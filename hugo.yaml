@@ -47,15 +47,12 @@ menu:
     - name: Home
       url: /
       weight: 1
-    - name: Blog
-      url: /blog
+    - name: Docs
+      url: /docs
       weight: 2
-    - name: Get Started
+    - name: Blog
       weight: 3
-      url: /docs/quickstart/
-    - name: Why kgateway
-      weight: 4
-      url: /docs/about/overview/
+      url: /blog
     - name: Search
       weight: 5
       params:
