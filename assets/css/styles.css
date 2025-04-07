@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.nav-container a img {
+  height: 25px;
+  width: 165px;
+}
+
+.content, .sidebar-container, .hextra-toc, .hx-text-base {
+  font-family: 'Open Sans', 'ui-sans-serif', 'system-ui', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'
+}
