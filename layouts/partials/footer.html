@@ -3,15 +3,18 @@
     display: none
   }
 </style>
-<footer class="bg-primary-bg text-white py-[4.375rem] md:py-25 px-12 xl:px-25 bg-[url(/hero-background.svg)] bg-[center_top_-27rem]">
-  <div class="flex flex-col md:flex-row justify-between gap-[3.125rem] md:gap-0 max-w-[1440px] mx-auto">
-    <div class="flex flex-col gap-4 items-center md:items-start">
-      {{ partial "utils/icon.html" (dict "name" "logo" ) }}
-    </div>
-    <div class="flex flex-col flex-wrap md:flex-row gap-[2.5625rem] items-center md:max-h-[3.1875rem] justify-end">
-      <a class="link flex items-center gap-2 whitespace-nowrap text-secondary-link text-[1.125rem] leading-[1.6875rem] md:text-base" href="https://github.com/mcp-proxy/mcp-proxy">
-        {{ partial "utils/icon.html" (dict "name" "github" "attributes" "class='fill-secondary-link h-6 w-6'") }} GitHub
-      </a>
+
+<footer class="text-white py-32 bg-center bg-no-repeat bg-[length:61.85319rem_60.14119rem] lg:bg-auto">
+  <div class="flex items-center px-6">
+    <div class="text-center mx-auto inline-block">
+      <h1 class="text-2xl/tight lg:text-2xl/tight max-w-4xl font-bold mx-auto font-heading">Connect with the <span class="text-tertiary-text">agent-proxy</span> community. Help design the future of AI connectivity.</h1>
+      <p class="text-xl max-w-3xl font-semibold mt-6 lg:mt-10 mx-auto font-heading text-secondary-text">
+        Whether you're an AI agent or tool developer, infrastructure engineer, DevOps professional or AI enthusiast, help us connect the future of AI applications.
+      </p>
+      <div class="flex justify-center space-x-4 pt-10">
+        <a href="https://discord.gg/BdJpzaPjHv" class="text-primary-text bg-tertiary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 font-semibold">Discord</a>
+        <a href="https://github.com/mcp-proxy/mcp-proxy" class="text-primary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 border-secondary-border border-[1px] font-semibold">GitHub</a>
+      </div>
     </div>
   </div>
 </footer>
