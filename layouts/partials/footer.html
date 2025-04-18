@@ -12,8 +12,8 @@
         Whether you're an AI agent or tool developer, infrastructure engineer, DevOps professional or AI enthusiast, help us connect the future of AI applications.
       </p>
       <div class="flex justify-center space-x-4 pt-10">
-        <a href="https://discord.gg/BdJpzaPjHv" class="text-primary-text bg-tertiary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 font-semibold">Discord</a>
-        <a href="https://github.com/agentproxy-dev/agentproxy" class="text-primary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 border-secondary-border border-[1px] font-semibold">GitHub</a>
+        {{ partial "button" (dict "style" "primary" "href" "https://discord.gg/BdJpzaPjHv" "text" "Discord" "icon" "discord") }}
+        {{ partial "button" (dict "style" "secondary" "href" "https://github.com/agentproxy-dev/agentproxy" "text" "GitHub" "icon" "github") }}
       </div>
     </div>
   </div>

@@ -12,8 +12,8 @@ description: ""
         An open-source data plane built for modern AI connectivity. Connect agents, federate tools, and support emerging protocols with a secure, scalable agentic mesh
       </p>
       <div class="flex justify-center space-x-4 pt-10">
-        <a href="/docs/" class="text-primary-text bg-tertiary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 font-semibold">Get Started</a>
-        <a href="https://github.com/agentproxy-dev/agentproxy" class="text-primary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 border-secondary-border border-[1px] font-semibold">View on GitHub</a>
+        {{< button style="primary" href="/docs/" iconRight="true" text="Get Started" icon="arrow-right" >}}
+        {{< button style="secondary" href="https://github.com/agentproxy-dev/agentproxy" text="View on GitHub" icon="github" >}}
       </div>
     </div>
   </div>
