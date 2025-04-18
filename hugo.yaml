@@ -59,7 +59,7 @@ menu:
         type: search
 
 params:
-  description: MCP Description
+  description: agentproxy
   navbar:
     displayTitle: false
     displayLogo: true

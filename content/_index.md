@@ -1,5 +1,5 @@
 ---
-title: Model Context Protocol
+title: agentproxy
 toc: false
 description: ""
 ---
@@ -13,7 +13,7 @@ description: ""
       </p>
       <div class="flex justify-center space-x-4 pt-10">
         <a href="/docs/" class="text-primary-text bg-tertiary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 font-semibold">Get Started</a>
-        <a href="https://github.com/mcp-proxy/mcp-proxy" class="text-primary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 border-secondary-border border-[1px] font-semibold">View on GitHub</a>
+        <a href="https://github.com/agentproxy-dev/agentproxy" class="text-primary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 border-secondary-border border-[1px] font-semibold">View on GitHub</a>
       </div>
     </div>
   </div>

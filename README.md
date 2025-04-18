@@ -1,1 +1,1 @@
-# mcp-proxy/website Contribution Guide
+# agentproxy-dev/website Contribution Guide
