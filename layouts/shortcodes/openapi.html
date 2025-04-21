@@ -1,0 +1,88 @@
+{{ $url := .Get "url" }}
+{{ $spec := resources.GetRemote $url | transform.Unmarshal }}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>{{ $spec.info.title }}</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Montserrat:300,400,700|Roboto:300,400,700"
+      rel="stylesheet"
+    />
+    <!-- Add Swagger UI CSS -->
+    <link rel="stylesheet" type="text/css" href="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui.css">
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      /* Override Hextra's layout for the Swagger container */
+      .swagger-container {
+        grid-column: 2 / 4 !important; /* Span both middle and right columns */
+        width: 100% !important;
+        max-width: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      /* Ensure Swagger UI takes full width */
+      .swagger-ui {
+        width: 100% !important;
+      }
+      /* Fix any potential conflicts with Hextra's styles */
+      .swagger-ui .opblock {
+        background: #fff;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        margin: 0 0 15px;
+      }
+      .swagger-ui .opblock .opblock-summary {
+        background: #f8f8f8;
+        border-bottom: 1px solid #e0e0e0;
+        padding: 8px 20px;
+      }
+      .swagger-ui .opblock .opblock-summary-method {
+        background: #4990e2;
+        color: #fff;
+        font-weight: 700;
+        padding: 6px 10px;
+        border-radius: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="swagger-container">
+      <div id="swagger-ui"></div>
+    </div>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-bundle.js"></script>
+    <script src="https://unpkg.com/swagger-ui-dist@5.9.0/swagger-ui-standalone-preset.js"></script>
+    <script>
+      window.onload = function() {
+        const ui = SwaggerUIBundle({
+          url: "{{ $url }}",
+          dom_id: '#swagger-ui',
+          deepLinking: true,
+          presets: [
+            SwaggerUIBundle.presets.apis,
+            SwaggerUIStandalonePreset
+          ],
+          plugins: [
+            SwaggerUIBundle.plugins.DownloadUrl
+          ],
+          layout: "StandaloneLayout",
+          supportedSubmitMethods: ['get', 'post', 'put', 'delete', 'patch'],
+          operationsSorter: 'alpha',
+          tagsSorter: 'alpha',
+          docExpansion: 'list',
+          defaultModelsExpandDepth: 3,
+          defaultModelExpandDepth: 3,
+          displayRequestDuration: true,
+          showExtensions: true,
+          showCommonExtensions: true
+        });
+      }
+    </script>
+  </body>
+</html>
