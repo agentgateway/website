@@ -25,7 +25,7 @@ description: ""
   </h2>
   <div class="flex flex-row text-start gap-8 align-middle justify-center">
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/">
-      <h3 class="font-bold">
+      <h3 class="font-bold text-primary-text">
         Dataplane
       </h3>
       <p class="text-secondary-text text-sm">
@@ -33,7 +33,7 @@ description: ""
       </p>
     </a>
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/">
-      <h3 class="font-bold">
+      <h3 class="font-bold  text-primary-text">
         Protocols
       </h3>
       <p class="text-secondary-text text-sm">
@@ -41,7 +41,7 @@ description: ""
       </p>
     </a>
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/">
-      <h3 class="font-bold">
+      <h3 class="font-bold  text-primary-text">
         Developer Portal
       </h3>
       <p class="text-secondary-text text-sm">
