@@ -57,7 +57,7 @@ description: ""
   </h2>
   <div class="text-start max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
-      <h3 class="font-bold">
+      <h3 class="font-bold text-primary-text">
         Agent Interoperability
       </h3>
       <p class="text-secondary-text text-sm">
@@ -65,7 +65,7 @@ description: ""
       </p>
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
-      <h3 class="font-bold">
+      <h3 class="font-bold text-primary-text">
         MCP Server Integration
       </h3>
       <p class="text-secondary-text text-sm">
@@ -73,7 +73,7 @@ description: ""
       </p>
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
-      <h3 class="font-bold">
+      <h3 class="font-bold text-primary-text">
         Tool Federation
       </h3>
       <p class="text-secondary-text text-sm">
@@ -81,7 +81,7 @@ description: ""
       </p>
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
-      <h3 class="font-bold">
+      <h3 class="font-bold text-primary-text">
         AI Innovation at Speed
       </h3>
       <p class="text-secondary-text text-sm">
