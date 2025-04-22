@@ -32,12 +32,7 @@ INFO:     Uvicorn running on http://localhost:10002 (Press CTRL+C to quit)
 
 Create an agentproxy that proxies requests to the reimbursement agent that you created earlier. 
 
-1. Go to the `agentproxy` directory. 
-   ```sh
-   cd agentproxy
-   ```
-   
-2. Create a listener and target configuration for your agentproxy. In this example, the agentproxy is configured as follows: 
+1. Create a listener and target configuration for your agentproxy. In this example, the agentproxy is configured as follows: 
    * **Listener**: An SSE listener is configured for the A2A protocol and exposed on port 3000.  
    * **Target**: The agentproxy targets the reimbursement agent that you created earlier and exposed on localhost, port 10002. 
    ```sh
@@ -74,4 +69,18 @@ Use the A2A CLI to send a request to your agent through the agentproxy.
 
 3. Enter a prompt, such as the following. 
    ```sh
+   Can you reimburse me for my trip to Kubecon on 4/2/25, amount: $1000.
+   ```
+   
+4. Optionally upload a receipt from your trip or skip this step by hitting the return key.
+5. Review the logs of your agent and verify that you see the reimbursement form filled out with the information that you entered. 
+  
+   ```
+   -----------------------------------------------------------
+   Function calls:
+   name: return_form, args: {'form_request': '{"amount": "$1000", "date": "4/2/25", "purpose": "Kubecon trip", "request_id": "request_id_2241162"}'}
+   -----------------------------------------------------------
+   Raw response:
+   {"candidates":[{"content":{"parts":[{"function_call":{"args":{"form_request":"{\"amount\": \"$1000\", \"date\": \"4/2/25\", \"purpose\": \"Kubecon trip\", \"request_id\": \"request_id_2241162\"}"},"name":"return_form"}}],"role":"model"},"finish_reason":"STOP","avg_logprobs":-0.017740900699908916}],"model_version":"gemini-2.0-flash-001","usage_metadata":{"candidates_token_count":52,"candidates_tokens_details":[{"modality":"TEXT","token_count":52}],"prompt_token_count":628,"prompt_tokens_details":[{"modality":"TEXT","token_count":628}],"total_token_count":680},"automatic_function_calling_history":[]}
+   -----------------------------------------------------------
    ```

@@ -19,7 +19,7 @@ Set up an SSE listener on your agentproxy.
    ```
 
 2. [Open the agentproxy listener UI](http://localhost:19000/ui/listeners/). 
-   {{< reuse-image src="img/agentproxy-ui-listener.png" >}}
+   {{< reuse-image src="img/agentproxy-ui-listener-none.png" >}}
 
 3. Click **Add Listener**. 
 4. Enter a **Name** for your listener, and configure the **Address** and **Port** that you want your listener to be exposed on. To use an address that is compatible with IPv4 and IPv6, enter `[::]`. 
@@ -57,7 +57,7 @@ Set up an SSE listener on your agentproxy.
    ```
 
 2. [Open the agentproxy listener UI](http://localhost:19000/ui/listeners/) and verify that your listener is added successfully. 
-   {{< reuse-image src="img/agentproxy-ui-listener.png" >}}
+   {{< reuse-image src="img/agentproxy-ui-listener-added.png" >}}
    
 {{% /tab %}}
 {{% tab %}}
@@ -101,7 +101,7 @@ Remove agentproxy listeners with the UI.
    ```
 
 2. [Open the agentproxy listener UI](http://localhost:19000/ui/listeners/) and find the listener that you want to remove. 
-   {{< reuse-image src="img/agentproxy-ui-listener.png" >}}
+   {{< reuse-image src="img/agentproxy-ui-listener-added.png" >}}
 
 3. Click the trash icon to remove the listener and confirm the deletion. 
 
