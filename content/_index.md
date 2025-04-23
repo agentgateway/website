@@ -9,7 +9,7 @@ description: ""
     <div class="text-center mx-auto inline-block">
       <h1 class="text-3xl/tight lg:text-6xl/tight max-w-4xl font-bold mt-6 mx-auto font-heading">Agent <span class="text-tertiary-text">Connectivity</span> Solved</h1>
       <p class="text-xl max-w-3xl font-semibold mt-6 lg:mt-10 mx-auto font-heading text-secondary-text">
-        An open-source Agent Gateway built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
+        An open source Agent Gateway built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
       </p>
       <div class="flex justify-center space-x-4 pt-10">
         {{< button style="primary" href="/docs/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}
