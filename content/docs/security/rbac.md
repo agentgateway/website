@@ -4,20 +4,20 @@ weight: 30
 description:
 ---
 
-Configure the agentproxy to require a JWT token to authenticate requests and use an RBAC policy to authorize access to tools for JWT tokens that contain specific claims. 
+Configure the Agent Gateway to require a JWT token to authenticate requests and use an RBAC policy to authorize access to tools for JWT tokens that contain specific claims. 
 
 
-## Configure the agentproxy
+## Configure the Agent Gateway
 
 1. Download a sample, local JWT public key file. You use this file to validate JWTs later. 
    ```sh
-   curl -o pub-key https://raw.githubusercontent.com/agentproxy-dev/agentproxy/refs/heads/main/manifests/jwt/pub-key
+   curl -o pub-key https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/pub-key
    ```
 
-2. Create a configuration file for your agentproxy. In this example, you configure the following elements: 
-   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentproxy successfully. If the request has a JWT that does not include this claim, the request is denied.
+2. Create a configuration file for your Agent Gateway. In this example, you configure the following elements: 
+   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the Agent Gateway successfully. If the request has a JWT that does not include this claim, the request is denied.
    * **RBAC policy**: An RBAC policy that allows access to the `everything_echo` tool when a JWT token with the `sub: me` claim is present in the request. 
-   * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. 
+   * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
    
    ```sh
    cat <<EOF > ./config.json
@@ -79,29 +79,29 @@ Configure the agentproxy to require a JWT token to authenticate requests and use
    EOF
    ```
 
-3. Run the agentproxy. 
+3. Run the Agent Gateway. 
    ```sh
-   agentproxy -f config.json
+   agentgateway -f config.json
    ```
    
 ## Verify access to tools
 
-1. Open the [agentproxy UI](http://localhost:19000/ui/). 
+1. Open the [Agent Gateway UI](http://localhost:19000/ui/). 
 
-2. Connect to the MCP server with the agentproxy UI playground. 
-   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
+2. Connect to the MCP server with the Agent Gateway UI playground. 
+   1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
    2. In the **Connection Settings** card, select your listener
-   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```
    4. Verify that you see a list of **Available Tools**. 
    
-      {{< reuse-image src="img/agentproxy-ui-tools-jwt.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
 
 3. Try out access to the tools. 
    1. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-      {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
    2. Select a different tool, such as `everything_add`, enter any number in the **a** and **b** fields, and click **Run Tool**. Verify that access to the tool is denied, because the RBAC policy only allowed access to the `everything_echo` tool. 
-      {{< reuse-image src="img/agentproxy-ui-tool-denied.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tool-denied.png" >}}
    

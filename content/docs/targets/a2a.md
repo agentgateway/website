@@ -28,32 +28,32 @@ INFO:     Application startup complete.
 INFO:     Uvicorn running on http://localhost:10002 (Press CTRL+C to quit)
 ```
 
-## Set up the agentproxy
+## Set up the Agent Gateway
 
-Create an agentproxy that proxies requests to the reimbursement agent that you created earlier. 
+Create an Agent Gateway that proxies requests to the reimbursement agent that you created earlier. 
 
-1. Create a listener and target configuration for your agentproxy. In this example, the agentproxy is configured as follows: 
+1. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured for the A2A protocol and exposed on port 3000.  
-   * **Target**: The agentproxy targets the reimbursement agent that you created earlier and exposed on localhost, port 10002. 
+   * **Target**: The Agent Gateway targets the reimbursement agent that you created earlier and exposed on localhost, port 10002. 
    ```sh
    cat <<EOF > config.json
-   {{< github url="https://raw.githubusercontent.com/agentproxy-dev/agentproxy/refs/heads/main/examples/a2a/config.json" >}}
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/a2a/config.json" >}}
    EOF
    ```
 
-3. Create the agentproxy. 
+3. Create the Agent Gateway. 
    ```sh
-   agentproxy -f config.json
+   agentgateway -f config.json
    ```
 
 
 ## Send a request to the agent
 
-Use the A2A CLI to send a request to your agent through the agentproxy. 
+Use the A2A CLI to send a request to your agent through the Agent Gateway. 
 
 1. Clone the [A2A CLI](https://github.com/google/A2A/tree/main/samples/python/hosts/cli) repository and navigate to the `samples/python/hosts/cli` directory. 
 
-2. Use the A2A CLI to connect to the agent through your agentproxy. 
+2. Use the A2A CLI to connect to the agent through your Agent Gateway. 
    ```sh
    uv run . --agent http://localhost:3000/google-adk 
    ```

@@ -4,7 +4,7 @@ weight: 50
 description: 
 ---
 
-Secure the agentproxy and the tools it exposes. 
+Secure the Agent Gateway and the tools it exposes. 
 
 {{< cards >}}
   {{< card link="tls" title="Set up a TLS listener" >}}

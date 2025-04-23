@@ -4,7 +4,7 @@ weight: 70
 description: 
 ---
 
-Review metrics and trace requests that are served by the agentproxy. 
+Review metrics and trace requests that are served by the Agent Gateway. 
 
 {{< cards >}}
   {{< card link="metrics" title="Metrics" >}}
