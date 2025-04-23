@@ -139,11 +139,14 @@ Remove agentproxy targets with the UI.
 {{% /tab %}}
 {{% tab %}}
 
-If you use a configuration file to configure your agentproxy, you can remove the target from the file. Then, run your agentproxy with the updated configuration. 
+Update the configuration file to remove the target.
 
-```sh
-agentproxy -f config.json
-```
+1. In your configuration file, remove the target that you want to delete. 
+2. Apply the updated configuration file to your agentproxy.
+
+   ```sh
+   agentproxy -f config.json
+   ```
 
 {{% /tab %}}
 {{% tab %}}

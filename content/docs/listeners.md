@@ -1,7 +1,8 @@
 ---
 title: Listeners
 weight: 30
-description: You can use the agentproxy UI or admin API to configure listeners. 
+description: You can use the agentproxy UI or admin API to configure listeners.
+next: /docs/targets
 --- 
 
 You can use the built-in agentproxy UI, a configuration file, or the admin API to create, update, and delete listeners. 
@@ -109,11 +110,14 @@ Remove agentproxy listeners with the UI.
 {{% /tab %}}
 {{% tab %}}
 
-If you use a configuration file to configure your agentproxy, you can remove the listener from the file. Then, run your agentproxy with the updated configuration. 
+Update the configuration file to remove the listener.
 
-```sh
-agentproxy -f config.json
-```
+1. In your configuration file, remove the listener that you want to delete.
+2. Apply the updated configuration file to your agentproxy.
+
+   ```sh
+   agentproxy -f config.json
+   ```
 
 {{% /tab %}}
 {{% tab %}}
