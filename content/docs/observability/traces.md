@@ -4,27 +4,27 @@ weight: 20
 description:
 ---
 
-The agentproxy integrates with Jaeger as the tracing platform. [Jaeger](https://www.jaegertracing.io) is an open source tool that helps you follow the path of a request as it is forwarded between agents. The chain of events and interactions are captured by an OpenTelemetry pipeline that is configured to send traces to the Jaeger agent. You can then visualize the traces by using the Jaeger UI. 
+The Agent Gateway integrates with Jaeger as the tracing platform. [Jaeger](https://www.jaegertracing.io) is an open source tool that helps you follow the path of a request as it is forwarded between agents. The chain of events and interactions are captured by an OpenTelemetry pipeline that is configured to send traces to the Jaeger agent. You can then visualize the traces by using the Jaeger UI. 
 
 ## Set up Jaeger
 
 Use [`docker compose`](https://docs.docker.com/compose/install/linux/) to spin up a Jaeger instance with the following components: 
-* An OpenTelemetry collector that receives traces from the agentproxy. The collector is exposed on `http://localhost:4317`. 
+* An OpenTelemetry collector that receives traces from the Agent Gateway. The collector is exposed on `http://localhost:4317`. 
 * A Jaeger agent that receives the collected traces. The agent is exposed on `http://localhost:14268`. 
 * A Jaeger UI that is exposed on `http://localhost:16686`. 
 
 ```sh
 docker compose -f - up -d <<EOF
-{{< github url="https://raw.githubusercontent.com/agentproxy-dev/agentproxy/refs/heads/main/examples/telemetry/docker-compose.yaml" >}}
+{{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/telemetry/docker-compose.yaml" >}}
 EOF
 ```
 
-## Configure the agentproxy
+## Configure the Agent Gateway
 
-1. Create a configuration file for your agentproxy. In this example, you configure the following elements: 
+1. Create a configuration file for your Agent Gateway. In this example, you configure the following elements: 
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
-   * **Traces**: The agentproxy is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
-   * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. 
+   * **Traces**: The Agent Gateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
+   * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
    ```sh
    cat <<EOF > ./config.json
    {
@@ -61,33 +61,33 @@ EOF
    EOF
    ```
 
-2. Run the agentproxy. 
+2. Run the Agent Gateway. 
    ```sh
-   agentproxy -f config.json
+   agentgateway -f config.json
    ```
 
 ## Verify traces
 
-1. Open the [agentproxy UI](http://localhost:19000/ui/). 
+1. Open the [Agent Gateway UI](http://localhost:19000/ui/). 
 
-2. Connect to the MCP server with the agentproxy UI playground. 
-   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
-   2. In the **Connection Settings** card, select your listener and click **Connect**. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+2. Connect to the MCP server with the Agent Gateway UI playground. 
+   1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    3. Verify that you see a list of **Available Tools**. 
    
-      {{< reuse-image src="img/agentproxy-ui-tools.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tools.png" >}}
 
 3. Verify access to a tool. 
    1. From the **Available Tools** list, select the `everything_echo` tool. 
    2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
    3. Verify that you see your message echoed in the **Response** card. 
    
-      {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
 
 4. Open the [Jaeger UI](http://localhost:16686). 
 
 5. View traces. 
-   1. From the **Service** drop down, select `agentproxy`. 
+   1. From the **Service** drop down, select `agentgateway`. 
    2. Click **Find Traces**. 
    3. Verify that you can see trace spans for listing the MCP tools (`list_tools`) and calling a tool (`call_tool`).
    
@@ -95,19 +95,19 @@ EOF
    
 ## Add tags to traces
 
-You can optionally enrich the traces that are captured by the agentproxy with tags. Tags are key-value pairs that can have the following format: 
-* **Static key-value pair**, where the key and value do not change. For example, use `"custom-tag": "test"` to add this tag to all traces that are captured by the agentproxy. 
+You can optionally enrich the traces that are captured by the Agent Gateway with tags. Tags are key-value pairs that can have the following format: 
+* **Static key-value pair**, where the key and value do not change. For example, use `"custom-tag": "test"` to add this tag to all traces that are captured by the Agent Gateway. 
 * **Claim-based key-value pair**, where you map the value of a specific JWT claim to a key. For example, if the username is captured in a `sub` claim in your JWT, you can map that username to a `user` tag by using the following syntax `"user": "@sub"`. 
 
 1. Download a sample, local JWT public key file. You use this file to validate JWTs later. 
    ```sh
-   curl -o pub-key https://raw.githubusercontent.com/agentproxy-dev/agentproxy/refs/heads/main/manifests/jwt/pub-key
+   https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/pub-key
    ```
 
-2. Create a configuration file for your agentproxy. In this example, you configure the following elements: 
-   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentproxy successfully. If the request has a JWT that does not include this claim, the request is denied.
-   * **Traces**: The agentproxy is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. In addition, the agentproxy is configured to inject the `custom-tag: test` tag and to extract the `sub` claim from the JWT token and map it to the `user` tag. 
-   * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. 
+2. Create a configuration file for your Agent Gateway. In this example, you configure the following elements: 
+   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the Agent Gateway successfully. If the request has a JWT that does not include this claim, the request is denied.
+   * **Traces**: The Agent Gateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. In addition, the Agent Gateway is configured to inject the `custom-tag: test` tag and to extract the `sub` claim from the JWT token and map it to the `user` tag. 
+   * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
    cat <<EOF > ./config.json
    {
@@ -161,31 +161,31 @@ You can optionally enrich the traces that are captured by the agentproxy with ta
    EOF
    ```
 
-3. Run the agentproxy. 
+3. Run the Agent Gateway. 
    ```sh
-   agentproxy -f config.json
+   agentgateway -f config.json
    ```
 
-4. Open the [agentproxy UI](http://localhost:19000/ui/). 
+4. Open the [Agent Gateway UI](http://localhost:19000/ui/). 
 
-5. Connect to the MCP server with the agentproxy UI playground. 
-   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
+5. Connect to the MCP server with the Agent Gateway UI playground. 
+   1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
    2. In the **Connection Settings** card, select your listener
-   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the MCP tools. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the MCP tools. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```
    4. Verify that you see a list of **Available Tools**. 
    
-      {{< reuse-image src="img/agentproxy-ui-tools-jwt.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
 
 6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-   {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}
+   {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
 
 7. Open the [Jaeger UI](http://localhost:16686). 
 
 8. View traces. 
-   1. From the **Service** drop down, select `agentproxy`. 
+   1. From the **Service** drop down, select `agentgateway`. 
    2. Click **Find Traces**. 
    3. Verify that you can see trace spans for listing the MCP tools (`list_tools`) and calling a tool (`call_tool`).
    4. Expand a trace and verify that you see the `custom-tag=test` and `user=me` tags for each trace span. 

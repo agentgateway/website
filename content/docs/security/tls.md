@@ -4,17 +4,17 @@ weight: 10
 description:
 ---
 
-You can configure the SSE listener on the agentproxy with a TLS certificate to secure the communication to the agentproxy. 
+You can configure the SSE listener on the Agent Gateway with a TLS certificate to secure the communication to the Agent Gateway. 
 
 1. Download the `.pem` files for certificate and key that you use to secure the SSE listener. 
    ```sh
-   curl -o cert.pem https://raw.githubusercontent.com/agentproxy-dev/agentproxy/refs/heads/main/examples/tls/certs/cert.pem
-   curl -o key.pem https://raw.githubusercontent.com/agentproxy-dev/agentproxy/refs/heads/main/examples/tls/certs/key.pem
+   curl -o cert.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/cert.pem
+   curl -o key.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/key.pem
    ```
 
-2. Create a listener and target configuration for your agentproxy. In this example, the agentproxy is configured as follows: 
+2. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
-   * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. 
+   * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
    ```sh
    cat <<EOF > config.json
    {
@@ -52,12 +52,12 @@ You can configure the SSE listener on the agentproxy with a TLS certificate to s
    EOF
    ```
 
-3. Run the agentproxy. 
+3. Run the Agent Gateway. 
    ```sh
-   agentproxy -f config.json
+   agentgateway -f config.json
    ```
    
-3. Send an HTTP request to the agentproxy. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 
+3. Send an HTTP request to the Agent Gateway. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 
    ```sh
    curl -vik http://localhost:3000/sse
    ```
@@ -73,7 +73,7 @@ You can configure the SSE listener on the agentproxy with a TLS certificate to s
    curl: (1) Received HTTP/0.9 when not allowed
    ```
 
-4. Send an HTTPS request to the agentproxy. Verify that you see a TLS handshake and that a connection to the agentproxy can be established.
+4. Send an HTTPS request to the Agent Gateway. Verify that you see a TLS handshake and that a connection to the Agent Gateway can be established.
    ```sh
    curl -vik https://localhost:3000/sse
    ```

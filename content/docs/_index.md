@@ -3,7 +3,7 @@ linkTitle: "Documentation"
 title: Welcome
 ---
 
-Welcome to the documentation for the agentproxy open source project! 
+Welcome to the documentation for the Agent Gateway open source project! 
 
 {{< cards >}}
   {{< card link="quickstart" title="Get started" >}}

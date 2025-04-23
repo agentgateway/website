@@ -4,18 +4,18 @@ weight: 10
 description: 
 ---
 
-Expose an OpenAPI spec on the agentproxy. 
+Expose an OpenAPI server on the Agent Gateway. 
 
-## Configure the agentproxy
+## Configure the Agent Gateway
 
 1. Download the OpenAPI schema for the Petstore app. 
    ```sh
-   curl -o openapi.json https://raw.githubusercontent.com/agentproxy-dev/agentproxy/main/examples/openapi/openapi.json
+   curl -o openapi.json https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/openapi/openapi.json
    ```
 
-2. Create a listener and target configuration for your agentproxy. In this example, the agentproxy is configured as follows: 
+2. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. 
-   * **Target**: The agentproxy connects to a Swagger UI endpoint that exposes the OpenAPI spec for the Petstore sample app. You also include the OpenAPI schema that you downloaded earlier. 
+   * **Target**: The Agent Gateway connects to a Swagger UI endpoint that exposes the OpenAPI spec for the Petstore sample app. You also include the OpenAPI schema that you downloaded earlier. 
    ```sh
    cat <<EOF > config.json
    {
@@ -46,9 +46,9 @@ Expose an OpenAPI spec on the agentproxy.
    EOF
    ```
 
-3. Run the agentproxy. 
+3. Run the Agent Gateway. 
    ```sh
-   agentproxy -f config.json
+   agentgateway -f config.json
    ```
    
 ## Verify access to the Petstore APIs
@@ -60,10 +60,10 @@ Expose an OpenAPI spec on the agentproxy.
 
 2. Open the MCP inspector at the address from the output of the previous command, such as `http://localhost:5173?proxyPort=9000`.
 
-3. Connect to the agentproxy. 
+3. Connect to the Agent Gateway. 
    1. Select `SSE` from the **Transport Type** drop down. 
    2. Enter `http://localhost:3000/sse` in the **URL** field. 
-   3. Click **Connect** to connect to the agentproxy. 
+   3. Click **Connect** to connect to the Agent Gateway. 
    
 4. Verify access to the Petstore APIs. 
    1. From the menu bar, select **Tools**. 
