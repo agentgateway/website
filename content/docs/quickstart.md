@@ -10,7 +10,7 @@ Get started with agentproxy, an open source, highly available, and highly scalab
 
 In this guide, you learn how to use the agentproxy to proxy requests to an open source MCP test server that exposes multiple MCP test tools. 
 
-{{< reuse-image src="img/quickstart.svg" width="500px" >}}
+{{< reuse-image src="img/quickstart.svg" width="700px" >}}
 
 You complete the following tasks: 
 * Install the agentproxy binary on your local machine. 
