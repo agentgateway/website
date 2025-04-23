@@ -26,10 +26,10 @@ The following figure shows how agentproxy provides AI connectivity for agents an
 Agentproxy comes with the following key features: 
 
 * **Open source**: Agentproxy is open source, and licensed under the Apache 2.0 license. 
-* **Compatible with any agentic framework**: Agentproxy is compatible with any agentic framework supporting Model Context Protocol (MCP) or agent-to-agent (A2A) protocol, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use agentproxy to expose a REST API as an agent-native tool. 
+* **Compatible with any agentic framework**: Agentproxy is compatible with any agentic framework supporting the Model Context Protocol (MCP) or agent-to-agent (A2A) protocol, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use agentproxy to expose a REST API as an agent-native tool. 
 * **Platform-agnostic**: Agentproxy can run in any environment, including bare metal, virtual machine, containers, and Kubernetes. 
 * **Highly performant**: Agentproxy is written in Rust and designed to handle any scale. 
-* **Tool federation**: Agentproxy provides a unifie
+* **Tool federation**: Agentproxy can connect to multiple targets and provide a unified view of the tools and agents that are exposed on these targets. 
 * **Dynamic configuration updates**: Agentproxy can be updated via an xDS interface without any downtime. 
 * **Security with RBAC**: Agentproxy supports a robust RBAC system that allows you to control access to MCP tools and agents. 
 * **Built-in observability**: Agentproxy comes with built-in metrics and tracing capabilities that allow you to monitor the traffic that goes through the agentproxy.

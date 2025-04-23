@@ -10,13 +10,13 @@ Get started with agentproxy, an open source, highly available, and highly scalab
 
 In this guide, you learn how to use the agentproxy to proxy requests to an open source MCP test server that exposes multiple MCP test tools. 
 
-{{< reuse-image src="img/quickstart.svg" width="700px" >}}
-
 You complete the following tasks: 
 * Install the agentproxy binary on your local machine. 
 * Create an agentproxy configuration that proxies requests to multiple tools that are exposed on an open source MCP test server, `server-everything`. 
-* Explore the agentproxy UI
+* Explore the agentproxy UI.
 * Test access to the `everything_echo` MCP tool. 
+
+{{< reuse-image src="img/quickstart.svg" width="700px" >}}
 
 
 ## Step 1: Install the binary
@@ -57,7 +57,7 @@ You complete the following tasks:
    * **Listener**: An SSE listener is configured and exposed on port 3000. 
    * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. The server runs the entire MCP stack in a single process and can be used to test, develop, or demo MCP environments. 
    
-     To run the server, you use the standard input/output (`stdio`) capability of the agentproxy, which allows you to pass in the command and command arguments that you want to use. In this example, the `npx` command is used. The `npx` command utility lets you to run a Node.js package (`@modelcontextprotocol/server-everything`) without installing it. If you do not have `npx` on your machine, follow the [instructions to install Node.js](https://nodejs.org/en/download).
+     To run the server, you use the standard input/output (`stdio`) capability of the agentproxy, which allows you to pass in the command and command arguments that you want to use. In this example, the `npx` command is used. The `npx` command utility lets you run a Node.js package (`@modelcontextprotocol/server-everything`) without installing it. If you do not have `npx` on your machine, follow the [instructions to install Node.js](https://nodejs.org/en/download).
    ```sh
    cat <<EOF > config.json
    {{< github url="https://raw.githubusercontent.com/agentproxy-dev/agentproxy/refs/heads/main/examples/basic/config.json" >}}
@@ -88,10 +88,10 @@ The agentproxy comes with a built-in UI that you can use to connect to your MCP 
 
    {{< reuse-image src="img/agentproxy-ui-listener-basic.png" >}}
    
-3. Go to the [**Targets** overview](http://localhost:19000/ui/targets/) and review your target configuration. To learn how to create more or delete existing targets with the UI, see the [Targets](/docs/targetes) docs. 
+3. Go to the [**Targets** overview](http://localhost:19000/ui/targets/) and review your target configuration. To learn how to create more or delete existing targets with the UI, see the [Targets](/docs/targets) docs. 
    {{< reuse-image src="img/agentproxy-ui-targets.png" >}}
    
-4. Connect to the MCP server with the agentproxy UI playground. 
+4. Connect to the MCP test server with the agentproxy UI playground. 
    1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
    2. In the **Connection Settings** card, select your listener and click **Connect**. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    3. Verify that you see a list of **Available Tools**. 
@@ -108,9 +108,9 @@ The agentproxy comes with a built-in UI that you can use to connect to your MCP 
 
 ## Next
 
-With you agentproxy up and running, you can now explore the following tasks: 
+With your agentproxy up and running, you can now explore the following tasks: 
 
-* [Configure other targets](/docs/targets), such as multiple MCP servers, an A2A agent, or an OpenAPI spec. 
+* [Configure other targets](/docs/targets), such as multiple MCP servers, an A2A agent, or an OpenAPI server. 
 * [Secure your agentproxy setup](/docs/security), such as by setting up a TLS listener, JWT authentication, and RBAC policies to control access to tools and agents. 
 * [Explore metrics and traces](/docs/observability) that the agentproxy emits so that you can monitor the traffic that goes through your agentproxy. 
 

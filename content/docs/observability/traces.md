@@ -4,11 +4,11 @@ weight: 20
 description:
 ---
 
-The agentproxy integrates with Jaeger as the tracing platform. [Jaeger](https://www.jaegertracing.io) is an open source tool that helps you follow the path of a request as it is forwarded between microservices. The chain of events and interactions are captured by an OpenTelemetry pipeline that is configured to send traces to the Jaeger agent. You can then visualize the traces by using the Jaeger UI. 
+The agentproxy integrates with Jaeger as the tracing platform. [Jaeger](https://www.jaegertracing.io) is an open source tool that helps you follow the path of a request as it is forwarded between agents. The chain of events and interactions are captured by an OpenTelemetry pipeline that is configured to send traces to the Jaeger agent. You can then visualize the traces by using the Jaeger UI. 
 
 ## Set up Jaeger
 
-Use `docker compose` to spin up a Jaeger instance with the following components: 
+Use [`docker compose`](https://docs.docker.com/compose/install/linux/) to spin up a Jaeger instance with the following components: 
 * An OpenTelemetry collector that receives traces from the agentproxy. The collector is exposed on `http://localhost:4317`. 
 * A Jaeger agent that receives the collected traces. The agent is exposed on `http://localhost:14268`. 
 * A Jaeger UI that is exposed on `http://localhost:16686`. 
@@ -21,7 +21,7 @@ EOF
 
 ## Configure the agentproxy
 
-1. Create a configuration for your agentproxy. 
+1. Create a configuration file for your agentproxy. In this example, you configure the following elements: 
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
    * **Traces**: The agentproxy is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
    * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. 
@@ -63,7 +63,7 @@ EOF
 
 2. Run the agentproxy. 
    ```sh
-   agentproxy -f ./config.json
+   agentproxy -f config.json
    ```
 
 ## Verify traces
@@ -163,12 +163,7 @@ You can optionally enrich the traces that are captured by the agentproxy with ta
 
 3. Run the agentproxy. 
    ```sh
-   agentproxy -f ./config.json
-   ```
-
-3. Run the agentproxy. 
-   ```sh
-   agentproxy -f ./config.json
+   agentproxy -f config.json
    ```
 
 4. Open the [agentproxy UI](http://localhost:19000/ui/). 
@@ -176,7 +171,7 @@ You can optionally enrich the traces that are captured by the agentproxy with ta
 5. Connect to the MCP server with the agentproxy UI playground. 
    1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
    2. In the **Connection Settings** card, select your listener
-   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the MCP tools. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```

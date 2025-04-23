@@ -8,9 +8,9 @@ The agentproxy comes with a built-in metrics endpoint that you can use to monito
 
 ## View metrics
 
-1. Follow the [Get started](/docs/quickstart) to create a configuration for your agentproxy and verify access to an MCP tool. 
+1. Follow the [Get started](/docs/quickstart) guide to create a configuration for your agentproxy and verify access to an MCP tool. 
 
-2. Open the [agentproxy metrics endpoint](http://localhost:9091/metrics) to view all the metrics that the agentproxy captures. If you tried out an MCP tool earlier, such as the `everything-add` tool, you see the counter for the `tool_calls_total` and `list_calls_total` metrics increase. 
+2. Open the [agentproxy metrics endpoint](http://localhost:9091/metrics) to view all the metrics that the agentproxy captures. If you tried out an MCP tool earlier, such as the `everything_add` tool, you see the counter for the `tool_calls_total` and `list_calls_total` metrics increase. 
    
    Example output: 
    ```
@@ -101,7 +101,7 @@ You can optionally enrich the metrics that are captured by the agentproxy with t
 
 3. Run the agentproxy. 
    ```sh
-   agentproxy -f ./config.json
+   agentproxy -f config.json
    ```
 
 4. Open the [agentproxy UI](http://localhost:19000/ui/). 
@@ -109,7 +109,7 @@ You can optionally enrich the metrics that are captured by the agentproxy with t
 5. Connect to the MCP server with the agentproxy UI playground. 
    1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
    2. In the **Connection Settings** card, select your listener
-   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed to access the tools that are exposed on the MCP target. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```

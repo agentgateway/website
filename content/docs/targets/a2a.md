@@ -73,7 +73,7 @@ Use the A2A CLI to send a request to your agent through the agentproxy.
    ```
    
 4. Optionally upload a receipt from your trip or skip this step by hitting the return key.
-5. Review the logs of your agent and verify that you see the reimbursement form filled out with the information that you entered. 
+5. Review the logs of your agent and verify that you see the reimbursement form filled out with the information that you entered in your prompt. 
   
    ```
    -----------------------------------------------------------

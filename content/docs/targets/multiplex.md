@@ -35,7 +35,7 @@ Federate tools of multiple MCP servers on the agentproxy by using MCP multiplexi
       {{< reuse-image src="img/agentproxy-ui-tools-multiplex.png" >}}
 
 6. Verify access to a tool. 
-   1. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+   1. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
    
       {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}
    

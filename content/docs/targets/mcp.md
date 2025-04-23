@@ -12,7 +12,7 @@ Expose tools that are hosted on an MCP server on the agentproxy.
 
 An MCP server exposes external data sources and tools so that LLM applications can access them. Typically, you want to deploy these servers remotely and have authorization mechanisms in place so that LLM applications can safely access the data.
 
-With agentproxy, you can connect to one or multiple MCP servers in any environment. The agentproxy proxies requests to the MCP tool that is exposed on the server. You can also use the agentproxy to federate tools from multiple MCP servers. For more information, see the [Multiple targets](/docs/setup/examples/multiple-targets) guide. 
+With agentproxy, you can connect to one or multiple MCP servers in any environment. The agentproxy proxies requests to the MCP tool that is exposed on the server. You can also use the agentproxy to federate tools from multiple MCP servers. For more information, see the [MCP multiplexing](/docs/setup/examples/multiplex) guide. 
 
 ## Configure the agentproxy
 

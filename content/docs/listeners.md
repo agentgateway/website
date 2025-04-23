@@ -63,7 +63,7 @@ Set up an SSE listener on your agentproxy.
 {{% /tab %}}
 {{% tab %}}
 
-Use the agentproxy admin API to configure an SSE listener on your agentproxy 
+Use the agentproxy admin API to configure an SSE listener on your agentproxy.
 
 1. Start your agentproxy. The agentproxy automatically exposes its admin API on port 19000. 
    ```sh

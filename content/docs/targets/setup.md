@@ -25,16 +25,18 @@ You can create targets by using the agentproxy UI, a configuration file, or the 
    2. Enter a **Name** for your listener, and configure the **Address** and **Port** that you want your listener to be exposed on. To use an address that is compatible with IPv4 and IPv6, enter `[::]`. 
    
       {{< reuse-image src="img/agentproxy-ui-listener-add.png" width="500px" >}}
+   
+   3. Click **Add Listener** to save your configuration.
 
 4. [Open the agentproxy target UI](http://localhost:19000/ui/targets/). 
    {{< reuse-image src="img/agentproxy-ui-targets-none.png" >}}
    
-5. Add an MCP server as a target for you agentproxy. 
+5. Add an MCP server as a target for your agentproxy. 
    1. Click **Add Target**. 
    2. Enter a **Target Name**. The name is used as a prefix for all the MCP tools that are exposed on the MCP server.
-   3. Select the **Listeners** that can server traffic to that target. 
+   3. Select the **Listeners** that can serve traffic to that target. 
    4. Select `MCP Target` from the **Target Type**. 
-   5. Select the **>_ stdio** tab and enter the `npx` argument that you want to use to run your MCP server. For example, to run a sample, open source MCP test server, `server-everything`, enter `@modelcontextprotocol/server-everything`. If your server is exposed on a public URL, you can enter that URL in the **SSE** tab. 
+   5. Select the **>_ stdio** tab and enter the `npx` argument that you want to use to run your MCP server. For example, to run the sample, open source MCP test server, `server-everything`, enter `@modelcontextprotocol/server-everything`. If your server is exposed on a public URL, you can enter that URL in the **SSE** tab instead. 
    
       {{< reuse-image src="img/agentproxy-ui-target-add.png" width="500px" >}}
    6. Click **Add Target** to save your configuration. 
@@ -47,7 +49,7 @@ You can create targets by using the agentproxy UI, a configuration file, or the 
 
 1. Create a JSON file that contains your listener configuration. The following example sets up these components: 
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
-   * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. The server runs the entire MCP stack in a single process and can be used to test, develop, or demo MCP environments. To run the server, you use the `npx` command, which allows you to run a Node.js package without installing it. 
+   * **Target**: The agentproxy targets a sample, open source MCP test server, `server-everything`. The server runs the entire MCP stack in a single process and can be used to test, develop, or demo MCP environments. To run the server, you use the standard input/output (`stdio`) capability of the agentproxy that allows you specify a command and command arguments that you want to run. In this example, you use the `npx` command utility to run the `@modelcontextprotocol/server-everything` server. 
    ```sh
    cat <<EOF > config.json
    {
@@ -183,14 +185,19 @@ Use the agentproxy admin API to delete targets from your agentproxy.
    []
    ```
 
-5. List all the A2A targets that are configured on your agentproxy and note the name of the target that you want to remove. In the following example, the name of the A2A target is `google_sdk`. 
+5. List all the A2A targets that are configured on your agentproxy and note the name of the target that you want to remove. In the following example, the name of the A2A target is `google_adk`. 
    ```sh
    curl http://localhost:19000/targets/a2a
+   ```
+   
+   Example output: 
+   ```console
+   [{"name":"google-adk","host":"127.0.0.1","port":10002}]%
    ```
 
 6. Remove the A2A target from your agentproxy. 
    ```sh
-   curl -X DELETE curl http://localhost:19000/targets/a2a/google_sdk
+   curl -X DELETE curl http://localhost:19000/targets/a2a/google_adk
    ```
 
 7. Verify that the A2A target is removed. 
