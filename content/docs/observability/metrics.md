@@ -104,29 +104,23 @@ You can optionally enrich the metrics that are captured by the agentproxy with t
    agentproxy -f ./config.json
    ```
 
-4. Run the MCP Inspector. 
-   ```sh
-   SERVER_PORT=9000 npx @modelcontextprotocol/inspector
-   ```
+4. Open the [agentproxy UI](http://localhost:19000/ui/). 
 
-5. Open the MCP inspector at the address from the output of the previous command, such as `http://localhost:5173?proxyPort=9000`.
-
-6. Connect to the agentproxy. 
-   1. Select `SSE` from the **Transport Type** drop down. 
-   2. Enter `http://localhost:3000/sse` in the **URL** field. 
-   3. Expand the **Authentication** drop down and enter the following JWT token in the **Bearer Token** field. The JWT token includes the `sub: me` claim.  
+5. Connect to the MCP server with the agentproxy UI playground. 
+   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener
+   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```
-   4. Click **Connect** to connect to the agentproxy. 
+   4. Verify that you see a list of **Available Tools**. 
+   
+      {{< reuse-image src="img/agentproxy-ui-tools-jwt.png" >}}
 
-7. Access a tool. 
-   1. From the menu bar, select **Tools**. 
-   2. Click **List Tools**. 
-   3. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-      {{< reuse-image src="img/mcp-access-granted.png" >}}
+6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+   {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}
 
-8. Send a request to the agentproxy metrics endpoint to grab the `tool_calls_total` metric. Verify that you see the `custom-tag=test` and the `user=me` tags. 
+7. Send a request to the agentproxy metrics endpoint to grab the `tool_calls_total` metric. Verify that you see the `custom-tag=test` and the `user=me` tags. 
    ```sh
    curl http://localhost:9091/metrics -s | grep tool_calls_total
    ```

@@ -32,19 +32,18 @@ With agentproxy, you can connect to one or multiple MCP servers in any environme
    
 ## Verify access to tools
 
-1. Run the MCP Inspector. 
-   ```sh
-   SERVER_PORT=9000 npx @modelcontextprotocol/inspector
-   ```
+1. Open the [agentproxy UI](http://localhost:19000/ui/). 
 
-2. Open the MCP inspector at the address from the output of the previous command, such as `http://localhost:5173?proxyPort=9000`.
-
-3. Connect to the agentproxy. 
-   1. Select `SSE` from the **Transport Type** drop down. 
-   2. Enter `http://localhost:3000/sse` in the **URL** field. 
-   3. Click **Connect** to connect to the agentproxy. 
+2. Connect to the MCP server with the agentproxy UI playground. 
+   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener and click **Connect**. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. Verify that you see a list of **Available Tools**. 
    
-4. From the menu bar, select **Tools**. 
-   2. Click **List Tools**. 
-   3. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-      {{< reuse-image src="img/mcp-access-granted.png" >}}
+      {{< reuse-image src="img/agentproxy-ui-tools.png" >}}
+
+6. Verify access to a tool. 
+   1. From the **Available Tools** list, select the `everything_echo` tool. 
+   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
+   3. Verify that you see your message echoed in the **Response** card. 
+   
+      {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}

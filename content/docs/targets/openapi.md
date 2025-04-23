@@ -72,3 +72,4 @@ Expose an OpenAPI spec on the agentproxy.
    4. Enter the details for your pet, such as the **ID** and **Name** for the pet category and your pet, a URL to a photo of your pet, the pet's **Status** in the store, and optionally any tags. Click **Run Tool**. Verify that the pet is added to the petstore. 
       
       {{< reuse-image src="img/openapi-pet-add.png" >}}
+      

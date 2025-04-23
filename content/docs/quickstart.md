@@ -15,8 +15,8 @@ In this guide, you learn how to use the agentproxy to proxy requests to an open 
 You complete the following tasks: 
 * Install the agentproxy binary on your local machine. 
 * Create an agentproxy configuration that proxies requests to multiple tools that are exposed on an open source MCP test server, `server-everything`. 
+* Explore the agentproxy UI
 * Test access to the `everything_echo` MCP tool. 
-* Explore the agentproxy UI. 
 
 
 ## Step 1: Install the binary
@@ -77,62 +77,34 @@ You complete the following tasks:
    2025-04-16T20:19:36.449874Z  INFO agentproxy::inbound: serving sse on [::]:3000
    ```
 
-## Step 3: Access an MCP tool
+## Step 3: Explore the UI
 
-1. Run the MCP inspector, a debugging and visualization tool for the Model Context Protocol.
-   ```sh
-   SERVER_PORT=9000 npx @modelcontextprotocol/inspector 
-   ```
-   
-   Example output: 
-   ```
-   Starting MCP inspector...
-   Proxy server listening on port 9000
-   New SSE connection
-   Query parameters: { transportType: 'sse', url: 'http://localhost:3000/sse' }
-   SSE transport: url=http://localhost:3000/sse, headers=Accept,authorization
-   Connected to SSE transport
-   Connected MCP client to backing server transport
-   Created web app transport
-   Created web app transport
-   Set up MCP proxy
+The agentproxy comes with a built-in UI that you can use to connect to your MCP target to view and access the tools that are exposed on the MCP server. You can also use the UI to review and update your listener and target configuration in-flight. Configuration updates are available immediately and do not require a restart of the agentproxy.  
 
-   🔍 MCP Inspector is up and running at http://localhost:5173?proxyPort=9000 🚀
-   ```
-   
-2. Open the MCP inspector at the address from the output of the previous command, such as [http://localhost:5173?proxyPort=9000](http://localhost:5173?proxyPort=9000). 
-
-3. Connect to the agentproxy. 
-   1. Switch the **Transport Type** to `SSE`.
-   2. Change the URL to `http://localhost:3000/sse`, which represents the address that the agentproxy is exposed on. 
-   3. Click **Connect** to connect to the agentproxy. 
-
-4. Access an MCP tool. 
-   1. In the MCP inspector, go to **Tools**.
-   2. Click **List Tools** to show the tools that the agentproxy has access to from the `server-everything` target that you configured earlier.
-   3. Select the **everything_echo** tool. 
-   4. In the **message** field, enter any string, such as `This is a sample agentproxy setup.`. 
-   5. Click **Run Tool** to execute the tool. 
-   6. Verify that your string is echoed back.
-   
-   {{< reuse-image src="img/agentproxy-basic.png" >}}
-
-
-## Step 4: Explore the UI
-
-The agentproxy comes with a built-in UI that you can use to review and update your agentproxy configuration in-flight. Configuration updates are available immediately and do not require a restart of the agentproxy.  
-
-1. Open the built-in [agentproxy UI](http://localhost:19000). 
-
-2. Verify that you see the listener and the MCP target that you set up earlier. 
+1. Open the built-in [agentproxy UI](http://localhost:19000).
    {{< reuse-image src="img/agentproxy-ui-home.png" >}}
    
-3. Go to the [**Listener** overview](http://localhost:19000/ui/listeners/) and review your listener configuration. 
+2. Go to the [**Listener** overview](http://localhost:19000/ui/listeners/) and review your listener configuration. To learn how to create more or delete existing listeners with the UI, see the [Listeners](/docs/listeners) docs. 
 
    {{< reuse-image src="img/agentproxy-ui-listener-basic.png" >}}
    
-4. Go to the [**Targets** overview](http://localhost:19000/ui/targets/) and review your target configuration. 
+3. Go to the [**Targets** overview](http://localhost:19000/ui/targets/) and review your target configuration. To learn how to create more or delete existing targets with the UI, see the [Targets](/docs/targetes) docs. 
    {{< reuse-image src="img/agentproxy-ui-targets.png" >}}
+   
+4. Connect to the MCP server with the agentproxy UI playground. 
+   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener and click **Connect**. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. Verify that you see a list of **Available Tools**. 
+   
+      {{< reuse-image src="img/agentproxy-ui-tools.png" >}}
+
+6. Verify access to a tool. 
+   1. From the **Available Tools** list, select the `everything_echo` tool. 
+   2. In the **message** field, enter any string, such as `This is my first agentproxy setup.`, and click **Run Tool**. 
+   3. Verify that you see your message echoed in the **Response** card. 
+   
+      {{< reuse-image src="img/agentproxy-ui-tool-echo.png" >}}
+
 
 ## Next
 
