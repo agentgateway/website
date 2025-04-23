@@ -46,7 +46,7 @@ description: ""
         Developer Portal
       </h3>
       <p class="text-secondary-text text-sm">
-        Increase development velocity with self-service portal for tool and agent developers.
+        Self-service developer portal for agent and tool developers to create, configure, discover, and debug tools and agents from a single pane of glass UI.
       </p>
     </a>
   </div>
