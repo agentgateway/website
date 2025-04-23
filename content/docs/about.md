@@ -4,7 +4,7 @@ weight: 20
 description:
 ---
 
-Agentproxy is an open source, highly available, and highly scalable, enterprise-grade Agent Gateway that provides AI connectivity for agents and tools in any environment. 
+Agentproxy is an open source, highly available, highly scalable, and enterprise-grade Agent Gateway that provides AI connectivity for agents and tools in any environment. 
 
 ## Why agentproxy?
 
@@ -16,9 +16,9 @@ Agentproxy also comes with built-in security and observability features that all
 
 ## Architecture
 
-The following image shows how agentproxy provides AI connectivity for agents and tools in any environment.
+The following figure shows how agentproxy provides AI connectivity for agents and tools in any environment.
 
-{{< reuse-image src="img/architecture.svg" >}}
+{{< reuse-image src="img/architecture.svg" caption="Figure: Agentproxy works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 
 
 ## Key features
