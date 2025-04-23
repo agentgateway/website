@@ -1,7 +1,7 @@
 baseURL: "/"
 enableRobotsTXT: true
 canonifyURLs: true
-title: "agentproxy | Run AI Connectivity Anywhere"
+title: "agentproxy | Agent Connectivity Solved"
 
 outputs:
   home: [HTML]

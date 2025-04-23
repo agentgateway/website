@@ -7,9 +7,9 @@ description: ""
 <section class="text-white pt-[7.875rem] bg-center bg-no-repeat bg-[length:61.85319rem_60.14119rem] lg:bg-auto">
   <div class="py-8 lg:py-16 flex flex-col items-center px-6 border-b-[1px] border-b-secondary-border gap-20">
     <div class="text-center mx-auto inline-block">
-      <h1 class="text-3xl/tight lg:text-6xl/tight max-w-4xl font-bold mt-6 mx-auto font-heading">Run <span class="text-tertiary-text">AI Connectivity</span> Anywhere</h1>
+      <h1 class="text-3xl/tight lg:text-6xl/tight max-w-4xl font-bold mt-6 mx-auto font-heading">Agent <span class="text-tertiary-text">Connectivity</span> Solved</h1>
       <p class="text-xl max-w-3xl font-semibold mt-6 lg:mt-10 mx-auto font-heading text-secondary-text">
-        An open-source data plane built for modern AI connectivity. Connect agents, federate tools, and support emerging protocols with a secure, scalable agentic mesh
+        An open-source Agent Gateway built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
       </p>
       <div class="flex justify-center space-x-4 pt-10">
         {{< button style="primary" href="/docs/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}
@@ -22,23 +22,23 @@ description: ""
 
 <section class="text-center py-20">
   <h2 class="text-primary-text text-3xl font-bold pb-12">
-    Unified agentic mesh designed for emerging AI architecture
+    AI-native connectivity for agentic applications
   </h2>
   <div class="flex flex-row text-start gap-8 align-middle justify-center">
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/">
       <h3 class="font-bold text-primary-text">
-        Dataplane
+        Tool Federation
       </h3>
       <p class="text-secondary-text text-sm">
-        Open-source, Rust-based dataplane for any environment including bare metal, virtual machines, or Kubernetes. Designed with low footprint, high availability, and predictable scaling.
+        Provide a single MCP endpoint for all the tools your agents consume, with unified security, observability, and governance for all agent-to-tool communication.
       </p>
     </a>
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/">
       <h3 class="font-bold  text-primary-text">
-        Protocols
+        Unified Connectivity
       </h3>
       <p class="text-secondary-text text-sm">
-        Connects agents and tools and compatible with any agentic framework including MCP, A2A and OpenAPI.
+        Support for industry standard AI protocols for agent and tool connectivity including A2A and MCP with the ability to automatically expose existing REST APIs as MCP-native tools.
       </p>
     </a>
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/">
