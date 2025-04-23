@@ -5,17 +5,18 @@ description: ""
 ---
 
 <section class="text-white pt-[7.875rem] bg-center bg-no-repeat bg-[length:61.85319rem_60.14119rem] lg:bg-auto">
-  <div class="py-8 lg:py-16 flex items-center px-6 border-b-[1px] border-b-secondary-border">
+  <div class="py-8 lg:py-16 flex flex-col items-center px-6 border-b-[1px] border-b-secondary-border gap-20">
     <div class="text-center mx-auto inline-block">
       <h1 class="text-3xl/tight lg:text-6xl/tight max-w-4xl font-bold mt-6 mx-auto font-heading">Run <span class="text-tertiary-text">AI Connectivity</span> Anywhere</h1>
       <p class="text-xl max-w-3xl font-semibold mt-6 lg:mt-10 mx-auto font-heading text-secondary-text">
         An open-source data plane built for modern AI connectivity. Connect agents, federate tools, and support emerging protocols with a secure, scalable agentic mesh
       </p>
       <div class="flex justify-center space-x-4 pt-10">
-        {{< button style="primary" href="/docs/" iconRight="true" text="Get Started" icon="arrow-right" >}}
-        {{< button style="secondary" href="https://github.com/agentproxy-dev/agentproxy" text="View on GitHub" icon="github" >}}
+        {{< button style="primary" href="/docs/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}
+        {{< button style="secondary" href="https://github.com/agentgateway/agentproxy" text="View on GitHub" icon="github" >}}
       </div>
     </div>
+    <img src="/hero.png" width="800" height="600" class="object-cover" />
   </div>
 </section>
 

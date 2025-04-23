@@ -1,7 +1,7 @@
 baseURL: "/"
 enableRobotsTXT: true
 canonifyURLs: true
-title: "Model Context Protocol"
+title: "agentproxy | Run AI Connectivity Anywhere"
 
 outputs:
   home: [HTML]
