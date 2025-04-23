@@ -81,32 +81,27 @@ Configure the agentproxy to require a JWT token to authenticate requests and use
 
 3. Run the agentproxy. 
    ```sh
-   agentproxy -f ./config.json
+   agentproxy -f config.json
    ```
    
 ## Verify access to tools
 
-1. Open the MCP Inspector. 
-   ```sh
-   SERVER_PORT=9000 npx @modelcontextprotocol/inspector
-   ```
+1. Open the [agentproxy UI](http://localhost:19000/ui/). 
 
-2. Open the MCP inspector at the address from the output of the previous command, such as `http://localhost:5173?proxyPort=9000`.
-
-3. Connect to the agentproxy. 
-   1. Select `SSE` from the **Transport Type** drop down. 
-   2. Enter `http://localhost:3000/sse` in the **URL** field. 
-   3. Expand the **Authentication** drop down and enter the following JWT token in the **Bearer Token** field. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. 
+2. Connect to the MCP server with the agentproxy UI playground. 
+   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener
+   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```
-   4. Click **Connect** to connect to the agentproxy. 
+   4. Verify that you see a list of **Available Tools**. 
+   
+      {{< reuse-image src="img/agentproxy-ui-tools-jwt.png" >}}
 
 3. Try out access to the tools. 
-   1. From the menu bar, select **Tools**. 
-   2. Click **List Tools**. 
-   3. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-      {{< reuse-image src="img/mcp-access-granted.png" >}}
-   4. Select a different tool, such as `everything_add`, enter any number in the **a** and **b** fields, and click **Run Tool**. Verify that access to the tool is denied, because the RBAC policy only allowed access to the `everything_echo` tool. 
-      {{< reuse-image src="img/mcp-access-denied.png" >}}
+   1. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+      {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}
+   2. Select a different tool, such as `everything_add`, enter any number in the **a** and **b** fields, and click **Run Tool**. Verify that access to the tool is denied, because the RBAC policy only allowed access to the `everything_echo` tool. 
+      {{< reuse-image src="img/agentproxy-ui-tool-denied.png" >}}
    

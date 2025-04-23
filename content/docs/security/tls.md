@@ -54,7 +54,7 @@ You can configure the SSE listener on the agentproxy with a TLS certificate to s
 
 3. Run the agentproxy. 
    ```sh
-   agentproxy -f ./config.json
+   agentproxy -f config.json
    ```
    
 3. Send an HTTP request to the agentproxy. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 

@@ -25,23 +25,20 @@ Federate tools of multiple MCP servers on the agentproxy by using MCP multiplexi
    
 ## Verify access to tools
 
-1. Run the MCP Inspector. 
-   ```sh
-   SERVER_PORT=9000 npx @modelcontextprotocol/inspector
-   ```
+1. Open the [agentproxy UI](http://localhost:19000/ui/). 
 
-2. Open the MCP inspector at the address from the output of the previous command, such as `http://localhost:5173?proxyPort=9000`.
-
-3. Connect to the agentproxy. 
-   1. Select `SSE` from the **Transport Type** drop down. 
-   2. Enter `http://localhost:3000/sse` in the **URL** field. 
-   3. Click **Connect** to connect to the agentproxy. 
+2. Connect to the MCP server with the agentproxy UI playground. 
+   1. Go to the agentproxy UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener and click **Connect**. The agentproxy UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. Verify that you see a list of **Available Tools** and that all tools are listed twice, one time with the prefix `everything` and one time with the prefix `everything-else`. You now have a federated view of all the tools that are exposed on all defined targets.
    
-4. Verify access to tools. 
-   1. From the menu bar, select **Tools**. 
-   2. Click **List Tools**. 
-   3. Review the list of tools. Verify that all tools are listed twice, one time with the prefix `everything` and one time with the prefix `everything-else`. You now have a federated view of all the tools that are exposed on all defined targets.
-   4. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-      {{< reuse-image src="img/multiplex-everything.png" >}}
-   5. Select the `everything-else_echo` tool, enter any string in the **message** field, such as `hello`, and click **Run Tool**. Verify that access to the tool is granted and that you also see your message echoed. 
-      {{< reuse-image src="img/multiplex-everything-else.png" >}}
+      {{< reuse-image src="img/agentproxy-ui-tools-multiplex.png" >}}
+
+6. Verify access to a tool. 
+   1. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+   
+      {{< reuse-image src="img/agentproxy-ui-tool-echo-hello.png" >}}
+   
+   2. Select the `everything-else_echo` tool, enter any string in the **message** field, such as `hello everything else`, and click **Run Tool**. Verify that access to the tool is granted and that you also see your message echoed. 
+   
+      {{< reuse-image src="img/agentproxy-ui-tool-echo-else.png" >}}

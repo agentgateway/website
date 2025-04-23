@@ -58,7 +58,7 @@ Use a JWT token to authenticate requests before forwarding them to a target.
 
 3. Run the agentproxy. 
    ```sh
-   agentproxy -f ./config.json
+   agentproxy -f config.json
    ```
    
 4. Send a request to the agentproxy. Verify that this request is denied and that you see a message stating that an Authorization header is required. 
