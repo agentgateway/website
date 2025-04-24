@@ -27,7 +27,7 @@ description: ""
   <div class="flex flex-row text-start gap-8 align-middle justify-center">
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets">
       <h3 class="font-bold text-primary-text">
-        Tool Federation
+        <span class="text-tertiary-text">Tool Federation</span>
       </h3>
       <p class="text-secondary-text text-sm">
         Provide a single MCP endpoint for all the tools your agents consume, with unified security, observability, and governance for all agent-to-tool communication.
@@ -35,7 +35,7 @@ description: ""
     </a>
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets/multiplex">
       <h3 class="font-bold  text-primary-text">
-        Unified Connectivity
+        <span class="text-tertiary-text">Unified Connectivity</span>
       </h3>
       <p class="text-secondary-text text-sm">
         Support for industry standard AI protocols for agent and tool connectivity including A2A and MCP with the ability to automatically expose existing REST APIs as MCP-native tools.
@@ -43,7 +43,7 @@ description: ""
     </a>
     <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
       <h3 class="font-bold  text-primary-text">
-        Developer Portal
+        <span class="text-tertiary-text">Developer Portal</span>
       </h3>
       <p class="text-secondary-text text-sm">
         Self-service developer portal for agent and tool developers to create, configure, discover, and debug tools and agents from a single pane of glass UI.
