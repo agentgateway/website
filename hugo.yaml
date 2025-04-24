@@ -59,7 +59,8 @@ menu:
         type: search
 
 params:
-  description: agentgateway
+  title: agentgateway
+  description: An open source Agent Gateway built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
   navbar:
     displayTitle: false
     displayLogo: true
@@ -70,6 +71,8 @@ params:
       width: 494
       height: 100
     width: wide
+  images:
+    - /ogimage.png
 
   page:
     width: wide
