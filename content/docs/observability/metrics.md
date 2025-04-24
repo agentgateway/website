@@ -57,6 +57,8 @@ You can optionally enrich the metrics that are captured by the Agent Gateway wit
      "type": "static",
      "listeners": [
        {
+         "name": "sse",
+         "protocol": "MCP",
          "sse": {
            "address": "[::]",
            "port": 3000,
@@ -71,8 +73,8 @@ You can optionally enrich the metrics that are captured by the Agent Gateway wit
                "local_jwks": {
                  "file_path": "./pub-key"
                }
-             }
-           }
+            }
+          }
          }
        }
      ],
@@ -104,16 +106,17 @@ You can optionally enrich the metrics that are captured by the Agent Gateway wit
    agentgateway -f config.json
    ```
 
-4. Open the [Agent Gateway UI](http://localhost:19000/ui/). 
+4. Open the [Agent Gateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
 
 5. Connect to the MCP server with the Agent Gateway UI playground. 
    1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
-   2. In the **Connection Settings** card, select your listener
-   3. Enter the following JWT token and click **Connect**. The JWT token includes the `sub: me` claim that is allowed to access the tools that are exposed on the MCP target. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   2. In the **Connection Settings** card, select your **Listener Endpoint**. 
+   3. In the **Bearer Token** field, enter the following JWT token. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```
-   4. Verify that you see a list of **Available Tools**. 
+   4. Click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   5. Verify that you see a list of **Available Tools**.  
    
       {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
 

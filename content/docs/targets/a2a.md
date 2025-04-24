@@ -35,7 +35,7 @@ Create an Agent Gateway that proxies requests to the reimbursement agent that yo
 1. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured for the A2A protocol and exposed on port 3000.  
    * **Target**: The Agent Gateway targets the reimbursement agent that you created earlier and exposed on localhost, port 10002. 
-   ```sh
+   ```yaml
    cat <<EOF > config.json
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/a2a/config.json" >}}
    EOF
@@ -46,33 +46,24 @@ Create an Agent Gateway that proxies requests to the reimbursement agent that yo
    agentgateway -f config.json
    ```
 
+## Try out the ADK agent
 
-## Send a request to the agent
+Use the Agent Gateway playground to send a request to the reimbursement agent that you set up earlier. 
 
-Use the A2A CLI to send a request to your agent through the Agent Gateway. 
+1. Open the [Agent Gateway UI](http://localhost:19000/ui/). 
 
-1. Clone the [A2A CLI](https://github.com/google/A2A/tree/main/samples/python/hosts/cli) repository and navigate to the `samples/python/hosts/cli` directory. 
-
-2. Use the A2A CLI to connect to the agent through your Agent Gateway. 
-   ```sh
-   uv run . --agent http://localhost:3000/google-adk 
-   ```
+2. Connect to the MCP server with the Agent Gateway UI playground. 
+   1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener and the **A2A target**, and click **Connect**. The Agent Gateway UI connects to the A2A target and retrieves all the skills that the target provides.
+   3. Verify that you see a list of **Available Skills**. 
    
-   Example output: 
-   ```
-   ======= Agent Card ========
-   {"name":"Reimbursement Agent","description":"This agent handles the reimbursement process for the employees given the amount and purpose of the reimbursement.","url":"http://localhost:3000/google_adk","version":"1.0.0","capabilities":{"streaming":true,"pushNotifications":false,"stateTransitionHistory":false},"defaultInputModes":["text","text/plain"],"defaultOutputModes":["text","text/plain"],"skills":[{"id":"process_reimbursement","name":"Process Reimbursement Tool","description":"Helps with the reimbursement process for users given the amount and purpose of the reimbursement.","tags":["reimbursement"],"examples":["Can you reimburse me $20 for my lunch with the clients?"]}]}
-   =========  starting a new task ======== 
+      {{< reuse-image src="img/agentgateway-ui-playground-skills.png" >}}
 
-   What do you want to send to the agent? (:q or quit to exit):
-   ```
+3. Select the **Process Reimbursement Tool** skill. In the **Message** field, enter a prompt, such as `Can you reimburse me for my trip to Kubecon on 4/2/25, amount: $1000?`, and click **Send Task**. 
 
-3. Enter a prompt, such as the following. 
-   ```sh
-   Can you reimburse me for my trip to Kubecon on 4/2/25, amount: $1000.
-   ```
+4. Verify that you get back a message from the ADK agent stating that your request was processed successfully. 
+   {{< reuse-image src="img/agentgateway-ui-adkagent-success.png" >}}
    
-4. Optionally upload a receipt from your trip or skip this step by hitting the return key.
 5. Review the logs of your agent and verify that you see the reimbursement form filled out with the information that you entered in your prompt. 
   
    ```

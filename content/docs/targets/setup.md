@@ -22,7 +22,7 @@ You can create targets by using the Agent Gateway UI, a configuration file, or t
 
 3. Add a listener. 
    1. From the listener UI, click **Add Listener**. 
-   2. Enter a **Name** for your listener, and configure the **Address** and **Port** that you want your listener to be exposed on. To use an address that is compatible with IPv4 and IPv6, enter `[::]`. 
+   2. Enter a **Name** for your listener, select a protocol, and configure the **Address** and **Port** that you want your listener to be exposed on. To use an address that is compatible with IPv4 and IPv6, enter `[::]`. 
    
       {{< reuse-image src="img/agentgateway-ui-listener-add.png" width="500px" >}}
    
@@ -31,13 +31,17 @@ You can create targets by using the Agent Gateway UI, a configuration file, or t
 4. [Open the Agent Gateway target UI](http://localhost:19000/ui/targets/). 
    {{< reuse-image src="img/agentgateway-ui-targets-none.png" >}}
    
-5. Click **Add Target** and select the `MCP` **Target Type** that you want to configure. To connect to an OpenAPI server, use the MCP target type. 
+5. Click **Add Target** and choose your **Target Type**, such as `MCP`. 
+
+   {{< callout type="info">}} 
+   To connect to an OpenAPI server, use the `MCP `target type. 
+   {{< /callout >}}
    {{< reuse-image src="img/agentgateway-ui-target-type.png" width="500px"  >}}
    
 6. Confgure your MCP target. 
    1. Select the listener you want to attach to the target. 
    2. Enter a **Target Name**. The name is used as a prefix for all the MCP tools that are exposed on the MCP server.
-   3. Select the **>_ stdio** tab and enter the `npx` argument that you want to use to run your MCP server. For example, to run the sample, open source MCP test server, `server-everything`, enter `@modelcontextprotocol/server-everything`. If your server is exposed on a public URL, you can enter that URL in the **SSE** tab instead. 
+   3. Select the standard input/output (**>_ stdio**) tab that allows you to specify a command and command arguments to run your MCP server. In this example, you use the `npx` command utility to run the `@modelcontextprotocol/server-everything` server. If your server is exposed on a public URL, you can enter that URL in the **SSE** tab instead. 
    
       {{< reuse-image src="img/agentgateway-ui-target-add.png" width="500px" >}}
    6. Click **Add Target** to save your configuration. 
@@ -51,32 +55,34 @@ You can create targets by using the Agent Gateway UI, a configuration file, or t
 1. Create a JSON file that contains your listener configuration. The following example sets up these components: 
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
    * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. The server runs the entire MCP stack in a single process and can be used to test, develop, or demo MCP environments. To run the server, you use the standard input/output (`stdio`) capability of the Agent Gateway that allows you specify a command and command arguments that you want to run. In this example, you use the `npx` command utility to run the `@modelcontextprotocol/server-everything` server. 
-   ```sh
+   ```yaml
    cat <<EOF > config.json
    {
-        "type": "static",
-        "listeners": [
-          {
-            "sse": {
-              "address": "[::]",
-              "port": 3000
-            }
-          }
-        ],
-        "targets": {
-          "mcp": [
-            {
-              "name": "everything",
-              "stdio": {
-                "cmd": "npx",
-                "args": [
-                  "@modelcontextprotocol/server-everything"
-                ]
-              }
-            }
-          ]
-        }
-      }
+     "type": "static",
+     "listeners": [
+       {
+         "name": "sse",
+         "protocol": "MCP",
+         "sse": {
+           "address": "[::]",
+           "port": 3000
+         }
+       }
+     ],
+     "targets": {
+       "mcp": [
+         {
+           "name": "everything",
+           "stdio": {
+             "cmd": "npx",
+             "args": [
+               "@modelcontextprotocol/server-everything"
+             ]
+           }
+         }
+       ]
+     }
+   }
    EOF
    ```
 
@@ -144,7 +150,7 @@ Remove Agent Gateway targets with the UI.
 
 Update the configuration file to remove the target.
 
-1. In your configuration file, remove the target that you want to delete. 
+1. Remove the target from your configuration file. 
 2. Apply the updated configuration file to your Agent Gateway.
 
    ```sh
@@ -173,7 +179,7 @@ Use the Agent Gateway admin API to delete targets from your Agent Gateway.
 
 3. Remove the MCP target from your Agent Gateway. 
    ```sh
-   curl -X DELETE curl http://localhost:19000/targets/mcp/everything
+   curl -X DELETE http://localhost:19000/targets/mcp/everything
    ```
    
 4. Verify that the MCP target is removed.

@@ -50,11 +50,11 @@ You complete the following tasks:
 1. Create a listener and target configuration for your Agent Gateway. In this example, you use a configuration file to configure the Agent Gateway, but you can also use the Agent Gateway UI or admin API to configure these components. For examples, see the [Listeners](/docs/listeners) and [Targets](/docs/targets) guides. 
    
    The Agent Gateway in this example is configured as follows: 
-   * **Listener**: An SSE listener is configured and exposed on port 3000. 
+   * **Listener**: An SSE listener is configured with the MCP protocol and exposed on port 3000. 
    * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. The server runs the entire MCP stack in a single process and can be used to test, develop, or demo MCP environments. 
    
      To run the server, you use the standard input/output (`stdio`) capability of the Agent Gateway, which allows you to pass in the command and command arguments that you want to use. In this example, the `npx` command is used. The `npx` command utility lets you run a Node.js package (`@modelcontextprotocol/server-everything`) without installing it. If you do not have `npx` on your machine, follow the [instructions to install Node.js](https://nodejs.org/en/download).
-   ```sh
+   ```yaml
    cat <<EOF > config.json
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.json" >}}
    EOF
@@ -89,7 +89,7 @@ The Agent Gateway comes with a built-in UI that you can use to connect to your M
    
 4. Connect to the MCP test server with the Agent Gateway UI playground. 
    1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
-   2. In the **Connection Settings** card, select your listener and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    3. Verify that you see a list of **Available Tools**. 
    
       {{< reuse-image src="img/agentgateway-ui-tools.png" >}}
