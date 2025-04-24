@@ -1,5 +1,5 @@
 ---
-title: agentproxy
+title: agentgateway
 toc: false
 description: ""
 ---

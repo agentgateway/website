@@ -1,7 +1,7 @@
 baseURL: "/"
 enableRobotsTXT: true
 canonifyURLs: true
-title: "agentproxy | Agent Connectivity Solved"
+title: "agentgateway | Agent Connectivity Solved"
 
 outputs:
   home: [HTML]
@@ -59,7 +59,7 @@ menu:
         type: search
 
 params:
-  description: agentproxy
+  description: agentgateway
   navbar:
     displayTitle: false
     displayLogo: true

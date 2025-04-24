@@ -1,4 +1,4 @@
-# agentproxy-dev/website Contribution Guide
+# agentgateway-dev/website Contribution Guide
 
 ## Getting Started
 
