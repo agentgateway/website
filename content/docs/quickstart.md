@@ -24,7 +24,7 @@ You complete the following tasks:
 
 1. Download the Agent Gateway binary and install it. 
    ```sh
-   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentproxy | bash
+   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentproxy | sh
    ```
    
    Example output: 
