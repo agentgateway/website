@@ -13,7 +13,7 @@ description: ""
       </p>
       <div class="flex justify-center space-x-4 pt-10">
         {{< button style="primary" href="/docs/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}
-        {{< button style="secondary" href="https://github.com/agentgateway/agentproxy" text="View on GitHub" icon="github" >}}
+        {{< button style="secondary" href="https://github.com/agentgateway/agentgateway" text="View on GitHub" icon="github" >}}
       </div>
     </div>
     <img src="/hero.png" width="800" height="600" class="object-cover" />
@@ -25,7 +25,7 @@ description: ""
     AI-native connectivity for agentic applications
   </h2>
   <div class="flex flex-row text-start gap-8 align-middle justify-center">
-    <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
+    <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets">
       <h3 class="font-bold text-primary-text">
         Tool Federation
       </h3>
@@ -41,7 +41,7 @@ description: ""
         Support for industry standard AI protocols for agent and tool connectivity including A2A and MCP with the ability to automatically expose existing REST APIs as MCP-native tools.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets">
+    <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
       <h3 class="font-bold  text-primary-text">
         Developer Portal
       </h3>
