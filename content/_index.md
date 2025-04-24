@@ -59,7 +59,7 @@ description: ""
   <div class="text-start max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        Agent and Tool Interoperability
+        <span class="text-tertiary-text">Agent and Tool Interoperability</span>
       </h3>
       <p class="text-secondary-text text-sm">
         Built on the leading industry protocols for agent and tool connectivity, Agent Gateway allows you to seamlessly integrate any agent and tool supporting A2A and MCP.
@@ -67,7 +67,7 @@ description: ""
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        Agent Governance
+        <span class="text-tertiary-text">Agent Governance</span>
       </h3>
       <p class="text-secondary-text text-sm">
         Agentic applications will be composed of multiple tools and agents working together to achieve a goal, creating a fragmented landscape for security and observability. Agent Gateway is a drop-in solution transparent to agents and tools to secure, govern, and audit agent and tool communications.
@@ -75,7 +75,7 @@ description: ""
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        Tool Sprawl
+        <span class="text-tertiary-text">Tool Sprawl</span>
       </h3>
       <p class="text-secondary-text text-sm">
         Agent development will never scale treating every tool integration as a 1:1 integration. Agent Gateway provides a federated MCP endpoint with a centralized registry, self-service discovery, and dynamic configuration of agents and tools.
@@ -83,7 +83,7 @@ description: ""
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        Leveraging Existing APIs
+        <span class="text-tertiary-text">Leveraging Existing APIs</span>
       </h3>
       <p class="text-secondary-text text-sm">
         No need to create custom MCP tool server implementations for every REST API you have today. Agent Gateway automatically translates OpenAPI resources into MCP tools ready to consume from agents.
