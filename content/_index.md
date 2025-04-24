@@ -54,39 +54,39 @@ description: ""
 
 <section class="text-center py-20 bg-secondary-bg">
   <h2 class="text-primary-text text-3xl font-bold pb-12">
-    Solving AI Connectivity Roadblocks
+    Solving AI Connectivity Challenges
   </h2>
   <div class="text-start max-w-6xl mx-auto px-6 grid grid-cols-1 md:grid-cols-2 gap-8">
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        Agent Interoperability
+        Agent and Tool Interoperability
       </h3>
       <p class="text-secondary-text text-sm">
-        Support for agent-to-agent protocols (A2A) to ensure interoperability between agents.
+        Built on the leading industry protocols for agent and tool connectivity, Agent Gateway allows you to seamlessly integrate any agent and tool supporting A2A and MCP.
       </p>
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        MCP Server Integration
+        Agent Governance
       </h3>
       <p class="text-secondary-text text-sm">
-        Accelerate agentic development with agent-proxy integration with any MCP tool service and adoption of existing interfacts, including OpenAPI
+        Agentic applications will be composed of multiple tools and agents working together to achieve a goal, creating a fragmented landscape for security and observability. Agent Gateway is a drop-in solution transparent to agents and tools to secure, govern, and audit agent and tool communications.
       </p>
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        Tool Federation
+        Tool Sprawl
       </h3>
       <p class="text-secondary-text text-sm">
-        Manage tool sprawl and maintain strict security guardrails with the agent-proxy’s self-service developer portal.
+        Agent development will never scale treating every tool integration as a 1:1 integration. Agent Gateway provides a federated MCP endpoint with a centralized registry, self-service discovery, and dynamic configuration of agents and tools.
       </p>
     </div>
     <div class="bg-tertiary-bg rounded-xl p-4 border-secondary-border border-[1px]">
       <h3 class="font-bold text-primary-text">
-        AI Innovation at Speed
+        Leveraging Existing APIs
       </h3>
       <p class="text-secondary-text text-sm">
-        Achieve real-time AI connectivity with a robust agentic architecture. Empower rapid and confident AI application development.
+        No need to create custom MCP tool server implementations for every REST API you have today. Agent Gateway automatically translates OpenAPI resources into MCP tools ready to consume from agents.
       </p>
     </div>
   </div>
