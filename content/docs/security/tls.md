@@ -15,12 +15,14 @@ You can configure the SSE listener on the Agent Gateway with a TLS certificate t
 2. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
    * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
-   ```sh
+   ```yaml
    cat <<EOF > config.json
    {
      "type": "static",
      "listeners": [
        {
+         "name": "sse",
+         "protocol": "MCP",
          "sse": {
            "address": "[::]",
            "port": 3000,

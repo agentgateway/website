@@ -29,19 +29,21 @@ Set up an SSE listener on your Agent Gateway.
 
 5. Click **Add Listener** to save your configuration. 
    
-   {{< reuse-image src="img/agentgateway-ui-listener-added.png">}}
+   {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
 
    
 {{% /tab %}}
 {{% tab %}}
 
-1. Create a JSON file that contains your listener configuration. The following example sets up an SSE listener that listens for incoming traffic on port 3000. 
-   ```json
+1. Create a JSON file that contains your listener configuration. The following example sets up an SSE listener with the MCP protocol that listens for incoming traffic on port 3000. 
+   ```yaml
    cat <<EOF > ./config.json
    {
      "type": "static",
      "listeners": [
        {
+         "name": "sse",
+         "protocol": "MCP",
          "sse": {
            "address": "[::]",
            "port": 3000
@@ -58,7 +60,7 @@ Set up an SSE listener on your Agent Gateway.
    ```
 
 2. [Open the Agent Gateway listener UI](http://localhost:19000/ui/listeners/) and verify that your listener is added successfully. 
-   {{< reuse-image src="img/agentgateway-ui-listener-added.png" >}}
+   {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
    
 {{% /tab %}}
 {{% tab %}}
@@ -70,9 +72,9 @@ Use the Agent Gateway admin API to configure an SSE listener on your Agent Gatew
    agentgateway 
    ```
 
-2. Create an SSE listener by using the `/listeners` endpoint. In the following example, the listener is exposed on port 3000. 
+2. Create an SSE listener by using the `/listeners` endpoint. In the following example, the listener is configured with the MCP protocol and exposed on port 3000. 
    ```sh
-   curl -X POST -H content-type:application/json http://localhost:19000/listeners -d '{"name": "sse", "sse": {"address": "[::]", "port": 3000}}'
+   curl -X POST -H content-type:application/json http://localhost:19000/listeners -d '{"name":"sse","protocol":"MCP","sse":{"address":"[::]","port":3000,"rbac":[]}}'
    ```
    
 3. Verify that the listener is created. 
@@ -82,7 +84,7 @@ Use the Agent Gateway admin API to configure an SSE listener on your Agent Gatew
    
    Example output: 
    ```console
-   [{"name":"sse","sse":{"address":"0.0.0.0","port":3000}}]% 
+   [{"name":"sse","protocol":"MCP","sse":{"address":"[::]","port":3000,"rbac":[]}}]
    ```
 {{% /tab %}}
 {{< /tabs >}}
@@ -102,7 +104,7 @@ Remove Agent Gateway listeners with the UI.
    ```
 
 2. [Open the Agent Gateway listener UI](http://localhost:19000/ui/listeners/) and find the listener that you want to remove. 
-   {{< reuse-image src="img/agentgateway-ui-listener-added.png" >}}
+   {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
 
 3. Click the trash icon to remove the listener and confirm the deletion. 
 
@@ -112,7 +114,7 @@ Remove Agent Gateway listeners with the UI.
 
 Update the configuration file to remove the listener.
 
-1. In your configuration file, remove the listener that you want to delete.
+1. Remove the listener from your configuration file.
 2. Apply the updated configuration file to your Agent Gateway.
 
    ```sh
@@ -136,7 +138,7 @@ Use the Agent Gateway admin API to delete listeners from your Agent Gateway.
    
    Example output: 
    ```console
-   [{"name":"sse","sse":{"address":"0.0.0.0","port":3000}}]%
+   [{"name":"sse","protocol":"MCP","sse":{"address":"[::]","port":3000,"rbac":[]}}]
    ```
 
 3. Delete the listener. The following example shows how to delete the `sse` listener. 

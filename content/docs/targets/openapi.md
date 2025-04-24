@@ -16,33 +16,35 @@ Expose an OpenAPI server on the Agent Gateway.
 2. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. 
    * **Target**: The Agent Gateway connects to a Swagger UI endpoint that exposes the OpenAPI spec for the Petstore sample app. You also include the OpenAPI schema that you downloaded earlier. 
-   ```sh
+   ```yaml
    cat <<EOF > config.json
    {
-        "type": "static",
-        "listeners": [
-          {
-            "sse": {
-              "address": "[::]",
-              "port": 3000
-            }
-          }
-        ],
-        "targets": {
-          "mcp": [
-            {
-              "name": "petstore",
-              "openapi": {
-                "host": "petstore3.swagger.io",
-                "port": 443,
-                "schema": {
-                  "file_path": "./openapi.json"
-                }
+     "type": "static",
+     "listeners": [
+       {
+         "name": "sse",
+         "protocol": "MCP",
+         "sse": {
+           "address": "[::]",
+           "port": 3000
+         }
+       }
+     ],
+     "targets": {
+       "mcp": [
+         {
+           "name": "petstore",
+           "openapi": {
+             "host": "petstore3.swagger.io",
+             "port": 443,
+             "schema": {
+               "file_path": "./openapi.json"
              }
-            }
-          ]
-        }
-      }
+          }
+         }
+       ]
+     }
+   }
    EOF
    ```
 
@@ -53,23 +55,44 @@ Expose an OpenAPI server on the Agent Gateway.
    
 ## Verify access to the Petstore APIs
 
-1. Run the MCP Inspector. 
-   ```sh
-   SERVER_PORT=9000 npx @modelcontextprotocol/inspector
-   ```
+1. Open the [Agent Gateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
 
-2. Open the MCP inspector at the address from the output of the previous command, such as `http://localhost:5173?proxyPort=9000`.
-
-3. Connect to the Agent Gateway. 
-   1. Select `SSE` from the **Transport Type** drop down. 
-   2. Enter `http://localhost:3000/sse` in the **URL** field. 
-   3. Click **Connect** to connect to the Agent Gateway. 
+2. Connect to the OpenAPI server with the Agent Gateway UI playground. 
+   1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the APIs that are exposed on the target. 
+   3. Verify that you see the Petstore APIs from the OpenAPI spec as a list of **Available Tools** 
    
-4. Verify access to the Petstore APIs. 
-   1. From the menu bar, select **Tools**. 
-   2. Click **List Tools**. Verify that the Petstore APIs from the OpenAPI spec are displayed. 
-   3. Select the `petstore_addPet` API. 
-   4. Enter the details for your pet, such as the **ID** and **Name** for the pet category and your pet, a URL to a photo of your pet, the pet's **Status** in the store, and optionally any tags. Click **Run Tool**. Verify that the pet is added to the petstore. 
+      {{< reuse-image src="img/agentgateway-ui-tools-openapi.png" >}}
+
+3. Verify access to the Petstore APIs. 
+   1. Select the `petstore_addPet` API. 
+   2. In the **body** field, enter the details for your pet, such as the ID and name for the pet category and your pet, a URL to a photo of your pet, the pet's status in the store, and optionally any tags. You can use the following example JSON file. 
+      ```yaml
+      {
+        "id": 10,
+        "category": {
+          "id": 1,
+          "name": "Dogs"
+        },
+        "name": "doggie",
+        "photoUrls": [
+          "https://example.com/photo1.jpg",
+          "https://example.com/photo2.jpg"
+        ],
+        "tags": [
+          {
+            "id": 101,
+            "name": "fluffy"
+          },
+          {
+            "id": 102,
+            "name": "friendly"
+          }
+        ],
+        "status": "available"
+      }
+      ```
+   3. Click **Run Tool**. Verify that the pet is added to the petstore. 
       
-      {{< reuse-image src="img/openapi-pet-add.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
       

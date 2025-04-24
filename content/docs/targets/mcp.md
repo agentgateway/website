@@ -19,7 +19,7 @@ With Agent Gateway, you can connect to one or multiple MCP servers in any enviro
 1. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. 
    * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
-   ```sh
+   ```yaml
    cat <<EOF > config.json
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.json" >}}
    EOF
@@ -32,11 +32,11 @@ With Agent Gateway, you can connect to one or multiple MCP servers in any enviro
    
 ## Verify access to tools
 
-1. Open the [Agent Gateway UI](http://localhost:19000/ui/). 
+1. Open the [Agent Gateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
 
 2. Connect to the MCP server with the Agent Gateway UI playground. 
    1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
-   2. In the **Connection Settings** card, select your listener and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    3. Verify that you see a list of **Available Tools**. 
    
       {{< reuse-image src="img/agentgateway-ui-tools.png" >}}
