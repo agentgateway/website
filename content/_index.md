@@ -24,8 +24,8 @@ description: ""
   <h2 class="text-primary-text text-3xl font-bold pb-12">
     AI-native connectivity for agentic applications
   </h2>
-  <div class="flex flex-row text-start gap-8 align-middle justify-center">
-    <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets">
+  <div class="flex flex-col md:flex-row text-start gap-8 items-center md:items-stretch justify-center mx-6 min-h-36">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets">
       <h3 class="font-bold text-primary-text">
         <span class="text-tertiary-text">Tool Federation</span>
       </h3>
@@ -33,7 +33,7 @@ description: ""
         Provide a single MCP endpoint for all the tools your agents consume, with unified security, observability, and governance for all agent-to-tool communication.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets/multiplex">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets/multiplex">
       <h3 class="font-bold  text-primary-text">
         <span class="text-tertiary-text">Unified Connectivity</span>
       </h3>
@@ -41,7 +41,7 @@ description: ""
         Support for industry standard AI protocols for agent and tool connectivity including A2A and MCP with the ability to automatically expose existing REST APIs as MCP-native tools.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
       <h3 class="font-bold  text-primary-text">
         <span class="text-tertiary-text">Developer Portal</span>
       </h3>
