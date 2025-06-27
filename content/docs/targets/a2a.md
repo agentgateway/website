@@ -12,7 +12,7 @@ Agent-to-agent, or [A2A](https://github.com/google/A2A), is an open protocol tha
 
 ## Set up an ADK agent
 
-Follow the [A2A sample documentation](https://github.com/a2aproject/a2a-samples/tree/main/samples/python/agents/adk_expense_reimbursement) to create an agent that handles reimbursements. The agent listens on port 10002. To create a Google API key, go to the [Google AI Studio](https://aistudio.google.com/app/apikey).
+Follow the [A2A sample documentation](https://github.com/a2aproject/A2A/tree/v0.1.0/samples/python/agents/google_adk) to create an agent that handles reimbursements. The agent listens on port 10002. To create a Google API key, go to the [Google AI Studio](https://aistudio.google.com/app/apikey).
 
 Example output: 
 ```
