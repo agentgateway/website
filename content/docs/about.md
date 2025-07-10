@@ -28,9 +28,9 @@ Agent Gateway comes with the following key features:
 * **Open source**: Agent Gateway is open source, and licensed under the Apache 2.0 license. 
 * **Compatible with any agentic framework**: Agent Gateway is compatible with any agentic framework supporting the Model Context Protocol (MCP) or agent-to-agent (A2A) protocol, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use Agent Gateway to expose a REST API as an agent-native tool. 
 * **Platform-agnostic**: Agent Gateway can run in any environment, including bare metal, virtual machine, containers, and Kubernetes. 
+* **Conformant to the Gateway API project**: Agent Gateway is conformant to the [Kubernetes Gateway API project](https://gateway-api.sigs.k8s.io/implementations/#agent-gateway-with-kgateway), which allows you to use it as a gateway with any Gateway API implementation.
 * **Highly performant**: Agent Gateway is written in Rust and designed to handle any scale. 
 * **Tool federation**: Agent Gateway can connect to multiple targets and provide a unified view of the tools and agents that are exposed on these targets. 
 * **Dynamic configuration updates**: Agent Gateway can be updated via an xDS interface without any downtime. 
 * **Security with RBAC**: Agent Gateway supports a robust RBAC system that allows you to control access to MCP tools and agents. 
 * **Built-in observability**: Agent Gateway comes with built-in metrics and tracing capabilities that allow you to monitor the traffic that goes through the Agent Gateway.
-
