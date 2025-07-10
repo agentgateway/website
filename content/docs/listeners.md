@@ -37,26 +37,14 @@ Set up an SSE listener on your Agent Gateway.
 
 1. Create a JSON file that contains your listener configuration. The following example sets up an SSE listener with the MCP protocol that listens for incoming traffic on port 3000. 
    ```yaml
-   cat <<EOF > ./config.json
-   {
-     "type": "static",
-     "listeners": [
-       {
-         "name": "sse",
-         "protocol": "MCP",
-         "sse": {
-           "address": "[::]",
-           "port": 3000
-         }
-       }
-     ]
-   } 
+   cat <<EOF > config.yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
    EOF
    ```
 
 2. Run the Agent Gateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
 
 2. [Open the Agent Gateway listener UI](http://localhost:19000/ui/listeners/) and verify that your listener is added successfully. 
@@ -118,7 +106,7 @@ Update the configuration file to remove the listener.
 2. Apply the updated configuration file to your Agent Gateway.
 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
 
 {{% /tab %}}
@@ -128,7 +116,7 @@ Use the Agent Gateway admin API to delete listeners from your Agent Gateway.
 
 1. Run the Agent Gateway from which you want to remove a listener. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
 
 2. List the listeners that are currently configured on your Agent Gateway and note the name of the listener that you want to delete. In the following example, the listener is named `sse`. 
