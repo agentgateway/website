@@ -1,69 +1,33 @@
 ---
-title: Authenticate requests
+title: Authenticate and authorize requests
 weight: 20
 description: 
 ---
 
 Use a JWT token to authenticate requests before forwarding them to a target. 
 
-1. Download a sample, local JWT public key file. You use this file to validate JWTs later. 
-   ```sh
-   curl -o pub-key https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/pub-key
-   ```
+## Configure JWT and MCP auth policies {#jwt-mcp-auth}
 
-2. Create a configuration file for your Agent Gateway. In this example, you configure the following elements: 
-   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the Agent Gateway successfully. If the request has a JWT that does not include this claim, the request is denied.
-   * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
+1. Create a configuration file for your Agent Gateway. In this example, you configure the following elements: 
+   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
+   * **Route policies**: The listener includes route policies for `jwtAuth` and `mcpAuthorization`. 
+   * **jwtAuth**: The `jwtAuth` policy configures how to authenticate clients. The example uses sample JWT keys and tokens for demo purposes only. Requests must have a valid JWT that matches the criteria, or are denied.
+   * **mcpAuthorization**: The `mcpAuthorization` policy configures who is allowed to access certain resources. These authorization rules use the [Cedar Policy language](https://www.cedarpolicy.com/). The example lets anyone call the `echo` tool, only the `test-user` call the `add` tool, and only users with a certain claim call the `printEnv` tool.
+   * **Backend**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
-   cat <<EOF > ./config.json
-   {
-     "type": "static",
-     "listeners": [
-       {
-         "name": "sse",
-         "protocol": "MCP",
-         "sse": {
-           "address": "[::]",
-           "port": 3000,
-           "authn": {
-             "jwt": {
-               "issuer": [
-                 "me"
-               ],
-               "audience": [
-                 "me.com"
-               ],
-               "local_jwks": {
-                 "file_path": "./pub-key"
-               }
-            }
-          }
-         }
-       }
-     ],
-     "targets": {
-       "mcp": [
-         {
-           "name": "everything",
-           "stdio": {
-             "cmd": "npx",
-            "args": [
-               "@modelcontextprotocol/server-everything"
-             ]
-           }
-         }
-       ]
-     }
-   }
+   cat <<EOF > config.yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/authorization/config.yaml" >}}
    EOF
    ```
 
-3. Run the Agent Gateway. 
+2. Run the Agent Gateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
    
-4. Send a request to the Agent Gateway. Verify that this request is denied with a 401 HTTP response code and that you see a message stating that an `authorization` header is missing in the request. 
+## Verify authentication {#verify}
+
+1. Send a request to the Agent Gateway. Verify that this request is denied with a 401 HTTP response code and that you see a message stating that an `authorization` header is missing in the request. 
    ```sh
    curl -vik localhost:3000/sse
    ```
@@ -76,11 +40,35 @@ Use a JWT token to authenticate requests before forwarding them to a target.
    ...
    {"error":"No auth header present, error: Header of type `authorization` was missing"}   
    ```
-   
-5. Send another request to the Agent Gateway. This time, you provide a JWT in the `Authorization` header. Because this JWT includes the `sub: me` claim, the request is successfully authenticated and you get back a 200 HTTP response code. 
+
+2. Save a JWT from the `example2.key` file as an environment variable. This JWT is for the `test-user` and has no claims.
+
+   ```sh
+   export JWT_TOKEN2={{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/example1.key" >}}
+   ```
+
+3. Send another request to the Agent Gateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo` and `add` tools, but not the `printEnv` tool.
    ```sh
    curl -vik localhost:3000/sse \
-   -H "Authorization: bearer eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ" 
+   -H "Authorization: bearer $JWT_TOKEN2" 
+   ```
+   
+   Example output: 
+   ```
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
+   ...
+
+4. Save another JWT from the `example1.key` file as an environment variable. This JWT is for the `test-user` and has a matching claim for the `printEnv` tool.
+
+   ```sh
+   export JWT_TOKEN1={{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/example1.key" >}}
+   ```
+
+5. Send another request to the Agent Gateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo`, `add`, and `printEnv` tools.
+   ```sh
+   curl -vik localhost:3000/sse \
+   -H "Authorization: bearer $JWT_TOKEN1" 
    ```
    
    Example output: 

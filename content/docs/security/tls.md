@@ -8,55 +8,22 @@ You can configure the SSE listener on the Agent Gateway with a TLS certificate t
 
 1. Download the `.pem` files for certificate and key that you use to secure the SSE listener. 
    ```sh
-   curl -o cert.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/cert.pem
-   curl -o key.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/key.pem
+   curl -o examples/tls/certs/cert.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/cert.pem
+   curl -o examples/tls/certs/key.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/key.pem
    ```
 
-2. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
+2. Create a TLS configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
-   * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
+   * **Backend**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
-   cat <<EOF > config.json
-   {
-     "type": "static",
-     "listeners": [
-       {
-         "name": "sse",
-         "protocol": "MCP",
-         "sse": {
-           "address": "[::]",
-           "port": 3000,
-           "tls": {
-             "cert_pem": {
-               "file_path": "./cert.pem"
-             },
-             "key_pem": {
-               "file_path": "./key.pem"
-             }
-           }
-         }
-       }
-     ],
-     "targets": {
-       "mcp": [
-         {
-           "name": "everything",
-           "stdio": {
-             "cmd": "npx",
-             "args": [
-               "@modelcontextprotocol/server-everything"
-             ]
-           }
-         }
-       ]
-     }
-   }
+   cat <<EOF > config.yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/config.yaml" >}}
    EOF
    ```
 
 3. Run the Agent Gateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
    
 3. Send an HTTP request to the Agent Gateway. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 
