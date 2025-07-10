@@ -1,17 +1,17 @@
 ---
 title: Listeners
 weight: 30
-description: You can use the Agent Gateway UI or admin API to configure listeners.
+description: Configure listeners for Agent Gateway.
 next: /docs/targets
 --- 
 
-You can use the built-in Agent Gateway UI, a configuration file, or the admin API to create, update, and delete listeners. 
+You can use the built-in Agent Gateway UI or a configuration file to create, update, and delete listeners. 
 
 ## Create listeners
 
 Set up an SSE listener on your Agent Gateway. 
 
-{{< tabs items="UI,Configuration file,Admin API," >}}
+{{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
 1. Start your Agent Gateway. 
@@ -51,37 +51,13 @@ Set up an SSE listener on your Agent Gateway.
    {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
    
 {{% /tab %}}
-{{% tab %}}
-
-Use the Agent Gateway admin API to configure an SSE listener on your Agent Gateway.
-
-1. Start your Agent Gateway. The Agent Gateway automatically exposes its admin API on port 19000. 
-   ```sh
-   agentgateway 
-   ```
-
-2. Create an SSE listener by using the `/listeners` endpoint. In the following example, the listener is configured with the MCP protocol and exposed on port 3000. 
-   ```sh
-   curl -X POST -H content-type:application/json http://localhost:19000/listeners -d '{"name":"sse","protocol":"MCP","sse":{"address":"[::]","port":3000,"rbac":[]}}'
-   ```
-   
-3. Verify that the listener is created. 
-   ```sh
-   curl http://localhost:19000/listeners
-   ```
-   
-   Example output: 
-   ```console
-   [{"name":"sse","protocol":"MCP","sse":{"address":"[::]","port":3000,"rbac":[]}}]
-   ```
-{{% /tab %}}
 {{< /tabs >}}
 
 ## Delete listeners
 
-Remove Agent Gateway listeners by using the UI or admin API. 
+Remove Agent Gateway listeners by using the UI or deleting the configuration file. 
 
-{{< tabs items="UI,Configuration file,Admin API" >}}
+{{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
 Remove Agent Gateway listeners with the UI. 
@@ -107,41 +83,6 @@ Update the configuration file to remove the listener.
 
    ```sh
    agentgateway -f config.yaml
-   ```
-
-{{% /tab %}}
-{{% tab %}}
-
-Use the Agent Gateway admin API to delete listeners from your Agent Gateway.
-
-1. Run the Agent Gateway from which you want to remove a listener. 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-2. List the listeners that are currently configured on your Agent Gateway and note the name of the listener that you want to delete. In the following example, the listener is named `sse`. 
-   ```sh
-   curl http://localhost:19000/listeners
-   ```
-   
-   Example output: 
-   ```console
-   [{"name":"sse","protocol":"MCP","sse":{"address":"[::]","port":3000,"rbac":[]}}]
-   ```
-
-3. Delete the listener. The following example shows how to delete the `sse` listener. 
-   ```sh
-   curl -X DELETE http://localhost:19000/listeners/sse
-   ```
-   
-4. Verify that the listener is removed. 
-   ```sh
-   curl http://localhost:19000/listeners
-   ```
-   
-   Example output: 
-   ```console
-   []
    ```
 
 {{% /tab %}}

@@ -45,7 +45,7 @@ You complete the following tasks:
    
 ## Step 2: Set up an Agent Gateway
 
-1. Create the configuration for your Agent Gateway. In this example, you use a configuration file to configure the Agent Gateway, but you can also use the Agent Gateway UI or admin API to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
+1. Create the configuration for your Agent Gateway. In this example, you use a configuration file to configure the Agent Gateway, but you can also use the Agent Gateway UI to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
    
    ```yaml
    cat <<EOF > config.yaml
