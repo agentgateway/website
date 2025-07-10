@@ -8,19 +8,19 @@ Federate tools of multiple MCP servers on the Agent Gateway by using MCP multipl
 
 ## Configure the Agent Gateway
 
-1. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
-   * **Listener**: An SSE listener is configured and exposed on port 3000. 
-   * **Target**: The Agent Gateway defines two targets that both point to the same sample MCP server, `server-everything`. To federate the tools of the MCP server targets, you give each target a unique name. This name is used as a prefix for the tools that are exposed on the MCP server. In this example, the `everything` and `everything-else` prefixes are used. Note that the prefix name cannot include underscores (`_`).
+1. Create a multiplex configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
+   * **Listener**: An SSE listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
+   * **Backend**: The backend defines two targets: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are exposed together a single MCP server to clients.
 
    ```yaml
-   cat <<EOF > config.json
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.json" >}}
+   cat <<EOF > config.yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml" >}}
    EOF
    ```
    
 2. Run the Agent Gateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
    
 ## Verify access to tools
@@ -30,7 +30,7 @@ Federate tools of multiple MCP servers on the Agent Gateway by using MCP multipl
 2. Connect to the MCP server with the Agent Gateway UI playground. 
    1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
    2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
-   3. Verify that you see a list of **Available Tools** and that all tools are listed twice, one time with the prefix `everything` and one time with the prefix `everything-else`. You now have a federated view of all the tools that are exposed on all defined targets.
+   3. Verify that you see a list of **Available Tools** and that all tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
    
       {{< reuse-image src="img/agentgateway-ui-tools-multiplex.png" >}}
 

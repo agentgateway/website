@@ -25,7 +25,7 @@ description: ""
     AI-native connectivity for agentic applications
   </h2>
   <div class="flex flex-col md:flex-row text-start gap-8 items-center md:items-stretch justify-center mx-6 min-h-36">
-    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/backends">
       <h3 class="font-bold text-primary-text">
         <span class="text-tertiary-text">Tool Federation</span>
       </h3>
@@ -33,7 +33,7 @@ description: ""
         Provide a single MCP endpoint for all the tools your agents consume, with unified security, observability, and governance for all agent-to-tool communication.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/targets/multiplex">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/backends/multiplex">
       <h3 class="font-bold  text-primary-text">
         <span class="text-tertiary-text">Unified Connectivity</span>
       </h3>
