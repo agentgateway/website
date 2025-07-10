@@ -10,47 +10,21 @@ Expose an OpenAPI server on the Agent Gateway.
 
 1. Download the OpenAPI schema for the Petstore app. 
    ```sh
-   curl -o openapi.json https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/openapi/openapi.json
+   curl -o ./examples/openapi/openapi.json https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/openapi/openapi.json
    ```
 
-2. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
+2. Create an OpenAPI configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. 
-   * **Target**: The Agent Gateway connects to a Swagger UI endpoint that exposes the OpenAPI spec for the Petstore sample app. You also include the OpenAPI schema that you downloaded earlier. 
+   * **Backend**: The Agent Gateway connects to a Swagger UI endpoint that exposes the OpenAPI spec for the Petstore sample app. You also include the OpenAPI schema that you downloaded earlier. 
    ```yaml
-   cat <<EOF > config.json
-   {
-     "type": "static",
-     "listeners": [
-       {
-         "name": "sse",
-         "protocol": "MCP",
-         "sse": {
-           "address": "[::]",
-           "port": 3000
-         }
-       }
-     ],
-     "targets": {
-       "mcp": [
-         {
-           "name": "petstore",
-           "openapi": {
-             "host": "petstore3.swagger.io",
-             "port": 443,
-             "schema": {
-               "file_path": "./openapi.json"
-             }
-          }
-         }
-       ]
-     }
-   }
+   cat <<EOF > config.yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/openapi/config.yaml" >}}
    EOF
    ```
 
 3. Run the Agent Gateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
    
 ## Verify access to the Petstore APIs
