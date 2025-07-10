@@ -18,9 +18,7 @@ You complete the following tasks:
 
 {{< reuse-image src="img/quickstart.svg" width="700px" >}}
 
-
 ## Step 1: Install the binary
-
 
 1. Download the Agent Gateway binary and install it. 
    ```sh
@@ -47,27 +45,35 @@ You complete the following tasks:
    
 ## Step 2: Set up an Agent Gateway
 
-1. Create a listener and target configuration for your Agent Gateway. In this example, you use a configuration file to configure the Agent Gateway, but you can also use the Agent Gateway UI or admin API to configure these components. For examples, see the [Listeners](/docs/listeners) and [Targets](/docs/targets) guides. 
+1. Create the configuration for your Agent Gateway. In this example, you use a configuration file to configure the Agent Gateway, but you can also use the Agent Gateway UI or admin API to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
    
-   The Agent Gateway in this example is configured as follows: 
-   * **Listener**: An SSE listener is configured with the MCP protocol and exposed on port 3000. 
-   * **Target**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. The server runs the entire MCP stack in a single process and can be used to test, develop, or demo MCP environments. 
-   
-     To run the server, you use the standard input/output (`stdio`) capability of the Agent Gateway, which allows you to pass in the command and command arguments that you want to use. In this example, the `npx` command is used. The `npx` command utility lets you run a Node.js package (`@modelcontextprotocol/server-everything`) without installing it. If you do not have `npx` on your machine, follow the [instructions to install Node.js](https://nodejs.org/en/download).
    ```yaml
-   cat <<EOF > config.json
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.json" >}}
+   cat <<EOF > config.yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
    EOF
    ```
 
+   {{< reuse "docs/snippets/review-table.md" >}}
+
+   | Field | Description |
+   | ----- | ----------- |
+   | `binds` | Binds set up each port on which the Agent Gateway listens for incoming requests. This example configures one port. |
+   | `port` | The port to listen on, such as `3000`. |
+   | `listeners` | Listeners configure how Agent Gateway accepts and processes incoming requests. They do this by grouping together resources such as routes and the backends that serve traffic. |
+   | `routes` | Routes configure advanced routing features, such as traffic policies, that control how traffic is sent to the backends. In the example, the route matches all traffic. |
+   | `policies` | Policies configure traffic policies on routes that shape how traffic is sent to the backends. In the example, a basic CORS policy is configured to allow all origins and the `mcp-protocol-version` header, so that you can use the UI in a later step. |
+   | `backends` | Backends configure the backing destination where the traffic is sent to. Backends can be MCP servers, A2A agents, or OpenAPI servers. In this example, the backend is an MCP server. |
+   | `targets` | Targets configure the details of the backend, such as the MCP server. In this example, the target is the sample, open source MCP test server, `server-everything`. The server runs the entire MCP stack in a single process and can be used to test, develop, or demo MCP environments. |
+   | `stdio` | To run the server, you use the standard input/output (`stdio`) capability of the Agent Gateway, which allows you to pass in the command and command arguments that you want to use. In this example, the `npx` command is used. The `npx` command utility lets you run a Node.js package (`@modelcontextprotocol/server-everything`) without installing it. If you do not have `npx` on your machine, follow the [instructions to install Node.js](https://nodejs.org/en/download). |
+
 2. Run the Agent Gateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
    
    Example output: 
    ```
-   2025-04-16T20:19:36.449164Z  INFO agentgateway: Reading config from file: basic.json
+   2025-04-16T20:19:36.449164Z  INFO agentgateway: Reading config from file: basic.yaml
    2025-04-16T20:19:36.449580Z  INFO insert_target: agentgateway::xds: inserted target: everything
    2025-04-16T20:19:36.449595Z  INFO agentgateway::r#static: local config initialized num_mcp_targets=1 num_a2a_targets=0
    2025-04-16T20:19:36.449874Z  INFO agentgateway::inbound: serving sse on [::]:3000
@@ -106,7 +112,7 @@ The Agent Gateway comes with a built-in UI that you can use to connect to your M
 
 With your Agent Gateway up and running, you can now explore the following tasks: 
 
-* [Configure other targets](/docs/targets), such as multiple MCP servers, an A2A agent, or an OpenAPI server. 
+* [Configure other backends](/docs/backends), such as multiple MCP servers, an A2A agent, or an OpenAPI server. 
 * [Secure your Agent Gateway setup](/docs/security), such as by setting up a TLS listener, JWT authentication, and RBAC policies to control access to tools and agents. 
 * [Explore metrics and traces](/docs/observability) that the Agent Gateway emits so that you can monitor the traffic that goes through your Agent Gateway. 
 
