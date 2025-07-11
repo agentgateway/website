@@ -8,26 +8,26 @@ Use a JWT token to authenticate requests before forwarding them to a target.
 
 ## Configure JWT and MCP auth policies {#jwt-mcp-auth}
 
-1. Create a configuration file for your Agent Gateway. In this example, you configure the following elements: 
+1. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
    * **Route policies**: The listener includes route policies for `jwtAuth` and `mcpAuthorization`. 
    * **jwtAuth**: The `jwtAuth` policy configures how to authenticate clients. The example uses sample JWT keys and tokens for demo purposes only. Requests must have a valid JWT that matches the criteria, or are denied.
    * **mcpAuthorization**: The `mcpAuthorization` policy configures who is allowed to access certain resources. These authorization rules use the [Cedar Policy language](https://www.cedarpolicy.com/). The example lets anyone call the `echo` tool, only the `test-user` call the `add` tool, and only users with a certain claim call the `printEnv` tool.
-   * **Backend**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
+   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/authorization/config.yaml" >}}
    EOF
    ```
 
-2. Run the Agent Gateway. 
+2. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
    
 ## Verify authentication {#verify}
 
-1. Send a request to the Agent Gateway. Verify that this request is denied with a 401 HTTP response code and that you see a message stating that an `authorization` header is missing in the request. 
+1. Send a request to the agentgateway. Verify that this request is denied with a 401 HTTP response code and that you see a message stating that an `authorization` header is missing in the request. 
    ```sh
    curl -vik localhost:3000/sse
    ```
@@ -47,7 +47,7 @@ Use a JWT token to authenticate requests before forwarding them to a target.
    export JWT_TOKEN2={{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/example1.key" >}}
    ```
 
-3. Send another request to the Agent Gateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo` and `add` tools, but not the `printEnv` tool.
+3. Send another request to the agentgateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo` and `add` tools, but not the `printEnv` tool.
    ```sh
    curl -vik localhost:3000/sse \
    -H "Authorization: bearer $JWT_TOKEN2" 
@@ -65,7 +65,7 @@ Use a JWT token to authenticate requests before forwarding them to a target.
    export JWT_TOKEN1={{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/example1.key" >}}
    ```
 
-5. Send another request to the Agent Gateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo`, `add`, and `printEnv` tools.
+5. Send another request to the agentgateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo`, `add`, and `printEnv` tools.
    ```sh
    curl -vik localhost:3000/sse \
    -H "Authorization: bearer $JWT_TOKEN1" 

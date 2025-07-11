@@ -4,7 +4,7 @@ weight: 10
 description:
 ---
 
-You can configure the SSE listener on the Agent Gateway with a TLS certificate to secure the communication to the Agent Gateway. 
+You can configure the SSE listener on the agentgateway with a TLS certificate to secure the communication to the agentgateway. 
 
 1. Download the `.pem` files for certificate and key that you use to secure the SSE listener. 
    ```sh
@@ -12,21 +12,21 @@ You can configure the SSE listener on the Agent Gateway with a TLS certificate t
    curl -o examples/tls/certs/key.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/key.pem
    ```
 
-2. Create a TLS configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
+2. Create a TLS configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
-   * **Backend**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
+   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/config.yaml" >}}
    EOF
    ```
 
-3. Run the Agent Gateway. 
+3. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
    
-3. Send an HTTP request to the Agent Gateway. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 
+3. Send an HTTP request to the agentgateway. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 
    ```sh
    curl -vik http://localhost:3000/sse
    ```
@@ -42,7 +42,7 @@ You can configure the SSE listener on the Agent Gateway with a TLS certificate t
    curl: (1) Received HTTP/0.9 when not allowed
    ```
 
-4. Send an HTTPS request to the Agent Gateway. Verify that you see a TLS handshake and that a connection to the Agent Gateway can be established.
+4. Send an HTTPS request to the agentgateway. Verify that you see a TLS handshake and that a connection to the agentgateway can be established.
    ```sh
    curl -vik https://localhost:3000/sse
    ```

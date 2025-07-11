@@ -1,25 +1,25 @@
 ---
 title: Listeners
 weight: 30
-description: Configure listeners for Agent Gateway.
+description: Configure listeners for agentgateway.
 next: /docs/targets
 --- 
 
-You can use the built-in Agent Gateway UI or a configuration file to create, update, and delete listeners. 
+You can use the built-in agentgateway UI or a configuration file to create, update, and delete listeners. 
 
 ## Create listeners
 
-Set up an SSE listener on your Agent Gateway. 
+Set up an SSE listener on your agentgateway. 
 
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
-1. Start your Agent Gateway. 
+1. Start your agentgateway. 
    ```sh
    agentgateway 
    ```
 
-2. [Open the Agent Gateway listener UI](http://localhost:19000/ui/listeners/). 
+2. [Open the agentgateway listener UI](http://localhost:19000/ui/listeners/). 
    {{< reuse-image src="img/agentgateway-ui-listener-none.png" >}}
 
 3. Click **Add Listener**. 
@@ -42,12 +42,12 @@ Set up an SSE listener on your Agent Gateway.
    EOF
    ```
 
-2. Run the Agent Gateway. 
+2. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
 
-2. [Open the Agent Gateway listener UI](http://localhost:19000/ui/listeners/) and verify that your listener is added successfully. 
+2. [Open the agentgateway listener UI](http://localhost:19000/ui/listeners/) and verify that your listener is added successfully. 
    {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
    
 {{% /tab %}}
@@ -55,19 +55,19 @@ Set up an SSE listener on your Agent Gateway.
 
 ## Delete listeners
 
-Remove Agent Gateway listeners by using the UI or deleting the configuration file. 
+Remove agentgateway listeners by using the UI or deleting the configuration file. 
 
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
-Remove Agent Gateway listeners with the UI. 
+Remove agentgateway listeners with the UI. 
 
-1. Run the Agent Gateway from which you want to remove a listener. 
+1. Run the agentgateway from which you want to remove a listener. 
    ```sh
    agentgateway -f config.json
    ```
 
-2. [Open the Agent Gateway listener UI](http://localhost:19000/ui/listeners/) and find the listener that you want to remove. 
+2. [Open the agentgateway listener UI](http://localhost:19000/ui/listeners/) and find the listener that you want to remove. 
    {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
 
 3. Click the trash icon to remove the listener and confirm the deletion. 
@@ -79,7 +79,7 @@ Remove Agent Gateway listeners with the UI.
 Update the configuration file to remove the listener.
 
 1. Remove the listener from your configuration file.
-2. Apply the updated configuration file to your Agent Gateway.
+2. Apply the updated configuration file to your agentgateway.
 
    ```sh
    agentgateway -f config.yaml

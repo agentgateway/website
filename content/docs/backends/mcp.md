@@ -1,10 +1,10 @@
 ---
 title: MCP
 weight: 10
-description: Expose tools that are hosted on an MCP server on the Agent Gateway. 
+description: Expose tools that are hosted on an MCP server on the agentgateway. 
 ---
 
-Expose tools that are hosted on an MCP server on the Agent Gateway. 
+Expose tools that are hosted on an MCP server on the agentgateway. 
 
 ## About MCP
 
@@ -12,31 +12,31 @@ Expose tools that are hosted on an MCP server on the Agent Gateway.
 
 An MCP server exposes external data sources and tools so that LLM applications can access them. Typically, you want to deploy these servers remotely and have authorization mechanisms in place so that LLM applications can safely access the data.
 
-With Agent Gateway, you can connect to one or multiple MCP servers in any environment. The Agent Gateway proxies requests to the MCP tool that is exposed on the server. You can also use the Agent Gateway to federate tools from multiple MCP servers. For more information, see the [MCP multiplexing](/docs/setup/examples/multiplex) guide. 
+With agentgateway, you can connect to one or multiple MCP servers in any environment. The agentgateway proxies requests to the MCP tool that is exposed on the server. You can also use the agentgateway to federate tools from multiple MCP servers. For more information, see the [MCP multiplexing](/docs/setup/examples/multiplex) guide. 
 
-## Configure the Agent Gateway
+## Configure the agentgateway
 
-1. Create an MCP configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
+1. Create an MCP configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. 
-   * **Backend**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
+   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
    EOF
    ```
 
-2. Run the Agent Gateway. 
+2. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
    
 ## Verify access to tools
 
-1. Open the [Agent Gateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
+1. Open the [agentgateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
 
-2. Connect to the MCP server with the Agent Gateway UI playground. 
-   1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
-   2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The Agent Gateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+2. Connect to the MCP server with the agentgateway UI playground. 
+   1. Go to the agentgateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    3. Verify that you see a list of **Available Tools**. 
    
       {{< reuse-image src="img/agentgateway-ui-tools.png" >}}

@@ -10,20 +10,20 @@ Proxy requests to an agent that communicates via the agent-to-agent protocol (A2
 
 Agent-to-agent, or [A2A](https://github.com/google/A2A), is an open protocol that enables communication and interoperability between opaque agentic applications. Developed by Google, A2A defines a common language that enables agents to show their capabilities and help them negotiate how they interact with the user, such as via text, forms, or bidirectional audio or video, irrespective of the framework or vendor they are built on. 
 
-## Set up the Agent Gateway {#agentgateway}
+## Set up the agentgateway {#agentgateway}
 
-Create an Agent Gateway that proxies requests to the reimbursement agent that you created earlier. 
+Create an agentgateway that proxies requests to the reimbursement agent that you created earlier. 
 
-1. Create a listener and target configuration for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
+1. Create a listener and target configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
    * **Listener**: An SSE listener is configured for the A2A protocol and exposed on port 3000.  
-   * **Backend**: The Agent Gateway targets the reimbursement agent that you created earlier and exposed on localhost, port 10002. 
+   * **Backend**: The agentgateway targets the reimbursement agent that you created earlier and exposed on localhost, port 10002. 
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/a2a/config.yaml" >}}
    EOF
    ```
 
-3. Create the Agent Gateway. 
+3. Create the agentgateway. 
    ```sh
    agentgateway -f config.json
    ```
@@ -75,13 +75,13 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
 
    Type a sample message, such as `hi`, and then send the message by pressing enter.
 
-3. In another terminal tab, manually send a request to the [agent card endpoint](https://www.agentcard.net/) through Agent Gateway.
+3. In another terminal tab, manually send a request to the [agent card endpoint](https://www.agentcard.net/) through agentgateway.
 
    ```sh
    curl localhost:3000/.well-known/agent.json | jq
    ```
 
-   Example output: Notice that the `url` field is rewritten to point to the Agent Gateway.
+   Example output: Notice that the `url` field is rewritten to point to the agentgateway.
 
    ```json
    {
@@ -117,7 +117,7 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
    }
    ```
 
-4. In the tab where the Agent Gateway is running, verify that you see request logs from your client query to the Hello World agent, such as the following example.
+4. In the tab where the agentgateway is running, verify that you see request logs from your client query to the Hello World agent, such as the following example.
 
    ```text
    2025-07-10T18:10:46.547567Z	info	request	gateway=bind/3000 listener=listener0 route=route0 endpoint=localhost:9999 src.addr=[::1]:59257 http.method=POST http.host=localhost http.path=/ http.version=HTTP/1.1 http.status=200 a2a.method=message/stream duration=3ms
@@ -126,13 +126,13 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
 <!--TODO ui steps
 ## Try out the ADK agent
 
-Use the Agent Gateway playground to send a request to the reimbursement agent that you set up earlier. 
+Use the agentgateway playground to send a request to the reimbursement agent that you set up earlier. 
 
-1. Open the [Agent Gateway UI](http://localhost:19000/ui/). 
+1. Open the [agentgateway UI](http://localhost:19000/ui/). 
 
-2. Connect to the MCP server with the Agent Gateway UI playground. 
-   1. Go to the Agent Gateway UI [**Playground**](http://localhost:19000/ui/playground/).
-   2. In the **Connection Settings** card, select your listener and the **A2A target**, and click **Connect**. The Agent Gateway UI connects to the A2A target and retrieves all the skills that the target provides.
+2. Connect to the MCP server with the agentgateway UI playground. 
+   1. Go to the agentgateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   2. In the **Connection Settings** card, select your listener and the **A2A target**, and click **Connect**. The agentgateway UI connects to the A2A target and retrieves all the skills that the target provides.
    3. Verify that you see a list of **Available Skills**. 
    
       {{< reuse-image src="img/agentgateway-ui-playground-skills.png" >}}

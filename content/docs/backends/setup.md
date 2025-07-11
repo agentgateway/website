@@ -4,21 +4,21 @@ weight: 5
 description: 
 ---
 
-Learn how to use the Agent Gateway UI or a configuration file to create and delete targets. 
+Learn how to use the agentgateway UI or a configuration file to create and delete targets. 
 
 ## Create backends
 
-You can create backends by using the Agent Gateway UI or a configuration file. 
+You can create backends by using the agentgateway UI or a configuration file. 
 
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
-1. Start your Agent Gateway. 
+1. Start your agentgateway. 
    ```sh
    agentgateway
    ```
 
-2. [Open the Agent Gateway listener UI](http://localhost:19000/ui/listeners/). You must create a listener before you can create a target. 
+2. [Open the agentgateway listener UI](http://localhost:19000/ui/listeners/). You must create a listener before you can create a target. 
 
 3. Add a listener. 
    1. From the listener UI, click **Add Listener**. 
@@ -28,7 +28,7 @@ You can create backends by using the Agent Gateway UI or a configuration file.
    
    3. Click **Add Listener** to save your configuration.
 
-4. [Open the Agent Gateway target UI](http://localhost:19000/ui/targets/). 
+4. [Open the agentgateway target UI](http://localhost:19000/ui/targets/). 
    {{< reuse-image src="img/agentgateway-ui-targets-none.png" >}}
    
 5. Click **Add Target** and choose your **Target Type**, such as `MCP`. 
@@ -52,21 +52,21 @@ You can create backends by using the Agent Gateway UI or a configuration file.
 {{% /tab %}}
 {{% tab %}}
 
-1. Create a configuration file for your Agent Gateway. In this example, the Agent Gateway is configured as follows: 
+1. Create a configuration file for your agentgateway. In this example, the agentgateway is configured as follows: 
    * **Listener**: An SSE listener is configured and exposed on port 3000. 
-   * **Backend**: The Agent Gateway targets a sample, open source MCP test server, `server-everything`. 
+   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
    EOF
    ```
 
-2. Run the Agent Gateway. 
+2. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
 
-3. [Open the Agent Gateway target UI](http://localhost:19000/ui/targets/) and verify that your target is added successfully. 
+3. [Open the agentgateway target UI](http://localhost:19000/ui/targets/) and verify that your target is added successfully. 
    {{< reuse-image src="img/agentgateway-ui-targets.png" >}}
    
 {{% /tab %}}
@@ -78,14 +78,14 @@ You can create backends by using the Agent Gateway UI or a configuration file.
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
-Remove Agent Gateway targets with the UI. 
+Remove agentgateway targets with the UI. 
 
-1. Run the Agent Gateway from which you want to remove a listener. 
+1. Run the agentgateway from which you want to remove a listener. 
    ```sh
    agentgateway -f config.yaml
    ```
 
-2. [Open the Agent Gateway targets UI](http://localhost:19000/ui/targets/) and find the target that you want to remove. 
+2. [Open the agentgateway targets UI](http://localhost:19000/ui/targets/) and find the target that you want to remove. 
    {{< reuse-image src="img/agentgateway-ui-targets.png" >}}
 
 3. Click the trash icon to remove the target and confirm the deletion. 
@@ -97,7 +97,7 @@ Remove Agent Gateway targets with the UI.
 Update the configuration file to remove the target.
 
 1. Remove the target from your configuration file. 
-2. Apply the updated configuration file to your Agent Gateway.
+2. Apply the updated configuration file to your agentgateway.
 
    ```sh
    agentgateway -f config.yaml

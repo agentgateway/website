@@ -60,7 +60,7 @@ menu:
 
 params:
   title: agentgateway
-  description: An open source Agent Gateway built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
+  description: Agentgateway is an open source project that is built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
   navbar:
     displayTitle: false
     displayLogo: true
