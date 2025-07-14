@@ -33,7 +33,7 @@ With agentgateway, you can connect to one or multiple MCP servers in any environ
    ```sh
    agentgateway -f config.yaml
    ```
-   
+
 ## Verify access to tools
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.

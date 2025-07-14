@@ -9,11 +9,11 @@ Use a JWT token to authenticate requests before forwarding them to a target.
 ## Configure JWT and MCP auth policies {#jwt-mcp-auth}
 
 1. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
-   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
+   * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
    * **Route policies**: The listener includes route policies for `jwtAuth` and `mcpAuthorization`. 
    * **jwtAuth**: The `jwtAuth` policy configures how to authenticate clients. The example uses sample JWT keys and tokens for demo purposes only. Requests must have a valid JWT that matches the criteria, or are denied.
    * **mcpAuthorization**: The `mcpAuthorization` policy configures who is allowed to access certain resources. These authorization rules use the [Cedar Policy language](https://www.cedarpolicy.com/). The example lets anyone call the `echo` tool, only the `test-user` call the `add` tool, and only users with a certain claim call the `printEnv` tool.
-   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
+   
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/authorization/config.yaml" >}}

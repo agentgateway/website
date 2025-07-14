@@ -15,17 +15,17 @@ Agent-to-agent, or [A2A](https://github.com/google/A2A), is an open protocol tha
 Create an agentgateway that proxies requests to the reimbursement agent that you created earlier. 
 
 1. Create a listener and target configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
-   * **Listener**: An SSE listener is configured for the A2A protocol and exposed on port 3000.  
-   * **Backend**: The agentgateway targets the reimbursement agent that you created earlier and exposed on localhost, port 10002. 
+   * **Listener**: An HTTP listener is configured for the A2A protocol and exposed on port 3000.  
+   * **Backend**: The agentgateway targets a backend on your localhost port 9999, which you create in a subsequent step.
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/a2a/config.yaml" >}}
    EOF
    ```
 
-3. Create the agentgateway. 
+2. Create the agentgateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
 
 ## Set up an ADK agent {#hello-world-agent}
