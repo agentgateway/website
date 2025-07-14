@@ -56,7 +56,7 @@ You can optionally enrich the metrics that are captured by the agentgateway with
    ```
 
 2. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
-   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentgateway successfully. If the request has a JWT that does not include this claim, the request is denied.
+   * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentgateway successfully. If the request has a JWT that does not include this claim, the request is denied.
    * **Metrics**: The agentgateway metrics endpoint is configured to inject the `custom-tag: test` tag and to extract the `sub` claim from the JWT token and map it to the `user` tag. 
    * **Target**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```json

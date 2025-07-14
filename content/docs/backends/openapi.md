@@ -14,7 +14,7 @@ Expose an OpenAPI server on the agentgateway.
    ```
 
 2. Create an OpenAPI configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
-   * **Listener**: An SSE listener is configured and exposed on port 3000. 
+   * **Listener**: An HTTP listener is configured and exposed on port 3000. 
    * **Backend**: The agentgateway connects to a Swagger UI endpoint that exposes the OpenAPI spec for the Petstore sample app. You also include the OpenAPI schema that you downloaded earlier. 
    ```yaml
    cat <<EOF > config.yaml

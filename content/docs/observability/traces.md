@@ -22,7 +22,7 @@ EOF
 ## Configure the agentgateway
 
 1. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
-   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
+   * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
    * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
@@ -133,7 +133,7 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    ```
 
 2. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
-   * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentgateway successfully. If the request has a JWT that does not include this claim, the request is denied.
+   * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentgateway successfully. If the request has a JWT that does not include this claim, the request is denied.
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. In addition, the agentgateway is configured to inject the `custom-tag: test` tag and to extract the `sub` claim from the JWT token and map it to the `user` tag. 
    * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```json

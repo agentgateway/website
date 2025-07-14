@@ -36,7 +36,7 @@ The following steps are equivalent to creating this basic configuration file.
    
    {{< reuse-image src="img/ui-wizard-backends.png" >}}
 
-6. From the **Configure Policies** tab, set up a basic CORS policy as follows:
+6. From the **Configure Policies** tab, set up a basic CORS policy as follows. This way, the configuration works with the [MCP inspector tool](https://modelcontextprotocol.io/docs/tools/inspector).
 
    * Allowed Origins: `*`
    * Allowed Methods: `GET,POST,PUT,DELETE,OPTIONS`

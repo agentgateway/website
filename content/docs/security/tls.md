@@ -4,16 +4,16 @@ weight: 10
 description:
 ---
 
-You can configure the SSE listener on the agentgateway with a TLS certificate to secure the communication to the agentgateway. 
+You can configure the HTTP listener on the agentgateway with a TLS certificate to secure the communication to the agentgateway. 
 
-1. Download the `.pem` files for certificate and key that you use to secure the SSE listener. 
+1. Download the `.pem` files for certificate and key that you use to secure the HTTP listener. 
    ```sh
    curl -o examples/tls/certs/cert.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/cert.pem
    curl -o examples/tls/certs/key.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/key.pem
    ```
 
 2. Create a TLS configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
-   * **Listener**: An SSE listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
+   * **Listener**: An HTTP listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
    * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
    cat <<EOF > config.yaml

@@ -9,7 +9,7 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
 ## Configure the agentgateway
 
 1. Create a multiplex configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
-   * **Listener**: An SSE listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
+   * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
    * **Backend**: The backend defines two targets: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are exposed together a single MCP server to clients.
 
    ```yaml
