@@ -89,18 +89,20 @@ EOF
    agentgateway -f config.json
    ```
 
-<!-- TODO UI bug with Playground
-
 ## Verify traces
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 2. Connect to the MCP server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
-   2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
+      
+      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
+
+   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+
    3. Verify that you see a list of **Available Tools**. 
    
-      {{< reuse-image src="img/agentgateway-ui-tools.png" >}}
+      {{< reuse-image src="img/ui-playground-tools.png" >}}
 
 3. Verify access to a tool. 
    1. From the **Available Tools** list, select the `everything_echo` tool. 
@@ -118,7 +120,6 @@ EOF
    
    {{< reuse-image src="img/jaeger-traces.png">}}
 
--->
 <!-- TODO tags
 
 ## Add tags to traces

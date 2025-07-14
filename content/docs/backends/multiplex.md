@@ -8,41 +8,52 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
 
 ## Configure the agentgateway
 
-1. Create a multiplex configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
-   * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
-   * **Backend**: The backend defines two targets: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are exposed together a single MCP server to clients.
+1. Download a multiplex configuration for your agentgateway.
 
    ```yaml
-   cat <<EOF > config.yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml" >}}
-   EOF
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml -o config.yaml
    ```
+
+2. Review the configuration file. 
+
+   ```
+   cat config.yaml
+   ```
+
+   ```yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml" >}}
+   ```
+
+   * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
+   * **Backend**: The backend defines two targets: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are exposed together a single MCP server to clients.
    
-2. Run the agentgateway. 
+3. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
-
-<!-- TODO UI bug with Playground
 
 ## Verify access to tools
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
-2. Connect to the MCP server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
-   2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
-   3. Verify that you see a list of **Available Tools** and that all tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
+2. Connect to the MCP test server with the agentgateway UI playground. 
    
-      {{< reuse-image src="img/agentgateway-ui-tools-multiplex.png" >}}
+   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
+      
+      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
 
-3. Verify access to a tool. 
-   1. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the targets that you configured and retrieves the tools that are exposed on the targets. 
+   
+   3. Verify that you see a list of **Available Tools**. Note that the tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
+   
+      {{< reuse-image src="img/ui-playground-tools.png" >}}
+
+3. Verify access to tools from both targets. 
+   1. From the **Available Tools** list, select the `everything_echo` tool. 
+   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
+   3. Verify that you see your message echoed in the **Response** card. 
    
       {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
-   
-   2. Select the `everything-else_echo` tool, enter any string in the **message** field, such as `hello everything else`, and click **Run Tool**. Verify that access to the tool is granted and that you also see your message echoed. 
+   4. Repeat the steps with the `everything_else` tool with a different message, such as `hello everything else`. 
    
       {{< reuse-image src="img/agentgateway-ui-tool-echo-else.png" >}}
-
--->
