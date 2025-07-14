@@ -1,10 +1,10 @@
 ---
-title: Targets
+title: Backends
 weight: 40
 description: 
 ---
 
-A target represents a destination for which you want Agent Gateway to proxy traffic for. Agent Gateway is designed to enable AI connectivity for tools and agents, and therefore supports various protocols to interact with the following targets.
+A backend represents a destination for which you want agentgateway to proxy traffic for. Agentgateway is designed to enable AI connectivity for tools and agents, and therefore supports various protocols to interact with the following backends.
 
 {{< cards >}}
   {{< card link="mcp" title="Model Context Protocol (MCP)" >}}

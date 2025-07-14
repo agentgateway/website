@@ -1,10 +1,10 @@
 ---
-title: Security
+title: Security policies
 weight: 50
 description: 
 ---
 
-Secure the Agent Gateway and the tools it exposes. 
+Secure the agentgateway and the tools it exposes. 
 
 {{< cards >}}
   {{< card link="tls" title="Set up a TLS listener" >}}
