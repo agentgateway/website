@@ -25,10 +25,10 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
    
 ## Verify access to tools
 
-1. Open the [agentgateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
+1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 2. Connect to the MCP server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
    2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    3. Verify that you see a list of **Available Tools** and that all tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
    

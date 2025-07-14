@@ -29,10 +29,10 @@ Expose an OpenAPI server on the agentgateway.
    
 ## Verify access to the Petstore APIs
 
-1. Open the [agentgateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
+1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 2. Connect to the OpenAPI server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
    2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the APIs that are exposed on the target. 
    3. Verify that you see the Petstore APIs from the OpenAPI spec as a list of **Available Tools** 
    

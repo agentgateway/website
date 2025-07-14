@@ -1,5 +1,5 @@
 ---
-title: Security
+title: Security policies
 weight: 50
 description: 
 ---

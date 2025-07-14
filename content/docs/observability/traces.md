@@ -24,19 +24,53 @@ EOF
 1. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. 
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
-   * **Target**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
+   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
    ```yaml
    cat <<EOF > ./config.json
    {
-     "type": "static",
-     "listeners": [
+     "binds": [
        {
-         "name": "sse",
-         "protocol": "MCP",
-         "sse": {
-           "address": "[::]",
-           "port": 3000
-          }
+         "port": 3000,
+         "listeners": [
+           {
+             "name": "sse",
+             "protocol": "HTTP",
+             "hostname": null,
+             "routes": [
+               {
+                 "name": null,
+                 "ruleName": null,
+                 "hostnames": [],
+                 "matches": [
+                   {
+                     "path": {
+                       "pathPrefix": "/"
+                     }
+                   }
+                 ],
+                 "policies": null,
+                 "backends": [
+                   {
+                     "mcp": {
+                       "targets": [
+                         {
+                           "name": "everything",
+                           "stdio": {
+                             "cmd": "npx",
+                             "args": [
+                               "@modelcontextprotocol/server-everything"
+                             ]
+                           }
+                         }
+                       ]
+                     }
+                   }
+                 ]
+               }
+             ],
+             "tls": null
+           }
+         ]
        }
      ],
      "tracing": {
@@ -45,19 +79,6 @@ EOF
            "endpoint": "http://localhost:4317"
          }
        }
-     },
-     "targets": {
-       "mcp": [
-         {
-           "name": "everything",
-           "stdio": {
-             "cmd": "npx",
-             "args": [
-               "@modelcontextprotocol/server-everything"
-             ]
-           }
-         }
-       ]
      }
    }
    EOF
@@ -70,10 +91,10 @@ EOF
 
 ## Verify traces
 
-1. Open the [agentgateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
+1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 2. Connect to the MCP server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
    2. In the **Connection Settings** card, select your **Listener Endpoint** and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    3. Verify that you see a list of **Available Tools**. 
    
@@ -109,32 +130,61 @@ You can optionally enrich the traces that are captured by the agentgateway with 
 2. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentgateway successfully. If the request has a JWT that does not include this claim, the request is denied.
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. In addition, the agentgateway is configured to inject the `custom-tag: test` tag and to extract the `sub` claim from the JWT token and map it to the `user` tag. 
-   * **Target**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
-   ```yaml
+   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
+   ```json
    cat <<EOF > ./config.json
    {
-     "type": "static",
-     "listeners": [
+     "binds": [
        {
-         "name": "sse",
-         "protocol": "MCP",
-         "sse": {
-           "address": "[::]",
-           "port": 3000,
-           "authn": {
-             "jwt": {
-               "issuer": [
-                 "me"
-               ],
-               "audience": [
-                 "me.com"
-               ],
-               "local_jwks": {
-                 "file_path": "./pub-key"
+         "port": 3000,
+         "listeners": [
+           {
+             "name": "sse",
+             "protocol": "HTTP",
+             "hostname": null,
+             "routes": [
+               {
+                 "name": null,
+                 "ruleName": null,
+                 "hostnames": [],
+                 "matches": [
+                   {
+                     "path": {
+                       "pathPrefix": "/"
+                     }
+                   }
+                 ],
+                 "policies": {
+                   "jwtAuth": {
+                     "issuer": "me",
+                     "audiences": ["me.com"],
+                     "jwks": {
+                       "file": "./pub-key"
+                     }
+                   }
+                 },
+                 "backends": [
+                   {
+                     "mcp": {
+                       "targets": [
+                         {
+                           "name": "everything",
+                           "stdio": {
+                             "cmd": "npx",
+                             "args": [
+                               "@modelcontextprotocol/server-everything"
+                             ]
+                           }
+                         }
+                       ]
+                     }
+                   }
+                 ]
                }
-            }
-          }
-         }
+             ],
+             "tls": null
+           }
+         ]
        }
      ],
      "tracing": {
@@ -147,19 +197,6 @@ You can optionally enrich the traces that are captured by the agentgateway with 
          "user": "@sub",
          "custom-tag": "test"
        }
-     },
-     "targets": {
-       "mcp": [
-         {
-           "name": "everything",
-           "stdio": {
-             "cmd": "npx",
-            "args": [
-               "@modelcontextprotocol/server-everything"
-             ]
-           }
-         }
-       ]
      }
    }
    EOF
@@ -170,10 +207,10 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    agentgateway -f config.json
    ```
 
-4. Open the [agentgateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
+4. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 5. Connect to the MCP server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:19000/ui/playground/).
+   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
    2. In the **Connection Settings** card, select your **Listener Endpoint**. 
    3. In the **Bearer Token** field, enter the following JWT token. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. 
       ```sh

@@ -2,14 +2,14 @@
 title: Listeners
 weight: 30
 description: Configure listeners for agentgateway.
-next: /docs/targets
+next: /docs/routes
 --- 
 
 You can use the built-in agentgateway UI or a configuration file to create, update, and delete listeners. 
 
 ## Create listeners
 
-Set up an SSE listener on your agentgateway. 
+Set up a listener on your agentgateway. 
 
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
@@ -19,23 +19,28 @@ Set up an SSE listener on your agentgateway.
    agentgateway 
    ```
 
-2. [Open the agentgateway listener UI](http://localhost:19000/ui/listeners/). 
+2. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/). 
    {{< reuse-image src="img/agentgateway-ui-listener-none.png" >}}
 
-3. Click **Add Listener**. 
-4. Enter a **Name** for your listener, select a protocol, and configure the **Address** and **Port** that you want your listener to be exposed on. To use an address that is compatible with IPv4 and IPv6, enter `[::]`. 
+3. Click **Add Bind**. 
+4. Enter a **Port** number such as `3000` and then click **Add Bind**.
+   {{< reuse-image src="img/ui-listener-add-bind.png" >}}
+5. Expand the port that you just created and click **Add Listener**.
+   {{< reuse-image src="img/ui-listener-add.png">}}
+6. For your listener, configure the details.
+   * Name: If you omit this, a name is generated for you.
+   * Gateway Name: An optional field to group together listeners for ease of management, such as listeners for the same app or team.
+   * Target Bind: The port bind that you set up in the previous step.
+   * Protocol: The protocol that you want your listener to use, such as `HTTP`.
+   * Hostname: The hostname that the listener binds to, which can include a wildcard `*`. To use an address that is compatible with IPv4 and IPv6, enter `[::]`.
+   * Click **Add Listener** to save your configuration.
    
-   {{< reuse-image src="img/agentgateway-ui-listener-add.png" width="500px" >}}
+   {{< reuse-image src="img/ui-listener-add-details.png" >}}
 
-5. Click **Add Listener** to save your configuration. 
-   
-   {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
-
-   
 {{% /tab %}}
 {{% tab %}}
 
-1. Create a JSON file that contains your listener configuration. The following example sets up an SSE listener with the MCP protocol that listens for incoming traffic on port 3000. 
+1. Create a configuration file that contains your listener configuration. The following example sets up an HTTP listener with the MCP protocol that listens for incoming traffic on port 3000. 
    ```yaml
    cat <<EOF > config.yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
@@ -47,7 +52,7 @@ Set up an SSE listener on your agentgateway.
    agentgateway -f config.yaml
    ```
 
-2. [Open the agentgateway listener UI](http://localhost:19000/ui/listeners/) and verify that your listener is added successfully. 
+3. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/) and verify that your listener is added successfully. 
    {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
    
 {{% /tab %}}
@@ -64,14 +69,14 @@ Remove agentgateway listeners with the UI.
 
 1. Run the agentgateway from which you want to remove a listener. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
 
-2. [Open the agentgateway listener UI](http://localhost:19000/ui/listeners/) and find the listener that you want to remove. 
+2. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/) and find the listener that you want to remove. 
    {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
 
-3. Click the trash icon to remove the listener and confirm the deletion. 
-
+3. Click the trash icon and then **Delete** to remove the listener. 
+   {{< reuse-image src="img/ui-listener-delete.png" >}}
 
 {{% /tab %}}
 {{% tab %}}

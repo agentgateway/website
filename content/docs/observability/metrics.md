@@ -10,30 +10,36 @@ The agentgateway comes with a built-in metrics endpoint that you can use to moni
 
 1. Follow the [Get started](/docs/quickstart) guide to create a configuration for your agentgateway and verify access to an MCP tool. 
 
-2. Open the [agentgateway metrics endpoint](http://localhost:9091/metrics) to view all the metrics that the agentgateway captures. If you tried out an MCP tool earlier, such as the `everything_add` tool, you see the counter for the `tool_calls_total` and `list_calls_total` metrics increase. 
+2. Open the [agentgateway metrics endpoint](http://localhost:15020/metrics) to view all the metrics that the agentgateway captures. If you tried out an MCP tool earlier, such as the `everything_add` tool, you see the counter for the `tool_calls_total` and `list_calls_total` metrics increase. 
    
    Example output: 
    ```
    # HELP tool_calls The total number of tool calls.
    # TYPE tool_calls counter
-   tool_calls_total{server="everything",name="add"} 1
    # HELP tool_call_errors The total number of tool call errors.
    # TYPE tool_call_errors counter
    # HELP list_calls The total number of list calls.
    # TYPE list_calls counter
-   list_calls_total{resource_type="tool"} 1
    # HELP read_resource_calls The total number of read resource calls.
    # TYPE read_resource_calls counter
    # HELP get_prompt_calls The total number of get prompt calls.
    # TYPE get_prompt_calls counter
-   # HELP agent_calls The total number of agent calls.
-   # TYPE agent_calls counter
+   # HELP agentgateway_xds_connection_terminations The total number of completed connections to xds server (unstable).
+   # TYPE agentgateway_xds_connection_terminations counter
+   # HELP agentgateway_xds_message Total number of messages received (unstable).
+   # TYPE agentgateway_xds_message counter
+   # HELP agentgateway_xds_message_bytes Total number of bytes received (unstable).
+   # TYPE agentgateway_xds_message_bytes counter
+   # UNIT agentgateway_xds_message_bytes bytes
+   # HELP agentgateway_requests The total number of HTTP requests sent.
+   # TYPE agentgateway_requests counter
+   agentgateway_requests_total{gateway="bind/3000",listener="listener0",route="route0",route_rule="unknown",backend="unknown",method="OPTIONS",status="200"} 1
    # EOF
    ```
 
-3. You can optionaly send a curl request to the agentgateway metrics endpoint to view the metrics from the command line. 
+3. You can optionally send a curl request to the agentgateway metrics endpoint to view the metrics from the command line. 
    ```sh
-   curl localhost:9091/metrics -s
+   curl localhost:15020/metrics -s
    ```
 
 ## Add tags to metrics
@@ -51,51 +57,59 @@ You can optionally enrich the metrics that are captured by the agentgateway with
    * **Listener**: An SSE listener that listens for incoming traffic on port 3000. The listener requires a JWT to be present in an `Authorization` header. You use the local JWT public key file to validate the JWT. Only JWTs that include the `sub: me` claim can authenticate with the agentgateway successfully. If the request has a JWT that does not include this claim, the request is denied.
    * **Metrics**: The agentgateway metrics endpoint is configured to inject the `custom-tag: test` tag and to extract the `sub` claim from the JWT token and map it to the `user` tag. 
    * **Target**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
-   ```yaml
+   ```json
    cat <<EOF > ./config.json
    {
-     "type": "static",
-     "listeners": [
+     "binds": [
        {
-         "name": "sse",
-         "protocol": "MCP",
-         "sse": {
-           "address": "[::]",
-           "port": 3000,
-           "authn": {
-             "jwt": {
-               "issuer": [
-                 "me"
-               ],
-               "audience": [
-                 "me.com"
-               ],
-               "local_jwks": {
-                 "file_path": "./pub-key"
+         "port": 3000,
+         "listeners": [
+           {
+             "name": "sse",
+             "protocol": "HTTP",
+             "hostname": null,
+             "routes": [
+               {
+                 "name": null,
+                 "ruleName": null,
+                 "hostnames": [],
+                 "matches": [
+                   {
+                     "path": {
+                       "pathPrefix": "/"
+                     }
+                   }
+                 ],
+                 "policies": null,
+                 "backends": [
+                   {
+                     "mcp": {
+                       "targets": [
+                         {
+                           "name": "everything",
+                           "stdio": {
+                             "cmd": "npx",
+                             "args": [
+                               "@modelcontextprotocol/server-everything"
+                             ]
+                           }
+                         }
+                       ]
+                     }
+                   }
+                 ]
                }
-            }
-          }
-         }
+             ],
+             "tls": null
+           }
+         ]
        }
      ],
      "metrics": {
-         "tags": {
-           "user": "@sub",
-           "custom-tag": "test"
+       "tags": {
+         "user": "@sub",
+         "custom-tag": "test"
        }
-     },
-     "targets": {
-       "mcp": [
-         {
-           "name": "everything",
-           "stdio": {
-             "cmd": "npx",
-            "args": [
-               "@modelcontextprotocol/server-everything"
-             ]
-           }
-         }
-       ]
      }
    }
    EOF
@@ -106,17 +120,16 @@ You can optionally enrich the metrics that are captured by the agentgateway with
    agentgateway -f config.json
    ```
 
-4. Open the [agentgateway UI](http://localhost:19000/ui/) to view your listener and target configuration.
+4. Open the [agentgateway UI](http://localhost:15000/ui/) to view your configuration.
 
 5. Connect to the MCP server with the agentgateway UI playground. 
-   1. Go to the agentgateway UI [**Playground**](http://localhost:19000/ui/playground/).
-   2. In the **Connection Settings** card, select your **Listener Endpoint**. 
-   3. In the **Bearer Token** field, enter the following JWT token. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. 
+   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
+   2. In the **Testing** card > **Connection** details > **Bearer Token** field, enter the following JWT token. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. 
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```
-   4. Click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
-   5. Verify that you see a list of **Available Tools**.  
+   3. Click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   4. Verify that you see a list of **Available Tools**.  
    
       {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
 
@@ -125,7 +138,7 @@ You can optionally enrich the metrics that are captured by the agentgateway with
 
 7. Send a request to the agentgateway metrics endpoint to grab the `tool_calls_total` metric. Verify that you see the `custom-tag=test` and the `user=me` tags. 
    ```sh
-   curl http://localhost:9091/metrics -s | grep tool_calls_total
+   curl http://localhost:15020/metrics -s | grep tool_calls_total
    ```
    
    Example output: 
