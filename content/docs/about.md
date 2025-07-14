@@ -34,3 +34,29 @@ Agentgateway comes with the following key features:
 * **Dynamic configuration updates**: Agentgateway can be updated via an xDS interface without any downtime. 
 * **Security with RBAC**: Agentgateway supports a robust RBAC system that allows you to control access to MCP tools and agents. 
 * **Built-in observability**: Agentgateway comes with built-in metrics and tracing capabilities that allow you to monitor the traffic that goes through the agentgateway.
+
+## Policies
+
+Policies are configurable rules that control traffic behavior, security, and transformations for routes and backends.
+
+Based on the [schema](https://github.com/agentgateway/agentgateway/blob/main/schema/local.json), you can configure the following policies. Each policy can be applied individually or in combination, allowing you to tailor security and traffic management to your needs.
+
+* Request Header Modifier: Add, set, or remove HTTP request headers.
+* Response Header Modifier: Add, set, or remove HTTP response headers.
+* Request Redirect: Redirect incoming requests to a different scheme, authority, path, or status code.
+* URL Rewrite: Rewrite the authority or path of requests before forwarding.
+* Request Mirror: Mirror a percentage of requests to an additional backend for testing or analysis.
+* Direct Response: Return a fixed response (body and status) directly, without forwarding to a backend.
+* CORS: Configure Cross-Origin Resource Sharing (CORS) settings for allowed origins, headers, methods, and credentials.
+* MCP Authorization: Apply custom authorization rules using the MCP model.
+* MCP Authentication: Enforce authentication using an external provider (e.g., Auth0, Keycloak) with issuer, scopes, and audience.
+* A2A: Enable agent-to-agent (A2A) communication features.
+* AI: Attach AI-specific configuration for routes that use AI backends.
+* Backend TLS: Configure TLS settings for secure backend connections, including certificates and trust roots.
+* Backend Auth: Set up authentication for backend services (e.g., passthrough, key, GCP, AWS).
+* Local Rate Limit: Apply local rate limiting to control request rates.
+* Remote Rate Limit: Apply distributed rate limiting using an external service.
+* JWT Auth: Enforce JWT authentication with issuer, audiences, and JWKS (key set) configuration.
+* External Authorization (extAuthz): Integrate with an external authorization service.
+* Timeout: Set request and backend timeouts.
+* Retry: Configure retry attempts, backoff, and which response codes should trigger retries.
