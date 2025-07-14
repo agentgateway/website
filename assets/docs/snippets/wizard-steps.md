@@ -7,7 +7,7 @@ The following steps are equivalent to creating this basic configuration file.
    agentgateway 
    ```
 
-2. In your browser, [open the agentgateway UI](http://localhost:15000/ui/). The first time, you are greeted with a wizard that walks you through creating your first configuration. Click **
+2. In your browser, [open the agentgateway UI](http://localhost:15000/ui/). The first time, you are greeted with a wizard that walks you through creating your first configuration. Click **Start Setup** to continue.
    {{< reuse-image src="img/ui-wizard.png" >}}
 
 3. From the **Configure Listener** tab, set up your first listener as follows:

@@ -117,7 +117,10 @@ EOF
    3. Verify that you can see trace spans for listing the MCP tools (`list_tools`) and calling a tool (`call_tool`).
    
    {{< reuse-image src="img/jaeger-traces.png">}}
-   
+
+-->
+<!-- TODO tags
+
 ## Add tags to traces
 
 You can optionally enrich the traces that are captured by the agentgateway with tags. Tags are key-value pairs that can have the following format: 

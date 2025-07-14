@@ -42,7 +42,7 @@ The agentgateway comes with a built-in metrics endpoint that you can use to moni
    curl localhost:15020/metrics -s
    ```
 
-<!-- TODO UI bug with Playground
+<!-- TODO tags
 
 ## Add tags to metrics
 
