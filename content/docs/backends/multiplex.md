@@ -22,7 +22,9 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
    ```sh
    agentgateway -f config.yaml
    ```
-   
+
+<!-- TODO UI bug with Playground
+
 ## Verify access to tools
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
@@ -42,3 +44,5 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
    2. Select the `everything-else_echo` tool, enter any string in the **message** field, such as `hello everything else`, and click **Run Tool**. Verify that access to the tool is granted and that you also see your message echoed. 
    
       {{< reuse-image src="img/agentgateway-ui-tool-echo-else.png" >}}
+
+-->

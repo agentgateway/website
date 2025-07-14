@@ -26,7 +26,9 @@ Expose an OpenAPI server on the agentgateway.
    ```sh
    agentgateway -f config.yaml
    ```
-   
+
+<!-- TODO UI bug with Playground
+
 ## Verify access to the Petstore APIs
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
@@ -70,3 +72,4 @@ Expose an OpenAPI server on the agentgateway.
       
       {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
       
+-->

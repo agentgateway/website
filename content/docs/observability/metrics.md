@@ -42,6 +42,8 @@ The agentgateway comes with a built-in metrics endpoint that you can use to moni
    curl localhost:15020/metrics -s
    ```
 
+<!-- TODO UI bug with Playground
+
 ## Add tags to metrics
 
 You can optionally enrich the metrics that are captured by the agentgateway with tags. Tags are key-value pairs that can have the following format: 
@@ -145,3 +147,5 @@ You can optionally enrich the metrics that are captured by the agentgateway with
    ```
    tool_calls_total{server="everything",name="echo",custom-tag="test",user="me"} 1
    ```
+
+-->

@@ -34,6 +34,8 @@ With agentgateway, you can connect to one or multiple MCP servers in any environ
    agentgateway -f config.yaml
    ```
 
+<!-- TODO UI bug with Playground
+
 ## Verify access to tools
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
@@ -51,3 +53,5 @@ With agentgateway, you can connect to one or multiple MCP servers in any environ
    3. Verify that you see your message echoed in the **Response** card. 
    
       {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+
+-->

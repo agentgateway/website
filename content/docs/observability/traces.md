@@ -89,6 +89,8 @@ EOF
    agentgateway -f config.json
    ```
 
+<!-- TODO UI bug with Playground
+
 ## Verify traces
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
@@ -233,3 +235,5 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    4. Expand a trace and verify that you see the `custom-tag=test` and `user=me` tags for each trace span. 
    
    {{< reuse-image src="img/jaeger-traces-tags.png">}} 
+
+-->
