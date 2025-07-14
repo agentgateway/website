@@ -9,8 +9,8 @@ Welcome to the documentation for the agentgateway open source project!
   {{< card link="quickstart" title="Get started" >}}
   {{< card link="about" title="About" >}}
   {{< card link="listeners" title="Listeners" >}}
-  {{< card link="targets" title="Targets" >}}
+  {{< card link="routes" title="Routes" >}}
+  {{< card link="backends" title="Backends" >}}
   {{< card link="security" title="Security" >}}
   {{< card link="observability" title="Observability" >}}
-  {{< card link="reference" title="Reference" >}}
 {{< /cards >}}
