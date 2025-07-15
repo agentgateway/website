@@ -40,19 +40,27 @@ Set up a listener on your agentgateway.
 {{% /tab %}}
 {{% tab %}}
 
-1. Create a configuration file that contains your listener configuration. The following example sets up an HTTP listener with the MCP protocol that listens for incoming traffic on port 3000. 
-   ```yaml
-   cat <<EOF > config.yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
-   EOF
+1. Download a configuration file that contains your listener configuration. 
+   
+   ```sh
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
    ```
 
-2. Run the agentgateway. 
+2. Review the configuration file. The example sets up an HTTP listener with the MCP protocol that listens for incoming traffic on port 3000. 
+   ```
+   cat config.yaml
+   ```
+
+   ```yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
+   ```
+
+3. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
 
-3. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/) and verify that your listener is added successfully. 
+4. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/) and verify that your listener is added successfully. 
    {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
    
 {{% /tab %}}

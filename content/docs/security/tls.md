@@ -12,21 +12,29 @@ You can configure the HTTP listener on the agentgateway with a TLS certificate t
    curl -o examples/tls/certs/key.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/key.pem
    ```
 
-2. Create a TLS configuration for your agentgateway. In this example, the agentgateway is configured as follows: 
-   * **Listener**: An HTTP listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
-   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
-   ```yaml
-   cat <<EOF > config.yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/config.yaml" >}}
-   EOF
+2. Download a TLS configuration for your agentgateway. 
+   ```sh
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/config.yaml -o config.yaml
    ```
 
-3. Run the agentgateway. 
+3. Review the configuration file.
+   * **Listener**: An HTTP listener is configured and exposed on port 3000. The listener is secured with the certificate and key that you downloaded earlier. 
+   * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
+   
+   ```
+   cat config.yaml
+   ```
+
+   ```yaml
+   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/config.yaml" >}}
+   ```
+
+4. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
    
-3. Send an HTTP request to the agentgateway. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 
+5. Send an HTTP request to the agentgateway. Verify that this request is denied and that you see a message that the HTTP protocol is not allowed. 
    ```sh
    curl -vik http://localhost:3000/sse
    ```
@@ -42,7 +50,7 @@ You can configure the HTTP listener on the agentgateway with a TLS certificate t
    curl: (1) Received HTTP/0.9 when not allowed
    ```
 
-4. Send an HTTPS request to the agentgateway. Verify that you see a TLS handshake and that a connection to the agentgateway can be established.
+6. Send an HTTPS request to the agentgateway. Verify that you see a TLS handshake and that a connection to the agentgateway can be established.
    ```sh
    curl -vik https://localhost:3000/sse
    ```

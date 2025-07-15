@@ -49,23 +49,31 @@ You can create backends by using the agentgateway UI or a configuration file.
 {{% /tab %}}
 {{% tab %}}
 
-1. Create a configuration file for your agentgateway.
+1. Download a configuration file for your agentgateway.
    ```yaml
-   cat <<EOF > config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
+   ```
+
+2. Review the configuration file.
+
+   ```
+   cat config.yaml
+   ```
+
+   ```yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
-   EOF
    ```
 
    {{< reuse "docs/snippets/review-table.md" >}}
 
    {{< reuse "docs/snippets/example-basic-mcp.md" >}}
 
-2. Run the agentgateway. 
+3. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
 
-3. [Open the agentgateway backend UI](http://localhost:15000/ui/backends/) and verify that your target is added successfully. 
+4. [Open the agentgateway backend UI](http://localhost:15000/ui/backends/) and verify that your target is added successfully. 
    {{< reuse-image src="img/agentgateway-ui-backends.png" >}}
    
 {{% /tab %}}

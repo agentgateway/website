@@ -22,7 +22,7 @@ You complete the following tasks:
 
 1. Download the agentgateway binary and install it. 
    ```sh
-   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentproxy | sh
+   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentproxy | bash
    ```
    
    Example output: 
@@ -50,19 +50,29 @@ You complete the following tasks:
    
 ## Step 2: Create a basic configuration {#basic-config}
 
-1. Create the configuration file for your agentgateway. In this example, you use a configuration file to configure the agentgateway, but you can also use the agentgateway UI to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
+In this example, you use a basic configuration file to configure the agentgateway, but you can also use the agentgateway UI to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
+
+1. Download a basic configuration file for your agentgateway. 
    
    ```yaml
-   cat <<EOF > config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
+   ```
+
+2. Review the configuration file. 
+
+   ```
+   cat config.yaml
+   ```
+
+   ```yaml
    {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
-   EOF
    ```
 
    {{< reuse "docs/snippets/review-table.md" >}}
 
    {{< reuse "docs/snippets/example-basic-mcp.md" >}}
 
-2. Run the agentgateway. 
+3. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
@@ -95,8 +105,6 @@ The agentgateway comes with a built-in UI that you can use to connect to your MC
 5. Go to the [**Policies** overview](http://localhost:15000/ui/policies/) and review your route and policy configuration. To learn more about policies, see the [About policies](/docs/about#policies) docs. 
    {{< reuse-image src="img/agentgateway-ui-policies.png" >}}
 
-<!-- TODO UI bug with Playground
-
 6. Connect to the MCP test server with the agentgateway UI playground. 
    
    1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
@@ -107,16 +115,14 @@ The agentgateway comes with a built-in UI that you can use to connect to your MC
    
    3. Verify that you see a list of **Available Tools**. 
    
-      {{< reuse-image src="img/agentgateway-ui-tools.png" >}}
+      {{< reuse-image src="img/ui-playground-tools.png" >}}
 
 7. Verify access to a tool. 
-   1. From the **Available Tools** list, select the `everything_echo` tool. 
+   1. From the **Available Tools** list, select the `echo` tool. 
    2. In the **message** field, enter any string, such as `This is my first agentgateway setup.`, and click **Run Tool**. 
    3. Verify that you see your message echoed in the **Response** card. 
    
-      {{< reuse-image src="img/agentgateway-ui-tool-echo.png" >}}
-
--->
+      {{< reuse-image src="img/ui-playground-tool-echo.png" >}}
 
 ## Next
 
