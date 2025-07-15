@@ -22,7 +22,7 @@ You complete the following tasks:
 
 1. Download the agentgateway binary and install it. 
    ```sh
-   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentproxy | sh
+   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentproxy | bash
    ```
    
    Example output: 
