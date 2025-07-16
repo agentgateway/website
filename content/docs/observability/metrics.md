@@ -137,8 +137,7 @@ You can optionally enrich the metrics that are captured by the agentgateway with
                 allowOrigins:
                   - "*"
                 allowHeaders:
-                  - mcp-protocol-version
-                  - content-type
+                  - "*"
       ...
       ```
    1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).

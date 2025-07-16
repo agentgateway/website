@@ -40,8 +40,7 @@ Expose an OpenAPI server on the agentgateway.
                 allowOrigins:
                   - "*"
                 allowHeaders:
-                  - mcp-protocol-version
-                  - content-type
+                  - "*"
             backends:
       ...
       ```

@@ -51,8 +51,7 @@ EOF
                 allowOrigins:
                   - "*"
                 allowHeaders:
-                  - mcp-protocol-version
-                  - content-type
+                  - "*"
             backends:
       ...
       ```

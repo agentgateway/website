@@ -37,8 +37,7 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
                 allowOrigins:
                   - "*"
                 allowHeaders:
-                  - mcp-protocol-version
-                  - content-type
+                  - "*"
             backends:
       ...
       ```

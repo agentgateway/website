@@ -143,8 +143,7 @@ Use the agentgateway playground to send a request to the reimbursement agent tha
                 allowOrigins:
                   - "*"
                 allowHeaders:
-                  - mcp-protocol-version
-                  - content-type
+                  - "*"
       ...
       ```   
    1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
