@@ -33,7 +33,7 @@ EOF
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml" %}}
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/telemetry/config.yaml" %}}
 
    * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
