@@ -94,6 +94,15 @@ EOF
    
    {{< reuse-image src="img/jaeger-traces.png">}}
 
+## Cleanup
+
+Stop and remove the Jaeger container.
+
+```sh
+docker stop jaeger
+docker rm jaeger
+```
+
 <!-- TODO tags
 
 ## Add tags to traces
