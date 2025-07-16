@@ -1,0 +1,9 @@
+{{- $url := .Get "url" -}}
+{{- with resources.GetRemote $url -}}
+```yaml {base_url="{{ $url | path.Dir}}",filename="{{ $url | path.Base}}"}
+{{ .Content | replaceRE "^# yaml-language-server.*\n" "" | safe.HTML}}
+```
+
+{{- else -}}
+  <p><strong>Error:</strong> Unable to load code from {{ $url }}</p>
+{{- end -}}

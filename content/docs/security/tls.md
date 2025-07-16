@@ -25,9 +25,7 @@ You can configure the HTTP listener on the agentgateway with a TLS certificate t
    cat config.yaml
    ```
 
-   ```yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/config.yaml" >}}
-   ```
+   {{% github-yaml  url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/config.yaml" %}}
 
 4. Run the agentgateway. 
    ```sh

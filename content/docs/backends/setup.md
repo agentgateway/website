@@ -60,9 +60,7 @@ You can create backends by using the agentgateway UI or a configuration file.
    cat config.yaml
    ```
 
-   ```yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
-   ```
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
 
    {{< reuse "docs/snippets/review-table.md" >}}
 

@@ -101,9 +101,7 @@ Set up a route on your listener.
    cat config.yaml
    ```
 
-   ```yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
-   ```
+   {{% github-yaml  url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
 
 3. Run the agentgateway. 
    ```sh

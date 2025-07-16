@@ -23,10 +23,8 @@ Use a JWT token to authenticate requests before forwarding them to a target.
    ```yaml
    cat config.yaml
    ```
-
-   ```yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/authorization/config.yaml" >}}
-   ```
+   
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/authorization/config.yaml" %}}
 
 3. Run the agentgateway. 
    ```sh
