@@ -35,14 +35,31 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 2. Connect to the MCP test server with the agentgateway UI playground. 
-   
-   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
+
+   1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
+      
+      ```yaml
+      binds:
+      - post: 3000
+        listeners:
+        - routes:
+          - policies:
+              cors:
+                allowOrigins:
+                  - "*"
+                allowHeaders:
+                  - mcp-protocol-version
+                  - content-type
+      ...
+      ```
+
+   2. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
       
       {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
 
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the targets that you configured and retrieves the tools that are exposed on the targets. 
+   3. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the targets that you configured and retrieves the tools that are exposed on the targets. 
    
-   3. Verify that you see a list of **Available Tools**. Note that the tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
+   4. Verify that you see a list of **Available Tools**. Note that the tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
    
       {{< reuse-image src="img/ui-playground-tools.png" >}}
 

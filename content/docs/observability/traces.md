@@ -94,13 +94,31 @@ EOF
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
 2. Connect to the MCP server with the agentgateway UI playground. 
-   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
+
+   1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
+      
+      ```yaml
+      binds:
+      - post: 3000
+        listeners:
+        - routes:
+          - policies:
+              cors:
+                allowOrigins:
+                  - "*"
+                allowHeaders:
+                  - mcp-protocol-version
+                  - content-type
+      ...
+      ```   
+   
+   2. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
       
       {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
 
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   3. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
 
-   3. Verify that you see a list of **Available Tools**. 
+   4. Verify that you see a list of **Available Tools**. 
    
       {{< reuse-image src="img/ui-playground-tools.png" >}}
 

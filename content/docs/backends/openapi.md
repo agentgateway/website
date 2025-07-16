@@ -39,18 +39,35 @@ Expose an OpenAPI server on the agentgateway.
 
 2. Connect to the OpenAPI server with the agentgateway UI playground. 
    
-   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
+   1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
+      
+      ```yaml
+      binds:
+      - post: 3000
+        listeners:
+        - routes:
+          - policies:
+              cors:
+                allowOrigins:
+                  - "*"
+                allowHeaders:
+                  - mcp-protocol-version
+                  - content-type
+      ...
+      ```
+
+   2. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
       
       {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
 
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the APIs that are exposed on the target.
+   3. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the APIs that are exposed on the target.
    
-   3. Verify that you see the Petstore APIs from the OpenAPI spec as a list of **Available Tools** 
+   4. Verify that you see the Petstore APIs from the OpenAPI spec as a list of **Available Tools** 
    
       {{< reuse-image src="img/agentgateway-ui-tools-openapi.png" >}}
 
 3. Verify access to the Petstore APIs. 
-   1. Select the `petstore_addPet` API. 
+   1. Select the `addPet` API. 
    2. In the **body** field, enter the details for your pet, such as the ID and name for the pet category and your pet, a URL to a photo of your pet, the pet's status in the store, and optionally any tags. You can use the following example JSON file. 
       ```json
       {

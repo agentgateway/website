@@ -26,7 +26,16 @@ Use a JWT token to authenticate requests before forwarding them to a target.
    
    {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/authorization/config.yaml" %}}
 
-3. Run the agentgateway. 
+3. Save the public key of the JWKS that the policy refers to in a directory relative to where you downloaded the agentgateway binary file.  
+   
+   If you installed the binary at `/usr/local/bin/agentgateway`, run the following command:
+
+   ```sh
+   mkdir -p /usr/local/bin/manifests/jwt
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/pub-key -o /usr/local/bin/manifests/jwt/pub-key
+   ```
+
+4. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
