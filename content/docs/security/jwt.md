@@ -38,8 +38,7 @@ Use a JWT token to authenticate requests before forwarding them to a target.
                 allowOrigins:
                   - "*"
                 allowHeaders:
-                  - mcp-protocol-version
-                  - content-type
+                  - "*"
             backends:
       ...
       ```
@@ -72,65 +71,24 @@ Use a JWT token to authenticate requests before forwarding them to a target.
    
    {{< reuse-image src="img/ui-jwt-echo-tool.png" >}}
 
-<!-- TODO JWT token steps when UI supports it
+5. Verify that you get access to more tools by providing a JWT with no claims.
 
-1. In the output of your running agentgateway, find and save the `session_id` as an environment variable.
+   1. In a new browser tab, copy the JWT from the [`example2.key`](https://github.com/agentgateway/agentgateway/blob/main/manifests/jwt/example2.key) file. This JWT is for the `test-user` and has no claims. To review the JWT details, you can use a tool like [jwt.io](https://jwt.io/).
 
-   ```sh
-   export SESSION_ID=<session_id>
-   ```
+   2. In the Playground UI, copy the JWT into the **Bearer Token** field and click **Connect**.
 
-2. Send a request to the agentgateway. Verify that this request is denied with a 401 HTTP response code and that you see a message stating that an `authorization` header is missing in the request. 
-   ```sh
-   curl -vik localhost:3000/mcp \
-   -H "Accept: text/event-stream" \
-   -H "Session-ID: $SESSION_ID"
-   ```
+   3. Verify that you now have access to two tools as allowed in the JWT policy: `echo` and `add`. This user does not have access to the `printEnv` tool because the JWT does not have a matching claim.
    
-   Example output:
-   ```
-   ...
-   < HTTP/1.1 401 Unauthorized
-   HTTP/1.1 401 Unauthorized
-   ...
-   ```
+      {{< reuse-image src="img/ui-jwt-test-user.png" >}}
 
-3. Save a JWT from the `example2.key` file as an environment variable. This JWT is for the `test-user` and has no claims.
+6. Verify that you get access to even more tools with a JWT that has a matching claim.
 
-   ```sh
-   export JWT_TOKEN2={{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/example1.key" >}}
-   ```
+   1. In a new browser tab, copy the JWT from the [`example1.key`](https://github.com/agentgateway/agentgateway/blob/main/manifests/jwt/example1.key) file. This JWT is for the `test-user` and has a matching claim. To review the JWT details, you can use a tool like [jwt.io](https://jwt.io/).
 
-4. Send another request to the agentgateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo` and `add` tools, but not the `printEnv` tool.
-   ```sh
-   curl -vik localhost:3000/mcp -H "Accept: text/event-stream" \
-   -H "Session-ID: $SESSION_ID" \
-   -H "Authorization: bearer $JWT_TOKEN2" 
-   ```
+   2. In the Playground UI, click **Disconnect** to end your previous session with the `example2` JWT.
    
-   Example output: 
-   ```
-   < HTTP/1.1 200 OK
-   HTTP/1.1 200 OK
-   ...
+   3. Copy the `example1` JWT into the **Bearer Token** field and click **Connect**.
 
-5. Save another JWT from the `example1.key` file as an environment variable. This JWT is for the `test-user` and has a matching claim for the `printEnv` tool.
-
-   ```sh
-   export JWT_TOKEN1={{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/manifests/jwt/example1.key" >}}
-   ```
-
-6. Send another request to the agentgateway. This time, you provide a JWT in the `Authorization` header. Because this JWT meets the criteria, the request is successfully authenticated and you get back a 200 HTTP response code. This user has access to the `echo`, `add`, and `printEnv` tools.
-   ```sh
-   curl -vik localhost:3000/mcp -H "Accept: text/event-stream" \
-   -H "Authorization: bearer $JWT_TOKEN1" 
-   ```
+   4. Verify that you now have access to the tools as allowed in the JWT policy: `echo`, `add`, and `printEnv`.
    
-   Example output: 
-   ```
-   < HTTP/1.1 200 OK
-   HTTP/1.1 200 OK
-   ...
-   ```
-
--->
+      {{< reuse-image src="img/ui-jwt-test-user-claims.png" >}}
