@@ -131,6 +131,21 @@ Use the agentgateway playground to send a request to the reimbursement agent tha
 1. Open the [agentgateway UI](http://localhost:15000/ui/). 
 
 2. Connect to the MCP server with the agentgateway UI playground. 
+   1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
+      
+      ```yaml
+      binds:
+      - post: 3000
+        listeners:
+        - routes:
+          - policies:
+              cors:
+                allowOrigins:
+                  - "*"
+                allowHeaders:
+                  - "*"
+      ...
+      ```   
    1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
    2. In the **Connection Settings** card, select your listener and the **A2A target**, and click **Connect**. The agentgateway UI connects to the A2A target and retrieves all the skills that the target provides.
    3. Verify that you see a list of **Available Skills**. 
