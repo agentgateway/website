@@ -21,81 +21,25 @@ EOF
 
 ## Configure the agentgateway
 
-1. Create a configuration file for your agentgateway. In this example, you configure the following elements: 
+1. Download a telemetry configuration for your agentgateway.
+
+   ```yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/telemetry/config.yaml -o config.yaml
+   ```
+
+2. Review the configuration file. 
+
+   ```
+   cat config.yaml
+   ```
+
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml" %}}
+
    * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
    * **Backend**: The agentgateway targets a sample, open source MCP test server, `server-everything`. 
-   ```yaml
-   cat <<EOF > ./config.json
-   {
-     "binds": [
-       {
-         "port": 3000,
-         "listeners": [
-           {
-             "name": "sse",
-             "protocol": "HTTP",
-             "hostname": null,
-             "routes": [
-               {
-                 "name": null,
-                 "ruleName": null,
-                 "hostnames": [],
-                 "matches": [
-                   {
-                     "path": {
-                       "pathPrefix": "/"
-                     }
-                   }
-                 ],
-                 "policies": null,
-                 "backends": [
-                   {
-                     "mcp": {
-                       "targets": [
-                         {
-                           "name": "everything",
-                           "stdio": {
-                             "cmd": "npx",
-                             "args": [
-                               "@modelcontextprotocol/server-everything"
-                             ]
-                           }
-                         }
-                       ]
-                     }
-                   }
-                 ]
-               }
-             ],
-             "tls": null
-           }
-         ]
-       }
-     ],
-     "tracing": {
-       "tracer": {
-         "otlp": {
-           "endpoint": "http://localhost:4317"
-         }
-       }
-     }
-   }
-   EOF
-   ```
 
-2. Run the agentgateway. 
-   ```sh
-   agentgateway -f config.json
-   ```
-
-## Verify traces
-
-1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
-
-2. Connect to the MCP server with the agentgateway UI playground. 
-
-   1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
+3. Optional: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
       
       ```yaml
       binds:
@@ -109,21 +53,33 @@ EOF
                 allowHeaders:
                   - mcp-protocol-version
                   - content-type
+            backends:
       ...
-      ```   
+      ```
+
+4. Run the agentgateway. 
+   ```sh
+   agentgateway -f config.json
+   ```
+
+## Verify traces
+
+1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
+
+2. Connect to the MCP server with the agentgateway UI playground. 
    
-   2. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
+   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
       
       {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
 
-   3. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
 
-   4. Verify that you see a list of **Available Tools**. 
+   3. Verify that you see a list of **Available Tools**. 
    
       {{< reuse-image src="img/ui-playground-tools.png" >}}
 
 3. Verify access to a tool. 
-   1. From the **Available Tools** list, select the `everything_echo` tool. 
+   1. From the **Available Tools** list, select the `echo` tool. 
    2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
    3. Verify that you see your message echoed in the **Response** card. 
    
