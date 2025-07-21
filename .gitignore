@@ -4,3 +4,4 @@ public/
 hugo_stats.json
 .vscode/
 resources/
+.devcontainer.json
