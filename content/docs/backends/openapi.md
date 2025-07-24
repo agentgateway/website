@@ -21,7 +21,7 @@ You can pull and run the sample Petstore server from Docker Hub.
    docker pull swaggerapi/petstore3:unstable
    ```
 
-2. Run the Petstore server on port 8080. Update your platform accordingly.
+2. Run the Petstore server on port 8080.
 
    ```sh
    docker run  --name swaggerapi-petstore3 -d -p 8080:8080 swaggerapi/petstore3:unstable
