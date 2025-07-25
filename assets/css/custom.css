@@ -11,3 +11,105 @@ h6 {
     font-family: 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
+/* Blog content styling for better contrast on light backgrounds */
+.bg-white .content,
+[data-theme="light"] .content {
+    color: #1e293b !important; /* Dark gray for excellent contrast on white */
+}
+
+.bg-white .content h1,
+.bg-white .content h2,
+.bg-white .content h3,
+.bg-white .content h4,
+.bg-white .content h5,
+.bg-white .content h6,
+[data-theme="light"] .content h1,
+[data-theme="light"] .content h2,
+[data-theme="light"] .content h3,
+[data-theme="light"] .content h4,
+[data-theme="light"] .content h5,
+[data-theme="light"] .content h6 {
+    color: #111827 !important; /* Very dark gray for headings */
+}
+
+.bg-white .content p,
+[data-theme="light"] .content p {
+    color: #374151 !important; /* Dark gray for body text */
+}
+
+.bg-white .content blockquote,
+[data-theme="light"] .content blockquote {
+    background-color: #f8fafc !important; /* Light gray background */
+    border-left: 4px solid #3b82f6 !important; /* Blue accent */
+    color: #4b5563 !important; /* Medium gray for blockquotes */
+    padding: 1rem !important;
+    margin: 1.5rem 0 !important;
+    border-radius: 0.375rem !important;
+}
+
+.bg-white .content blockquote p,
+[data-theme="light"] .content blockquote p {
+    color: #4b5563 !important;
+    margin: 0.5rem 0 !important;
+}
+
+.bg-white .content a,
+[data-theme="light"] .content a {
+    color: #2563eb !important; /* Blue for links */
+}
+
+.bg-white .content a:hover,
+[data-theme="light"] .content a:hover {
+    color: #1d4ed8 !important; /* Darker blue on hover */
+}
+
+.bg-white .content code,
+[data-theme="light"] .content code {
+    background-color: #f1f5f9 !important; /* Light gray background */
+    color: #dc2626 !important; /* Red for code */
+    padding: 0.125rem 0.25rem !important;
+    border-radius: 0.25rem !important;
+    font-size: 0.875em !important;
+}
+
+.bg-white .content pre,
+[data-theme="light"] .content pre {
+    background-color: #f1f5f9 !important;
+    color: #1e293b !important;
+    padding: 1rem !important;
+    border-radius: 0.5rem !important;
+    overflow-x: auto !important;
+}
+
+.bg-white .content li,
+[data-theme="light"] .content li {
+    color: #374151 !important;
+}
+
+.bg-white .content strong,
+[data-theme="light"] .content strong {
+    color: #111827 !important;
+}
+
+.bg-white .content em,
+[data-theme="light"] .content em {
+    color: #374151 !important;
+}
+
+/* Navigation links - keep original light color for dark navbar background */
+.navbar a,
+.navbar .link {
+    color: rgb(249, 250, 251) !important; /* Light gray for navigation links on dark background */
+}
+
+.navbar a:hover,
+.navbar .link:hover {
+    color: #ffffff !important; /* White on hover */
+}
+
+/* Ensure navigation text remains visible */
+.navbar a,
+.mobile-nav a {
+    color: inherit !important;
+}
+
