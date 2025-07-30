@@ -1,10 +1,10 @@
 ---
 title: MCP
 weight: 10
-description: Expose tools that are hosted on an MCP server on the agentgateway. 
+description: Expose MCP servers through the agentgateway. 
 ---
 
-Expose tools that are hosted on an MCP server on the agentgateway. 
+An MCP backend allows exposing MCP servers through the agentgateway.
 
 ## About MCP
 
