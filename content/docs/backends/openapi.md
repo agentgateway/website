@@ -36,6 +36,7 @@ Build the Docker image from the source code. The example builds the image for an
 
    ```sh
    git clone https://github.com/swagger-api/swagger-petstore.git
+   cd swagger-petstore
    ```
 
 2. Package the project with Maven.
