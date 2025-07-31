@@ -141,7 +141,7 @@ Use the agentgateway playground to send a request to the ADK agent that you set 
 
       {{< reuse-image src="img/ui-a2a-skills.png" >}}
 
-3. Select the **Returns hellow world** skill. In the **Message** field, enter a prompt, such as `Say hello`, and click **Send Task**.
+3. Select the **Returns hello world** skill. In the **Message** field, enter a prompt, such as `Say hello`, and click **Send Task**.
 
 4. Verify that you get back a message from the ADK agent stating that your request was processed successfully.
    {{< reuse-image src="img/ui-a2a-success.png" >}}
