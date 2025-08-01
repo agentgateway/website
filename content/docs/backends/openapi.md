@@ -94,7 +94,7 @@ Build the Docker image from the source code. The example builds the image for an
    ```yaml
    binds:
    - port: 3000
-     listeners:  
+     listeners:
      - routes:
        - policies:
            cors:
@@ -103,18 +103,17 @@ Build the Docker image from the source code. The example builds the image for an
              allowHeaders:
                - "*"
          backends:
-          - mcp:
-              name: default
-              targets:
-              - name: openapi
-                openapi:
-                  schema:
-                    file: openapi.json
-                  host: localhost
-                  port: 8080   
+         - mcp:
+             targets:
+             - name: openapi
+               openapi:
+                 schema:
+                   file: openapi.json
+                 host: localhost
+                 port: 8080
    ```
 
-4. Run the agentgateway. 
+1. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
