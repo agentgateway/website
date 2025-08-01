@@ -6,6 +6,11 @@ description:
 
 The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https://www.jaegertracing.io) is an open source tool that helps you follow the path of a request as it is forwarded between agents. The chain of events and interactions are captured by an OpenTelemetry pipeline that is configured to send traces to the Jaeger agent. You can then visualize the traces by using the Jaeger UI. 
 
+## Before you begin
+
+1. {{< reuse "docs/snippets/prereq-docker.md" >}}
+2. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+
 ## Set up Jaeger
 
 Use [`docker compose`](https://docs.docker.com/compose/install/linux/) to spin up a Jaeger instance with the following components: 

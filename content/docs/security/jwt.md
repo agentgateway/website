@@ -6,6 +6,10 @@ description:
 
 Use a JWT token to authenticate requests before forwarding them to a target. 
 
+## Before you begin
+
+{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+
 ## Configure JWT and MCP auth policies {#jwt-mcp-auth}
 
 1. Download a configuration file for your agentgateway.

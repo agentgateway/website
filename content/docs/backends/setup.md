@@ -10,6 +10,7 @@ Learn how to use the agentgateway UI or a configuration file to create and delet
 
 1. [Set up a listener](/docs/listeners).
 2. [Create a route](/docs/routes) on the listener.
+3. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
 
 ## Create backends
 

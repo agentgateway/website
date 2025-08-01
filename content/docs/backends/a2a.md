@@ -10,6 +10,11 @@ Proxy requests to an agent that communicates via the agent-to-agent protocol (A2
 
 Agent-to-agent, or [A2A](https://github.com/google/A2A), is an open protocol that enables communication and interoperability between opaque agentic applications. Developed by Google, A2A defines a common language that enables agents to show their capabilities and help them negotiate how they interact with the user, such as via text, forms, or bidirectional audio or video, irrespective of the framework or vendor they are built on.
 
+## Before you begin
+
+1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+2. {{< reuse "docs/snippets/prereq-uv.md" >}}
+
 ## Set up the agentgateway {#agentgateway}
 
 Create an agentgateway that proxies requests to the ADK agent that you create later.

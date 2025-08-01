@@ -6,9 +6,16 @@ description:
 
 Expose an OpenAPI server on the agentgateway. 
 
+## Before you begin
+
+1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+2. {{< reuse "docs/snippets/prereq-uv.md" >}}
+3. {{< reuse "docs/snippets/prereq-docker.md" >}}
+4. For ARM64 machines: [Install `maven`](https://maven.apache.org/install.html) to build the sample Petstore image from source.
+
 ## Set up a local Petstore server {#petstore}
 
-Run the sample [Swagger Petstore server](https://github.com/swagger-api/swagger-petstore) locally.
+Run the sample [Swagger Petstore server](https://github.com/swagger-api/swagger-petstore) locally. The following steps show use Docker and Maven as an example to pull, build, and run the Petstore server. You can also use your own OpenAPI server and update the steps accordingly.
 
 {{< tabs items="AMD64 machines, ARM64 or other machines" >}}
 {{% tab %}}

@@ -57,7 +57,8 @@ Match on query parameters, either by exact value or regex:
 
 ## Before you begin
 
-[Set up a listener](/docs/listeners).
+1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+2. [Set up a listener](/docs/listeners).
 
 ## Create routes
 

@@ -14,6 +14,10 @@ An MCP server exposes external data sources and tools so that LLM applications c
 
 With agentgateway, you can connect to one or multiple MCP servers in any environment. The agentgateway proxies requests to the MCP tool that is exposed on the server. You can also use the agentgateway to federate tools from multiple MCP servers. For more information, see the [MCP multiplexing](/docs/setup/examples/multiplex) guide. 
 
+## Before you begin
+
+{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+
 ## Configure the agentgateway
 
 1. Download an MCP configuration for your agentgateway.
