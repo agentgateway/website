@@ -7,6 +7,10 @@ next: /docs/routes
 
 You can use the built-in agentgateway UI or a configuration file to create, update, and delete listeners. 
 
+## Before you begin
+
+{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+
 ## Create listeners
 
 Set up a listener on your agentgateway. 

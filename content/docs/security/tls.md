@@ -6,6 +6,12 @@ description:
 
 You can configure the HTTP listener on the agentgateway with a TLS certificate to secure the communication to the agentgateway. 
 
+## Before you begin
+
+{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+
+## Set up a TLS listener {#tls-listener}
+
 1. Download the `.pem` files for certificate and key that you use to secure the HTTP listener. 
    ```sh
    curl -o examples/tls/certs/cert.pem https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/tls/certs/cert.pem

@@ -6,9 +6,16 @@ description:
 
 Expose an OpenAPI server on the agentgateway. 
 
+## Before you begin
+
+1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+2. {{< reuse "docs/snippets/prereq-uv.md" >}}
+3. {{< reuse "docs/snippets/prereq-docker.md" >}}
+4. For ARM64 machines: [Install `maven`](https://maven.apache.org/install.html) to build the sample Petstore image from source.
+
 ## Set up a local Petstore server {#petstore}
 
-Run the sample [Swagger Petstore server](https://github.com/swagger-api/swagger-petstore) locally.
+Run the sample [Swagger Petstore server](https://github.com/swagger-api/swagger-petstore) locally. The following steps show use Docker and Maven as an example to pull, build, and run the Petstore server. You can also use your own OpenAPI server and update the steps accordingly.
 
 {{< tabs items="AMD64 machines, ARM64 or other machines" >}}
 {{% tab %}}
@@ -36,6 +43,7 @@ Build the Docker image from the source code. The example builds the image for an
 
    ```sh
    git clone https://github.com/swagger-api/swagger-petstore.git
+   cd swagger-petstore
    ```
 
 2. Package the project with Maven.
@@ -86,7 +94,7 @@ Build the Docker image from the source code. The example builds the image for an
    ```yaml
    binds:
    - port: 3000
-     listeners:  
+     listeners:
      - routes:
        - policies:
            cors:
@@ -95,18 +103,17 @@ Build the Docker image from the source code. The example builds the image for an
              allowHeaders:
                - "*"
          backends:
-          - mcp:
-              name: default
-              targets:
-              - name: openapi
-                openapi:
-                  schema:
-                    file: openapi.json
-                  host: localhost
-                  port: 8080   
+         - mcp:
+             targets:
+             - name: openapi
+               openapi:
+                 schema:
+                   file: openapi.json
+                 host: localhost
+                 port: 8080
    ```
 
-4. Run the agentgateway. 
+1. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```

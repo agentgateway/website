@@ -6,6 +6,11 @@ description:
 
 Federate tools of multiple MCP servers on the agentgateway by using MCP multiplexing.
 
+## Before you begin
+
+1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+2. {{< reuse "docs/snippets/prereq-uv.md" >}}
+
 ## Configure the agentgateway
 
 1. Download a multiplex configuration for your agentgateway.
