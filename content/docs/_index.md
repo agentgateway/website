@@ -13,4 +13,5 @@ Welcome to the documentation for the agentgateway open source project!
   {{< card link="backends" title="Backends" >}}
   {{< card link="security" title="Security" >}}
   {{< card link="observability" title="Observability" >}}
+  {{< card link="llm-consumption" title="LLM Consumption" >}}
 {{< /cards >}}
