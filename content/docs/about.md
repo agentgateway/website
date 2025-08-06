@@ -18,6 +18,10 @@ Agentgateway also comes with built-in security and observability features that a
 
 The following figure shows how agentgateway provides AI connectivity for agents and tools in any environment.
 
+{{< callout icon="kgateway" >}}
+To use agentgateway in a Kubernetes cluster, check out the [kgateway integration guide](https://kgateway.dev/docs/agentgateway/).
+{{< /callout >}}
+
 {{< reuse-image src="img/architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 
 

@@ -4,7 +4,11 @@ weight: 10
 description: Get started with agentgateway. 
 ---
 
-Get started with agentgateway, an open source, highly available, and highly scalable data plane that brings AI connectivity for agents and tools. To learn more about agentgateway, see the [About](/docs/about) section. 
+Get started with agentgateway, an open source, highly available, and highly scalable data plane that brings AI connectivity for agents and tools. To learn more about agentgateway, see the [About](/docs/about) section.
+
+{{< callout icon="kgateway" >}}
+Want to use agentgateway in a Kubernetes cluster? Check out the [kgateway integration guide](https://kgateway.dev/docs/agentgateway/).
+{{< /callout >}}
 
 ## About this guide
 
