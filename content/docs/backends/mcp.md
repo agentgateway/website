@@ -6,9 +6,7 @@ description: Expose MCP servers through the agentgateway.
 
 An MCP backend allows exposing MCP servers through the agentgateway.
 
-{{< callout icon="kgateway" >}}
-Want to use agentgateway for an MCP server in a Kubernetes cluster? Check out the [kgateway integration guide](https://kgateway.dev/docs/agentgateway/).
-{{< /callout >}}
+{{< reuse "docs/snippets/kgateway-callout.md" >}}
 
 ## About MCP
 

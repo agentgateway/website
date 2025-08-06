@@ -6,6 +6,8 @@ description:
 
 Agentgateway is an open source, highly available, highly scalable, and enterprise-grade data plane that provides AI connectivity for agents and tools in any environment. 
 
+{{< reuse "docs/snippets/kgateway-callout.md" >}}
+
 ## Why agentgateway?
 
 With Agentic AI changing the way organizations build and deliver applications, organizations face the challenge of rapidly adopting new technologies and interoperability protocols to connect agents and tools in fragmented environments. To accelerate agent development, infrastructure is needed that transcends the rapidly changing landscape.  
@@ -17,10 +19,6 @@ Agentgateway also comes with built-in security and observability features that a
 ## Architecture
 
 The following figure shows how agentgateway provides AI connectivity for agents and tools in any environment.
-
-{{< callout icon="kgateway" >}}
-To use agentgateway in a Kubernetes cluster, check out the [kgateway integration guide](https://kgateway.dev/docs/agentgateway/).
-{{< /callout >}}
 
 {{< reuse-image src="img/architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 
