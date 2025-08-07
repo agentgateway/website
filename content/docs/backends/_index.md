@@ -11,4 +11,5 @@ A backend represents a destination for which you want agentgateway to proxy traf
   {{< card link="multiplex" title="MCP multiplexing" >}}
   {{< card link="a2a" title="Agent-to-agent (A2A)" >}}
   {{< card link="openapi" title="OpenAPI" >}}
+  {{< card link="../llm" title="AI backends for LLM providers" >}}
 {{< /cards >}}
