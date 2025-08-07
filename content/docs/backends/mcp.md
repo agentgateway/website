@@ -6,6 +6,8 @@ description: Expose MCP servers through the agentgateway.
 
 An MCP backend allows exposing MCP servers through the agentgateway.
 
+{{< reuse "docs/snippets/kgateway-callout.md" >}}
+
 ## About MCP
 
 [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction) is an open protocol that standardizes how Large Language Model (LLM) applications connect to various external data sources and tools. Without MCP, you need to implement custom integrations for each tool that your LLM application needs to access. However, this approach is hard to maintain and can cause issues when you want to scale your environment. With MCP, you can significantly speed up, simplify, and standardize these types of integrations.

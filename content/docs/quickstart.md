@@ -4,7 +4,9 @@ weight: 10
 description: Get started with agentgateway. 
 ---
 
-Get started with agentgateway, an open source, highly available, and highly scalable data plane that brings AI connectivity for agents and tools. To learn more about agentgateway, see the [About](/docs/about) section. 
+Get started with agentgateway, an open source, highly available, and highly scalable data plane that brings AI connectivity for agents and tools. To learn more about agentgateway, see the [About](/docs/about) section.
+
+{{< reuse "docs/snippets/kgateway-callout.md" >}}
 
 ## About this guide
 
