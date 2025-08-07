@@ -2,7 +2,7 @@
 <script>
     document.querySelector('html').classList.remove('dark');
 </script>
-<div class='mx-auto flex bg-white text-primary-text'>
+<div class='mx-auto flex bg-white text-gray-900'>
     {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
     <article class="w-full break-words flex justify-center">
         <main class="w-full relative overflow-hidden">
@@ -21,7 +21,13 @@
                     <p class="text-white">{{ $.Page.Params.Description }}</p>
                 </div>
             </section>
-            <div class="content px-10 md:px-32 py-32 !text-primary-text max-w-[1440px] mx-auto">
+            <div class="px-10 md:px-32 py-32 max-w-[1440px] mx-auto prose prose-gray prose-lg max-w-none 
+                        prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 
+                        prose-a:hover:text-blue-800 prose-strong:text-gray-900 prose-code:text-red-600 
+                        prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+                        prose-pre:bg-gray-100 prose-pre:text-gray-800
+                        prose-blockquote:border-l-blue-500 prose-blockquote:bg-gray-50 prose-blockquote:text-gray-600
+                        prose-li:text-gray-700">
                 {{ .Content }}
             </div>
         </main>
