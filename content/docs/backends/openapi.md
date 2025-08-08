@@ -4,7 +4,7 @@ weight: 10
 description: 
 ---
 
-Expose an OpenAPI server on the agentgateway. 
+Expose an OpenAPI server on the agentgateway. Then, your OpenAPI endpoints become available as tools in the agentgateway UI playground.
 
 ## Before you begin
 
@@ -13,7 +13,23 @@ Expose an OpenAPI server on the agentgateway.
 3. {{< reuse "docs/snippets/prereq-docker.md" >}}
 4. For ARM64 machines: [Install `maven`](https://maven.apache.org/install.html) to build the sample Petstore image from source.
 
-## Set up a local Petstore server {#petstore}
+## Set up your OpenAPI server {#openapi-server}
+
+Start by setting up your OpenAPI server. You need an OpenAPI spec, such as a JSON or YAML file, as well as a running server instance that hosts the API. These steps use the [Swagger Petstore server](#petstore) as an example.
+
+In your OpenAPI schema, make sure to set the URL of the server. If no URL is set, agentgateway defaults to `/`. Then, the paths in your OpenAPI schema get an extra slash concatenated, which can break requests. For example, `/api/v1/` becomes `//api/v1/`.
+
+To avoid this issue, explicitly set the URL value to `/` in the OpenAPI schema, such as the following example.
+
+```json
+ "servers": [
+    {
+      "url": "/"
+    }
+  ]
+```
+
+### Sample Petstore server {#petstore}
 
 Run the sample [Swagger Petstore server](https://github.com/swagger-api/swagger-petstore) locally. The following steps show use Docker and Maven as an example to pull, build, and run the Petstore server. You can also use your own OpenAPI server and update the steps accordingly.
 
