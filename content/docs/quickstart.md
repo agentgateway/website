@@ -24,7 +24,7 @@ You complete the following tasks:
 
 1. Download the agentgateway binary and install it. 
    ```sh
-   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentproxy | bash
+   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
    ```
    
    Example output: 
@@ -41,13 +41,20 @@ You complete the following tasks:
    ```
 
 2. Verify that the `agentgateway` binary is installed. 
-   ```sh
+   ```shell
    agentgateway --version
    ```
 
    Example output with the latest version, {{< reuse "docs/versions/n-patch.md" >}}:
-   ```
-   agentgateway-app version.BuildInfo{RustVersion:"1.88.0", BuildProfile:"release", BuildStatus:"Modified", GitTag:"v{{< reuse "docs/versions/n-patch.md" >}}", Version:"2c7ba0d4ed47fcafa97fa411fdbf1a8ca40cf6a9-dirty", GitRevision:"2c7ba0d4ed47fcafa97fa411fdbf1a8ca40cf6a9-dirty"}
+
+   ```json
+   {
+     "version": "{{< reuse "docs/versions/n-patch.md" >}}",
+     "git_revision": "90f7b25855fb5f5fbefcc16855206040cba9b77d",
+     "rust_version": "1.89.0",
+     "build_profile": "release",
+     "build_target": "x86_64-unknown-linux-musl"
+   }
    ```
    
 ## Step 2: Create a basic configuration {#basic-config}
@@ -62,10 +69,6 @@ In this example, you use a basic configuration file to configure the agentgatewa
 
 2. Review the configuration file. 
 
-   ```
-   cat config.yaml
-   ```
-
    {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
 
    {{< reuse "docs/snippets/review-table.md" >}}
@@ -79,10 +82,9 @@ In this example, you use a basic configuration file to configure the agentgatewa
    
    Example output: 
    ```
-   2025-04-16T20:19:36.449164Z  INFO agentgateway: Reading config from file: basic.yaml
-   2025-04-16T20:19:36.449580Z  INFO insert_target: agentgateway::xds: inserted target: everything
-   2025-04-16T20:19:36.449595Z  INFO agentgateway::r#static: local config initialized num_mcp_targets=1 num_a2a_targets=0
-   2025-04-16T20:19:36.449874Z  INFO agentgateway::inbound: serving sse on [::]:3000
+   2025-08-18T16:11:44.055681Z     info    state_manager   loaded config from File("examples/basic/config.yaml")
+   2025-08-18T16:11:44.056093Z     info    app     serving UI at http://localhost:15000/ui
+   2025-08-18T16:11:44.061277Z     info    proxy::gateway  started bind    bind="bind/3000"
    ```
 
 ## Step 3: Explore the UI {#explore-ui}
