@@ -1,0 +1,14 @@
+{{- $url := .Get "url" -}}
+{{- $section := .Get "section" -}}
+{{- with resources.GetRemote $url -}}
+  {{- $content := .Content -}}
+  {{- $pattern := printf "(?ms)^##? %s\\s*(.*?)(^##? |\\z)" $section -}}
+  {{- $match := findRE $pattern $content -}}
+  {{- if $match -}}
+    {{ index $match 0 | replaceRE (printf "^## %s\\s*" $section) ""  }}
+  {{- else -}}
+    {{ errorf "fail to find section: %s" $section }}
+  {{- end -}}
+{{- else -}}
+{{ errorf "unable to load content from %s" $url }}
+{{- end -}}
