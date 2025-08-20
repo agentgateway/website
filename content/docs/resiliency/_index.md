@@ -14,6 +14,7 @@ Simulate failures, disruptions, and adverse conditions to test that your gateway
 
 {{< cards >}}
   {{< card link="mirroring" title="Mirroring" >}}
+  {{< card link="rate-limits" title="Rate limiting" >}}
   {{< card link="retries" title="Retries" >}}
   {{< card link="timeouts" title="Timeouts" >}}
 {{< /cards >}}

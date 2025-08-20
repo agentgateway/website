@@ -18,5 +18,4 @@ Secure backends and routes with different types of security, authentication, aut
   {{< card link="jwt-authn" title="JWT authentication" >}}
   {{< card link="mcp-authn" title="MCP authentication" >}}
   {{< card link="mcp-authz" title="MCP authorization" >}}
-  {{< card link="rate-limits" title="Rate limiting" >}}
 {{< /cards >}}
