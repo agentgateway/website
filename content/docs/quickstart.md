@@ -59,7 +59,7 @@ You complete the following tasks:
    
 ## Step 2: Create a basic configuration {#basic-config}
 
-In this example, you use a basic configuration file to configure the agentgateway, but you can also use the agentgateway UI to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
+In this example, you use a [basic configuration file](/docs/operations/config-file) to configure the agentgateway, but you can also use the agentgateway UI to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
 
 1. Download a basic configuration file for your agentgateway. 
    

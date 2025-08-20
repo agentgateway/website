@@ -1,7 +1,6 @@
 ---
-title: Rate Limiting Policies
-weight: 12
-description: 
+title: Rate limiting
+weight: 10
 ---
 
 Agentgateway rate limiting policies allow controlling the rate of requests incoming to a route.
