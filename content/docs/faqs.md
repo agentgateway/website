@@ -62,10 +62,10 @@ The kgateway project uses [Apache License 2.0](https://www.apache.org/licenses/)
 
 ## What is the project roadmap?
 
-The agentgateway project organizes issues into milestones for each release. For more details, see the following links: 
-* [agentgateway issues](https://github.com/agentgateway/agentgateway/issues)
-* [agentgateway milestones](https://github.com/agentgateway/agentgateway/milestones)
-* [agentgateway project board](https://github.com/orgs/agentgateway/projects/1)
+The agentgateway project organizes issues into milestones for each release. For more details, see the following agentgateway links: 
+* [Issues](https://github.com/agentgateway/agentgateway/issues)
+* [Milestones](https://github.com/agentgateway/agentgateway/milestones)
+* [Project board](https://github.com/orgs/agentgateway/projects/1)
 
 ## Where is the changelog? 
 
