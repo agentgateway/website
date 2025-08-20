@@ -13,7 +13,7 @@ Control traffic and route requests through agentgateway.
 {{< reuse "docs/snippets/policy-apply.md" >}}
 
 {{< cards >}}
+  {{< card link="manipulation" title="Header manipulation" >}}
   {{< card link="redirects" title="Redirects" >}}
-  {{< card link="manipulation" title="Request and response manipulation" >}}
   {{< card link="matching" title="Request matching" >}}
 {{< /cards >}}

@@ -1,5 +1,5 @@
 ---
-title: Request and response manipulation
+title: Header manipulation
 weight: 10
 ---
 
