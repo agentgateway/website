@@ -1,11 +1,10 @@
 ---
-title: Listeners
-weight: 30
-description: Configure listeners for agentgateway.
-next: /docs/routes
+title: HTTP listeners
+weight: 10
+description: Configure HTTP listeners for agentgateway.
 --- 
 
-You can use the built-in agentgateway UI or a configuration file to create, update, and delete listeners. 
+You can use the built-in agentgateway UI or a configuration file to create, update, and delete HTTP listeners. 
 
 ## Before you begin
 

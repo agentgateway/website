@@ -1,7 +1,8 @@
 ---
 title: Observability
-weight: 70
-description: 
+weight: 120
+prev: /docs/llm
+next: /docs/operations
 ---
 
 Review metrics and trace requests that are served by the agentgateway. 

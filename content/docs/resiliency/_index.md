@@ -1,10 +1,14 @@
 ---
-title: Configuration
-weight: 50
-description: 
+title: Resiliency
+weight: 70
+prev: /docs/traffic-management
+next: /docs/security
 ---
 
-Configure agentgateway.
+Simulate failures, disruptions, and adverse conditions to test that your gateway and apps continue to function.
+
+> [!TIP]
+> {{< reuse "docs/snippets/policies-gateway-api.md" >}}
 
 {{< cards >}}
   {{< card link="basics" title="Configuration basics" >}}

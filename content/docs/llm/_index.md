@@ -1,7 +1,9 @@
 ---
 title: LLM consumption
-weight: 70
+weight: 90
 description: Overview of LLM provider integration and consumption patterns
+prev: /docs/security
+next: /docs/observability
 ---
 
 Consume LLM services by setting up AI backends for your LLM providers.
