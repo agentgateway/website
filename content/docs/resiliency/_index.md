@@ -10,11 +10,10 @@ Simulate failures, disruptions, and adverse conditions to test that your gateway
 > [!TIP]
 > {{< reuse "docs/snippets/policies-gateway-api.md" >}}
 
+{{< reuse "docs/snippets/policy-apply.md" >}}
+
 {{< cards >}}
-  {{< card link="basics" title="Configuration basics" >}}
-  {{< card link="http-policies" title="HTTP Policies" >}}
-  {{< card link="rate-limits" title="Rate Limiting Policies" >}}
-  {{< card link="security-policies" title="Security Policies" >}}
-  {{< card link="mcp-policies" title="MCP Policies" >}}
-  {{< card link="tls" title="TLS Listeners" >}}
+  {{< card link="mirroring" title="Mirroring" >}}
+  {{< card link="retries" title="Retries" >}}
+  {{< card link="timeouts" title="Timeouts" >}}
 {{< /cards >}}

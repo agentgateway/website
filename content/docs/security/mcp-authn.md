@@ -1,41 +1,16 @@
 ---
-title: MCP Policies
-weight: 14
-description: 
+title: MCP authentication
+weight: 10
 ---
 
-Agentgateway has support for a variety of policies specifically for [MCP](https://modelcontextprotocol.io/) traffic.
-Note that all standard HTTP policies also apply to MCP traffic.
+> [!NOTE]
+> {{< reuse "docs/snippets/mcp-policy-note.md" >}}
 
-## MCP Authorization
-
-The MCP authorization policy works similarly to [HTTP authorization](/docs/configuration/security-policies/#http-authorization), but runs in the context of an MCP request.
-
-Instead of running against an HTTP request, MCP authorization policies run against specific MCP method invocations such as `list_tools` and `call_tools`.
-
-If a tool, or other resource, is not allowed it will automatically be filtered in the `list` request.
-
-```yaml
-mcpAuthorization:
-  rules:
-  # Allow anyone to call 'echo'
-  - 'mcp.tool.name == "echo"'
-  # Only the test-user can call 'add'
-  - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-  # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-  - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
-```
-
-Refer to the [CEL reference](/docs/operations/cel) for allowed variables.
-
-## MCP Authentication
-
-MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization).
-Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
+MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
 
 There are three deployment scenarios.
 
-### Authorization Server Proxy
+## Authorization Server Proxy
 
 Agentgateway can adapt traffic for authorization servers that don't fully comply with OAuth standards.
 For example, Keycloak exposes certificates at a non-standard endpoint.
@@ -64,7 +39,7 @@ mcpAuthentication:
     resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
 
-### Resource Server Only
+## Resource Server Only
 
 Agentgateway acts solely as a resource server, validating tokens issued by an external authorization server.
 
@@ -82,6 +57,6 @@ mcpAuthentication:
     - query
 ```
 
-### Passthrough
+## Passthrough
 
 When the MCP server already implements OAuth authentication, no additional configuration is needed. Agentgateway will pass requests through without modification.
