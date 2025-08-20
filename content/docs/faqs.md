@@ -24,7 +24,7 @@ A single client request, such as to list all available tools, might require the 
 
 Traditional gateways are not built with the session and message awareness that is required to properly handle stateful, session-based, and bidirectional communications. In addition, these communication patterns are very resource intensive and can quicky overwhelm traditional gateways leading to performance impacts or even failure. 
 
-## What is agentgateway? 
+## What is agentgateway and why do I want to use it? 
 
 Agentgateway provides secure, scalable, stateful, bidirectional communication for MCP servers and AI agents in any environment. It is built to solve the common challenges with traditional gateway proxies and missing specification in the MCP and A2A protocols by providing enterprise-grade security, observabiity, resiliency, reliability, and multi-tenancy. 
 
