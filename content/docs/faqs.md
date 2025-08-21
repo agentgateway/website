@@ -8,11 +8,13 @@ Check out frequently asked questions about agentgateway.
 
 ## What are MCP and A2A? 
 
-With Agentic AI changing the way organizations build and deliver applications, organizations face the challenge of rapidly adopting new technologies and interoperability protocols to connect agents and tools in fragmented environments. To accelerate agent development, infrastructure is needed that transcends the rapidly changing landscape.
+With agentic artificial intelligence (AI) changing the way organizations build and deliver applications, organizations face the challenge of rapidly adopting new technologies and interoperability protocols to connect agents and tools in fragmented environments. To accelerate agent development, infrastructure is needed that transcends the rapidly changing landscape.
 
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) has become the de facto standard to retrieve and exchange context with Large Language Models (LLMs) and for connecting LLMs to tools. [Agent-to-Agent (A2A)](https://github.com/a2aproject/A2A) is a newly introduced complementary protocol to MCP that solves for long-running tasks and state management across multiple agents. MCP and A2A are both JSON-RPC protocols that define the structure of how an agent describes what it wants to do, how it calls tools, and how it hands off tasks to other agents.
+[Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) has become the de facto standard for retrieving and exchanging context with Large Language Models (LLMs) and for connecting LLMs to tools. [Agent-to-Agent (A2A)](https://github.com/a2aproject/A2A) is a newly introduced complementary protocol to MCP that solves for long-running tasks and state management across multiple agents. MCP and A2A are both JSON-RPC protocols that define the structure of how an agent describes what it wants to do, how it calls tools, and how it hands off tasks to other agents.
 
-While MCP and A2A define the RPC communication protocol for agents and tools, they currently do not address enterprise-level concerns regarding authentication, authorization, resiliency, tracing, tenancy, and guardrails. In addition, LLMs, agents, and tools are typically spread across remote networks, which requires low latency and handling of retries, timeouts, and failures. 
+## Why do I need a gateway for MCP and A2A communication?
+	
+Gateways provide a consistent way to manage MCP and A2A communication across multiple tools and agents. While MCP and A2A define the RPC communication protocol for agents and tools, they currently do not address enterprise-level concerns regarding authentication, authorization, resiliency, tracing, tenancy, and guardrails. In addition, LLMs, agents, and tools are typically spread across remote networks, which requires low latency and handling of retries, timeouts, and failures. 
 
 ## What's the problem with traditional API and AI gateways? 
 
@@ -28,9 +30,9 @@ Traditional gateways are not built with the session and message awareness that i
 
 Agentgateway provides secure, scalable, stateful, bidirectional communication for MCP servers and AI agents in any environment. It is built to solve the common challenges with traditional gateway proxies and missing specification in the MCP and A2A protocols by providing enterprise-grade security, observabiity, resiliency, reliability, and multi-tenancy. 
 
-* **Unified data plane**: Agentgateway is a unified data plane to manage agent connectivity with support for agent protocols, such as Model Context Protocol (MCP) and agent-to-agent (A2A), and the ability to integrate existing REST APIs as agent-native tools. 
+* **Unified data plane**: Agentgateway is a unified data plane to manage agent connectivity with support for agent protocols including MCP and A2A, and the ability to integrate existing REST APIs as agent-native tools.
 * **Highly performant**: Built in Rust, agentgateway is designed to handle any scale. It is optimized for high throughput, low latency, reliability, and stability when handling long-lived connections and fan-out patterns. 
-* **Any agent framework**: Agentgateway is compatible with any agentic framework supporting the Model Context Protocol (MCP) or agent-to-agent (A2A) protocol, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use agentgateway to expose a REST API as an agent-native tool.
+* **Any agent framework**: Agentgateway is compatible with any agentic framework supporting MCP and A2A protocols, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use agentgateway to expose a REST API as an agent-native tool.
 * **Platform-agnostic**: Agentgateway can run in any environment, including bare metal, virtual machine, containers, and Kubernetes.
 * **Multiplexing and tool federation**: Agentgateway provides a single endpoint to federate multiple backend MCP servers and virtualize tool servers on a per-client basis.
 * **Automatic protocol upgrades/fallbacks**: Agentgateway is built to negotiate and gracefully handle protocol upgrades and fallbacks to avoid client or server failures as the MCP/A2A protocols evolve.
@@ -45,7 +47,7 @@ Agentgateway provides secure, scalable, stateful, bidirectional communication fo
 
 While you can manually deploy agentgateway proxies in any environment, you might want a more declarative way to define your agentgateway proxy and deploy it, especially in cloud-native environments, such as Kubernetes. 
 
-The [kgateway open source project](kgateway.dev) is the recommended control plane to quickly spin up and manage the lifecycle of agentgateway proxies in a Kubernetes clusters. In addition, you can leverage kgateway's traffic management, resiliency, and security policies to further protect your agentgateway proxy and make it more robust. 
+The [kgateway open source project](https://kgateway.dev) is the recommended control plane to quickly spin up and manage the lifecycle of agentgateway proxies in Kubernetes clusters. In addition, you can leverage kgateway's traffic management, resiliency, and security policies to further protect your agentgateway proxy and make it more robust. 
 
 For more information about how to deploy agentgateway with kgateway, see the [kgateway documentation](https://kgateway.dev/docs/agentgateway/). 
 
@@ -53,12 +55,12 @@ For more information about how to deploy agentgateway with kgateway, see the [kg
 
 Agentgateway provides secure, scalable, stateful, bidirectional connectivity between clients, MCP servers, tools, and agents. However, agentgateway assumes that the MCP servers, tools, and agents already exist in an environment so that it can connect to them. 
 
-To develop, build, and run MCP servers and agents in Kubernetes, you can use the open source project [Kagent](kagent.dev) instead. Kagent automates complex DevOps and platform engineer operations for you with intelligent workflows and built-in troubleshooting. 
+To develop, build, and run MCP servers and agents in Kubernetes, you can use the open source project [kagent](https://kagent.dev). Kagent automates complex DevOps and platform engineer operations for you with out-of-the-box agents and tools, intelligent workflows, and built-in troubleshooting.
 
 
 ## What license is agentgateway under?
 
-The kgateway project uses [Apache License 2.0](https://www.apache.org/licenses/).
+The agentgateway project uses [Apache License 2.0](https://www.apache.org/licenses/).
 
 ## What is the project roadmap?
 
