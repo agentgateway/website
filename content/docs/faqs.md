@@ -8,50 +8,21 @@ Check out frequently asked questions about agentgateway.
 
 ## What are MCP and A2A? 
 
-With agentic artificial intelligence (AI) changing the way organizations build and deliver applications, organizations face the challenge of rapidly adopting new technologies and interoperability protocols to connect agents and tools in fragmented environments. Because AI agents and tools can be built with different frameworks, access different APIs and data sources, standardizing the way agents and tools communicate with each other is essential to further accelerate agent development. 
-
-[Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro) and [Agent-to-Agent (A2A)](https://github.com/a2aproject/A2A) are the leading protocols for enabling communication between agents and tools. MCP helps to retrieve and exchange context with Large Language Models (LLMs) and connect LLMs to tools. A2A on the other hand solves for long-running tasks and state management across multiple agents. MCP and A2A are both JSON-RPC protocols that define the structure of how an agent describes what it wants to do, how it calls tools, and how it hands off tasks to other agents.
+{{< reuse "docs/snippets/about-mcp-a2a.md" >}}
 
 ## What do MCP and A2A not solve for? 
 
-While MCP and A2A define the RPC communication protocol for agents and tools, they currently do not address real-world, enterprise-level concerns: 
-* Agents typically do not operate in isolation. Instead, they interact with each other (agent-to-agent), with internal systems (agent-to-tool), and external or foundational models (agent-to-LLM). 
-* These interactions are often dynamic, multi-modal, and span organizational and data boundaries. 
-
-This creates new vectors for risk and complexity, including: 
-* **Security**: How to handle authentication, authorization, and auditing of agent interactions across tools and services? 
-* **Governance**: How to enforce policies across autonomous workflows, such as data residency or access control? 
-* **Observability**: How to gain visibility into what agents are doing, when, and why? 
-* **Scalability and performance**: How to ensure low latency while securely handling retries, timeouts, and failures? 
-
-Agentgateway is designed to tackle these challenges at its core with built-in security, governance, and observability for all MCP and A2A communication between agents, tools, and LLMs. 
+{{< reuse "docs/snippets/about-mcp-challenges.md" >}}
 
 ## What's the problem with traditional API and AI gateways? 
 
-Traditional API gateways, reverse proxies and AI gateways, such as Envoy, were built and optimized for RESTful microservices architectures where the gateway receives short-lived HTTP requests from a client, decides on a backend, and forwards the request to that backend. Typically, no session context or ongoing connection state is required in these cases. 
-
-MCP, by contrast, is a stateful protocol based on JSON-RPC with its own semantics for how to retrieve and exchange context with LLMs. MCP clients and servers must maintain long-lived sessions where requests and responses are sent constantly. Every request and response must be tied to the same session context. In addition, MCP servers can initiate messages back to the client asynchronously, which makes keeping track of all stateful sessions challenging. 
-
-A single client request, such as to list all available tools, might require the proxy to access multiple backend MCP servers, aggregate the responses, and return a single coherent result. In addition, clients might not have access to all the tools that are available on the server. The proxy must be capable to dynamically adjust its responses on a per-session basis and map each client session to the backend servers it is allowed to access. 
-
-Traditional gateways are not built with the session and message awareness that is required to properly handle stateful, session-based, and bidirectional communications. In addition, these communication patterns are very resource intensive and can quicky overwhelm traditional gateways leading to performance impacts or even failure. 
+{{< reuse "docs/snippets/about-traditional-gw.md" >}}
 
 ## What is agentgateway and why do I want to use it? 
 
 Agentgateway provides secure, scalable, stateful, bidirectional communication for MCP servers and AI agents in any environment. It is built to solve the common challenges with traditional gateway proxies and missing specification in the MCP and A2A protocols by providing enterprise-grade security, observabiity, resiliency, reliability, and multi-tenancy. 
 
-* **Unified data plane**: Agentgateway is a unified data plane to manage agent connectivity with support for agent protocols including MCP and A2A, and the ability to integrate existing REST APIs as agent-native tools.
-* **Highly performant**: Built in Rust, agentgateway is designed to handle any scale. It is optimized for high throughput, low latency, reliability, and stability when handling long-lived connections and fan-out patterns. 
-* **Any agent framework**: Agentgateway is compatible with any agentic framework supporting MCP and A2A protocols, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use agentgateway to expose a REST API as an agent-native tool.
-* **Platform-agnostic**: Agentgateway can run in any environment, including bare metal, virtual machine, containers, and Kubernetes.
-* **Multiplexing and tool federation**: Agentgateway provides a single endpoint to federate multiple backend MCP servers and virtualize tool servers on a per-client basis.
-* **Automatic protocol upgrades/fallbacks**: Agentgateway is built to negotiate and gracefully handle protocol upgrades and fallbacks to avoid client or server failures as the MCP/A2A protocols evolve.
-* **Authentication and authorization**: Built-in JWT authentication and a robust RBAC system allow you to control access to MCP servers, tools and agents, and to protect against [tool poisoning attacks](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks). 
-* **Built-in observability**: Agentgateway comes with built-in metrics and tracing capabilities that allow you to monitor the MCP client and backend tool interactions.
-* **Self-service portal**: Agentgateway provides a built-in self-service developer portal that allows agent developers to easily connect, discover, federate, integrate, and secure agents and tools in any environment, including bare metal, VMs, containers, and Kubernetes.
-* **Open source**: Agentgateway is open source, and licensed under the Apache 2.0 license.
-* **Conformant to the Gateway API project**: Agentgateway is conformant to the Kubernetes Gateway API project, which allows you to use it as a gateway with any Gateway API implementation.
-* **Dynamic configuration updates**: Agentgateway can be updated via an xDS interface without any downtime.
+{{< reuse "docs/snippets/key-benefits.md" >}}
 
 ## How does agentgateway relate to kgateway?
 
