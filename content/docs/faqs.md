@@ -36,7 +36,7 @@ For more information about how to deploy agentgateway with kgateway, see the [kg
 
 ## What's the difference between agentgateway and kagent? 
 
-Agentgateway governs agent-to-tool, agent-to-agent, and agent-to-llm communication ensuring that these components can securely and reliably talk to each other and exchange data. However, agentgateway assumes that the MCP servers, tools, and agents that you want to access already exist in your environment.
+Agentgateway governs agent-to-tool, agent-to-agent, and agent-to-LLM communication ensuring that these components can securely and reliably talk to each other and exchange data. However, agentgateway assumes that the MCP servers, tools, and agents that you want to access already exist in your environment.
 
 That’s where [kagent](https://kagent.dev) comes in. With kagent, you can quickly develop, build, and run MCP servers and agents directly in Kubernetes. Kagent automates complex DevOps and platform engineering operations for you with out-of-the-box agents and tools, intelligent workflows, and built-in troubleshooting. 
 
