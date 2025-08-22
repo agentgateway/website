@@ -34,7 +34,7 @@ Agentgateway comes with the following key features:
 
 ## Architecture
 
-The following figure shows how agentgateway provides AI connectivity for agents and tools in any environment.
+The following figure shows how agentgateway provides AI connectivity for agents, tools, and LLMs in any environment.
 
 {{< reuse-image src="img/agentgateway-architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 
