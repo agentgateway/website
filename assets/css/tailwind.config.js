@@ -25,7 +25,7 @@ module.exports = {
                 'tertiary-bg': '#1c2029',
                 'primary-text': 'rgb(249, 250, 251)',
                 'secondary-text': 'rgb(156, 163, 175)',
-                'tertiary-text': '#20B7F3',
+                'tertiary-text': '#7734be',
                 'primary-border': 'rgba(139, 92, 246, 0.5)',
                 'secondary-border': '#1F2937'
             },
