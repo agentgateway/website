@@ -32,6 +32,14 @@ Agentgateway comes with the following key features:
 
 {{< reuse "docs/snippets/key-benefits.md" >}}
 
+## Architecture
+
+The following figure shows how agentgateway provides AI connectivity for agents, tools, and LLMs in any environment.
+
+{{< reuse-image src="img/agentgateway-architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
+
+<!-- Excalidraw: https://app.excalidraw.com/s/AKnnsusvczX/7HmmdE0MyN5 -->
+
 ## Policies
 
 Agentgateway provides policies to govern how traffic for MCP and A2A backends is managed, transformed, and secured. 

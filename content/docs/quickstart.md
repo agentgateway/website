@@ -20,6 +20,7 @@ You complete the following tasks:
 * Test access to the `everything_echo` MCP tool. 
 
 {{< reuse-image src="img/quickstart.svg" width="700px" >}}
+<!-- Excalidraw: https://app.excalidraw.com/s/AKnnsusvczX/7HmmdE0MyN5 -->
 
 ## Step 1: Install the binary {#binary}
 
