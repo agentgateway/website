@@ -1,5 +1,5 @@
 ---
-title: Get started
+title: Quickstart
 weight: 10
 description: Get started with agentgateway. 
 ---
