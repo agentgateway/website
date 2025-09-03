@@ -19,17 +19,50 @@ This is controlled via the [Envoy Rate Limit gRPC service](https://www.envoyprox
 
 In additional to simple request-based rate limits, agentgateway can limit requests based on *tokens* for [LLM consumption](/docs/llm/).
 
-For requests, the count is simple: each request consumes 1 unit of capacity.
+### Request-based rate limits
+
+By default, agentgateway applies rate limits to requests. Therefore, each request consumes 1 unit of capacity.
+
+To explicitly set request-based rate limits, set the rate limiting type to `requests` as shown in the following example. 
+
+```yaml
+      policies:
+        localRateLimit:
+          - maxTokens: 10
+            tokensPerFill: 1
+            fillInterval: 60s
+            type: requests
+
+```
+
+
+
+### Token-based rate limits
 
 For tokens, each token (prompt or completion) consumes 1 unit of capacity.
-However, calculating this can be tricky, as the completion token usage is not known until after the request is complete.
-As a result, token-based rate limits are checked in two phases:
+Because the number of tokens that are used for the completion is not known at the time the request is sent, calculating the number of tokens can become tricky. To work around this issue, agentgateway checks token-based rate limits in two phases, at request time and at response time. 
 
-1. At request time:
-  * If `tokenize: true` is set on the AI backend, the prompt token count will be estimated, and the prompt tokens are counted against the allowed account. If the token usage exceeds to allowed amount, the request is denied.
-  * Otherwise, a request will only be denied if there are no tokens allowed at all.
-2. At response time, the completion tokens are counted against the rate limit. Even if the count is exceeded, the response is allowed.
-  LLM responses typically will additional include the exact prompt token count; if this differs from the count recorded during the request (whether this is due to tokenization being disabled, which means the count is always `0`, or if the estimation was off) the difference between these will also be accounted for.
+To enable token-based rate limiting, set the rate limiting type to `token` as shown in the following example. 
+
+```yaml
+      policies:
+        localRateLimit:
+          - maxTokens: 10
+            tokensPerFill: 1
+            fillInterval: 60s
+            type: tokens
+```
+
+#### At request time
+
+* When `tokenize: true` _is not set_ on the AI backend, the number of tokens that are used for the request cannot be calculated. Because of this, the request is always allowed, unless the rate limit is set to 0 tokens. The LLM typically returns the number of tokens that were used for the request when sending the response. Agentgateway verifies the number of tokens that were used in the request and the response to determine whether the rate limit was reached. 
+* When `tokenize: true` _is set_, agentgateway estimates the number of tokens at reques time. Because of that, the request is only allowed if the estimated number of tokens does not exceed the set rate limit. 
+
+#### At response time
+
+When the LLM returns a response, it typically provides the number of tokens that were used during the request and response. Agentgateway uses these numbers to determine if the rate limit was reached. 
+
+Note that this determination happens _after_ the response is returned. Even, if the number of tokens that are used in the response exceeds the number of allowed tokens, the response is still returned to the user. Only subsequent requests are rate limited. If `tokenize: true` is set on the AI backend and tokens were estimated during the request, agentgateway verifies the actual number of tokens that were used for the request when the LLM returns its response. In the case the initial estimation was off, agentgateway adjusts the number of used tokens to count these against the set rate limit. 
 
 ## Configuration
 
@@ -42,6 +75,7 @@ Local rate limiting uses a [Token bucket](https://en.wikipedia.org/wiki/Token_bu
 |`maxTokens`|Maximum, and initial, size of the bucket|
 |`fillInterval`|How often to refill the bucket|
 |`tokensPerFill`|How many tokens to replenish per fill|
+|`type`|The type of rate limiting. Choose between `requests` for request-based rate limits, and `tokens` for token-based rate limits. |
 
 Below shows an example rate limit configuration that allows 5,000 tokens per hour, and 60 requests per second.
 
