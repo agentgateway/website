@@ -20,7 +20,7 @@ Check out frequently asked questions about agentgateway.
 
 ## What is agentgateway and why do I want to use it? 
 
-Agentgateway provides secure, scalable, stateful, bidirectional communication for MCP servers and AI agents in any environment. It is built to solve the common challenges with traditional gateway proxies and missing specification in the MCP and A2A protocols by providing enterprise-grade security, observabiity, resiliency, reliability, and multi-tenancy. 
+{{< reuse "docs/snippets/about-agw.md" >}}
 
 {{< reuse "docs/snippets/key-benefits.md" >}}
 
