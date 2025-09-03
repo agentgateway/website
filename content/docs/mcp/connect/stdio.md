@@ -1,5 +1,5 @@
 ---
-title: MCP
+title: Stdio
 weight: 10
 description: Expose MCP servers through the agentgateway. 
 ---

@@ -1,0 +1,192 @@
+---
+title: Control spend
+weight: 70
+description: Limit the number of tokens that can be used to prevent unexpected bills and LLM misuse. 
+---
+
+Limit the number of tokens that can be used to prevent unexpected bills and LLM misuse. 
+
+## About LLM spending
+
+LLMs typically charge per input and output token, and not per query. Because of that, even smaller queries can become expensive quickly, especially if prompts are long, context windows are large, or outputs are very verbose. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. Attackers can also craft prompt bombs or denial-of-wallet attacks that force the system to consume massive amounts of tokens at your expense. 
+
+To protect against unexpected bills, scaling surprises, and abuse, it is essential to limit the number of tokens that can be used. 
+
+## Rate limiting in agentgateway
+
+Agentgateway comes with built-in rate limiting capabilities to limit the number of tokens that can be used. Each token (prompt or completion) consumes 1 unit of capacity. Because the number of tokens that are used for the completion is not known at the time the request is sent, calculating the number of tokens can become tricky. To work around this issue, agentgateway checks token-based rate limits in two phases: 
+
+### At request time
+
+* When `tokenize: true` _is not set_ on the AI backend, the number of tokens that are used for the request cannot be calculated. Because of this, the request is always allowed, unless the rate limit is set to 0 tokens. The LLM typically returns the number of tokens that were used for the request when sending the response. Agentgateway verifies the number of tokens that were used in the request and the response to determine whether the rate limit was reached. 
+* When `tokenize: true` _is set_, agentgateway estimates the number of tokens at reques time. Because of that, the request is only allowed if the estimated number of tokens does not exceed the set rate limit. 
+
+### At response time
+
+When the LLM returns a response, it typically provides the number of tokens that were used during the request and response. Agentgateway uses these numbers to determine if the rate limit was reached. 
+
+Note that this determination happens _after_ the response is returned. Even, if the number of tokens that are used in the response exceeds the number of allowed tokens, the response is still returned to the user. Only subsequent requests are rate limited. If `tokenize: true` is set on the AI backend and tokens were estimated during the request, agentgateway verifies the actual number of tokens that were used for the request when the LLM returns its response. In the case the initial estimation was off, agentgateway adjusts the number of used tokens to count these against the set rate limit. 
+
+## Before you begin
+
+{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+
+## Configure the agentgateway
+
+1. Create a configuration file with your token-based local rate limiting settings. The following example uses the OpenAI provider, but you can adjust this example to use the provider of your choice. For an overview of supported providers, see [Providers](../providers).
+   ```yaml
+   cat <<EOF > config.yaml
+   binds:
+   - port: 3000
+     listeners:
+     - routes:
+       - backends:
+          - ai:
+             name: openai
+             provider:
+               openAI:
+                 # Optional; overrides the model in requests
+                 model: gpt-3.5-turbo
+         policies:
+           backendAuth:
+             key: "$OPENAI_API_KEY"
+           localRateLimit:
+             - maxTokens: 10
+               tokensPerFill: 1
+               fillInterval: 60s
+               type: tokens
+           cors:
+             allowOrigins:
+               - "*"
+             allowHeaders:
+               - "*"
+   EOF
+   ```
+
+   {{< reuse "docs/snippets/review-table.md" >}}
+
+   | Setting | Description | 
+   | -- | -- | 
+   | `maxTokens` | The maximum number of tokens that are available to use. | 
+   | `tokensPerFill` | The number of tokens that are added during a refill. |  
+   | `fillInterval` | The number of seconds, after which the token bucket is refilled. | 
+   | `type` | The type of rate limiting that you want to apply. In this example, you want to perform token-based rate limiting. | 
+
+2. Run the agentgateway. 
+   ```sh
+   agentgateway -f config.yaml
+   ```
+   
+## Verify rate limits
+
+1. Send a prompt to the LLM that instructs the LLM to tell a short story. At the time the prompt is sent, the number of tokens that are required for the completion is unknown. Because `tokenize: true` is not set in your agentgateway proxy, the prompt count is not estimated. As a result, the prompt is allowed, because the number of tokens is unknown and cannot be counted against the rate limit. 
+
+   {{< callout type="info">}}
+   The LLM typically returns the number of tokens that were required for completion in its response. Agentgateway uses this number and counts it against the rate limit. 
+   {{< /callout >}}
+   
+   ```sh
+   curl 'http://0.0.0.0:3000/' \
+   --header 'Content-Type: application/json' \
+   --data ' {
+     "model": "gpt-3.5-turbo",
+     "messages": [
+       {
+         "role": "user",
+         "content": "Tell me a short story"
+       }
+     ]
+   }'
+   ```
+   
+   Example output: 
+   ```
+   {"id":"chatcmpl-CBms1tAAgkoreamvAmgpr","choices":[{"index":0,"message":{"content":"Once upon a time, 
+   in a small village nestled between towering mountains and lush forests, there lived a young girl named
+   Lily....","role":"assistant"},"finish_reason":"stop"}],"created":1756925501,"model":"gpt-3.5-turbo-0125",
+   "service_tier":"default","object":"chat.completion","usage":{"prompt_tokens":12,"completion_tokens":248,
+   "total_tokens":260,"prompt_tokens_details":{"audio_tokens":0,"cached_tokens":0},
+   "completion_tokens_details":{"accepted_prediction_tokens":0,"audio_tokens":0,"reasoning_tokens":0,
+   "rejected_prediction_tokens":0}}}%        
+   ```
+   
+2. Repeat the same request. Note that this time, the request is rate limited, because the number of tokens that were returned from the first request and response exceeded the number of tokens in your rate limiting setting. 
+   ```sh
+   curl 'http://0.0.0.0:3000/' \
+   --header 'Content-Type: application/json' \
+   --data ' {
+     "model": "gpt-3.5-turbo",
+     "messages": [
+       {
+         "role": "user",
+         "content": "Tell me a short story"
+       }
+     ]
+   }'
+   ```
+   
+   Example output: 
+   ```
+   rate limit exceeded
+   ```
+   
+3. Change your agentgateway rate limiting configuration to include the `tokenize: true` setting in your LLM provider. This setting allows agentgateway to estimate the number of tokens that are required for completion. 
+   ```yaml
+   cat <<EOF > config.yaml
+   binds:
+   - port: 3000
+     listeners:
+     - routes:
+       - backends:
+          - ai:
+             name: openai
+             provider:
+               openAI:
+                 # Optional; overrides the model in requests
+                 model: gpt-3.5-turbo
+             tokenize: true
+         policies:
+           backendAuth:
+             key: "$OPENAI_API_KEY"
+           localRateLimit:
+             - maxTokens: 10
+               tokensPerFill: 1
+               fillInterval: 60s
+               type: tokens
+           cors:
+             allowOrigins:
+               - "*"
+             allowHeaders:
+               - "*"
+   EOF
+   ```
+
+4. Run the agentgateway. 
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+5. Try the same request again. This time, the request is denied immediately, because the number of tokens that are used for the prompt and user role exceeds the maximum of 10 token available.. 
+   ```sh
+   curl 'http://0.0.0.0:3000/' \
+   --header 'Content-Type: application/json' \
+   --data ' {
+     "model": "gpt-3.5-turbo",
+     "messages": [
+       {
+         "role": "user",
+         "content": "Tell me a short story"
+       }
+     ]
+   }'
+   ```
+   
+   Example output: 
+   ```
+   rate limit exceeded
+   ```
+
+   
+   
+
+
