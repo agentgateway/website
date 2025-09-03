@@ -4,7 +4,7 @@ weight: 10
 description:
 ---
 
-Agentgateway provides secure, scalable, stateful, bidirectional communication for MCP servers, tools, LLMs, and AI agents in any environment. It is built to solve the common challenges with traditional gateway proxies and missing specification in the MCP and A2A protocols by providing enterprise-grade security, observabiity, resiliency, reliability, and multi-tenancy.
+{{< reuse "docs/snippets/about-agw.md" >}}
 
 {{< reuse "docs/snippets/kgateway-callout.md" >}}
 
@@ -24,7 +24,7 @@ To understand the benefits of agentgateway and why you shoud use it, let's dive 
 
 {{< reuse "docs/snippets/about-traditional-gw.md" >}}
 
-Agentgateway on the other hand is purposely designed and built to handle stateful, bidirectional communication between agents, MCP servers, tools, and LLMs at any scale on any platform. With enterprise-grade drop-in security, observability, governance, resiliency, and multi-tenancy, agentgateway addresses the common challenges with MCP and A2A, and allows enterprises to adopt and quicklly scale their agentic AI environments. 
+In contrast, {{< reuse "docs/snippets/about-agw.md" >}}
 
 ## Key features
 
