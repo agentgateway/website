@@ -18,14 +18,11 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
 
 ### At request time
 
-* When `tokenize: true` _is not set_ on the AI backend, the number of tokens that are used for the request cannot be calculated. Because of this, the request is always allowed, unless the rate limit is set to 0 tokens. The LLM typically returns the number of tokens that were used for the request when sending the response. Agentgateway verifies the number of tokens that were used in the request and the response to determine whether the rate limit was reached. 
-* When `tokenize: true` _is set_, agentgateway estimates the number of tokens at reques time. Because of that, the request is only allowed if the estimated number of tokens does not exceed the set rate limit. 
+{{< reuse "docs/snippets/ratelimit-requesttime.md" >}} 
 
 ### At response time
 
-When the LLM returns a response, it typically provides the number of tokens that were used during the request and response. Agentgateway uses these numbers to determine if the rate limit was reached. 
-
-Note that this determination happens _after_ the response is returned. Even, if the number of tokens that are used in the response exceeds the number of allowed tokens, the response is still returned to the user. Only subsequent requests are rate limited. If `tokenize: true` is set on the AI backend and tokens were estimated during the request, agentgateway verifies the actual number of tokens that were used for the request when the LLM returns its response. In the case the initial estimation was off, agentgateway adjusts the number of used tokens to count these against the set rate limit. 
+{{< reuse "docs/snippets/ratelimit-responsetime.md" >}} 
 
 ## Before you begin
 
@@ -69,8 +66,8 @@ Note that this determination happens _after_ the response is returned. Even, if 
    | -- | -- | 
    | `maxTokens` | The maximum number of tokens that are available to use. | 
    | `tokensPerFill` | The number of tokens that are added during a refill. |  
-   | `fillInterval` | The number of seconds, after which the token bucket is refilled. | 
-   | `type` | The type of rate limiting that you want to apply. In this example, you want to perform token-based rate limiting. | 
+   | `fillInterval` | The number of seconds after which the token bucket is refilled. | 
+   | `type` | The type of rate limiting that you want to apply. In this example, you want to perform token-based rate limiting. However, you can also change this value to `requests` if you want to rate limit based on the number of requests. | 
 
 2. Run the agentgateway. 
    ```sh
