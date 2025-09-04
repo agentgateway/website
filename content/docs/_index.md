@@ -6,12 +6,13 @@ title: Welcome
 Welcome to the documentation for the agentgateway open source project! 
 
 {{< cards >}}
-  {{< card link="quickstart" title="Get started" >}}
+  {{< card link="quickstart" title="Quickstart" >}}
   {{< card link="about" title="About" >}}
-  {{< card link="listeners" title="Listeners" >}}
-  {{< card link="routes" title="Routes" >}}
-  {{< card link="backends" title="Backends" >}}
-  {{< card link="security" title="Security" >}}
-  {{< card link="observability" title="Observability" >}}
   {{< card link="llm" title="LLM consumption" >}}
+  {{< card link="inference" title="Inference routing" >}}
+  {{< card link="mcp" title="MCP connectivity" >}}
+  {{< card link="agent" title="Agent connectivity" >}}
+  {{< card link="configuration" title="Configuration" >}}
+  {{< card link="reference" title="Reference" >}}
+  {{< card link="faqs" title="FAQs" >}}
 {{< /cards >}}
