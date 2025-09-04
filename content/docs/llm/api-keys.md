@@ -56,9 +56,9 @@ You can provide your API key directly in the agentgateway configuration. This op
    export OPENAI_API_KEY=<your-api-key>
    ```
 
-2. Configure the agentgateway proxy. 
+2. Configure the agentgateway proxy to refer to that environment variable. Agentgateway automatically replaces the value of the variable with the value that is stored in the environment. 
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    binds:
    - port: 3000
      listeners:

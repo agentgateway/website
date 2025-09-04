@@ -1,6 +1,6 @@
 ---
 title: Control spend
-weight: 70
+weight: 50
 description: Limit the number of tokens that can be used to prevent unexpected bills and LLM misuse. 
 ---
 

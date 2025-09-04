@@ -1,6 +1,6 @@
 ---
 title: Observe traffic
-weight: 60
+weight: 50
 description:
 ---
 
