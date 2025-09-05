@@ -2,6 +2,7 @@
 title: About
 weight: 10 
 description:
+next: /docs/mcp/connect
 ---
 
 Learn more about MCP and common challenges when adopting MCP in enterprise environments. 

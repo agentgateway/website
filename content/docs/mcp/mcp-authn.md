@@ -1,6 +1,7 @@
 ---
 title: MCP authentication
 weight: 30
+prev: /docs/mcp/connect
 ---
 
 > [!NOTE]

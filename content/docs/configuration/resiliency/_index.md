@@ -1,8 +1,8 @@
 ---
 title: Resiliency
 weight: 50
-prev: /docs/traffic-management
-next: /docs/security
+prev: /docs/configuration/traffic-management
+next: /docs/configuration/security
 ---
 
 Simulate failures, disruptions, and adverse conditions to test that your gateway and apps continue to function.

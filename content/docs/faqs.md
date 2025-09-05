@@ -2,6 +2,7 @@
 title: FAQs
 weight: 200
 description: Check out frequently asked questions about agentgateway. 
+prev: /docs/reference
 --- 
 
 Check out frequently asked questions about agentgateway. 
