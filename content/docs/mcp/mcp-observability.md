@@ -8,7 +8,7 @@ Review MCP-specific metrics, logs, and traces.
 
 ## Before you begin
 
-Complete an MCP guide, such as the [stdio](../connect/stdio) guide. This guide uses the agentgateway playground to interact with an MCP tool server, wich generates metrics, logs, and traces.  
+Complete an MCP guide, such as the [stdio](../connect/stdio) guide. This guide uses the agentgateway playground to interact with an MCP tool server, which generates metrics, logs, and traces.  
 
 ## View MCP metrics
 
@@ -58,7 +58,6 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
    ```
 
 4. Open the [agentgateway playground](http://localhost:15000/ui/playground/) and click **Connect**. Then, select a tool, such as `echo`, enter any message, and click **Run Tool**. 
-
 
 5. Open the [Jaeger UI](http://localhost:16686/search) and select the `call_tool` operation. Then, verify that you can see traces for your MCP tool call. 
    

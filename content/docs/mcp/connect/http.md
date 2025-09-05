@@ -1,7 +1,7 @@
 ---
 title: Streamable HTTP
 weight: 15
-description: Expose MCP servers through the agentgateway. 
+description: 
 ---
 
 Connect to an MCP server via streamable HTTP. 
