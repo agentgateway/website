@@ -2,6 +2,7 @@
 title: Quickstart
 weight: 10
 description: Get started with agentgateway. 
+next: /docs/about
 ---
 
 Get started with agentgateway, an open source, highly available, and highly scalable data plane that brings AI connectivity for agents and tools. To learn more about agentgateway, see the [About](/docs/about) section.

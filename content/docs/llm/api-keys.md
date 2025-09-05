@@ -2,6 +2,7 @@
 title: Manage API keys
 weight: 40
 description: Configure authentication when connecting to your LLM. 
+prev: /docs/llm/providers
 ---
 
 Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense. 

@@ -2,6 +2,7 @@
 title: Overview
 weight: 10
 description:
+next: /docs/configuration/listeners
 ---
 
 Manage agentgateway through a configuration file. Supported file formats are JSON and YAML.

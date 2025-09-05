@@ -1,5 +1,0 @@
----
-title: MCP observability
-weight: 70
-description:
----
