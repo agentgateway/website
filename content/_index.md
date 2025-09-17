@@ -52,6 +52,8 @@ description: ""
   </div>
 </section>
 
+{{< adopters >}}
+
 <section class="text-center py-20 bg-secondary-bg">
   <h2 class="text-primary-text text-3xl font-bold pb-12">
     Solving AI Connectivity Challenges

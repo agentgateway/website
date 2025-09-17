@@ -1,0 +1,43 @@
+{{ $data := .Site.Data.adopters }}
+
+{{ if $data }}
+  {{ $list := $data.adopters }}
+  {{ if $list }}
+    <section id="adopters" class="py-[4.375rem] md:py-50 px-4 md:px-12 xl:px-25 bg-card-bg">
+      <div class="flex flex-col gap-[3.125rem] md:gap-[6.9375rem] items-center max-w-[1440px] mx-auto">
+        <h2 class="font-heading text-[2.5rem] font-semibold leading-[2.75rem] tracking-tight text-center text-primary-text">
+          Who uses <span class="text-tertiary-text font-semibold">agentgateway</span>
+        </h2>
+        <div class="overflow-x-auto w-full">
+          <div class="flex justify-center items-center gap-10 flex-wrap">
+            {{ range $list }}
+              <a href="{{ .website }}" target="_blank" rel="noopener noreferrer" class="flex justify-center items-center" aria-label="{{ .name }}">
+                {{ $single := .logo }}
+                {{ $light := .logo_light }}
+                {{ $dark := .logo_dark }}
+                {{ if $single }}
+                  <img src="{{ $single }}" alt="{{ .name }}" class="object-contain h-12 md:h-16" />
+                {{ else if and $light $dark }}
+                  <picture>
+                    <source srcset="{{ $dark }}" media="(prefers-color-scheme: dark)">
+                    <source srcset="{{ $light }}" media="(prefers-color-scheme: light)">
+                    <img src="{{ or $light $dark }}" alt="{{ .name }}" class="object-contain h-12 md:h-16" />
+                  </picture>
+                {{ else }}
+                  <img src="{{ or $light $dark }}" alt="{{ .name }}" class="object-contain h-12 md:h-16" />
+                {{ end }}
+              </a>
+            {{ end }}
+          </div>
+        </div>
+        <div class="text-center mt-10">
+          <a href="https://github.com/agentgateway/website" target="_blank" rel="noopener noreferrer" class="text-sm text-primary-text underline hover:underline hover:text-primary-text">
+            Add your logo here
+          </a>
+        </div>
+      </div>
+    </section>
+  {{ end }}
+{{ end }}
+
+
