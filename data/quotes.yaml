@@ -1,0 +1,83 @@
+- quote: >-
+    The future won’t be built by standalone agents, MCP servers or LLMs — it’s
+    shaped by their interconnection and ability to work together seamlessly. To
+    unlock their full potential, we must apply policies, ensure control and
+    maintain clear visibility into their interactions. This is where
+    agentgateway plays a pivotal role — bridging not only agent-to-agent (A2A)
+    communication but also agent-to-MCP servers, filling a critical gap in the
+    ecosystem. I look forward to seeing the project’s continued momentum within
+    the Linux Foundation.
+  author: John Roese
+  title: global chief technology officer & chief AI officer, Dell
+  logo: /quotes/dell.svg
+- quote: >-
+    AI agents are rapidly transforming how enterprises work and innovate. To
+    adopt them responsibly at scale, organizations need open and interoperable
+    gateways that provide governance, visibility, and security. Agentgateway
+    delivers the foundation enterprises need. I’m excited to see the community
+    come together to accelerate the open foundation our customers need to scale
+    AI on cloud platforms like CoreWeave.
+  author: Chen Goldberg
+  title: senior vice president of engineering, CoreWeave
+  logo: /quotes/coreweave.svg
+- quote: >-
+    Agentic AI demands purpose-built infrastructure, not just another software
+    layer. This requires rethinking compute, storage, and data movement from the
+    ground up, so retrofitting legacy systems doesn’t work. The agentgateway
+    project is a solid step toward that future. We’re happy to see it hosted by
+    the Linux Foundation, where open source and community can drive the adoption
+    and longevity that AI infrastructure requires.
+  author: Jon Alexander
+  title: senior vice president, cloud technology, Akamai
+  logo: /quotes/akamai.svg
+- quote: >-
+    We are excited to welcome the agentgateway project to the Linux Foundation,
+    ensuring that best practices for agentic workflows remain free and open to
+    all. Agentgateway complements emerging specifications like A2A and MCP, and
+    offers scalable, specification-aligned infrastructure for agent communication
+    thereby empowering customers and developers to build robust agentic
+    workflows across platforms.
+  author: Mitch Connors
+  title: CNCF Ambassador (Microsoft)
+  logo: /quotes/microsoft.svg
+- quote: >-
+    I’m excited to see Solo.io donate the agentgateway project to the Linux
+    Foundation. Open sourcing an AI-native connectivity solution that understands
+    MCP and A2A is a big win for the community. It helps us scale AI
+    responsibly, with the security, flexibility, and governance we need in the
+    real world.
+  author: Rob Hansen
+  title: director, digital product engineering and platforms, T-Mobile
+  logo: /quotes/tmobile.svg
+- quote: >-
+    Building reliable AI agents is a challenge, especially when every step
+    involves non-deterministic calls to LLMs, tools, and autonomous agents.
+    Agentgateway’s integration with OpenTelemetry provides a robust foundation
+    for observability, allowing us to treat each request-response pair as an
+    evaluable unit. This capability is crucial for ensuring system-level
+    accuracy and trustworthiness, paving the way for a true ‘AI mesh’ that
+    empowers teams to scale, secure and optimize their AI workflows.
+  author: Sathish Krishnan
+  title: executive director/distinguished engineer, cloud & AI, UBS
+  logo: /quotes/ubs.svg
+- quote: >-
+    One of the biggest open security problems today is how to do MCP security
+    effectively. While there are a lot of problems in this space that the
+    community doesn’t know how to address, the agentgateway project provides a
+    first step toward addressing some of the important issues with basic
+    role-based access control and visibility of actions to MCP servers. I look
+    forward to seeing how this project adapts and evolves to handle the complex,
+    evolving threats in this space under open source governance.
+  author: Justin Cappos
+  title: professor at New York University and creator of TUF, Uptane and in-toto
+  logo: /quotes/tuf.svg
+- quote: >-
+    The rapid evolution of the AI landscape demands robust, vendor-neutral
+    infrastructure for how agents communicate with each other and with external
+    tools. Without it, we risk stifling innovation and adoption. The
+    agentgateway project, hosted by the Linux Foundation, is a crucial step in
+    creating that common ground. We are excited to partner with Solo.io and
+    support a community-driven foundation for the future of interoperable AI.
+  author: Jim Bugwadia
+  title: creator, Kyverno; CEO, Nirmata
+  logo: /quotes/kyverno.png

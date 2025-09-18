@@ -1,0 +1,107 @@
+<div class="w-full bg-primary-bg text-primary-dark border-t border-b border-secondary-border">
+  <div class="max-w-7xl mx-auto px-6 lg:px-8 py-20 lg:py-28">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+      <div class="flex self-center flex-col items-center lg:items-start gap-4">
+        <img src="/lf-logo.svg" alt="agentgateway logo" class="h-16 w-auto lg:h-20" loading="lazy" />
+        <div class="flex items-center gap-3">
+          <button id="quotesPrev" class="p-2 border border-secondary-border rounded text-primary-text hover:bg-secondary-bg focus:outline-none focus:ring-2 focus:ring-primary-border" aria-label="Previous quote">
+            <span class="sr-only">Previous quote</span>
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M12.78 4.22a.75.75 0 010 1.06L8.06 10l4.72 4.72a.75.75 0 11-1.06 1.06l-5.25-5.25a.75.75 0 010-1.06l5.25-5.25a.75.75 0 011.06 0z" clip-rule="evenodd" />
+            </svg>
+          </button>
+          <button id="quotesNext" class="p-2 border border-secondary-border rounded text-primary-text hover:bg-secondary-bg focus:outline-none focus:ring-2 focus:ring-primary-border" aria-label="Next quote">
+            <span class="sr-only">Next quote</span>
+            <svg class="w-5 h-5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M7.22 4.22a.75.75 0 011.06 0l5.25 5.25a.75.75 0 010 1.06l-5.25 5.25a.75.75 0 11-1.06-1.06L11.94 10 7.22 5.28a.75.75 0 010-1.06z" clip-rule="evenodd" />
+            </svg>
+          </button>
+        </div>
+      </div>
+      <div class="relative">
+        {{ $quotes := .Site.Data.quotes }}
+        {{ if $quotes }}
+          <div id="quotesCarousel" class="overflow-hidden relative">
+            {{ range $index, $q := $quotes }}
+              <figure class="transition-opacity duration-700 ease-in-out {{ if ne $index 0 }}opacity-0 hidden{{ end }}">
+                {{ with $q.logo }}
+                  <div class="mb-4">
+                    <img src="{{ . }}" alt="{{ with $q.title }}{{ . }} logo{{ else }}{{ $q.author }} logo{{ end }}" class="h-8 md:h-10 w-auto object-contain" loading="lazy" />
+                  </div>
+                {{ end }}
+                <blockquote class="text-lg leading-relaxed text-primary-text">“{{ $q.quote }}”</blockquote>
+                <figcaption class="mt-4 text-sm">
+                    <div class="font-bold text-primary-text">{{ $q.author }}</div>
+                    <div class="text-secondary-text">{{ with $q.title }}{{ . }}{{ end }}</div>
+                </figcaption>
+              </figure>
+            {{ end }}
+          </div>
+          
+        {{ end }}
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+(function(){
+  const container = document.getElementById('quotesCarousel');
+  if(!container) return;
+  const slides = Array.from(container.querySelectorAll('figure'));
+  const prevBtn = document.getElementById('quotesPrev');
+  const nextBtn = document.getElementById('quotesNext');
+  if(slides.length === 0) return;
+  function setFixedHeight(){
+    let maxH = 0;
+    slides.forEach((el, idx) => {
+      const wasHidden = el.classList.contains('hidden');
+      if(wasHidden) el.classList.remove('hidden');
+      const prevPos = el.style.position;
+      const prevVis = el.style.visibility;
+      el.style.position = 'absolute';
+      el.style.visibility = 'hidden';
+      const h = el.offsetHeight;
+      if(h > maxH) maxH = h;
+      el.style.position = prevPos;
+      el.style.visibility = prevVis;
+      if(wasHidden) el.classList.add('hidden');
+    });
+    if(maxH > 0) container.style.height = maxH + 'px';
+  }
+  let index = 0;
+  function show(i){
+    slides.forEach((el, idx) => {
+      const isActive = idx === i;
+      el.classList.toggle('hidden', !isActive);
+      el.classList.toggle('opacity-0', !isActive);
+    });
+  }
+  function next(){
+    index = (index + 1) % slides.length;
+    show(index);
+  }
+  function prev(){
+    index = (index - 1 + slides.length) % slides.length;
+    show(index);
+  }
+  // initialize fixed height once content is laid out and images are loaded
+  function initHeightWhenReady(){
+    const imgs = Array.from(container.querySelectorAll('img'));
+    if(imgs.length === 0){ setFixedHeight(); return; }
+    let loaded = 0;
+    function trySet(){ loaded++; if(loaded >= imgs.length){ setFixedHeight(); }}
+    imgs.forEach(img => { if(img.complete){ trySet(); } else { img.addEventListener('load', trySet, { once:true }); img.addEventListener('error', trySet, { once:true }); }});
+  }
+  initHeightWhenReady();
+  window.addEventListener('resize', () => {
+    // recalc on resize due to reflow/line-wrap changes
+    container.style.height = '';
+    setFixedHeight();
+  });
+  let timer = setInterval(next, 7000);
+  container.addEventListener('mouseenter', () => clearInterval(timer));
+  container.addEventListener('mouseleave', () => { timer = setInterval(next, 7000); });
+  if(prevBtn){ prevBtn.addEventListener('click', () => { prev(); clearInterval(timer); timer = setInterval(next, 7000); }); }
+  if(nextBtn){ nextBtn.addEventListener('click', () => { next(); clearInterval(timer); timer = setInterval(next, 7000); }); }
+})();
+</script>

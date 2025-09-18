@@ -52,6 +52,8 @@ description: ""
   </div>
 </section>
 
+{{< quotes-carousel >}}
+
 {{< adopters >}}
 
 <section class="text-center py-20 bg-secondary-bg">
