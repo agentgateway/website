@@ -1,4 +1,4 @@
-baseURL: ""
+baseURL: "/"
 enableRobotsTXT: true
 canonifyURLs: true
 title: "agentgateway | Agent Connectivity Solved"
