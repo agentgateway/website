@@ -11,6 +11,28 @@ CEL allows writing simple expressions based on the request context that evaluate
 
 Review the following examples of expressions for different uses cases.
 
+### Default function {#default-function}
+
+You can use the `default` function to provide a fallback value if the expression cannot be resolved.
+
+Request header fallback with example of an anonymous user:
+
+```
+default(request.headers["x-user-id"], "anonymous")
+```
+
+Nested object fallback with example of light theme:
+
+```
+default(request.body.user.preferences.theme, "light")
+```
+
+JWT claim default "user" role:
+
+```
+default(jwt.claims.role, "user")
+```
+
 ### Logs, traces, and observability {#logs}
 
 ```yaml
