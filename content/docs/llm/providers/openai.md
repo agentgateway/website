@@ -37,7 +37,18 @@ binds:
 
 ### Multiple endpoints
 
-Optionally to support multiple LLM endpoints, you can set the `routes` field. The keys are URL suffix matches, like `/v1/models`. The wildcard character `*` can be used to match anything. If no route is set, the route defaults to the `completions` endpoint.
+Optionally to support multiple LLM endpoints, you can set the `routes` field. 
+
+The `routes` field maps URL paths to one of the following route types:
+
+* `completions`: Transforms to the LLM provider format and process the request with the LLM provider. This route type supports full LLM features such as tokenization, rate limiting, transformations, and other policies like prompt guards.
+* `passthrough`: Forwards the request to the LLM provider as-is. This route type does not support LLM features like route processing and policies. You might use this route type for non-chat endpoints such as health checks, get requests like listing models, or custom endpoints that you want to pass through to.
+
+The keys are URL suffix matches, like `/v1/models`. The wildcard character `*` can be used to match anything.
+
+If no route is set, the route defaults to the `completions` endpoint.
+
+In the following example, the `/v1/chat/completions` route is fully processed by the LLM provider. The `/v1/models` route and any other route (`*`) are passed through to the LLM provider as-is.
 
 ```yaml
 binds:

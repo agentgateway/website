@@ -4,15 +4,17 @@ weight: 60
 description: Configuration and setup for Azure AI services provider
 ---
 
-Configure Microsoft Azure AI services (including Azure AI Foundry) as an LLM provider in agentgateway.
+Configure Microsoft Azure AI as an LLM provider in agentgateway. Through Azure AI Foundry, you can connect to multiple Azure AI services, including Azure OpenAI, Content Safety, Speech, Vision, and more.
 
 ## Authentication
 
-Azure authentication supports multiple credential sources that work with Microsoft Entra ID.
+Azure authentication supports several credential sources:
 
-- **Client Secret**: Use Azure service principal credentials
-- **Managed Identity**: Use Azure managed identity (system-assigned or user-assigned)
-- **Workload Identity**: Use Azure workload identity for Kubernetes
+- **Client secret**: Use Azure service principal credentials
+- **Managed identity**: Use Azure managed identity for system- or user-assigned identities
+- **Workload Identity**: Use Azure identity for Kubernetes workloads
+
+These credential sources work with Microsoft Entra ID. Additionally, Azure AI Foundry supports connecting to multiple Azure AI services with your credentials by overriding the host and path to the Foundry endpoint.
 
 For more information, see the [Azure documentation](https://learn.microsoft.com/en-us/azure/ai-services/authentication).
 
@@ -20,10 +22,11 @@ For more information, see the [Azure documentation](https://learn.microsoft.com/
 
 {{< reuse "docs/snippets/review-configuration.md" >}} The tabs have examples for different authentication methods.
 
-{{< tabs items="Foundry,Client secret,System-assigned,User-assigned,Workload" >}}
+{{< tabs items="Foundry,Client secret,System-assigned managed identity,User-assigned managed identity,Workload identity" >}}
 
 {{% tab %}}
-**Azure AI Foundry**
+**Azure AI Foundry**: Set the host and path to the Foundry endpoint. For the credentials, you can use one of the authentication methods, such as user-assigned managed identity in the following example.
+
 ```yaml
 binds:
 - port: 3000
@@ -40,7 +43,7 @@ binds:
             explicitConfig:
               managedIdentity:
                 userAssignedIdentity:
-                  objectId: XXXX
+                  objectId: <object-id>
         backendTLS: {}
       backends:
       - ai:
@@ -54,7 +57,7 @@ binds:
 
 {{% /tab %}}
 {{% tab %}}
-**Client Secret Authentication**
+**Client secret authentication**
 ```yaml
 binds:
 - port: 3000
@@ -63,7 +66,7 @@ binds:
     - backends:
       - ai:
           name: azure
-          hostOverride: "your-azure-endpoint.com:443"
+          hostOverride: "<your-azure-endpoint.com:443>"
           provider:
             openAI:
               model: gpt-4
@@ -72,14 +75,21 @@ binds:
           azure:
             explicitConfig:
               clientSecret:
-                tenantId: "your-tenant-id"
-                clientId: "your-client-id"
-                clientSecret: "$AZURE_CLIENT_SECRET"
+                tenantId: "<your-tenant-id>"
+                clientId: "<your-client-id>"
+                clientSecret: "<your-client-secret>"
 ```
 
 {{% /tab %}}
 {{% tab %}}
-**System-Assigned Managed Identity**
+**System-assigned managed identity**: Let the Azure Instance Metadata Service automatically issue agentgateway an access token to use to call Azure AI services.
+
+To use system-assigned managed identity:
+* Agentgateway must run in an Azure resource, such as a VM or container instance.
+* The Azure resource must have managed identity enabled. 
+* The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
+
+Leave the `managedIdentity` field empty so that the system assigns a managed identity to use.
 ```yaml
 binds:
 - port: 3000
@@ -101,7 +111,15 @@ binds:
 
 {{% /tab %}}
 {{% tab %}}
-**User-Assigned Managed Identity**
+**User-assigned managed identity**: Manually assign a managed identity for agentgateway to use to call Azure AI services. Unlike system-assigned managed identity, you manage the identity's lifecycle. This way, the identity is not tied to the underlying Azure resource and can be shared across other Azure resources.
+
+To use user-assigned managed identity:
+* Agentgateway must run in an Azure resource, such as a VM or container instance.
+* The Azure resource must have managed identity enabled. 
+* The Azure resource identity must have permissions to and the network ability to access the Azure AI services.
+* Create and assign a managed identity for the Azure resource to use.
+
+Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
 binds:
 - port: 3000
@@ -110,7 +128,7 @@ binds:
     - backends:
       - ai:
           name: azure
-          hostOverride: "your-azure-endpoint.com:443"
+          hostOverride: "<your-azure-endpoint.com:443>"
           provider:
             openAI:
               model: gpt-4
@@ -120,7 +138,7 @@ binds:
             explicitConfig:
               managedIdentity:
                 userAssignedIdentity:
-                  clientId: "your-managed-identity-client-id"
+                  clientId: "<your-managed-identity-client-id>"
                   # OR use objectId or resourceId instead
                   # objectId: "your-managed-identity-object-id"
                   # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
@@ -128,7 +146,13 @@ binds:
 
 {{% /tab %}}
 {{% tab %}}
-**Workload Identity**
+**Workload identity**: Authenticate with Azure identity in Kubernetes clusters without the need to store credentials in the cluster.
+
+To use workload identity:
+* Agentgateway must run in a Kubernetes cluster.
+* The Kubernetes cluster must use federated OIDC for authentication.
+* The federated identity must link the Azure identity with access to Azure AI services to the Kubernetes service account.
+
 ```yaml
 binds:
 - port: 3000
@@ -137,7 +161,7 @@ binds:
     - backends:
       - ai:
           name: azure
-          hostOverride: "your-azure-endpoint.com:443"
+          hostOverride: "<your-azure-endpoint.com:443>"
           provider:
             openAI:
               model: gpt-4

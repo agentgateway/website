@@ -27,7 +27,7 @@ Nested object fallback with example of light theme:
 default(json(request.body).user.preferences.theme, "light")
 ```
 
-JWT claim default "user" role:
+JWT claim fallback with example of default "user" role:
 
 ```
 default(jwt.role, "user")
