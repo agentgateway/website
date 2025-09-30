@@ -24,13 +24,13 @@ default(request.headers["x-user-id"], "anonymous")
 Nested object fallback with example of light theme:
 
 ```
-default(request.body.user.preferences.theme, "light")
+default(json(request.body).user.preferences.theme, "light")
 ```
 
 JWT claim default "user" role:
 
 ```
-default(jwt.claims.role, "user")
+default(jwt.role, "user")
 ```
 
 ### Logs, traces, and observability {#logs}

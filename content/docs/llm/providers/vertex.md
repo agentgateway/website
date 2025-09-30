@@ -33,9 +33,6 @@ binds:
               region: us-west2
               # Optional; overrides the model in requests
               model: google/gemini-2.5-flash-lite-preview-06-17
-          routes:
-            /v1beta1/projects/*/locations/*/endpoints/openapi/chat/completions: completions
-            "*": passthrough
 ```
 
 {{< reuse "docs/snippets/review-configuration.md" >}}
@@ -46,4 +43,3 @@ binds:
 | `vertex.projectId` | The Google Cloud project ID. |
 | `vertex.region` | The Google Cloud region. Defaults to `global`. |
 | `vertex.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
-| `ai.routes` | To support multiple LLM endpoints, you can set the `routes` field. The keys are URL suffix matches, like `/v1beta1/projects/*/locations/*/endpoints/openapi/chat/completions`. The wildcard character `*` can be used to match anything. If no route is set, the route defaults to the `completions` endpoint. |
