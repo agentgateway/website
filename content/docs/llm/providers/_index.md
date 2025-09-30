@@ -13,5 +13,6 @@ Learn how to configure agentgateway for a particular LLM.
   {{< card link="gemini" title="Gemini" >}}
   {{< card link="bedrock" title="Amazon Bedrock" >}}
   {{< card link="anthropic" title="Anthropic" >}}
+  {{< card link="azure" title="Azure" >}}
   {{< card link="multiple-llms" title="Multiple LLM providers" >}}
 {{< /cards >}}

@@ -61,7 +61,7 @@ You complete the following tasks:
    
 ## Step 2: Create a basic configuration {#basic-config}
 
-In this example, you use a [basic configuration file](/docs/operations/config-file) to configure the agentgateway, but you can also use the agentgateway UI to configure these components. For examples, see the [Listeners](/docs/listeners) and [Backends](/docs/backends) guides.
+In this example, you use a [basic configuration file](/docs/configuration/overview/) to configure the agentgateway, but you can also use the agentgateway UI to configure these components. For examples, see the [Listeners](/docs/configuration/listeners) and [Backends](/docs/configuration/backends/) guides.
 
 1. Download a basic configuration file for your agentgateway. 
    
@@ -96,17 +96,17 @@ The agentgateway comes with a built-in UI that you can use to connect to your MC
 1. Open the built-in [agentgateway UI](http://localhost:15000).
    {{< reuse-image src="img/agentgateway-ui-home.png" >}}
    
-2. Go to the [**Listener** overview](http://localhost:15000/ui/listeners/) and review your listener configuration. To learn how to create more or delete existing listeners with the UI, see the [Listeners](/docs/listeners) docs. 
+2. Go to the [**Listener** overview](http://localhost:15000/ui/listeners/) and review your listener configuration. To learn how to create more or delete existing listeners with the UI, see the [Listeners](/docs/configuration/listeners) docs. 
 
    {{< reuse-image src="img/agentgateway-ui-listener-basic.png" >}}
 
-3. Go to the [**Routes** overview](http://localhost:15000/ui/routes/) and review your route and policy configuration. To learn how to create more or delete existing routes with the UI, see the [Routes](/docs/listeners) docs. 
+3. Go to the [**Routes** overview](http://localhost:15000/ui/routes/) and review your route and policy configuration. To learn how to create more or delete existing routes with the UI, see the [Routes](/docs/configuration/listeners) docs. 
    {{< reuse-image src="img/agentgateway-ui-routes.png" >}}
 
-4. Go to the [**Backends** overview](http://localhost:15000/ui/targets/) and review your target configuration. To learn how to create more or delete existing targets with the UI, see the [Backends](/docs/backends) docs. 
+4. Go to the [**Backends** overview](http://localhost:15000/ui/targets/) and review your target configuration. To learn how to create more or delete existing targets with the UI, see the [Backends](/docs/configuration/backends/) docs. 
    {{< reuse-image src="img/agentgateway-ui-backends.png" >}}
 
-5. Go to the [**Policies** overview](http://localhost:15000/ui/policies/) and review your route and policy configuration. To learn more about policies, see the [About policies](/docs/about#policies) docs. 
+5. Go to the [**Policies** overview](http://localhost:15000/ui/policies/) and review your route and policy configuration. To learn more about policies, see the [About policies](/docs/about/introduction/#policies) docs. 
    {{< reuse-image src="img/agentgateway-ui-policies.png" >}}
 
 6. Connect to the MCP test server with the agentgateway UI playground. 
@@ -132,7 +132,7 @@ The agentgateway comes with a built-in UI that you can use to connect to your MC
 
 With your agentgateway up and running, you can now explore the following tasks: 
 
-* [Configure other backends](/docs/backends), such as multiple MCP servers, an A2A agent, or an OpenAPI server. 
-* [Secure your agentgateway setup](/docs/security), such as by setting up a TLS listener, JWT authentication, and RBAC policies to control access to tools and agents. 
-* [Explore metrics and traces](/docs/observability) that the agentgateway emits so that you can monitor the traffic that goes through your agentgateway. 
+* [Configure other backends](/docs/configuration/backends/), such as multiple MCP servers, an A2A agent, or an OpenAPI server. 
+* [Secure your agentgateway setup](/docs/configuration/security), such as by setting up a TLS listener, JWT authentication, and RBAC policies to control access to tools and agents. 
+* [Explore metrics and traces](/docs/reference/observability) that the agentgateway emits so that you can monitor the traffic that goes through your agentgateway. 
 

@@ -12,7 +12,7 @@ You can use the built-in agentgateway UI or a configuration file to create, upda
 ## Before you begin
 
 1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
-2. [Set up a listener](/docs/listeners).
+2. [Set up a listener](/docs/configuration/listeners).
 
 ## Create routes
 
@@ -111,5 +111,5 @@ After you create routes, you might want to apply policies to them.
   {{< card link="/docs/traffic-management/matching" title="Request matching" >}}
   {{< card link="/docs/traffic-management/" title="Traffic management" >}}
   {{< card link="/docs/resiliency/" title="Resiliency" >}}
-  {{< card link="/docs/security/" title="Security" >}}
+  {{< card link="/docs/configuration/security/" title="Security" >}}
 {{< /cards >}}

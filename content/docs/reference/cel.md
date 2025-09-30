@@ -9,7 +9,31 @@ CEL allows writing simple expressions based on the request context that evaluate
 
 ## Example expressions
 
-Below shows some example expressions that can be used in logs, traces, etc:
+Review the following examples of expressions for different uses cases.
+
+### Default function {#default-function}
+
+You can use the `default` function to provide a fallback value if the expression cannot be resolved.
+
+Request header fallback with example of an anonymous user:
+
+```
+default(request.headers["x-user-id"], "anonymous")
+```
+
+Nested object fallback with example of light theme:
+
+```
+default(json(request.body).user.preferences.theme, "light")
+```
+
+JWT claim fallback with example of default "user" role:
+
+```
+default(jwt.role, "user")
+```
+
+### Logs, traces, and observability {#logs}
 
 ```yaml
 # Include logs where there was no response or there was an error
@@ -34,7 +58,7 @@ fields:
 
 ```
 
-Some example authorization policies:
+### Authorization {#authorization}
 
 ```yaml
 mcpAuthorization:
@@ -47,7 +71,7 @@ mcpAuthorization:
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
-Some example rate limiting rules:
+### Rate limiting {#rate-limiting}
 
 ```yaml
 remoteRateLimit:
@@ -64,14 +88,20 @@ remoteRateLimit:
 
 ## Context reference
 
-When using CEL, various variables and functions are provided, listed below:
+As you write expressions, keep the following context in mind.
+
+### Functions and variables {#functions-and-variables}
+
+When using CEL in agentgateway, you can use the following variables and functions.
 
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/README.md" section="CEL context" %}}
 
-Certain fields will only be populated if they are referenced in a CEL expression.
-This avoids, for example, expensive buffering of request bodies if no CEL expression depends on the `body`.
+### Functions by policy type {#fields-by-policy}
 
-Depending on the policy, different fields will be accessible based on when in the request processing they are applied
+Certain fields are populated only if they are referenced in a CEL expression.
+This way, agentgateway avoids expensive buffering of request bodies if no CEL expression depends on the `body`.
+
+Depending on the policy, different fields are accessible based on when in the request processing they are applied.
 
 |Policy|Available Variables|
 |------|-------------------|
@@ -83,8 +113,9 @@ Depending on the policy, different fields will be accessible based on when in th
 |Tracing| `source`, `request`, `jwt`, `mcp`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `response`, `llm`|
 
-The following functions are available, and can be used in all policy types:
+### Functions for all policy types {#functions-policy-all}
 
+The following functions can be used in all policy types.
 
 | Function            | Purpose                                                                                                                                                                                                                                                                          |
 |---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -98,8 +129,10 @@ The following functions are available, and can be used in all policy types:
 | `base64_decode`     | Decodes a string in base64 format. Example: `string(base64_decode("aGVsbG8K"))`. Warning: this returns `bytes`, not a `String`. Various parts of agentgateway will display bytes in base64 format, which may appear like the function does nothing if not converted to a string. |
 | `random`            | Generates a number float from 0.0-1.0                                                                                                                                                                                                                                            |
 
-Additionally, the following standard functions are available:
+### Standard functions {#standard-functions}
+
+Additionally, the following standard functions are available for all policy types, too.
+
 * `contains`, `size`, `has`, `map`, `filter`, `all`, `max`, `startsWith`, `endsWith`, `string`, `bytes`, `double`, `exists`, `exists_one`, `int`, `uint`, `matches`.
 * Duration/time functions: `duration`, `timestamp`, `getFullYear`, `getMonth`, `getDayOfYear`, `getDayOfMonth`, `getDate`, `getDayOfWeek`, `getHours`, `getMinutes`, `getSeconds`, `getMilliseconds`.
 * From the [strings extension](https://pkg.go.dev/github.com/google/cel-go/ext#Strings): `charAt`, `indexOf`, `join`, `lastIndexOf`, `lowerAscii`, `upperAscii`, `trim`, `replace`, `split`, `substring`.
-
