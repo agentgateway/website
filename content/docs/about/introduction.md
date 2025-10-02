@@ -10,7 +10,7 @@ description:
 
 ## Why agentgateway?
 
-To understand the benefits of agentgateway and why you shoud use it, let's dive into how agentic AI environments work, the challenges they come with, and why traditional gateways fall short of solving these challenges. 
+To understand the benefits of agentgateway and why you should use it, let's dive into how agentic AI environments work, the challenges they come with, and why traditional gateways fall short of solving these challenges.
 
 ### About MCP and A2A 
 
