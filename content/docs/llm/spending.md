@@ -163,7 +163,7 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
    agentgateway -f config.yaml
    ```
 
-5. Try the same request again. This time, the request is denied immediately, because the number of tokens that are used for the prompt and user role exceeds the maximum of 10 token available.. 
+5. Try the same request again. This time, the request is denied immediately, because the number of tokens that are used for the prompt and user role exceeds the maximum of 10 tokens available.
    ```sh
    curl 'http://0.0.0.0:3000/' \
    --header 'Content-Type: application/json' \

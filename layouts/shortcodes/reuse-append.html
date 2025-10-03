@@ -1,0 +1,19 @@
+{{- /* reads a base snippet from /assets, then append inner Markdown and render it. useful for appending to tables */ -}}
+
+{{- $asset := "" -}}
+{{- with (.Get 0) -}}
+  {{- $asset = . -}}
+{{- else -}}
+  {{- errorf "The %q shortcode requires one positional parameter: path in /assets. See %s" .Name .Position -}}
+{{- end -}}
+
+{{- $res := resources.Get $asset -}}
+{{- if not $res -}}
+  {{- errorf "The %q shortcode could not find %q. See %s" .Name $asset .Position -}}
+{{- end -}}
+
+{{- $base := $res.Content | strings.TrimSpace -}}
+{{- $extra := .Inner | strings.TrimSpace -}}
+{{- $combined := printf "%s\n%s\n" $base $extra -}}
+
+{{- $combined | .Page.RenderString -}}

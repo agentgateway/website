@@ -55,6 +55,11 @@ binds:
               model: gpt-5-mini
 ```
 
+{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+{{< /reuse-append >}}
+
 {{% /tab %}}
 {{% tab %}}
 **Client secret authentication**
@@ -79,6 +84,11 @@ binds:
                 clientId: "<your-client-id>"
                 clientSecret: "<your-client-secret>"
 ```
+
+{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+| `backendAuth.azure.explicitConfig.clientSecret` | Use Azure service principal authentication with tenant ID, client ID, and client secret. |
+{{< /reuse-append >}}
 
 {{% /tab %}}
 {{% tab %}}
@@ -108,6 +118,11 @@ binds:
             explicitConfig:
               managedIdentity: {}
 ```
+
+{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+{{< /reuse-append >}}
 
 {{% /tab %}}
 {{% tab %}}
@@ -144,6 +159,11 @@ binds:
                   # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
 ```
 
+{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
+{{< /reuse-append >}}
+
 {{% /tab %}}
 {{% tab %}}
 **Workload identity**: Authenticate with Azure identity in Kubernetes clusters without the need to store credentials in the cluster.
@@ -172,18 +192,10 @@ binds:
               workloadIdentity: {}
 ```
 
+{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+| `backendAuth.azure.explicitConfig.workloadIdentity` | Use Azure workload identity for Kubernetes environments. |
+{{< /reuse-append >}}
+
 {{% /tab %}}
 {{< /tabs >}}
-
-{{< reuse "docs/snippets/review-configuration.md" >}}
-
-| Setting | Description |
-|---------|-------------|
-| `ai.name` | The name of the LLM provider for this AI backend. |
-| `ai.hostOverride` | Override the hostname to point to your Azure AI service endpoint. |
-| `ai.pathOverride` | Override the path to match your Azure AI service API endpoint. |
-| `ai.provider.openAI.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
-| `backendAuth.azure.explicitConfig.clientSecret` | Use Azure service principal authentication with tenant ID, client ID, and client secret. |
-| `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
-| `backendAuth.azure.explicitConfig.workloadIdentity` | Use Azure workload identity for Kubernetes environments. |
-
