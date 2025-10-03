@@ -44,7 +44,7 @@ You can create backends by using the agentgateway UI or a configuration file.
    * Click **Add MCP Backend** to save your configuration.
 
 {{< callout type="info">}} 
-To connect to an OpenAPI server, use the `MCP `target type. 
+To connect to an OpenAPI server, use the `MCP` target type. 
 {{< /callout >}}
    {{< reuse-image src="img/ui-backend-details.png"  >}}
 
