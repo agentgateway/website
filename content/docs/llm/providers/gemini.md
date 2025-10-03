@@ -33,4 +33,4 @@ binds:
 |---------|-------------|
 | `ai.name` | The name of the LLM provider for this AI backend. |
 | `ai.provider.gemini.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
-| `backendAuth` | Gemini uses API keys for authentication. Optionally configure a policy to attach an API key that authenticate to the LLM provider to outgoing requests. If you do not include an API key, each request must pass in a valid API key. |
+| `backendAuth` | Gemini uses API keys for authentication. You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must pass in a valid API key. |

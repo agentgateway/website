@@ -41,7 +41,7 @@ binds:
 | `authority` | Set the default hostname authority to forward incoming requests. |
 | `path` | Rewrite the path to the appropriate LLM provider endpoint. This setting is optional if requests on the provider hostname are already sent on this path. |
 | `backendTLS` | Optionally configure a policy to use TLS when connecting to the LLM provider. |
-| `backendAuth` | Optionally configure a policy to attach an API key that authenticate to the LLM provider to outgoing requests. If you do not include an API key, each request must authenticate per the LLM provider requirements. |
+| `backendAuth` | You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must authenticate per the LLM provider requirements. |
 | `ai.name` | The name of the LLM provider for this AI backend. |
 | `ai.hostOverride` | Override the hostname. If not set, the hostname defaults to OpenAI (`api.openai.com`). This setting is optional if the hostname is already set in the URL rewrite policy's `authority` setting. |
 | `ai.provider.openAI.model` | Optionally set the model to use for requests. If not set, the request must include the model to use. |
