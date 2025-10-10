@@ -5,7 +5,7 @@
 Required dependencies:
 
 * `node.js` v18.18.2 or later
-* `hugo` extended v0.134.2 or later
+* `hugo` extended v0.147.2 or later
 
 To run a local preview:
 
