@@ -93,7 +93,7 @@ In this example, you use a [basic configuration file](/docs/configuration/overvi
 
 The agentgateway comes with a built-in UI that you can use to connect to your MCP target to view and access the tools that are exposed on the MCP server. You can also use the UI to review and update your listener and target configuration in-flight. Configuration updates are available immediately and do not require a restart of the agentgateway.  
 
-1. Open the built-in [agentgateway UI](http://localhost:15000).
+1. Open the built-in [agentgateway UI on port 15000](http://localhost:15000).
    {{< reuse-image src="img/agentgateway-ui-home.png" >}}
    
 2. Go to the [**Listener** overview](http://localhost:15000/ui/listeners/) and review your listener configuration. To learn how to create more or delete existing listeners with the UI, see the [Listeners](/docs/configuration/listeners) docs. 

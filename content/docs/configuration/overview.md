@@ -30,7 +30,7 @@ EOF
 To update configuration, you can write to the configuration file or use the agentgateway UI.
 
 * **Write to the file**: Most changes that you make to the file are automatically picked up by agentgateway.
-* **UI**: The agentgateway UI overwrites the contents of the configuration file. Note that any comments that you add to the file are wiped out!
+* **UI**: The agentgateway UI overwrites the contents of the configuration file. Note that any comments that you add to the file are wiped out! You can open the agentgateway UI on port 15000.
 
 ## Run your configuration {#run}
 
