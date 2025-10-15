@@ -5,12 +5,11 @@ weight: 10
 
 Cross-Site Request Forgery ([CSRF](https://developer.mozilla.org/en-US/docs/Glossary/CSRF)) protection prevents malicious websites from making unauthorized requests to your application on behalf of authenticated users.
 
-> [!TIP]
-> CSRF protection is enforced by the server and blocks malicious cross-site requests before they reach your backend. Unlike CORS, CSRF protection works with all HTTP clients, not just browsers.
-
 ## How it works
 
-The CSRF policy implements a multi-layered validation approach to allow or block requests based on their properties.
+The CSRF policy implements a multi-layered validation approach to allow or block requests based on their properties. 
+
+CSRF protection is enforced by the server and blocks malicious cross-site requests before they reach your backend. Unlike CORS, CSRF protection works with all HTTP clients, not just browsers.
 
 ### Allowed requests
 
@@ -23,7 +22,7 @@ Allowed requests are as follows.
 
 ### Blocked requests
 
-Blocked requests receive a `403 Forbidden` response with the message "CSRF validation failed".
+Blocked requests, which receive a `403 Forbidden` response with the message "CSRF validation failed", are as follows.
 
 - Cross-site requests with `Sec-Fetch-Site: cross-site` (unless trusted)
 - Cross-site requests where `Origin` doesn't match `Host` (unless trusted)
