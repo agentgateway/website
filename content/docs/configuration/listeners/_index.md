@@ -10,5 +10,6 @@ Listeners configure how agentgateway accepts and processes incoming requests. Th
 
 {{< cards >}}
   {{< card link="http" title="HTTP listeners" >}}
+  {{< card link="tcp" title="TCP listeners" >}}
   {{< card link="tls" title="TLS listeners" >}}
 {{< /cards >}}
