@@ -120,7 +120,7 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
 
 Use the agentgateway playground to send a request to the ADK agent that you set up earlier.
 
-1. Open the [agentgateway UI](http://localhost:15000/ui/).
+1. Open the [agentgateway UI on port 15000](http://localhost:15000/ui/).
 
 2. Connect to the MCP server with the agentgateway UI playground.
    1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
