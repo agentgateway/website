@@ -15,7 +15,7 @@ You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`t
 
 ### HTTP routes
 
-[HTTP or TLS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method or query matching and HTTP-specific filters and policies.
+[HTTP or TLS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
 
 Example configuration:
 
