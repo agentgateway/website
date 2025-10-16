@@ -104,3 +104,6 @@ You can configure the HTTP listener on the agentgateway with a TLS certificate t
    data: ?sessionId=f25025b0f78d5a143ce43c36cedaebec
    ```
 
+## Next steps
+
+Create an [HTTP route](../../routes) on the listener.

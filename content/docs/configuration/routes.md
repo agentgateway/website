@@ -7,9 +7,55 @@ next: /docs/configuration/traffic-management
 
 Routes are the entry points for traffic to your agentgateway. They are configured on listeners and are used to route traffic to backends.
 
-Configure HTTP and TCP routes with matching conditions and other traffic management policies.
-
 You can use the built-in agentgateway UI or a configuration file to create, update, and delete routes. 
+
+## Types of routes
+
+You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`tcpRoutes`).
+
+### HTTP routes
+
+[HTTP or TLS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method or query matching and HTTP-specific filters and policies.
+
+Example configuration:
+
+```yaml
+binds:
+- port: 8080
+  listeners:
+  - name: http-proxy
+    protocol: HTTP
+    routes:
+    - name: http-backend
+      backends:
+      - host: http.example.com:8080
+        weight: 1
+```
+
+For more information, continue to the [Create routes](#create-routes) section.
+
+### TCP routes
+
+[TCP listeners](../listeners/tcp) use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than other HTTP routes.
+
+Keep in mind that TCP routes do not support HTTP features such as path, header, method or query matching and HTTP-specific filters and policies.
+
+Example configuration:
+
+```yaml
+binds:
+- port: 5432
+  listeners:
+  - name: postgres-proxy
+    protocol: TCP
+    tcpRoutes:
+    - name: postgres-backend
+      backends:
+      - host: postgres.example.com:5432
+        weight: 1
+```
+
+For more information, see [TCP route matching](../traffic-management/matching#tcp-routes).
 
 ## Before you begin
 
@@ -104,102 +150,6 @@ Update the configuration file to remove the route.
 
 {{% /tab %}}
 {{< /tabs >}}
-
-## About routes {#about}
-
-Routes are the entry points for traffic to your agentgateway. They are configured on listeners and are used to route traffic to backends.
-
-Based on the [schema](https://github.com/agentgateway/agentgateway/blob/main/schema/local.json), you can configure the following matching conditions for routes.
-
-### HTTP Routes
-
-HTTP routes are used with HTTP, HTTPS, and TLS listeners. They support rich matching conditions:
-
-#### Path Matching
-
-If no path match is specified, the default is to match all paths (`/`).
-
-You can match incoming requests based on their path using one of the following strategies:
-
-| Type        | Example                              | Description                                 |
-|-------------|--------------------------------------|---------------------------------------------|
-| Exact       | `{ "exact": "/foo/bar" }`            | Matches only the exact path `/foo/bar`      |
-| Prefix      | `{ "pathPrefix": "/foo" }`           | Matches any path starting with `/foo`       |
-| Regex       | `{ "regex": ["^/foo/[0-9]+$", 0] }`  | Matches paths using a regular expression    |
-
-{{< callout type="info">}}
-Only one of `exact`, `pathPrefix`, or `regex` can be specified per path matcher.
-{{< /callout >}}
-
-#### Header Matching
-
-You can match on HTTP headers:
-
-- **Exact match:**  
-  `{ "name": "Authorization", "value": { "exact": "Bearer token" } }`
-- **Regex match:**  
-  `{ "name": "Authorization", "value": { "regex": "^Bearer .*" } }`
-
-#### Method Matching
-
-Optionally restrict matches to specific HTTP methods:
-```json
-{ "method": { "method": "GET" } }
-```
-
-#### Query Parameter Matching
-
-Match on query parameters, either by exact value or regex:
-- **Exact:**  
-  `{ "name": "version", "value": { "exact": "v1" } }`
-- **Regex:**  
-  `{ "name": "version", "value": { "regex": "^v[0-9]+$" } }`
-
-### TCP Routes
-
-TCP routes are used with TCP listeners and provide simpler routing for raw TCP connections:
-
-#### Hostname Matching
-
-TCP routes can match on hostnames, primarily used for TLS termination scenarios:
-
-```yaml
-tcpRoutes:
-- name: database-backend
-  hostnames:
-  - "db.example.com"
-  backends:
-  - host: postgres.example.com:5432
-```
-
-#### Backend Routing
-
-TCP routes support direct backend routing with load balancing:
-
-```yaml
-tcpRoutes:
-- name: redis-cluster
-  backends:
-  - host: redis-1.example.com:6379
-    weight: 1
-  - host: redis-2.example.com:6379
-    weight: 2
-```
-
-#### TCP Route Limitations
-
-TCP routes do **not** support:
-- Path matching (not applicable to raw TCP)
-- HTTP header matching
-- HTTP method matching
-- Query parameter matching
-- HTTP-specific filters and policies
-
-TCP routes support:
-- Hostname matching (for TLS termination)
-- Backend routing with weights
-- Backend TLS configuration
-- Basic load balancing
 
 ## Next steps
 

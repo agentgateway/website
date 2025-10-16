@@ -101,3 +101,7 @@ Update the configuration file to remove the listener.
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## Next steps
+
+Create an [HTTP route](../../routes) on the listener.

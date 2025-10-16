@@ -15,61 +15,6 @@ TCP listeners provide raw TCP connection proxying, which is useful for:
 - **Legacy applications**: Connect older applications that use custom TCP protocols
 - **TLS termination**: Terminate TLS connections and forward to backend services
 
-### Example configuration
-
-TCP listeners use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than other routes.
-
-```yaml
-binds:
-- port: 5432
-  listeners:
-  - name: postgres-proxy
-    protocol: TCP
-    tcpRoutes:
-    - name: postgres-backend
-      backends:
-      - host: postgres.example.com:5432
-        weight: 1
-```
-
-### Supported route features
-
-TCP routes support the following features.
-
-- **Hostname matching**: Only for TLS termination scenarios.
-- **Backend routing**: Direct connection to backend services.
-- **Weight-based load balancing**: Distribute traffic across multiple backends.
-- **Backend TLS**: Configure TLS for upstream connections.
-
-#### Load balancing example
-
-```yaml
-binds:
-- port: 6379
-  listeners:
-  - name: redis-cluster
-    protocol: TCP
-    tcpRoutes:
-    - name: redis-backends
-      backends:
-      - host: redis-1.example.com:6379
-        weight: 1
-      - host: redis-2.example.com:6379
-        weight: 2
-      - host: redis-3.example.com:6379
-        weight: 1
-```
-
-### Unsupported route features
-
-TCP routes do not support the following features. Instead, you can use HTTP routes.
-
-- Path matching
-- HTTP header matching
-- HTTP method matching
-- Query parameter matching
-- HTTP-specific filters and policies
-
 ## Before you begin
 
 {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
@@ -187,3 +132,7 @@ Update the configuration file to remove the TCP listener.
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## Next steps
+
+Create a [TCP route](../../traffic-management/matching#tcp-routes) on the listener.
