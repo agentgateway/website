@@ -38,7 +38,7 @@ For more information, continue to the [Create routes](#create-routes) section.
 
 [TCP listeners](../listeners/tcp) use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than other HTTP routes.
 
-Keep in mind that TCP routes do not support HTTP features such as path, header, method or query matching and HTTP-specific filters and policies.
+Keep in mind that TCP routes do not support HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
 
 Example configuration:
 
