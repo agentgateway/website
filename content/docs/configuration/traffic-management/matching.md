@@ -192,7 +192,7 @@ Match on query parameters, either by exact value or regex.
 
 {{< reuse "docs/snippets/review-configuration.md" >}}
 
-{{< tabs items="Exact query parameter matching, Regex query parameter matching, Multiple query parameters, Combined matching example">}}
+{{< tabs items="Exact query parameter matching, Regex query parameter matching, Multiple query parameters">}}
 {{< tab >}}
 ```yaml
 routes:
@@ -241,7 +241,12 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< /tabs >}}
+
+### Combined matching
+
+You can combine multiple matching conditions to create a more specific route, such as the following example.
+
 ```yaml
 routes:
 - name: comprehensive-match
@@ -260,8 +265,6 @@ routes:
     backends:
     - host: api.example.com:8080
 ```
-{{< /tab >}}
-{{< /tabs >}}
 
 ## TCP routes
 
