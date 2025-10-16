@@ -20,7 +20,7 @@ binds:
           name: anthropic
           provider:
             anthropic:
-              model: claude-3-5-haiku-20241022
+              model: claude-haiku-4-5-20251001
           routes:
             /v1/messages: messages
             /v1/chat/completions: completions
@@ -62,7 +62,7 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
              name: anthropic
              provider:
                anthropic:
-                 model: claude-3-5-haiku-20241022
+                 model: claude-haiku-4-5-20251001
              routes:
                /v1/messages: messages
                /v1/chat/completions: completions
@@ -76,10 +76,10 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
    agentgateway -f config.yaml
    ```
 
-3. In another terminal, configure Claude Code to use agentgateway.
+3. In another terminal, configure Claude Code to use agentgateway that is running on your localhost.
 
    ```bash
-   export ANTHROPIC_API_URL="http://localhost:3000/v1/messages"
+   export ANTHROPIC_BASE_URL="http://localhost:3000"
    ```
 
 4. Start Claude Code with the new configuration with your local environment variable.
@@ -88,10 +88,12 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
    claude
    ```
 
-5. Send a test request through Claude Code, such as `Briefly tell me what you can do.` 
+5. Send a test request through Claude Code, such as `Hello`.
 
 6. In the terminal where you run agentgateway, check the logs. You should see the requests in agentgateway logs. Claude Code continues to work normally while benefiting from any agentgateway features that you added, such as traffic management, security, and monitoring.
    
    Example output:
+   
    ```
+   2025-10-16T20:10:17.919575Z	info	request gateway=bind/3000 listener=listener0 route_rule=route0/default route=route0 endpoint=api.anthropic.com:443 src.addr=[::1]:59011 http.method=POST http.host=localhost http.path=/v1/messages?beta=true http.version=HTTP/1.1 http.status=200 gen_ai.operation.name=chat gen_ai.provider.name=anthropic gen_ai.request.model=claude-haiku-4-5-20251001 gen_ai.response.model=claude-haiku-4-5-20251001 gen_ai.usage.input_tokens=4734 gen_ai.usage.output_tokens=32 gen_ai.request.temperature=0 gen_ai.request.max_tokens=512 duration=1900ms
    ```
