@@ -9,6 +9,54 @@ Routes are the entry points for traffic to your agentgateway. They are configure
 
 You can use the built-in agentgateway UI or a configuration file to create, update, and delete routes. 
 
+## Types of routes
+
+You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`tcpRoutes`).
+
+### HTTP routes
+
+[HTTP or TLS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
+
+Example configuration:
+
+```yaml
+binds:
+- port: 8080
+  listeners:
+  - name: http-proxy
+    protocol: HTTP
+    routes:
+    - name: http-backend
+      backends:
+      - host: http.example.com:8080
+        weight: 1
+```
+
+For more information, continue to the [Create routes](#create-routes) section.
+
+### TCP routes
+
+[TCP listeners](../listeners/tcp) use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than other HTTP routes.
+
+Keep in mind that TCP routes do not support HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
+
+Example configuration:
+
+```yaml
+binds:
+- port: 5432
+  listeners:
+  - name: postgres-proxy
+    protocol: TCP
+    tcpRoutes:
+    - name: postgres-backend
+      backends:
+      - host: postgres.example.com:5432
+        weight: 1
+```
+
+For more information, see [TCP route matching](../traffic-management/matching#tcp-routes).
+
 ## Before you begin
 
 1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
