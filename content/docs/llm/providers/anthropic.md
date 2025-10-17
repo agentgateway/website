@@ -36,7 +36,7 @@ binds:
 |---------|-------------|
 | `name` | The name of the LLM provider for this AI backend, `anthropic`. |
 | `model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
-| `routes` | Include the URL paths to route types. The keys are URL suffix matches, such as `"/v1/messages"` and `"/v1/chat/completions"`. The special `*` wildcard matches any path. If not specified, all traffic is treated as OpenAI's chat completions format. The `messages` format processes requests in Anthropic's native messages format. This enables full compatibility with Claude Code and other Anthropic-native tools.|
+| `routes` | Include the routes to the LLM endpoints that you want to support. The keys are URL suffix matches, such as `"/v1/messages"` and `"/v1/chat/completions"`. The special `*` wildcard matches any path. If not specified, all traffic is treated as OpenAI's chat completions format. The `messages` format processes requests in Anthropic's native messages format. This enables full compatibility with Claude Code and other Anthropic-native tools.|
 | `backendAuth` | Anthropic uses API keys for authentication. You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must pass in a valid API key. |
 
 ## Example request
@@ -120,13 +120,13 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
    agentgateway -f config.yaml
    ```
 
-3. In another terminal, configure Claude Code to use agentgateway that is running on your localhost.
+3. In another terminal, configure Claude Code to use the agentgateway instance that is running on your localhost.
 
    ```bash
    export ANTHROPIC_BASE_URL="http://localhost:3000"
    ```
 
-4. Start Claude Code with the new configuration with your local environment variable.
+4. Start Claude Code with the new configuration.
 
    ```bash
    claude
