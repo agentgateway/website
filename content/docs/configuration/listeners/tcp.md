@@ -14,6 +14,7 @@ TCP listeners provide raw TCP connection proxying, which is useful for:
 - **Custom protocols**: Handle any TCP-based protocol that isn't HTTP
 - **Legacy applications**: Connect older applications that use custom TCP protocols
 - **TLS termination**: Terminate TLS connections and forward to backend services
+- **TLS passthrough**: Route TLS connections based on their [SNI](https://en.wikipedia.org/wiki/Server_Name_Indication), without terminating the TLS connection, and forward to backend services
 
 ## Before you begin
 
