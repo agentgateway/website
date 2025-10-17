@@ -89,6 +89,6 @@ We're thrilled to see the community interest grow around this project. If you're
 
 * [Project website](https://agentgateway.io/)
 * [GitHub repo](https://github.com/agentgateway/agentgateway)
-* [Discord community](https://discord.gg/solo-io)
+* [Discord community](https://discord.com/invite/y9efgEmppm)
 
 > Agentgateway has evolved far beyond just a proxy. It's becoming the control point for secure, scalable agentic systems. We're just getting started.

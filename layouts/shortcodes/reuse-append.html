@@ -12,8 +12,8 @@
   {{- errorf "The %q shortcode could not find %q. See %s" .Name $asset .Position -}}
 {{- end -}}
 
-{{- $base := $res.Content | strings.TrimSpace -}}
-{{- $extra := .Inner | strings.TrimSpace -}}
+{{- $base := trim $res.Content " \n\r\t" -}}
+{{- $extra := trim .Inner " \n\r\t" -}}
 {{- $combined := printf "%s\n%s\n" $base $extra -}}
 
 {{- $combined | .Page.RenderString -}}
