@@ -39,6 +39,50 @@ binds:
 | `routes` | Include the URL paths to route types. The keys are URL suffix matches, such as `"/v1/messages"` and `"/v1/chat/completions"`. The special `*` wildcard matches any path. If not specified, all traffic is treated as OpenAI's chat completions format. The `messages` format processes requests in Anthropic's native messages format. This enables full compatibility with Claude Code and other Anthropic-native tools.|
 | `backendAuth` | Anthropic uses API keys for authentication. You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must pass in a valid API key. |
 
+## Example request
+
+After running agentgateway with the configuration from the previous section, you can send a request to the `v1/messages` endpoint. Agentgateway automatically adds the `x-api-key` authorization and `anthropic-version` headers to the request. The request is forwarded to the Anthropic API and the response is returned to the client.
+
+```json
+curl -X POST http://localhost:3000/v1/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-3-5-haiku-20241022",
+    "max_tokens": 100,
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
+
+Example response:
+
+```json
+{
+  "model": "claude-haiku-4-5-20251001",
+  "usage": {
+    "input_tokens": 9,
+    "output_tokens": 21,
+    "cache_creation_input_tokens": 0,
+    "cache_read_input_tokens": 0,
+    "cache_creation": {
+      "ephemeral_5m_input_tokens": 0,
+      "ephemeral_1h_input_tokens": 0
+    },
+    "service_tier": "standard"
+  },
+  "content": [
+    {
+      "text": "Hi there! How are you doing today? Is there anything I can help you with?",
+      "type": "text"
+    }
+  ],
+  "id": "msg_01QdUEuzvXfjLh1HfMQd4UHP",
+  "type": "message",
+  "role": "assistant",
+  "stop_reason": "end_turn",
+  "stop_sequence": null
+}
+```
+
 ## Connect to Claude Code
 
 Connect to Claude Code locally to verify access to the Anthropic provider through agentgateway.
@@ -51,7 +95,7 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
 
 2. Start agentgateway with the following configuration. Make sure that the `v1/messages` route is set so that Claude Code can connect to agentgateway.
    
-   ```bash
+   ```yaml
    cat > config.yaml << EOF
    binds:
    - port: 3000
