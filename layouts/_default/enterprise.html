@@ -1,0 +1,171 @@
+{{ define "main" }}
+<div class="w-full absolute top-20 lg:top-25 z-10">   
+{{ partial "announcement.html" .}}
+</div>
+<div class='mx-auto flex bg-primary-bg text-primary-dark'>
+    {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
+    <article class="w-full break-words flex justify-center">
+        <main class="w-full relative overflow-hidden">
+            {{ partial "nav.html" .}}
+            <section class="text-white pt-[7.875rem]">
+              <div class="py-16 lg:py-24 px-6 border-b-[1px] border-b-secondary-border">
+                <div class="max-w-7xl mx-auto">
+                  <div class="flex flex-col lg:flex-row items-center justify-between gap-12">
+                    <div class="flex-1">
+                      <h1 class="text-4xl lg:text-5xl font-bold text-primary-text font-heading">
+                        Enterprise <span class="text-tertiary-text">Distributions</span>
+                      </h1>
+                      <p class="text-lg text-secondary-text mt-6 max-w-3xl">
+                        Agentgateway was originally created by Solo.io and is a Linux Foundation project. The listed partners offer enterprise distributions and commercial support for agentgateway.
+                      </p>
+                    </div>
+                    <div class="flex-shrink-0">
+                      <img src="/lf-logo.svg" alt="Linux Foundation" class="h-24 lg:h-32 object-contain" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="py-20 lg:py-28 px-6">
+              <div class="max-w-7xl mx-auto">
+                <h2 class="text-3xl lg:text-4xl font-bold text-primary-text text-center mb-16 font-heading">
+                  Distributions & <span class="text-tertiary-text">Support</span>
+                </h2>
+                
+                <div class="bg-secondary-bg rounded-2xl p-8 lg:p-12 border-[1px] border-secondary-border">
+                  <div class="flex flex-col lg:flex-row gap-8 items-start">
+                    <div class="flex-shrink-0">
+                      <picture>
+                        <source srcset="/adopters/solo-io-dark.png" media="(prefers-color-scheme: dark)">
+                        <source srcset="/adopters/solo-io-light.png" media="(prefers-color-scheme: light)">
+                        <img src="/adopters/solo-io-dark.png" alt="Solo.io" class="h-12 object-contain" />
+                      </picture>
+                    </div>
+                    <div class="flex-1">
+                      <h3 class="text-2xl font-bold text-primary-text mb-4 font-heading">
+                        Solo Enterprise for agentgateway
+                      </h3>
+                      <p class="text-secondary-text text-lg mb-6 leading-relaxed">
+                        Discover Solo.io's enterprise distribution of agentgateway, the first AI-native gateway built to secure, govern, and scale agentic connectivity. Designed for production-ready MCP and A2A deployments, it unifies security, observability, and lifecycle management for AI and agentic systems.
+                      </p>
+                      <a 
+                        href="https://www.solo.io/products/agentgateway-enterprise?utm_source=agentgateway.io&utm_medium=referral&utm_campaign=enterprise-distro" 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-2 px-6 py-3 bg-tertiary-text text-white font-semibold rounded-lg hover:opacity-90 transition-opacity"
+                      >
+                        Learn more
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                        </svg>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section class="py-20 lg:py-28 px-6 bg-secondary-bg">
+              <div class="max-w-7xl mx-auto">
+                <h2 class="text-3xl lg:text-4xl font-bold text-primary-text text-center mb-6 font-heading">
+                  Our <span class="text-tertiary-text">Contributors</span>
+                </h2>
+                <p class="text-secondary-text text-center text-lg mb-16 max-w-3xl mx-auto">
+                  Agentgateway is supported by contributions from leading technology companies and organizations worldwide.
+                </p>
+                
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8 lg:gap-12 items-center justify-items-center">
+                    <img src="/quotes/tmobile.svg" alt="T-Mobile" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    <img src="/quotes/microsoft.svg" alt="Microsoft" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    <img src="/quotes/ubs.svg" alt="UBS" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    <img src="/quotes/akamai.svg" alt="Akamai" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    <img src="/quotes/dell.svg" alt="Dell" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    <img src="/quotes/tuf.svg" alt="TUF" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    <img src="/quotes/kyverno.png" alt="Kyverno" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                    <img src="/quotes/coreweave.svg" alt="CoreWeave" class="max-h-16 max-w-full object-contain opacity-80 hover:opacity-100 transition-opacity" />
+                </div>
+              </div>
+            </section>
+
+            <section class="py-20 lg:py-28 px-6">
+              <div class="max-w-5xl mx-auto text-center">
+                <h2 class="text-3xl lg:text-4xl font-bold text-primary-text mb-12 font-heading">
+                  Get <span class="text-tertiary-text">Involved</span>
+                </h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <a 
+                    href="https://discord.com/invite/y9efgEmppm" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="bg-secondary-bg rounded-xl p-6 border-[1px] border-secondary-border hover:border-primary-border transition-colors text-left group"
+                  >
+                    <h3 class="text-xl font-bold text-primary-text mb-2 group-hover:text-tertiary-text transition-colors">
+                      Join us on Discord
+                    </h3>
+                    <p class="text-secondary-text">
+                      Connect with the community and get help
+                    </p>
+                  </a>
+                  
+                  <a 
+                    href="https://github.com/agentgateway/agentgateway" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="bg-secondary-bg rounded-xl p-6 border-[1px] border-secondary-border hover:border-primary-border transition-colors text-left group"
+                  >
+                    <h3 class="text-xl font-bold text-primary-text mb-2 group-hover:text-tertiary-text transition-colors">
+                      Contribute on GitHub
+                    </h3>
+                    <p class="text-secondary-text">
+                      Help improve agentgateway with your contributions
+                    </p>
+                  </a>
+                  
+                  <a 
+                    href="https://www.linkedin.com/company/agent-gateway" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    class="bg-secondary-bg rounded-xl p-6 border-[1px] border-secondary-border hover:border-primary-border transition-colors text-left group"
+                  >
+                    <h3 class="text-xl font-bold text-primary-text mb-2 group-hover:text-tertiary-text transition-colors">
+                      Follow us on LinkedIn
+                    </h3>
+                    <p class="text-secondary-text">
+                      Stay updated with the latest news and updates
+                    </p>
+                  </a>
+                  
+                  <a 
+                    href="/docs/quickstart/" 
+                    class="bg-secondary-bg rounded-xl p-6 border-[1px] border-secondary-border hover:border-primary-border transition-colors text-left group"
+                  >
+                    <h3 class="text-xl font-bold text-primary-text mb-2 group-hover:text-tertiary-text transition-colors">
+                      Visit the Quickstart
+                    </h3>
+                    <p class="text-secondary-text">
+                      Get started with agentgateway in minutes
+                    </p>
+                  </a>
+                </div>
+                
+                <div class="mt-8">
+                  <a 
+                    href="/docs/" 
+                    class="inline-flex items-center gap-2 px-8 py-4 bg-tertiary-text text-white font-semibold rounded-lg hover:opacity-90 transition-opacity text-lg"
+                  >
+                    Explore the Docs
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                      <path fill-rule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </section>
+        </main>
+    </article>
+</div>
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ .Site.Params.gtmContainerID }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+{{ end }}
+

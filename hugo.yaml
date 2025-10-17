@@ -53,6 +53,9 @@ menu:
     - name: Blog
       weight: 3
       url: /blog
+    - name: Enterprise
+      weight: 4
+      url: /enterprise
     - name: Search
       weight: 5
       params:
