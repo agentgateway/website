@@ -27,20 +27,56 @@ Set up a TCP listener on your agentgateway.
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
-1. Start your agentgateway. 
-   ```sh
-   agentgateway 
+1. Create a configuration file with your TCP listener configuration. 
+   
+   ```yaml
+   cat > config.yaml << 'EOF'
+   # yaml-language-server: $schema=https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/local.json
+   binds:
+   - port: 5432
+     listeners:
+     - name: postgres-proxy
+       protocol: TCP
+       tcpRoutes:
+       - name: postgres-backend
+         backends:
+         - host: postgres.example.com:5432
+           weight: 1
+   EOF
    ```
 
-2. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/). 
-   {{< reuse-image src="img/agentgateway-ui-listener-none.png" >}}
+2. Review the configuration file. The example sets up a TCP listener that proxies raw TCP connections on port 5432 to a PostgreSQL server. 
+   ```
+   cat config.yaml
+   ```
 
-3. Click **Add Bind**. 
-4. Enter a **Port** number such as `5432` and then click **Add Bind**.
-   {{< reuse-image src="img/ui-listener-add-bind.png" >}}
-5. Expand the port that you just created and click **Add Listener**.
-   {{< reuse-image src="img/ui-listener-add.png">}}
-6. For your listener, configure the details.
+   ```yaml
+   # yaml-language-server: $schema=https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/local.json
+   binds:
+   - port: 5432
+     listeners:
+     - name: postgres-proxy
+       protocol: TCP
+       tcpRoutes:
+       - name: postgres-backend
+         backends:
+         - host: postgres.example.com:5432
+           weight: 1
+   ```
+
+3. Run the agentgateway. 
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+4. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/). 
+   {{< reuse-image src="img/agentgateway-ui-listener-tcp.png" >}}
+
+5. Click **Add Bind**. 
+6. Enter a **Port** number such as `5432` and then click **Add Bind**.
+   {{< reuse-image src="img/ui-listener-add-bind-tcp.png" >}}
+7. Expand the port that you just created and click **Add Listener**.
+8. For your listener, configure the details.
    * Name: If you omit this, a name is generated for you.
    * Gateway Name: An optional field to group together listeners for ease of management, such as listeners for the same app or team.
    * Target Bind: The port bind that you set up in the previous step.
@@ -48,14 +84,14 @@ Set up a TCP listener on your agentgateway.
    * Hostname: The hostname that the listener binds to, which can include a wildcard `*`. To use an address that is compatible with IPv4 and IPv6, enter `[::]`.
    * Click **Add Listener** to save your configuration.
    
-   {{< reuse-image src="img/ui-listener-tcp-dark.png" >}}
+   {{< reuse-image src="img/ui-listener-tcp.png" >}}
 
 {{% /tab %}}
 {{% tab %}}
 
 1. Create a configuration file with your TCP listener configuration. 
    
-   ```sh
+   ```yaml
    cat > config.yaml << 'EOF'
    # yaml-language-server: $schema=https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/local.json
    binds:
@@ -117,7 +153,7 @@ Remove agentgateway TCP listeners with the UI.
 2. [Open the agentgateway listener UI](http://localhost:15000/ui/listeners/) and find the TCP listener that you want to remove.
 
 3. Click the trash icon and then **Delete** to remove the listener. 
-   {{< reuse-image src="img/ui-listener-delete.png" >}}
+   {{< reuse-image src="img/ui-listener-delete-tcp.png" >}}
 
 {{% /tab %}}
 {{% tab %}}

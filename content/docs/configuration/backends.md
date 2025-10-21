@@ -20,15 +20,28 @@ You can create backends by using the agentgateway UI or a configuration file.
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
-1. Start your agentgateway. 
+1. Download a configuration file that contains your listener configuration. 
+   
    ```sh
-   agentgateway
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
    ```
 
-2. [Open the agentgateway target UI](http://localhost:15000/ui/backends/). 
+2. Review the configuration file. The example sets up an HTTP listener with the MCP protocol that listens for incoming traffic on port 3000. 
+   ```
+   cat config.yaml
+   ```
+
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
+
+3. Run the agentgateway. 
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+4. [Open the agentgateway target UI](http://localhost:15000/ui/backends/). 
    {{< reuse-image src="img/ui-backends-none.png" >}}
    
-3. Click **Add Backend** and configure your backend details, such as follows:
+5. Click **Add Backend** and configure your backend details, such as follows:
 
    * Backend Type: `MCP`
    * Name: `default`

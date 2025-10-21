@@ -71,6 +71,10 @@ In this example, you use a [basic configuration file](/docs/configuration/overvi
 
 2. Review the configuration file. 
 
+   ```sh
+   cat config.yaml
+   ```
+
    {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
 
    {{< reuse "docs/snippets/review-table.md" >}}

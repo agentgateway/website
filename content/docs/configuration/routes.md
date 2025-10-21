@@ -69,15 +69,28 @@ Set up a route on your listener.
 {{< tabs items="UI,Configuration file" >}}
 {{% tab %}}
 
-1. Start your agentgateway. 
-   ```sh
-   agentgateway 
+1. Download a configuration file for your agentgateway.
+   ```yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
    ```
 
-2. [Open the agentgateway route UI](http://localhost:15000/ui/routes/). 
+2. Review the configuration file.
+
+   ```
+   cat config.yaml
+   ```
+
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
+
+3. Run the agentgateway. 
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+4. [Open the agentgateway route UI](http://localhost:15000/ui/routes/). 
    {{< reuse-image src="img/ui-routes-none.png" >}}
 
-3. Click **Add Route** and configure a route such as follows:
+5. Click **Add Route** and configure a route such as follows:
    * Name: An optional name for the route.
    * Rule Name: An optional name for the matching rules of the route.
    * Target Listener: Select the listener that you previously created. The Route Type is automatically determined based on the listener protocol.
