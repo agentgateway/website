@@ -39,13 +39,11 @@ sequenceDiagram
 You can choose whether you want agentgateway to forward requests if the external processing server is unavailable with the `extProc.failureMode` setting. Choose between the following modes: 
 
 * **failOpen**: Block requests if the request to the external processing server fails. This is the default behavior. 
-* **failClosed**: Forward requests to the backend service, even if the connection to the external processing server fails. 
+* **failClosed**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
 
 ## Setup
 
-{{< callout >}}
-External processing can be applied at the route or the gateway level. If applied to both, the route-level policy takes precedence. 
-{{< /callout >}}
+External processing can be applied at the route or the gateway level. If applied to both, the route-level policy takes precedence.
 
 {{< tabs items="Route-level,Gateway-level">}}
 {{% tab %}}
