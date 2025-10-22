@@ -19,3 +19,7 @@ To run a local preview:
 
 5. [`http://localhost:1313`](http://localhost:1313)
 
+## Adopters
+
+We’d love to highlight agentgateway adopters on our website! 🌟 If you're using agentgateway in a dev/test or production environment, feel free to add yourself to the [adopters file](src/data/adopters.yaml) by submitting a PR with your company name and logo. Thank you for your support! 💖
+
