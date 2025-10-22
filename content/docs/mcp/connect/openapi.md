@@ -112,21 +112,20 @@ Build the Docker image from the source code. The example builds the image for an
    - port: 3000
      listeners:
      - routes:
-       - policies:
-           cors:
-             allowOrigins:
-               - "*"
-             allowHeaders:
-               - "*"
-         backends:
+       - backends:
          - mcp:
              targets:
              - name: openapi
                openapi:
                  schema:
                    file: openapi.json
-                 host: localhost
-                 port: 8080
+                 host: localhost:8080
+         policies:
+           cors:
+             allowOrigins:
+               - "*"
+             allowHeaders:
+               - "*"
    ```
 
 1. Run the agentgateway. 

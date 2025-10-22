@@ -60,6 +60,11 @@ menu:
       weight: 5
       params:
         type: search
+    - name: GitHub
+      weight: 10
+      url: "https://github.com/agentgateway/website"
+      params:
+        icon: github
 
 params:
   title: agentgateway
