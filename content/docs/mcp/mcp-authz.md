@@ -23,4 +23,4 @@ mcpAuthorization:
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
-Refer to the [CEL reference](/docs/operations/cel) for allowed variables.
+Refer to the [CEL reference](/docs/reference/cel) for allowed variables.
