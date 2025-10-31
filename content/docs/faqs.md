@@ -58,6 +58,12 @@ The agentgateway project organizes issues into milestones for each release. For 
 
 The changelog is part of each [GitHub release](https://github.com/agentgateway/agentgateway/releases/).
 
+## Is there enterprise software that is based on agentgateway?
+
+{{< cards >}}
+  {{< card link="https://www.solo.io/products/agentgateway-enterprise" title="Solo.io" image="/img/solo-enterprise-for-agw.png" icon="external-link">}}
+{{< /cards >}}
+
 ## What if I have more questions about agentgateway? 
 
 Join the weekly agentgateway [community meeting](https://github.com/agentgateway/agentgateway?tab=readme-ov-file#community-meetings) or engage with the agentgateway community on [Discord](https://discord.com/invite/y9efgEmppm).
