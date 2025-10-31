@@ -62,7 +62,7 @@ menu:
         type: search
     - name: GitHub
       weight: 10
-      url: "https://github.com/agentgateway/website"
+      url: "https://github.com/agentgateway/agentgateway"
       params:
         icon: github
 
