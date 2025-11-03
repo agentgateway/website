@@ -1,17 +1,37 @@
-<section class="px-6 md:px-10 py-[4.375rem] md:py-24 flex flex-col gap-16 justify-center items-center">
-  <div class="grid auto-rows-auto grid-flow-row gap-x-8 gap-y-16 grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 justify-items-center">
+<section class="px-6 md:px-10 py-20 md:py-28 max-w-6xl mx-auto bg-gray-50">
+  <div class="flex flex-col gap-8">
     {{ range $.Page.Pages }}
-      <a href="{{ .RelPermalink }}" class="card bg-primary-bg min-h-[15.625rem] rounded-[.625rem] flex flex-col items-start justify-start max-w-[24.5rem] sm:w-[24.5rem] p-6 gap-4">
-        <h3 class="font-heading tracking-tight text-2xl text-white font-bold">
-          {{ .LinkTitle }}
-        </h3>
-        <div class="font-heading text-xl text-white">
-          {{ .PublishDate | time.Format ":date_medium" }}
-          <p class="text-base font-sans">
-            {{ .Params.Author }}
-          </p> 
+      <article class="group bg-white border-2 border-gray-200 rounded-2xl p-8 md:p-10 hover:border-purple-400 hover:shadow-[0_20px_60px_-15px_rgba(139,92,246,0.4)] transition-all duration-300 hover:scale-[1.01] text-left">
+        
+        <!-- Date and Author -->
+        <div class="flex items-center gap-3 text-sm font-medium text-gray-600 mb-5 tracking-wide">
+          <time datetime="{{ .PublishDate }}">
+            {{ .PublishDate | time.Format "Jan 2, 2006" }}
+          </time>
+          <span class="text-gray-400 opacity-50">•</span>
+          <span>{{ .Params.Author }}</span>
         </div>
-      </a>
+        
+        <!-- Title -->
+        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6 group-hover:text-purple-700 transition-colors duration-200 leading-tight font-sans" style="letter-spacing: 0 !important; word-spacing: 0 !important; text-align: left !important; text-justify: none !important; font-family: ui-sans-serif, system-ui, sans-serif !important;">
+          <a href="{{ .RelPermalink }}" class="hover:underline decoration-purple-600 decoration-2 underline-offset-4" style="text-align: left !important;">
+            {{ .LinkTitle }}
+          </a>
+        </h2>
+        
+        <!-- Excerpt/Description -->
+        <div class="text-gray-600 text-lg leading-relaxed mb-8 max-h-32 overflow-hidden" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;">
+          {{ .Summary }}
+        </div>
+        
+        <!-- Read more indicator -->
+        <a href="{{ .RelPermalink }}" class="inline-flex items-center gap-2 text-purple-600 font-bold text-base group-hover:gap-4 transition-all duration-200 hover:underline decoration-2 underline-offset-4">
+          <span>Read full article</span>
+          <svg class="w-5 h-5 transform group-hover:translate-x-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+          </svg>
+        </a>
+      </article>
     {{ end }}
   </div>
 </section>
