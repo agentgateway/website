@@ -22,7 +22,11 @@ In this blog post, you'll learn how to properly set fine-grained rate limiting, 
 
 ## What do Enterprises Need?
 
-The hosted LLM providers are trying to protect their service, and rightfully so. They give you fixed buckets for service, and coarse grained limiting that cannot be configured. Enterprises need things like fine-grained rate limit control, attribution metrics, spike arrest, model (and potentially provider) failover, and dashboards/alerting. Most of this should NOT be implemented on the hosted LLM providers (for privacy, PII, and compliance reasons - e.g., sending user IDs, auth context, entitlements, etc), so enterprises are leveraging AI / LLM gateways to do this. Let's see how [agentgateway](https://agentgateway.dev) can be used here. 
+The hosted LLM providers are trying to protect their service, and rightfully so. They give you fixed buckets for service, and coarse grained limiting that cannot be configured. Enterprises need things like fine-grained rate limit control, attribution metrics, spike arrest, model (and potentially provider) failover, and dashboards/alerting. Most of this should NOT be implemented on the hosted LLM providers (for privacy, PII, and compliance reasons - e.g., sending user IDs, auth context, entitlements, etc), so enterprises are leveraging AI / LLM gateways to do this.
+
+Think of this like cloud providers. You're essentially "renting infrastructure" from them, and there is a cap/quota/limit that each region has. The same type of concept applies to LLM providers.
+
+Let's see how [agentgateway](https://agentgateway.dev) can be used here. 
 
 ## Fine Grained Rate Limiting, Cost Control, Spike Arrest
 
@@ -109,7 +113,9 @@ This will enforce rate limit per route/user/source_ip tuple. This gives extremel
 
 ## Enriching Call Metrics
 
-Once we have fine-grained control over what clients, applications, users, teams, environments, etc can call which models, and enforce fine-grained usage limits at runtime, we need to track what is actually getting used. Model providers do give some visibility into what gets consumed, but again, the buckets are too coarse grained. The usage limits are tracked per project and per API key. Just like with rate limiting, we'll need more fine-grained metrics. 
+Once we have fine-grained control over what clients, applications, users, teams, environments, etc can call which models, and enforce fine-grained usage limits at runtime, we need to track what is actually getting used. Model providers do give some visibility into what gets consumed, but again, the buckets are too coarse grained. The usage limits are tracked per project and per API key. Just like with rate limiting, we'll need more fine-grained metrics.
+
+Organizations are beginning to think about Agentic Infrastructure like they have been thinking about cloud environments for years utilizing failover, High Availability, Usage (in this case, Tokens), and network connectivity. Because of that, understanding what is going on underneath the hood is crucial for all teams utilizing LLMs.
 
 Agentgateway has a [wealth of metrics]({{< relref "docs/reference/observability/metrics/" >}}) about LLM usage. The important point here is that the metric dimensions are fully configurable. Let's take a look. Here are the main metrics that get tracked:
 
