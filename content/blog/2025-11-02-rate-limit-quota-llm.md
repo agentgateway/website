@@ -210,20 +210,10 @@ Enterprises will need to effectively plan for failover. If traffic is managed th
 
 In this case, if `gpt-5` has issues or hits provider limits, agentgateway will recognize this (ie, 429s, etc) and failover to the `gpt-4o` model.
 
-Taking the same approach, there are times where quotas may be hit on a particular AI vendor for the subscription that your organization has or a particular LLM provider is having connectivity issues and failures are occuring. If that happens, you can failover to a different LLM.
+Taking the same approach, there are times where quotas may be hit on a particular AI vendor for the subscription that your organization has or a particular LLM provider is having connectivity issues and failures are occurring. If that happens, you can failover to a different model provider.
 
 ```yaml
-- name: failover-openai
-  matches:
-  - path:
-      pathPrefix: /failover/chat
-  policies:
-    retry:
-      attempts: 2        # Retry once (2 total attempts)
-      codes: [429]       # Retry on 429 errors
-    urlRewrite:
-      path:
-        prefix: ""          
+   
   backends:
   - ai:
       groups:
@@ -235,6 +225,7 @@ Taking the same approach, there are times where quotas may be hit on a particula
             backendAuth:
               key: ${OPENAI_API_KEY}   
 
+      # Different provider : Anthropic
       - providers:
           - name: secondary-model
             provider:
@@ -262,7 +253,7 @@ Using a standard Prometheus + Grafana setup (or OpenTelemetry-compatible backend
 
 * **Failover Behavior** – Visualize when and why traffic was shifted to a secondary provider or model, surfacing patterns like repeated rate-limit failures or upstream outages.
 
-{{< reuse-image src="img/blog/rate-limit/dashboard.png" width="700px" >}}
+{{< reuse-image src="img/blog/rate-limit/dashboard.png"  >}}
 
 These dashboards can easily be sliced and diced by any metric dimension you’ve annotated in agentgateway — for example, breaking down token usage by team, application, or region.
 
@@ -273,7 +264,7 @@ For alerting, since all metrics are exposed in standard formats, you can define 
 * Alert when failover events exceed a certain frequency.
 * Send cost threshold alerts by model or provider to finance or platform teams.
 
-{{< reuse-image src="img/blog/rate-limit/dashboard2.png" width="700px" >}}
+{{< reuse-image src="img/blog/rate-limit/dashboard2.png"  >}}
 
 The combination of agentgateway’s flexible metrics model, Prometheus exposition, and configurable metadata enables both deep operational visibility and automated guardrails. Enterprises can make informed scaling decisions, attribute costs accurately, and quickly detect abnormal behavior across teams, environments, and providers — all without exposing sensitive user data to the hosted LLM providers.
 
@@ -283,13 +274,13 @@ You can see the dasboard [here](https://github.com/AdminTurnedDevOps/agentic-dem
 
 Here's an example of what the metrics look like from a visual perspective.
 
-![](../images/prometheus-agentgateway-metrics.png)
-![](../images/agentgateway-grafana-dashboard.png)
+{{< reuse-image src="img/blog/rate-limit/prometheus-agentgateway-metrics.png" >}}
+{{< reuse-image src="img/blog/rate-limit/agentgateway-grafana-dashboard.png" >}}
+
 
 ## Wrapping Up
 
-Enterprises are realizing that managing LLM usage isn’t just about calling an API — it’s about governance, control, visibility, and resilience. Agentgateway gives you the building blocks to do this: fine-grained rate limiting, attribution, failover, dashboards, and alerting — all without sending sensitive context to hosted LLM providers. If you’re building AI into your enterprise applications, it’s time to treat your LLM traffic like any other critical service layer. Try agentgateway
- today and see how easy it is to gain control, insight, and reliability over your AI infrastructure.
+Enterprises know that managing LLM usage isn’t just about calling an API or relying fully on what the provider has. It’s about governance, control, visibility, and resilience. Agentgateway gives you the building blocks to do this: fine-grained rate limiting, attribution, failover, and metrics/dashboards based on Open Telemetry all without sending sensitive context to hosted LLM providers. If you’re building AI into your enterprise applications, it’s time to treat your LLM traffic like any other critical service layer. Try agentgateway today and see how easy it is to gain control, insight, and reliability over your AI infrastructure.
 
 
 
