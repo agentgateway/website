@@ -16,11 +16,17 @@ Hosted LLM providers like OpenAI and Anthropic have [rate limiting capabilities]
 | Anthropic | Claude 3.0        | 400,000 TPM                                     | Lower tier example             |
 
 
-In essence the providers give you coarse grained, non-configurable controls for rate limiting. Enterprises need far more control here. Providers expect users to figure this out themselves. That's where something like an LLM gateway (ie, [agentgateway](https://agentgateway.dev)) comes into the picture. 
+In essence the providers give you coarse grained, non-configurable controls for rate limiting. Enterprises need far more control here. Providers expect users to figure this out themselves. That's where something like an LLM gateway (ie, [agentgateway](https://agentgateway.dev)) comes into the picture.
+
+In this blog post, you'll learn how to properly set fine-grained rate limiting, understand cost/usage of Tokens, Model/LLM failover, and observability for agentgateway.
 
 ## What do Enterprises Need?
 
-The hosted LLM providers are trying to protect their service, and rightfully so. They give you fixed buckets for service, and coarse grained limiting that cannot be configured. Enterprises need things like fine-grained rate limit control, attribution metrics, spike arrest, model (and potentially provider) failover, and dashboards/alerting. Most of this should NOT be implemented on the hosted LLM providers (for privacy, PII, and compliance reasons - e.g., sending user IDs, auth context, entitlements, etc), so enterprises are leveraging AI / LLM gateways to do this. Let's see how [agentgateway](https://agentgateway.dev) can be used here. 
+The hosted LLM providers are trying to protect their service, and rightfully so. They give you fixed buckets for service, and coarse grained limiting that cannot be configured. Enterprises need things like fine-grained rate limit control, attribution metrics, spike arrest, model (and potentially provider) failover, and dashboards/alerting. Most of this should NOT be implemented on the hosted LLM providers (for privacy, PII, and compliance reasons - e.g., sending user IDs, auth context, entitlements, etc), so enterprises are leveraging AI / LLM gateways to do this.
+
+Think of this like cloud providers. You're essentially "renting infrastructure" from them, and there is a cap/quota/limit that each region has. The same type of concept applies to LLM providers.
+
+Let's see how [agentgateway](https://agentgateway.dev) can be used here. 
 
 ## Fine Grained Rate Limiting, Cost Control, Spike Arrest
 
@@ -107,7 +113,9 @@ This will enforce rate limit per route/user/source_ip tuple. This gives extremel
 
 ## Enriching Call Metrics
 
-Once we have fine-grained control over what clients, applications, users, teams, environments, etc can call which models, and enforce fine-grained usage limits at runtime, we need to track what is actually getting used. Model providers do give some visibility into what gets consumed, but again, the buckets are too coarse grained. The usage limits are tracked per project and per API key. Just like with rate limiting, we'll need more fine-grained metrics. 
+Once we have fine-grained control over what clients, applications, users, teams, environments, etc can call which models, and enforce fine-grained usage limits at runtime, we need to track what is actually getting used. Model providers do give some visibility into what gets consumed, but again, the buckets are too coarse grained. The usage limits are tracked per project and per API key. Just like with rate limiting, we'll need more fine-grained metrics.
+
+Organizations are beginning to think about Agentic Infrastructure like they have been thinking about cloud environments for years utilizing failover, High Availability, Usage (in this case, Tokens), and network connectivity. Because of that, understanding what is going on underneath the hood is crucial for all teams utilizing LLMs.
 
 Agentgateway has a [wealth of metrics]({{< relref "docs/reference/observability/metrics/" >}}) about LLM usage. The important point here is that the metric dimensions are fully configurable. Let's take a look. Here are the main metrics that get tracked:
 
@@ -130,6 +138,16 @@ Example question it answers:
 
 Example question it answers:
 “How fast is the model generating tokens once it starts?”
+
+* **agentgateway_gen_ai_client_token_usage_sum** - Total Tokens
+
+Example question it answers:
+“How many tokens have been used for a particular LLM?”
+
+* **agentgateway_downstream_connections_total** - Counter of downstream connections (labeled by bind, gateway, listener, protocol)
+
+Example question it answers:
+“What connections are coming from clients to the Gateway?”
 
 If we annotate the metrics with additional metadata, we can get more depth to what calls are happening, by whom, and how to attribute them: Let's look at an example:
 
@@ -190,7 +208,41 @@ Enterprises will need to effectively plan for failover. If traffic is managed th
               key: ${OPENAI_API_KEY}   
 ```
 
-In this case, if `gpt-5` has issues or hits provider limits, agentgateway will recognize this (ie, 429s, etc) and failover to the `gpt-4o` model. 
+In this case, if `gpt-5` has issues or hits provider limits, agentgateway will recognize this (ie, 429s, etc) and failover to the `gpt-4o` model.
+
+Taking the same approach, there are times where quotas may be hit on a particular AI vendor for the subscription that your organization has or a particular LLM provider is having connectivity issues and failures are occuring. If that happens, you can failover to a different LLM.
+
+```yaml
+- name: failover-openai
+  matches:
+  - path:
+      pathPrefix: /failover/chat
+  policies:
+    retry:
+      attempts: 2        # Retry once (2 total attempts)
+      codes: [429]       # Retry on 429 errors
+    urlRewrite:
+      path:
+        prefix: ""          
+  backends:
+  - ai:
+      groups:
+      - providers:
+          - name: primary-model
+            provider:
+              openAI:
+                model: "gpt-5"
+            backendAuth:
+              key: ${OPENAI_API_KEY}   
+
+      - providers:
+          - name: secondary-model
+            provider:
+              openAI:
+                model: "claude-3-5-haiku-latest"
+            backendAuth:
+              key: ${ANTHROPIC_API_KEY}   
+```
 
 It's important to understand the performance and behavior of the primary model and how/what to failover to. Models each have their nuances when it comes to thinking, tool behavior, accuracy, etc. Some thought needs to be put into failover. 
 
@@ -224,6 +276,15 @@ For alerting, since all metrics are exposed in standard formats, you can define 
 {{< reuse-image src="img/blog/rate-limit/dashboard2.png" width="700px" >}}
 
 The combination of agentgateway’s flexible metrics model, Prometheus exposition, and configurable metadata enables both deep operational visibility and automated guardrails. Enterprises can make informed scaling decisions, attribute costs accurately, and quickly detect abnormal behavior across teams, environments, and providers — all without exposing sensitive user data to the hosted LLM providers.
+
+Leaning into Grafana and Prometheus, two popular and prominent open-source monitoring and metrics tools, you can capture the agentgateway metrics within Prometheus and if you want a visual from a monitoring perspective, you can create a Grafana dashboard with those metrics.
+
+You can see the dasboard [here](https://github.com/AdminTurnedDevOps/agentic-demo-repo/blob/main/agentgateway-oss-k8s/observability/llm%2Bmcp_dashboard.json)
+
+Here's an example of what the metrics look like from a visual perspective.
+
+![](../images/prometheus-agentgateway-metrics.png)
+![](../images/agentgateway-grafana-dashboard.png)
 
 ## Wrapping Up
 
