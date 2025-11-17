@@ -16,9 +16,23 @@ Hosted LLM providers like OpenAI and Anthropic have [rate limiting capabilities]
 | Anthropic | Claude 3.0        | 400,000 TPM                                     | Lower tier example             |
 
 
-In essence the providers give you coarse grained, non-configurable controls for rate limiting. Enterprises need far more control here. Providers expect users to figure this out themselves. That's where something like an LLM gateway (ie, [agentgateway](https://agentgateway.dev)) comes into the picture.
+In essence the providers give you coarse grained, non-configurable controls for rate limiting. Enterprises need far more control here. Enterprises need:
+
+* Fine-grained rate limit / quota enforcement
+* Detailed report/audit/metrics for chargeback/showback
+* Model/provider failover
+* Configurable rate limit / metric collection
+
+
+Providers expect users to figure this out themselves. That's where something like an LLM gateway (ie, [agentgateway](https://agentgateway.dev)) comes into the picture.
 
 In this blog post, you'll learn how to properly set fine-grained rate limiting, understand cost/usage of Tokens, Model/LLM failover, and observability for agentgateway.
+
+### TL;DR video demo
+
+You can see a demo of these features in action here:
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/3ZkGsGrz774?si=3SyGLsxsyTynynms" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
 
 ## What do Enterprises Need?
 
