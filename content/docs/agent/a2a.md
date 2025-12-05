@@ -68,7 +68,7 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
 
    The agent responded with `Hello World` by taking a look at the end of the respond `{"kind":"text","text":"Hello World"}],"role":"agent"}`
 
-2. In another terminal tab, manually send a request to the [agent card endpoint](https://www.agentcard.net/) through agentgateway.
+2. In another terminal tab, manually send a request to the agent card endpoint through agentgateway.
 
    ```sh
    curl localhost:3000/.well-known/agent.json | jq
