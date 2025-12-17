@@ -88,18 +88,13 @@ remoteRateLimit:
 
 ## Context reference
 
-As you write expressions, keep the following context in mind.
+When using CEL expressions, a variety of variables and functions are made available.
 
-### Functions and variables {#functions-and-variables}
+### Variables
 
-When using CEL in agentgateway, you can use the following variables and functions.
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel.md" section="CEL context Schema" %}}
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/README.md" section="CEL context" %}}
-
-### Functions by policy type {#fields-by-policy}
-
-Certain fields are populated only if they are referenced in a CEL expression.
-This way, agentgateway avoids expensive buffering of request bodies if no CEL expression depends on the `body`.
+#### Variables by policy type
 
 Depending on the policy, different fields are accessible based on when in the request processing they are applied.
 
@@ -113,26 +108,13 @@ Depending on the policy, different fields are accessible based on when in the re
 |Tracing| `source`, `request`, `jwt`, `mcp`, `response`, `llm`|
 |Metrics| `source`, `request`, `jwt`, `mcp`, `response`, `llm`|
 
-### Functions for all policy types {#functions-policy-all}
+Additionally, fields are populated only if they are referenced in a CEL expression.
+This way, agentgateway avoids expensive buffering of request bodies if no CEL expression depends on the `body`.
+
+### Functions {#functions-policy-all}
 
 The following functions can be used in all policy types.
 
-| Function            | Purpose                                                                                                                                                                                                                                                                          |
-|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `json`              | Parse a string or bytes as JSON. Example: `json(request.body).some_field`.                                                                                                                                                                                                       |
-| `with`              | CEL does not allow variable bindings. `with` allows doing this. Example: `json(request.body).with(b, b.field_a + b.field_b)`                                                                                                                                                      |
-| `variables`         | `variables` exposes all of the variables available as a value. CEL otherwise does not allow accessing all variables without knowing them ahead of time. Warning: this automatically enables all fields to be captured.                                                           |
-| `map_values`        | `map_values` applies a function to all values in a map. `map` in CEL only applies to map keys.                                                                                                                                                                                   |
-| `flatten`           | Usable only for logging and tracing. `flatten` will flatten a list or struct into many fields. For example, defining `headers: 'flatten(request.headers)'` would log many keys like `headers.user-agent: "curl"`, etc.                                                           |
-| `flatten_recursive` | Usable only for logging and tracing. Like `flatten` but recursively flattens multiple levels.                                                                                                                                                                                    |
-| `base64_encode`     | Encodes a string to a base64 string. Example: `base64_encode("hello")`.                                                                                                                                                                                                          |
-| `base64_decode`     | Decodes a string in base64 format. Example: `string(base64_decode("aGVsbG8K"))`. Warning: this returns `bytes`, not a `String`. Various parts of agentgateway will display bytes in base64 format, which may appear like the function does nothing if not converted to a string. |
-| `random`            | Generates a number float from 0.0-1.0                                                                                                                                                                                                                                            |
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Functions" %}}
 
-### Standard functions {#standard-functions}
-
-Additionally, the following standard functions are available for all policy types, too.
-
-* `contains`, `size`, `has`, `map`, `filter`, `all`, `max`, `startsWith`, `endsWith`, `string`, `bytes`, `double`, `exists`, `exists_one`, `int`, `uint`, `matches`.
-* Duration/time functions: `duration`, `timestamp`, `getFullYear`, `getMonth`, `getDayOfYear`, `getDayOfMonth`, `getDate`, `getDayOfWeek`, `getHours`, `getMinutes`, `getSeconds`, `getMilliseconds`.
-* From the [strings extension](https://pkg.go.dev/github.com/google/cel-go/ext#Strings): `charAt`, `indexOf`, `join`, `lastIndexOf`, `lowerAscii`, `upperAscii`, `trim`, `replace`, `split`, `substring`.
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Standard Functions" %}}
