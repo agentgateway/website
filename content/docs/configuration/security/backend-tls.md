@@ -6,6 +6,8 @@ weight: 10
 By default, requests to backends will use HTTP.
 To use HTTPS, a backend TLS policy can be configured.
 
+**[Supported attachment points](/docs/configuration/policies/):** Backend.
+
 ```yaml
 backendTLS:
   # A file containing the root certificate to verify.

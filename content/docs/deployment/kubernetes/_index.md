@@ -1,6 +1,6 @@
 ---
 title: Deploy on Kubernetes
-weight: 20
+weight: 25
 description: Overview of how to deploy agentgateway on Kubernetes
 ---
 

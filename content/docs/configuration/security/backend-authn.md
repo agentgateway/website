@@ -5,6 +5,7 @@ weight: 10
 
 When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 
+**[Supported attachment points](/docs/configuration/policies/):** Backend.
 
 To attach a static key as an `Authorization` value, use `key`:
 

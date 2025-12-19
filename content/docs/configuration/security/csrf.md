@@ -1,9 +1,11 @@
 ---
 title: CSRF
-weight: 10
+weight: 11
 ---
 
 Cross-Site Request Forgery ([CSRF](https://developer.mozilla.org/en-US/docs/Glossary/CSRF)) protection prevents malicious websites from making unauthorized requests to your application on behalf of authenticated users.
+
+**[Supported attachment points](/docs/configuration/policies/):** Route.
 
 ## How it works
 
@@ -17,7 +19,7 @@ Allowed requests are as follows.
 
 - Safe methods (`GET`, `HEAD`, `OPTIONS`) from any origin
 - Same-origin requests (`Origin` matches `Host`)
-- Requests from origins in `additional_origins`
+- Requests from origins in `additionalOrigins`
 - Requests with `Sec-Fetch-Site: same-origin` or `Sec-Fetch-Site: none`
 
 ### Blocked requests
@@ -35,20 +37,20 @@ Blocked requests, which receive a `403 Forbidden` response with the message "CSR
 ```yaml
 policies:
   csrf:
-    additional_origins:
+    additionalOrigins:
       - "https://www.example.com"
       - "https://trusted.domain.com"
 ```
 
-The `additional_origins` setting is a list of trusted origins allowed to make cross-site requests.
+The `additionalOrigins` setting is a list of trusted origins allowed to make cross-site requests.
 - Format: `"scheme://host[:port]"`
 - Examples: `"https://www.example.com"`, `"http://localhost:3000"`
 
-For strict CSRF protection to prevent all cross-site requests, set `additional_origins` to an empty list.
+For strict CSRF protection to prevent all cross-site requests, set `additionalOrigins` to an empty list.
 
 ```yaml
 ...
 policies:
   csrf:
-    additional_origins: []
+    additionalOrigins: []
 ```

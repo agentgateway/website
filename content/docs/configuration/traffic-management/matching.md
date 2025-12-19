@@ -1,6 +1,6 @@
 ---
 title: Request matching
-weight: 10
+weight: 9
 ---
 
 Based on the [route schema](https://github.com/agentgateway/agentgateway/blob/main/schema/local.json), you can configure the following matching conditions for HTTP or TCP routes.

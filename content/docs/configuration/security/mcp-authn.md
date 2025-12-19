@@ -3,10 +3,12 @@ title: MCP authentication
 weight: 30
 ---
 
+MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
+
+**[Supported attachment points](/docs/configuration/policies/):** Backend (MCP Backends only).
+
 > [!NOTE]
 > {{< reuse "docs/snippets/mcp-policy-note.md" >}}
-
-MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
 
 There are three deployment scenarios.
 
@@ -24,7 +26,8 @@ In this mode, agentgateway:
 ```yaml
 mcpAuthentication:
   issuer: http://localhost:7080/realms/mcp
-  jwksUrl: http://localhost:7080/protocol/openid-connect/certs
+  jwks:
+    url: http://localhost:7080/protocol/openid-connect/certs
   provider:
     keycloak: {}
   resourceMetadata:
@@ -46,7 +49,8 @@ Agentgateway acts solely as a resource server, validating tokens issued by an ex
 ```yaml
 mcpAuthentication:
   issuer: http://localhost:9000
-  jwksUrl: http://localhost:9000/.well-known/jwks.json
+  jwks:
+    url: http://localhost:9000/.well-known/jwks.json
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:

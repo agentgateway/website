@@ -1,6 +1,6 @@
 ---
 title: Redirects
-weight: 10
+weight: 11
 ---
 
 Request redirects allow returning a direct response redirecting users to another location.
@@ -16,3 +16,5 @@ requestRedirect:
     full: /new-path
   status: 307
 ```
+
+**[Supported attachment points](/docs/configuration/policies/):** Route and Backend.

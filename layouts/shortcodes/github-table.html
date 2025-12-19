@@ -1,11 +1,17 @@
 {{- $url := .Get "url" -}}
+{{ $exclude := .Get "exclude" }}
 {{- $section := .Get "section" -}}
 {{- with resources.GetRemote $url -}}
   {{- $content := .Content  -}}
   {{- $pattern := printf "(?ms)^#+? %s\\s*(.*?)(^#+? |\\z)" $section -}}
   {{- $match := index (findRESubmatch $pattern $content) 0 -}}
   {{- if $match -}}
-    {{ index $match 1 | replaceRE (printf "^#+? %s\\s*" $section) "" |safe.HTML }}
+    {{ $content := index $match 1 | replaceRE (printf "^#+? %s\\s*" $section) ""  -}}
+    {{ if $exclude -}}
+      {{ replaceRE (printf "(?m)%s.*\n?" $exclude) "" $content |safe.HTML  }}
+    {{ else -}}
+      {{ $content|safe.HTML  }}
+    {{ end }}
   {{- else -}}
     {{ errorf "fail to find section: %s" $section }}
   {{- end -}}

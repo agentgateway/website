@@ -5,7 +5,11 @@ weight: 10
 
 Request timeouts allow returning an error for requests that take too long to complete.
 
-There are two types of timeouts.
+## Route Timeouts
+
+There are two types of timeouts on a route.
+
+**[Supported attachment points](/docs/configuration/policies/):** Route.
 
 |Timeout|Description|
 |-|-|
@@ -18,3 +22,22 @@ For example:
 timeout:
   requestTimeout: 1s
 ```
+
+## Backend Timeouts
+
+In additional to route level timeouts, per-backend timeouts can be configured.
+
+**[Supported attachment points](/docs/configuration/policies/):** Backend.
+
+| Timeout          | Description                                                                                       |
+|------------------|---------------------------------------------------------------------------------------------------|
+| `requestTimeout` | The time from the start of an HTTP request to a backend until the response headers are completed. |
+| `connectTimeout` | The time from the start of a TCP connection to a backend until the connection is established.     |
+
+```yaml
+http:
+  requestTimeout: 1s
+tcp:
+  connectTimeout: 10s
+```
+

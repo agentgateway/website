@@ -1,126 +1,62 @@
 ---
 title: Backends
-weight: 30
+weight: 13
 description: 
 prev: /docs/configuration/listeners
 ---
 
-Learn how to use the agentgateway UI or a configuration file to create and delete targets. 
+Agentgateway backends control where traffic is routed to.
+Agentgateway supports a variety of backends, such as simple hostnames and IP addresses, LLM providers, and MCP servers.
 
-## Before you begin
+## Static Hosts
 
-1. [Set up a listener](/docs/configuration/listeners).
-2. [Create a route](/docs/routes) on the listener.
-3. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+The simplest form of backend is a static hostname or IP address. For example:
 
-## Create backends
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - protocol: HTTP
+    routes:
+    - backends:
+      - host: example.com:8080
+        weight: 1
+      - host: 127.0.0.1:80
+        weight: 9
+```
 
-You can create backends by using the agentgateway UI or a configuration file. 
+## MCP Servers
 
-{{< tabs items="UI,Configuration file" >}}
-{{% tab %}}
+The MCP backend allows you to connect to an MCP server.
+Below shows a simple example, exposing a local and remote MCP server.
+See the [MCP connectivity guide](/docs/mcp/) for more information.
 
-1. Download a configuration file that contains your listener configuration. 
-   
-   ```sh
-   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
-   ```
+```yaml
+backends:
+- mcp:
+    targets:
+    - name: stdio-server
+      stdio:
+        cmd: npx
+        args: ["@modelcontextprotocol/server-everything"]
+    - name: http-server
+      mcp:
+        host: https://example.com/mcp
+```
 
-2. Review the configuration file. The example sets up an HTTP listener with the MCP protocol that listens for incoming traffic on port 3000. 
-   ```
-   cat config.yaml
-   ```
+## LLM Providers
 
-   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
+Agentgateway natively supports connecting to LLM providers, such as OpenAI and Anthropic.
+Below shows a simple example, connecting to OpenAI.
+See the [LLM consumption guide](/docs/llm/) for more information.
 
-3. Run the agentgateway. 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-4. [Open the agentgateway target UI](http://localhost:15000/ui/backends/). 
-   {{< reuse-image src="img/ui-backends-none.png" >}}
-   
-5. Click **Add Backend** and configure your backend details, such as follows:
-
-   * Backend Type: `MCP`
-   * Name: `default`
-   * Weight: `1`
-   * Route: Select the route on the listener that you want to use to route to the backend.
-   * Click **Add Target**.
-   * Target Name: `everything`
-   * Target Type: From the dropdown, select the target type that you want to use, such as `Stdio`.
-   * Command: `npx`
-   * Arguments: `@modelcontextprotocol/server-everything`
-   * Environment Variables: Optionally add any environment variables that you need the target to run.
-   * To add more targets, click **Add Target** and repeat the previous steps.
-   * Click **Add MCP Backend** to save your configuration.
-
-{{< callout type="info">}} 
-To connect to an OpenAPI server, use the `MCP` target type. 
-{{< /callout >}}
-   {{< reuse-image src="img/ui-backend-details.png"  >}}
-
-{{% /tab %}}
-{{% tab %}}
-
-1. Download a configuration file for your agentgateway.
-   ```yaml
-   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
-   ```
-
-2. Review the configuration file.
-
-   ```
-   cat config.yaml
-   ```
-
-   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
-
-   {{< reuse "docs/snippets/review-table.md" >}}
-
-   {{< reuse "docs/snippets/example-basic-mcp.md" >}}
-
-3. Run the agentgateway. 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-4. [Open the agentgateway backend UI](http://localhost:15000/ui/backends/) and verify that your target is added successfully. 
-   {{< reuse-image src="img/agentgateway-ui-backends.png" >}}
-   
-{{% /tab %}}
-{{< /tabs >}}
-
-
-## Delete targets
-
-{{< tabs items="UI,Configuration file" >}}
-{{% tab %}}
-
-Remove agentgateway backends with the UI. 
-
-1. Run the agentgateway from which you want to remove a backend. 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-2. [Open the agentgateway backends UI](http://localhost:15000/ui/backends/) and find the backend that you want to remove. 
-   {{< reuse-image src="img/agentgateway-ui-backends.png" >}}
-
-3. Click the trash icon to remove the backend. 
-
-{{% /tab %}}
-{{% tab %}}
-
-Update the configuration file to remove the backend.
-
-1. Remove the backend from your configuration file. 
-2. Apply the updated configuration file to your agentgateway.
-
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-{{% /tab %}}
-{{< /tabs >}}
+```yaml
+backends:
+- ai:
+    provider:
+      openAI:
+        model: gpt-3.5-turbo
+policies:
+  backendAuth:
+    key: "$OPENAI_API_KEY"
+```

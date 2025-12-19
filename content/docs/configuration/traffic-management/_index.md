@@ -13,7 +13,12 @@ Control traffic and route requests through agentgateway.
 {{< reuse "docs/snippets/policy-apply.md" >}}
 
 {{< cards >}}
+  {{< card link="matching" title="Request matching" >}}
   {{< card link="manipulation" title="Header manipulation" >}}
   {{< card link="redirects" title="Redirects" >}}
-  {{< card link="matching" title="Request matching" >}}
+  {{< card link="transformations" title="Transformations" >}}
+  {{< card link="rewrites" title="Rewrites" >}}
+  {{< card link="direct-response" title="Direct Response" >}}
+  {{< card link="extproc" title="External processing (ExtProc)" >}}
+  {{< card link="llm" title="AI (LLM) Policies" >}}
 {{< /cards >}}
