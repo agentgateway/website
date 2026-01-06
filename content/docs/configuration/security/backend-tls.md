@@ -3,10 +3,11 @@ title: Backend TLS
 weight: 10
 ---
 
+Attach to:
+{{< badge content="Backend" link="/docs/configuration/backends/">}}
+
 By default, requests to backends will use HTTP.
 To use HTTPS, a backend TLS policy can be configured.
-
-**[Supported attachment points](/docs/configuration/policies/):** Backend.
 
 ```yaml
 backendTLS:

@@ -4,11 +4,12 @@ weight: 16
 description: 
 ---
 
+Attach to:
+{{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
+
 External processing is an advanced filter that allows arbitrary modifications to HTTP requests and responses with an external processing server.
 
-Agentgateway is API compatible with Envoy's [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto).
-
-**[Supported attachment points](/docs/configuration/policies/):** Listener and Route.
+Agentgateway is API-compatible with Envoy's [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto).
 
 ## About external processing
 
@@ -42,27 +43,26 @@ sequenceDiagram
 
 You can choose whether you want agentgateway to forward requests if the external processing server is unavailable with the `extProc.failureMode` setting. Choose between the following modes: 
 
-* **failOpen**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
+* **failOpen (not recommended)**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
 * **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior. 
 
 > [!WARNING]
-> Fail Open mode, as specified in the Envoy External Processing API, is fundamentally unsafe and should not be used.
-> This mode allows transitive timeouts to corrupt requests, which can lead to unexpected behavior.
+> `failOpen` mode, as specified in the Envoy External Processing API, allows transitive timeouts to corrupt requests, which can lead to unexpected behavior. As such, the mode is fundamentally unsafe and should not be used.
 
 ## Compatibility
 
 The [External Processing gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ext_proc/v3/external_processor.proto) was designed for Envoy,
 and includes a number of Envoy-specific fields that do not make sense outside of Envoy.
-While Agentgateway aims to support the API as closely as possible, there are some gaps.
+Although agentgateway aims to support the API as closely as possible, there are some gaps.
 
 A non-exhaustive list of these gaps is as follows:
-* Headers and Body are *always* sent, with Body in streaming mode. This means your server must process both.
+* Headers and Body are *always* sent, with Body in streaming mode. This means your server must process both headers and the body.
 * `attributes`, `metadata_context`, and `protocol_config` are never sent in requests.
 * `dynamic_metadata`, `mode_override`, and `override_message_timeout` are ignored in all responess.
-* `clear_route_cache` is ignored in responses; Agentgateway does not have a 'route cache'.
+* `clear_route_cache` is ignored in responses. Agentgateway does not have a route cache.
 * `status.CONTINUE_AND_REPLACE` is ignored in responses.
 
-If any incompatibility causes issues running real world Ext Proc servers, please open an issue!
+If any incompatibility causes issues for your external processing server, open an issue on the [agentgateway GitHub repository](https://github.com/agentgateway/agentgateway/issues).
 
 ## Setup
 

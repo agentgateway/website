@@ -3,10 +3,10 @@ title: MCP authorization
 weight: 40
 ---
 
+Attach to:
+{{< badge content="Backend" link="/docs/configuration/backends/">}} (MCP Backends only)
 
 The MCP authorization policy works similarly to [HTTP authorization](/docs/configuration/security/http-authz), but runs in the context of an MCP request.
-
-**[Supported attachment points](/docs/configuration/policies/):** Backend (MCP Backends only).
 
 > [!NOTE]
 > {{< reuse "docs/snippets/mcp-policy-note.md" >}}

@@ -4,14 +4,15 @@ weight: 12
 description: Modify header and body information for requests and responses. 
 ---
 
+Attach to:
+{{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
+
 Agentgateway uses transformation templates that are written in Common Expression Language (CEL). CEL is a fast, portable, and safely executable language that goes beyond declarative configurations. CEL lets you develop more complex expressions in a readable, developer-friendly syntax.
 
 To learn more about how to use CEL, refer to the following resources:
 
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 - [Agentgateway reference docs](https://agentgateway.dev/docs/reference/cel/)
-
-**[Supported attachment points](/docs/configuration/policies/):** Listener and Route.
 
 ### Header transformation
 

@@ -24,7 +24,8 @@ You complete the following tasks:
 
 ## Step 1: Install the binary {#binary}
 
-1. Download the agentgateway binary and install it. 
+1. Download and install the agentgateway binary with the following command. Alternatively, you can manually download the binary from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases/latest).
+   
    ```sh
    curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
    ```

@@ -3,9 +3,10 @@ title: Backend authentication
 weight: 10
 ---
 
-When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
+Attach to:
+{{< badge content="Backend" link="/docs/configuration/backends/" >}}
 
-**[Supported attachment points](/docs/configuration/policies/):** Backend.
+When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 
 To attach a static key as an `Authorization` value, use `key`:
 

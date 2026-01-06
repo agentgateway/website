@@ -4,15 +4,14 @@ weight: 20
 description: Overview of how to deploy agentgateway with Docker.
 ---
 
-To run agentgateway as a Docker container, agentgateway publishes official Docker images on at cr.agentgateway.dev/agentgateway.
+To run agentgateway as a Docker container, agentgateway publishes official Docker images at `cr.agentgateway.dev/agentgateway`.
 
-First, create a [configuration file](/docs/configuration/) for agentgateway. In this example, `config.yaml` is used.
-You can also start with a [simple example configuration file](https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml).
-
+Before you begin, create a [configuration file](/docs/configuration/) for agentgateway. In this example, `config.yaml` is used.
+You might start with [this simple example configuration file](https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml).
 
 ## Docker
 
-To run with Docker, you will want to mount your configuration file into the container and expose any necessary ports.
+To run agentgateway with Docker, mount your configuration file into the container and expose any necessary ports.
 
 ```sh
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
@@ -20,8 +19,8 @@ docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -f /config.yaml
 ```
 
-The admin UI by default listens on localhost, which is not exposed outside of the container.
-To access the UI, you can either change the bind address and expose the port:
+By default, the agentgateway admin UI listens on localhost, which is not exposed outside of the container.
+To access the UI, you can change the bind address and expose the port.
 
 ```sh
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
@@ -32,7 +31,7 @@ docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
 
 ## Docker Compose
 
-A similar setup can be done with Docker Compose.
+To run agentgateway in Docker Compose, follow a similar approach to mount the configuration file and expose the ports.
 
 ```yaml
 services:

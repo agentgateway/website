@@ -38,15 +38,15 @@ To run agentgateway, install the agentgateway binary and pass the file with the 
 agentgateway -f config.yaml
 ```
 
-## Configuration Overview
+## Configuration overview
 
 Agentgateway's core configuration is made up of listeners, routes, and backends.
 
-* **Listeners** are the main entry point for incoming traffic. For a simple setup, you may have just a single listener. More complex setups may have multiple listeners to serve different ports or domains.
+* **Listeners** are the main entry point for incoming traffic. For a simple setup, you might have just a single listener. More complex setups might have multiple listeners to serve different ports or domains.
 * **Routes** define how incoming traffic is matched and forwarded to backends.
-* **Backends** are the targets that receive traffic from agentgateway. Backends can be simple URLs or more complex backends, like an MCP or LLM.
+* **Backends** are the targets that receive traffic from agentgateway. Backends can be simple URLs or more complex backends, like an MCP server or LLM provider.
 
-A minimal configuration that accepts HTTP traffic on port 3000 and forwards it to a backend running on `localhost:8000` looks like this:
+A minimal configuration that accepts HTTP traffic on port 3000 and forwards it to a backend running on `localhost:8000` looks like the following example.
 
 ```yaml
 binds:

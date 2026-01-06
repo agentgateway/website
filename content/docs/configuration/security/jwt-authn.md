@@ -3,9 +3,10 @@ title: JWT authentication
 weight: 15
 ---
 
-[JWT tokens](https://www.jwt.io/introduction#what-is-json-web-token-structure) from incoming requests can be verified.
+Attach to:
+{{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-**[Supported attachment points](/docs/configuration/policies/):** Listener and Route.
+[JWT tokens](https://www.jwt.io/introduction#what-is-json-web-token-structure) from incoming requests can be verified.
 
 JWT authentication requires a few parameters:
 
