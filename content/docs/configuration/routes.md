@@ -1,6 +1,6 @@
 ---
 title: Routes
-weight: 40
+weight: 14
 description: Configure routes on listeners for agentgateway.
 next: /docs/configuration/traffic-management
 ---
@@ -15,7 +15,7 @@ You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`t
 
 ### HTTP routes
 
-[HTTP or TLS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
+[HTTP or HTTPS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
 
 Example configuration:
 
@@ -36,7 +36,7 @@ For more information, continue to the [Create routes](#create-routes) section.
 
 ### TCP routes
 
-[TCP listeners](../listeners/tcp) use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than other HTTP routes.
+[TCP listeners](../listeners) use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than other HTTP routes.
 
 Keep in mind that TCP routes do not support HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
 

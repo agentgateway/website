@@ -13,3 +13,5 @@ requestMirror:
   # Mirror 50% of request
   percentage: 0.5
 ```
+
+**[Supported attachment points](/docs/configuration/policies/):** Route and Backend.

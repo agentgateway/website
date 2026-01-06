@@ -1,9 +1,11 @@
 ---
 title: HTTP authorization
-weight: 10
+weight: 12
 ---
 
 HTTP authorization allows defining rules to allow or deny requests based on their properties, using [CEL expressions](/docs/cel).
+
+**[Supported attachment points](/docs/configuration/policies/):** Route.
 
 Policies can define `allow` and `deny` rules. When evaluating a request:
 1. If there are no policies, the request is allowed.

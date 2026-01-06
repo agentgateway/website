@@ -20,3 +20,5 @@ retry:
 
 When a request has retries enabled and an HTTP body, the request body will be buffered.
 If the total body size exceeds a threshold size, retries will be disabled.
+
+**[Supported attachment points](/docs/configuration/policies/):** Route.

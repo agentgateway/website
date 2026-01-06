@@ -17,33 +17,8 @@ requestHeaderModifier:
     - x-remove-me
 ```
 
-More advanced operations are available with the `transformation` policy.
+More advanced operations are available with the [`transformation` policy](../transformations).
 Like the `HeaderModifier` policies, this can also `add`, `set`, or `remove` headers, but can also manipulate HTTP bodies.
 Additionally, each modification is based on a [CEL expression](/docs/operations/cel) rather than static strings.
 
-Examples:
-
-```yaml
-transformations:
-  request:
-    add:
-      x-request-id: 'random()'
-  response:
-    add:
-      x-sub: "jwt.sub"
-      x-claim: "jwt.nested.key"
-    body: |
-      has(jwt.sub) ?
-      {"success": "user is authenticated as " + jwt.sub} :
-      {"error": "unauthenticated"}
-```
-
-To modify the request authority (also known as "hostname") or path, the `urlRewrite` policy be used:
-
-```yaml
-urlRewrite:
-  authority:
-    full: example.com
-  path:
-    full: "/v1/chat/completions"
-```
+**[Supported attachment points](/docs/configuration/policies/):** Route and Backend.

@@ -16,6 +16,8 @@ Secure backends and routes with different types of security, authentication, aut
   {{< card link="external-authz" title="External authorization" >}}
   {{< card link="http-authz" title="HTTP authorization" >}}
   {{< card link="jwt-authn" title="JWT authentication" >}}
+  {{< card link="basic-authn" title="Basic authentication" >}}
+  {{< card link="apikey-authn" title="API Key authentication" >}}
   {{< card link="mcp-authn" title="MCP authentication" >}}
   {{< card link="mcp-authz" title="MCP authorization" >}}
 {{< /cards >}}

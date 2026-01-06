@@ -20,16 +20,14 @@ For an overview of the configuration fields, review the [Getting Started](/docs/
 ### Example configuration file {#example-file}
 
 ```yaml
-cat <<EOF > config.yaml
-{{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" >}}
-EOF
+{{% github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
 ```
 
 ## Update configuration {#add}
 
 To update configuration, you can write to the configuration file or use the agentgateway UI.
 
-* **Write to the file**: Most changes that you make to the file are automatically picked up by agentgateway.
+* **Write to the file**: Most changes that you make to the file are automatically picked up by agentgateway, with the exception of the top-level `config` section.
 * **UI**: The agentgateway UI overwrites the contents of the configuration file. Note that any comments that you add to the file are wiped out! You can open the agentgateway UI on port 15000.
 
 ## Run your configuration {#run}
@@ -38,4 +36,23 @@ To run agentgateway, install the agentgateway binary and pass the file with the 
 
 ```shell
 agentgateway -f config.yaml
+```
+
+## Configuration Overview
+
+Agentgateway's core configuration is made up of listeners, routes, and backends.
+
+* **Listeners** are the main entry point for incoming traffic. For a simple setup, you may have just a single listener. More complex setups may have multiple listeners to serve different ports or domains.
+* **Routes** define how incoming traffic is matched and forwarded to backends.
+* **Backends** are the targets that receive traffic from agentgateway. Backends can be simple URLs or more complex backends, like an MCP or LLM.
+
+A minimal configuration that accepts HTTP traffic on port 3000 and forwards it to a backend running on `localhost:8000` looks like this:
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
 ```

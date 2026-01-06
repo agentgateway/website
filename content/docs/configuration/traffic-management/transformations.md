@@ -1,6 +1,6 @@
 ---
 title: Transformations
-weight: 10
+weight: 12
 description: Modify header and body information for requests and responses. 
 ---
 
@@ -11,8 +11,7 @@ To learn more about how to use CEL, refer to the following resources:
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 - [Agentgateway reference docs](https://agentgateway.dev/docs/reference/cel/)
 
-> [!TIP]
-> Transformation templates can be applied at the route or the gateway level. If applied to both, the route-level transformation takes precedence. 
+**[Supported attachment points](/docs/configuration/policies/):** Listener and Route.
 
 ### Header transformation
 
