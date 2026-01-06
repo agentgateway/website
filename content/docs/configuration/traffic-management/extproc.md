@@ -47,7 +47,7 @@ You can choose whether you want agentgateway to forward requests if the external
 * **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior. 
 
 > [!WARNING]
-> Fail Open mode, as specified in the Envoy External Processing API, allows transitive timeouts to corrupt requests, which can lead to unexpected behavior. As such, the mode is fundamentally unsafe and should not be used.
+> `failOpen` mode, as specified in the Envoy External Processing API, allows transitive timeouts to corrupt requests, which can lead to unexpected behavior. As such, the mode is fundamentally unsafe and should not be used.
 
 ## Compatibility
 

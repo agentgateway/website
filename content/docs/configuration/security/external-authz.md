@@ -6,7 +6,7 @@ weight: 20
 Attach to:
 {{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-When authorization decisions need to be made out-of-process, use an the external authorization policy.
+When authorization decisions need to be made out-of-process, use an external authorization policy.
 This policy has agentgateway send the request to an external server, such as [Open Policy Agent](https://www.openpolicyagent.org/docs/envoy) which decides whether the request is allowed or denied.
 You can configure agentgateway to do this by using the [External Authorization gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) or by using HTTP requests.
 
@@ -16,7 +16,7 @@ The [Envoy External Authorization gRPC service](https://www.envoyproxy.io/docs/e
 Agentgateway is API-compatible with the Envoy External Authorization gRPC service.
 
 > [!NOTE]
-> gRPC refers to the protocol to the external authorization service. The service can authorize both gRPC and HTTP requests from the user.
+> gRPC refers to the protocol of the external authorization service. The service can authorize both gRPC and HTTP requests from the user.
 
 Example configuration:
 

@@ -26,7 +26,7 @@ timeout:
 
 ## Backend Timeouts
 
-In additional to route level timeouts, you can configure per-backend timeouts within the backend configuration section.
+In addition to route level timeouts, you can configure per-backend timeouts within the backend configuration section.
 
 | Timeout          | Description                                                                                       |
 |------------------|---------------------------------------------------------------------------------------------------|
