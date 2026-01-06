@@ -1,19 +1,18 @@
 ---
-title: Static Configuration
+title: Static configuration
 weight: 10
 description:
 ---
 
-While most configurations are dynamic, and automatically updating as you make changes, a few configurations are staticly configured at startup.
-These are configured under the `config` section.
+Most agentgateway configurations dynamically update as you make changes to the binds, policies, backends, and so on. 
 
-## Configuration File Schema
+However, a few configurations are staticly configured at startup. These static configurations are under the `config` section.
 
-The following table describes the full configuration file schema.
+## Static configuration file schema
+
+The following table shows the `config` file schema for static configurations at startup. For the full agentgateway schema of dynamic and static configuration, see the [reference docs](/docs/reference/configuration).
 
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/config.md" 
    section="Configuration File Schema"
    exclude="^\\|.(binds|frontendPolicies|policies|services|workloads|backends)"
 %}}
-
-The full configuration schema can be found [here](/docs/reference/configuration).

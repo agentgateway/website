@@ -3,6 +3,9 @@ title: Mirroring
 weight: 10
 ---
 
+Attach to:
+{{< badge content="Route" link="/docs/configuration/routes/">}} {{< badge content="Backend" link="/docs/configuration/backends/">}}
+
 Request mirroring allows sending a copy of each request to an alterative backend.
 These request will not be retried if they fail.
 
@@ -13,5 +16,3 @@ requestMirror:
   # Mirror 50% of request
   percentage: 0.5
 ```
-
-**[Supported attachment points](/docs/configuration/policies/):** Route and Backend.

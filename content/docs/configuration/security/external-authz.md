@@ -3,19 +3,20 @@ title: External authorization
 weight: 20
 ---
 
-For cases where authorization decisions need to be made out-of-process, the external authorization policy can be used.
-This sends a request to an external server, such as [Open Policy Agent](https://www.openpolicyagent.org/docs/envoy) which will decide whether the request is allowed or denied.
-This is done utilizing the [External Authorization gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) or HTTP requests.
+Attach to:
+{{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-**[Supported attachment points](/docs/configuration/policies/):** Listener and Route.
+When authorization decisions need to be made out-of-process, use an the external authorization policy.
+This policy has agentgateway send the request to an external server, such as [Open Policy Agent](https://www.openpolicyagent.org/docs/envoy) which decides whether the request is allowed or denied.
+You can configure agentgateway to do this by using the [External Authorization gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) or by using HTTP requests.
 
 ## gRPC External Authorization
 
 The [Envoy External Authorization gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) provides a standardized API to make authorization decisions.
-Agentgateway is API compatible with this API.
+Agentgateway is API-compatible with the Envoy External Authorization gRPC service.
 
 > [!NOTE]
-> gRPC refers to the protocol to the external authorization service. This can authorize both gRPC and HTTP requests from the user.
+> gRPC refers to the protocol to the external authorization service. The service can authorize both gRPC and HTTP requests from the user.
 
 Example configuration:
 
@@ -35,7 +36,7 @@ extAuthz:
 HTTP External Authorization allows sending plain HTTP requests to an authorization service.
 If the service returns a 2xx status code, the request is allowed. Otherwise, it is denied.
 
-Below shows an example configuration. For the full set of options, see the [configuration reference](/docs/reference/configuration).
+Example configuration: For the full set of options, see the [configuration reference](/docs/reference/configuration).
 
 ```yaml
 extAuthz:
@@ -54,8 +55,8 @@ extAuthz:
       - x-auth-request-user
 ```
 
-For advanced cases, more options are available to help construct the request to the authorization service, as well as handling the response from the authorization service.
-For example, `redirect` can be used to redirect users to a signin page, and `metadata` can be used to extract information from the authorization response to include in logs.
+For advanced cases, configure settings for the request to the authorization service, as well as the response from the authorization service.
+For example, configure `redirect` to redirect users to a signin page, and `metadata` to extract information from the authorization response to include in logs. Review the following table for more advanced options.
 
 |Option|Description|
 |---|---|
@@ -68,7 +69,6 @@ For example, `redirect` can be used to redirect users to a signin page, and `met
 |`includeRequestBody`|Options for including the request body in the authorization request|
 |`includeRequestBody.maxRequestBytes`|Maximum size of request body to buffer (default: 8192)|
 |`includeRequestBody.allowPartialMessage`|If true, send partial body when max_request_bytes is reached|
-
 
 
 For some more advanced scenarios, follow these examples:

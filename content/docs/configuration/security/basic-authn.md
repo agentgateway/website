@@ -3,17 +3,22 @@ title: Basic authentication
 weight: 16
 ---
 
+Attach to:
+{{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
+
 [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#basic_authentication_scheme) enables a simple username/password authentication mechanism.
 
-**[Supported attachment points](/docs/configuration/policies/):** Listener and Route.
+> [!WARNING]
+> Basic authentication is not generally recommended for production use.
+> At minimum, use basic authentication along with TLS encryption.
 
 The **htpasswd** field specifies the username/password pairs. See the [htpasswd](https://httpd.apache.org/docs/current/programs/htpasswd.html) documentation.
 The **realm** field, optionally, specifies the [realm name](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#www-authenticate_and_proxy-authenticate_headers) returned in error responses.
 
-Additionally, authentication can run in three different modes:
-* **Strict**: A valid username/password must be present.
-* **Optional** (default): If a username/password exists, validate it.  
-  *Warning*: This allows requests without a valid username/password!
+Additionally, authentication can run in two different modes:
+* **Strict**: A valid username/password pair must be present.
+* **Optional** (default): If a username/password pair exists, validate it.  
+  *Warning*: This allows requests without a username/password pair!
 
 ```yaml
 basicAuth:
@@ -28,12 +33,8 @@ basicAuth:
   realm: example.com
 ```
 
-Requests can now be sent with the user details:
+Now to send requests, include the username and password.
 
 ```shell
 curl http://user1:agentgateway@localhost:3000
 ```
-
-> [!WARNING]
-> Basic authentication is not generally recommended for production use.
-> At minimum, it should be used in conjunction with TLS.

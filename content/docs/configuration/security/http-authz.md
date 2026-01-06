@@ -3,9 +3,10 @@ title: HTTP authorization
 weight: 12
 ---
 
-HTTP authorization allows defining rules to allow or deny requests based on their properties, using [CEL expressions](/docs/cel).
+Attach to:
+{{< badge content="Route" link="/docs/configuration/routes/">}}
 
-**[Supported attachment points](/docs/configuration/policies/):** Route.
+HTTP authorization allows defining rules to allow or deny requests based on their properties, using [CEL expressions](/docs/cel).
 
 Policies can define `allow` and `deny` rules. When evaluating a request:
 1. If there are no policies, the request is allowed.

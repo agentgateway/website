@@ -3,6 +3,9 @@ title: Retries
 weight: 10
 ---
 
+Attach to:
+{{< badge content="Route" link="/docs/configuration/routes/">}}
+
 When a backend request fails, agentgateway can be configured to *retry* the request.
 When a retry is attempted, a different backend will be preferred (if possible).
 
@@ -20,5 +23,3 @@ retry:
 
 When a request has retries enabled and an HTTP body, the request body will be buffered.
 If the total body size exceeds a threshold size, retries will be disabled.
-
-**[Supported attachment points](/docs/configuration/policies/):** Route.

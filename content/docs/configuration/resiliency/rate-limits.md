@@ -3,6 +3,9 @@ title: Rate limiting
 weight: 10
 ---
 
+Attach to:
+{{< badge content="Route" link="/docs/configuration/routes/">}}
+
 Agentgateway rate limiting policies allow controlling the rate of requests incoming to a route.
 
 ## Rate limit types
@@ -14,8 +17,6 @@ These are very low overhead, but not appropriate for usage where exact global co
 
 **Remote rate limits** store counters in an pluggable external data store, which enables shared state across replicas of agentgateway.
 This is controlled via the [Envoy Rate Limit gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ratelimit/v3/rls.proto) to enable re-use with existing rate limiting services built for Envoy; the Envoy project has an example [rate limiter service](https://github.com/envoyproxy/ratelimit) that can be used.
-
-**[Supported attachment points](/docs/configuration/policies/):** Route.
 
 ## Rate limit modes
 

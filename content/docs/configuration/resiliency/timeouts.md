@@ -3,13 +3,14 @@ title: Timeouts
 weight: 10
 ---
 
+Attach to:
+{{< badge content="Route" link="/docs/configuration/routes/">}} {{< badge content="Backend" link="/docs/configuration/backends/">}}
+
 Request timeouts allow returning an error for requests that take too long to complete.
 
 ## Route Timeouts
 
-There are two types of timeouts on a route.
-
-**[Supported attachment points](/docs/configuration/policies/):** Route.
+You can configure two types of timeouts on a route.
 
 |Timeout|Description|
 |-|-|
@@ -25,9 +26,7 @@ timeout:
 
 ## Backend Timeouts
 
-In additional to route level timeouts, per-backend timeouts can be configured.
-
-**[Supported attachment points](/docs/configuration/policies/):** Backend.
+In additional to route level timeouts, you can configure per-backend timeouts within the backend configuration section.
 
 | Timeout          | Description                                                                                       |
 |------------------|---------------------------------------------------------------------------------------------------|
@@ -40,4 +39,3 @@ http:
 tcp:
   connectTimeout: 10s
 ```
-

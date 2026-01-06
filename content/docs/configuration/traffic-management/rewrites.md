@@ -3,9 +3,12 @@ title: Rewrites
 weight: 13
 ---
 
-Rewrites allow modifying URLs of incoming requests.
+Attach to:
+{{< badge content="Route" link="/docs/configuration/routes/">}}
 
-For example, the following configuration will modify the request hostname to `example.com` and the request path to `/new-path`.
+Modify URLs of incoming requests with rewrite policies.
+
+For example, the following configuration modifies the request hostname to `example.com` and the request path to `/new-path`.
 
 ```yaml
 urlRewrite:
@@ -14,5 +17,3 @@ urlRewrite:
   path:
     full: /new-path
 ```
-
-**[Supported attachment points](/docs/configuration/policies/):** Route.
