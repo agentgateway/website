@@ -32,6 +32,8 @@ Connect to an MCP server via streamable HTTP.
                - "*"
              allowHeaders:
                - "*"
+             exposeHeaders:
+               - "Mcp-Session-Id"
          backends:
          - mcp:
              targets:
