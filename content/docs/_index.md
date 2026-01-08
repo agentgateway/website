@@ -8,7 +8,7 @@ Welcome to the documentation for the agentgateway open source project!
 {{< cards >}}
   {{< card link="quickstart" title="Quickstart" >}}
   {{< card link="about" title="About" >}}
-  {{< card link="kubernetes" title="Deploy on Kubernetes" >}}
+  {{< card link="deployment" title="Deployment options" >}}
   {{< card link="llm" title="LLM consumption" >}}
   {{< card link="inference" title="Inference routing" >}}
   {{< card link="mcp" title="MCP connectivity" >}}
