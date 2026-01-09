@@ -87,7 +87,7 @@ description: ""
 <span class="text-tertiary-text font-mono">#</span> Run with Docker
 </div>
 <div class="relative group">
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml \<br>  -p 3000:3000 -p 127.0.0.1:15000:15000 \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml \<br>  -p 3000:3000 \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
 <button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
 </button>
