@@ -33,6 +33,9 @@ binds:
               region: us-west2
               # Optional; overrides the model in requests
               model: google/gemini-2.5-flash-lite-preview-06-17
+      policies:
+        backendAuth:
+          gcp: {}    
 ```
 
 {{< reuse "docs/snippets/review-configuration.md" >}}

@@ -21,12 +21,13 @@ binds:
           provider:
             anthropic:
               model: claude-haiku-4-5-20251001
+      policies:
+        ai:
           routes:
             /v1/messages: messages
             /v1/chat/completions: completions
             /v1/models: passthrough
             "*": passthrough
-      policies:
         backendAuth:
           key: "$ANTHROPIC_API_KEY"
 ```
