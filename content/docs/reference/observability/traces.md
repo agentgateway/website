@@ -15,7 +15,16 @@ The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https:
 
 {{< reuse "docs/snippets/jaeger.md" >}}
 
-## Configure the agentgateway
+## Tracing configuration types
+
+Agentgateway supports two types of tracing configuration:
+
+* **Static tracing**: Configured globally in the `config.tracing` section. All routes use the same tracing configuration.
+* **Dynamic tracing**: Configured at the frontend policy level (per-listener). All routes handled by a listener use the same tracing configuration from `frontendPolicies.tracing`. This allows you to configure different tracing backends per listener, set dynamic span attributes and resource attributes using CEL expressions, override sampling rates per listener, or use different OTLP protocols (HTTP or gRPC) per listener.
+
+## Static tracing
+
+Static tracing is configured globally and applies to all routes.
 
 1. Download a telemetry configuration for your agentgateway.
 
@@ -39,7 +48,7 @@ The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https:
       
       ```yaml
       binds:
-      - post: 3000
+      - port: 3000
         listeners:
         - routes:
           - policies:
@@ -54,8 +63,63 @@ The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https:
 
 4. Run the agentgateway. 
    ```sh
-   agentgateway -f config.json
+   agentgateway -f config.yaml
    ```
+
+## Dynamic tracing
+
+Dynamic tracing allows you to configure tracing at the frontend policy level, providing per-listener control over tracing behavior. The tracing configuration applies to all routes handled by listeners that use the frontend policies. Each route can have its own tracing configuration with dynamic attributes, resources, and sampling rates.
+
+* **`attributes`**: Span-level attributes that are added to each individual trace span. They are evaluated as CEL expressions for each request, so you can use dynamic values like `request.path` or `jwt.sub`. These appear as tags on individual spans in Jaeger.
+
+* **`resources`**: Resource-level attributes that are set at the tracer provider level and apply to all spans from that tracer. The `service.name` resource attribute sets the service name that appears in Jaeger's service dropdown. If not set, it defaults to `"agentgateway"`.
+
+* **`remove`**: Attribute keys to remove before attributes are evaluated. This way, you can remove default attributes or avoid duplication.
+
+* **`randomSampling` and `clientSampling`**: Optional per-policy overrides for random and client sampling. If set, overrides global config for requests that use this frontend policy.
+
+### Basic dynamic tracing example
+
+The following example shows how to configure dynamic tracing at the frontend policy level:
+
+   * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
+   * **Traces**: Agentgateway is with the following details:
+     * Sends traces to the OpenTelemetry collector on `localhost:4317`.
+     * Sets the resource attributes for the service name to `agentgateway` and for the service version to `1.0.0`.
+     * Sets the span attributes for the environment to `production` and the route to the request path.
+     * Enables random sampling tracing. By default, sampling is set to false and disabled, which means no traces are generated. 
+   * **Policies**: A CORS policy is configured to allow all origins and the `mcp-protocol-version` header. This way, the configuration works with the [MCP inspector tool](https://modelcontextprotocol.io/docs/tools/inspector).
+   * **Backend**: Agentgateway targets a sample, open source MCP test server, `server-everything`. 
+
+```yaml
+frontendPolicies:
+  tracing:
+    host: localhost:4317
+    randomSampling: "1.0"
+    attributes:
+      environment: '"production"'
+      route: request.path
+    resources:
+      service.name: '"agentgateway"'
+      service.version: '"1.0.0"'
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        cors:
+          allowOrigins:
+            - "*"
+          allowHeaders:
+            - "*"
+      backends:
+      - mcp:
+          targets:
+          - name: everything
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+```
 
 ## Verify traces
 
@@ -83,7 +147,7 @@ The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https:
 4. Open the [Jaeger UI](http://localhost:16686). 
 
 5. View traces. 
-   1. From the **Service** drop down, select `agentgateway`. 
+   1. From the **Service** drop down, select the service name you configured, such as `agentgateway`.
    2. Click **Find Traces**. 
    3. Verify that you can see trace spans for listing the MCP tools (`list_tools`) and calling a tool (`call_tool`).
    
