@@ -38,11 +38,21 @@ description: ""
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Install agentgateway
 </div>
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto">curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Download config and run
 </div>
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto">curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml<br>agentgateway -f config.yaml</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml<br>agentgateway -f config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
 </div>
 <div class="mt-6 pt-4 border-t border-secondary-border flex items-center justify-between">
 <span class="text-white text-base font-medium">Then open <a href="http://localhost:15000" class="text-white hover:underline">localhost:15000</a></span>
@@ -54,11 +64,21 @@ description: ""
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Download sample config
 </div>
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto">curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Run with Docker
 </div>
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto">docker run -v ./config.yaml:/config.yaml \<br>  -p 3000:3000 -p 127.0.0.1:15000:15000 \<br>  cr.agentgateway.dev/agentgateway:0.11.0 -f /config.yaml</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml \<br>  -p 3000:3000 -p 127.0.0.1:15000:15000 \<br>  cr.agentgateway.dev/agentgateway:0.11.0 -f /config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
 </div>
 <div class="mt-6 pt-4 border-t border-secondary-border flex items-center justify-between">
 <span class="text-white text-base font-medium">Then open <a href="http://localhost:15000" class="text-white hover:underline">localhost:15000</a></span>
@@ -70,15 +90,30 @@ description: ""
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Install Gateway API CRDs
 </div>
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto">kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.4.0/standard-install.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Install agentgateway CRDs
 </div>
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto">helm upgrade -i agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \<br>  --create-namespace --namespace agentgateway-system --version v2.2.0-main</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">helm upgrade -i agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \<br>  --create-namespace --namespace agentgateway-system --version v2.2.0-main</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Deploy agentgateway
 </div>
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto">helm upgrade -i agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \<br>  --namespace agentgateway-system --version v2.2.0-main</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">helm upgrade -i agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \<br>  --namespace agentgateway-system --version v2.2.0-main</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
 </div>
 <div class="mt-6 pt-4 border-t border-secondary-border flex items-center justify-between">
 <span class="text-white text-base font-medium">Verify: <span class="font-mono text-sm">kubectl get pods -n agentgateway-system</span></span>
@@ -284,6 +319,19 @@ function toggleFeature(feature) {
     detail.classList.add('hidden');
     chevron.classList.remove('rotate-180');
   }
+}
+function copyCode(button) {
+  const codeBlock = button.previousElementSibling;
+  const text = codeBlock.innerText.replace(/\n\s+/g, ' ');
+  navigator.clipboard.writeText(text).then(() => {
+    const originalSvg = button.innerHTML;
+    button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+    button.classList.add('text-green-400');
+    setTimeout(() => {
+      button.innerHTML = originalSvg;
+      button.classList.remove('text-green-400');
+    }, 2000);
+  });
 }
 </script>
 
