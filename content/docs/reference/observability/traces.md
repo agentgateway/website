@@ -85,7 +85,7 @@ The following example shows how to configure dynamic tracing at the frontend pol
    * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
    * **Traces**: Agentgateway is with the following details:
      * Sends traces to the OpenTelemetry collector on `localhost:4317`.
-     * Sets the resource attributes for the service name to `agentgateway` and for the service version to `1.0.0`.
+     * Sets the resource attributes for the service name to `agentgateway`.
      * Sets the span attributes for the environment to `production` and the route to the request path.
      * Enables random sampling tracing. By default, sampling is set to false and disabled, which means no traces are generated. 
    * **Policies**: A CORS policy is configured to allow all origins and the `mcp-protocol-version` header. This way, the configuration works with the [MCP inspector tool](https://modelcontextprotocol.io/docs/tools/inspector).
@@ -101,7 +101,6 @@ frontendPolicies:
       route: request.path
     resources:
       service.name: '"agentgateway"'
-      service.version: '"1.0.0"'
 binds:
 - port: 3000
   listeners:
