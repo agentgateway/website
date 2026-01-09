@@ -47,6 +47,14 @@ description: ""
 </div>
 <div class="p-6">
 <div id="content-binary" class="get-started-content">
+<div class="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-secondary-border">
+<span class="text-primary-text text-sm font-medium mr-1">Use case:</span>
+<button onclick="showBinaryOption('quickstart')" id="binary-opt-quickstart" class="binary-option px-4 py-2 text-sm font-semibold rounded-lg bg-tertiary-text text-white border-2 border-tertiary-text transition-all">Quick Start</button>
+<button onclick="showBinaryOption('llm')" id="binary-opt-llm" class="binary-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">LLM Consumption</button>
+<button onclick="showBinaryOption('mcp')" id="binary-opt-mcp" class="binary-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">MCP Connectivity</button>
+<button onclick="showBinaryOption('agent')" id="binary-opt-agent" class="binary-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">Agent Connectivity</button>
+</div>
+<div id="binary-quickstart" class="binary-content">
 <div class="space-y-4">
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Install agentgateway
@@ -66,39 +74,410 @@ description: ""
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
 </button>
 </div>
+<div class="mt-4 pt-4 border-t border-secondary-border flex items-center justify-between">
+<span class="text-white text-base font-medium">To view in GUI, open <a href="http://localhost:15000" class="text-white hover:underline">localhost:15000</a></span>
+<a href="/docs/quickstart/" class="text-tertiary-text hover:underline text-sm font-medium">Full docs →</a>
 </div>
-<div class="mt-6 pt-4 border-t border-secondary-border flex items-center justify-between">
-<span class="text-white text-base font-medium">Then open <a href="http://localhost:15000" class="text-white hover:underline">localhost:15000</a></span>
-<a href="/docs/quickstart/" class="text-white hover:underline text-sm font-medium">Full docs →</a>
+</div>
+</div>
+<div id="binary-llm" class="binary-content hidden">
+<div class="space-y-4">
+<div class="flex items-center gap-3 mb-2">
+<span class="text-secondary-text text-sm">Provider:</span>
+<select id="binary-llm-provider-select" onchange="switchBinaryLLMProvider(this.value)" class="bg-primary-bg text-primary-text text-sm rounded-lg border border-secondary-border px-3 py-1.5 focus:outline-none focus:border-tertiary-text">
+<option value="openai" selected>OpenAI (Default)</option>
+<option value="gemini">Gemini</option>
+<option value="anthropic">Anthropic</option>
+<option value="bedrock">Amazon Bedrock</option>
+</select>
+</div>
+<div class="relative group mb-2">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12"><span id="binary-llm-export">export OPENAI_API_KEY=your-api-key</span></div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div id="binary-llm-openai" class="binary-llm-provider-content">
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Install agentgateway
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Download config and run
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/binary-llm-openai.yaml -o config.yaml<br>OPENAI_API_KEY=$OPENAI_API_KEY agentgateway -f config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div id="binary-llm-gemini" class="binary-llm-provider-content hidden">
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Install agentgateway
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Download config and run
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/binary-llm-gemini.yaml -o config.yaml<br>GEMINI_API_KEY=$GEMINI_API_KEY agentgateway -f config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"gemini-1.5-flash","messages":[{"role":"user","content":"Hello!"}]}'</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div id="binary-llm-anthropic" class="binary-llm-provider-content hidden">
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Install agentgateway
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Download config and run
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/binary-llm-anthropic.yaml -o config.yaml<br>ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY agentgateway -f config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"claude-3-5-sonnet-20241022","messages":[{"role":"user","content":"Hello!"}]}'</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div id="binary-llm-bedrock" class="binary-llm-provider-content hidden">
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Install agentgateway
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Download config and run
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/binary-llm-bedrock.yaml -o config.yaml<br>AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \<br>  AWS_REGION=$AWS_REGION agentgateway -f config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"anthropic.claude-3-sonnet-20240229-v1:0","messages":[{"role":"user","content":"Hello!"}]}'</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-secondary-border flex items-center justify-between">
+<span class="text-white text-base font-medium">To view in GUI, open <a href="http://localhost:15000" class="text-white hover:underline">localhost:15000</a></span>
+<a href="/docs/llm/providers/" class="text-tertiary-text hover:underline text-sm font-medium">View more providers →</a>
+</div>
+</div>
+</div>
+<div id="binary-mcp" class="binary-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Connect and federate MCP servers through agentgateway. Learn how to configure different connection types and policies.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="/docs/mcp/connect/stdio/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Stdio</span>
+<p class="text-secondary-text text-xs mt-1">Spawn MCP servers as child processes</p>
+</a>
+<a href="/docs/mcp/connect/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">MCP Multiplexing</span>
+<p class="text-secondary-text text-xs mt-1">Federate multiple MCP servers</p>
+</a>
+<a href="/docs/llm/providers/openai/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">OpenAI</span>
+<p class="text-secondary-text text-xs mt-1">Connect MCP to OpenAI models</p>
+</a>
+<a href="/docs/mcp/authn/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Authentication</span>
+<p class="text-secondary-text text-xs mt-1">Secure MCP connections</p>
+</a>
+<a href="/docs/mcp/authz/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Authorization</span>
+<p class="text-secondary-text text-xs mt-1">Control access to MCP tools</p>
+</a>
+<a href="/docs/mcp/observability/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Observability</span>
+<p class="text-secondary-text text-xs mt-1">Monitor MCP traffic</p>
+</a>
+</div>
+</div>
+</div>
+<div id="binary-agent" class="binary-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Enable agent-to-agent communication with A2A protocol support.</p>
+<div class="flex justify-center">
+<a href="/docs/agent/a2a/" class="block p-4 px-8 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors text-center">
+<span class="text-primary-text text-sm font-medium">A2A Protocol</span>
+<p class="text-secondary-text text-xs mt-1">Agent-to-agent communication</p>
+</a>
+</div>
+</div>
 </div>
 </div>
 <div id="content-docker" class="get-started-content hidden">
+<div class="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-secondary-border">
+<span class="text-primary-text text-sm font-medium mr-1">Use case:</span>
+<button onclick="showDockerOption('llm')" id="docker-opt-llm" class="docker-option px-4 py-2 text-sm font-semibold rounded-lg bg-tertiary-text text-white border-2 border-tertiary-text transition-all">LLM Consumption</button>
+<button onclick="showDockerOption('mcp')" id="docker-opt-mcp" class="docker-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">MCP Connectivity</button>
+<button onclick="showDockerOption('agent')" id="docker-opt-agent" class="docker-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">Agent Connectivity</button>
+</div>
+<div id="docker-mcp" class="docker-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Connect and federate MCP servers through agentgateway. Learn how to configure different connection types and policies.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="/docs/mcp/connect/stdio/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Stdio</span>
+<p class="text-secondary-text text-xs mt-1">Spawn MCP servers as child processes</p>
+</a>
+<a href="/docs/mcp/connect/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">MCP Multiplexing</span>
+<p class="text-secondary-text text-xs mt-1">Federate multiple MCP servers</p>
+</a>
+<a href="/docs/llm/providers/openai/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">OpenAI</span>
+<p class="text-secondary-text text-xs mt-1">Connect MCP to OpenAI models</p>
+</a>
+<a href="/docs/mcp/authn/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Authentication</span>
+<p class="text-secondary-text text-xs mt-1">Secure MCP connections</p>
+</a>
+<a href="/docs/mcp/authz/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Authorization</span>
+<p class="text-secondary-text text-xs mt-1">Control access to MCP tools</p>
+</a>
+<a href="/docs/mcp/observability/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Observability</span>
+<p class="text-secondary-text text-xs mt-1">Monitor MCP traffic</p>
+</a>
+</div>
+</div>
+</div>
+<div id="docker-agent" class="docker-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Enable agent-to-agent communication with A2A protocol support.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="/docs/agent/a2a/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">A2A Protocol</span>
+<p class="text-secondary-text text-xs mt-1">Agent-to-agent communication</p>
+</a>
+</div>
+</div>
+</div>
+<div id="docker-llm" class="docker-content">
+<div class="space-y-4">
+<div class="flex items-center gap-3 mb-2">
+<span class="text-secondary-text text-sm">Provider:</span>
+<select id="llm-provider-select" onchange="switchLLMProvider(this.value)" class="bg-primary-bg text-primary-text text-sm rounded-lg border border-secondary-border px-3 py-1.5 focus:outline-none focus:border-tertiary-text">
+<option value="openai" selected>OpenAI (Default)</option>
+<option value="gemini">Gemini</option>
+<option value="anthropic">Anthropic</option>
+<option value="bedrock">Amazon Bedrock</option>
+</select>
+</div>
+<div class="relative group mb-2">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12"><span id="docker-llm-export">export OPENAI_API_KEY=your-api-key</span></div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div id="llm-openai" class="llm-provider-content">
 <div class="space-y-4">
 <div class="flex items-center gap-3 text-primary-text text-sm">
-<span class="text-tertiary-text font-mono">#</span> Download sample config
+<span class="text-tertiary-text font-mono">#</span> Download config.yaml for OpenAI
 </div>
 <div class="relative group">
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml</div>
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/docker-llm-openai.yaml -o config.yaml</div>
 <button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
 </button>
 </div>
 <div class="flex items-center gap-3 text-primary-text text-sm">
-<span class="text-tertiary-text font-mono">#</span> Run with Docker
+<span class="text-tertiary-text font-mono">#</span> Run agentgateway
 </div>
 <div class="relative group">
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml \<br>  -p 3000:3000 \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml -p 3000:3000 \<br>  -e OPENAI_API_KEY=$OPENAI_API_KEY \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'</div>
 <button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
 </button>
 </div>
 </div>
-<div class="mt-6 pt-4 border-t border-secondary-border flex items-center justify-between">
-<span class="text-white text-base font-medium">Then open <a href="http://localhost:15000" class="text-white hover:underline">localhost:15000</a></span>
-<a href="/docs/quickstart/" class="text-white hover:underline text-sm font-medium">Full docs →</a>
+</div>
+<div id="llm-gemini" class="llm-provider-content hidden">
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Download config.yaml for Gemini
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/docker-llm-gemini.yaml -o config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Run agentgateway
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml -p 3000:3000 \<br>  -e GEMINI_API_KEY=$GEMINI_API_KEY \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"gemini-1.5-flash","messages":[{"role":"user","content":"Hello!"}]}'</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div id="llm-anthropic" class="llm-provider-content hidden">
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Download config.yaml for Anthropic
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/docker-llm-anthropic.yaml -o config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Run agentgateway
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml -p 3000:3000 \<br>  -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"claude-3-5-sonnet-20241022","messages":[{"role":"user","content":"Hello!"}]}'</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div id="llm-bedrock" class="llm-provider-content hidden">
+<div class="space-y-4">
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Download config.yaml for Amazon Bedrock
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl -sL https://agentgateway.dev/configs/docker-llm-bedrock.yaml -o config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Run agentgateway
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml -p 3000:3000 \<br>  -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \<br>  -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \<br>  -e AWS_REGION=$AWS_REGION \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+<div class="flex items-center gap-3 text-primary-text text-sm">
+<span class="text-tertiary-text font-mono">#</span> Test with a chat completion
+</div>
+<div class="relative group">
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">curl http://localhost:3000/v1/chat/completions \<br>  -H "Content-Type: application/json" \<br>  -d '{"model":"anthropic.claude-3-sonnet-20240229-v1:0","messages":[{"role":"user","content":"Hello!"}]}'</div>
+<button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
+<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-4 pt-4 border-t border-secondary-border flex items-center justify-end">
+<a href="/docs/llm/providers/" class="text-tertiary-text hover:underline text-sm font-medium">View more providers →</a>
+</div>
+</div>
 </div>
 </div>
 <div id="content-kubernetes" class="get-started-content hidden">
+<div class="flex flex-wrap items-center gap-2 mb-6 pb-4 border-b border-secondary-border">
+<span class="text-primary-text text-sm font-medium mr-1">Use case:</span>
+<button onclick="showK8sOption('quickstart')" id="k8s-opt-quickstart" class="k8s-option px-4 py-2 text-sm font-semibold rounded-lg bg-tertiary-text text-white border-2 border-tertiary-text transition-all">Quick Start</button>
+<button onclick="showK8sOption('llm')" id="k8s-opt-llm" class="k8s-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">LLM Consumption</button>
+<button onclick="showK8sOption('inference')" id="k8s-opt-inference" class="k8s-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">Inference Routing</button>
+<button onclick="showK8sOption('mcp')" id="k8s-opt-mcp" class="k8s-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">MCP Connectivity</button>
+<button onclick="showK8sOption('agent')" id="k8s-opt-agent" class="k8s-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">Agent Connectivity</button>
+<button onclick="showK8sOption('rbac')" id="k8s-opt-rbac" class="k8s-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">CEL-based RBAC</button>
+<button onclick="showK8sOption('observability')" id="k8s-opt-observability" class="k8s-option px-4 py-2 text-sm font-semibold rounded-lg bg-secondary-bg text-primary-text border-2 border-secondary-border hover:border-tertiary-text hover:bg-tertiary-bg transition-all">Observability</button>
+</div>
+<div id="k8s-quickstart" class="k8s-content">
 <div class="space-y-4">
 <div class="flex items-center gap-3 text-primary-text text-sm">
 <span class="text-tertiary-text font-mono">#</span> Install Gateway API CRDs
@@ -127,10 +506,116 @@ description: ""
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
 </button>
 </div>
-</div>
-<div class="mt-6 pt-4 border-t border-secondary-border flex items-center justify-between">
+<div class="mt-4 pt-4 border-t border-secondary-border flex items-center justify-between">
 <span class="text-white text-base font-medium">Verify: <span class="font-mono text-sm">kubectl get pods -n agentgateway-system</span></span>
-<a href="https://kgateway.dev/docs/agentgateway/main/quickstart/" class="text-white hover:underline text-sm font-medium">Full docs →</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/quickstart/" class="text-tertiary-text hover:underline text-sm font-medium">Full docs →</a>
+</div>
+</div>
+</div>
+<div id="k8s-llm" class="k8s-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Proxy and manage requests to multiple LLM providers with unified authentication, rate limiting, and observability.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/providers/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Providers</span>
+<p class="text-secondary-text text-xs mt-1">OpenAI, Anthropic, Azure, more</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/api-keys/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Manage API Keys</span>
+<p class="text-secondary-text text-xs mt-1">Centralized key management</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/failover/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Model Failover</span>
+<p class="text-secondary-text text-xs mt-1">Automatic failover between models</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/prompt-guards/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Prompt Guards</span>
+<p class="text-secondary-text text-xs mt-1">Set up prompt safety guards</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/prompt-enrichment/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Enrich Prompts</span>
+<p class="text-secondary-text text-xs mt-1">Add context to prompts</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/functions/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Call Functions</span>
+<p class="text-secondary-text text-xs mt-1">Function calling support</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/guardrail-api/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Guardrail Webhook API</span>
+<p class="text-secondary-text text-xs mt-1">Custom guardrail webhooks</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/observability/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Metrics and Logs</span>
+<p class="text-secondary-text text-xs mt-1">View metrics and logs</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/llm/tracing/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">View Traces</span>
+<p class="text-secondary-text text-xs mt-1">Distributed tracing</p>
+</a>
+</div>
+</div>
+</div>
+<div id="k8s-inference" class="k8s-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Intelligently route inference requests based on model availability, cost, and latency requirements.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="https://kgateway.dev/docs/agentgateway/main/inference/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Inference Routing</span>
+<p class="text-secondary-text text-xs mt-1">Smart routing for inference</p>
+</a>
+</div>
+</div>
+</div>
+<div id="k8s-mcp" class="k8s-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Connect and federate MCP servers through agentgateway with unified security and discovery.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="https://kgateway.dev/docs/agentgateway/main/mcp/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">MCP Gateway</span>
+<p class="text-secondary-text text-xs mt-1">Federate MCP servers</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/mcp/authn/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Authentication</span>
+<p class="text-secondary-text text-xs mt-1">Secure MCP connections</p>
+</a>
+<a href="https://kgateway.dev/docs/agentgateway/main/mcp/authz/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Authorization</span>
+<p class="text-secondary-text text-xs mt-1">Control access to MCP tools</p>
+</a>
+</div>
+</div>
+</div>
+<div id="k8s-agent" class="k8s-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Enable agent-to-agent communication with A2A protocol support.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="https://kgateway.dev/docs/agentgateway/main/agent/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">A2A Protocol</span>
+<p class="text-secondary-text text-xs mt-1">Agent-to-agent communication</p>
+</a>
+</div>
+</div>
+</div>
+<div id="k8s-rbac" class="k8s-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Define granular access control policies using Common Expression Language (CEL).</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="https://kgateway.dev/docs/agentgateway/main/rbac/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">CEL-based RBAC</span>
+<p class="text-secondary-text text-xs mt-1">Expression-based access control</p>
+</a>
+</div>
+</div>
+</div>
+<div id="k8s-observability" class="k8s-content hidden">
+<div class="space-y-4">
+<p class="text-secondary-text text-sm">Monitor and observe all agent and tool traffic with built-in observability features.</p>
+<div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+<a href="https://kgateway.dev/docs/agentgateway/main/observability/" class="block p-3 bg-primary-bg rounded-lg border border-secondary-border hover:border-tertiary-text transition-colors">
+<span class="text-primary-text text-sm font-medium">Observability</span>
+<p class="text-secondary-text text-xs mt-1">Metrics, logs, and tracing</p>
+</a>
+</div>
 </div>
 </div>
 </div>
@@ -335,7 +820,7 @@ function toggleFeature(feature) {
 }
 function copyCode(button) {
   const codeBlock = button.previousElementSibling;
-  const text = codeBlock.innerText.replace(/\n\s+/g, ' ');
+  const text = codeBlock.innerText;
   navigator.clipboard.writeText(text).then(() => {
     const originalSvg = button.innerHTML;
     button.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
@@ -345,6 +830,63 @@ function copyCode(button) {
       button.classList.remove('text-green-400');
     }, 2000);
   });
+}
+function showDockerOption(option) {
+  document.querySelectorAll('.docker-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.docker-option').forEach(el => {
+    el.classList.remove('bg-tertiary-text', 'text-white', 'border-tertiary-text');
+    el.classList.add('bg-secondary-bg', 'text-primary-text', 'border-secondary-border', 'hover:border-tertiary-text', 'hover:bg-tertiary-bg');
+  });
+  document.getElementById('docker-' + option).classList.remove('hidden');
+  const selectedOpt = document.getElementById('docker-opt-' + option);
+  selectedOpt.classList.add('bg-tertiary-text', 'text-white', 'border-tertiary-text');
+  selectedOpt.classList.remove('bg-secondary-bg', 'text-primary-text', 'border-secondary-border', 'hover:border-tertiary-text', 'hover:bg-tertiary-bg');
+}
+function switchLLMProvider(provider) {
+  document.querySelectorAll('.llm-provider-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('llm-' + provider).classList.remove('hidden');
+  const exportEl = document.getElementById('docker-llm-export');
+  const exports = {
+    openai: 'export OPENAI_API_KEY=your-api-key',
+    gemini: 'export GEMINI_API_KEY=your-api-key',
+    anthropic: 'export ANTHROPIC_API_KEY=your-api-key',
+    bedrock: 'export AWS_ACCESS_KEY_ID=your-access-key-id\nexport AWS_SECRET_ACCESS_KEY=your-secret-access-key\nexport AWS_REGION=us-east-1'
+  };
+  exportEl.textContent = exports[provider];
+}
+function showBinaryOption(option) {
+  document.querySelectorAll('.binary-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.binary-option').forEach(el => {
+    el.classList.remove('bg-tertiary-text', 'text-white', 'border-tertiary-text');
+    el.classList.add('bg-secondary-bg', 'text-primary-text', 'border-secondary-border', 'hover:border-tertiary-text', 'hover:bg-tertiary-bg');
+  });
+  document.getElementById('binary-' + option).classList.remove('hidden');
+  const selectedOpt = document.getElementById('binary-opt-' + option);
+  selectedOpt.classList.add('bg-tertiary-text', 'text-white', 'border-tertiary-text');
+  selectedOpt.classList.remove('bg-secondary-bg', 'text-primary-text', 'border-secondary-border', 'hover:border-tertiary-text', 'hover:bg-tertiary-bg');
+}
+function switchBinaryLLMProvider(provider) {
+  document.querySelectorAll('.binary-llm-provider-content').forEach(el => el.classList.add('hidden'));
+  document.getElementById('binary-llm-' + provider).classList.remove('hidden');
+  const exportEl = document.getElementById('binary-llm-export');
+  const exports = {
+    openai: 'export OPENAI_API_KEY=your-api-key',
+    gemini: 'export GEMINI_API_KEY=your-api-key',
+    anthropic: 'export ANTHROPIC_API_KEY=your-api-key',
+    bedrock: 'export AWS_ACCESS_KEY_ID=your-access-key-id\nexport AWS_SECRET_ACCESS_KEY=your-secret-access-key\nexport AWS_REGION=us-east-1'
+  };
+  exportEl.textContent = exports[provider];
+}
+function showK8sOption(option) {
+  document.querySelectorAll('.k8s-content').forEach(el => el.classList.add('hidden'));
+  document.querySelectorAll('.k8s-option').forEach(el => {
+    el.classList.remove('bg-tertiary-text', 'text-white', 'border-tertiary-text');
+    el.classList.add('bg-secondary-bg', 'text-primary-text', 'border-secondary-border', 'hover:border-tertiary-text', 'hover:bg-tertiary-bg');
+  });
+  document.getElementById('k8s-' + option).classList.remove('hidden');
+  const selectedOpt = document.getElementById('k8s-opt-' + option);
+  selectedOpt.classList.add('bg-tertiary-text', 'text-white', 'border-tertiary-text');
+  selectedOpt.classList.remove('bg-secondary-bg', 'text-primary-text', 'border-secondary-border', 'hover:border-tertiary-text', 'hover:bg-tertiary-bg');
 }
 let currentSlide = 0;
 const totalSlides = 2;
