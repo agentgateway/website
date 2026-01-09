@@ -18,7 +18,20 @@ description: ""
       </div>
     </div>
     <div class="flex-1 flex justify-center lg:justify-end">
-      <img src="/hero.png" width="600" height="450" class="object-cover max-w-full" />
+      <div class="relative w-full max-w-[600px] group/slider">
+        <img id="hero-slide-1" src="/hero.png" width="600" height="450" class="hero-slide object-cover max-w-full transition-opacity duration-700 opacity-100" />
+        <img id="hero-slide-2" src="/hero2.png" width="600" height="450" class="hero-slide object-cover max-w-full transition-opacity duration-700 opacity-0 absolute inset-0 m-auto" />
+        <button onclick="prevSlide()" class="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-primary-bg/80 hover:bg-tertiary-bg text-secondary-text hover:text-primary-text transition-all opacity-0 group-hover/slider:opacity-100 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        </button>
+        <button onclick="nextSlide()" class="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-primary-bg/80 hover:bg-tertiary-bg text-secondary-text hover:text-primary-text transition-all opacity-0 group-hover/slider:opacity-100 flex items-center justify-center">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+        </button>
+        <div class="flex justify-center gap-2 mt-4">
+          <button onclick="goToSlide(0)" id="dot-0" class="hero-dot w-2 h-2 rounded-full bg-tertiary-text transition-colors"></button>
+          <button onclick="goToSlide(1)" id="dot-1" class="hero-dot w-2 h-2 rounded-full bg-secondary-text/50 hover:bg-secondary-text transition-colors"></button>
+        </div>
+      </div>
     </div>
   </div>
 </section>
@@ -74,7 +87,7 @@ description: ""
 <span class="text-tertiary-text font-mono">#</span> Run with Docker
 </div>
 <div class="relative group">
-<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml \<br>  -p 3000:3000 -p 127.0.0.1:15000:15000 \<br>  cr.agentgateway.dev/agentgateway:0.11.0 -f /config.yaml</div>
+<div class="bg-primary-bg rounded-lg p-4 font-mono text-sm text-secondary-text overflow-x-auto pr-12">docker run -v ./config.yaml:/config.yaml \<br>  -p 3000:3000 -p 127.0.0.1:15000:15000 \<br>  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml</div>
 <button onclick="copyCode(this)" class="absolute top-2 right-2 p-2 rounded-md bg-tertiary-bg hover:bg-secondary-border text-secondary-text hover:text-primary-text transition-colors opacity-0 group-hover:opacity-100">
 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
 </button>
@@ -333,6 +346,26 @@ function copyCode(button) {
     }, 2000);
   });
 }
+let currentSlide = 0;
+const totalSlides = 2;
+function goToSlide(index) {
+  currentSlide = index;
+  document.querySelectorAll('.hero-slide').forEach((slide, i) => {
+    slide.classList.toggle('opacity-100', i === index);
+    slide.classList.toggle('opacity-0', i !== index);
+  });
+  document.querySelectorAll('.hero-dot').forEach((dot, i) => {
+    dot.classList.toggle('bg-tertiary-text', i === index);
+    dot.classList.toggle('bg-secondary-text/50', i !== index);
+  });
+}
+function nextSlide() {
+  goToSlide((currentSlide + 1) % totalSlides);
+}
+function prevSlide() {
+  goToSlide((currentSlide - 1 + totalSlides) % totalSlides);
+}
+setInterval(nextSlide, 5000);
 </script>
 
 <section class="text-center py-20">
