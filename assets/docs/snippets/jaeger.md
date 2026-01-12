@@ -5,6 +5,6 @@ Use [`docker compose`](https://docs.docker.com/compose/install/linux/) to spin u
 
 ```sh
 docker compose -f - up -d <<EOF
-{{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/telemetry/docker-compose.yaml" >}}
+{{< github url="https://agentgateway.dev/examples/telemetry/docker-compose.yaml" >}}
 EOF
 ```

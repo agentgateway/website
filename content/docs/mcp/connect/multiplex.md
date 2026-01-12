@@ -16,7 +16,7 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
 1. Download a multiplex configuration for your agentgateway.
 
    ```yaml
-   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml -o config.yaml
+   curl -L https://agentgateway.dev/examples/multiplex/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file. 
@@ -25,7 +25,7 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP multiple
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/multiplex/config.yaml" %}}
+   {{% github-yaml url="https://agentgateway.dev/examples/multiplex/config.yaml" %}}
 
    * **Listener**: An HTTP listener is configured and bound on port 3000. It includes a basic route that matches all traffic to an MCP backend.
    * **Backend**: The backend defines two targets: `time` and `everything`. Note that the target names cannot include underscores (`_`). These targets are exposed together a single MCP server to clients.
