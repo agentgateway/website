@@ -108,7 +108,7 @@ The agentgateway comes with a built-in UI that you can use to connect to your MC
 3. Go to the [**Routes** overview](http://localhost:15000/ui/routes/) and review your route and policy configuration. To learn how to create more or delete existing routes with the UI, see the [Routes](/docs/configuration/listeners) docs. 
    {{< reuse-image src="img/agentgateway-ui-routes.png" >}}
 
-4. Go to the [**Backends** overview](http://localhost:15000/ui/targets/) and review your target configuration. To learn how to create more or delete existing targets with the UI, see the [Backends](/docs/configuration/backends/) docs. 
+4. Go to the [**Backends** overview](http://localhost:15000/ui/backends/) and review your backend configuration. To learn how to create more or delete existing targets with the UI, see the [Backends](/docs/configuration/backends/) docs. 
    {{< reuse-image src="img/agentgateway-ui-backends.png" >}}
 
 5. Go to the [**Policies** overview](http://localhost:15000/ui/policies/) and review your route and policy configuration. To learn more about policies, see the [About policies](/docs/about/introduction/#policies) docs. 
