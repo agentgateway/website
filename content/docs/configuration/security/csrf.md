@@ -6,7 +6,7 @@ weight: 11
 Attach to:
 {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-Cross-Site Request Forgery ([CSRF](https://developer.mozilla.org/en-US/docs/Glossary/CSRF)) protection prevents malicious websites from making unauthorized requests to your application on behalf of authenticated users.
+{{< gloss "CSRF (Cross-Site Request Forgery)" >}}Cross-Site Request Forgery (CSRF){{< /gloss >}} protection prevents malicious websites from making unauthorized requests to your application on behalf of authenticated users.
 
 ## How it works
 

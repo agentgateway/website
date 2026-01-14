@@ -4,7 +4,7 @@ weight: 20
 description: 
 ---
 
-Learn how to configure agentgateway for a particular LLM. 
+Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}}provider{{< /gloss >}}. 
 
 {{< cards >}}
   {{< card link="openai" title="OpenAI" >}}

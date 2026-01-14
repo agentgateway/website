@@ -6,7 +6,7 @@ weight: 11
 Attach to:
 {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-Cross-origin resource sharing ([CORS](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS)) is a browser security mechanism which allows a server to control which origins can request resources.
+{{< gloss "CORS (Cross-Origin Resource Sharing)" >}}Cross-origin resource sharing (CORS){{< /gloss >}} is a browser security mechanism which allows a server to control which origins can request resources.
 
 > [!TIP]
 > CORS is enforced on the browser, not the server. Requests that violate the CORS policy will still have responses returned, but the browser will reject them. As such, usage of tools like `curl` with `cors` can be confusing, as `curl` does not respect CORS headers.

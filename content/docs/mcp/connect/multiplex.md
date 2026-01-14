@@ -4,7 +4,7 @@ weight: 20
 description:
 ---
 
-Federate tools of multiple MCP servers on the agentgateway by using MCP multiplexing.
+Federate tools of multiple MCP servers on the agentgateway by using MCP {{< gloss "Multiplex" >}}multiplexing{{< /gloss >}}.
 
 ## Before you begin
 

@@ -6,7 +6,7 @@ weight: 17
 Attach to:
 {{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-API key authentication enables authenticating requests based on a user-provided API key.
+{{< gloss "API Key" >}}API key{{< /gloss >}} {{< gloss "Authentication (AuthN)" >}}authentication{{< /gloss >}} enables authenticating requests based on a user-provided API key.
 
 > [!TIP]
 > This policy is about authenticating incoming requests. For attaching API keys to outgoing requests, see [Backend Authentication](../backend-authn).

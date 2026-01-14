@@ -6,7 +6,7 @@ weight: 11
 Attach to:
 {{< badge content="Route" link="/docs/configuration/routes/">}} {{< badge content="Backend" link="/docs/configuration/backends/">}}
 
-Request redirects allow returning a direct response redirecting users to another location.
+Request {{< gloss "Redirect" >}}redirects{{< /gloss >}} allow returning a direct response redirecting users to another location.
 
 For example, the following configuration will return a `307 Temporary Redirect` response with the header `location: https://example.com/new-path`:
 

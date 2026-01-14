@@ -4,7 +4,7 @@ weight: 10
 description: 
 ---
 
-Agentgateway uses the [CEL](https://cel.dev/) expression language throughout the project to enable flexibility.
+Agentgateway uses the {{< gloss "CEL (Common Expression Language)" >}}CEL{{< /gloss >}} expression language throughout the project to enable flexibility.
 CEL allows writing simple expressions based on the request context that evaluate to some result.
 
 ## Example expressions
@@ -27,7 +27,7 @@ Nested object fallback with example of light theme:
 default(json(request.body).user.preferences.theme, "light")
 ```
 
-JWT claim fallback with example of default "user" role:
+{{< gloss "JWT (JSON Web Token)" >}}JWT{{< /gloss >}} claim fallback with example of default "user" role:
 
 ```
 default(jwt.role, "user")

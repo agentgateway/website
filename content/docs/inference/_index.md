@@ -4,7 +4,7 @@ weight: 50
 description:
 ---
 
-Learn more about agentgateway's intelligent routing and load balancing capabilities for AI inference workloads. 
+Learn more about agentgateway's intelligent routing and load balancing capabilities for AI {{< gloss "Inference" >}}inference{{< /gloss >}} workloads. 
 
 ## About Inference Extension {#about}
 

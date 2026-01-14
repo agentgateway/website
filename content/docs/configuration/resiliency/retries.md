@@ -6,7 +6,7 @@ weight: 10
 Attach to:
 {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-When a backend request fails, agentgateway can be configured to *retry* the request.
+When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request.
 When a retry is attempted, a different backend will be preferred (if possible).
 
 ```yaml

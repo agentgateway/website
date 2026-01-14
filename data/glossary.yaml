@@ -56,4 +56,97 @@ Security:
 
 Traffic Management:
   short: "Features to control routing, transformations, load balancing, and traffic shaping."
+
+Backend:
+  short: "A destination service that receives traffic from agentgateway. Backends can be static hosts, MCP servers, LLM providers, or other services."
+
+Listener:
+  short: "An entry point for incoming traffic into agentgateway. Listeners are configured on ports and support HTTP, HTTPS, TCP, and TLS protocols."
+
+Route:
+  short: "A rule that matches incoming requests and forwards them to backends. Routes can match on path, hostname, headers, query parameters, and HTTP methods."
+
+Policy:
+  short: "A configuration that manipulates, secures, or observes traffic as it flows through agentgateway. Policies can be attached at the listener, route, or backend level."
+
+Authentication (AuthN):
+  short: "The process of verifying the identity of a user or service. Agentgateway supports various authentication methods including JWT, API keys, and basic authentication."
+
+Authorization (AuthZ):
+  short: "The process of determining what actions an authenticated user or service is allowed to perform. Agentgateway supports HTTP authorization, MCP authorization, and external authorization services."
+
+JWT (JSON Web Token):
+  short: "A compact, URL-safe token format used for securely transmitting information between parties. JWTs are commonly used for authentication and authorization in agentgateway."
+
+API Key:
+  short: "A secret token used to authenticate API requests. Agentgateway can validate API keys and attach metadata to authenticated requests."
+
+TLS (Transport Layer Security):
+  short: "A cryptographic protocol that provides secure communication over a network. Agentgateway supports TLS for both incoming connections (listeners) and outgoing connections (backends)."
+
+CORS (Cross-Origin Resource Sharing):
+  short: "A security mechanism that allows web pages to make requests to a different domain than the one serving the web page. Agentgateway can configure CORS headers to control cross-origin access."
+
+CSRF (Cross-Site Request Forgery):
+  short: "A security vulnerability where unauthorized commands are transmitted from a user that the web application trusts. Agentgateway can help protect against CSRF attacks."
+
+HTTP (Hypertext Transfer Protocol):
+  short: "The protocol used for transmitting web pages and data over the internet. Agentgateway primarily handles HTTP and HTTPS traffic."
+
+HTTPS (HTTP Secure):
+  short: "HTTP over TLS/SSL, providing encrypted communication. Agentgateway supports HTTPS listeners with TLS certificate configuration."
+
+TCP (Transmission Control Protocol):
+  short: "A connection-oriented protocol that provides reliable, ordered delivery of data. Agentgateway supports TCP listeners for non-HTTP traffic."
+
+Transformation:
+  short: "The process of modifying HTTP requests or responses as they pass through agentgateway. Transformations can change headers, body content, and other request/response attributes."
+
+Rewrite:
+  short: "A traffic management feature that modifies the authority (host) or path of requests before forwarding them to backends."
+
+Redirect:
+  short: "A traffic management feature that sends clients to a different URL, with configurable scheme, authority, path, or status code."
+
+Matching:
+  short: "The process of determining which route should handle an incoming request based on criteria such as path, hostname, headers, query parameters, or HTTP methods."
+
+Direct Response:
+  short: "A traffic management feature that returns a fixed response (body and status code) directly to the client without forwarding the request to a backend."
+
+Retry:
+  short: "A resiliency feature that automatically resends failed requests to backends. Retries can be configured with backoff strategies and specific conditions for when to retry."
+
+Timeout:
+  short: "A time limit for how long agentgateway will wait for a response from a backend before considering the request failed. Timeouts can be configured at the request or backend level."
+
+Mirroring:
+  short: "A resiliency feature that sends a copy of requests to an additional backend for testing or analysis, without affecting the primary request flow."
+
+Circuit Breaker:
+  short: "A resiliency pattern that stops sending requests to a failing backend temporarily, allowing it to recover. Circuit breakers help prevent cascading failures."
+
+CEL (Common Expression Language):
+  short: "A simple expression language used throughout agentgateway to enable flexible configuration. CEL expressions can access request context, JWT claims, and other variables to make dynamic decisions."
+
+ExtProc (External Processing):
+  short: "An advanced filter that allows arbitrary modifications to HTTP requests and responses using an external gRPC processing server. ExtProc is API-compatible with Envoy's External Processing service."
+
+Quota:
+  short: "A limit on the amount of resources (requests, tokens, etc.) that can be consumed within a specific time period. Quotas are enforced through rate limiting policies."
+
+STDIO (Standard Input/Output):
+  short: "A connection method for MCP servers that communicates through standard input and output streams. STDIO is commonly used for local MCP server processes."
+
+Multiplex:
+  short: "A connection method for MCP servers that allows multiple MCP sessions to share a single transport connection, improving efficiency."
+
+OpenAPI:
+  short: "A specification for describing RESTful APIs. Agentgateway can connect to MCP servers that expose an OpenAPI specification."
+
+Provider:
+  short: "A service that provides LLM capabilities, such as OpenAI, Anthropic, or Azure. Agentgateway supports multiple LLM providers and can route to different providers based on configuration."
+
+Inference:
+  short: "The process of generating predictions or responses from a trained machine learning model. In the context of agentgateway, inference refers to LLM API calls for generating text or other outputs."
   

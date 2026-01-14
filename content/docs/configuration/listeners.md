@@ -5,7 +5,7 @@ description: Configure listeners for agentgateway.
 --- 
 
 Listeners are the entrypoints for traffic into agentgateway.
-Agentgateway supports both HTTP and TCP traffic, with and without TLS.
+Agentgateway supports both {{< gloss "HTTP (Hypertext Transfer Protocol)" >}}HTTP{{< /gloss >}} and {{< gloss "TCP (Transmission Control Protocol)" >}}TCP{{< /gloss >}} traffic, with and without {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}}.
 
 ## HTTP Listeners
 
@@ -21,7 +21,7 @@ listeners:
 
 ## HTTPS Listeners
 
-Serving HTTPS traffic requires TLS certificates and setting `protocol: HTTPS` in the listener configuration:
+Serving {{< gloss "HTTPS (HTTP Secure)" >}}HTTPS{{< /gloss >}} traffic requires TLS certificates and setting `protocol: HTTPS` in the listener configuration:
 
 ```yaml
 listeners:

@@ -5,7 +5,7 @@ description: Configure routes on listeners for agentgateway.
 next: /docs/configuration/traffic-management
 ---
 
-Routes are the entry points for traffic to your agentgateway. They are configured on listeners and are used to route traffic to backends.
+{{< gloss "Route" >}}Routes{{< /gloss >}} are the entry points for traffic to your agentgateway. They are configured on listeners and are used to route traffic to {{< gloss "Backend" >}}backends{{< /gloss >}}.
 
 You can use the built-in agentgateway UI or a configuration file to create, update, and delete routes. 
 
@@ -15,7 +15,7 @@ You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`t
 
 ### HTTP routes
 
-[HTTP or HTTPS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
+[HTTP or HTTPS listeners](../listeners/) use `routes` to configure HTTP routes. HTTP routes support all HTTP features such as path, header, method, or query {{< gloss "Matching" >}}matching{{< /gloss >}}, and HTTP-specific filters and {{< gloss "Policy" >}}policies{{< /gloss >}}.
 
 Example configuration:
 

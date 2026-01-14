@@ -7,7 +7,7 @@ Attach to:
 {{< badge content="Backend" link="/docs/configuration/backends/">}}
 
 By default, requests to backends will use HTTP.
-To use HTTPS, a backend TLS policy can be configured.
+To use HTTPS, a backend {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}} policy can be configured.
 
 ```yaml
 backendTLS:

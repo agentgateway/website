@@ -6,7 +6,7 @@ weight: 15
 Attach to:
 {{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-[JWT tokens](https://www.jwt.io/introduction#what-is-json-web-token-structure) from incoming requests can be verified.
+{{< gloss "JWT (JSON Web Token)" >}}JWT tokens{{< /gloss >}} from incoming requests can be verified.
 
 JWT authentication requires a few parameters:
 

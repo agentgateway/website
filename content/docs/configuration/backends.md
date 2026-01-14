@@ -5,8 +5,8 @@ description:
 prev: /docs/configuration/listeners
 ---
 
-Agentgateway backends control where traffic is routed to.
-Agentgateway supports a variety of backends, such as simple hostnames and IP addresses, LLM providers, and MCP servers.
+Agentgateway {{< gloss "Backend" >}}backends{{< /gloss >}} control where traffic is routed to.
+Agentgateway supports a variety of backends, such as simple hostnames and IP addresses, {{< gloss "Provider" >}}LLM providers{{< /gloss >}}, and MCP servers.
 
 ## Static Hosts
 
@@ -36,7 +36,7 @@ backends:
 - mcp:
     targets:
     - name: stdio-server
-      stdio:
+      {{< gloss "STDIO (Standard Input/Output)" >}}stdio{{< /gloss >}}:
         cmd: npx
         args: ["@modelcontextprotocol/server-everything"]
     - name: http-server

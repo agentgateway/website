@@ -6,7 +6,7 @@ weight: 10
 Attach to:
 {{< badge content="Route" link="/docs/configuration/routes/">}} {{< badge content="Backend" link="/docs/configuration/backends/">}}
 
-Request timeouts allow returning an error for requests that take too long to complete.
+Request {{< gloss "Timeout" >}}timeouts{{< /gloss >}} allow returning an error for requests that take too long to complete.
 
 ## Route Timeouts
 

@@ -4,7 +4,7 @@ weight: 30
 description: 
 ---
 
-Expose an OpenAPI server on the agentgateway. Then, your OpenAPI endpoints become available as tools in the agentgateway UI playground.
+Expose an {{< gloss "OpenAPI" >}}OpenAPI{{< /gloss >}} server on the agentgateway. Then, your OpenAPI endpoints become available as tools in the agentgateway UI playground.
 
 ## Before you begin
 

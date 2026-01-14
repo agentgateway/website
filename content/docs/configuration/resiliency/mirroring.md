@@ -6,7 +6,7 @@ weight: 10
 Attach to:
 {{< badge content="Route" link="/docs/configuration/routes/">}} {{< badge content="Backend" link="/docs/configuration/backends/">}}
 
-Request mirroring allows sending a copy of each request to an alterative backend.
+Request {{< gloss "Mirroring" >}}mirroring{{< /gloss >}} allows sending a copy of each request to an alterative backend.
 These request will not be retried if they fail.
 
 ```yaml
