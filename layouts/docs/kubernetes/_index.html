@@ -1,6 +1,6 @@
 {{ define "main" }}
   <style>
-    /* Hide sidebar on docs landing page */
+    /* Hide sidebar on kubernetes landing page */
     .sidebar-container,
     aside.sidebar-container,
     aside.hx-order-first,
@@ -11,8 +11,10 @@
     
     /* Hide Hextra theme navbar on docs pages - we use custom nav.html instead */
     .nav-container,
-    .hx-sticky.hx-top-0 {
+    .hx-sticky.hx-top-0,
+    div.nav-container {
       display: none !important;
+      visibility: hidden !important;
     }
     
     /* Full width for landing page - override theme's flex layout */
@@ -39,32 +41,15 @@
       }
     }
     
-    /* Center title on docs landing page */
-    .hx-w-full .content h1 {
+    /* Center text above cards on kubernetes landing page */
+    .hx-w-full .content {
       text-align: center !important;
     }
     
-    /* Left-align description text */
     .hx-w-full .content p {
-      text-align: left !important;
-    }
-    
-    /* Center cards on docs landing page - use text-align on wrapper, don't change display */
-    .hx-w-full .content > div[class*="hx-block"] {
       text-align: center !important;
-    }
-    
-    /* Center the cards grid container */
-    .hx-w-full .content .hextra-cards {
       margin-left: auto !important;
       margin-right: auto !important;
-      width: fit-content !important;
-    }
-    
-    /* Left-align card subtitles */
-    .hx-w-full .content .hextra-card p,
-    .hx-w-full .content .hextra-card .hextra-card-subtitle {
-      text-align: left !important;
     }
   </style>
   
@@ -79,7 +64,7 @@
     <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center">
       <main class="hx-w-full hx-min-w-0 hx-max-w-6xl">
         <div class="hx-text-center hx-mb-12">
-          <h1 class="hx-text-4xl hx-font-bold hx-mb-4">{{ .Title | default "Documentation" }}</h1>
+          <h1 class="hx-text-4xl hx-font-bold hx-mb-4">{{ if .Title }}{{ .Title }}{{ else }}Kubernetes Documentation{{ end }}</h1>
         </div>
         
         <div class="content">
