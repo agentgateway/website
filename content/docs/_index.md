@@ -22,10 +22,12 @@ Agentgateway can be deployed in two ways. Choose your deployment type to view th
   {{< card link="/docs/kubernetes/" title="Kubernetes" subtitle="Deploy agentgateway on Kubernetes by using the kgateway control plane. Ideal for production environments with advanced orchestration needs." image="/logo-dark-kubernetes.svg" >}}
 {{< /cards >}}
 </div>
-  
+
+## About agentgateway
+
 {{< reuse-image src="img/architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 
-## Why Agentgateway?
+## Why agentgateway?
 
 Traditional API gateways and reverse proxies aren't built for MCP and A2A, and adapting them isn't straightforward. These systems are optimized for **stateless REST-style interactions**—one request in, pick a backend, one response out—with no session context or ongoing connection state.
 
