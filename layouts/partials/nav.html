@@ -226,19 +226,59 @@
 {{- end -}}
 
 {{- if $isLandingPage -}}
-  {{- /* Original landing page navbar style */ -}}
-  <nav class="navbar py-[1.875rem] px-12 xl:px-25 absolute top-0 w-full hidden lg:block z-50">
+  {{- /* Original landing page navbar style - larger, lighter text for dark background */ -}}
+  <style>
+    /* Landing page navbar text - larger and lighter for dark mode */
+    .landing-navbar .link {
+      font-size: 1rem; /* text-base - larger than docs navbar */
+      color: rgb(243, 244, 246) !important; /* gray-100 - lighter for dark background */
+      font-weight: 400;
+    }
+    
+    .landing-navbar .link:hover {
+      color: rgb(255, 255, 255) !important; /* white on hover */
+    }
+    
+    /* Landing page dropdown styling - match landing page text style */
+    .landing-navbar .navbar-dropdown-content {
+      background-color: rgba(17, 24, 39, 0.95); /* gray-900 with slight transparency */
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .landing-navbar .navbar-dropdown-content a {
+      color: rgb(243, 244, 246) !important; /* gray-100 - lighter text */
+      font-size: 0.9375rem; /* slightly smaller than main nav */
+    }
+    
+    .landing-navbar .navbar-dropdown-content a:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: rgb(255, 255, 255) !important; /* white on hover */
+    }
+  </style>
+  <nav class="navbar landing-navbar py-[1.875rem] px-12 xl:px-25 absolute top-0 w-full hidden lg:block z-50">
     <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
       <div class="flex items-center gap-8">
         <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "id='logo'" ) }}</a>
       </div>
       <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between lg:gap-8 xl:gap-[3.5625rem]">
-        <a class="link whitespace-nowrap text-primary-text" href="/docs/">Docs</a>
-        <a class="link whitespace-nowrap text-primary-text" href="/blog">Blog</a>
-        <a class="link whitespace-nowrap text-primary-text" href="/enterprise">Enterprise</a>
-        <a class="link whitespace-nowrap text-primary-text" href="https://discord.gg/y9efgEmppm">Community</a>
-        <a class="link whitespace-nowrap text-primary-text" href="/docs/quickstart/">Get Started</a>
-        <a class="link whitespace-nowrap text-primary-text" href="https://github.com/agentgateway/agentgateway">GitHub</a>
+        <div class="dropdown">
+          <a class="link whitespace-nowrap flex items-center gap-1" href="/docs/">
+            Docs
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </a>
+          <div class="dropdown-content navbar-dropdown-content rounded-l bg-white dark:bg-gray-900 absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
+            <a href="/docs/local/" class="px-4 py-3 block text-left">Local</a>
+            <a href="/docs/kubernetes/" class="px-4 py-3 block text-left">Kubernetes</a>
+          </div>
+        </div>
+        <a class="link whitespace-nowrap" href="/blog">Blog</a>
+        <a class="link whitespace-nowrap" href="/enterprise">Enterprise</a>
+        <a class="link whitespace-nowrap" href="https://discord.gg/y9efgEmppm">Community</a>
+        <a class="link whitespace-nowrap" href="/docs/quickstart/">Get Started</a>
+        <a class="link whitespace-nowrap" href="https://github.com/agentgateway/agentgateway">GitHub</a>
       </div>
     </div>
   </nav>
