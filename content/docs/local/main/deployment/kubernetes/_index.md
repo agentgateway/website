@@ -5,7 +5,8 @@ description: Overview of how to deploy agentgateway on Kubernetes
 ---
 
 This website, [agentgateway.dev](https://agentgateway.dev/), is primarily focused on deploying and operating agentgateway as a standalone binary.
-To deploy agentgateway on Kubernetes, check out the [kgateway](https://kgateway.dev/) project.
+
+To deploy agentgateway on Kubernetes, agentgateway uses the [kgateway](https://kgateway.dev/) project.
 Kgateway provides a control plane to dynamically provision and manage agentgateway in Kubernetes environments, with [first-class support](https://kgateway.dev/docs/agentgateway/) for agentgateway.
 
 Kgateway benefits include:
@@ -16,5 +17,5 @@ Kgateway benefits include:
 
 
 {{< cards >}}
-  {{< card link="https://kgateway.dev/docs/agentgateway/latest/quickstart/" title="Get started with agentgateway on Kubernetes" icon="external-link">}}
+  {{< card link="../../../../kubernetes/" title="Get started with agentgateway on Kubernetes" icon="external-link">}}
 {{< /cards >}}
