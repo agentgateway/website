@@ -1,0 +1,59 @@
+A2A:
+  short: "Agent-to-Agent Protocol for secure, policy-driven communication across agents."
+  
+
+Agentgateway:
+  short: "An open-source data plane optimized for agentic AI connectivity."
+  
+
+Agents:
+  short: "Autonomous AI components that interact with MCP tools, services, and other agents."
+  
+
+API Gateway:
+  short: "A centralized entry point that manages, secures, and routes API traffic."
+  
+
+Control Plane:
+  short: "Components that manage and distribute configuration and policies to the data plane."
+  
+
+Data Plane:
+  short: "Proxies (agentgateway) that process live network traffic per configuration from the control plane."
+  
+
+Large Language Model (LLM):
+  short: "Pre-trained language models used for natural language tasks. LLM traffic can be managed via agentgateway."
+  
+
+LLM Gateway / AI Gateway:
+  short: "A gateway pattern for managing LLM/AI traffic, often served by agentgateway."
+  
+
+MCP (Model Context Protocol):
+  short: "Protocol for exchanging model context and metadata between LLM gateways, agents, and tools."
+  
+
+Observability (Logging, Monitoring, Tracing):
+  short: "Telemetry systems (logs, metrics, traces) used to monitor agentgateway."
+  
+
+Proxy:
+  short: "Agentgateway-based data plane process that terminates and forwards traffic."
+  
+
+Rate Limiting:
+  short: "Policies that control request rates to protect backends and enforce quotas."
+  
+
+Resiliency:
+  short: "Features that improve reliability, such as retries, timeouts, and circuit breakers."
+  
+
+Security:
+  short: "Authentication, authorization, encryption and other protections for traffic."
+  
+
+Traffic Management:
+  short: "Features to control routing, transformations, load balancing, and traffic shaping."
+  
