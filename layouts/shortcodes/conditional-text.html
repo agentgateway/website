@@ -1,4 +1,4 @@
-{{- /* Extract the current section (binary or kubernetes) from the page URL */ -}}
+{{- /* Extract the current section (local or kubernetes) from the page URL */ -}}
 {{- $path := .Page.RelPermalink -}}
 {{- $segments := split $path "/" -}}
 {{- $condition := "" -}}
