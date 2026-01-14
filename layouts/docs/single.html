@@ -1,4 +1,11 @@
 {{ define "main" }}
+  <style>
+    /* Hide Hextra theme navbar on docs pages - we use custom nav.html instead */
+    .nav-container,
+    .hx-sticky.hx-top-0 {
+      display: none !important;
+    }
+  </style>
   <div class="w-full z-10">
     {{ partial "announcement.html" .}}
   </div>

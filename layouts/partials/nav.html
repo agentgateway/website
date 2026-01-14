@@ -51,6 +51,66 @@
   }
 
   .dropdown:hover .dropdown-content {display: block;}
+  
+  .navbar-dropdown-content {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    background-color: #1c2029; /* tertiary-bg - matches homepage dark theme */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    z-index: 50;
+    padding-top: 0.25rem;
+    min-width: 180px;
+  }
+  
+  /* Create a hover bridge between trigger and dropdown */
+  .dropdown::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: 0.5rem;
+    z-index: 49;
+  }
+  
+  /* Dark mode - matches homepage theme */
+  .navbar-dropdown-content {
+    background-color: #1c2029; /* tertiary-bg */
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Light mode override (if needed) */
+  @media (prefers-color-scheme: light) {
+    .navbar-dropdown-content {
+      background-color: white;
+      border-color: rgba(0, 0, 0, 0.1);
+    }
+  }
+  
+  /* Dark mode hover styles for dropdown items */
+  .navbar-dropdown-content a {
+    color: rgb(156, 163, 175); /* secondary-text */
+  }
+  
+  .navbar-dropdown-content a:hover {
+    background-color: #10141f !important; /* secondary-bg */
+    color: rgb(249, 250, 251) !important; /* primary-text */
+  }
+  
+  /* Light mode hover styles (if needed) */
+  @media (prefers-color-scheme: light) {
+    .navbar-dropdown-content a {
+      color: rgb(55, 65, 81); /* gray-700 */
+    }
+    
+    .navbar-dropdown-content a:hover {
+      background-color: rgb(243, 244, 246);
+      color: rgb(17, 24, 39);
+    }
+  }
 </style>
 
 <nav class="navbar py-[1.875rem] px-12 xl:px-25 absolute top-0 w-full hidden lg:block z-50">
@@ -59,7 +119,18 @@
       <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "id='logo'" ) }}</a>
     </div>
     <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between lg:gap-8 xl:gap-[3.5625rem]">
-      <a class="link whitespace-nowrap text-primary-text" href="/docs/">Docs</a>
+      <div class="dropdown">
+        <a class="link whitespace-nowrap text-primary-text flex items-center gap-1" href="/docs/">
+          Docs
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </a>
+        <div class="dropdown-content navbar-dropdown-content">
+          <a href="/docs/local/" class="block px-4 py-3 text-sm">Local</a>
+          <a href="/docs/kubernetes/" class="block px-4 py-3 text-sm">Kubernetes</a>
+        </div>
+      </div>
       <a class="link whitespace-nowrap text-primary-text" href="/blog">Blog</a>
       <a class="link whitespace-nowrap text-primary-text" href="/enterprise">Enterprise</a>
       <a class="link whitespace-nowrap text-primary-text" href="https://discord.gg/y9efgEmppm">Community</a>
@@ -86,6 +157,8 @@
 <div class="mobile-nav absolute bg-primary-bg w-screen z-40">
   <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
     <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
+    <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/local/">Local</a>
+    <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/kubernetes/">Kubernetes</a>
     <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/blog">Blog</a>
     <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/enterprise">Enterprise</a>
     <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://discord.gg/y9efgEmppm">Community</a>
