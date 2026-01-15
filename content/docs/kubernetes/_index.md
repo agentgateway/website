@@ -15,4 +15,4 @@ Select the version for the agentgateway docs.
 {{< /cards >}}
 
 > [!TIP] 
-> Looking to use agentgateway locally and not in a Kubernetes cluster? Check out the [local binary docs](../local/) instead.
+> Looking to use agentgateway locally and not in a Kubernetes cluster? Check out the [local binary docs](/docs/local/latest/) instead.

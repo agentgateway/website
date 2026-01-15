@@ -6,7 +6,7 @@ title: Welcome
 Welcome to the documentation for using the local binary of the agentgateway open source project! 
 
 > [!NOTE]
-> Looking to deploy agentgateway on Kubernetes? Check out the [Kubernetes section of the docs](/docs/kubernetes/).
+> Looking to deploy agentgateway on Kubernetes? Check out the [Kubernetes section of the docs](/docs/kubernetes/latest/).
 
 {{< cards >}}
   {{< card link="quickstart" title="Quickstart" >}}
