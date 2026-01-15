@@ -8,6 +8,9 @@
   {{- errorf "The %q shortcode requires a single positional parameter; the relative path to a file in the assets directory. See %s" .Name .Position}}
 {{- end }}
 
+{{- /* Remove leading slash if present, as resources.Get expects paths relative to assets without leading slash */}}
+{{- $asset = $asset | strings.TrimPrefix "/" }}
+
 {{- /* Get resource. */}}
 {{- $r := "" }}
 {{- with resources.Get $asset }}
@@ -17,6 +20,6 @@
 {{- end }}
 
 {{- /* Render resource content. */}}
-{{- $r.Content | .Page.RenderString }}
+{{- $r.Content | .Page.RenderString | chomp }}
 
 {{- /* Chomp trailing newlines. */ -}}

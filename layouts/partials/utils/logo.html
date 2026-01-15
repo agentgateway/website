@@ -1,0 +1,40 @@
+{{- /* Determine which logo to show based on current page path */ -}}
+{{- $page := . -}}
+{{- if isset . "Page" -}}
+  {{- $page = .Page -}}
+{{- end -}}
+{{- $path := $page.RelPermalink -}}
+{{- $segments := split $path "/" -}}
+{{- $section := "" -}}
+
+{{- /* Check if we're in a docs section and extract the subsection */ -}}
+{{- if and (ge (len $segments) 3) (eq (index $segments 1) "docs") -}}
+  {{- $section = index $segments 2 | lower -}}
+{{- end -}}
+
+{{- /* Set logo paths based on section */ -}}
+{{- $logoLight := "/logo.svg" -}}
+{{- $logoDark := "/logo-dark.svg" -}}
+
+{{- if eq $section "local" -}}
+  {{- $logoLight = "/logo-local-binary.svg" -}}
+  {{- $logoDark = "/logo-dark-local-binary.svg" -}}
+{{- else if eq $section "kubernetes" -}}
+  {{- $logoLight = "/logo-kubernetes.svg" -}}
+  {{- $logoDark = "/logo-dark-kubernetes.svg" -}}
+{{- end -}}
+
+{{- /* Get attributes if provided */ -}}
+{{- $attributes := "" -}}
+{{- if isset . "attributes" -}}
+  {{- $attributes = .attributes -}}
+{{- end -}}
+
+{{- /* Render logo with dark mode support */ -}}
+{{- if $attributes -}}
+  <img src="{{ $logoLight }}" alt="agentgateway logo" class="dark:hidden" {{ $attributes | safeHTML }} />
+  <img src="{{ $logoDark }}" alt="agentgateway logo" class="hidden dark:block" {{ $attributes | safeHTML }} />
+{{- else -}}
+  <img src="{{ $logoLight }}" alt="agentgateway logo" class="dark:hidden" height="50" />
+  <img src="{{ $logoDark }}" alt="agentgateway logo" class="hidden dark:block" height="50" />
+{{- end -}}
