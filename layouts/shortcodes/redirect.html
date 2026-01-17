@@ -1,0 +1,8 @@
+{{ $url := .Get 0 }}
+<script>
+  window.location.href = "{{ $url }}";
+</script>
+<noscript>
+  <meta http-equiv="refresh" content="0; url={{ $url }}">
+</noscript>
+<p>Redirecting to <a href="{{ $url }}">{{ $url }}</a>...</p>
