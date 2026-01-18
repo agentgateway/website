@@ -11,7 +11,6 @@ Kagent provides a Kubernetes-native approach to running AI agents:
 
 - **CRD-based Configuration** - Define agents as Kubernetes resources
 - **Native Scaling** - Horizontal pod autoscaling for agent workloads
-- **Service Mesh Integration** - Works with Istio, Linkerd, and other meshes
 - **MCP Support** - Built-in Model Context Protocol for tool access
 - **A2A Communication** - Agent-to-agent messaging via Kubernetes services
 - **GitOps Ready** - Declarative agent definitions for Flux/ArgoCD
@@ -337,52 +336,9 @@ observability:
         index: agentgateway-audit
 ```
 
-## Integration with Service Mesh
-
-### Istio Integration
-
-Add Agent Gateway to your Istio mesh:
-
-```yaml
-apiVersion: networking.istio.io/v1beta1
-kind: VirtualService
-metadata:
-  name: agentgateway
-spec:
-  hosts:
-    - agentgateway.ai-platform.svc
-  http:
-    - route:
-        - destination:
-            host: agentgateway.ai-platform.svc
-      retries:
-        attempts: 3
-        perTryTimeout: 10s
-```
-
-### mTLS Enforcement
-
-Require mutual TLS for all agent communications:
-
-```yaml
-apiVersion: security.istio.io/v1beta1
-kind: PeerAuthentication
-metadata:
-  name: agentgateway-mtls
-  namespace: ai-platform
-spec:
-  selector:
-    matchLabels:
-      app: agentgateway
-  mtls:
-    mode: STRICT
-```
-
 ## Best Practices
 
-1. **Use NetworkPolicies** - Restrict which pods can reach Agent Gateway
-2. **Enable mTLS** - Encrypt all agent communications
-3. **Namespace Isolation** - Separate teams with namespace-aware policies
-4. **Resource Quotas** - Set token budgets per namespace
-5. **Audit Everything** - Log all LLM, MCP, and A2A traffic
-6. **GitOps Policies** - Manage authorization policies declaratively
+1. **Namespace Isolation** - Separate teams with namespace-aware policies
+2. **Resource Quotas** - Set token budgets per namespace
+3. **Audit Everything** - Log all LLM, MCP, and A2A traffic
+4. **GitOps Policies** - Manage authorization policies declaratively
