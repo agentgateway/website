@@ -93,12 +93,3 @@ Integrate Agent Gateway with your existing infrastructure and tools.
   {{< card link="platforms/gcp" title="Google Cloud" subtitle="Cloud Run and GCP services" >}}
   {{< card link="platforms/azure" title="Azure" subtitle="Container Apps and Azure services" >}}
 {{< /cards >}}
-
-## Secret Management
-
-{{< cards >}}
-  {{< card link="secrets/vault" title="HashiCorp Vault" subtitle="Secrets management" >}}
-  {{< card link="secrets/aws-secrets-manager" title="AWS Secrets Manager" subtitle="AWS secret storage" >}}
-  {{< card link="secrets/gcp-secret-manager" title="GCP Secret Manager" subtitle="Google Cloud secrets" >}}
-  {{< card link="secrets/azure-key-vault" title="Azure Key Vault" subtitle="Azure secret storage" >}}
-{{< /cards >}}
