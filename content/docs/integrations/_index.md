@@ -37,15 +37,6 @@ Integrate Agent Gateway with your existing infrastructure and tools.
   {{< card link="llm-observability/helicone" title="Helicone" subtitle="LLM monitoring and analytics" >}}
 {{< /cards >}}
 
-## Service Mesh & Networking
-
-{{< cards >}}
-  {{< card link="service-mesh/istio" title="Istio" subtitle="Service mesh integration" >}}
-  {{< card link="service-mesh/linkerd" title="Linkerd" subtitle="Lightweight service mesh" >}}
-  {{< card link="networking/external-dns" title="External DNS" subtitle="Automatic DNS management" >}}
-  {{< card link="networking/cert-manager" title="cert-manager" subtitle="Automatic TLS certificate management" >}}
-{{< /cards >}}
-
 ## Authentication & Identity
 
 {{< cards >}}
