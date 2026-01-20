@@ -74,7 +74,7 @@ sequenceDiagram
    {{< tabs tabTotal="2" items="CLI,UI" >}}
    {{% tab tabName="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.17.5 \
+   npx @modelcontextprotocol/inspector@0.18.0 \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -143,7 +143,7 @@ sequenceDiagram
    {{% tab tabName="CLI" %}}
    1. Try to access the `get_me` tool with Alice's JWT token. Verify that the request succeeds and you can access the tool. 
       ```sh
-      npx @modelcontextprotocol/inspector@0.17.5 \
+      npx @modelcontextprotocol/inspector@0.18.0 \
       --cli http://localhost:8080/mcp-github \
       --transport http \
       --header "mcp-protocol-version: 2024-11-05" \
@@ -165,7 +165,7 @@ sequenceDiagram
       ```
    2. Try to access a different tool, such as `search_repositories`. Verify that the request fails, because this tool is not allowed in your {{< reuse "docs/snippets/trafficpolicy.md" >}}. 
       ```sh
-      npx @modelcontextprotocol/inspector@0.17.5 \
+      npx @modelcontextprotocol/inspector@0.18.0 \
       --cli http://localhost:8080/mcp-github \
       --transport http \
       --header "mcp-protocol-version: 2024-11-05" \
@@ -183,7 +183,7 @@ sequenceDiagram
    
    3. Try to access the `get_me` took with Bob's JWT token. Verify that the request fails, because the token does not have the `sub=alice` claim. 
       ```sh
-      npx @modelcontextprotocol/inspector@0.17.5 \
+      npx @modelcontextprotocol/inspector@0.18.0 \
       --cli http://localhost:8080/mcp-github \
       --transport http \
       --header "mcp-protocol-version: 2024-11-05" \
