@@ -1,10 +1,4 @@
-Use header and query matchers in a route delegation setup. 
-
-{{< version exclude-if="2.0.x" >}}
-{{< callout >}}
-{{< reuse "docs/snippets/proxy-kgateway.md" >}}
-{{< /callout >}}
-{{< /version >}}
+Use header and query matchers in a route delegation setup.
 
 ## Configuration overview
 

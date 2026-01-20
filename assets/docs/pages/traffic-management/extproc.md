@@ -1,8 +1,4 @@
-Modify aspects of an HTTP request or response with an external processing server. 
-
-{{< callout >}}
-{{< reuse "docs/snippets/proxy-kgateway.md" >}}
-{{< /callout >}}
+Modify aspects of an HTTP request or response with an external processing server.
 
 ## About external processing
 
