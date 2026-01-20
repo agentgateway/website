@@ -20,7 +20,7 @@ The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https:
 1. Download a telemetry configuration for your agentgateway.
 
    ```yaml
-   curl -L https://agentgateway.dev/examples/telemetry/config.yaml -o config.yaml -o config.yaml
+   curl -L https://agentgateway.dev/examples/telemetry/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file. 
@@ -29,7 +29,7 @@ The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https:
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://agentgateway.dev/examples/telemetry/config.yaml -o config.yaml" %}}
+   {{% github-yaml url="https://agentgateway.dev/examples/telemetry/config.yaml" %}}
 
    * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 
