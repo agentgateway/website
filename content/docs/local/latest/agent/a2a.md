@@ -22,7 +22,7 @@ Create an agentgateway that proxies requests to the ADK agent that you create la
    * **Backend**: The agentgateway targets a backend on your localhost port 9999, which you create in a subsequent step.
    ```yaml
    cat <<EOF > config.yaml
-   {{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/a2a/config.yaml" >}}
+   {{< github url="https://agentgateway.dev/examples/a2a/config.yaml" >}}
    EOF
    ```
 

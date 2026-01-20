@@ -93,7 +93,7 @@ Build the Docker image from the source code. The example builds the image for an
 
 2. Download an OpenAPI configuration for your agentgateway.
    ```sh
-   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/openapi/config.yaml -o config.yaml
+   curl -L https://agentgateway.dev/examples/openapi/config.yaml -o config.yaml -o config.yaml
    ```
 
 3. Update the agentgateway configuration file as follows:

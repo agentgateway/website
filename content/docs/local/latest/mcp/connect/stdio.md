@@ -17,7 +17,7 @@ An MCP backend allows exposing MCP servers through the agentgateway using {{< gl
 1. Download an MCP configuration for your agentgateway.
 
    ```yaml
-   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
+   curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file. 
@@ -26,7 +26,7 @@ An MCP backend allows exposing MCP servers through the agentgateway using {{< gl
    cat config.yaml
    ```
 
-   {{% github-yaml  url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
+   {{% github-yaml  url="https://agentgateway.dev/examples/basic/config.yaml" %}}
 
    {{< reuse "docs/snippets/review-table.md" >}}
 
