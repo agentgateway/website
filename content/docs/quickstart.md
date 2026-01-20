@@ -27,7 +27,7 @@ You complete the following tasks:
 1. Download and install the agentgateway binary with the following command. Alternatively, you can manually download the binary from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases/latest).
    
    ```sh
-   curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+   curl https://agentgateway.dev/install | bash
    ```
    
    Example output: 
@@ -67,7 +67,7 @@ In this example, you use a [basic configuration file](/docs/configuration/overvi
 1. Download a basic configuration file for your agentgateway. 
    
    ```yaml
-   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
+   curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file. 
@@ -76,7 +76,7 @@ In this example, you use a [basic configuration file](/docs/configuration/overvi
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
+   {{% github-yaml url="https://agentgateway.dev/examples/basic/config.yaml" %}}
 
    {{< reuse "docs/snippets/review-table.md" >}}
 

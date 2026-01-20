@@ -20,7 +20,7 @@ For an overview of the configuration fields, review the [Getting Started](/docs/
 ### Example configuration file {#example-file}
 
 ```yaml
-{{% github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml" %}}
+{{% github url="https://agentgateway.dev/examples/basic/config.yaml" %}}
 ```
 
 ## Update configuration {#add}
