@@ -4,11 +4,36 @@ weight: 10
 description: Configuration and setup for arbitrary OpenAI compatible LLM providers
 ---
 
-Configure any LLM provider that provides OpenAI-compatible endpoints with agentgateway.
+Configure any LLM provider that provides OpenAI-compatible endpoints with agentgateway. This includes providers like xAI (Grok), Cohere, Ollama, Together AI, Groq, and many others.
 
-## Configuration
+## xAI (Grok)
 
-{{< reuse "docs/snippets/review-configuration.md" >}} The example integrates with [Cohere AI](https://cohere.com/). For a different provider, consult their documentation to find the provider-specific details.
+[xAI](https://x.ai/) provides OpenAI-compatible endpoints for their Grok models.
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: api.x.ai
+        backendTLS: {}
+        backendAuth:
+          key: $XAI_API_KEY
+      backends:
+      - ai:
+          name: xai
+          hostOverride: api.x.ai:443
+          provider:
+            openAI:
+              model: grok-2-latest
+```
+
+## Cohere
+
+[Cohere](https://cohere.com/) provides an OpenAI-compatible endpoint for their models.
 
 ```yaml
 binds:
@@ -30,10 +55,111 @@ binds:
           hostOverride: api.cohere.ai:443
           provider:
             openAI:
-              model: command
+              model: command-r-plus
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+## Ollama (Local)
+
+[Ollama](https://ollama.ai/) runs models locally and provides an OpenAI-compatible API.
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: localhost:11434
+      backends:
+      - ai:
+          name: ollama
+          hostOverride: localhost:11434
+          provider:
+            openAI:
+              model: llama3.2
+```
+
+## Together AI
+
+[Together AI](https://together.ai/) provides access to open-source models via OpenAI-compatible endpoints.
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: api.together.xyz
+        backendTLS: {}
+        backendAuth:
+          key: $TOGETHER_API_KEY
+      backends:
+      - ai:
+          name: together
+          hostOverride: api.together.xyz:443
+          provider:
+            openAI:
+              model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+```
+
+## Groq
+
+[Groq](https://groq.com/) provides fast inference via OpenAI-compatible endpoints.
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: api.groq.com
+          path:
+            full: "/openai/v1/chat/completions"
+        backendTLS: {}
+        backendAuth:
+          key: $GROQ_API_KEY
+      backends:
+      - ai:
+          name: groq
+          hostOverride: api.groq.com:443
+          provider:
+            openAI:
+              model: llama-3.3-70b-versatile
+```
+
+## Generic configuration
+
+For any OpenAI-compatible provider, use this template:
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: <provider-api-host>
+          path:
+            full: "<provider-chat-endpoint>"  # Often /v1/chat/completions
+        backendTLS: {}  # Include if provider uses HTTPS
+        backendAuth:
+          key: $PROVIDER_API_KEY
+      backends:
+      - ai:
+          name: <provider-name>
+          hostOverride: <provider-api-host>:443
+          provider:
+            openAI:
+              model: <model-name>
+```
+
+## Configuration reference
 
 | Setting | Description |
 |---------|-------------|
