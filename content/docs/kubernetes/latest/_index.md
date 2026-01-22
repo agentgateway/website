@@ -1,5 +1,5 @@
 ---
-title: Latest (2.2.x)
+title: Latest (2.2.x beta)
 weight: 460
 description: Use kgateway with agentgateway. 
 ---
