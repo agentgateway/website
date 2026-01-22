@@ -75,6 +75,10 @@ menu:
 params:
   title: agentgateway
   description: Agentgateway is an open source project that is built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
+  banner:
+    key: 'announcement-2.2'
+    message: |
+      Agentgateway on Kubernetes version 2.2 is available as a **beta** release.
   navbar:
     displayTitle: false
     displayLogo: true
@@ -154,9 +158,11 @@ params:
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
+          banner: "This version of the documentation is currently under development. Select latest from the version dropdown or [click this link](https://agentgateway.dev/docs/kubernetes/latest/)."
         - version: "2.2.x"
           dropdown: "2.2 (latest)"
           linkVersion: "latest"
           url: "/latest"
+          banner: "2.2.x is available as a **beta** release."
   
   gtmContainerID: "GTM-MDMTFJQC"

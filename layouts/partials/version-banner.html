@@ -1,0 +1,46 @@
+{{/* TEST: Simple banner that should always show to verify partial is working */}}
+<div class="bg-red-500 text-white p-4 text-center w-full">
+  TEST BANNER - If you see this, the partial is working!
+</div>
+
+{{/* Version-specific banner - works for any product section (kubernetes, local, etc.) */}}
+{{ $path := .RelPermalink }}
+{{ $segments := split $path "/" }}
+{{ $section := index $segments 1 }}  {{/* "docs" */}}
+{{ $subSection := index $segments 2 }}  {{/* "local" or "kubernetes" */}}
+{{ $currentVersion := "" }}
+{{ $bannerMessage := "" }}
+
+{{/* Extract current version from path - matching breadcrumb.html logic */}}
+{{ if and (ge (len $segments) 4) (eq $section "docs") }}
+  {{ $currentVersion = index $segments 3 }}
+{{ end }}
+
+{{/* Only show on versioned docs pages */}}
+{{ if and (eq $section "docs") $subSection $currentVersion }}
+  {{/* Get versions for current section to find banner message */}}
+  {{ $versions := slice }}
+  {{ if and $subSection (isset site.Params.sections $subSection) }}
+    {{ $versions = (index site.Params.sections $subSection).versions }}
+  {{ end }}
+
+  {{/* Find the banner message for current version */}}
+  {{ range $versions }}
+    {{ if and (eq .linkVersion $currentVersion) (isset . "banner") }}
+      {{ $bannerMessage = .banner }}
+      {{ break }}
+    {{ end }}
+  {{ end }}
+
+  {{/* Display banner if message is configured */}}
+  {{ if $bannerMessage }}
+    <div class="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-200 dark:border-blue-800 w-full font-secondary text-sm lg:text-base text-blue-900 dark:text-blue-200">
+      <div class="p-4 text-center">
+        {{/* Render markdown content - inline styles for better markdown support */}}
+        <div class="inline-block [&_strong]:font-semibold [&_a]:underline [&_a]:hover:no-underline [&_a]:text-blue-800 dark:[&_a]:text-blue-200">
+          {{ $bannerMessage | .Page.RenderString }}
+        </div>
+      </div>
+    </div>
+  {{ end }}
+{{ end }}
