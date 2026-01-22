@@ -56,9 +56,9 @@
       statusText.className = 'compact-status-text text-white whitespace-nowrap font-medium';
 
       if (hoursUntil > 0) {
-        statusText.textContent = `Join in ${hoursUntil}h ${minsUntil}m`;
+        statusText.textContent = `Starts in ${hoursUntil}h ${minsUntil}m`;
       } else {
-        statusText.textContent = `Join in ${minsUntil}m`;
+        statusText.textContent = `Starts in ${minsUntil}m`;
       }
       indicator.className = 'meeting-indicator-compact flex items-center gap-2 px-3 py-2 bg-yellow-500/10 border border-yellow-500/50 rounded-lg hover:border-yellow-500 transition-all duration-200 text-sm';
       return;
