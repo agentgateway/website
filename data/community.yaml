@@ -1,0 +1,9 @@
+meeting:
+  title: "Weekly Community Meeting"
+  day: "Thursday"
+  time: "2:00 PM"
+  timezone: "ET"
+  meetingUrl: "http://meet.google.com/xub-tufq-rtc"
+  notesUrl: "https://docs.google.com/document/d/1TvCKGDeE5KVwjY5lAd06z5xYfzX4SrJZFvVaYmlIt00/edit?usp=sharing"
+  calendarUrl: "https://calendar.google.com/calendar/u/0?cid=Y18zZTAzNGE0OTFiMGUyYzU2OWI1Y2ZlOWNmOWM4NjYyZTljNTNjYzVlOTdmMjdkY2I5ZTZmNmM5ZDZhYzRkM2ZmQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20"
+  description: "Join us for our weekly community sync to discuss features, roadmap, and community contributions."
