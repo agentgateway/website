@@ -1,8 +1,18 @@
 {{ define "main" }}
-  <div class="w-full z-10">
+  <style>
+    /* Hide Hextra theme navbar on docs pages - we use custom nav.html instead */
+    .nav-container,
+    .hx-sticky.hx-top-0,
+    div.nav-container {
+      display: none !important;
+      visibility: hidden !important;
+    }
+  </style>
+  {{ partial "nav.html" . }}
+  <div class="w-full z-10" style="padding-top: 5rem;">
     {{ partial "announcement.html" .}}
   </div>
-  <div class='hx-mx-auto hx-flex {{ partial "utils/page-width" . }}'>
+  <div class='hx-mx-auto hx-flex {{ partial "utils/page-width" . }}' style="padding-top: 5rem;">
     {{ partial "sidebar.html" (dict "context" .) }}
     {{ partial "toc.html" . }}
     <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center hx-pb-8 hx-pr-[calc(env(safe-area-inset-right)-1.5rem)]">

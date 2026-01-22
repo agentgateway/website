@@ -51,10 +51,10 @@ menu:
       url: /docs
       weight: 2
     - name: Tutorials
-      url: /docs/tutorials
+      url: /docs/local/latest/tutorials
       weight: 3
     - name: Integrations
-      url: /docs/integrations
+      url: /docs/local/latest/integrations
       weight: 4
     - name: Blog
       weight: 5
@@ -135,5 +135,28 @@ params:
     urls:
       websites: https://searchbot.tryhelix.ai/
       bots: https://searchbot.tryhelix.ai/bots
+  
+  # Section-specific configurations
+  sections:
+    local:
+      versions:
+        - version: "0.12.x"
+          dropdown: "main"
+          linkVersion: "main"
+          url: "/main"
+        - version: "0.11.x"
+          dropdown: "0.11 (latest)"
+          linkVersion: "latest"
+          url: "/latest"
+    kubernetes:
+      versions:
+        - version: "2.3.x"
+          dropdown: "main"
+          linkVersion: "main"
+          url: "/main"
+        - version: "2.2.x"
+          dropdown: "2.2 beta (latest)"
+          linkVersion: "latest"
+          url: "/latest"
   
   gtmContainerID: "GTM-MDMTFJQC"

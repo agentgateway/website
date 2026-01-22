@@ -1,4 +1,18 @@
 <script>
+  let vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+
+  document.addEventListener('scroll', function (e) {
+    const nav = document.querySelector('.navbar');
+    if (nav) {
+      if (nav.classList.contains('scrolled') && window.scrollY <= 0) {
+        nav.classList.remove('scrolled');
+      } else if (window.scrollY > 0) {
+        nav.classList.add('scrolled');
+      }
+    }
+  });
+
   function openMobileNav() {
     document.querySelector('.mobile-nav').classList.toggle('visible');
     document.querySelector('.hamburger').classList.toggle('visible');
@@ -10,6 +24,36 @@
 <style>
   .nav-container {
     display: none
+  }
+
+  .navbar.scrolled {
+    background-color: white;
+    border-color: transparent;
+    transition-property: background-color, border;
+    transition-duration: 500ms;
+    transition-timing-function: linear;
+  }
+  
+  .dark .navbar.scrolled {
+    background-color: rgb(17, 24, 39); /* gray-900 */
+  }
+  
+  .navbar.scrolled .link {
+    color: rgb(55, 65, 81); /* gray-700 */
+    transition: color 500ms linear;
+  }
+
+  .dark .navbar.scrolled .link {
+    color: rgb(209, 213, 219); /* gray-300 */
+  }
+
+  .navbar.scrolled a.link svg {
+    fill: rgb(55, 65, 81);
+    transition: fill 500ms linear;
+  }
+
+  .dark .navbar.scrolled a.link svg {
+    fill: rgb(209, 213, 219);
   }
 
   .mobile-nav {
@@ -51,46 +95,366 @@
   }
 
   .dropdown:hover .dropdown-content {display: block;}
+  
+  .navbar-dropdown-content {
+    position: absolute;
+    top: calc(100% + 0.25rem);
+    right: 0;
+    background-color: #1c2029; /* tertiary-bg - matches homepage dark theme */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    z-index: 50;
+    padding-top: 0.25rem;
+    min-width: 180px;
+  }
+  
+  /* Create a hover bridge between trigger and dropdown */
+  .dropdown::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    height: 0.5rem;
+    z-index: 49;
+  }
+  
+  
+  /* Constrain logo size */
+  .navbar #logo,
+  .navbar a[href="/"] svg,
+  .navbar a[href="/"] img {
+    height: 50px !important;
+    width: auto !important;
+    max-width: 200px !important;
+  }
+  
+  /* Ensure logo dark mode classes work correctly */
+  .navbar a[href="/"] img.dark\:hidden {
+    display: block;
+  }
+  
+  .dark .navbar a[href="/"] img.dark\:hidden {
+    display: none;
+  }
+  
+  .navbar a[href="/"] img.hidden.dark\:block {
+    display: none;
+  }
+  
+  .dark .navbar a[href="/"] img.hidden.dark\:block {
+    display: block;
+  }
+  
+  /* Navbar link styles - ensure visibility in both light and dark mode */
+  .navbar .link {
+    color: rgb(55, 65, 81); /* gray-700 - visible on light backgrounds */
+    transition: color 200ms;
+    font-size: 0.875rem; /* text-sm - smaller text */
+  }
+  
+  .dark .navbar .link {
+    color: rgb(209, 213, 219); /* gray-300 - visible on dark backgrounds */
+  }
+  
+  /* Ensure dropdown content works in both modes */
+  .navbar-dropdown-content {
+    background-color: white;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .dark .navbar-dropdown-content {
+    background-color: rgb(17, 24, 39); /* gray-900 */
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Ensure dropdown links are readable in light mode */
+  
+  {{- /* Only add GitHub icon CSS on docs pages */ -}}
+  {{- $isDocsPage := false -}}
+  {{- if .RelPermalink -}}
+    {{- $path := .RelPermalink -}}
+    {{- $segments := split $path "/" -}}
+    {{- if and (ge (len $segments) 2) (eq (index $segments 1) "docs") -}}
+      {{- $isDocsPage = true -}}
+    {{- end -}}
+  {{- end -}}
+  
+  {{- if $isDocsPage -}}
+  /* Force GitHub icon to inherit link color properly - only on docs pages */
+  a[href*="github"] span.inline-block.dark\:hidden svg,
+  a[href*="github"] span.inline-block.dark\:hidden svg path {
+    fill: rgb(55, 65, 81) !important; /* text-gray-700 */
+    color: rgb(55, 65, 81) !important;
+  }
+  
+  .dark a[href*="github"] span.hidden.dark\:inline-block svg,
+  .dark a[href*="github"] span.hidden.dark\:inline-block svg path {
+    fill: rgb(209, 213, 219) !important; /* text-gray-300 */
+    color: rgb(209, 213, 219) !important;
+  }
+  {{- end -}}
+  .navbar-dropdown-content a {
+    color: rgb(17, 24, 39) !important; /* gray-900 - very dark, high contrast */
+  }
+  
+  .dark .navbar-dropdown-content a {
+    color: rgb(209, 213, 219) !important; /* gray-300 - light, visible on dark */
+  }
+  
+  .navbar-dropdown-content a:hover {
+    background-color: rgb(243, 244, 246) !important; /* gray-100 */
+    color: rgb(17, 24, 39) !important;
+  }
+  
+  .dark .navbar-dropdown-content a:hover {
+    background-color: rgb(31, 41, 55) !important; /* gray-800 */
+    color: rgb(255, 255, 255) !important;
+  }
 </style>
 
-<nav class="navbar py-[1.875rem] px-12 xl:px-25 absolute top-0 w-full hidden lg:block z-50">
-  <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
-    <div class="flex items-center gap-8">
-      <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "id='logo'" ) }}</a>
+{{- /* Determine if we're on the landing page */ -}}
+{{- $isLandingPage := eq .RelPermalink "/" -}}
+{{- $isDocsPage := false -}}
+{{- if .RelPermalink -}}
+  {{- $path := .RelPermalink -}}
+  {{- $segments := split $path "/" -}}
+  {{- if and (ge (len $segments) 2) (eq (index $segments 1) "docs") -}}
+    {{- $isDocsPage = true -}}
+  {{- end -}}
+{{- end -}}
+
+{{- if $isLandingPage -}}
+  {{- /* Original landing page navbar style - larger, lighter text for dark background */ -}}
+  <style>
+    /* Landing page navbar text - larger and lighter for dark mode */
+    .landing-navbar .link {
+      font-size: 1rem; /* text-base - larger than docs navbar */
+      color: rgb(243, 244, 246) !important; /* gray-100 - lighter for dark background */
+      font-weight: 400;
+    }
+    
+    .landing-navbar .link:hover {
+      color: rgb(255, 255, 255) !important; /* white on hover */
+    }
+    
+    /* Landing page dropdown styling - match landing page text style */
+    .landing-navbar .navbar-dropdown-content {
+      background-color: rgba(17, 24, 39, 0.95); /* gray-900 with slight transparency */
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+    }
+    
+    .landing-navbar .navbar-dropdown-content a {
+      color: rgb(243, 244, 246) !important; /* gray-100 - lighter text */
+      font-size: 0.9375rem; /* slightly smaller than main nav */
+    }
+    
+    .landing-navbar .navbar-dropdown-content a:hover {
+      background-color: rgba(255, 255, 255, 0.1) !important;
+      color: rgb(255, 255, 255) !important; /* white on hover */
+    }
+  </style>
+  <nav class="navbar landing-navbar py-[1.875rem] px-12 xl:px-25 absolute top-0 w-full hidden lg:block z-50">
+    <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
+      <div class="flex items-center gap-8">
+        <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "id='logo'" ) }}</a>
+      </div>
+      <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between lg:gap-8 xl:gap-[3.5625rem]">
+        <div class="dropdown">
+          <a class="link whitespace-nowrap flex items-center gap-1" href="/docs/">
+            Docs
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+            </svg>
+          </a>
+          <div class="dropdown-content navbar-dropdown-content rounded-l bg-white dark:bg-gray-900 absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
+            <a href="/docs/local/latest/" class="px-4 py-3 block text-left">Local</a>
+            <a href="/docs/kubernetes/latest/" class="px-4 py-3 block text-left">Kubernetes</a>
+          </div>
+        </div>
+        <a class="link whitespace-nowrap" href="/blog">Blog</a>
+        <a class="link whitespace-nowrap" href="/enterprise">Enterprise</a>
+        <a class="link whitespace-nowrap" href="https://discord.gg/y9efgEmppm">Community</a>
+        <a class="link whitespace-nowrap" href="/docs/quickstart/">Get Started</a>
+        <a class="link whitespace-nowrap" href="https://github.com/agentgateway/agentgateway">GitHub</a>
+      </div>
     </div>
-    <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between lg:gap-8 xl:gap-[3.5625rem]">
-      <a class="link whitespace-nowrap text-primary-text" href="/docs/">Docs</a>
-      <a class="link whitespace-nowrap text-primary-text" href="/blog">Blog</a>
-      <a class="link whitespace-nowrap text-primary-text" href="/enterprise">Enterprise</a>
-      <a class="link whitespace-nowrap text-primary-text" href="https://discord.gg/y9efgEmppm">Community</a>
-      <a class="link whitespace-nowrap text-primary-text" href="/docs/quickstart/">Get Started</a>
-      <a class="link whitespace-nowrap text-primary-text" href="https://github.com/agentgateway/agentgateway">GitHub</a>
+  </nav>
+
+  <nav class="absolute top-0 w-full block lg:hidden z-50">
+    <div class="py-6 pr-4 flex justify-between items-center">
+      <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "height=50" ) }}</a>
+      <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">
+        <div class="visible hamburger hidden">
+          {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
+        </div>
+        <div class="x hidden">
+          {{ partial "utils/icon.html" (dict "name" "x" "attributes" "class='w-4'") }}
+        </div>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-nav absolute bg-primary-bg w-screen z-40">
+    <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/blog">Blog</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/enterprise">Enterprise</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://discord.gg/y9efgEmppm">Community</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/quickstart/">Get Started</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://github.com/agentgateway/agentgateway">GitHub</a>
       {{ partial "community-meeting-compact.html" . }}
     </div>
   </div>
-</nav>
-
-<nav class="absolute top-0 w-full block lg:hidden z-50">
-  <div class="py-6 pr-4 flex justify-between items-center">
-    <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "height=50" ) }}</a>
-    <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">
-      <div class="visible hamburger hidden">
-        {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
+{{- else -}}
+  {{- /* Docs pages navbar with dropdown */ -}}
+  <nav class="navbar py-[1.875rem] px-12 xl:px-25 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20">
+    <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
+      <div class="flex items-center gap-8">
+        {{- $page := . -}}
+        {{- if $page -}}
+          <a href="/">{{ partial "utils/logo.html" (dict "Page" $page "attributes" "id=\"logo\" height=\"50\"" ) }}</a>
+        {{- else -}}
+          <a href="/">{{ partial "utils/logo.html" (dict "Page" . "attributes" "id=\"logo\" height=\"50\"" ) }}</a>
+        {{- end -}}
       </div>
-      <div class="x hidden">
-        {{ partial "utils/icon.html" (dict "name" "x" "attributes" "class='w-4'") }}
+      <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between gap-4">
+        {{- /* Extract version and section for version dropdown */ -}}
+        {{- $path := .RelPermalink -}}
+        {{- $segments := split $path "/" -}}
+        {{- $currentVersion := "" -}}
+        {{- $subSection := "" -}}
+        {{- if and (ge (len $segments) 4) (eq (index $segments 1) "docs") -}}
+          {{- $subSection = index $segments 2 -}}
+          {{- $currentVersion = index $segments 3 -}}
+        {{- end -}}
+        
+        {{- /* Get versions for current section */ -}}
+        {{- $versions := slice -}}
+        {{- if and $subSection (isset site.Params.sections $subSection) -}}
+          {{- $versions = (index site.Params.sections $subSection).versions -}}
+        {{- end -}}
+        
+        {{- /* Show version dropdown if in a versioned docs section */ -}}
+        {{- if and $versions $currentVersion -}}
+          <div class="dropdown">
+            <button class="link whitespace-nowrap text-gray-700 dark:text-gray-300 flex items-center gap-1" type="button">
+              {{- $foundVersion := false -}}
+              {{- range $versions -}}
+                {{- if eq $currentVersion .linkVersion -}}
+                  {{- .dropdown -}}
+                  {{- $foundVersion = true -}}
+                  {{ break }}
+                {{- end -}}
+              {{- end -}}
+              {{- if not $foundVersion -}}
+                {{- $currentVersion -}}
+              {{- end -}}
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+              </svg>
+            </button>
+            <div class="dropdown-content navbar-dropdown-content rounded-l bg-white dark:bg-gray-900 absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
+              {{- $filtered := after 4 $segments -}}
+              {{- $newPath := printf "/%s" (delimit $filtered "/") -}}
+              {{- range $versions -}}
+                <a href="/docs/{{ $subSection }}/{{ .linkVersion }}{{ $newPath }}" class="px-4 py-3 block text-left">{{ .dropdown }}</a>
+              {{- end -}}
+            </div>
+          </div>
+        {{- end -}}
+        
+        {{- /* Iterate through menu items from hugo.yaml */ -}}
+        {{- $currentPage := . -}}
+        {{- $docsRendered := false -}}
+        {{- range .Site.Menus.main -}}
+          {{- if eq .Params.type "search" -}}
+            {{- /* Search menu item - use Hextra search if available */ -}}
+            {{- if templates.Exists "partials/hextra/search.html" -}}
+              {{- partial "hextra/search.html" (dict "params" .Params) -}}
+            {{- else if templates.Exists "partials/search.html" -}}
+              {{- partial "search.html" (dict "params" .Params) -}}
+            {{- end -}}
+          {{- else if and (eq .Name "Docs") (not $docsRendered) -}}
+            {{- /* Docs dropdown - only render once */ -}}
+            {{- $docsRendered = true -}}
+            <div class="dropdown">
+              <a class="link whitespace-nowrap text-gray-700 dark:text-gray-300 flex items-center gap-1" href="{{ .URL }}">
+                {{ .Name }}
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                </svg>
+              </a>
+              <div class="dropdown-content navbar-dropdown-content rounded-l bg-white dark:bg-gray-900 absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
+                <a href="/docs/local/latest/" class="px-4 py-3 block text-left">Local</a>
+                <a href="/docs/kubernetes/latest/" class="px-4 py-3 block text-left">Kubernetes</a>
+              </div>
+            </div>
+          {{- else if eq .Name "Docs" -}}
+            {{- /* Skip duplicate Docs menu items */ -}}
+          {{- else if .Params.icon -}}
+            {{- /* Icon menu item (like GitHub) */ -}}
+            {{- $external := strings.HasPrefix .URL "http" -}}
+            {{- $rel := cond (eq .Params.icon "mastodon") "noreferer me" "noreferer" -}}
+            <a class="link text-gray-700 dark:text-gray-300 p-2 flex items-center" {{ if $external }}target="_blank" rel="{{ $rel }}"{{ end }} href="{{ .URL }}" title="{{ .Name }}">
+              {{- if eq .Params.icon "github" -}}
+                {{- if templates.Exists "partials/utils/icon.html" -}}
+                  <span class="inline-block dark:hidden">{{- partial "utils/icon.html" (dict "name" "github" "attributes" "class='fill-current w-5 h-5'") -}}</span>
+                  <span class="hidden dark:inline-block">{{- partial "utils/icon.html" (dict "name" "github-white" "attributes" "class='fill-current w-5 h-5'") -}}</span>
+                {{- else -}}
+                  {{- /* Fallback GitHub icon SVG */ -}}
+                  <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                {{- end -}}
+                <span class="sr-only">{{ .Name }}</span>
+              {{- else -}}
+                {{- /* Other icons */ -}}
+                {{- if templates.Exists "partials/utils/icon.html" -}}
+                  {{- partial "utils/icon.html" (dict "name" .Params.icon "attributes" "class='w-5 h-5'") -}}
+                {{- end -}}
+                <span class="sr-only">{{ .Name }}</span>
+              {{- end -}}
+            </a>
+          {{- else -}}
+            {{- /* Regular menu item */ -}}
+            {{- $external := strings.HasPrefix .URL "http" -}}
+            <a class="link whitespace-nowrap text-gray-700 dark:text-gray-300" {{ if $external }}target="_blank" rel="noreferer"{{ end }} href="{{ .URL }}">{{ .Name }}</a>
+          {{- end -}}
+        {{- end -}}
       </div>
-    </button>
-  </div>
-</nav>
+    </div>
+  </nav>
 
-<div class="mobile-nav absolute bg-primary-bg w-screen z-40">
-  <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
-    <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
-    <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/blog">Blog</a>
-    <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/enterprise">Enterprise</a>
-    <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://discord.gg/y9efgEmppm">Community</a>
-    <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/quickstart/">Get Started</a>
-    <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://github.com/agentgateway/agentgateway">GitHub</a>
+  <nav class="fixed top-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-50">
+    <div class="py-6 pr-4 flex justify-between items-center">
+      {{- $page := . -}}
+      {{- if $page -}}
+        <a href="/">{{ partial "utils/logo.html" (dict "Page" $page "attributes" "height=\"50\"" ) }}</a>
+      {{- else -}}
+        <a href="/">{{ partial "utils/logo.html" (dict "Page" . "attributes" "height=\"50\"" ) }}</a>
+      {{- end -}}
+      <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">
+        <div class="visible hamburger hidden">
+          {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
+        </div>
+        <div class="x hidden">
+          {{ partial "utils/icon.html" (dict "name" "x" "attributes" "class='w-4'") }}
+        </div>
+      </button>
+    </div>
+  </nav>
+
+  <div class="mobile-nav absolute bg-primary-bg w-screen z-40">
+    <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
+      <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/local/latest/">Local</a>
+      <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/kubernetes/latest/">Kubernetes</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/blog">Blog</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/enterprise">Enterprise</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://discord.gg/y9efgEmppm">Community</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/quickstart/">Get Started</a>
+      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://github.com/agentgateway/agentgateway">GitHub</a>
+    </div>
   </div>
-</div>
+{{- end -}}
