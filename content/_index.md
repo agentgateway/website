@@ -733,6 +733,21 @@ function showK8sOption(option) {
   </div>
 </section>
 
+<!-- Community Meeting Section -->
+<section class="py-16 bg-primary-bg" id="community-meeting">
+  <div class="max-w-5xl mx-auto px-6">
+    <h2 class="text-primary-text text-3xl lg:text-4xl font-bold text-center mb-4">Join the Community</h2>
+    <p class="text-center text-secondary-text text-lg mb-8 max-w-3xl mx-auto">
+      Calling all agent creators, tool providers, platform engineers, and AI enthusiasts - come build the future of AI agent connectivity.
+    </p>
+    <div class="flex justify-center gap-4 mb-12">
+      {{< button style="secondary" href="https://discord.gg/y9efgEmppm" text="Discord" icon="discord" >}}
+      {{< button style="secondary" href="https://github.com/agentgateway/agentgateway" text="GitHub" icon="github" >}}
+    </div>
+    {{< community-meeting >}}
+  </div>
+</section>
+
 {{< quotes-carousel >}}
 
 <section class="text-center py-20 bg-secondary-bg">
