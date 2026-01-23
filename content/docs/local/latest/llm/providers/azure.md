@@ -56,7 +56,7 @@ binds:
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
-{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+{{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
@@ -86,7 +86,7 @@ binds:
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
-{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+{{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.clientSecret` | Use Azure service principal authentication with tenant ID, client ID, and client secret. |
 {{< /reuse-append >}}
 
@@ -120,7 +120,7 @@ binds:
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
-{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+{{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
@@ -160,7 +160,7 @@ binds:
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
-{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+{{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
 
@@ -193,7 +193,7 @@ binds:
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
-{{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
+{{< reuse-append "agw-docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.workloadIdentity` | Use Azure workload identity for Kubernetes environments. |
 {{< /reuse-append >}}
 
