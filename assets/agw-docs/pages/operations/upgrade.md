@@ -60,16 +60,7 @@ During the upgrade, pods that run the new version of the control plane and proxi
 -->
 
 
-{{% conditional-text include-if="envoy" %}}
 
-## Prepare to upgrade {#prepare}
-
-Before you upgrade {{< reuse "/agw-docs/snippets/kgateway.md" >}}, review the following information.
-
-1. Review the [kgateway release notes](https://github.com/kgateway-dev/kgateway/releases) for any breaking changes or new features that you need to be aware of.
-
-2. Check the [supported version compatibility matrix](../../reference/versions/#supported-versions). If the version of {{< reuse "/agw-docs/snippets/kgateway.md" >}} that you are upgrading to requires a different version of Kubernetes, the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, or Istio, upgrade those technologies accordingly.
-{{% /conditional-text %}}
 
 {{< conditional-text include-if="envoy" >}}
 
