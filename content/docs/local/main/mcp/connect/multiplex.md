@@ -52,8 +52,8 @@ routes:
 
 ## Before you begin
 
-1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
-2. {{< reuse "docs/snippets/prereq-uv.md" >}}
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. {{< reuse "agw-docs/snippets/prereq-uv.md" >}}
 
 ## Configure the agentgateway
 

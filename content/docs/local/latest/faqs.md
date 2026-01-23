@@ -9,21 +9,21 @@ Check out frequently asked questions about agentgateway.
 
 ## What are MCP and A2A? 
 
-{{< reuse "docs/snippets/about-mcp-a2a.md" >}}
+{{< reuse "agw-docs/snippets/about-mcp-a2a.md" >}}
 
 ## What do MCP and A2A not solve for? 
 
-{{< reuse "docs/snippets/about-mcp-challenges.md" >}}
+{{< reuse "agw-docs/snippets/about-mcp-challenges.md" >}}
 
 ## What's the problem with traditional API and AI gateways? 
 
-{{< reuse "docs/snippets/about-traditional-gw.md" >}}
+{{< reuse "agw-docs/snippets/about-traditional-gw.md" >}}
 
 ## What is agentgateway and why do I want to use it? 
 
-{{< reuse "docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}}
 
-{{< reuse "docs/snippets/key-benefits.md" >}}
+{{< reuse "agw-docs/snippets/key-benefits.md" >}}
 
 ## How does agentgateway relate to kgateway?
 

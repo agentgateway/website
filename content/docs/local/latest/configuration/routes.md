@@ -59,7 +59,7 @@ For more information, see [TCP route matching](../traffic-management/matching#tc
 
 ## Before you begin
 
-1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. [Set up a listener](/docs/configuration/listeners).
 
 ## Create routes

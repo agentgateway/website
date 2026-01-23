@@ -11,20 +11,20 @@ Secure your applications with JSON Web Token (JWT) authentication by using the a
 2. [Install the httpbin sample app]({{< link-hextra path="/operations/sample-app/" >}}).
 
 
-{{< reuse "docs/snippets/keycloak.md" >}}
+{{< reuse "agw-docs/snippets/keycloak.md" >}}
 
 ## Set up JWT authentication
 
-Configure an {{< reuse "docs/snippets/trafficpolicy.md" >}} to validate JWTs using a remote JWKS endpoint from Keycloak. This approach is recommended for production as it supports automatic key rotation.
+Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to validate JWTs using a remote JWKS endpoint from Keycloak. This approach is recommended for production as it supports automatic key rotation.
 
-1. Create an {{< reuse "docs/snippets/trafficpolicy.md" >}} with JWT authentication configuration.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with JWT authentication configuration.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: jwt-auth-policy
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      # Target the Gateway to apply JWT authentication to all routes
      targetRefs:
@@ -69,7 +69,7 @@ Configure an {{< reuse "docs/snippets/trafficpolicy.md" >}} to validate JWTs usi
 
 2. View the details of the policy. Verify that the policy is accepted.
    ```sh
-   kubectl get {{< reuse "docs/snippets/trafficpolicy.md" >}} jwt-auth-policy -n {{< reuse "docs/snippets/namespace.md" >}} -o json | jq '.status'
+   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json | jq '.status'
    ```
 
 ## Verify JWT authentication
@@ -152,7 +152,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
 
 ## Other JWT auth examples
 
-Review other common JWT auth configuration examples that you can add to your {{< reuse "docs/snippets/trafficpolicy.md" >}}.
+Review other common JWT auth configuration examples that you can add to your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
 ### Multiple JWT providers
 
@@ -251,9 +251,9 @@ traffic:
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} jwt-auth-policy -n {{< reuse "docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete ns keycloak
 ```

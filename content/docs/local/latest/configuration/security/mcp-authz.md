@@ -9,7 +9,7 @@ Attach to:
 The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization](/docs/configuration/security/http-authz), but runs in the context of an MCP request.
 
 > [!NOTE]
-> {{< reuse "docs/snippets/mcp-policy-note.md" >}}
+> {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
 
 Instead of running against an HTTP request, MCP authorization policies run against specific MCP method invocations such as `list_tools` and `call_tools`.
 

@@ -33,7 +33,7 @@ Blocked requests, which receive a `403 Forbidden` response with the message "CSR
 
 ## Configuration
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 policies:

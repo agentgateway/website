@@ -7,4 +7,4 @@ Welcome to the documentation for using the local binary of the agentgateway open
 
 <br />
 
-{{< reuse "docs/pages/landing.md" >}}
+{{< reuse "agw-docs/pages/landing.md" >}}

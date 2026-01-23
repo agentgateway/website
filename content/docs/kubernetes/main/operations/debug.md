@@ -3,4 +3,4 @@ title: Debug your setup
 weight: 15
 ---
 
-{{< reuse "docs/pages/operations/debug.md" >}}
+{{< reuse "agw-docs/pages/operations/debug.md" >}}

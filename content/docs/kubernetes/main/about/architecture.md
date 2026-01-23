@@ -4,4 +4,4 @@ weight: 15
 
 ---
 
-{{< reuse "docs/pages/about/architecture.md" >}}
+{{< reuse "agw-docs/pages/about/architecture.md" >}}

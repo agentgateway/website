@@ -58,11 +58,11 @@ To enable token-based rate limiting, set the rate limiting type to `token` as sh
 
 #### At request time
 
-{{< reuse "docs/snippets/ratelimit-requesttime.md" >}}
+{{< reuse "agw-docs/snippets/ratelimit-requesttime.md" >}}
 
 #### At response time
 
-{{< reuse "docs/snippets/ratelimit-responsetime.md" >}}
+{{< reuse "agw-docs/snippets/ratelimit-responsetime.md" >}}
 
 ## Configuration
 

@@ -16,7 +16,7 @@ Before you can use Vertex AI as an LLM provider, you must authenticate by using 
 
 ## Configuration
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 binds:
@@ -35,7 +35,7 @@ binds:
               model: google/gemini-2.5-flash-lite-preview-06-17
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|

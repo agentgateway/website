@@ -20,7 +20,7 @@ For more information, see the [Azure documentation](https://learn.microsoft.com/
 
 ## Configuration
 
-{{< reuse "docs/snippets/review-configuration.md" >}} The tabs have examples for different authentication methods.
+{{< reuse "agw-docs/snippets/review-configuration.md" >}} The tabs have examples for different authentication methods.
 
 {{< tabs items="Foundry,Client secret,System-assigned managed identity,User-assigned managed identity,Workload identity" >}}
 
@@ -55,7 +55,7 @@ binds:
               model: gpt-5-mini
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
@@ -85,7 +85,7 @@ binds:
                 clientSecret: "<your-client-secret>"
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.clientSecret` | Use Azure service principal authentication with tenant ID, client ID, and client secret. |
 {{< /reuse-append >}}
@@ -119,7 +119,7 @@ binds:
               managedIdentity: {}
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
@@ -159,7 +159,7 @@ binds:
                   # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.managedIdentity` | Use Azure managed identity. Leave empty for system-assigned, or specify `userAssignedIdentity` with `clientId`, `objectId`, or `resourceId`. |
 {{< /reuse-append >}}
@@ -192,7 +192,7 @@ binds:
               workloadIdentity: {}
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 {{< reuse-append "docs/snippets/provider-azure-base-configuration.md" >}}
 | `backendAuth.azure.explicitConfig.workloadIdentity` | Use Azure workload identity for Kubernetes environments. |
 {{< /reuse-append >}}

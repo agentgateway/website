@@ -4,7 +4,7 @@ weight: 40
 ---
 
 > [!NOTE]
-> {{< reuse "docs/snippets/mcp-policy-note.md" >}}
+> {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
 
 The MCP authorization policy works similarly to [HTTP authorization](/docs/configuration/security/http-authz), but runs in the context of an MCP request.
 

@@ -6,11 +6,11 @@ description:
 
 Connect to an MCP server via streamable HTTP. 
 
-{{< reuse "docs/snippets/kgateway-callout.md" >}}
+{{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
 
 ## Before you begin
 
-{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Configure the agentgateway
 

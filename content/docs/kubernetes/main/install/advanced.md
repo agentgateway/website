@@ -4,7 +4,7 @@ weight: 70
 description: Install kgateway and related components.
 ---
 
-{{< reuse "docs/pages/install/advanced.md" >}}
+{{< reuse "agw-docs/pages/install/advanced.md" >}}
 
 
 

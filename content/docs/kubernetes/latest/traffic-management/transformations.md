@@ -12,26 +12,26 @@ For an overview of supported CEL expressions, see the [agentgateway docs](https:
 
 ## About this guide
 
-This guide walks you through how to set up CEL-based transformations for the OpenAI LLM provider. Note that you can use the same {{< reuse "docs/snippets/trafficpolicy.md" >}} resource to apply transformations to MCP server, inference, or agent routes. 
+This guide walks you through how to set up CEL-based transformations for the OpenAI LLM provider. Note that you can use the same {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply transformations to MCP server, inference, or agent routes. 
 
 ## Before you begin
 
-{{< reuse "docs/snippets/agw-prereq-llm.md" >}}
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 {{< callout type="info" >}}
-Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server or agent. Make sure to adjust these steps to apply to your {{< reuse "docs/snippets/backend.md" >}} type.
+Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server or agent. Make sure to adjust these steps to apply to your {{< reuse "agw-docs/snippets/backend.md" >}} type.
 {{< /callout >}}
 
 ## Set up transformations
 
-1. Create an {{< reuse "docs/snippets/trafficpolicy.md" >}} with your transformation rules. In this example, you use a CEL expression to extract the path from the request. The request path is then added to the `response-gateway` header.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your transformation rules. In this example, you use a CEL expression to extract the path from the request. The request path is then added to the `response-gateway` header.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: transformation
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
      - group: gateway.networking.k8s.io
@@ -101,8 +101,8 @@ Note that this guide assumes that you want to apply the policy to the OpenAI LLM
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} transformation -n {{< reuse "docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

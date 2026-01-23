@@ -8,7 +8,7 @@ Bring your own external authorization service to protect requests that go throug
 
 ## About external auth {#about}
 
-{{< reuse "/docs/snippets/kgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway. Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
+{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway. Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
 
 ```mermaid
 sequenceDiagram
@@ -38,10 +38,10 @@ sequenceDiagram
 
 ## Before you begin 
 
-{{< reuse "docs/snippets/agw-prereq-llm.md" >}}
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 {{< callout type="info" >}}
-Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server, agents, and Kubernetes services. Make sure to adjust these steps to apply to your {{< reuse "docs/snippets/backend.md" >}} type or Kubernetes service.
+Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server, agents, and Kubernetes services. Make sure to adjust these steps to apply to your {{< reuse "agw-docs/snippets/backend.md" >}} type or Kubernetes service.
 {{< /callout >}}
 
 ## Deploy your own external authorization service {#byo-ext-auth}
@@ -59,7 +59,7 @@ Keep in mind that your external authorization service must conform to the [Envoy
    apiVersion: apps/v1
    kind: Deployment
    metadata:
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      name: ext-authz
      labels:
        app: ext-authz
@@ -89,7 +89,7 @@ Keep in mind that your external authorization service must conform to the [Envoy
    apiVersion: v1
    kind: Service
    metadata:
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      name: ext-authz
      labels:
        app: ext-authz
@@ -154,14 +154,14 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    ...
    ```
 
-2. Create an {{< reuse "docs/snippets/trafficpolicy.md" >}} that applies to the Gateway and references the external authorization service that you created. Note that you can also set the `targetRefs` to select an HTTPRoute, which is demonstrated in later steps.
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies to the Gateway and references the external authorization service that you created. Note that you can also set the `targetRefs` to select an HTTPRoute, which is demonstrated in later steps.
 
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      name: gateway-ext-auth-policy
      labels:
        app: ext-authz
@@ -174,7 +174,7 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
        extAuth:
          backendRef:
            name: ext-authz
-           namespace: {{< reuse "docs/snippets/namespace.md" >}}
+           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            port: 4444
          grpc: {}
    EOF
@@ -280,12 +280,12 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} gateway-ext-auth-policy -n {{< reuse "docs/snippets/namespace.md" >}}
-kubectl delete deployment ext-authz -n {{< reuse "docs/snippets/namespace.md" >}}
-kubectl delete service ext-authz -n {{< reuse "docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} gateway-ext-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete deployment ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete service ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 

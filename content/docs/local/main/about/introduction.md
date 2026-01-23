@@ -4,9 +4,9 @@ weight: 10
 description:
 ---
 
-{{< reuse "docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}}
 
-{{< reuse "docs/snippets/kgateway-callout.md" >}}
+{{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
 
 ## Why agentgateway?
 
@@ -14,23 +14,23 @@ To understand the benefits of agentgateway and why you should use it, let's dive
 
 ### About MCP and A2A 
 
-{{< reuse "docs/snippets/about-mcp-a2a.md" >}}
+{{< reuse "agw-docs/snippets/about-mcp-a2a.md" >}}
 
 ### Challenges with MCP and A2A
 
-{{< reuse "docs/snippets/about-mcp-challenges.md" >}}
+{{< reuse "agw-docs/snippets/about-mcp-challenges.md" >}}
 
 ### Traditional gateways vs. agentgateway
 
-{{< reuse "docs/snippets/about-traditional-gw.md" >}}
+{{< reuse "agw-docs/snippets/about-traditional-gw.md" >}}
 
-In contrast, {{< reuse "docs/snippets/about-agw.md" >}}
+In contrast, {{< reuse "agw-docs/snippets/about-agw.md" >}}
 
 ## Key features
 
 Agentgateway comes with the following key features: 
 
-{{< reuse "docs/snippets/key-benefits.md" >}}
+{{< reuse "agw-docs/snippets/key-benefits.md" >}}
 
 ## Policies
 

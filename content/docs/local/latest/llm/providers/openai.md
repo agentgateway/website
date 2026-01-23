@@ -8,7 +8,7 @@ Configure OpenAI as an LLM provider in agentgateway.
 
 ## Configuration
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 binds:
@@ -27,7 +27,7 @@ binds:
           key: "$OPENAI_API_KEY"
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|

@@ -12,4 +12,4 @@ To run on Kubernetes, agentgateway uses [kgateway](https://github.com/kgateway-d
 
 <br />
 
-{{< reuse "docs/pages/landing.md" >}}
+{{< reuse "agw-docs/pages/landing.md" >}}

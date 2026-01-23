@@ -18,15 +18,15 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
 
 ### At request time
 
-{{< reuse "docs/snippets/ratelimit-requesttime.md" >}} 
+{{< reuse "agw-docs/snippets/ratelimit-requesttime.md" >}} 
 
 ### At response time
 
-{{< reuse "docs/snippets/ratelimit-responsetime.md" >}} 
+{{< reuse "agw-docs/snippets/ratelimit-responsetime.md" >}} 
 
 ## Before you begin
 
-{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Configure the agentgateway
 
@@ -60,7 +60,7 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
    EOF
    ```
 
-   {{< reuse "docs/snippets/review-table.md" >}}
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
 
    | Setting | Description | 
    | -- | -- | 

@@ -27,7 +27,7 @@ For more information, see the [Semantic conventions for generative AI metrics](h
 
 ## View traces
 
-1. {{< reuse "docs/snippets/jaeger.md" >}}
+1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
 
 2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. 
    ```yaml

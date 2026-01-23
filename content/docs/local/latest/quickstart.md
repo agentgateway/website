@@ -7,7 +7,7 @@ next: /docs/about
 
 Get started with agentgateway, an open source, highly available, and highly scalable data plane that brings AI connectivity for agents and tools. To learn more about agentgateway, see the [About](/docs/about) section.
 
-{{< reuse "docs/snippets/kgateway-callout.md" >}}
+{{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
 
 ## About this guide
 
@@ -48,11 +48,11 @@ You complete the following tasks:
    agentgateway --version
    ```
 
-   Example output with the latest version, {{< reuse "docs/versions/n-patch.md" >}}:
+   Example output with the latest version, {{< reuse "agw-docs/versions/n-patch.md" >}}:
 
    ```json
    {
-     "version": "{{< reuse "docs/versions/n-patch.md" >}}",
+     "version": "{{< reuse "agw-docs/versions/n-patch.md" >}}",
      "git_revision": "90f7b25855fb5f5fbefcc16855206040cba9b77d",
      "rust_version": "1.89.0",
      "build_profile": "release",
@@ -78,9 +78,9 @@ In this example, you use a [basic configuration file](/docs/configuration/overvi
 
    {{% github-yaml url="https://agentgateway.dev/examples/basic/config.yaml" %}}
 
-   {{< reuse "docs/snippets/review-table.md" >}}
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
 
-   {{< reuse "docs/snippets/example-basic-mcp.md" >}}
+   {{< reuse "agw-docs/snippets/example-basic-mcp.md" >}}
 
 3. Run the agentgateway. 
    ```sh

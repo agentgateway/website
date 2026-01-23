@@ -4,4 +4,4 @@ weight: 30
 description:
 ---
 
-{{< reuse "docs/pages/agentgateway/inference.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/inference.md" >}}

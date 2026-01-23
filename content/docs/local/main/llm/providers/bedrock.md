@@ -12,7 +12,7 @@ Before you can use Bedrock as an LLM provider, you must authenticate by using th
 
 ## Configuration
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
 binds:
@@ -29,7 +29,7 @@ binds:
               model: amazon.titan-text-express-v1
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|

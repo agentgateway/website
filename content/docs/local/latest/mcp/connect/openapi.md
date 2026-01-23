@@ -8,9 +8,9 @@ Expose an {{< gloss "OpenAPI" >}}OpenAPI{{< /gloss >}} server on the agentgatewa
 
 ## Before you begin
 
-1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
-2. {{< reuse "docs/snippets/prereq-uv.md" >}}
-3. {{< reuse "docs/snippets/prereq-docker.md" >}}
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. {{< reuse "agw-docs/snippets/prereq-uv.md" >}}
+3. {{< reuse "agw-docs/snippets/prereq-docker.md" >}}
 4. For ARM64 machines: [Install `maven`](https://maven.apache.org/install.html) to build the sample Petstore image from source.
 
 ## Set up your OpenAPI server {#openapi-server}
