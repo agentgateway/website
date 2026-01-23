@@ -13,7 +13,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
    export GH_PAT=<personal-access-token>
    ```
 
-2. Create the {{< reuse "agw-docs/snippets/namespace.md" >}} for the remote GitHub MCP server. The server requires you to connect to it by using the HTTPS protocol. Because of that, you set the `mcp.targets.static.port` field to 443.
+2. Create the {{< reuse "agw-docs/snippets/backend.md" >}} for the remote GitHub MCP server. The server requires you to connect to it by using the HTTPS protocol. Because of that, you set the `mcp.targets.static.port` field to 443.
    
    ```yaml
    kubectl apply -f- <<EOF
