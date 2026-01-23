@@ -21,7 +21,7 @@ The InferencePool groups together InferenceModels of LLM workloads into a routab
 
 ### Agentgateway with kgateway and Inference Extension {#kgateway}
 
-The [kgateway open source project](https://kgateway.dev/) is the recommended control plane to quickly spin up and manage the lifecycle of agentgateway proxies in Kubernetes clusters. In addition, you can leverage kgateway’s traffic management, resiliency, and security policies to further protect your agentgateway proxy and make it more robust.
+[Agentgateway on Kubernetes via the kgateway control plane](https://agentgateway.dev/docs/kubernetes/) is the recommended control plane to quickly spin up and manage the lifecycle of agentgateway proxies in Kubernetes clusters. In addition, you can leverage kgateway’s traffic management, resiliency, and security policies to further protect your agentgateway proxy and make it more robust.
 
 Kgateway passes conformance tests for the Kubernetes Gateway API and Inference Extensions projects so you can use the standards that you are familiar with to configure agentgateway. The following diagram shows how agent gateway proxies in kgateway can route requests to InferencePools. 
 

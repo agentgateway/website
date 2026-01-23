@@ -10,10 +10,10 @@ Run Agent Gateway on GCP to leverage Vertex AI, GKE, and Google Cloud services.
 
 ### Google Kubernetes Engine (GKE)
 
-For GKE deployments, use [kgateway](https://kgateway.dev/docs/agentgateway/) which provides native Kubernetes Gateway API support, dynamic configuration, and MCP service discovery.
+For GKE deployments, use [Agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/) which provides native Kubernetes Gateway API support, dynamic configuration, and MCP service discovery.
 
 {{< cards >}}
-  {{< card link="https://kgateway.dev/docs/agentgateway/" title="Deploy on GKE with kgateway" icon="external-link" >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Deploy on GKE with kgateway" icon="external-link" >}}
 {{< /cards >}}
 
 ### Cloud Run

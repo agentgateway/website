@@ -112,7 +112,7 @@ You can store your API key in a file and load the file into agentgateway during 
 
 When deploying agentgateway in a Kubernetes environment by using the kgateway control plane, you can leverage Kubernetes secrets to store your API key or pass through a token by using an `Authorization` or other custom header. 
 
-For more information, see the [kgateway docs](https://kgateway.dev/docs/agentgateway/latest/llm/api-keys/). 
+For more information, see the [agentgateway on Kubernetes docs](https://agentgateway.dev/docs/kubernetes/latest/llm/api-keys/). 
 
 {{% /tab %}}
 {{< /tabs >}}

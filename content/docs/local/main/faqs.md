@@ -33,7 +33,7 @@ The [kgateway open source project](https://kgateway.dev) is the recommended cont
 
 Kgateway passes conformance tests for the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) and [Inference Extensions](https://gateway-api-inference-extension.sigs.k8s.io/) projects so you can use the standards that you are familiar with to configure agentgateway. 
 
-For more information about how to deploy agentgateway with kgateway, see the [kgateway documentation](https://kgateway.dev/docs/agentgateway/). 
+For more information about how to deploy agentgateway with kgateway, see the [Agentgateway on Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/). 
 
 ## What's the difference between agentgateway and kagent? 
 
