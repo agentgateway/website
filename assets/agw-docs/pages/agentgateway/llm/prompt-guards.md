@@ -210,7 +210,7 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
            - regex:
                builtins: 
                  - CreditCard
-               action: MASK
+               action: Mask
    EOF
    ```
    
