@@ -28,67 +28,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
      Authorization: $ANTHROPIC_API_KEY
    EOF
    ```
-{{< version include-if="2.1.x" >}}
-   
-4. Create a {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the Anthropic API key secret.
-   
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: anthropic
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       llm:
-         anthropic:
-           authToken:
-             kind: SecretRef
-             secretRef:
-               name: anthropic-secret
-           model: "claude-3-opus-20240229"
-           apiVersion: "2023-06-01"
-   EOF
-   ```
-
-   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#aibackend" >}}).
-
-   | Setting     | Description |
-   |-------------|-------------|
-   | `type`      | Set to `AI` to configure this {{< reuse "agw-docs/snippets/backend.md" >}} for an AI provider. |
-   | `ai`        | Define the AI backend configuration. The example uses Anthropic (`spec.ai.llm.anthropic`). |
-   | `authToken` | Configure the authentication token for Anthropic API. The example refers to the secret that you previously created. The token is automatically sent in the `x-api-key` header. |
-   | `model`     | Optional: Override the model name, such as `claude-3-opus-20240229`. If unset, the model name is taken from the request. |
-   | `apiVersion` | Optional: A version header to pass to the Anthropic API. For more information, see the [Anthropic API versioning docs](https://docs.anthropic.com/en/api/versioning). |
-
-5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/anthropic` path. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the Anthropic `/v1/messages` endpoint.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: anthropic
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /anthropic
-       backendRefs:
-       - name: anthropic
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: gateway.kgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ```
-   {{< /version >}} {{< version include-if="2.2.x" >}}
+ 
 4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure your LLM provider that references the Anthropic API key secret.
    
    ```yaml
@@ -143,7 +83,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   {{< /version >}}
+   
 
 6. Send a request to the LLM provider API. Note that Anthropic uses the `/v1/messages` endpoint format instead of `/v1/chat/completions`. Verify that the request succeeds and that you get back a response from the API.
    

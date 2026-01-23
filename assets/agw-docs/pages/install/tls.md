@@ -140,13 +140,13 @@ Now that the control plane is up and running, verify the TLS connection.
 1. Port-forward the control plane service on port 9977.
 
    ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{% conditional-text include-if="envoy" %}}9977{{% /conditional-text %}}{{% conditional-text include-if="agentgateway" %}}9978{{% /conditional-text %}}
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} 9978
    ```
 
 2. Send a request to the control plane in plaintext without TLS authentication. You get back an `authentication failed` error.
 
    ```sh
-   grpcurl -plaintext localhost:{{% conditional-text include-if="envoy" %}}9977{{% /conditional-text %}}{{% conditional-text include-if="agentgateway" %}}9978{{% /conditional-text %}} list
+   grpcurl -plaintext localhost:9978 list
    ```
 
    Example output:

@@ -49,24 +49,7 @@ Deploy a Model Context Protocol (MCP) server that you want {{< reuse "agw-docs/s
    ```
 
 2. Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse "agw-docs/snippets/agentgateway.md" >}} target details for the MCP server. 
-   {{< version include-if="2.1.x" >}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: mcp-backend
-   spec:
-     mcp:
-       targets:
-       - name: mcp-target
-         static:
-           host: mcp-website-fetcher.default.svc.cluster.local
-           port: 80
-           protocol: SSE   
-   EOF
-   ```
-   {{< /version >}}{{< version include-if="2.2.x" >}}
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
@@ -83,33 +66,15 @@ Deploy a Model Context Protocol (MCP) server that you want {{< reuse "agw-docs/s
            protocol: SSE   
    EOF
    ```
-   {{< /version >}}
+   
 
 ## Step 2: Route with agentgateway {#agentgateway}
 
 Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step.
 
-{{< version include-if="2.1.x" >}}
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: mcp
-spec:
-  parentRefs:
-  - name: agentgateway-proxy
-    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}  
-  rules:
-    - backendRefs:
-      - name: mcp-backend
-        group: gateway.kgateway.dev
-        kind: {{< reuse "agw-docs/snippets/backend.md" >}}  
-EOF
-```
-{{< /version >}}
 
-{{< version include-if="2.2.x" >}}
+
+
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
@@ -128,7 +93,7 @@ spec:
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}  
 EOF
 ```
-{{< /version >}}
+
 
 ## Step 3: Verify the connection {#verify}
 

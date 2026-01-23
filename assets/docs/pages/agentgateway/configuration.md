@@ -11,14 +11,14 @@ However, you still might want to pass in custom configuration to your agentgatew
 - Migrating from upstream to {{< reuse "/agw-docs/snippets/agw-kgw.md" >}}. 
 - Using a feature that is not yet exposed via the Kubernetes Gateway or {{< reuse "/agw-docs/snippets/agw-kgw.md" >}} APIs.
 
-{{< version exclude-if="2.1.x" >}}
+
 
 You can choose between the following options to provide custom configuration to your agentgateway proxy. 
 
 * **Embed in {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} CRD directly (recommended)**: You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} custom resource directly. This way, your configuration is validated when you apply the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource in your cluster. Keep in mind that not all upstream configuration options, such as `binds`, are currently supported in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. For supported options, see the [API reference]({{< link-hextra path="/reference/api/#agentgatewayparametersspec" >}}). 
 * **`rawConfig`**: For configuration that cannot be embedded into the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource directly, or if you prefer to pass in raw upstream configuration, you can use the `rawConfig` option in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource instead. Note that configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
 
-{{< /version >}}
+
 
 ## Before you begin
 
@@ -26,82 +26,8 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup/" >}}).
 
 ## Step 1: Create agentgateway configuration {#agentgateway-configuration}
 
-{{< version include-if="2.1.x" >}}
+ 
 
-Use a ConfigMap to pass upstream configuration settings directly to the agentgateway proxy. 
-
-1. Create a ConfigMap with your agentgateway configuration. This configuration defines the binds, listeners, routes, backends, and policies that you want agentgateway to use. The key must be named `config.yaml`. The following example sets up a simple direct response listener on port 3000 that returns a `200 OK` response with the body `"hello!"` for requests to the `/direct` path.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: v1
-   kind: ConfigMap
-   metadata:
-     name: agentgateway-config
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   data:
-     config.yaml: |-
-       binds:
-       - port: 3000
-         listeners:
-         - protocol: HTTP
-           routes:
-           - name: direct-response
-             matches:
-             - path:
-                 pathPrefix: /direct
-             policies:
-               directResponse:
-                 body: "hello!"
-                 status: 200
-   EOF
-   ```
-
-2. Create a {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that refers to your ConfigMap.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
-   metadata:
-     name: agentgateway-config
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     kube:
-       agentgateway:
-         enabled: true
-         customConfigMapName: agentgateway-config
-   EOF
-   ```
-
-3. Create a Gateway resource for your agentgateway proxy that uses the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. Set the port to a dummy value like `3030` to avoid conflicts with the binds defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: Gateway
-   metadata:
-     name: agentgateway-config
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
-     infrastructure:
-       parametersRef:
-         name: agentgateway-config
-         group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}} 
-         kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
-     listeners:
-       - name: http
-         port: 3030
-         protocol: HTTP
-         allowedRoutes:
-           namespaces:
-             from: All
-   EOF
-   ```
-  
-{{< /version >}} 
-{{< version exclude-if="2.1.x" >}}
 
 Choose between the following options to provide your agentgateway configuration: 
 
@@ -270,65 +196,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
    ```
 
 {{< /version>}}
-{{< version include-if="2.1.x" >}}
 
-## Step 2: Verify the configuration {#verify-configuration}
-
-1. Describe the agentgateway pod. Verify that the pod is `Running` and that the `Mounts` section mounts the `/config` from the ConfigMap.
-
-   ```bash
-   kubectl describe pod -l app.kubernetes.io/name=agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-
-2. Check the pod logs to verify that agentgateway loaded the configuration from the ConfigMap, such as by searching for the port binding.
-
-   ```bash
-   kubectl logs deployment/agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep 3000
-   ```
-   
-   Example output:
-
-   ```
-   2025-10-28T13:47:01.116095Z	info	proxy::gateway	started bind	bind="bind/3000"
-   ```
-
-3. Send a test request.
-
-   * **Cloud Provider LoadBalancer**:
-     1. Get the external address of the gateway proxy and save it in an environment variable. 
-        ```sh
-        export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-config -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-        echo $INGRESS_GW_ADDRESS
-        ```
-
-     2. Send a request along the `/direct` path to the agentgateway proxy. Use port 3000 as defined in your ConfigMap.
-        ```sh
-        curl -i http://$INGRESS_GW_ADDRESS:3000/direct
-        ```
-   * **Port-forward for local testing**
-     1. Port-forward the `agentgateway-config` pod on port 3000 as defined in your ConfigMap.
-   
-        ```sh
-        kubectl port-forward deployment/agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}} 3000:3000
-        ```
-
-     2. Send a request to verify that you get back the expected response from your direct response configuration.
-   
-        ```sh
-        curl -i localhost:3000/direct
-        ```
-
-   Example output:
-   
-   ```txt
-   HTTP/1.1 200 OK
-   content-length: 6
-   date: Tue, 28 Oct 2025 14:13:48 GMT
-   
-   hello!
-   ```
-
-{{< /version >}}
 
 ## Clean up
 
@@ -336,6 +204,5 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
 
 ```bash
 kubectl delete Gateway agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< version exclude-if="2.2.x" >}}
-kubectl delete ConfigMap agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< /version >}}
+kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```

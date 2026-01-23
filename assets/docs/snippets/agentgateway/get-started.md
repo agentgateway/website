@@ -22,7 +22,7 @@
    --set controller.image.pullPolicy=Always
    ```
 
-3. Install the kgateway control plane by using Helm. {{< version include-if="2.1.x" >}}Make sure to enable the agentgateway feature flag, `--set agentgateway.enabled=true`. {{< /version >}}{{< version include-if="2.2.x" >}} To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.{{< /version >}}
+3. Install the agentgateway control plane by using Helm.  To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \

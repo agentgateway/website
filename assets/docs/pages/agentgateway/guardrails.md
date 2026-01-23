@@ -88,29 +88,8 @@ To optimize guardrail webhook performance, you can update the {{< reuse "agw-doc
 
 Example configuration file:
 
-{{< version include-if="2.1.x" >}}
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
-metadata:
-  name: agw-override
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  kube:
-    agentgateway:
-      enabled: true
-      env:
-      - name: GUARDRAIL_WEBHOOK_MAX_CONNECTIONS
-        value: "50"
-      - name: GUARDRAIL_WEBHOOK_KEEPALIVE_SECONDS
-        value: "60"
-EOF
-```
 
-{{< /version >}}
-{{< version include-if="2.2.x" >}}
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -128,7 +107,7 @@ spec:
 EOF
 ```
 
-{{< /version >}}
+
 
 ### More information
 
@@ -245,45 +224,8 @@ The webhook server is configured to take the following actions:
 
 Configure a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
 
-{{< version include-if="2.1.x" >}}
 
-```yaml
-kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: openai-prompt-guard
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: openai
-  ai:
-    promptGuard:
-      request:
-        webhook:
-          host:
-            host: $WEBHOOK_SERVER_ADDRESS
-            port: 8000
-      response:
-        webhook:
-          host:
-            host: $WEBHOOK_SERVER_ADDRESS
-            port: 8000
-EOF
-```
 
-{{% reuse "agw-docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} API docs for AI.
-
-| Setting | Description |
-|---------|-------------|
-| `targetRefs` | The HTTPRoute that you want to apply the guardrail to. This example uses the `openai` HTTPRoute that you created before you began. |
-| `ai.promptGuard` | The AI prompt guarding configuration that you want to set up. In this example, you configure the webhook server for both request and response guardrails. |
-| `webhook.host` and `.port` | The host address and port number of the webhook server. For this example, you use the LoadBalancer service address as the webhook server address. If the webhook service is deployed in the same cluster as the gateway proxy, you can also use the Kubernetes DNS name of the service, such as `ai-guardrail-webhook.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local`. The example webhook server is configured to use port 8000. |
-
-{{< /version >}}
-{{< version include-if="2.2.x" >}}
 
 ```yaml
 kubectl apply -f - <<EOF
@@ -323,7 +265,7 @@ EOF
 | `backend.ai.promptGuard` | The AI prompt guarding configuration that you want to set up. In this example, you configure the webhook server for both request and response guardrails. |
 | `webhook.backendRef` | The reference to the webhook server service. The example webhook server is configured to use port 8000. |
 
-{{< /version >}}
+
 
 
 ### Step 3: Test the webhook server {#test-webhook-server}

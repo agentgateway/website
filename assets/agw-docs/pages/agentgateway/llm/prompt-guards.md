@@ -6,10 +6,10 @@ Prompt guards are mechanisms that ensure that prompt-based interactions with a l
 
 You can set up prompt guards to block unwanted requests to the LLM provider and mask sensitive data. In this tutorial, you learn how to block any request with a `credit card` string in the request body and mask credit card numbers that are returned by the LLM.
 
-{{< version include-if="2.2.x" >}}
+
 </br>
 Prompt guards can be configured directly in an {{< reuse "agw-docs/snippets/backend.md" >}} resource or in a separate AgentgatewayPolicy resource. 
-{{< /version >}}
+
 
 ## Before you begin
 
@@ -19,39 +19,7 @@ Prompt guards can be configured directly in an {{< reuse "agw-docs/snippets/back
 
 Use the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and the `promptGuard` field to deny requests to the LLM provider that include the `credit card` string in the request body.
 
-{{< version include-if="2.1.x" >}}
 
-1. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and add a custom prompt guard. The following example parses requests sent to the LLM provider to identify a regex pattern match that is named `CC` for debugging purposes. The proxy blocks any requests that contain the `credit card` string in the request body. These requests are automatically denied with a custom response message.
-
-
-   ```yaml
-   kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: openai-prompt-guard
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     labels:
-       app: agentgateway
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: openai
-     ai:
-       promptGuard:
-         request:
-           customResponse:
-             message: "Rejected due to inappropriate content"
-           regex:
-             action: REJECT
-             matches:
-             - pattern: "credit card"
-               name: "CC"
-   EOF
-   ```
-
-   {{< /version >}}{{< version include-if="2.2.x" >}}
 1. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and add a custom prompt guard. The proxy blocks any requests that contain the `credit card` string in the request body. These requests are automatically denied with a custom response message.
 
    ```yaml
@@ -75,25 +43,25 @@ Use the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and the `pro
            - response:
                message: "Rejected due to inappropriate content"
              regex:
-               action: REJECT
+               action: Reject
                matches:
                - "credit card"
    EOF
    ```
 
-   {{< /version >}}
+   
 
    {{< callout type="info" >}}
-   You can also reject requests that contain strings of inappropriate content itself, such as credit card numbers, by using the <code>promptGuard.request.regex.builtins</code> field. Besides <code>CREDIT_CARD</code> in this example, you can also specify <code>EMAIL</code>, <code>PHONE_NUMBER</code>, and <code>SSN</code>.
+   You can also reject requests that contain strings of inappropriate content itself, such as credit card numbers, by using the <code>promptGuard.request.regex.builtins</code> field. Besides <code>CreditCard</code> in this example, you can also specify <code>Email</code>, <code>PhoneNumber</code>, <code>Ssn</code>, and <code>CaSin</code>.
    {{< /callout >}}
    ```yaml
    ...
    promptGuard:
      request:
        regex:
-         action: REJECT
+         action: Reject
          builtins:
-         - CREDIT_CARD
+         - CreditCard
    ```
    
 2. Send a request to the AI API that includes the string `credit card` in the request body. Verify that the request is denied with a 403 HTTP response code and the custom response message is returned.
@@ -218,33 +186,7 @@ Use the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and the `pro
 
 In the next step, you instruct agentgateway to mask credit card numbers that are returned by the LLM.
 
-{{< version include-if="2.1.x" >}}
-1. Add the following credit card response matcher to the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. This time, use the built-in credit card regex match instead of a custom one.
-   
-   ```yaml
-   kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: openai-prompt-guard
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     labels:
-       app: agentgateway
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: openai
-     ai:
-       promptGuard:
-         response:
-           regex:
-             action: MASK
-             builtins:
-             - CREDIT_CARD
-   EOF
-   ```
-   {{< /version >}}{{< version include-if="2.2.x" >}}
+
 1. Add the following credit card response matcher to the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. This time, use the built-in credit card regex match instead of a custom one.
    
    ```yaml
@@ -268,10 +210,10 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
            - regex:
                builtins: 
                  - CreditCard
-               action: MASK
+               action: Mask
    EOF
    ```
-   {{< /version >}}
+   
 
 2. Send another request to the AI API and include a fake VISA credit card number. Verify that the VISA number is detected and masked in your response.
    

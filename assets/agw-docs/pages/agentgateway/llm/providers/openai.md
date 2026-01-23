@@ -27,68 +27,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
      Authorization: $OPENAI_API_KEY
    EOF
    ``` 
-{{< version include-if="2.1.x" >}}   
-4. Create a {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: openai
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       llm:
-         openai:
-           authToken:
-             kind: SecretRef
-             secretRef:
-               name: openai-secret
-           model: "gpt-3.5-turbo"
-   EOF
-   ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#aibackend" >}}).
-
-   | Setting     | Description |
-   |-------------|-------------|
-   | `type`      | Set to `AI` to configure this {{< reuse "agw-docs/snippets/backend.md" >}} for an AI provider. |
-   | `ai`        | Define the AI backend configuration. The example uses OpenAI (`spec.ai.llm.openai`). |
-   | `authToken` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created. |
-   | `model`     | The OpenAI model to use, such as `gpt-3.5-turbo`. |
-5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: openai
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /openai
-       filters:
-       - type: URLRewrite
-         urlRewrite:
-           path:
-             type: ReplaceFullPath
-             replaceFullPath: /v1/chat/completions
-       backendRefs:
-       - name: openai
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: gateway.kgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ``` 
-   {{< /version >}} {{< version include-if="2.2.x" >}}
 
 4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
    ```yaml
@@ -145,7 +84,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   {{< /version >}}
+   
 
 6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
    

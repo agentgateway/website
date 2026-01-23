@@ -109,15 +109,15 @@ promptGuard:
 	- response:
 	    message: "Rejected due to inappropriate content"
 	  regex:
-	    action: REJECT
+	    action: Reject
 	    matches:
 	    - pattern: "credit card"
 	      name: "CC"
 	response:
 	- regex:
 	    builtins:
-	    - CREDIT_CARD
-	    action: MASK
+	    - CreditCard
+	    action: Mask
 
 
 ```

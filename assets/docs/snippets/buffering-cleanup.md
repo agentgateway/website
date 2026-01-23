@@ -5,8 +5,8 @@
 1. Delete the {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} resources.
    ```sh
    kubectl delete {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} transformation-buffer-body -n httpbin 
-   {{< version include-if="2.2.x,2.1.x" >}}
-   kubectl delete {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} transformation-buffer-limit -n httpbin {{< /version >}}
+   
+   kubectl delete {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} transformation-buffer-limit -n httpbin 
    ```
 
 2. Remove the buffer limit annotation from the http Gateway resource.

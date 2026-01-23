@@ -20,7 +20,7 @@ For more information, see the [Helm reference docs]({{< link-hextra path="/refer
 
 When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add `--set controller.image.pullPolicy=Always` to ensure you get the latest image. For production environments, this setting is not recommended as it might impact performance.
 
-{{< version include-if="2.2.x" >}}
+
 
 ### Experimental Gateway API features {#experimental-gateway-api-features}
 
@@ -38,9 +38,9 @@ controller:
   extraEnv:
     KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
 ```
-{{< /version >}}
 
-{{< version include-if="2.2.x,2.1.x" >}}
+
+
 
 ## Leader election
 
@@ -54,7 +54,7 @@ controller:
   disableLeaderElection: true
 ```
 
-{{< /version >}}
+
 
 ## Namespace discovery {#namespace-discovery}
 
@@ -87,10 +87,10 @@ discoveryNamespaceSelectors:
     version: v3
 ```
 
-{{< version include-if="2.2.x,2.1.x" >}}
+
 
 ## TLS encryption {#tls-encryption}
 
 You can enable TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information, see the [TLS encryption]({{< link-hextra path="/install/tls" >}}) docs.
 
-{{< /version >}}
+
