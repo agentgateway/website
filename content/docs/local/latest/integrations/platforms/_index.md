@@ -18,7 +18,7 @@ Agent Gateway runs anywhere—from local development to production cloud environ
 
 ## Kubernetes distributions
 
-Agent Gateway runs on all Kubernetes distributions through [kgateway](https://kgateway.dev/docs/agentgateway/):
+Agent Gateway runs on all Kubernetes distributions through [kgateway](https://agentgateway.dev/docs/kubernetes/):
 
 | Category | Distributions |
 |----------|---------------|
@@ -44,4 +44,4 @@ Agent Gateway runs on all Kubernetes distributions through [kgateway](https://kg
 
 - [Deployment Guide](/docs/deployment/)
 - [Configuration Reference](/docs/configuration/)
-- [kgateway Documentation](https://kgateway.dev/docs/agentgateway/)
+- [Agentgateway on Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/)

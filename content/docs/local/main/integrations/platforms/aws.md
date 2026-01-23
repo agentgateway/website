@@ -50,10 +50,10 @@ Run Agent Gateway as an ECS service with Fargate or EC2.
 
 ### Amazon EKS
 
-For EKS deployments, use [kgateway](https://kgateway.dev/docs/agentgateway/) which provides native Kubernetes Gateway API support, dynamic configuration, and MCP service discovery.
+For EKS deployments, use [Agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/) which provides native Kubernetes Gateway API support, dynamic configuration, and MCP service discovery.
 
 {{< cards >}}
-  {{< card link="https://kgateway.dev/docs/agentgateway/" title="Deploy on EKS with kgateway" icon="external-link" >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Deploy on EKS with kgateway" icon="external-link" >}}
 {{< /cards >}}
 
 ## AWS integrations

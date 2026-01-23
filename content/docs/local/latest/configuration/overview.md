@@ -13,7 +13,7 @@ Agentgateway configuration has a few top level sections:
 
 * `config` configures top level settings. These options are the only ones that are not dynamically configured.
 * `binds` provides the entry point to all routing configuration.
-* `services` and `workloads` can be used for very advanced cases where backends need to be represented as complex objects rather than simple URLs. However, it is recommended to [use kgateway](https://kgateway.dev/docs/agentgateway/) for these purposes. Kgateway simplifies the management of agentgateway proxy resources for Kubernetes-based workloads.
+* `services` and `workloads` can be used for very advanced cases where backends need to be represented as complex objects rather than simple URLs. However, it is recommended to [use agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/) for these purposes. Kgateway simplifies the management of agentgateway proxy resources for Kubernetes-based workloads.
 
 For an overview of the configuration fields, review the [Getting Started](/docs/quickstart/#basic-config) guide.
 
