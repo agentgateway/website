@@ -1,0 +1,1 @@
+[Install the `agentgateway` binary](/docs/quickstart/#binary).

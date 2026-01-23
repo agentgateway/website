@@ -14,34 +14,15 @@
    {{% /tab %}}
    {{< /tabs >}}
 
-2. Deploy the CRDs for the kgateway control plane and agentgateway data plane by using Helm.
-   {{< version include-if="2.2.x" >}}
+2. Deploy the CRDs for the agentgateway control plane by using Helm.
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version v{{< reuse "agw-docs/versions/patch-dev.md" >}} \
    --set controller.image.pullPolicy=Always
    ```
-   {{< /version >}}
-   {{< version include-if="2.1.x" >}}
-   ```sh
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://cr.kgateway.dev/kgateway-dev/charts/kgateway-crds \
-   --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version v{{< reuse "agw-docs/versions/n-patch.md" >}} 
-   ```
-   {{< /version >}}
 
-3. Install the kgateway control plane by using Helm. {{< version include-if="2.1.x" >}}Make sure to enable the agentgateway feature flag, `--set agentgateway.enabled=true`. {{< /version >}}{{< version include-if="2.2.x" >}} To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.{{< /version >}}
-   {{< version include-if="2.1.x" >}}
-   ```sh
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://cr.kgateway.dev/kgateway-dev/charts/kgateway \
-     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
-     --set agentgateway.enabled=true  \
-     --set controller.image.pullPolicy=Always
-   ```
-   {{< /version >}}
-   {{< version include-if="2.2.x" >}}
+3. Install the kgateway control plane by using Helm. To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
@@ -49,8 +30,7 @@
      --set controller.image.pullPolicy=Always \
      --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
    ```
-   {{< /version >}}
-
+   
 4. Make sure that the `{{< reuse "agw-docs/snippets/pod-name.md" >}}` control plane is running.
 
    ```sh
