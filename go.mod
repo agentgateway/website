@@ -1,4 +1,4 @@
-module github.com/imfing/hextra-starter-template
+module github.com/agentgateway/website
 
 go 1.21
 
