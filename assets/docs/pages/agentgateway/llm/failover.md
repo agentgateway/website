@@ -28,45 +28,7 @@ You can configure failover across multiple models and providers by using priorit
    2. OpenAI `gpt-5.1` model (fallback)
    3. OpenAI `gpt-3.5-turbo` model (lowest priority)
 
-   {{< version include-if="2.1.x" >}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: model-failover
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       priorityGroups:
-       - providers:
-         - name: openai-gpt-4.1
-           openai:
-             model: "gpt-4.1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-       - providers:
-         - name: openai-gpt-5.1
-           openai:
-             model: "gpt-5.1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-       - providers:
-         - name: openai-gpt-3.5-turbo
-           openai:
-             model: "gpt-3.5-turbo"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-   EOF
-   ```
-   {{< /version >}}{{< version include-if="2.2.x" >}}
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
@@ -102,7 +64,7 @@ You can configure failover across multiple models and providers by using priorit
    EOF
    ```
 
-   {{< /version >}}
+   
    
    {{% /tab %}}
    {{% tab tabName="Cost-based priority across providers" %}}
@@ -113,53 +75,8 @@ You can configure failover across multiple models and providers by using priorit
 
    Make sure that you configured both Anthropic and OpenAI providers.
 
-   {{< version include-if="2.1.x" >}}
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: model-failover
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       priorityGroups:
-       - providers:
-         - name: openai-gpt-3.5-turbo
-           openai:
-             model: "gpt-3.5-turbo"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-         - name: claude-haiku
-           anthropic:
-             model: "claude-3-5-haiku-latest"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: anthropic-secret
-       - providers:
-         - name: openai-gpt-4.1
-           openai:
-             model: "gpt-4.1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-         - name: claude-opus
-           anthropic:
-             model: "claude-opus-4-1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: anthropic-secret
-   EOF
-   ```
-   {{< /version >}}
-   {{< version include-if="2.2.x" >}}
+   
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
@@ -202,45 +119,15 @@ You can configure failover across multiple models and providers by using priorit
                      name: anthropic-secret
    EOF
    ```
-   {{< /version >}}
+   
    
    {{% /tab %}}
    {{< /tabs >}}
 
 2. Create an HTTPRoute resource that routes incoming traffic on the `/model` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. In this example, the URLRewrite filter rewrites the path from `/model` to the path of the API in the LLM provider that you want to use, such as `/v1/chat/completions` for OpenAI.
 
-   {{< version include-if="2.1.x" >}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: model-failover
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /model
-       filters:
-       - type: URLRewrite
-         urlRewrite:
-           path:
-             type: ReplaceFullPath
-             replaceFullPath: /v1/chat/completions
-       backendRefs:
-       - name: model-failover
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: gateway.kgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ```
-   {{< /version >}}
-   {{< version include-if="2.2.x" >}}
+   
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -264,7 +151,7 @@ You can configure failover across multiple models and providers by using priorit
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   {{< /version >}}
+   
 
 3. Send a request to observe the failover. In your request, do not specify a model. Instead, the {{< reuse "agw-docs/snippets/backend.md" >}} automatically uses the model from the first priority group (highest priority).
 

@@ -61,29 +61,7 @@ Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md"
    ```
 
 2. Create a {{< reuse "agw-docs/snippets/backend.md" >}} for your MCP server that uses label selectors to select the MCP server.
-   {{< version include-if="2.1.x" >}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: mcp-backend
-   spec:
-     mcp:
-       targets:
-         - name: mcp-server-everything
-           selector:
-             services:
-               matchLabels:
-                 app: mcp-server-everything
-   EOF
-   ```
-
-   {{< callout type="info" >}}
-   Plan to attach policies to your selector-based Backend later? You can still attach the policy to a particular backing Service. To do so, set the `targetRef` setting in the policy to the backing Service, not to the Backend's service selector. Include the `sectionName` of the port that you want the policy to apply to. For an example, check out the [BackendTLSPolicy guide](../../../security/backend-tls/).
-   {{< /callout >}}
-
-   {{< /version >}}{{< version include-if="2.2.x" >}}
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
@@ -100,33 +78,13 @@ Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md"
                  app: mcp-server-everything
    EOF
    ```
-   {{< /version >}}
+   
 
 ## Step 2: Route with agentgateway {#agentgateway}
 
 Create an HTTPRoute resource that routes to the Backend that you created in the previous step.
-{{< version include-if="2.1.x" >}}
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: mcp
-  labels:
-    example: mcp-route
-spec:
-  parentRefs:
-    - name: agentgateway-proxy
-      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  rules:
-    - backendRefs:
-        - name: mcp-backend
-          group: gateway.kgateway.dev
-          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-EOF
-```
-{{< /version >}}
-{{< version include-if="2.2.x" >}}
+
+
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
@@ -146,7 +104,7 @@ spec:
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
-{{< /version >}}
+
 
 ## Step 3: Verify the connection {#verify}
 

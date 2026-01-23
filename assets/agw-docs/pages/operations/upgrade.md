@@ -188,9 +188,9 @@ For Istio upgrades, consult the docs based on the way that you installed Istio. 
 
 4. Upgrade the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane Helm installation.
    * Make sure to include your Helm values when you upgrade either as a configuration file or with `--set` flags. Otherwise, any previous custom values that you set might be overwritten.
-   * When using the development build v{{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.{{< version include-if="2.2.x,2.1.x" >}}
+   * When using the development build v{{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
    * To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
-   {{< /version >}}{{< conditional-text include-if="agentgateway" >}}
+   {{< conditional-text include-if="agentgateway" >}}
    * Make sure to keep the agentgateway feature flag, `--set agentgateway.enabled=true`.{{< /conditional-text >}}
    
    ```sh

@@ -18,66 +18,7 @@
      Authorization: $GOOGLE_KEY
    EOF
    ```
-{{< version include-if="2.1.x" >}}
 
-3. Create a {{< reuse "agw-docs/snippets/backend.md" >}} resource to define the Gemini destination.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     labels:
-       app: agentgateway
-     name: google
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     ai:
-       llm:
-        gemini:
-             apiVersion: v1beta
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: google-secret
-             model: gemini-2.5-flash-lite
-     type: AI
-   EOF
-   ```
-
-   {{< reuse "agw-docs/snippets/review-table.md" >}}
-
-   | Setting      | Description                                                                                                                                                                                                                                                                                                           |
-   | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-   | `gemini`     | The Gemini AI provider.                                                                                                                                                                                                                                                                                               |
-   | `apiVersion` | The API version of Gemini that is compatible with the model that you plan to use. In this example, you must use `v1beta` because the `gemini-2.5-flash-lite` model is not compatible with the `v1` API version. For more information, see the [Google AI docs](https://ai.google.dev/gemini-api/docs/api-versions). |
-   | `authToken`  | The authentication token to use to authenticate to the LLM provider. The example refers to the secret that you created in the previous step.                                                                                                                                                                          |
-   | `model`      | The model to use to generate responses. In this example, you use the `gemini-2.5-flash-lite` model. For more models, see the [Google AI docs](https://ai.google.dev/gemini-api/docs/models).                                                                                                                        |
-
-4. Create an HTTPRoute resource to route requests to the Gemini {{< reuse "agw-docs/snippets/backend.md" >}}. Note that {{< reuse "/agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint that you set up (such as `/gemini`) to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: google
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /gemini
-       backendRefs:
-       - name: google
-         group: gateway.kgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ```
-   {{< /version >}}{{< version include-if="2.2.x" >}}
 3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
    ```yaml
    kubectl apply -f- <<EOF
@@ -129,7 +70,7 @@
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   {{< /version >}}
+   
 
 5. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
 

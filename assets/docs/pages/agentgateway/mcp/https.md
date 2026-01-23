@@ -13,7 +13,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
    export GH_PAT=<personal-access-token>
    ```
 
-{{< version include-if="2.2.x" >}}2. Create the {{< reuse "agw-docs/snippets/namespace.md" >}} for the remote GitHub MCP server. The server requires you to connect to it by using the HTTPS protocol. Because of that, you set the `mcp.targets.static.port` field to 443.
+2. Create the {{< reuse "agw-docs/snippets/namespace.md" >}} for the remote GitHub MCP server. The server requires you to connect to it by using the HTTPS protocol. Because of that, you set the `mcp.targets.static.port` field to 443.
    
    ```yaml
    kubectl apply -f- <<EOF
@@ -72,85 +72,9 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   {{< /version >}}
    
-{{< version include-if="2.1.x" >}}2. Create a {{< reuse "agw-docs/snippets/backend.md" >}} for the remote GitHub MCP server. The server requires you to connect to it by using the HTTPS protocol. Because of that, you set the `mcp.targets.static.port` field to 443.
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: github-mcp-backend
-     namespace: kgateway-system
-   spec:
-     type: MCP
-     mcp:
-       targets:
-       - name: mcp-target
-         static:
-           host: api.githubcopilot.com
-           port: 443
-           path: /mcp/
-   EOF
-   ```
+   
 
-3. Create a BackendTLSPolicy to configure your agentgateway to connect to your Backend by using HTTPS. To validate the MCP server's TLS certificate, you use the well-known system CA certificates. Note that to use the BackendTLSPolicy, you must have the experimental channel of the Kubernetes Gateway API version 1.4 or later.
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: BackendTLSPolicy
-   metadata:
-     name: github-mcp-backend-tls
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-       - name: github-mcp-backend
-         kind: Backend
-         group: gateway.kgateway.dev
-     validation:
-       hostname: api.githubcopilot.com
-       wellKnownCACertificates: System
-   EOF
-   ```
-
-4. Create an HTTPRoute that routes traffic to the GitHub MCP server along the `/mcp-github` path. To properly connect to the MCP server, you must allow traffic from `http://localhost:8080`, which is the domain and port you expose your agentgateway proxy on later. If you expose the proxy under a different domain, make sure to add this domain to the allowed origins. Because the MCP server also requires a GitHub access token to connect, you set the `Authorization` header to the token that you created earlier. 
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: mcp-github
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-     - name: agentgateway-proxy
-       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-       - matches:
-           - path:
-               type: PathPrefix
-               value: /mcp-github
-         filters:
-           - type: CORS
-             cors:
-               allowHeaders:
-                 - "*"               
-               allowMethods:            
-                 - "*"              
-               allowOrigins:
-                 - "http://localhost:8080"
-           - type: RequestHeaderModifier
-             requestHeaderModifier:
-               set: 
-                 - name: Authorization
-                   value: "Bearer ${GH_PAT}"
-         backendRefs:
-         - name: github-mcp-backend
-           group: gateway.kgateway.dev
-           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ```
-   {{< /version >}}
    
 ## Verify the connection {#verify}
 
@@ -196,5 +120,5 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/legacy/tools/inspec
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} github-mcp-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete HTTPRoute mcp-github -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
-{{< version include-if="2.1.x" >}}kubectl delete BackendTLSPolicy github-mcp-backend-tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< /version >}}
+
 ```

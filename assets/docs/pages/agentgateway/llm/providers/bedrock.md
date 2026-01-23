@@ -51,64 +51,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    {{% /tab %}}
    {{< /tabs >}}
 
-{{< version include-if="2.1.x" >}}2. Create a {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
-   
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: bedrock
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       llm:
-         bedrock:
-           model: "amazon.titan-text-lite-v1"
-           region: us-east-1
-           auth:
-             type: Secret
-             secretRef:
-               name: bedrock-secret
-   EOF
-   ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#aibackend" >}}).
-
-   | Setting     | Description |
-   |-------------|-------------|
-   | `type`      | Set to `AI` to configure this {{< reuse "agw-docs/snippets/backend.md" >}} for an AI provider. |
-   | `ai`        | Define the AI backend configuration. The example uses Amazon Bedrock (`spec.ai.llm.bedrock`). |
-   | `model`     | The model to use to generate responses. In this example, you use the `amazon.titan-text-lite-v1` model. Keep in mind that some models support cross-region inference. These models begin with a `us.` prefix, such as `us.anthropic.claude-sonnet-4-20250514-v1:0`. For more models, see the [AWS Bedrock docs](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). |
-   | `region`    | The AWS region where your Bedrock model is deployed. Multiple regions are not supported. |
-   | `auth` | Provide the credentials to use to access the Amazon Bedrock API. The example refers to the secret that you previously created. To use IRSA, omit the `auth` settings.|
-
-3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint that you set up (such as `/bedrock`) to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
-   ```yaml
-   kubectl apply -f- <<EOF                                             
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:       
-     name: bedrock
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /bedrock
-       backendRefs:
-       - name: bedrock
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: gateway.kgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ```
-   {{< /version >}}{{< version include-if="2.2.x" >}}
 
 2. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure your LLM provider. Make sure to reference the secret that holds your credentials to access the LLM. 
    ```yaml
@@ -164,7 +107,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-{{< /version >}}
+
 
 4. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
 

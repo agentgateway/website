@@ -1,6 +1,6 @@
 Extract the values of common headers to generate a redirect URL.
 
-{{< version exclude-if="2.0.x" >}}
+
 <!--TODO agentgateway transformation
    {{< tabs items="Envoy-based kgateway,Agentgateway" tabTotal="2" >}}
    {{% tab tabName="Envoy-based kgateway" %}}
@@ -47,7 +47,7 @@ Extract the values of common headers to generate a redirect URL.
    {{% /tab %}}
    {{< /tabs >}}
 -->
-{{< /version >}}
+
 
 ## About pseudo headers 
 

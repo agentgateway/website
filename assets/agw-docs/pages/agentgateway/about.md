@@ -28,39 +28,7 @@ Review the following table to understand how to configure agentgateway resources
 | Target | The details of the backend, such as the tools in an MCP backend. | Services and Backends. |
 | Policies | Policies for how agentgateway processes incoming requests.<ul><li>Request Header Modifier: Add, set, or remove HTTP request headers.</li><li>Response Header Modifier: Add, set, or remove HTTP response headers.</li><li>Request Redirect: Redirect incoming requests to a different scheme, authority, path, or status code.</li><li>URL Rewrite: Rewrite the authority or path of requests before forwarding.</li><li>Request Mirror: Mirror a percentage of requests to an additional backend for testing or analysis.</li><li>CORS: Configure Cross-Origin Resource Sharing (CORS) settings for allowed origins, headers, methods, and credentials.</li><li>A2A: Enable agent-to-agent (A2A) communication features.</li><li>Backend Auth: Set up authentication for backend services such as passthrough, key, GCP, AWS, and so on.</li><li>Timeout: Set request and backend timeouts.</li><li>Retry: Configure retry attempts, backoff, and which response codes should trigger retries.</li></ul> | Policies in HTTPRoutes and Backends. |
 
-{{< version include-if="2.1.x" >}}
 
-## Feature enablement
-
-To use agentgateway features, you must enable the agentgateway feature in {{< reuse "agw-docs/snippets/kgateway.md" >}}. Additionally, to route to AI providers, enable the AI Gateway feature alongside AI gateway.
-
-1. Upgrade or install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane to enable the agentgateway data plane. 
-
-   ```shell
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} \
-     --set agentgateway.enabled=true \
-     --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
-   ```
-
-2. Verify that your Helm installation was updated.
-   ```shell
-   helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
-   ```
-   
-   Example output: 
-   ```
-   
-   agentgateway:
-     enabled: true
-   ```
-
-3. Review the guides in the following sections to create an agentgateway proxy that fits your use case:
-   * [LLM consumption]({{< link-hextra path="/agentgateway/llm/" >}})
-   * [Inference routing]({{< link-hextra path="/agentgateway/inference/" >}})
-   * [MCP connectivity]({{< link-hextra path="/agentgateway/mcp/" >}})
-   * [Agent connectivity]({{< link-hextra path="/agentgateway/agent/" >}})
-
-{{< /version >}}
 <!--
 ## More considerations
 

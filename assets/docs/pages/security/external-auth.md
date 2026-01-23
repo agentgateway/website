@@ -262,7 +262,7 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    ```
 
 5. Create another {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to disable external authorization for a particular HTTPRoute. This way, requests that do not require external authorization, such as health checks, are allowed through while the external authorization service is still in place for requests to other routes on the Gateway.
-   {{< version exclude-if="2.0.x" >}}
+   
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -281,27 +281,8 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
        disable: {}
    EOF
    ```
-   {{< /version >}}
-   {{< version include-if="2.0.x" >}}
-   ```yaml
-   kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     namespace: httpbin
-     name: route-ext-auth-policy
-     labels:
-       app: ext-authz
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbin
-     extAuth:
-       enablement: DisableAll
-   EOF
-   ``` 
-   {{< /version >}}
+   
+   
 
 6. Send a request without the `x-ext-authz` header and verify that you get back a 200 OK response. This time, the TrafficPolicy with the disabled external authorization service takes precedence so that the request is allowed through.
 
