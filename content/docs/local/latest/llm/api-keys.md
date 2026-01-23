@@ -17,7 +17,7 @@ Follow the instructions in this guide to learn how to use these different method
 
 ## Before you begin
 
-{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Configure your agentgateway proxy
 

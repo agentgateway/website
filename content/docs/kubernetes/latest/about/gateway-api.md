@@ -3,4 +3,4 @@ title: Gateway API
 weight: 20
 ---
 
-{{< reuse "docs/pages/agentgateway/gateway-api.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/gateway-api.md" >}}

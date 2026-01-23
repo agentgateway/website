@@ -6,11 +6,11 @@ description: Expose MCP servers through the agentgateway.
 
 An MCP backend allows exposing MCP servers through the agentgateway using {{< gloss "STDIO (Standard Input/Output)" >}}STDIO{{< /gloss >}}.
 
-{{< reuse "docs/snippets/kgateway-callout.md" >}}
+{{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
 
 ## Before you begin
 
-{{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Configure the agentgateway
 
@@ -28,9 +28,9 @@ An MCP backend allows exposing MCP servers through the agentgateway using {{< gl
 
    {{% github-yaml  url="https://agentgateway.dev/examples/basic/config.yaml" %}}
 
-   {{< reuse "docs/snippets/review-table.md" >}}
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
 
-   {{< reuse "docs/snippets/example-basic-mcp.md" >}}
+   {{< reuse "agw-docs/snippets/example-basic-mcp.md" >}}
 
 3. Run the agentgateway. 
    ```sh

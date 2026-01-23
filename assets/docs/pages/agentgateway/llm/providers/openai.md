@@ -1,4 +1,4 @@
-Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "docs/snippets/agentgateway.md" >}}.
+Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 ## Before you begin
 
@@ -21,83 +21,22 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
    kind: Secret
    metadata:
      name: openai-secret
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    type: Opaque
    stringData:
      Authorization: $OPENAI_API_KEY
    EOF
    ``` 
-{{< version include-if="2.1.x" >}}   
-4. Create a {{< reuse "docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "docs/snippets/backend.md" >}}
-   metadata:
-     name: openai
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       llm:
-         openai:
-           authToken:
-             kind: SecretRef
-             secretRef:
-               name: openai-secret
-           model: "gpt-3.5-turbo"
-   EOF
-   ```
+ 
 
-   {{% reuse "docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#aibackend" >}}).
-
-   | Setting     | Description |
-   |-------------|-------------|
-   | `type`      | Set to `AI` to configure this {{< reuse "docs/snippets/backend.md" >}} for an AI provider. |
-   | `ai`        | Define the AI backend configuration. The example uses OpenAI (`spec.ai.llm.openai`). |
-   | `authToken` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created. |
-   | `model`     | The OpenAI model to use, such as `gpt-3.5-turbo`. |
-5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: openai
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /openai
-       filters:
-       - type: URLRewrite
-         urlRewrite:
-           path:
-             type: ReplaceFullPath
-             replaceFullPath: /v1/chat/completions
-       backendRefs:
-       - name: openai
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
-         group: gateway.kgateway.dev
-         kind: {{< reuse "docs/snippets/backend.md" >}}
-   EOF
-   ``` 
-   {{< /version >}} {{< version include-if="2.2.x" >}}
-
-4. Create an {{< reuse "docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
+4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "docs/snippets/backend.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      ai:
        provider:
@@ -112,7 +51,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
    EOF
    ```
 
-   {{% reuse "docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#aibackend" >}}).
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#aibackend" >}}).
 
    | Setting     | Description |
    |-------------|-------------|
@@ -120,7 +59,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
    | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
    | `policies.auth` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created.|
 
-5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
+5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -128,11 +67,11 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
    kind: HTTPRoute
    metadata:
      name: openai
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      parentRefs:
        - name: agentgateway-proxy
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches:
        - path:
@@ -140,12 +79,12 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
            value: /openai
        backendRefs:
        - name: openai
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          group: agentgateway.dev
-         kind: {{< reuse "docs/snippets/backend.md" >}}
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   {{< /version >}}
+   
 
 6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
    
@@ -219,4 +158,4 @@ Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
    }
    ```
 
-{{< reuse "docs/snippets/agentgateway/llm-next.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

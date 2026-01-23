@@ -30,7 +30,7 @@ You can set up the httpbin sample app. This app can be used to try out traffic m
    spec:
      parentRefs:
        - name: agentgateway-proxy
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - "www.example.com"
      rules:
@@ -46,7 +46,7 @@ You can set up the httpbin sample app. This app can be used to try out traffic m
 1. Get the external address of the gateway proxy and save it in an environment variable.
    
    ```sh
-   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "docs/snippets/namespace.md" >}} agentgatway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgatway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $INGRESS_GW_ADDRESS
    ```
 
@@ -97,7 +97,7 @@ You can set up the httpbin sample app. This app can be used to try out traffic m
 1. Port-forward the gateway proxy `http` pod on port 8080. 
    
    ```sh
-   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "docs/snippets/namespace.md" >}} 8080:80
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
 
 2. Send a request to the httpbin app and verify that you get back a 200 HTTP response code. 

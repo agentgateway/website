@@ -1,14 +1,14 @@
-{{< reuse "docs/snippets/kgateway-about.md" >}}
+{{< reuse "agw-docs/snippets/kgateway-about.md" >}}
 
-In this topic, you learn about the basics of API gateways for microservices, the extensions that {{< reuse "/docs/snippets/kgateway.md" >}} provides beyond typical API gateway functionality, and the default API gateway proxy setup.
+In this topic, you learn about the basics of API gateways for microservices, the extensions that {{< reuse "/agw-docs/snippets/kgateway.md" >}} provides beyond typical API gateway functionality, and the default API gateway proxy setup.
 
 {{< callout icon="agentgateway" >}}
-Looking for an AI gateway to connect agents, MCP tools, and LLMs? Check out the [agentgateway data plane docs](../../agentgateway/). {{< reuse "docs/snippets/control-plane-note.md" >}}
+Looking for an AI gateway to connect agents, MCP tools, and LLMs? Check out the [agentgateway data plane docs](../../agentgateway/). {{< reuse "agw-docs/snippets/control-plane-note.md" >}}
 {{< /callout >}}
 
 ## API gateway {#api-gateway}
 
-The {{< reuse "/docs/snippets/kgateway.md" >}} data plane is a feature-rich, fast, and flexible Kubernetes-native [ingress controller](#what-is-an-ingress) and next-generation [API gateway](#what-is-an-api-gateway) that is built on top of [Envoy proxy](https://www.envoyproxy.io/) and the [{{< reuse "docs/snippets/k8s-gateway-api-name.md" >}}](#what-is-the-kubernetes-gateway-api). 
+The {{< reuse "/agw-docs/snippets/kgateway.md" >}} data plane is a feature-rich, fast, and flexible Kubernetes-native [ingress controller](#what-is-an-ingress) and next-generation [API gateway](#what-is-an-api-gateway) that is built on top of [Envoy proxy](https://www.envoyproxy.io/) and the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}](#what-is-the-kubernetes-gateway-api). 
 
 ### What is an ingress?
 
@@ -16,7 +16,7 @@ An ingress, edge router, or application gateway, is a service that is accessible
 
 Examples of Kubernetes ingresses include ingress-nginx and Contour.
 
-Kgateway includes full Kubernetes ingress functionality, providing its own control plane, using the [{{< reuse "docs/snippets/k8s-gateway-api-name.md" >}}](#what-is-the-kubernetes-gateway-api) as its configuration language and Envoy as its proxy server.
+Kgateway includes full Kubernetes ingress functionality, providing its own control plane, using the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}](#what-is-the-kubernetes-gateway-api) as its configuration language and Envoy as its proxy server.
 
 ### What are the components of an ingress?
 
@@ -26,7 +26,7 @@ There are three major components that make up any ingress solution:
 * data plane  
 * configuration language
 
-The [{{< reuse "docs/snippets/k8s-gateway-api-name.md" >}}](#what-is-the-kubernetes-gateway-api) is a project designed to standardize the configuration language, replacing the legacy `Ingress` API with an extensible API.
+The [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}](#what-is-the-kubernetes-gateway-api) is a project designed to standardize the configuration language, replacing the legacy `Ingress` API with an extensible API.
 
 Ingress projects therefore differentiate on their data plane — there are solutions built on top of Envoy, HAProxy, NGINX, Traefik and more — and the performance, scalability and features of their control plane.
 
@@ -66,11 +66,11 @@ Traditionally an ingress primarily handles routing and aggregation, with Kuberne
 
 ### What is the Kubernetes Gateway API?
 
-The {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} is a common, extensible standard for traffic management in Kubernetes. It is quickly becoming the standard interface for defining routing and policy for cloud native networking, addressing many shortcomings of its predecessor, the Ingress API, and unifying best practices that have evolved through real-world usage.
+The {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} is a common, extensible standard for traffic management in Kubernetes. It is quickly becoming the standard interface for defining routing and policy for cloud native networking, addressing many shortcomings of its predecessor, the Ingress API, and unifying best practices that have evolved through real-world usage.
 
 [Learn about the history of the Gateway API](/blog/introduction-to-kubernetes-gateway-api/), or [watch our in-depth video series](/resources/videos/).
 
-Kgateway is fully conformant with the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} and extends its functionality with custom extension APIs, such as TrafficPolicies, ListenerPolicies, and Backends. These custom resources help to centrally configure advanced traffic management, security, and resiliency rules for an HTTPRoute or Gateway listener.
+Kgateway is fully conformant with the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} and extends its functionality with custom extension APIs, such as TrafficPolicies, ListenerPolicies, and Backends. These custom resources help to centrally configure advanced traffic management, security, and resiliency rules for an HTTPRoute or Gateway listener.
 
 ### Is the Gateway API an API gateway?
 
@@ -80,7 +80,7 @@ The Gateway API is an API which can be used to program an ingress or an API gate
 
 ## Extensions
 
-{{< reuse "/docs/snippets/kgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.
+{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.
 
 {{< cards >}}
   {{< card link="../../security/access-logging/" title="Access logging" tag="Security" >}}
@@ -98,6 +98,6 @@ The Gateway API is an API which can be used to program an ingress or an API gate
 
 ## Default gateway proxy setup
 
-{{< reuse "/docs/snippets/kgateway-capital.md" >}} automatically spins up, bootstraps, and manages gateway proxy deployments when you create a Kubernetes Gateway resource. To do that, a combination of kgateway and Kubernetes resources are used, such as GatewayClass, GatewayParameters, and a gateway proxy template that includes the Envoy configuration that each proxy is bootstrapped with. 
+{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} automatically spins up, bootstraps, and manages gateway proxy deployments when you create a Kubernetes Gateway resource. To do that, a combination of kgateway and Kubernetes resources are used, such as GatewayClass, GatewayParameters, and a gateway proxy template that includes the Envoy configuration that each proxy is bootstrapped with. 
 
 To learn more about the default setup and how these resources interact with each other, see the [Default gateway proxy setup]({{< link-hextra path="/setup/default/" >}}).

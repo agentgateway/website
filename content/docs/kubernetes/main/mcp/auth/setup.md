@@ -16,18 +16,18 @@ In this guide, you explore how to configure the agentgateway proxy to protect a 
 3. Follow the steps to [set up Keycloak]({{< link-hextra path="/mcp/auth/keycloak/" >}}). 
 4. Install the experimental channel Gateway API. 
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```  
 
 ## Configure MCP auth
 
-With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "docs/snippets/trafficpolicy.md" >}} that enforces authentication for the MCP backend.
+With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces authentication for the MCP backend.
 
-1. Create an {{< reuse "docs/snippets/trafficpolicy.md" >}} with MCP authentication configuration.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with MCP authentication configuration.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: mcp-echo-authn
    spec:
@@ -89,7 +89,7 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
 
 2. Verify that the policy was accepted.
    ```sh
-   kubectl get {{< reuse "docs/snippets/trafficpolicy.md" >}} mcp-echo-authn -o yaml
+   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-echo-authn -o yaml
    ```
 
 3. Update the HTTPRoute that routes incoming traffic to the MCP server to include the discovery paths for the MCP resource and authorization server. This way, the agentgateway proxy can retrieve the resource and authorization server metadata during the MCP auth flow. 
@@ -154,7 +154,7 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
 
 1. Open the MCP inspector. 
    ```sh
-   npx modelcontextprotocol/inspector#{{% reuse "docs/versions/mcp-inspector.md" %}}
+   npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
    ```
 
 2. From the MCP Inspector menu, connect to your agentgateway address as follows:
@@ -201,10 +201,10 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
 
 ## Clean up
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} mcp-echo-authn 
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-echo-authn 
 kubectl delete httproute mcp 
 ```
 

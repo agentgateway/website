@@ -1,16 +1,16 @@
-Learn about the custom resources that make up {{< reuse "/docs/snippets/kgateway.md" >}} and how they interact with each other. 
+Learn about the custom resources that make up {{< reuse "/agw-docs/snippets/kgateway.md" >}} and how they interact with each other. 
 
 ## Custom resource overview
 
-{{< reuse "docs/snippets/cr-ov.md" >}}
+{{< reuse "agw-docs/snippets/cr-ov.md" >}}
 
 <!--Source https://app.excalidraw.com/s/AKnnsusvczX/1HkLXOmi9BF-->
 
 ## Kubernetes Gateway API resources {#k8s}
 
-Review the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} resources that you use to set up gateway proxies and configure routing for your apps. 
+Review the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} resources that you use to set up gateway proxies and configure routing for your apps. 
 
-For more information, see the [{{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} introduction](https://gateway-api.sigs.k8s.io/#introduction). 
+For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} introduction](https://gateway-api.sigs.k8s.io/#introduction). 
 
 ### Gateway and GatewayClass
 
@@ -20,14 +20,14 @@ To spin up a Gateway and manage its lifecycle, a gateway controller is used. The
 
 ### HTTPRoute and TCPRoute {#httproute}
 
-To configure routing, the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} provides several routing resources, such as an HTTPRoute and TCPRoute. These routes attach to a Gateway resource and define how incoming traffic is matched and forwarded to a backing destination.
+To configure routing, the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} provides several routing resources, such as an HTTPRoute and TCPRoute. These routes attach to a Gateway resource and define how incoming traffic is matched and forwarded to a backing destination.
 
 * [HTTPRoute](https://gateway-api.sigs.k8s.io/api-types/httproute/): The most commonly used route resource, that configures traffic routing for HTTP and HTTPS traffic. 
 * [TCPRoute](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1alpha2.TCPRoute): A resource to route TCP requests.
 
-While the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} provides the functionality for basic request matching, redirects, rewrites, and header manipulation, it is missing more complex traffic management, resiliency, and security features, such as transformations, access logging, or route delegation. 
+While the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} provides the functionality for basic request matching, redirects, rewrites, and header manipulation, it is missing more complex traffic management, resiliency, and security features, such as transformations, access logging, or route delegation. 
 
-You can extend the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} features by leveraging the [kgateway-native policy custom resources](#policies). Policies allow you to apply intelligent traffic management, resiliency, and security standards to an HTTPRoute or Gateway. 
+You can extend the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} features by leveraging the [kgateway-native policy custom resources](#policies). Policies allow you to apply intelligent traffic management, resiliency, and security standards to an HTTPRoute or Gateway. 
 
 ### Kubernetes Services
 
@@ -42,7 +42,7 @@ A [ReferenceGrant](https://gateway-api.sigs.k8s.io/api-types/referencegrant/) al
 <!--
 
 {{< callout type="info" >}}
-Kgateway custom resources do not follow the same cross-namespace restrictions as the resources in the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}}. For example, access between a TrafficPolicy resource in `namespace1` and a Backend resource in `namespace2` is allowed by default and does not require a ReferenceGrant. However, if you need to reference a kgateway resource from a {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} resource, you must create a ReferenceGrant. 
+Kgateway custom resources do not follow the same cross-namespace restrictions as the resources in the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}. For example, access between a TrafficPolicy resource in `namespace1` and a Backend resource in `namespace2` is allowed by default and does not require a ReferenceGrant. However, if you need to reference a kgateway resource from a {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} resource, you must create a ReferenceGrant. 
 {{< /callout >}}-->
 
 ## Kgateway resources {#kgateway}
@@ -51,17 +51,17 @@ Review the kgateway resources that you use to bootstrap, configure, and customiz
 
 ### GatewayExtensions
 
-A {{< gloss "Gateway Extension" >}}GatewayExtension{{< /gloss >}} is a {{< reuse "/docs/snippets/kgateway.md" >}} Custom Resource that serves as a configuration bridge between {{< reuse "/docs/snippets/kgateway.md" >}} and external services that extend a Gateway's functionality. These external services provide additional capabilities like authentication (`extAuth`), rate limiting (`rateLimit`), and request processing (`extProc`). TrafficPolicies can then refer to the GatewayExtension with the external service that the policy needs to be enforced. For more information, see the [API docs]({{< link-hextra path="/reference/api/#gatewayextension" >}}).
+A {{< gloss "Gateway Extension" >}}GatewayExtension{{< /gloss >}} is a {{< reuse "/agw-docs/snippets/kgateway.md" >}} Custom Resource that serves as a configuration bridge between {{< reuse "/agw-docs/snippets/kgateway.md" >}} and external services that extend a Gateway's functionality. These external services provide additional capabilities like authentication (`extAuth`), rate limiting (`rateLimit`), and request processing (`extProc`). TrafficPolicies can then refer to the GatewayExtension with the external service that the policy needs to be enforced. For more information, see the [API docs]({{< link-hextra path="/reference/api/#gatewayextension" >}}).
 
-### {{< reuse "docs/snippets/gatewayparameters.md" >}}
+### {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 
-When you create a Gateway resource, a [default gateway proxy template](https://github.com/kgateway-dev/kgateway/blob/{{< reuse "docs/versions/github-branch.md" >}}{{< reuse "docs/versions/github-kgateway-deployment.md" >}}) is used to automatically spin up and bootstrap a gateway proxy deployment and service in your cluster. The template includes Envoy configuration that binds the gateway proxy deployment to the Gateway resource that you created. In addition, the settings in the {{< gloss "GatewayParameters" >}}{{< reuse "docs/snippets/gatewayparameters.md" >}}{{< /gloss >}} resource are used to configure the gateway proxy.
+When you create a Gateway resource, a [default gateway proxy template](https://github.com/kgateway-dev/kgateway/blob/{{< reuse "agw-docs/versions/github-branch.md" >}}{{< reuse "agw-docs/versions/github-kgateway-deployment.md" >}}) is used to automatically spin up and bootstrap a gateway proxy deployment and service in your cluster. The template includes Envoy configuration that binds the gateway proxy deployment to the Gateway resource that you created. In addition, the settings in the {{< gloss "GatewayParameters" >}}{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}{{< /gloss >}} resource are used to configure the gateway proxy.
 
 To learn more about the default gateway setup and how these resource interact with each other, see [Default gateway proxy setup]({{< link-hextra path="/setup/default/" >}}). 
 
 ### Policies
 
-While the {{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} allows you to do simple routing, such as to match, redirect, or rewrite requests, you might want additional capabilities in your API gateway, such as access logging or transformations. [Policies]({{< link-hextra path="/about/policies/" >}}) allow you to apply intelligent traffic management, resiliency, and security standards to HTTPRoutes or Gateways.
+While the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} allows you to do simple routing, such as to match, redirect, or rewrite requests, you might want additional capabilities in your API gateway, such as access logging or transformations. [Policies]({{< link-hextra path="/about/policies/" >}}) allow you to apply intelligent traffic management, resiliency, and security standards to HTTPRoutes or Gateways.
 
 Kgateway uses the following custom resources to attach policies to routes and gateway listeners: 
 
@@ -69,8 +69,8 @@ Kgateway uses the following custom resources to attach policies to routes and ga
 * [**HTTPListenerPolicy**]({{< link-hextra path="/about/policies/httplistenerpolicy/" >}}): Apply policies to all HTTP and HTTPS listeners.
 * [**TrafficPolicy**](https://kgateway.dev/docs/envoy/main/about/policies/trafficpolicy/): Attach policies to routes in an HTTPRoute resource.
 
-### {{< reuse "docs/snippets/backend.md" >}}s
+### {{< reuse "agw-docs/snippets/backend.md" >}}s
 
 For workloads within your cluster, you can can route incoming traffic to their Kubernetes Service. But what if you have external services such as static hostnames or AWS Lambda functions that you want to route traffic to?
 
-You can use a {{< reuse "docs/snippets/backend.md" >}} resource to accomplish this task. Similar to using Kubernetes Services, you reference the {{< reuse "docs/snippets/backend.md" >}} in your HTTPRoute resource. For more information, see [{{< reuse "docs/snippets/backend.md" >}}s]({{< link-hextra path="/traffic-management/destination-types/backends/" >}}).
+You can use a {{< reuse "agw-docs/snippets/backend.md" >}} resource to accomplish this task. Similar to using Kubernetes Services, you reference the {{< reuse "agw-docs/snippets/backend.md" >}} in your HTTPRoute resource. For more information, see [{{< reuse "agw-docs/snippets/backend.md" >}}s]({{< link-hextra path="/traffic-management/destination-types/backends/" >}}).

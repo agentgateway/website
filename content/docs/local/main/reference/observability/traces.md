@@ -8,12 +8,12 @@ The agentgateway integrates with Jaeger as the tracing platform. [Jaeger](https:
 
 ## Before you begin
 
-1. {{< reuse "docs/snippets/prereq-docker.md" >}}
-2. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
+1. {{< reuse "agw-docs/snippets/prereq-docker.md" >}}
+2. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Set up Jaeger
 
-{{< reuse "docs/snippets/jaeger.md" >}}
+{{< reuse "agw-docs/snippets/jaeger.md" >}}
 
 ## Configure the agentgateway
 

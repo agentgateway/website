@@ -8,4 +8,4 @@ Welcome to the documentation for using agentgateway on Kubernetes!
 
 <br />
 
-{{< reuse "docs/pages/landing.md" >}}
+{{< reuse "agw-docs/pages/landing.md" >}}

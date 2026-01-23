@@ -3,7 +3,7 @@ title: Tracing
 weight: 90
 ---
 
-Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "docs/snippets/trafficpolicy.md" >}}.
+Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
 ## Before you begin
 
@@ -12,7 +12,7 @@ Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and con
 
 ## Set up an OpenTelemetry collector
 
-Install an OpenTelemetry collector that the {{< reuse "docs/snippets/agentgateway.md" >}} proxy can send traces to. Depending on your environment, you can further configure your OpenTelemetry to export these traces to your preferred tracing platform, such as Jaeger. 
+Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy can send traces to. Depending on your environment, you can further configure your OpenTelemetry to export these traces to your preferred tracing platform, such as Jaeger. 
 
 1. Install the OTel collector.
    ```sh
@@ -62,14 +62,14 @@ Install an OpenTelemetry collector that the {{< reuse "docs/snippets/agentgatewa
 
 ## Set up tracing
 
-1. Create an {{< reuse "docs/snippets/trafficpolicy.md" >}} resource with your tracing configuration. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your tracing configuration. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: tracing
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
        - kind: Gateway
@@ -120,13 +120,13 @@ Install an OpenTelemetry collector that the {{< reuse "docs/snippets/agentgatewa
 
 2. Get the trace ID from your request from the agentgateway proxy logs. 
    ```sh
-   kubectl logs deploy/agentgateway-proxy -n {{< reuse "docs/snippets/namespace.md" >}}
+   kubectl logs deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 3. Get the logs of the collector and search for the trace ID. Verify that you see the additional tracing attributes that you configured initially.
    ```sh
    kubectl logs deploy/opentelemetry-collector-traces -n telemetry \
-   | grep -A 25 "Trace ID\s\+: <trace_id>"
+   | grep -A 30 "Trace ID\s\+: <trace_id>"
    ```
 
    Example output: 

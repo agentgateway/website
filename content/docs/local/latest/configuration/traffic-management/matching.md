@@ -25,7 +25,7 @@ If no path match is specified, the default is to match all paths (`/`).
 Only one of `exact`, `pathPrefix`, or `regex` can be specified per path matcher.
 {{< /callout >}}
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs items="Exact path matching, Prefix path matching, Regex path matching">}}
 {{< tab >}}
@@ -72,7 +72,7 @@ Match incoming requests based on HTTP headers included in the request.
 - **Regex match:**  
   `{ "name": "Authorization", "value": { "regex": "^Bearer .*" } }`
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs items="Exact header matching, Regex header matching, Multiple header matching">}}
 {{< tab >}}
@@ -133,7 +133,7 @@ Optionally restrict matches to specific HTTP methods.
 { "method": { "method": "GET" } }
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs items="GET method matching, POST method matching, Multiple methods with different backends">}}
 {{< tab >}}
@@ -190,7 +190,7 @@ Match on query parameters, either by exact value or regex.
 - **Regex:**  
   `{ "name": "version", "value": { "regex": "^v[0-9]+$" } }`
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 {{< tabs items="Exact query parameter matching, Regex query parameter matching, Multiple query parameters">}}
 {{< tab >}}

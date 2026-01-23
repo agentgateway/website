@@ -1,4 +1,4 @@
-Use {{< reuse "/docs/snippets/kgateway.md" >}} as the ingress gateway to control and secure traffic that enters your {{< gloss "Service Mesh" >}}service mesh{{< /gloss >}}.
+Use {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway to control and secure traffic that enters your {{< gloss "Service Mesh" >}}service mesh{{< /gloss >}}.
 
 A service mesh is a dedicated infrastructure layer that you add your apps to, which ensures secure service-to-service communication across cloud networks. With a service mesh, you can solve problems such as service identity, mutual TLS communication, consistent L7 network telemetry gathering, service resilience, secure traffic routing between services across clusters, and policy enforcement, such as to enforce quotas or rate limit requests. To learn more about the benefits of using a service mesh, see [What is Istio](https://istio.io/latest/docs/overview/what-is-istio/) in the Istio documentation. 
 
@@ -14,11 +14,11 @@ The open source project Istio is the leading service mesh implementation that of
 
 ### About the sidecar Istio integration
 
-{{< reuse "/docs/snippets/kgateway-capital.md" >}} comes with an Istio integration that allows you to configure your gateway proxy with an Istio sidecar. The Istio sidecar uses mutual TLS (mTLS) to prove its identity and to secure the connection between your gateway and the services in your Istio service mesh. In addition, you can control and secure the traffic that enters the mesh by applying all the advanced routing, traffic management, security, resiliency, and AI capabilities that {{< reuse "/docs/snippets/kgateway.md" >}} offers. 
+{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} comes with an Istio integration that allows you to configure your gateway proxy with an Istio sidecar. The Istio sidecar uses mutual TLS (mTLS) to prove its identity and to secure the connection between your gateway and the services in your Istio service mesh. In addition, you can control and secure the traffic that enters the mesh by applying all the advanced routing, traffic management, security, resiliency, and AI capabilities that {{< reuse "/agw-docs/snippets/kgateway.md" >}} offers. 
 
 ## About this guide
 
-In this guide, you learn how to use {{< reuse "/docs/snippets/kgateway.md" >}} as an ingress gateway proxy for the workloads in your Istio {{< gloss "Service Mesh" >}}service mesh{{< /gloss >}}. You explore how to enable the Istio sidecar mesh integration in {{< reuse "/docs/snippets/kgateway.md" >}}, set up your ingress gateway proxy with a sidecar, and send secure mutual TLS traffic to the Bookinfo app as illustrated in the following image. 
+In this guide, you learn how to use {{< reuse "/agw-docs/snippets/kgateway.md" >}} as an ingress gateway proxy for the workloads in your Istio {{< gloss "Service Mesh" >}}service mesh{{< /gloss >}}. You explore how to enable the Istio sidecar mesh integration in {{< reuse "/agw-docs/snippets/kgateway.md" >}}, set up your ingress gateway proxy with a sidecar, and send secure mutual TLS traffic to the Bookinfo app as illustrated in the following image. 
 
 {{< reuse-image src="img/sidecar-ingress.svg" width="800px" >}}
 {{< reuse-image-dark srcDark="img/sidecar-ingress-dark.svg" width="800px" >}}
@@ -26,7 +26,7 @@ In this guide, you learn how to use {{< reuse "/docs/snippets/kgateway.md" >}} a
 
 ## Before you begin
 
-{{< reuse "docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Step 1: Set up an Istio service mesh {#istio}
 
@@ -39,15 +39,15 @@ In this guide, you learn how to use {{< reuse "/docs/snippets/kgateway.md" >}} a
 
 ## Step 2: Enable the Istio integration {#istio-integration}
 
-Upgrade your {{< reuse "/docs/snippets/kgateway.md" >}} installation to enable the Istio integration. 
+Upgrade your {{< reuse "/agw-docs/snippets/kgateway.md" >}} installation to enable the Istio integration. 
 
 1. Get the Helm values for your current Helm installation. 
    ```sh
-   helm get values {{< reuse "/docs/snippets/helm-kgateway.md" >}} -n {{< reuse "docs/snippets/namespace.md" >}} -o yaml > {{< reuse "/docs/snippets/helm-kgateway.md" >}}.yaml
-   open {{< reuse "/docs/snippets/helm-kgateway.md" >}}.yaml
+   helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
+   open {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
    ```
    
-2. Add the following values to the Helm values file to enable the Istio integration in {{< reuse "/docs/snippets/kgateway.md" >}}.
+2. Add the following values to the Helm values file to enable the Istio integration in {{< reuse "/agw-docs/snippets/kgateway.md" >}}.
    ```yaml
 
    controller:
@@ -58,7 +58,7 @@ Upgrade your {{< reuse "/docs/snippets/kgateway.md" >}} installation to enable t
 3. Upgrade your Helm installation. This upgrade automatically triggers a restart of any existing gateway proxies to inject `istio-proxy` and `sds` containers.
    
    ```sh
-   helm upgrade -i --namespace {{< reuse "docs/snippets/namespace.md" >}} --version {{< reuse "/docs/versions/helm-version-flag.md" >}} {{< reuse "/docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/docs/snippets/helm-path.md" >}}/charts/{{< reuse "/docs/snippets/helm-kgateway.md" >}} -f {{< reuse "/docs/snippets/helm-kgateway.md" >}}.yaml
+   helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "/agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -f {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
    ```
    
    {{< callout type="warning" >}}
@@ -97,7 +97,7 @@ Create a GatewayParameters resource to configure the revisioned istiod service a
    kind: GatewayParameters
    metadata:
      name: custom-gw-params
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      kube: 
        istio:
@@ -109,7 +109,7 @@ Create a GatewayParameters resource to configure the revisioned istiod service a
          image:
            registry: cr.kgateway.dev/kgateway-dev
            repository: sds
-           tag: v{{< reuse "docs/versions/n-patch.md" >}} 
+           tag: v{{< reuse "agw-docs/versions/n-patch.md" >}} 
    EOF
    ```  
 {{% /tab %}}
@@ -121,14 +121,14 @@ apiVersion: gateway.kgateway.dev/v1alpha1
 kind: GatewayParameters
 metadata:
   name: custom-gw-params
-  namespace: {{< reuse "docs/snippets/namespace.md" >}}
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   kube:
     sdsContainer:
       image:
         registry: cr.kgateway.dev/kgateway-dev
         repository: sds
-        tag: v{{< reuse "docs/versions/n-patch.md" >}} 
+        tag: v{{< reuse "agw-docs/versions/n-patch.md" >}} 
 EOF
 ```
 {{% /tab %}}
@@ -145,9 +145,9 @@ Create or update a Gateway that includes the Istio proxy.
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
      name: http
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
-     gatewayClassName: {{< reuse "/docs/snippets/gatewayclass.md" >}}
+     gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      infrastructure:
        parametersRef:
          name: custom-gw-params
@@ -165,7 +165,7 @@ Create or update a Gateway that includes the Istio proxy.
    
 2. Verify that the gateway proxy is now successfully deployed. 
    ```sh
-   kubectl get pods -n {{< reuse "docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=http \
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=http \
      -o jsonpath='{range .items[*]}Pod: {.metadata.name} | Status: {.status.phase}{"\n"}Containers:{"\n"}{range .spec.containers[*]}- {.name}{"\n"}{end}{"\n"}{end}'
    ```
 
@@ -193,7 +193,7 @@ Create or update a Gateway that includes the Istio proxy.
    spec:
      parentRefs:
      - name: http
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
      - istio-sidecar.example
      rules:
@@ -234,20 +234,20 @@ Create or update a Gateway that includes the Istio proxy.
    x-envoy-decorator-operation: productpage.bookinfo.svc.cluster.local:9080/*
    ```
 
-{{< version exclude-if="2.0.x" >}}
+
 {{< callout type="info">}}
 To exclude a service from using Istio mTLS or to configure your own TLS settings, you can create a static Backend resource for the service and add the `kgateway.dev/disable-istio-auto-mtls` annotation to the Backend. Then, you can apply custom TLS settings by using a BackendTLSPolicy or BackendConfigPolicy.   
 {{< /callout >}}
-{{< /version >}}
+
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 1. Delete the HTTPRoute and gateway-related resources. 
    ```sh
    kubectl delete httproute bookinfo
-   kubectl delete gatewayparameters custom-gw-params -n {{< reuse "docs/snippets/namespace.md" >}}
+   kubectl delete gatewayparameters custom-gw-params -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
   
 2. Restore the http Gateway from the getting started tutorial. 
@@ -257,9 +257,9 @@ To exclude a service from using Istio mTLS or to configure your own TLS settings
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
      name: http
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
-     gatewayClassName: {{< reuse "/docs/snippets/gatewayclass.md" >}}
+     gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
        port: 8080
@@ -272,13 +272,13 @@ To exclude a service from using Istio mTLS or to configure your own TLS settings
 
 3. Get the Helm values for your current Helm installation and remove the values that you added in this guide.
    ```sh
-   helm get values {{< reuse "/docs/snippets/helm-kgateway.md" >}} -n {{< reuse "docs/snippets/namespace.md" >}} -o yaml > {{< reuse "/docs/snippets/helm-kgateway.md" >}}.yaml
-   open {{< reuse "/docs/snippets/helm-kgateway.md" >}}.yaml
+   helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
+   open {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
    ```
    
 4. Upgrade your Helm installation. 
    ```sh
-   helm upgrade -i --namespace {{< reuse "docs/snippets/namespace.md" >}} --version {{< reuse "/docs/versions/helm-version-flag.md" >}} {{< reuse "/docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/docs/snippets/helm-path.md" >}}/charts/{{< reuse "/docs/snippets/helm-kgateway.md" >}} -f {{< reuse "/docs/snippets/helm-kgateway.md" >}}.yaml
+   helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "/agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -f {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}.yaml
    ```
 
 5. Follow the Istio documentation to [uninstall Istio](https://istio.io/latest/docs/setup/getting-started/#uninstall) and [remove the Bookinfo sample app](https://istio.io/latest/docs/examples/bookinfo/#cleanup).

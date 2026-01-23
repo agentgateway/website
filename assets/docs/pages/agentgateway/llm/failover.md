@@ -4,7 +4,7 @@ Prioritize the failover of requests across different models from an LLM provider
 
 Failover is a way to keep services running smoothly by automatically switching to a backup system when the main one fails or becomes unavailable.
 
-For {{< reuse "docs/snippets/agentgateway.md" >}}, you can set up failover for the models of the LLM providers that you want to prioritize. If the main model from one provider goes down, slows, or has any issue, the system quickly switches to a backup model from that same provider. This keeps the service running without interruptions.
+For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover for the models of the LLM providers that you want to prioritize. If the main model from one provider goes down, slows, or has any issue, the system quickly switches to a backup model from that same provider. This keeps the service running without interruptions.
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
@@ -15,9 +15,9 @@ This approach increases the resiliency of your network environment by ensuring t
 
 ## Fail over to other models {#model-failover}
 
-You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority. Models within the same priority group are load balanced (round-robin), not prioritized.
+You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority. Models within the same priority group are load balanced (round-robin), not prioritized.
 
-1. Create or update the {{< reuse "docs/snippets/backend.md" >}} for your LLM providers.
+1. Create or update the {{< reuse "agw-docs/snippets/backend.md" >}} for your LLM providers.
 
    {{< tabs tabTotal="2" items="OpenAI model priority,Cost-based priority across providers" >}}
    {{% tab tabName="OpenAI model priority" %}}
@@ -28,52 +28,14 @@ You can configure failover across multiple models and providers by using priorit
    2. OpenAI `gpt-5.1` model (fallback)
    3. OpenAI `gpt-3.5-turbo` model (lowest priority)
 
-   {{< version include-if="2.1.x" >}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "docs/snippets/backend.md" >}}
-   metadata:
-     name: model-failover
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       priorityGroups:
-       - providers:
-         - name: openai-gpt-4.1
-           openai:
-             model: "gpt-4.1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-       - providers:
-         - name: openai-gpt-5.1
-           openai:
-             model: "gpt-5.1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-       - providers:
-         - name: openai-gpt-3.5-turbo
-           openai:
-             model: "gpt-3.5-turbo"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-   EOF
-   ```
-   {{< /version >}}{{< version include-if="2.2.x" >}}
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "docs/snippets/backend.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: model-failover
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      ai:
        groups: 
@@ -102,7 +64,7 @@ You can configure failover across multiple models and providers by using priorit
    EOF
    ```
 
-   {{< /version >}}
+   
    
    {{% /tab %}}
    {{% tab tabName="Cost-based priority across providers" %}}
@@ -113,60 +75,15 @@ You can configure failover across multiple models and providers by using priorit
 
    Make sure that you configured both Anthropic and OpenAI providers.
 
-   {{< version include-if="2.1.x" >}}
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: {{< reuse "docs/snippets/backend.md" >}}
-   metadata:
-     name: model-failover
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
-   spec:
-     type: AI
-     ai:
-       priorityGroups:
-       - providers:
-         - name: openai-gpt-3.5-turbo
-           openai:
-             model: "gpt-3.5-turbo"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-         - name: claude-haiku
-           anthropic:
-             model: "claude-3-5-haiku-latest"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: anthropic-secret
-       - providers:
-         - name: openai-gpt-4.1
-           openai:
-             model: "gpt-4.1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: openai-secret
-         - name: claude-opus
-           anthropic:
-             model: "claude-opus-4-1"
-             authToken:
-               kind: SecretRef
-               secretRef:
-                 name: anthropic-secret
-   EOF
-   ```
-   {{< /version >}}
-   {{< version include-if="2.2.x" >}}
+   
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "docs/snippets/backend.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: model-failover
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      ai:
        groups: 
@@ -202,56 +119,26 @@ You can configure failover across multiple models and providers by using priorit
                      name: anthropic-secret
    EOF
    ```
-   {{< /version >}}
+   
    
    {{% /tab %}}
    {{< /tabs >}}
 
-2. Create an HTTPRoute resource that routes incoming traffic on the `/model` path to the {{< reuse "docs/snippets/backend.md" >}} that you created in the previous step. In this example, the URLRewrite filter rewrites the path from `/model` to the path of the API in the LLM provider that you want to use, such as `/v1/chat/completions` for OpenAI.
+2. Create an HTTPRoute resource that routes incoming traffic on the `/model` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. In this example, the URLRewrite filter rewrites the path from `/model` to the path of the API in the LLM provider that you want to use, such as `/v1/chat/completions` for OpenAI.
 
-   {{< version include-if="2.1.x" >}}
+   
+   
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
      name: model-failover
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      parentRefs:
        - name: agentgateway-proxy
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /model
-       filters:
-       - type: URLRewrite
-         urlRewrite:
-           path:
-             type: ReplaceFullPath
-             replaceFullPath: /v1/chat/completions
-       backendRefs:
-       - name: model-failover
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
-         group: gateway.kgateway.dev
-         kind: {{< reuse "docs/snippets/backend.md" >}}
-   EOF
-   ```
-   {{< /version >}}
-   {{< version include-if="2.2.x" >}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: model-failover
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches:
        - path:
@@ -259,14 +146,14 @@ You can configure failover across multiple models and providers by using priorit
            value: /model
        backendRefs:
        - name: model-failover
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          group: agentgateway.dev
-         kind: {{< reuse "docs/snippets/backend.md" >}}
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   {{< /version >}}
+   
 
-3. Send a request to observe the failover. In your request, do not specify a model. Instead, the {{< reuse "docs/snippets/backend.md" >}} automatically uses the model from the first priority group (highest priority).
+3. Send a request to observe the failover. In your request, do not specify a model. Instead, the {{< reuse "agw-docs/snippets/backend.md" >}} automatically uses the model from the first priority group (highest priority).
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -298,7 +185,7 @@ You can configure failover across multiple models and providers by using priorit
    {{< tabs tabTotal="2" items="OpenAI model priority,Cost-based priority across providers" >}}
    {{% tab tabName="OpenAI model priority" %}}
    
-   Note the response is from the `gpt-4o` model, which is the first model in the priority order from the {{< reuse "docs/snippets/backend.md" >}}.
+   Note the response is from the `gpt-4o` model, which is the first model in the priority order from the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
    ```json {linenos=table,hl_lines=[5],linenostart=1,filename="model-response.json"}
    {
@@ -357,11 +244,11 @@ You can configure failover across multiple models and providers by using priorit
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```shell
-kubectl delete {{< reuse "docs/snippets/backend.md" >}} model-failover -n {{< reuse "docs/snippets/namespace.md" >}}
-kubectl delete httproute model-failover -n {{< reuse "docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete httproute model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 ## Next

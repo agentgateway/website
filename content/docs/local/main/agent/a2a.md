@@ -6,12 +6,12 @@ description:
 
 Proxy requests to an agent that communicates via the agent-to-agent protocol (A2A).
 
-{{< reuse "docs/snippets/kgateway-callout.md" >}}
+{{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
 
 ## Before you begin
 
-1. {{< reuse "docs/snippets/prereq-agentgateway.md" >}}
-2. {{< reuse "docs/snippets/prereq-uv.md" >}}
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. {{< reuse "agw-docs/snippets/prereq-uv.md" >}}
 
 ## Set up the agentgateway {#agentgateway}
 

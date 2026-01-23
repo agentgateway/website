@@ -8,7 +8,7 @@ Configure any LLM provider that provides OpenAI-compatible endpoints with agentg
 
 ## Configuration
 
-{{< reuse "docs/snippets/review-configuration.md" >}} The example integrates with [Cohere AI](https://cohere.com/). For a different provider, consult their documentation to find the provider-specific details.
+{{< reuse "agw-docs/snippets/review-configuration.md" >}} The example integrates with [Cohere AI](https://cohere.com/). For a different provider, consult their documentation to find the provider-specific details.
 
 ```yaml
 binds:
@@ -33,7 +33,7 @@ binds:
               model: command
 ```
 
-{{< reuse "docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|

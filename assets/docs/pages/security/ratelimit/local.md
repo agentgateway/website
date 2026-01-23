@@ -1,8 +1,8 @@
-Limit the number of requests that are allowed to enter the cluster before global {{< version include-if="2.2.x,2.1.x" >}}{{< gloss "Rate Limiting" >}}rate limiting{{< /gloss >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}rate limiting{{< /version >}} and external auth policies are applied.  
+Limit the number of requests that are allowed to enter the cluster before global {{< gloss "Rate Limiting" >}}rate limiting{{< /gloss >}} and external auth policies are applied.  
 
 ## About {#about}
 
-Local {{< version include-if="2.2.x,2.1.x" >}}{{< gloss "Rate Limiting" >}}rate limiting{{< /gloss >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}rate limiting{{< /version >}} is a coarse-grained rate limiting capability that is primarily used as a first line of defense mechanism to limit the number of requests that are forwarded to your rate limit servers. 
+Local {{< gloss "Rate Limiting" >}}rate limiting{{< /gloss >}} is a coarse-grained rate limiting capability that is primarily used as a first line of defense mechanism to limit the number of requests that are forwarded to your rate limit servers. 
 
 Without local rate limiting, all requests are directly forwarded to a rate limit server that you set up where the request is either denied or allowed based on the global rate limiting settings that you configured. However, during an attack, too many requests might be forwarded to your rate limit servers and can cause overload or even failure.
 
@@ -12,7 +12,7 @@ For more information about local rate limiting, see the [Envoy documentation](ht
 
 ### Architecture
 
-The following image shows how local rate limiting works in {{< reuse "/docs/snippets/kgateway.md" >}}. As clients send requests to a backend destination, they first reach the Envoy instance that represents your gateway. Local rate limiting settings are applied to an Envoy pod or process. Note that limits are applied to each pod or process. For example, if you have 5 Envoy instances that are configured with a local rate limit of 10 requests per second, the total number of allowed requests per second is 50 (5 x 10). In a global rate limiting setup, this limit is shared between all Envoy instances, so the total number of allowed requests per second is 10. 
+The following image shows how local rate limiting works in {{< reuse "/agw-docs/snippets/kgateway.md" >}}. As clients send requests to a backend destination, they first reach the Envoy instance that represents your gateway. Local rate limiting settings are applied to an Envoy pod or process. Note that limits are applied to each pod or process. For example, if you have 5 Envoy instances that are configured with a local rate limit of 10 requests per second, the total number of allowed requests per second is 50 (5 x 10). In a global rate limiting setup, this limit is shared between all Envoy instances, so the total number of allowed requests per second is 10. 
 
 Depending on your setup, each Envoy instance or pod is configured with a number of tokens in a token bucket. To allow a request, a token must be available in the bucket so that it can be assigned to a downstream connection. Token buckets are refilled occasionally as defined in the refill setting of the local rate limiting configuration. If no token is available, the connection is closed immediately, and a 429 HTTP response code is returned to the client. 
 
@@ -23,26 +23,26 @@ When a token is available in the token bucket it can be assigned to an incoming 
 
 ### Local rate limiting
 
-In {{< reuse "docs/snippets/kgateway.md" >}}, you use a [{{< reuse "docs/snippets/trafficpolicy.md" >}}]({{< link-hextra path="/about/policies/trafficpolicy/" >}}) to set up local rate limiting for your routes. You can choose between the following attachment options: 
-* **A particular route in an HTTPRoute resource**: Use the `extensionRef` filter in the HTTPRoute to attach the {{< reuse "docs/snippets/trafficpolicy.md" >}} to the route you want to rate limit. For an example, see [Route configuration](#route). 
-* **All routes in an HTTPRoute**: Use the `targetRefs` section in the {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} to attach the policy to a particular HTTPRoute resource. 
-* **All routes that the Gateway serves**: Use the `targetRefs` section in the {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} to attach the policy to a Gateway. For an example, see [Gateway configuration](#gateway). 
+In {{< reuse "agw-docs/snippets/kgateway.md" >}}, you use a [{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}]({{< link-hextra path="/about/policies/trafficpolicy/" >}}) to set up local rate limiting for your routes. You can choose between the following attachment options: 
+* **A particular route in an HTTPRoute resource**: Use the `extensionRef` filter in the HTTPRoute to attach the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to the route you want to rate limit. For an example, see [Route configuration](#route). 
+* **All routes in an HTTPRoute**: Use the `targetRefs` section in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to attach the policy to a particular HTTPRoute resource. 
+* **All routes that the Gateway serves**: Use the `targetRefs` section in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to attach the policy to a Gateway. For an example, see [Gateway configuration](#gateway). 
 
-Note that if you apply a policy to an HTTPRoute and to a Gateway at the same time, the HTTPRoute policy takes precedence. For more information, see [{{< reuse "docs/snippets/trafficpolicy.md" >}}]({{< link-hextra path="/about/policies/trafficpolicy/#multiple-targetrefs-TrafficPolicies" >}}). 
+Note that if you apply a policy to an HTTPRoute and to a Gateway at the same time, the HTTPRoute policy takes precedence. For more information, see [{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}]({{< link-hextra path="/about/policies/trafficpolicy/#multiple-targetrefs-TrafficPolicies" >}}). 
 
 ## Before you begin
 
-{{< reuse "docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Route configuration {#route}
 
 Set up local rate limiting for a particular route. 
 
-1. Create a {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} with your local rate limiting settings. 
+1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your local rate limiting settings. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}gateway.kgateway.dev/v1alpha1{{< /version >}}
-   kind: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: local-ratelimit
      namespace: httpbin
@@ -62,7 +62,7 @@ Set up local rate limiting for a particular route.
    | `tokensPerFill` | The number of tokens that are added during a refill.  |
    | `fillIntervall` | The number of seconds, after which the token bucket is refilled. |
 
-2. Create an HTTPRoute that limits requests to the httpbin app along the `ratelimit.example` domain. To apply the {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} that created earlier, you use the `extensionRef` filter. 
+2. Create an HTTPRoute that limits requests to the httpbin app along the `ratelimit.example` domain. To apply the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that created earlier, you use the `extensionRef` filter. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -73,7 +73,7 @@ Set up local rate limiting for a particular route.
    spec:
      parentRefs:
      - name: http
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
      - ratelimit.example
      rules:
@@ -85,8 +85,8 @@ Set up local rate limiting for a particular route.
        - type: ExtensionRef
          extensionRef:
            name: local-ratelimit
-           group: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy-group.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}gateway.kgateway.dev{{< /version >}}
-           kind: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}}
+           group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
+           kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
        backendRefs:
        - name: httpbin
          port: 8000
@@ -159,14 +159,14 @@ Set up local rate limiting for a particular route.
 
 Instead of applying local rate limiting to a particular route, you can also apply it to an entire gateway. This way, the local rate limiting settings are applied to all the routes that the gateway serves. 
 
-1. Create a {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} with your local rate limiting settings. Use the `targetRefs` section to apply the policy to a specific Gateway. The policy automatically applies to all the routes that the Gateway serves. 
+1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your local rate limiting settings. Use the `targetRefs` section to apply the policy to a specific Gateway. The policy automatically applies to all the routes that the Gateway serves. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}gateway.kgateway.dev/v1alpha1{{< /version >}}
-   kind: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: local-ratelimit
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs: 
      - group: gateway.networking.k8s.io
@@ -252,17 +252,17 @@ Instead of applying local rate limiting to a particular route, you can also appl
 
 ## Disable rate limiting for a route {#disable-route}
 
-Sometimes, you might want to disable {{< version include-if="2.2.x,2.1.x" >}}{{< gloss "Rate Limiting" >}}rate limiting{{< /gloss >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}rate limiting{{< /version >}}  for a route. For example, you might have system critical routes that should be accessible even under high traffic conditions, such as a health check or admin endpoints. You can exclude a route from rate limiting by setting `rateLimit.local` to `{}` in the {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}}. 
+Sometimes, you might want to disable {{< gloss "Rate Limiting" >}}rate limiting{{< /gloss >}}  for a route. For example, you might have system critical routes that should be accessible even under high traffic conditions, such as a health check or admin endpoints. You can exclude a route from rate limiting by setting `rateLimit.local` to `{}` in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. 
 
-1. Create a Gateway-level {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} to enforce local rate limiting on all routes. For more information, refer to the [Gateway configuration](#gateway).
+1. Create a Gateway-level {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enforce local rate limiting on all routes. For more information, refer to the [Gateway configuration](#gateway).
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}gateway.kgateway.dev/v1alpha1{{< /version >}}
-   kind: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: local-ratelimit
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs: 
      - group: gateway.networking.k8s.io
@@ -277,7 +277,7 @@ Sometimes, you might want to disable {{< version include-if="2.2.x,2.1.x" >}}{{<
    EOF
    ```
 
-2. Create an HTTPRoute for the route that you want to exclude from rate limiting, such as `/anything` on the `httpbin` app. Note that because no {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} applies to this HTTPRoute yet, the Gateway-level rate limit policy is enforced for the `/anything` route.
+2. Create an HTTPRoute for the route that you want to exclude from rate limiting, such as `/anything` on the `httpbin` app. Note that because no {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} applies to this HTTPRoute yet, the Gateway-level rate limit policy is enforced for the `/anything` route.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -289,7 +289,7 @@ Sometimes, you might want to disable {{< version include-if="2.2.x,2.1.x" >}}{{<
    spec:
      parentRefs:
      - name: http
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
      - www.example.com
      rules:
@@ -303,7 +303,7 @@ Sometimes, you might want to disable {{< version include-if="2.2.x,2.1.x" >}}{{<
    EOF
    ```
 
-3. Send two requests to verify that the route is rate limited due to the Gateway-level {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} that allows only 1 request per 100 seconds.
+3. Send two requests to verify that the route is rate limited due to the Gateway-level {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that allows only 1 request per 100 seconds.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -342,12 +342,12 @@ Sometimes, you might want to disable {{< version include-if="2.2.x,2.1.x" >}}{{<
    local_rate_limited      
    ```
 
-4. Create a {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}} to disable rate limiting for the HTTPRoute.
+4. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to disable rate limiting for the HTTPRoute.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}gateway.kgateway.dev/v1alpha1{{< /version >}}
-   kind: {{< version include-if="2.2.x,2.1.x" >}}{{< reuse "docs/snippets/trafficpolicy.md" >}}{{< /version >}}{{< version exclude-if="2.2.x,2.1.x" >}}TrafficPolicy{{< /version >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: disable-ratelimit
      namespace: httpbin
@@ -393,12 +393,12 @@ Sometimes, you might want to disable {{< version include-if="2.2.x,2.1.x" >}}{{<
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} local-ratelimit -n httpbin
-kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} local-ratelimit -n {{< reuse "docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} disable-ratelimit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} local-ratelimit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} local-ratelimit -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} disable-ratelimit -n httpbin
 kubectl delete httproute httpbin-ratelimit -n httpbin
 kubectl delete httproute httpbin-anything -n httpbin
 ```

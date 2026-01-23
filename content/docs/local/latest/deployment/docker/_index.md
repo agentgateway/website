@@ -15,7 +15,7 @@ To run agentgateway with Docker, mount your configuration file into the containe
 
 ```sh
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
-  cr.agentgateway.dev/agentgateway:{{< reuse "docs/versions/n-patch.md" >}} \
+  cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/n-patch.md" >}} \
   -f /config.yaml
 ```
 
@@ -25,7 +25,7 @@ To access the UI, you can change the bind address and expose the port.
 ```sh
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -p 127.0.0.1:15000:15000 -e ADMIN_ADDR=0.0.0.0:15000 \
-  cr.agentgateway.dev/agentgateway:{{< reuse "docs/versions/n-patch.md" >}} \
+  cr.agentgateway.dev/agentgateway:{{< reuse "agw-docs/versions/n-patch.md" >}} \
   -f /config.yaml
 ```
 
@@ -38,7 +38,7 @@ services:
   agentgateway:
     container_name: agentgateway
     restart: unless-stopped
-    image: cr.agentgateway.dev/agentgateway::{{< reuse "docs/versions/n-patch.md" >}}
+    image: cr.agentgateway.dev/agentgateway::{{< reuse "agw-docs/versions/n-patch.md" >}}
     ports:
       - "3000:3000"
       - "127.0.0.1:15000:15000"

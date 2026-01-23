@@ -1,0 +1,1 @@
+Many of these policies are directly from the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/reference/spec/#httprouterule) and behave the same as those policies.

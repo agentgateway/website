@@ -1,4 +1,4 @@
-Use the Guardrail Webhook API to set up your own custom guardrail controls for {{< reuse "docs/snippets/agentgateway.md" >}}.
+Use the Guardrail Webhook API to set up your own custom guardrail controls for {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 ## About guardrails {#about}
 
@@ -26,22 +26,22 @@ By applying guardrails to both input and output, you can:
 
 ### Support for guardrails {#about-guardrail-support}
 
-{{< reuse "docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards](../../prompt-guards/) to reject, mask, or pass prompt data through a moderation endpoint.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards](../../prompt-guards/) to reject, mask, or pass prompt data through a moderation endpoint.
 
 However, you might want to bring your own guardrails for situations such as:
 
 * Small language models (SMLs) that do not have a moderation endpoint but that you want to use to sanitize input or output.
-* Advanced guards and moderation rules that are not part of {{< reuse "docs/snippets/agentgateway.md" >}} or the LLM provider's moderation endpoint.
+* Advanced guards and moderation rules that are not part of {{< reuse "agw-docs/snippets/agentgateway.md" >}} or the LLM provider's moderation endpoint.
 * Full control over safety and compliance logic.
 * Centralized enforcement across multiple models and providers.
 * The ability to update your policies without redeploying the gateway proxy or models.
 * Extra logging and auditing capabilities that are built into your own guardrail implementation.
 
-To support such advanced scenarios, {{< reuse "docs/snippets/agentgateway.md" >}} includes a Guardrail Webhook API that you can use to bring your own guardrails. This way, your webhook server can integrate with {{< reuse "docs/snippets/agentgateway.md" >}} to process requests synchronously before they reach the LLM and responses before they return to the user. This architecture allows for flexible integration with your existing security and compliance tools.
+To support such advanced scenarios, {{< reuse "agw-docs/snippets/agentgateway.md" >}} includes a Guardrail Webhook API that you can use to bring your own guardrails. This way, your webhook server can integrate with {{< reuse "agw-docs/snippets/agentgateway.md" >}} to process requests synchronously before they reach the LLM and responses before they return to the user. This architecture allows for flexible integration with your existing security and compliance tools.
 
 ### Example diagram {#example-diagram}
 
-The following diagram shows a simple sequence of how the Guardrail Webhook API lets your webhook server integrate with {{< reuse "docs/snippets/agentgateway.md" >}} to process LLM requests and responses.
+The following diagram shows a simple sequence of how the Guardrail Webhook API lets your webhook server integrate with {{< reuse "agw-docs/snippets/agentgateway.md" >}} to process LLM requests and responses.
 
 ```mermaid
 sequenceDiagram
@@ -67,9 +67,9 @@ sequenceDiagram
 ```
 
 1. The client sends a request to the LLM.
-2. {{< reuse "docs/snippets/agentgateway-capital.md" >}} receives the request and passes it to the webhook server for a pre-request guardrail check.
-3. If the request is allowed, {{< reuse "docs/snippets/agentgateway.md" >}} forwards the request to the LLM. The LLM generates a response that the webhook server can modify before {{< reuse "docs/snippets/agentgateway.md" >}} returns the response to the client.
-4. If the request is rejected by the Guardrail Webhook, {{< reuse "docs/snippets/agentgateway.md" >}} forwards the rejection to the client.
+2. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} receives the request and passes it to the webhook server for a pre-request guardrail check.
+3. If the request is allowed, {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the request to the LLM. The LLM generates a response that the webhook server can modify before {{< reuse "agw-docs/snippets/agentgateway.md" >}} returns the response to the client.
+4. If the request is rejected by the Guardrail Webhook, {{< reuse "agw-docs/snippets/agentgateway.md" >}} forwards the rejection to the client.
 
 ### Considerations for using guardrails {#about-considerations}
 
@@ -81,44 +81,23 @@ When implementing a guardrail webhook server, consider the following performance
 
 ### Optimize guardrail webhook performance {#optimize-performance}
 
-To optimize guardrail webhook performance, you can update the {{< reuse "docs/snippets/gatewayparameters.md" >}} for {{< reuse "docs/snippets/agentgateway.md" >}} with the following settings.
+To optimize guardrail webhook performance, you can update the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} for {{< reuse "agw-docs/snippets/agentgateway.md" >}} with the following settings.
 
 * `GUARDRAIL_WEBHOOK_MAX_CONNECTIONS`: The maximum number of concurrent connections that the gateway can open to the webhook server. A value of `0` means no limit. The default value is `100`. Higher values allow for greater concurrency, which is good for high-throughput systems, such as when many user requests trigger requests to the webhook server. Lower values help reduce resource usage and the risk of overwhelming the webhook server.
 * `GUARDRAIL_WEBHOOK_KEEPALIVE_SECONDS`: The number of seconds to keep an idle connection alive. The default value is `300`. Higher values help avoid delays to setup and teardown connections when requests are intermittent. Lower values help free up unused connections faster, which can help if the webhook server does not handle idle connections well.
 
 Example configuration file:
 
-{{< version include-if="2.1.x" >}}
+
+
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "docs/snippets/gatewayparam-apiversion.md" >}}
-kind: {{< reuse "docs/snippets/gatewayparameters.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agw-override
-  namespace: {{< reuse "docs/snippets/namespace.md" >}}
-spec:
-  kube:
-    agentgateway:
-      enabled: true
-      env:
-      - name: GUARDRAIL_WEBHOOK_MAX_CONNECTIONS
-        value: "50"
-      - name: GUARDRAIL_WEBHOOK_KEEPALIVE_SECONDS
-        value: "60"
-EOF
-```
-
-{{< /version >}}
-{{< version include-if="2.2.x" >}}
-
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "docs/snippets/gatewayparam-apiversion.md" >}}
-kind: {{< reuse "docs/snippets/gatewayparameters.md" >}}
-metadata:
-  name: agw-override
-  namespace: {{< reuse "docs/snippets/namespace.md" >}}
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   env:
   - name: GUARDRAIL_WEBHOOK_MAX_CONNECTIONS
@@ -128,7 +107,7 @@ spec:
 EOF
 ```
 
-{{< /version >}}
+
 
 ### More information
 
@@ -145,12 +124,12 @@ The webhook server is configured to take the following actions:
 * If the response has the word `mask`, the gateway transforms the word `mask` to asterisks (`****`) in the body with a 200 response.
 
 {{< callout type="warning" >}}
-{{% reuse "docs/snippets/demo-disclaimer.md" %}}
+{{% reuse "agw-docs/snippets/demo-disclaimer.md" %}}
 {{< /callout >}}
 
 ### Before you begin
 
-{{< reuse "docs/snippets/agw-prereq-llm.md" >}}
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 ### Step 1: Deploy the webhook server to your cluster
 
@@ -162,7 +141,7 @@ The webhook server is configured to take the following actions:
    kind: Deployment
    metadata:
      name: ai-guardrail-webhook
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      labels:
        app: ai-guardrail
    spec:
@@ -192,7 +171,7 @@ The webhook server is configured to take the following actions:
    kind: Service
    metadata:
      name: ai-guardrail-webhook
-     namespace: {{< reuse "docs/snippets/namespace.md" >}}
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      labels:
        app: ai-guardrail
    spec:
@@ -208,7 +187,7 @@ The webhook server is configured to take the following actions:
 2. Verify that the webhook server is running.
 
    ```sh
-   kubectl get deploy,svc -n {{< reuse "docs/snippets/namespace.md" >}} -l app=ai-guardrail
+   kubectl get deploy,svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=ai-guardrail
    ```
 
    Example output:
@@ -227,14 +206,14 @@ The webhook server is configured to take the following actions:
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
 
    ```sh
-   export WEBHOOK_SERVER_ADDRESS=$(kubectl get svc -n {{< reuse "docs/snippets/namespace.md" >}} ai-guardrail-webhook -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+   export WEBHOOK_SERVER_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} ai-guardrail-webhook -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $WEBHOOK_SERVER_ADDRESS  
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
-   If the webhook service is deployed in the same cluster as the gateway proxy, you can also use the Kubernetes DNS name of the service, such as `ai-guardrail-webhook.{{< reuse "docs/snippets/namespace.md" >}}.svc.cluster.local`.
+   If the webhook service is deployed in the same cluster as the gateway proxy, you can also use the Kubernetes DNS name of the service, such as `ai-guardrail-webhook.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local`.
    ```sh
-   export WEBHOOK_SERVER_ADDRESS=ai-guardrail-webhook.{{< reuse "docs/snippets/namespace.md" >}}.svc.cluster.local
+   export WEBHOOK_SERVER_ADDRESS=ai-guardrail-webhook.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
    echo $WEBHOOK_SERVER_ADDRESS  
    ```
    {{% /tab %}}
@@ -243,55 +222,18 @@ The webhook server is configured to take the following actions:
 
 ### Step 2: Configure the gateway proxy to use the webhook server {#ai-gateway}
 
-Configure a {{< reuse "docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
+Configure a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
 
-{{< version include-if="2.1.x" >}}
 
-```yaml
-kubectl apply -f - <<EOF
-apiVersion: {{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: openai-prompt-guard
-  namespace: {{< reuse "docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: openai
-  ai:
-    promptGuard:
-      request:
-        webhook:
-          host:
-            host: $WEBHOOK_SERVER_ADDRESS
-            port: 8000
-      response:
-        webhook:
-          host:
-            host: $WEBHOOK_SERVER_ADDRESS
-            port: 8000
-EOF
-```
 
-{{% reuse "docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "docs/snippets/trafficpolicy.md" >}} API docs for AI.
-
-| Setting | Description |
-|---------|-------------|
-| `targetRefs` | The HTTPRoute that you want to apply the guardrail to. This example uses the `openai` HTTPRoute that you created before you began. |
-| `ai.promptGuard` | The AI prompt guarding configuration that you want to set up. In this example, you configure the webhook server for both request and response guardrails. |
-| `webhook.host` and `.port` | The host address and port number of the webhook server. For this example, you use the LoadBalancer service address as the webhook server address. If the webhook service is deployed in the same cluster as the gateway proxy, you can also use the Kubernetes DNS name of the service, such as `ai-guardrail-webhook.{{< reuse "docs/snippets/namespace.md" >}}.svc.cluster.local`. The example webhook server is configured to use port 8000. |
-
-{{< /version >}}
-{{< version include-if="2.2.x" >}}
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
 metadata:
   name: openai-prompt-guard
-  namespace: {{< reuse "docs/snippets/namespace.md" >}}
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
@@ -315,7 +257,7 @@ spec:
 EOF
 ```
 
-{{% reuse "docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "docs/snippets/trafficpolicy.md" >}} API docs for AI.
+{{% reuse "agw-docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} API docs for AI.
 
 | Setting | Description |
 |---------|-------------|
@@ -323,12 +265,12 @@ EOF
 | `backend.ai.promptGuard` | The AI prompt guarding configuration that you want to set up. In this example, you configure the webhook server for both request and response guardrails. |
 | `webhook.backendRef` | The reference to the webhook server service. The example webhook server is configured to use port 8000. |
 
-{{< /version >}}
+
 
 
 ### Step 3: Test the webhook server {#test-webhook-server}
 
-1. Send a request through {{< reuse "docs/snippets/agentgateway.md" >}} to the OpenAI provider. In the body, include the word `block` to trigger the 403 Forbidden response.
+1. Send a request through {{< reuse "agw-docs/snippets/agentgateway.md" >}} to the OpenAI provider. In the body, include the word `block` to trigger the 403 Forbidden response.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}   
@@ -462,16 +404,16 @@ EOF
 
 ### Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 1. Delete the webhook server deployment and service.
 
    ```sh
-   kubectl delete deploy,svc -n {{< reuse "docs/snippets/namespace.md" >}} -l app=ai-guardrail
+   kubectl delete deploy,svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=ai-guardrail
    ```
 
-2. Delete the {{< reuse "docs/snippets/trafficpolicy.md" >}}.
+2. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
    ```sh
-   kubectl delete {{< reuse "docs/snippets/trafficpolicy.md" >}} -n {{< reuse "docs/snippets/namespace.md" >}} openai-prompt-guard
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} openai-prompt-guard
    ```

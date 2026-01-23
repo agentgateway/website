@@ -3,23 +3,23 @@ title: OTel stack
 weight: 10
 ---
 
-{{< reuse "docs/snippets/agentgateway/otel-prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/otel-prereq.md" >}}
 
-{{< reuse "docs/pages/observability/otel-stack.md" >}}
+{{< reuse "agw-docs/pages/observability/otel-stack.md" >}}
 
 ## Step 4: Explore Grafana dashboards
 
-{{< reuse "docs/snippets/agentgateway/grafana-dashboards.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/grafana-dashboards.md" >}}
 
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 1. Remove the configmap for the Envoy gateway proxy dashboard and delete the `envoy.json` file.
    ```sh
-   kubectl delete cm {{< reuse "docs/snippets/pod-name.md" >}}-dashboard -n telemetry
-   rm {{< reuse "docs/snippets/pod-name.md" >}}.json
+   kubectl delete cm {{< reuse "agw-docs/snippets/pod-name.md" >}}-dashboard -n telemetry
+   rm {{< reuse "agw-docs/snippets/pod-name.md" >}}.json
    ```
 
 2. Uninstall the Grafana Loki and Tempo components. 

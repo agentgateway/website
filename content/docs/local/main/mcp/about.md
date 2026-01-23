@@ -21,4 +21,4 @@ MCP and [Agent-to-Agent (A2A)](https://github.com/a2aproject/A2A) are the leadin
 
 ## Challenges with MCP and A2A
 
-{{< reuse "docs/snippets/about-mcp-challenges.md" >}}
+{{< reuse "agw-docs/snippets/about-mcp-challenges.md" >}}

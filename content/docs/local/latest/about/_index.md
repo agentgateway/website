@@ -4,7 +4,7 @@ weight: 20
 description: 
 ---
 
-{{< reuse "docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}}
 
 Review the following topics to learn more about agentgateway.
 

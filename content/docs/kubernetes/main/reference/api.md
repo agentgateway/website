@@ -3,7 +3,7 @@ title: API reference
 weight: 10
 ---
 
-{{< reuse "/docs/snippets/api-ref-docs-intro.md" >}}
+{{< reuse "/agw-docs/snippets/api-ref-docs-intro.md" >}}
 
 ## Packages
 - [agentgateway.dev/v1alpha1](#agentgatewaydevv1alpha1)
@@ -109,15 +109,15 @@ promptGuard:
 	- response:
 	    message: "Rejected due to inappropriate content"
 	  regex:
-	    action: REJECT
+	    action: Reject
 	    matches:
 	    - pattern: "credit card"
 	      name: "CC"
 	response:
 	- regex:
 	    builtins:
-	    - CREDIT_CARD
-	    action: MASK
+	    - CreditCard
+	    action: Mask
 
 
 ```

@@ -1,10 +1,10 @@
 Match the targeted path of an incoming request against specific path criteria. 
 
-For more information, see the [{{< reuse "docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/api-types/httproute/#matches).
+For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/api-types/httproute/#matches).
 
 ## Before you begin
 
-{{< reuse "docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Set up exact matching
 
@@ -19,7 +19,7 @@ For more information, see the [{{< reuse "docs/snippets/k8s-gateway-api-name.md"
    spec:
      parentRefs:
        - name: http
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - match.example
      rules:
@@ -106,7 +106,7 @@ For more information, see the [{{< reuse "docs/snippets/k8s-gateway-api-name.md"
    spec:
      parentRefs:
        - name: http
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - match.example
      rules:
@@ -210,7 +210,7 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    spec:
      parentRefs:
        - name: http
-         namespace: {{< reuse "docs/snippets/namespace.md" >}}
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - "match.example"
      rules:
@@ -310,7 +310,7 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
 
 ## Cleanup
 
-{{< reuse "docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
 kubectl delete httproute httpbin-match -n httpbin

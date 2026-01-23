@@ -6,4 +6,4 @@ description:
 
 Learn about Large Language Models and common problems when consuming these on an enterprise level. 
 
-{{< reuse "docs/snippets/about-llm.md" >}}
+{{< reuse "agw-docs/snippets/about-llm.md" >}}

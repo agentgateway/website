@@ -8,7 +8,7 @@ prev: /docs/llm
 
 Agentgateway provides seamless integration with various Large Language Model (LLM) providers. This way, you can consume AI services through a unified interface while still maintaining flexibility in the providers that you use.
 
-{{< reuse "docs/snippets/about-llm.md" >}}
+{{< reuse "agw-docs/snippets/about-llm.md" >}}
 
 ## Supported providers
 
