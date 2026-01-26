@@ -7,8 +7,6 @@ Specify an HTTP method, such as POST, GET, PUT, PATCH, or DELETE, to match reque
 
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/api-types/httproute/#matches).
 
-## Before you begin
-
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up HTTP method matching
