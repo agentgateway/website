@@ -26,7 +26,7 @@ CORS policies are typically implemented to limit access to server resources for 
 You can configure the CORS policy at two levels:
 
 * **HTTPRoute**: For the native way in Kubernetes Gateway API, configure a CORS policy in the HTTPRoute. You can choose to apply the CORS policy to all the routes that are defined in the HTTPRoute, or to a selection of `backendRefs`. This route-level policy takes precedence over any {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} CORS that you might configure. For more information, see the [Kubernetes Gateway API docs](https://gateway-api.sigs.k8s.io/reference/spec/#httpcorsfilter) and [CORS design docs](https://gateway-api.sigs.k8s.io/geps/gep-1767/).
-* **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}**: For more flexibility to reuse the CORS policy across HTTPRoutes, specific routes and Gateways, configure a CORS policy in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. You can attach a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a Gateway, all HTTPRoutes via `targetRefs`, or an individual route via `extensionRef`. To attach to a `backendRef`, use a CORS policy in the HTTPRoute instead. For more information about attachment and merging rules, see the [{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} concept docs](../../about/policies/trafficpolicy/).
+* **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}**: For more flexibility to reuse the CORS policy across HTTPRoutes, specific routes and Gateways, configure a CORS policy in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. You can attach a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a Gateway, all HTTPRoutes via `targetRefs`, or an individual route via `extensionRef`. To attach to a `backendRef`, use a CORS policy in the HTTPRoute instead. For more information about attachment and merging rules, see the [{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} concept docs]({{< link-hextra path="/about/policies/trafficpolicy/">}}).
 
 
 
@@ -111,7 +111,7 @@ EOF
    EOF
    ```
 
-2. Attach the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a route or Gateway. The following example creates an HTTPRoute for the httpbin app that has the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} attached via the `extensionRef` filter. For more information about attachment and merging rules, see the [{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} concept docs](/docs/about/policies/trafficpolicy/).
+2. Attach the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a route or Gateway. The following example creates an HTTPRoute for the httpbin app that has the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} attached via the `extensionRef` filter. For more information about attachment and merging rules, see the [{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} concept docs]({{< link-hextra path="/about/policies/trafficpolicy/">}}).
 
    ```yaml
    kubectl apply -f- <<EOF

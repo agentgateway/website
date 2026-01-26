@@ -314,4 +314,4 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "
 
 ## Next
 
-Explore how to [call functions](../functions/) to extend the capabilities of the LLM with your own external APIs, apps, and data.
+Explore how to [call functions]({{< link-hextra path="/functions/">}}) to extend the capabilities of the LLM with your own external APIs, apps, and data.

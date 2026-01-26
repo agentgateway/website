@@ -59,4 +59,4 @@ Using Agent Gateway with Helicone provides:
 ## Learn more
 
 - [Helicone Documentation](https://docs.helicone.ai/)
-- [LLM Gateway](/docs/llm/)
+- [LLM Gateway]({{< link-hextra path="/llm/" >}})

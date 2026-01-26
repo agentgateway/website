@@ -8,7 +8,7 @@ Note that only streamable HTTP is currently supported for label selectors. If yo
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Step 1: Deploy the MCP servers {#mcp-server-everythings}
 

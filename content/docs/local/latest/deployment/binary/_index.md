@@ -13,7 +13,7 @@ To run agentgateway as a standalone binary, follow the steps to download, instal
    curl https://agentgateway.dev/install | bash
    ```
 
-2. Create a [configuration file](/docs/configuration/) for agentgateway. In this example, `config.yaml` is used. You might start with [this simple example configuration file](https://agentgateway.dev/examples/basic/config.yaml).
+2. Create a [configuration file]({{< link-hextra path="/configuration/" >}}) for agentgateway. In this example, `config.yaml` is used. You might start with [this simple example configuration file](https://agentgateway.dev/examples/basic/config.yaml).
 
 3. Run agentgateway:
    ```sh

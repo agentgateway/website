@@ -27,6 +27,6 @@ Agent Gateway supports connecting to MCP servers via multiple transport protocol
 
 ## Learn more
 
-- [MCP Connectivity Guide](/docs/mcp/)
-- [MCP Authentication](/docs/mcp/mcp-authn/)
-- [MCP Authorization](/docs/mcp/mcp-authz/)
+- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
+- [MCP Authentication]({{< link-hextra path="/mcp/mcp-authn/" >}})
+- [MCP Authorization]({{< link-hextra path="/mcp/mcp-authz/" >}})

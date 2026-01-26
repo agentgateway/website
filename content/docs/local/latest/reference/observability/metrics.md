@@ -8,7 +8,7 @@ The agentgateway comes with a built-in metrics endpoint that you can use to moni
 
 ## View metrics
 
-1. Follow the [Get started](/docs/quickstart) guide to create a configuration for your agentgateway and verify access to an MCP tool. 
+1. Follow the [Get started]({{< link-hextra path="/quickstart" >}}) guide to create a configuration for your agentgateway and verify access to an MCP tool. 
 
 2. Open the [agentgateway metrics endpoint](http://localhost:15020/metrics) to view all the metrics that the agentgateway captures. If you tried out an MCP tool earlier, such as the `everything_add` tool, you see the counter for the `tool_calls_total` and `list_calls_total` metrics increase. 
    

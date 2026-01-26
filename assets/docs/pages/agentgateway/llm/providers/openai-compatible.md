@@ -8,7 +8,7 @@ Note that when you specify a custom `host` override, agentgateway requires expli
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Set up access to an OpenAI-compatible provider
 

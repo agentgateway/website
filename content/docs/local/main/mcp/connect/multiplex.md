@@ -28,7 +28,7 @@ backends:
 ```
 {{% /details %}}
 **Multiplexing vs. load balancing**
-Although configured similarly, multiplexing is different than load balancing. Load balancing distributes requests across multiple backends. Each request goes to one backend, selected based on weight. You configure load balancing with multiple backends in a route (instead of multiple targets). For more information, see [Backend routing](/docs/configuration/traffic-management/matching/#backend-routing).
+Although configured similarly, multiplexing is different than load balancing. Load balancing distributes requests across multiple backends. Each request goes to one backend, selected based on weight. You configure load balancing with multiple backends in a route (instead of multiple targets). For more information, see [Backend routing]({{< link-hextra path="/configuration/traffic-management/matching/#backend-routing" >}}).
 {{% details title="Example load balancing configuration" closed="true" %}}
 ```yaml
 routes:

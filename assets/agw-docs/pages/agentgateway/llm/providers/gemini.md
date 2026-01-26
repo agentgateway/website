@@ -2,7 +2,7 @@ Configure [Google Gemini](https://gemini.google.com/) as an LLM provider in {{< 
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Set up access to Gemini
 {{< reuse "agw-docs/snippets/gemini-setup.md" >}}

@@ -51,4 +51,4 @@ Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and runn
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-Follow the [Uninstall with Argo CD guide](../../operations/uninstall#argocd).
+Follow the [Uninstall with Argo CD guide]({{< link-hextra path="/operations/uninstall#argocd">}}).

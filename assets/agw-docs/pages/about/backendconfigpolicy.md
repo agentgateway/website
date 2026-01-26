@@ -5,7 +5,7 @@ Use a BackendConfigPolicy resource to configure connection settings for a backen
 You can apply BackendConfigPolicies to individual Kubernetes services, any backend that matches a specific label, or a global service in your ambient mesh.
 
 {{< callout type="info" >}}
-By default, you must attach policies to resources that are in the same namespace. To create global policies that can attach to resources in any namespace, see the [Global policy attachment](../global-attachment/) guide.
+By default, you must attach policies to resources that are in the same namespace. To create global policies that can attach to resources in any namespace, see the [Global policy attachment]({{< link-hextra path="/global-attachment/">}}) guide.
 {{< /callout >}}
 
 ### Individual backend {#attach-to-backend}

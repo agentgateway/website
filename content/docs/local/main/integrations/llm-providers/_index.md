@@ -37,4 +37,4 @@ binds:
           key: "$OPENAI_API_KEY"
 ```
 
-See [LLM Consumption](/docs/llm/) for complete documentation on working with LLM providers.
+See [LLM Consumption]({{< link-hextra path="/llm/" >}}) for complete documentation on working with LLM providers.

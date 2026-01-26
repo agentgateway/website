@@ -60,7 +60,7 @@ For more information, see [TCP route matching](../traffic-management/matching#tc
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Set up a listener](/docs/configuration/listeners).
+2. [Set up a listener]({{< link-hextra path="/configuration/listeners" >}}).
 
 ## Create routes
 
@@ -95,7 +95,7 @@ Set up a route on your listener.
    * Rule Name: An optional name for the matching rules of the route.
    * Target Listener: Select the listener that you previously created. The Route Type is automatically determined based on the listener protocol.
    * Hostnames: Add the hostnames that the route serves traffic on.
-   * Path Match Type: Select the type of path matching that you want to use, such as `Path Prefix`, and then configure its details. For more options, see the [Request matching](/docs/traffic-management/matching) guide.
+   * Path Match Type: Select the type of path matching that you want to use, such as `Path Prefix`, and then configure its details. For more options, see the [Request matching]({{< link-hextra path="/traffic-management/matching" >}}) guide.
    * Headers: Optional header configuration, such as the authorization header.
    * HTTP Methods: Optional HTTP methods to allow, such as `GET, POST, PUT`.
    * Query Parameters: Optional query parameters to allow, such as `version=v1`.
@@ -111,7 +111,7 @@ Set up a route on your listener.
    curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
    ```
 
-2. Review the configuration file. The example sets up an HTTP listener on port 3000 that matches on all hosts. For more options, see the [Request matching](/docs/traffic-management/matching) guide.
+2. Review the configuration file. The example sets up an HTTP listener on port 3000 that matches on all hosts. For more options, see the [Request matching]({{< link-hextra path="/traffic-management/matching" >}}) guide.
    
    ```yaml
    cat config.yaml

@@ -137,6 +137,4 @@ To set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway 
 
 ## Next
 
-Now that you set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway for your ambient mesh, you can further control and secure ingress traffic with [Policies](../../../../about/policies/).
-
-
+Now that you set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway for your ambient mesh, you can further control and secure ingress traffic with [Policies]({{< link-hextra path="/about/policies/">}}).

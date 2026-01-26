@@ -114,6 +114,6 @@ backends:
 
 ## Learn more
 
-- [MCP Connectivity Guide](/docs/mcp/)
-- [Streamable HTTP Reference](/docs/mcp/connect/http/)
-- [MCP Authentication](/docs/mcp/mcp-authn/)
+- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
+- [Streamable HTTP Reference]({{< link-hextra path="/mcp/connect/http/" >}})
+- [MCP Authentication]({{< link-hextra path="/mcp/mcp-authn/" >}})

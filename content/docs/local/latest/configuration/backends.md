@@ -29,7 +29,7 @@ binds:
 
 The MCP backend allows you to connect to an MCP server.
 Below shows a simple example, exposing a local and remote MCP server.
-See the [MCP connectivity guide](/docs/mcp/) for more information.
+See the [MCP connectivity guide]({{< link-hextra path="/mcp/" >}}) for more information.
 
 ```yaml
 backends:
@@ -48,7 +48,7 @@ backends:
 
 Agentgateway natively supports connecting to LLM providers, such as OpenAI and Anthropic.
 Below shows a simple example, connecting to OpenAI.
-See the [LLM consumption guide](/docs/llm/) for more information.
+See the [LLM consumption guide]({{< link-hextra path="/llm/" >}}) for more information.
 
 ```yaml
 backends:

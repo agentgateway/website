@@ -331,6 +331,6 @@ docker compose up -d
 
 ## Learn more
 
-- [Deployment Guide](/docs/deployment/docker/)
-- [Configuration Reference](/docs/configuration/)
-- [LLM Providers](/docs/llm/providers/)
+- [Deployment Guide]({{< link-hextra path="/deployment/docker/" >}})
+- [Configuration Reference]({{< link-hextra path="/configuration/" >}})
+- [LLM Providers]({{< link-hextra path="/llm/providers/" >}})

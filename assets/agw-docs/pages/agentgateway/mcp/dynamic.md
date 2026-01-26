@@ -1,12 +1,12 @@
-Route to a Model Context Protocol (MCP) server dynamically by using a label selector. This way, unlike a static backend, you can update the backing MCP server without having to update the Backend resource. For more information, see the [About MCP]({{< link-hextra path="/agentgateway/mcp/about" >}}) topic.
+Route to a Model Context Protocol (MCP) server dynamically by using a label selector. This way, unlike a static backend, you can update the backing MCP server without having to update the Backend resource. For more information, see the [About MCP]({{< link-hextra path="/mcp/about" >}}) topic.
 
 {{< callout type="warning" >}}
-Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend](../static-mcp/).
+Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend]({{< link-hextra path="/static-mcp/">}}).
 {{< /callout >}}
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Step 1: Deploy an MCP server {#mcp-server}
 

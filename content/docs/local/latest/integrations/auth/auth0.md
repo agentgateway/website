@@ -97,4 +97,4 @@ policies:
 ## Learn more
 
 - [Auth0 Documentation](https://auth0.com/docs)
-- [MCP Authentication Tutorial](/docs/tutorials/mcp-authentication)
+- [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})

@@ -6,7 +6,7 @@ weight: 40
 > [!NOTE]
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
 
-The MCP authorization policy works similarly to [HTTP authorization](/docs/configuration/security/http-authz), but runs in the context of an MCP request.
+The MCP authorization policy works similarly to [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}}), but runs in the context of an MCP request.
 
 Instead of running against an HTTP request, MCP authorization policies run against specific MCP method invocations such as `list_tools` and `call_tools`.
 
@@ -23,4 +23,4 @@ mcpAuthorization:
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
-Refer to the [CEL reference](/docs/reference/cel) for allowed variables.
+Refer to the [CEL reference]({{< link-hextra path="/reference/cel" >}}) for allowed variables.

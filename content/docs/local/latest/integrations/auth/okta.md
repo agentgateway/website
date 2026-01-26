@@ -88,4 +88,4 @@ policies:
 ## Learn more
 
 - [Okta Developer Documentation](https://developer.okta.com/docs/)
-- [MCP Authentication Tutorial](/docs/tutorials/mcp-authentication)
+- [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})

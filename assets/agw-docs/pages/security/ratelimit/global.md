@@ -177,7 +177,7 @@ Create a GatewayExtension resource that points to your Rate Limit Service.
    EOF
    ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs](../../../reference/api/#ratelimitprovider).
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#ratelimitprovider">}}).
 
    | Field | Description | Required |
    |-------|-------------|----------|
@@ -212,7 +212,7 @@ Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that applie
 
 The {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} configures the descriptors that define the dimensions for rate limiting. Each descriptor consists of one or more entries that help categorize and count requests. The descriptor entries match on the descriptor keys that you defined previously in the Rate Limit Service.
 
-Entries can be of one of the following types: `RemoteAddress`, `Path`, `Header`, or `Generic`. You can combine different entry types so that they are applied together as a rate limit, such as `RemoteAddress` and `Generic` or `Header` and `Path`. The following table describes the different descriptor entry types. For more information, see the [API docs](../../reference/api/#ratelimitpolicy).
+Entries can be of one of the following types: `RemoteAddress`, `Path`, `Header`, or `Generic`. You can combine different entry types so that they are applied together as a rate limit, such as `RemoteAddress` and `Generic` or `Header` and `Path`. The following table describes the different descriptor entry types. For more information, see the [API docs]({{< link-hextra path="/reference/api/#ratelimitpolicy">}}).
 
 | Type | Description | Additional Fields |
 |------|-------------|-------------------|
@@ -358,7 +358,7 @@ descriptors:
 
 {{% tab tabName="Local and global rate limits" %}}
 
-Combine local and global rate limiting in the same {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} such as in the following example. For more information, see [Local rate limiting](../local).
+Combine local and global rate limiting in the same {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} such as in the following example. For more information, see [Local rate limiting]({{< link-hextra path="/local">}}).
 
 * Local: A rate limit of 5 requests per second is applied to all requests.
 * Global: A rate limit of 2 requests per minute is applied to requests with a `service` descriptor key of `premium-api`.

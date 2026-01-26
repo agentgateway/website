@@ -22,7 +22,7 @@ You can choose between the following options to provide custom configuration to 
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup/" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup/" >}}). 
 
 ## Step 1: Create agentgateway configuration {#agentgateway-configuration}
 

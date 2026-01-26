@@ -4,7 +4,7 @@ In this guide, you configure your agentgateway proxy to connect to the remote [G
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Connect to the MCP server
 

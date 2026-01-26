@@ -36,7 +36,7 @@ extAuthz:
 HTTP External Authorization allows sending plain HTTP requests to an authorization service.
 If the service returns a 2xx status code, the request is allowed. Otherwise, it is denied.
 
-Example configuration: For the full set of options, see the [configuration reference](/docs/reference/configuration).
+Example configuration: For the full set of options, see the [configuration reference]({{< link-hextra path="/reference/configuration" >}}).
 
 ```yaml
 extAuthz:
