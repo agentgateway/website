@@ -39,7 +39,7 @@ The example in this guide uses the {{< reuse "agw-docs/snippets/gatewayparameter
            gateway: custom
          
          externalTrafficPolicy: Local
-        
+         
        podTemplate: 
          extraLabels:
            gateway: custom
