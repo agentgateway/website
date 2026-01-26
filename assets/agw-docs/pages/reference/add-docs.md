@@ -252,6 +252,6 @@ The kgateway project automatically generates the following documentation from th
 
 * [API reference]({{< link-hextra path="/reference/api/" >}})
 * [Helm reference]({{< link-hextra path="/reference/helm/" >}})
-* [Control plane metrics](../../../observability/control-plane-metrics/)
+* [Control plane metrics]({{< link-hextra path="/observability/control-plane-metrics/">}})
 
 To learn more about how to generate these docs, see the [GitHub Workflows README](https://github.com/kgateway-dev/kgateway.dev/tree/main/.github/workflows/README.md).

@@ -6,7 +6,7 @@ description: Overview of how to deploy agentgateway with Docker.
 
 To run agentgateway as a Docker container, agentgateway publishes official Docker images at `cr.agentgateway.dev/agentgateway`.
 
-Before you begin, create a [configuration file](/docs/configuration/) for agentgateway. In this example, `config.yaml` is used.
+Before you begin, create a [configuration file]({{< link-hextra path="/configuration/" >}}) for agentgateway. In this example, `config.yaml` is used.
 You might start with [this simple example configuration file](https://agentgateway.dev/examples/basic/config.yaml).
 
 ## Docker

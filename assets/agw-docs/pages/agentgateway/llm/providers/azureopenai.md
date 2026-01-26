@@ -2,7 +2,7 @@ Configure [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/ope
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Set up access to Azure OpenAI
 

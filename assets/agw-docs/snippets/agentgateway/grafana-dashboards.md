@@ -1,7 +1,7 @@
 You can use the pre-built Grafana dashboards to observe the control and data plane statuses. 
 
 1. Create a Grafana dashboard for the control metrics. You can download the following sample Grafana dashboard configuration: 
-   * [Agentgateway dashboard](../agentgateway.json) 
+   * [Agentgateway dashboard]({{< link-hextra path="/agentgateway.json">}}) 
      ```sh
      curl -L "http://kgateway.dev/docs/main/agentgateway/observability/agentgateway.json" >> agentgateway.json 
      ```

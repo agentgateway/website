@@ -7,7 +7,7 @@ Attach to:
 {{< badge content="Backend" link="/docs/configuration/backends/">}} (AI Backends only)
 
 Agentgateway has a number of policies that can be used to control the behavior of the AI (LLM) model.
-For more information on connecting to LLM providers, see [LLM consumption](/docs/llm).
+For more information on connecting to LLM providers, see [LLM consumption]({{< link-hextra path="/llm" >}}).
 
 |Policy| Details                                                                                            |
 |---|----------------------------------------------------------------------------------------------------|

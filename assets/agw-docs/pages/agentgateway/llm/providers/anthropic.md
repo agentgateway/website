@@ -2,7 +2,7 @@ Configure [Anthropic (Claude)](https://claude.ai/) as an LLM provider in {{< reu
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Set up access to Anthropic
 

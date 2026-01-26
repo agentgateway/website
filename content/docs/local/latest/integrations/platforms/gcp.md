@@ -33,9 +33,9 @@ gcloud run deploy agentgateway \
 
 | Integration | Purpose |
 |-------------|---------|
-| [Vertex AI](/docs/llm/providers/vertex/) | Access Gemini and other models |
-| [Google Gemini](/docs/llm/providers/gemini/) | Direct Gemini API access |
-| [GCP Secret Manager](/docs/integrations/secrets/gcp-secret-manager/) | Secure API key storage |
+| [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}) | Access Gemini and other models |
+| [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}) | Direct Gemini API access |
+| [GCP Secret Manager]({{< link-hextra path="/integrations/secrets/gcp-secret-manager/" >}}) | Secure API key storage |
 | Cloud Load Balancing | Global load balancing with SSL |
 | Cloud Trace | Distributed tracing |
 | Cloud Monitoring | Metrics and alerting |
@@ -62,7 +62,7 @@ gcloud projects add-iam-policy-binding my-project \
 
 ## Learn more
 
-- [Vertex AI Provider](/docs/llm/providers/vertex/)
-- [Google Gemini Provider](/docs/llm/providers/gemini/)
-- [GCP Secret Manager Integration](/docs/integrations/secrets/gcp-secret-manager/)
-- [Deployment Guide](/docs/deployment/)
+- [Vertex AI Provider]({{< link-hextra path="/llm/providers/vertex/" >}})
+- [Google Gemini Provider]({{< link-hextra path="/llm/providers/gemini/" >}})
+- [GCP Secret Manager Integration]({{< link-hextra path="/integrations/secrets/gcp-secret-manager/" >}})
+- [Deployment Guide]({{< link-hextra path="/deployment/" >}})

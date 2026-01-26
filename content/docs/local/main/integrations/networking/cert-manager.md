@@ -139,5 +139,5 @@ spec:
 ## Learn more
 
 - [cert-manager Documentation](https://cert-manager.io/docs/)
-- [TLS Tutorial](/docs/tutorials/tls)
-- [Kubernetes Deployment](/docs/integrations/platforms/kubernetes)
+- [TLS Tutorial]({{< link-hextra path="/tutorials/tls" >}})
+- [Kubernetes Deployment]({{< link-hextra path="/integrations/platforms/kubernetes" >}})

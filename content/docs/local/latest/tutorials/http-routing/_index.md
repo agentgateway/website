@@ -17,7 +17,7 @@ In this tutorial, you'll:
 
 ## Prerequisites
 
-- [Agent Gateway installed](/docs/quickstart/)
+- [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
 
 ## Step 1: Create a working directory
 

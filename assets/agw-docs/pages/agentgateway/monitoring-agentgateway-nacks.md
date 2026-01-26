@@ -6,7 +6,7 @@ Typically, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane repo
 
 To track these NACKs at configuration time, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes a combination of metrics and events that monitor the health of config synchronization between the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxies.
 
-For more general information about {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane metrics, see [Control plane metrics](../../observability/control-plane-metrics/).
+For more general information about {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane metrics, see [Control plane metrics]({{< link-hextra path="/observability/control-plane-metrics/">}}).
 
 Common causes of NACKs include:
 
@@ -47,7 +47,7 @@ You can access the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane 
 
 You can use this metric to configure alerts to notify you when NACKs occur so you can quickly investigate and resolve configuration issues.
 
-For guidance on setting up the observability stack, which allows for configurable alerting, see the [OpenTelemetry stack guide](../../observability/otel-stack/).
+For guidance on setting up the observability stack, which allows for configurable alerting, see the [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/">}}).
 
 ## Monitor NACKs with Kubernetes events {#nack-events}
 

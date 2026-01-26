@@ -103,6 +103,6 @@ backends:
 
 ## Learn more
 
-- [MCP Connectivity Guide](/docs/mcp/)
-- [stdio Configuration Reference](/docs/mcp/connect/stdio/)
-- [MCP Authentication](/docs/mcp/mcp-authn/)
+- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
+- [stdio Configuration Reference]({{< link-hextra path="/mcp/connect/stdio/" >}})
+- [MCP Authentication]({{< link-hextra path="/mcp/mcp-authn/" >}})

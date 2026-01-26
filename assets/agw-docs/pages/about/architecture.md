@@ -49,7 +49,7 @@ The following image shows the different stages of a translation cycle for the ga
 
 3. The translation cycle starts by collecting all of the resources that are needed to create agentgateway proxy config. These various collections include:
    * Core collections of the Kubernetes, Gateway API, and kgateway resources that are defined in the cluster, such as namespaces, services, gateways, routes, policies, backends, and plugins for AI, MCP, and A2A-specific backends.
-   * Agentgateway data plane resource building that consist of information translated from the core collection into the format that agentgateway expects, such as bind, port, listener, route, backend, target, and policy configuration for agentgateway. For more information, see the [agentgateway about topic](../../agentgateway/about/#resources).
+   * Agentgateway data plane resource building that consist of information translated from the core collection into the format that agentgateway expects, such as bind, port, listener, route, backend, target, and policy configuration for agentgateway. For more information, see the [agentgateway about topic]({{< link-hextra path="/about/">}}).
    * Address collections of the service and workloads that are included in service discovery and endpoint resolution.
    * The translation order ensures that dependencies are resolved correctly: `binds → listeners → routes → policies`, with backends and addresses processed separately and added to the final configuration.
 
@@ -74,7 +74,7 @@ The xDS server sends the xDS snapshot to the gateway proxies in the data plane.
 
 {{< reuse "agw-docs/snippets/discovery-about.md" >}}
 
-To enable automatic discovery of services, see [Discovery](/docs/traffic-management/destination-types/backends/#discovery). To learn more about Backends, see [Backends](/docs/traffic-management/destination-types/backends/).
+To enable automatic discovery of services, see [Discovery]({{< link-hextra path="/traffic-management/destination-types/backends/#discovery">}}). To learn more about Backends, see [Backends]({{< link-hextra path="/traffic-management/destination-types/backends/">}}).
 
 The following image shows how the endpoint discovery component discovers Kubernetes services and Functions and automatically creates Backend resources for them. 
 

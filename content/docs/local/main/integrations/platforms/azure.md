@@ -36,8 +36,8 @@ az containerapp create \
 
 | Integration | Purpose |
 |-------------|---------|
-| [Azure OpenAI](/docs/llm/providers/azure/) | Access GPT-4 and other models |
-| [Azure Key Vault](/docs/integrations/secrets/azure-key-vault/) | Secure API key storage |
+| [Azure OpenAI]({{< link-hextra path="/llm/providers/azure/" >}}) | Access GPT-4 and other models |
+| [Azure Key Vault]({{< link-hextra path="/integrations/secrets/azure-key-vault/" >}}) | Secure API key storage |
 | Azure Application Gateway | Load balancing with WAF |
 | Azure Monitor | Logs and metrics |
 | Azure Application Insights | Distributed tracing |
@@ -66,6 +66,6 @@ az role assignment create \
 
 ## Learn more
 
-- [Azure OpenAI Provider](/docs/llm/providers/azure/)
-- [Azure Key Vault Integration](/docs/integrations/secrets/azure-key-vault/)
-- [Deployment Guide](/docs/deployment/)
+- [Azure OpenAI Provider]({{< link-hextra path="/llm/providers/azure/" >}})
+- [Azure Key Vault Integration]({{< link-hextra path="/integrations/secrets/azure-key-vault/" >}})
+- [Deployment Guide]({{< link-hextra path="/deployment/" >}})

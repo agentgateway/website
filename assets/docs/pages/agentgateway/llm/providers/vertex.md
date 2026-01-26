@@ -2,7 +2,7 @@ Configure [Vertex AI](https://cloud.google.com/vertex-ai) as an LLM provider in 
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Set up access to Vertex AI
 

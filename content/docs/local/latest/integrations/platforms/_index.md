@@ -42,6 +42,6 @@ Agent Gateway runs on all Kubernetes distributions through [kgateway](https://ag
 
 ## Learn more
 
-- [Deployment Guide](/docs/deployment/)
-- [Configuration Reference](/docs/configuration/)
+- [Deployment Guide]({{< link-hextra path="/deployment/" >}})
+- [Configuration Reference]({{< link-hextra path="/configuration/" >}})
 - [Agentgateway on Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/)

@@ -103,4 +103,4 @@ services:
 ## Learn more
 
 - [Phoenix Documentation](https://docs.arize.com/phoenix)
-- [OpenTelemetry Integration](/docs/integrations/observability/opentelemetry)
+- [OpenTelemetry Integration]({{< link-hextra path="/integrations/observability/opentelemetry" >}})

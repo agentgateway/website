@@ -48,5 +48,5 @@ binds:
 
 ## Learn more
 
-- [MCP Connectivity Guide](/docs/mcp/)
-- [Streamable HTTP Transport](/docs/mcp/connect/http/)
+- [MCP Connectivity Guide]({{< link-hextra path="/mcp/" >}})
+- [Streamable HTTP Transport]({{< link-hextra path="/mcp/connect/http/" >}})

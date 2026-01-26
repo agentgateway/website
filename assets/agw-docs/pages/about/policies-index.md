@@ -21,19 +21,19 @@ Review the policies that you can configure in kgateway and the level at which yo
 
 | Policy | Applied via |
 | -- | -- | 
-| [Access logging](../../security/access-logging) | HTTPListenerPolicy |
-| [Buffering](../../traffic-management/buffering)| {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
-| [CSRF](../../security/csrf)| {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
-| [Direct response](../../traffic-management/direct-response/) | DirectResponse | 
-| [Dynamic Forward Proxy (DFP)](../../traffic-management/dfp)| Backend and HTTPRoute | 
-| [External authorization](../../security/external-auth) | GatewayExtension and {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} |
-| [External processing (ExtProc)](../../traffic-management/extproc/) | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
-| [Health checks for the Gateway](../../traffic-management/health-checks/gateway)| HTTPListenerPolicy | 
-| [Health checks for the Backends](../../traffic-management/health-checks/backend)| BackendConfigPolicy |
-| [HTTP connection settings](../../resiliency/connection)| BackendConfigPolicy | 
-| [Outlier detection](../../resiliency/outlier-detection)| BackendConfigPolicy | 
-| [Rate limiting](../../security/ratelimit/) | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
-| [Session affinity - Simple load balancing](../../traffic-management/session-affinity/loadbalancing/) | BackendConfigPolicy  | 
-| [Session affinity - Consistent hashing](../../traffic-management/session-affinity/consistent-hashing/) | BackendConfigPolicy  | 
-| [TCP keepalive](../../resiliency/tcp-keepalive/) | BackendConfigPolicy |
-| [Transformations](../../traffic-management/transformations) | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
+| [Access logging]({{< link-hextra path="/security/access-logging">}}) | HTTPListenerPolicy |
+| [Buffering]({{< link-hextra path="/traffic-management/buffering">}})| {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
+| [CSRF]({{< link-hextra path="/security/csrf">}})| {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
+| [Direct response]({{< link-hextra path="/traffic-management/direct-response/">}}) | DirectResponse | 
+| [Dynamic Forward Proxy (DFP)]({{< link-hextra path="/traffic-management/dfp">}})| Backend and HTTPRoute | 
+| [External authorization]({{< link-hextra path="/security/external-auth">}}) | GatewayExtension and {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} |
+| [External processing (ExtProc)]({{< link-hextra path="/traffic-management/extproc/">}}) | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
+| [Health checks for the Gateway]({{< link-hextra path="/traffic-management/health-checks/gateway">}})| HTTPListenerPolicy | 
+| [Health checks for the Backends]({{< link-hextra path="/traffic-management/health-checks/backend">}})| BackendConfigPolicy |
+| [HTTP connection settings]({{< link-hextra path="/resiliency/connection">}})| BackendConfigPolicy | 
+| [Outlier detection]({{< link-hextra path="/resiliency/outlier-detection">}})| BackendConfigPolicy | 
+| [Rate limiting]({{< link-hextra path="/security/ratelimit/">}}) | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 
+| [Session affinity - Simple load balancing]({{< link-hextra path="/traffic-management/session-affinity/loadbalancing/">}}) | BackendConfigPolicy  | 
+| [Session affinity - Consistent hashing]({{< link-hextra path="/traffic-management/session-affinity/consistent-hashing/">}}) | BackendConfigPolicy  | 
+| [TCP keepalive]({{< link-hextra path="/resiliency/tcp-keepalive/">}}) | BackendConfigPolicy |
+| [Transformations]({{< link-hextra path="/traffic-management/transformations">}}) | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} | 

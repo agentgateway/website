@@ -71,4 +71,4 @@ binds:
 ## Learn more
 
 - [LangSmith Documentation](https://docs.smith.langchain.com/)
-- [OpenTelemetry Integration](/docs/integrations/observability/opentelemetry)
+- [OpenTelemetry Integration]({{< link-hextra path="/integrations/observability/opentelemetry" >}})

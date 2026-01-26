@@ -20,7 +20,7 @@ This is controlled via the [Envoy Rate Limit gRPC service](https://www.envoyprox
 
 ## Rate limit modes
 
-In additional to simple request-based rate limits, agentgateway can limit requests based on *tokens* for [LLM consumption](/docs/llm/).
+In additional to simple request-based rate limits, agentgateway can limit requests based on *tokens* for [LLM consumption]({{< link-hextra path="/llm/" >}}).
 
 ### Request-based rate limits
 
@@ -120,4 +120,4 @@ remoteRateLimit:
     type: tokens # or 'requests'
 ```
 
-Each descriptor value is a [CEL expression](/docs/operations/cel).
+Each descriptor value is a [CEL expression]({{< link-hextra path="/operations/cel" >}}).

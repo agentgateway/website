@@ -14,7 +14,7 @@ flowchart LR
 
 ## Before you begin
 
-Set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} by following the [Quick start](../../quickstart/) or [Installation]({{< link-hextra path="/install" >}}) guides.
+Set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} by following the [Quick start]({{< link-hextra path="/quickstart/">}}) or [Installation]({{< link-hextra path="/install" >}}) guides.
 
 ## Deploy a sample app {#deploy-app}
 
@@ -52,7 +52,7 @@ The following configuration file creates the httpbin app. To review the source f
 
 Create an API gateway with an HTTP listener by using the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}.
 
-1. Create a Gateway resource and configure an HTTP listener. The following Gateway can serve HTTPRoute resources from all namespaces. For more information about which GatewayClass to use, see [About gateway proxies](../../about/proxies/).
+1. Create a Gateway resource and configure an HTTP listener. The following Gateway can serve HTTPRoute resources from all namespaces. For more information about which GatewayClass to use, see [About gateway proxies]({{< link-hextra path="/about/proxies/">}}).
    
    ```yaml
    kubectl apply -f- <<EOF
@@ -279,9 +279,9 @@ Now that your httpbin app is running and exposed on the gateway proxy, you can s
 
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your API gateway capabilities.
 
-- Add routing capabilities to your httpbin route by using the [Traffic management](../../traffic-management) guides. 
-- Explore ways to make your routes more resilient by using the [Resiliency](../../resiliency) guides. 
-- Secure your routes with external authentication and rate limiting policies by using the [Security](../../security) guides.
+- Add routing capabilities to your httpbin route by using the [Traffic management]({{< link-hextra path="/traffic-management">}}) guides. 
+- Explore ways to make your routes more resilient by using the [Resiliency]({{< link-hextra path="/resiliency">}}) guides. 
+- Secure your routes with external authentication and rate limiting policies by using the [Security]({{< link-hextra path="/security">}}) guides.
 
 ## Cleanup
 

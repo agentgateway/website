@@ -11,8 +11,8 @@ Paths are matched in order, and the first match determines how the request is ha
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}).
-2. Set up [API access to each LLM provider]({{< link-hextra path="/agentgateway/llm/api-keys/" >}}) that you want to use. The example in this guide uses OpenAI.
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
+2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use. The example in this guide uses OpenAI.
 
 ## Configure multiple endpoints
 

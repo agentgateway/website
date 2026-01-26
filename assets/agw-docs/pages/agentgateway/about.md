@@ -10,7 +10,7 @@ Agentgateway supports many agent connectivity use cases, including the following
 
 ## Architecture
 
-For more information about how kgateway integrates with agentgateway, see the [Architecture](../../about/architecture/) topic.
+For more information about how kgateway integrates with agentgateway, see the [Architecture]({{< link-hextra path="/about/architecture/">}}) topic.
 
 For more information about agentgateway resources, see the [Agentgateway upstream docs](https://agentgateway.dev/docs/about/).
 
@@ -38,7 +38,7 @@ Review the following considerations for using agentgateway.
 - HTTPListenerPolicy and BackendConfigPolicy resources that configure Envoy-specific filters, such as health checks, TLS, and access logging, cannot be applied to agentgateway proxies. You can use these policies with Envoy-based kgateway proxies only. 
 - External processing (extProc) as part of the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} is not supported.
 - Configuring your agentgateway proxy as a Dynamic Forward Proxy (DFP) is currently not supported.
-- [Header modifier filters](../../traffic-management/header-control/) in {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} are not supported for agentgateway proxies. You can still use header modifier filters in the Gateway API-native HTTPRoutes.
+- [Header modifier filters]({{< link-hextra path="/traffic-management/header-control/">}}) in {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} are not supported for agentgateway proxies. You can still use header modifier filters in the Gateway API-native HTTPRoutes.
 - Retries and timeouts cannot be configured on an agentgateway proxy.
 - In transformation policies, response-based transformations are not supported. Also note that the `parseAs` field is not supported, but you can use the `json()` function directly in CEL expressions instead
 

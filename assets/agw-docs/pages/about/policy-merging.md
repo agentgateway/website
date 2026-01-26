@@ -61,7 +61,7 @@ Resulting merged policy: The parent's `x-season` header is not included in the m
 | `x-season` | `winter` | Child |
 | `x-holiday` | `christmas` | Child |
 
-**Deep merging** means that values from both parent and child policies can be combined. Currently, only [Transformation rules of a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}](../../traffic-management/transformations) can be deep merged. Consider the following deep merge scenario:
+**Deep merging** means that values from both parent and child policies can be combined. Currently, only [Transformation rules of a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}]({{< link-hextra path="/traffic-management/transformations">}}) can be deep merged. Consider the following deep merge scenario:
 
 * Parent policy adds an `x-season=summer` header.
 * Child policy adds `x-season=winter` and `x-holiday=christmas` headers.
@@ -82,5 +82,5 @@ Resulting merged policy's headers: The child and grandchild values merge with th
 
 For more information, check out the following guides:
 
-* {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}'s [Policy priority and merging rules](../trafficpolicy/#policy-priority-and-merging-rules)
-* [Policy inheritance and overrides](../../../traffic-management/route-delegation/inheritance/) for both Kubernetes Gateway API and {{< reuse "/agw-docs/snippets/kgateway.md" >}} policies.
+* {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}'s [Policy priority and merging rules]({{< link-hextra path="/trafficpolicy/#policy-priority-and-merging-rules">}})
+* [Policy inheritance and overrides]({{< link-hextra path="/traffic-management/route-delegation/inheritance/">}}) for both Kubernetes Gateway API and {{< reuse "/agw-docs/snippets/kgateway.md" >}} policies.

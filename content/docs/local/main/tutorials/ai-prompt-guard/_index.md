@@ -16,7 +16,7 @@ In this tutorial, you'll:
 
 ## Prerequisites
 
-- [Agent Gateway installed](/docs/quickstart/)
+- [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
 - An OpenAI API key (get one at [platform.openai.com](https://platform.openai.com/api-keys))
 
 ## Step 1: Set up your environment

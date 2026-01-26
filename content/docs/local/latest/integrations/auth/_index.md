@@ -20,7 +20,7 @@ Agent Gateway supports several authentication approaches:
 
 | Method | Use Case | Tutorial |
 |--------|----------|----------|
-| JWT validation | API authentication | [MCP Authentication](/docs/tutorials/mcp-authentication) |
-| OAuth2/OIDC | User authentication | [OAuth2 Proxy](/docs/tutorials/oauth2-proxy) |
-| External authz | Custom auth services | [Authorization](/docs/tutorials/authorization) |
-| Tailscale | Zero-trust networks | [Tailscale Auth](/docs/tutorials/tailscale-auth) |
+| JWT validation | API authentication | [MCP Authentication]({{< link-hextra path="/tutorials/mcp-authentication" >}}) |
+| OAuth2/OIDC | User authentication | [OAuth2 Proxy]({{< link-hextra path="/tutorials/oauth2-proxy" >}}) |
+| External authz | Custom auth services | [Authorization]({{< link-hextra path="/tutorials/authorization" >}}) |
+| Tailscale | Zero-trust networks | [Tailscale Auth]({{< link-hextra path="/tutorials/tailscale-auth" >}}) |

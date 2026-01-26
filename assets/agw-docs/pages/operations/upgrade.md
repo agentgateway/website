@@ -26,7 +26,7 @@ During the upgrade, pods that run the new version of the control plane and proxi
    3. Then, you can repeat the steps in this guide to upgrade to the latest patch of the next minor version.
 
 2. Check that your underlying infrastructure platform, such as Kubernetes, and other dependencies run supported versions for the kgateway version that you want to upgrade to.
-   1. Review the [supported versions](../../reference/versions/) for dependencies such as Kubernetes, Istio, Helm, and more.
+   1. Review the [supported versions]({{< link-hextra path="/reference/versions/">}}) for dependencies such as Kubernetes, Istio, Helm, and more.
    2. Compare the supported version against the versions that you currently use. 
    3. If necessary, upgrade your dependencies, such as consulting your cluster infrastructure provider to upgrade the version of Kubernetes that your cluster runs.
 
@@ -69,7 +69,7 @@ During the upgrade, pods that run the new version of the control plane and proxi
 1. Decide on the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version that you want to use. 
 
    * For help, review the [Upgrade Notes in the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} docs for each version](https://gateway-api.sigs.k8s.io/guides/#v12-upgrade-notes).
-   * Check if you need to install the [experimental channel for the features that you want to use](../../reference/versions/#experimental-features).
+   * Check if you need to install the [experimental channel for the features that you want to use]({{< link-hextra path="/reference/versions/#experimental-features">}}).
 
 2. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version that you want to upgrade to, such as the standard {{< reuse "agw-docs/versions/k8s-gw-version.md" >}} version.
    

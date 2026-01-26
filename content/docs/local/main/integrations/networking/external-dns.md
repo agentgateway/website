@@ -143,4 +143,4 @@ args:
 
 - [External DNS Documentation](https://github.com/kubernetes-sigs/external-dns)
 - [cert-manager Integration](cert-manager)
-- [Kubernetes Deployment](/docs/integrations/platforms/kubernetes)
+- [Kubernetes Deployment]({{< link-hextra path="/integrations/platforms/kubernetes" >}})

@@ -1,7 +1,7 @@
 Learn how policy inheritance and overrides work for kgateway-native policies in a route delegation setup.
 
 {{< callout type="info" >}} 
-Want to learn more about policy inheritance and overrides for Kubernetes Gateway API-native policies? See [Native Gateway API policies](../native-policies/). 
+Want to learn more about policy inheritance and overrides for Kubernetes Gateway API-native policies? See [Native Gateway API policies]({{< link-hextra path="/native-policies/">}}). 
 {{< /callout >}}
 
 ## About policy inheritance

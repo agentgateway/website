@@ -10,7 +10,7 @@ However, a few configurations are staticly configured at startup. These static c
 
 ## Static configuration file schema
 
-The following table shows the `config` file schema for static configurations at startup. For the full agentgateway schema of dynamic and static configuration, see the [reference docs](/docs/reference/configuration).
+The following table shows the `config` file schema for static configurations at startup. For the full agentgateway schema of dynamic and static configuration, see the [reference docs]({{< link-hextra path="/reference/configuration" >}}).
 
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/config.md" 
    section="Configuration File Schema"

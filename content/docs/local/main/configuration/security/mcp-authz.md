@@ -6,7 +6,7 @@ weight: 40
 Attach to:
 {{< badge content="Backend" link="/docs/configuration/backends/">}} (MCP Backends only)
 
-The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization](/docs/configuration/security/http-authz), but runs in the context of an MCP request.
+The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}}), but runs in the context of an MCP request.
 
 > [!NOTE]
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
@@ -26,4 +26,4 @@ mcpAuthorization:
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
-Refer to the [CEL reference](/docs/operations/cel) for allowed variables.
+Refer to the [CEL reference]({{< link-hextra path="/operations/cel" >}}) for allowed variables.

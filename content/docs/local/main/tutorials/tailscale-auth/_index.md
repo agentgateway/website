@@ -16,7 +16,7 @@ In this tutorial, you'll:
 
 ## Prerequisites
 
-- [Agent Gateway installed](/docs/quickstart/)
+- [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
 - [Tailscale](https://tailscale.com/download) installed and connected to your tailnet
 - Another device on your tailnet to test from (or use the same machine via its Tailscale IP)
 

@@ -5,7 +5,7 @@ Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to attach poli
 You can apply {{< reuse "agw-docs/snippets/trafficpolicies.md" >}} to all routes in an HTTPRoute resource or only to specific routes. 
 
 {{< callout type="info" >}}
-By default, you must attach policies to resources that are in the same namespace. To create global policies that can attach to resources in any namespace, see the [Global policy attachment](../global-attachment/) guide.
+By default, you must attach policies to resources that are in the same namespace. To create global policies that can attach to resources in any namespace, see the [Global policy attachment]({{< link-hextra path="/global-attachment/">}}) guide.
 {{< /callout >}}
 
 ### All HTTPRoute routes {#attach-to-all-routes}

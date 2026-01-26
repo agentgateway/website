@@ -17,7 +17,7 @@ You can choose between the following options to provide custom configuration to 
 * **`rawConfig`**: For configuration that cannot be embedded into the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource directly, or if you prefer to pass in raw upstream configuration, you can use the `rawConfig` option in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource instead. Note that configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup/" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup/" >}}). 
 
 ## Step 1: Create agentgateway configuration {#agentgateway-configuration}
 

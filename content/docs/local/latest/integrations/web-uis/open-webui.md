@@ -182,7 +182,7 @@ Monitor Open WebUI usage with built-in metrics:
 - Error rates and latency percentiles
 - Cost attribution dashboards
 
-See [Observability](/docs/integrations/observability/) for Prometheus and Grafana integration.
+See [Observability]({{< link-hextra path="/integrations/observability/" >}}) for Prometheus and Grafana integration.
 
 ## Tutorial: Multi-LLM Platform with SSO and Observability
 

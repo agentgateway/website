@@ -55,7 +55,7 @@ Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane by usin
 
 3. Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart.
 
-   1. **Optional**: Pull and inspect the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart values before installation. You might want to update the Helm chart values files to customize the installation. For example, you might change the namespace, update the resource limits and requests, or enable extensions such as for AI. For more information, see [Advanced settings](../advanced).
+   1. **Optional**: Pull and inspect the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart values before installation. You might want to update the Helm chart values files to customize the installation. For example, you might change the namespace, update the resource limits and requests, or enable extensions such as for AI. For more information, see [Advanced settings]({{< link-hextra path="/advanced">}}).
 
       ```sh
       helm pull oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
@@ -145,13 +145,14 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
 
 
 Now that you have the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane set up and running, check out the following guides to start using the {{< reuse "/agw-docs/snippets/agentgateway.md" >}} data plane.
-- Learn more about [{{< reuse "/agw-docs/snippets/agentgateway.md" >}}, its features and benefits](../../about/overview). 
-- [Set up an agentgateway proxy](../../setup/) to start routing to AI workloads.
+
+- Learn more about [{{< reuse "/agw-docs/snippets/agentgateway.md" >}}, its features and benefits]({{< link-hextra path="/about/overview">}}). 
+- [Set up an agentgateway proxy]({{< link-hextra path="/setup/">}}) to start routing to AI workloads.
 
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-Follow the [Uninstall guide](../../operations/uninstall).
+Follow the [Uninstall guide]({{< link-hextra path="/operations/uninstall">}}).
 

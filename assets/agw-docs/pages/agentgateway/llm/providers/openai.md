@@ -2,7 +2,7 @@ Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "agw-doc
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/agentgateway/setup" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
 
 ## Set up access to OpenAI
 

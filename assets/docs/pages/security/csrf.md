@@ -46,7 +46,7 @@ Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs](/docs/reference/api/#csrfpolicy).
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#csrfpolicy" >}}).
 
    | Field | Description |
    |-------|-------------|
