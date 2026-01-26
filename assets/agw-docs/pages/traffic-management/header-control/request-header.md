@@ -356,10 +356,6 @@ You can return dynamic information about the request in the request header. For 
 
 {{< reuse "agw-docs/snippets/dynamic-req-resp-headers.md" >}}
 
-{{< callout >}}
-{{< reuse "agw-docs/snippets/proxy-agentgateway.md" >}}
-{{< /callout >}} 
-
 1. Set up a header modifier that sets the `X-Client-Ip` header with the value of the downstream remote address. 
    ```yaml {linenos=table,hl_lines=[18,19],linenostart=1}
    kubectl apply -f- <<EOF
