@@ -7,7 +7,7 @@ Use the `RequestHeaderModifier` filter to add, append, overwrite, or remove requ
 
 For more information, see the [HTTPHeaderFilter specification](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPHeaderFilter).
 
-{{< reuse "docs/snippets/agentgateway/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 
 ## Add and append request headers {#add-request-header}
@@ -25,7 +25,7 @@ Add headers to incoming requests before they are forwarded to an upstream servic
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:
@@ -148,7 +148,7 @@ Setting headers is similar to adding headers. If the request does not include th
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:
@@ -294,7 +294,7 @@ You can remove HTTP headers from a request before the request is forwarded to th
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:
@@ -354,10 +354,10 @@ You can remove HTTP headers from a request before the request is forwarded to th
 
 You can return dynamic information about the request in the request header. For more information, see the Envoy docs for [Custom request/response headers](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers.html#custom-request-response-headers).
 
-{{< reuse "docs/snippets/dynamic-req-resp-headers.md" >}}
+{{< reuse "agw-docs/snippets/dynamic-req-resp-headers.md" >}}
 
 {{< callout >}}
-{{< reuse "docs/snippets/proxy-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/proxy-agentgateway.md" >}}
 {{< /callout >}} 
 
 1. Set up a header modifier that sets the `X-Client-Ip` header with the value of the downstream remote address. 
@@ -371,7 +371,7 @@ You can return dynamic information about the request in the request header. For 
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:

@@ -7,7 +7,7 @@ Use the `ResponseHeaderModifier` filter to add, append, overwrite, or remove hea
 
 For more information, see the [HTTPHeaderFilter specification](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPHeaderFilter).
 
-{{< reuse "docs/snippets/agentgateway/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Add response headers {#add-response-headers-route}
 
@@ -24,7 +24,7 @@ Add headers to incoming requests before they are sent back to the client. If the
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:
@@ -103,7 +103,7 @@ Setting headers is similar to adding headers. If the response does not include t
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:
@@ -212,7 +212,7 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:
@@ -278,10 +278,10 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
 
 You can return dynamic information about the response in the response header. For more information, see the Envoy docs for [Custom request/response headers](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers.html#custom-request-response-headers).
 
-{{< reuse "docs/snippets/dynamic-req-resp-headers.md" >}}
+{{< reuse "agw-docs/snippets/dynamic-req-resp-headers.md" >}}
 
 {{< callout >}}
-{{< reuse "docs/snippets/proxy-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/proxy-agentgateway.md" >}}
 {{< /callout >}} 
 
 1. Set up a header modifier that sets the `X-Response-Code` header with the value of the HTTP response code. 
@@ -295,7 +295,7 @@ You can return dynamic information about the response in the response header. Fo
    spec:
      parentRefs:
      - name: agentgateway-proxy
-       namespace: {{< reuse "docs/snippets/namespace.md" >}}
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - headers.example
      rules:

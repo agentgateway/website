@@ -5,7 +5,7 @@ weight: 90
 
 Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
-{{< reuse "docs/snippets/agentgateway/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an OpenTelemetry collector
 

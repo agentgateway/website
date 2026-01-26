@@ -5,7 +5,7 @@ weight: 10
 
 Secure your applications with JSON Web Token (JWT) authentication by using the agentgateway proxy and an identity provider like Keycloak. To learn more about JWT auth, see [About JWT authentication]({{< link-hextra path="/security/jwt/about/" >}}). 
 
-{{< reuse "docs/snippets/agentgateway/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 {{< reuse "agw-docs/snippets/keycloak.md" >}}
 

@@ -32,7 +32,7 @@ You can configure the CORS policy at two levels:
 * **HTTPRoute**: For the native way in Kubernetes Gateway API, configure a CORS policy in the HTTPRoute. You can choose to apply the CORS policy to all the routes that are defined in the HTTPRoute, or to a selection of `backendRefs`. This route-level policy takes precedence over any {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} CORS that you might configure. For more information, see the [Kubernetes Gateway API docs](https://gateway-api.sigs.k8s.io/reference/spec/#httpcorsfilter) and [CORS design docs](https://gateway-api.sigs.k8s.io/geps/gep-1767/).
 * **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}**: For more flexibility to reuse the CORS policy across HTTPRoutes, specific routes, and Gateways, configure a CORS policy in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. You can attach an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a Gateway or the routes in an HTTPRoute resource. 
 
-{{< reuse "docs/snippets/agentgateway/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up CORS policies
 

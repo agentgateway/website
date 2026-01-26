@@ -8,7 +8,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 ## Before you begin
 
-{{< reuse "docs/snippets/agentgateway/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up host matching
 
