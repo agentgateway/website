@@ -5,10 +5,7 @@ weight: 90
 
 Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
-## Before you begin
-
-1. [Set up an agentgateway proxy]({{< link-hextra path="/setup/" >}}). 
-2. [Install the httpbin sample app]({{< link-hextra path="/operations/sample-app/" >}}).
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an OpenTelemetry collector
 
@@ -126,7 +123,7 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 3. Get the logs of the collector and search for the trace ID. Verify that you see the additional tracing attributes that you configured initially.
    ```sh
    kubectl logs deploy/opentelemetry-collector-traces -n telemetry \
-   | grep -A 30 "Trace ID\s\+: <trace_id>"
+   | grep -A 25 "Trace ID\s\+: <trace_id>"
    ```
 
    Example output: 

@@ -1,6 +1,6 @@
 ---
 title: CSRF
-weight: 30
+weight: 10
 description: Protect your applications from Cross-Site Request Forgery (CSRF) attacks.
 ---
 
@@ -18,10 +18,7 @@ To help prevent CSRF attacks, you can enable CSRF protection for your gateway or
 Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
 {{< /callout >}}
 
-## Before you begin
-
-1. [Set up an agentgateway proxy]({{< link-hextra path="/setup/" >}}). 
-2. [Install the httpbin sample app]({{< link-hextra path="/operations/sample-app/" >}}).
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up CSRF protection
 
@@ -48,14 +45,13 @@ Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enable CSRF p
          additionalOrigins:
          - example.org
          - allowThisOne.example.com
-         - "*.subdomain.example.com"
    EOF
    ```
 
    | Field | Description | 
    |-------|-------------|
    | `csrf` | Enables CSRF protection for the targeted Gateway or routes. When configured, all cross-origin requests are validated. | 
-   | `additionalOrigins` | List of additional origins that are allowed to make requests to your app beyond the same-origin requests. This is useful for trusted partners, subdomains, or CDNs. Origins can include wildcards for subdomain matching. | 
+   | `additionalOrigins` | List of additional origins that are allowed to make requests to your app beyond the same-origin requests. This is useful for trusted partners, subdomains, or CDNs. Origins cannot include wildcards. | 
 
 
 2. Send a request to the httpbin app on the `www.example.com` domain. Include the `malicioussite.com` origin that is not allowed in your policy. Verify that the request is denied and that you get back a 403 HTTP response code.
@@ -63,7 +59,7 @@ Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enable CSRF p
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:8080/post \
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:8080" \
     -H "origin: malicioussite.com"
    ```
@@ -93,8 +89,8 @@ Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enable CSRF p
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:8080/post \
-   -H "host: www.example.com:8080" \
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post \
+   -H "host: www.example.com" \
    -H "origin: allowThisOne.example.com"
    ```
    {{% /tab %}}
