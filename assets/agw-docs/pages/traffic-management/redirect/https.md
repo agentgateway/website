@@ -53,7 +53,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
        gateway: https
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          sectionName: http
      hostnames: 
@@ -88,7 +88,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
        gateway: https
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          sectionName: https
      hostnames: 
