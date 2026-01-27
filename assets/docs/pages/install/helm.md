@@ -94,14 +94,14 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
 
 {{% /tab %}}
 {{% tab tabName="Development" %}}
-When using the development build v{{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
+When using the development build {{< reuse "agw-docs/versions/helm-version-flag-n1.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
 
 
 
 
 ```sh
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} \
---version v{{< reuse "agw-docs/versions/patch-dev.md" >}} \
+--version {{< reuse "agw-docs/versions/helm-version-flag-n1.md" >}} \
 --set controller.image.pullPolicy=Always \
 --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
 ```
@@ -120,7 +120,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
       TEST SUITE: None
       ```
 
-4. Verify that the control plane is up and running. 
+1. Verify that the control plane is up and running. 
    
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -133,7 +133,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
    {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-78658959cd-cz6jt             1/1     Running   0          12s
    ```
 
-5. Verify that the `{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}` GatewayClass is created. You can optionally take a look at how the GatewayClass is configured by adding the `-o yaml` option to your command. 
+2. Verify that the `{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}` GatewayClass is created. You can optionally take a look at how the GatewayClass is configured by adding the `-o yaml` option to your command. 
 
    ```sh
    kubectl get gatewayclass {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
