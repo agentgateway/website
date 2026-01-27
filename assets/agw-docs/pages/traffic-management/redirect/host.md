@@ -16,7 +16,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - host.redirect.example

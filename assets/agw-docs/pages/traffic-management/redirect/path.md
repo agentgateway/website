@@ -23,7 +23,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - path.redirect.example
@@ -121,7 +121,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - path.redirect.example
