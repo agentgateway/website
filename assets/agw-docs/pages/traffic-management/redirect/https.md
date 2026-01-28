@@ -128,30 +128,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    < content-length: 0
    content-length: 0
    ```
-
-   {{< callout type="warning" >}}
-   **Troubleshooting**: If you get a 200 response instead of a 301 redirect, check the following:
-   
-   1. **Verify the redirect HTTPRoute is applied**: Check that the HTTPRoute with the `RequestRedirect` filter exists and is bound to the HTTP listener:
-      ```sh
-      kubectl get httproute httpbin-https-redirect -n httpbin -o yaml
-      ```
-      Ensure `spec.parentRefs[0].sectionName` is set to `http`.
-   
-   2. **Check for conflicting HTTPRoutes**: Another HTTPRoute bound to the same HTTP listener (`sectionName: http`) with the same hostname might be matching first. List all HTTPRoutes bound to your Gateway:
-      ```sh
-      kubectl get httproute -A -o jsonpath='{range .items[*]}{.metadata.namespace}{"\t"}{.metadata.name}{"\t"}{.spec.parentRefs[0].sectionName}{"\n"}{end}' | grep -E "(http|redirect.example)"
-      ```
-      If you find another HTTPRoute with `sectionName: http` and the same hostname (`redirect.example`), it might be taking precedence. Remove or modify that HTTPRoute, or ensure the redirect HTTPRoute has higher priority.
-   
-   3. **Verify hostname matches exactly**: Ensure the `Host` header in your curl command matches the hostname in the HTTPRoute exactly. The example uses `redirect.example` without a port number in the header.
-   
-   4. **Check HTTPRoute status**: Verify the HTTPRoute is accepted and bound correctly:
-      ```sh
-      kubectl describe httproute httpbin-https-redirect -n httpbin
-      ```
-      Look for any errors or warnings in the status section.
-   {{< /callout >}}
   
 4. Send an HTTPS request to the httpbin app on the `redirect.example` domain. Verify that you get back a 200 HTTP response code and that you can see a successful TLS handshake with the gateway. 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
