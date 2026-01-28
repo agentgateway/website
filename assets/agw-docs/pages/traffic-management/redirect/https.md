@@ -14,7 +14,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
@@ -179,6 +179,43 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    ...
    ```
 
+## Optional: Setting custom HTTP redirect status codes
+
+Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed HTTP redirect status codes. This setting overrides the status code that is set in the `RequestRedirect` filter of the HTTPRoute as shown in the following example.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-level-override
+  annotations:
+    kgateway.dev/http-redirect-status-code: "307"
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+  hostnames:
+    - "route-level-override.com"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /rule0
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        statusCode: 301
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /rule1
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        statusCode: 302
+EOF
+```
+
 
 ## Cleanup
 
@@ -200,7 +237,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
