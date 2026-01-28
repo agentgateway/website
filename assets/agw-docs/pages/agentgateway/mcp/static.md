@@ -83,14 +83,13 @@ metadata:
   name: mcp
 spec:
   parentRefs:
-  - name: agentgateway-proxy
-    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}  
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}  
   rules:
-  - 
-    backendRefs:
-    - name: mcp-backend
-      group: agentgateway.dev
-      kind: {{< reuse "agw-docs/snippets/backend.md" >}}  
+    - backendRefs:
+      - name: mcp-backend
+        group: agentgateway.dev
+        kind: {{< reuse "agw-docs/snippets/backend.md" >}}  
 EOF
 ```
 
