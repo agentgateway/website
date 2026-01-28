@@ -14,7 +14,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
@@ -139,7 +139,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{% tab tabName="Port-forward for local testing" %}}
    1. Port-forward the gateway proxy on port 8443. 
       ```sh
-      kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:443
+      kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:443
       ```
    
    2. Send an HTTPS request to the httpbin app. 
