@@ -8,13 +8,13 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 {{% reuse "agw-docs/snippets/listeners-https-create-cert.md" %}}
 
-5. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect. 
+6. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect. 
    ```yaml
    kubectl apply -f- <<EOF                                                          
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: agentgateway-proxy
+     name: http
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
@@ -237,7 +237,7 @@ EOF
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: agentgateway-proxy
+     name: http
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
