@@ -237,7 +237,7 @@ EOF
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
