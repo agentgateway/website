@@ -36,8 +36,8 @@ backends:
 - mcp:
     targets:
     - name: stdio-server
-      {{< gloss "STDIO (Standard Input/Output)" >}}stdio{{< /gloss >}}:
-        cmd: npx
+      stdio:
+        cmd: npx        
         args: ["@modelcontextprotocol/server-everything"]
     - name: http-server
       mcp:
