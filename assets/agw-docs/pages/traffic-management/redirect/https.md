@@ -2,21 +2,19 @@ Redirect HTTP traffic to HTTPS.
 
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRequestRedirectFilter).
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an HTTPS listener
 
 {{% reuse "agw-docs/snippets/listeners-https-create-cert.md" %}}
 
-5. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect. 
+6. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect. 
    ```yaml
    kubectl apply -f- <<EOF                                                          
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
@@ -55,7 +53,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
        gateway: https
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          sectionName: http
      hostnames: 
@@ -90,7 +88,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
        gateway: https
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          sectionName: https
      hostnames: 
@@ -141,7 +139,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{% tab tabName="Port-forward for local testing" %}}
    1. Port-forward the gateway proxy on port 8443. 
       ```sh
-      kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:8443
+      kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:443
       ```
    
    2. Send an HTTPS request to the httpbin app. 
@@ -181,6 +179,43 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    ...
    ```
 
+## Optional: Setting custom HTTP redirect status codes
+
+Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed HTTP redirect status codes. This setting overrides the status code that is set in the `RequestRedirect` filter of the HTTPRoute as shown in the following example.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-level-override
+  annotations:
+    kgateway.dev/http-redirect-status-code: "307"
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+  hostnames:
+    - "route-level-override.com"
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /rule0
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        statusCode: 301
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /rule1
+    filters:
+    - type: RequestRedirect
+      requestRedirect:
+        statusCode: 302
+EOF
+```
+
 
 ## Cleanup
 
@@ -202,7 +237,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
