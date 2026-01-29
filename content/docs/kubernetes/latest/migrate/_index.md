@@ -6,7 +6,7 @@ weight: 900
 ## Introduction
 
 Welcome to the documentation for migrating from Ingress to **Gateway API** and **agentgateway**. Migration is supported using the
-[agentgateway ingress2gateway](https://github.com/kgateway-dev/ingress2gateway) tool, which is a fork of
+[kgateway ingress2gateway](https://github.com/kgateway-dev/ingress2gateway) tool, which is a fork of
 [Kubernetes ingress2gateway](https://github.com/kubernetes-sigs/ingress2gateway) with the following additional features:
 
 - **Expanded Ingress NGINX Support:** Converts a wide range of Ingress NGINX-specific annotations, e.g. authentication,

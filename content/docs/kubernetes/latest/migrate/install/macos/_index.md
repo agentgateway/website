@@ -33,7 +33,7 @@ weight: 10
     Validate the binary against the checksum file.
 
     ```bash
-    echo "$(cat checksums.txt)  ingress2gateway" | shasum -a 256 --check
+    grep -F "  ingress2gateway_${OS}_${ARCH}.tar.gz" checksums.txt | shasum -a 256 --check
     ```
 
     If valid, the output is:
