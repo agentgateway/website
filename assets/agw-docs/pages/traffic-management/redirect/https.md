@@ -199,7 +199,7 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
        - name: agentgateway-proxy
          namespace: agentgateway-system
      hostnames:
-       - path.redirect.example
+       - redirect.example
      rules:
        - matches:
            - path:
@@ -230,12 +230,12 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:8080/anything -H "host: path.redirect.example"
+   curl -vik http://$INGRESS_GW_ADDRESS:8080/get -H "host: redirect.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/anything -H "host: path.redirect.example"
+   curl -vi localhost:8080/get -H "host: redirect.example"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -245,12 +245,10 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 307 Temporary Redirect
    HTTP/1.1 307 Temporary Redirect
-   < location: https://redirect.example:8080/status/200
-   location: https://redirect.example:8080/status/200
+   < location: http://redirect.example/anything
+   location: http://redirect.example/anything
    < date: Mon, 06 Nov 2024 01:48:12 GMT
    date: Mon, 06 Nov 2024 01:48:12 GMT
-   < server: envoy
-   server: envoy
    < content-length: 0
    content-length: 0
    ```
