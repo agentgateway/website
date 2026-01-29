@@ -226,7 +226,7 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
    EOF
    ```
 
-2. Send an HTTP request to the httpbin app on the `redirect.example` domain. Verify that you get back a 302 HTTP response code and that your redirect location shows `https://redirect.example:8080/status/200`. 
+2. Send an HTTP request to the httpbin app on the `redirect.example` domain. Verify that you get back a 307 HTTP response code. 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
