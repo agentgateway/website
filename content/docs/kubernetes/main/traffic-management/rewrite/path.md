@@ -4,4 +4,4 @@ weight: 462
 description: Rewrite path prefixes in requests. 
 ---
 
-{{< reuse "docs/pages/traffic-management/rewrite/path.md" >}}
+{{< reuse "agw-docs/pages/traffic-management/rewrite/path.md" >}}
