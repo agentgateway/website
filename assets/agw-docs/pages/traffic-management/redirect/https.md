@@ -230,12 +230,12 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: redirect.example"
+   curl -vik http://$INGRESS_GW_ADDRESS:8080/anything -H "host: path.redirect.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vik localhost:8080/status/200 -H "host: redirect.example"
+   curl -vi localhost:8080/anything -H "host: path.redirect.example"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -243,8 +243,8 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
    Example output: 
    ```
    * Mark bundle as not supporting multiuse
-   < HTTP/1.1 302 Moved Permanently
-   HTTP/1.1 302 Moved Permanently
+   < HTTP/1.1 307 Temporary Redirect
+   HTTP/1.1 307 Temporary Redirect
    < location: https://redirect.example:8080/status/200
    location: https://redirect.example:8080/status/200
    < date: Mon, 06 Nov 2024 01:48:12 GMT
