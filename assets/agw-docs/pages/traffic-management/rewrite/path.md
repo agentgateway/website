@@ -308,7 +308,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
 
 ### External services
 
-1. Create a Backend that represents your external service. The following example creates a Backend for the `httpbin.org` domain. 
+1. Create an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} for the `httpbin.org` domain. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -323,7 +323,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    EOF
    ```
    
-2. Create an HTTPRoute resource that matches incoming traffic on the `external-rewrite.example` domain and forwards traffic to the Backend that you created. Because the Backend expects a different domain, you use the `URLRewrite` filter to rewrite the hostname from `external-rewrite.example` to `httpbin.org`. In addition, you rewrite any existing paths to `/anything`. 
+2. Create an HTTPRoute resource that matches incoming traffic on the `external-rewrite.example` domain and forwards traffic to the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that you created. Because the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} expects a different domain, you use the `URLRewrite` filter to rewrite the hostname from `external-rewrite.example` to `httpbin.org`. In addition, you rewrite any existing paths to `/anything`. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
