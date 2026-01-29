@@ -181,7 +181,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 ## Setting custom HTTP redirect status codes
 
-Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed HTTP redirect status codes. 
+Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed HTTP redirect status codes. The annotation overrides any redirect codes that are set in the `RequestRedirect` filter on the HTTPRoute. 
 
 1. Override the status code that is set in the `RequestRedirect` filter of the HTTPRoute.
 
