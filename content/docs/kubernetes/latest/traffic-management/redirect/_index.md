@@ -1,6 +1,6 @@
 ---
 title: Redirects
-weight: 20
+weight: 30
 ---
 
 Redirect requests to another host or path. 
