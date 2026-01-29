@@ -32,6 +32,7 @@ document.addEventListener('alpine:init', () => {
     // Internal state
     currentStage: '',
     showThinking: false,
+    sessionId: '',
 
     // Utilities
     streamer: null,
@@ -47,6 +48,7 @@ document.addEventListener('alpine:init', () => {
       // Focus input when dialog opens
       this.$watch('isOpen', (value) => {
         if (value) {
+          this.sessionId = this.generateSessionId();
           this.$nextTick(() => {
             this.$refs.input?.focus();
           });
@@ -84,6 +86,7 @@ document.addEventListener('alpine:init', () => {
       this.isProcessing = false;
       this.showThinking = false;
       this.currentStage = '';
+      this.sessionId = '';
       this.thinkingAnimator.stop();
       this.markdownRenderer.reset();
       if (this.currentEventSource) {
@@ -126,6 +129,10 @@ document.addEventListener('alpine:init', () => {
     async sendQuery() {
       const query = this.userInput.trim();
       if (!query || this.isProcessing) return;
+
+      if (!this.sessionId) {
+        this.sessionId = this.generateSessionId();
+      }
 
       this.isProcessing = true;
 
@@ -175,6 +182,7 @@ document.addEventListener('alpine:init', () => {
       // Stream the response
       try {
         this.currentEventSource = this.streamer.stream(query, {
+          sessionId: this.sessionId,
           onToken: (token) => {
             this.markdownRenderer.addToken(token);
             const html = this.markdownRenderer.render();
@@ -243,6 +251,15 @@ document.addEventListener('alpine:init', () => {
         this.isProcessing = false;
         this.currentEventSource = null;
       }
+    },
+
+    generateSessionId() {
+      if (window.crypto?.randomUUID) {
+        return window.crypto.randomUUID();
+      }
+      const bytes = new Uint8Array(16);
+      window.crypto.getRandomValues(bytes);
+      return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
     },
 
     scrollToBottom() {

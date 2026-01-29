@@ -16,9 +16,9 @@ export class ChatStreamer {
    * @param {Function} callbacks.onError - Called on error
    * @returns {EventSource} The event source instance (for external cleanup if needed)
    */
-  stream(query, { onToken, onStage, onDone, onError }) {
+  stream(query, { sessionId, onToken, onStage, onDone, onError }) {
     const eventSource = new EventSource(
-      `${this.endpoint}/query?q=${encodeURIComponent(query)}`
+      `${this.endpoint}/query?q=${encodeURIComponent(query)}&sessionId=${encodeURIComponent(sessionId)}`
     );
 
     eventSource.addEventListener('stage', (e) => {
