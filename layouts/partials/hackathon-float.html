@@ -1,0 +1,61 @@
+<style>
+  @keyframes cyber-glow {
+    0%, 100% { box-shadow: 0 0 15px rgba(0, 255, 255, 0.4), 0 0 30px rgba(0, 255, 255, 0.1), inset 0 0 20px rgba(0, 255, 255, 0.05); }
+    50% { box-shadow: 0 0 25px rgba(0, 255, 255, 0.6), 0 0 50px rgba(0, 255, 255, 0.2), inset 0 0 30px rgba(0, 255, 255, 0.1); }
+  }
+  @keyframes scanline {
+    0% { transform: translateY(-100%); }
+    100% { transform: translateY(100%); }
+  }
+  @keyframes flicker {
+    0%, 95%, 100% { opacity: 1; }
+    96% { opacity: 0.8; }
+    97% { opacity: 1; }
+    98% { opacity: 0.6; }
+  }
+  #hackathon-float {
+    animation: cyber-glow 3s ease-in-out infinite;
+  }
+  #hackathon-float .cyber-title {
+    animation: flicker 4s infinite;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(0, 255, 255, 0.4);
+  }
+  #hackathon-float::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(transparent 50%, rgba(0, 255, 255, 0.03) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+  }
+  #hackathon-float .scanline {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 8px;
+    background: linear-gradient(to bottom, transparent, rgba(0, 255, 255, 0.1), transparent);
+    animation: scanline 3s linear infinite;
+    pointer-events: none;
+  }
+</style>
+
+<div id="hackathon-float" class="fixed top-24 right-6 z-50 max-w-xs rounded-xl overflow-hidden transition-all duration-300 font-secondary"
+     style="background: linear-gradient(135deg, #0a0e1a 0%, #111833 50%, #0a0e1a 100%); border: 1px solid rgba(0, 255, 255, 0.3);">
+  <div class="scanline"></div>
+  <button onclick="document.getElementById('hackathon-float').style.display='none'"
+          class="absolute top-2 right-3 text-cyan-400/60 hover:text-cyan-300 text-lg leading-none cursor-pointer z-10 transition-colors">&times;</button>
+  <div class="p-5 relative">
+    <div class="text-[10px] uppercase tracking-[0.3em] mb-2" style="color: rgba(0, 255, 255, 0.6);">// Virtual Hackathon</div>
+    <div class="cyber-title text-xl font-bold mb-2" style="color: #00ffff; font-family: monospace;">MCP_HACK//26</div>
+    <p class="text-xs leading-relaxed mb-4" style="color: rgba(200, 210, 255, 0.7);">
+      Build with <span style="color: #00ffff;">MCP</span> & <span style="color: #ff00ff;">AI Agents</span>.<br>
+      $5,000 in prizes. Feb 2 – Mar 1, 2026.
+    </p>
+    <a href="https://aihackathon.dev/" target="_blank" rel="noreferrer"
+       class="inline-block w-full text-center text-sm font-bold rounded px-4 py-2.5 transition-all duration-200"
+       style="background: linear-gradient(90deg, #00ffff, #00ccff); color: #0a0e1a; text-transform: uppercase; letter-spacing: 0.1em;"
+       onmouseover="this.style.background='linear-gradient(90deg, #00ffff, #ff00ff)'; this.style.boxShadow='0 0 20px rgba(0,255,255,0.5)'"
+       onmouseout="this.style.background='linear-gradient(90deg, #00ffff, #00ccff)'; this.style.boxShadow='none'">
+      Register Now &rarr;
+    </a>
+  </div>
+</div>
