@@ -149,8 +149,8 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
                 replacePrefixMatch: /anything   
           backendRefs:
           - name: httpbin
-            kind: Backend
-            group: gateway.kgateway.dev
+            kind: {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}
+            group: agentgateway.dev
    EOF
    ```
 
@@ -197,10 +197,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
        "Accept": "*/*", 
        "Host": "httpbin.org", 
        "User-Agent": "curl/8.7.1", 
-       "X-Amzn-Trace-Id": "Root=1-68599cdc-5d3c0d9a1ac2aa482effb24b", 
-       "X-Envoy-Expected-Rq-Timeout-Ms": "15000", 
-       "X-Envoy-External-Address": "10.0.15.215", 
-       "X-Envoy-Original-Path": "/"
+       "X-Amzn-Trace-Id": "Root=1-68599cdc-5d3c0d9a1ac2aa482effb24b"
      }, 
      "json": null, 
      "method": "GET", 
