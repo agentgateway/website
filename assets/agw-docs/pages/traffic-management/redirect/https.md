@@ -190,31 +190,39 @@ kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: route-level-override
-  annotations:
-    kgateway.dev/http-redirect-status-code: "307"
+  name: httpbin-redirect
+  namespace: httpbin
 spec:
   parentRefs:
     - name: agentgateway-proxy
+      namespace: agentgateway-system
+      annotations:
+         kgateway.dev/http-redirect-status-code: "307"
   hostnames:
-    - "route-level-override.com"
+    - path.redirect.example
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /rule0
-    filters:
-    - type: RequestRedirect
-      requestRedirect:
-        statusCode: 301
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /rule1
-    filters:
-    - type: RequestRedirect
-      requestRedirect:
-        statusCode: 302
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /get
+      filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /anything
+            statusCode: 302
+     - matches:
+        - path:
+            type: PathPrefix
+            value: /post
+       filters:
+        - type: RequestRedirect
+          requestRedirect:
+            path:
+              type: ReplacePrefixMatch
+              replacePrefixMatch: /anything
+            statusCode: 302
 EOF
 ```
 2. Send an HTTP request to the httpbin app on the `redirect.example` domain. Verify that you get back a 302 HTTP response code and that your redirect location shows `https://redirect.example:8080/status/200`. 
@@ -246,55 +254,6 @@ EOF
    content-length: 0
    ```
 
-3. Send an HTTPS request to the httpbin app on the `redirect.example` domain. Verify that you get back a 200 HTTP response code and that you can see a successful TLS handshake with the gateway. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vik https://$INGRESS_GW_ADDRESS:443/status/200 -H "host: redirect.example"
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   1. Port-forward the gateway proxy on port 8443. 
-      ```sh
-      kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:443
-      ```
-   
-   2. Send an HTTPS request to the httpbin app. 
-      ```sh
-      curl -vik --connect-to redirect.example:443:localhost:8443 https://redirect.example/status/200
-      ```
-   {{% /tab %}}
-   {{< /tabs >}}
-   
-   Example output: 
-   ```
-   * ALPN: curl offers h2,http/1.1
-   * (304) (OUT), TLS handshake, Client hello (1):
-   * (304) (IN), TLS handshake, Server hello (2):
-   * (304) (IN), TLS handshake, Unknown (8):
-   * (304) (IN), TLS handshake, Certificate (11):
-   * (304) (IN), TLS handshake, CERT verify (15):
-   * (304) (IN), TLS handshake, Finished (20):
-   * (304) (OUT), TLS handshake, Finished (20):
-   * SSL connection using TLSv1.3 / AEAD-CHACHA20-POLY1305-SHA256 / [blank] / UNDEF
-   * ALPN: server did not agree on a protocol. Uses default.
-   * Server certificate:
-   *  subject: CN=*; O=any domain
-   *  start date: Mar 14 13:37:22 2025 GMT
-   *  expire date: Mar 14 13:37:22 2026 GMT
-   *  issuer: O=any domain; CN=*
-   *  SSL certificate verify result: unable to get local issuer certificate (20), continuing anyway.
-   * using HTTP/1.x
-   > GET /status/200 HTTP/1.1
-   > Host: redirect.example
-   > User-Agent: curl/8.7.1
-   > Accept: */*
-   > 
-   * Request completely sent off
-   < HTTP/1.1 200 OK
-   HTTP/1.1 200 OK
-   ...
-   ```
 
 ## Cleanup
 
