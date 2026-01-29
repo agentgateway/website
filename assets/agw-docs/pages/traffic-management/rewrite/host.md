@@ -87,7 +87,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      namespace: httpbin
    metadata:
      name: static
-     namespace: agentgateway-system
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      static:
        host: httpbin.org
