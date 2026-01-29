@@ -192,12 +192,12 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
    metadata:
      name: httpbin-redirect
      namespace: httpbin
+     annotations:
+       kgateway.dev/http-redirect-status-code: "307"
    spec:
      parentRefs:
        - name: agentgateway-proxy
          namespace: agentgateway-system
-         annotations:
-            kgateway.dev/http-redirect-status-code: "307"
      hostnames:
        - path.redirect.example
      rules:
@@ -212,11 +212,11 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
                  type: ReplacePrefixMatch
                  replacePrefixMatch: /anything
                statusCode: 302
-        - matches:
+       - matches:
            - path:
                type: PathPrefix
                value: /post
-          filters:
+         filters:
            - type: RequestRedirect
              requestRedirect:
                path:
