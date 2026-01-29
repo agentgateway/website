@@ -2,9 +2,7 @@ Rewrite path prefixes in requests by using the `URLRewrite` filter.
 
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPURLRewriteFilter).
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Rewrite prefix path
 
@@ -25,7 +23,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
      namespace: httpbin
    spec:
      parentRefs:
-     - name: http
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - rewrite.example
@@ -48,7 +46,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    
    |Setting|Description|
    |--|--|
-   |`spec.parentRefs`| The name and namespace of the Gateway that serves this HTTPRoute. In this example, you use the `http` gateway that was created as part of the get started guide. |
+   |`spec.parentRefs`| The name and namespace of the Gateway that serves this HTTPRoute. In this example, you use the `agentgateway-proxy` gateway that was created as part of the get started guide. |
    |`spec.rules.filters.type`| The type of filter that you want to apply to incoming requests. In this example, the `URLRewrite` filter is used.|
    |`spec.rules.filters.urlRewrite.path.type`| The type of HTTPPathModifier that you want to use. In this example, `ReplacePrefixMatch` is used, which replaces only the path prefix.  |
    | `spec.rules.filters.urlRewrite.path.replacePrefixMatch` | The path prefix you want to rewrite to. In this example, you replace the prefix path with the `/anything` prefix path. | 
@@ -135,7 +133,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
      namespace: default
    spec:
      parentRefs:
-     - name: http
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - external-rewrite.example
@@ -232,7 +230,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
      namespace: httpbin
    spec:
      parentRefs:
-     - name: http
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - rewrite.example
@@ -255,7 +253,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    
    |Setting|Description|
    |--|--|
-   |`spec.parentRefs`| The name and namespace of the Gateway that serves this HTTPRoute. In this example, you use the `http` gateway that was created as part of the get started guide. |
+   |`spec.parentRefs`| The name and namespace of the Gateway that serves this HTTPRoute. In this example, you use the `agentgateway-proxy` gateway that was created as part of the get started guide. |
    |`spec.rules.filters.type`| The type of filter that you want to apply to incoming requests. In this example, the `URLRewrite` filter is used.|
    |`spec.rules.filters.urlRewrite.path.type`| The type of HTTPPathModifier that you want to use. In this example, `ReplaceFullPath` is used, which replaces the full path prefix.  |
    | `spec.rules.filters.urlRewrite.path.replaceFullPath` | The path prefix you want to rewrite to. In this example, you replace the full prefix path with the `/anything` prefix path. | 
@@ -342,7 +340,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
      namespace: default
    spec:
      parentRefs:
-     - name: http
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - external-rewrite.example
