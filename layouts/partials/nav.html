@@ -212,6 +212,32 @@
     background-color: rgb(31, 41, 55) !important; /* gray-800 */
     color: rgb(255, 255, 255) !important;
   }
+
+  /* Mobile nav bar: force background so it stays light in light mode */
+  .mobile-nav-bar {
+    background-color: white !important;
+  }
+  .dark .mobile-nav-bar {
+    background-color: rgb(17, 24, 39) !important; /* gray-900 */
+  }
+  /* Mobile nav bar: constrain logo size and ensure correct light/dark logo */
+  .mobile-nav-bar a[href="/"] img {
+    height: 32px !important;
+    width: auto !important;
+    max-width: 160px !important;
+  }
+  .mobile-nav-bar a[href="/"] img.dark\:hidden {
+    display: block !important;
+  }
+  .mobile-nav-bar a[href="/"] img.hidden.dark\:block {
+    display: none !important;
+  }
+  .dark .mobile-nav-bar a[href="/"] img.dark\:hidden {
+    display: none !important;
+  }
+  .dark .mobile-nav-bar a[href="/"] img.hidden.dark\:block {
+    display: block !important;
+  }
 </style>
 
 {{- /* Determine if we're on the landing page */ -}}
@@ -426,8 +452,8 @@
     </div>
   </nav>
 
-  <nav class="fixed top-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-50">
-    <div class="py-6 pr-4 flex justify-between items-center">
+  <nav class="mobile-nav-bar sticky top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-gray-900">
+    <div class="py-3 pr-4 flex justify-between items-center">
       {{- $page := . -}}
       {{- if $page -}}
         <a href="/">{{ partial "utils/logo.html" (dict "Page" $page "attributes" "height=\"50\"" ) }}</a>
