@@ -185,46 +185,47 @@ Use the `kgateway.dev/http-redirect-status-code` annotation to configure allowed
 
 1. Create an HTTPRoute that redirects the `/get` and `/post` httpbin paths to the `/anything` path with a 302 HTTP redirect code. To override the path-specific redirect code with a 307 HTTP response code, you add the `kgateway.dev/http-redirect-status-code` annotation. 
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: httpbin-redirect
-  namespace: httpbin
-spec:
-  parentRefs:
-    - name: agentgateway-proxy
-      namespace: agentgateway-system
-      annotations:
-         kgateway.dev/http-redirect-status-code: "307"
-  hostnames:
-    - path.redirect.example
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /get
-      filters:
-        - type: RequestRedirect
-          requestRedirect:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /anything
-            statusCode: 302
-     - matches:
-        - path:
-            type: PathPrefix
-            value: /post
-       filters:
-        - type: RequestRedirect
-          requestRedirect:
-            path:
-              type: ReplacePrefixMatch
-              replacePrefixMatch: /anything
-            statusCode: 302
-EOF
-```
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: httpbin-redirect
+     namespace: httpbin
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: agentgateway-system
+         annotations:
+            kgateway.dev/http-redirect-status-code: "307"
+     hostnames:
+       - path.redirect.example
+     rules:
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /get
+         filters:
+           - type: RequestRedirect
+             requestRedirect:
+               path:
+                 type: ReplacePrefixMatch
+                 replacePrefixMatch: /anything
+               statusCode: 302
+        - matches:
+           - path:
+               type: PathPrefix
+               value: /post
+          filters:
+           - type: RequestRedirect
+             requestRedirect:
+               path:
+                 type: ReplacePrefixMatch
+                 replacePrefixMatch: /anything
+               statusCode: 302
+   EOF
+   ```
+
 2. Send an HTTP request to the httpbin app on the `redirect.example` domain. Verify that you get back a 302 HTTP response code and that your redirect location shows `https://redirect.example:8080/status/200`. 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
