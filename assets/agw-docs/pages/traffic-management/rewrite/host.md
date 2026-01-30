@@ -168,6 +168,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ```sh
 kubectl delete httproute httpbin-rewrite -n httpbin
 kubectl delete httproute backend-rewrite -n httpbin
+kubectl delete {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} httpbin -n httpbin
 ```
 
 
