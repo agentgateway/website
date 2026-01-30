@@ -56,7 +56,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -82,7 +82,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers/200 -H "host: rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers/200 -H "host: rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -159,7 +159,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: external-rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: external-rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -258,7 +258,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2">}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -284,7 +284,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers/200 -H "host: rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers/200 -H "host: rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -357,7 +357,7 @@ Use the [HTTPPathModifier](https://gateway-api.sigs.k8s.io/reference/spec/#gatew
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/header -H "host: external-rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/header -H "host: external-rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
