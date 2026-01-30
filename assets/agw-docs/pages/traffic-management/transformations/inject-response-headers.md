@@ -84,8 +84,8 @@ Use an Inja template to extract a value from a request header and add it as a he
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers \
-    -H "host: www.example.com:8080" \
+   curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
+    -H "host: www.example.com:80" \
     -H "x-gateway-request: my custom request header" \
     -H "baz: pattern-to-replace"
    ```

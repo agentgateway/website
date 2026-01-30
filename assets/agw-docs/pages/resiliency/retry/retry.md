@@ -366,7 +366,7 @@ Set up retries to the reviews app.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/reviews/1 -H "host: retry.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/reviews/1 -H "host: retry.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -419,7 +419,7 @@ Simulate a failure for the reviews app so that you can verify that the request i
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/reviews/1 -H "host: retry.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/reviews/1 -H "host: retry.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

@@ -51,7 +51,7 @@ Add headers to incoming requests before they are sent back to the client. If the
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider Loadbalancer" %}}
 ```sh
-curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers -H "host: headers.example:8080"
+curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
 ```
 {{% /tab %}}
 {{% tab tabName="Port-forward for local testing" %}}
@@ -130,7 +130,7 @@ Setting headers is similar to adding headers. If the response does not include t
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider Loadbalancer" %}}
 ```sh
-curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers -H "host: headers.example:8080"
+curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
 ```
 {{% /tab %}}
 {{% tab tabName="Port-forward for local testing" %}}
@@ -171,7 +171,7 @@ You can remove HTTP headers from a response before the response is sent back to 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider Loadbalancer" %}}
 ```sh
-curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers -H "host: www.example.com:8080"
+curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: www.example.com:80"
 ```
 {{% /tab %}}
 {{% tab tabName="Port-forward for local testing" %}}
@@ -239,7 +239,7 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider Loadbalancer" %}}
 ```sh
-curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers -H "host: headers.example:8080"
+curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
 ```
 {{% /tab %}}
 {{% tab tabName="Port-forward for local testing" %}}
@@ -323,7 +323,7 @@ You can return dynamic information about the response in the response header. Fo
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider LoadBalancer" %}}
 ```sh
-curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers -H "host: headers.example:8080"
+curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
 ```
 {{% /tab %}}
 {{% tab tabName="Port-forward for local testing" %}}

@@ -62,7 +62,7 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:8080 -H "host: httpbin.org" 
+   curl -vik http://$INGRESS_GW_ADDRESS:80 -H "host: httpbin.org" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port forward for local testing" %}}

@@ -202,7 +202,7 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
          kind: GatewayParameters        
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -313,7 +313,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -H "Host: lambda.${AWS_LAMBDA_REGION}.amazonaws.com" \
-     $INGRESS_GW_ADDRESS:8080/echo \
+     $INGRESS_GW_ADDRESS:80/echo \
      -d '{"key1":"value1", "key2":"value2"}' -X POST
    ```
    {{% /tab %}}
@@ -368,7 +368,7 @@ If you no longer need to access Lambda functions from {{< reuse "/agw-docs/snipp
      gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

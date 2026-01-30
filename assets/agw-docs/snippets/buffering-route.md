@@ -35,7 +35,7 @@ You can configure connection buffer limits using a {{< reuse "/agw-docs/snippets
      gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -70,8 +70,8 @@ You can configure connection buffer limits using a {{< reuse "/agw-docs/snippets
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik -X POST http://$INGRESS_GW_ADDRESS:8080/anything \
-   -H "host: www.example.com:8080" \
+   curl -vik -X POST http://$INGRESS_GW_ADDRESS:80/anything \
+   -H "host: www.example.com:80" \
    -H "Content-Type: text/plain" \
    -d "{\"payload\": \"$(< /tmp/large_payload_2k.txt)\"}"
    ```
@@ -90,7 +90,7 @@ You can configure connection buffer limits using a {{< reuse "/agw-docs/snippets
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik -X POST http://$INGRESS_GW_ADDRESS:8080/anything \
+   curl -vik -X POST http://$INGRESS_GW_ADDRESS:80/anything \
       -H "host: www.example.com:8080" \
       -H "Content-Type: application/json" \
       -d "{\"payload\":  \"hello world\"}" 
@@ -123,6 +123,6 @@ You can configure connection buffer limits using a {{< reuse "/agw-docs/snippets
      },
      "method": "POST",
      "origin": "...",
-     "url": "https://$INGRESS_GW_ADDRESS:8080/anything"
+     "url": "https://$INGRESS_GW_ADDRESS:80/anything"
    }
    ```

@@ -13,7 +13,7 @@
      gatewayClassName: kgateway
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

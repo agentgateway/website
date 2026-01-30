@@ -151,7 +151,7 @@ Now that you have CORS policies applied via an HTTPRoute or {{< reuse "agw-docs/
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:8080/get -H "host: cors.example:8080" \
+   curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: cors.example:80" \
     -H "Origin: https://example.com/" \
     -H "Access-Control-Request-Method: POST" \
     -H "Access-Control-Request-Headers: Origin"
@@ -218,7 +218,7 @@ Now that you have CORS policies applied via an HTTPRoute or {{< reuse "agw-docs/
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:8080/get -H "host: cors.example:8080" \
+   curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: cors.example:80" \
     -H "Origin: https://notallowed.com/" \
     -H "Access-Control-Request-Method: POST" \
     -H "Access-Control-Request-Headers: Origin"

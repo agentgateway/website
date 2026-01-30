@@ -40,7 +40,7 @@ Match headers by an exact string, such as `version`.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -67,7 +67,7 @@ Match headers by an exact string, such as `version`.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: match.example:8080" -H "version: v2"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example:80" -H "version: v2"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -144,7 +144,7 @@ Match headers with regular expressions (regex).
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: match.example:8080" -H "host: match.example" \
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example:80" -H "host: match.example" \
    -H "Authorization: Bearer 123" \
    -H "pet: dogs" \
    -H "version: 3.0" 
@@ -181,7 +181,7 @@ Match headers with regular expressions (regex).
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: match.example:8080" -H "host: match.example" \
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example:80" -H "host: match.example" \
    -H "Authorization: Bearer 123" \
    -H "pet: dogs" \
    -H "version: 30"

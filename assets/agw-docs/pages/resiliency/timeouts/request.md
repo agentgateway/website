@@ -120,7 +120,7 @@ Specify timeouts for a specific route.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: timeout.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: timeout.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -160,7 +160,7 @@ Specify timeouts for a specific route.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything -H "host: timeout.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: timeout.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

@@ -154,7 +154,7 @@ The following image illustrates the route delegation hierarchy:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo?query1=val1" \
+   curl -i "http://$INGRESS_GW_ADDRESS:80/anything/team1/foo?query1=val1" \
    -H "host: delegation.example" -H "header1: val1"
    ```
    {{% /tab %}}
@@ -178,7 +178,7 @@ The following image illustrates the route delegation hierarchy:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo?query1=val1&queryX=valX" \
+   curl -i "http://$INGRESS_GW_ADDRESS:80/anything/team1/foo?query1=val1&queryX=valX" \
    -H "host: delegation.example" -H "header1: val1" -H "headerX: valX"
    ```
    {{% /tab %}}
@@ -206,7 +206,7 @@ The following image illustrates the route delegation hierarchy:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar?queryX=valX&query2=val2" \
+   curl -i "http://$INGRESS_GW_ADDRESS:80/anything/team2/bar?queryX=valX&query2=val2" \
    -H "host: delegation.example" -H "headerX: valX" -H "header2: val2"
    ```
    {{% /tab %}}
@@ -269,7 +269,7 @@ Instead of requiring the child HTTPRoutes to define the same matchers, headers, 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2">}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar?queryX=valX&query2=val2" \
+   curl -i "http://$INGRESS_GW_ADDRESS:80/anything/team2/bar?queryX=valX&query2=val2" \
    -H "host: delegation.example" -H "headerX: valX" -H "header2: val2"
    ```
    {{% /tab %}}

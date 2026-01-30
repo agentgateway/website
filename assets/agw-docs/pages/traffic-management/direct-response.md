@@ -82,8 +82,8 @@ The following rules are applied during schema validation:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 \
-   -H "host: direct-response.com:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 \
+   -H "host: direct-response.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -117,8 +117,8 @@ The following rules are applied during schema validation:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/direct-response \
-   -H "host: direct-response.com:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/direct-response \
+   -H "host: direct-response.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

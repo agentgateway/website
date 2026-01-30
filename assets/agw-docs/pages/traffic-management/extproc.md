@@ -202,7 +202,7 @@ You can enable ExtProc for a particular route in an HTTPRoute resource.
 
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
    ```
    {{% /tab %}}
 
@@ -247,7 +247,7 @@ You can enable ExtProc for a particular route in an HTTPRoute resource.
 
    {{% tab tabName="Cloud Provider LoadBalancer"  %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
    ```
    {{% /tab %}}
 
@@ -378,7 +378,7 @@ You can enable ExtProc for all a Gateway. This way, the ExtProc configuration ap
    
 5. Send a request to the httpbin app along the `/headers` path and provide your instructions in the `instruction` header. This example instructs the ExtProc server to add the `extproc: true` header. Verify that you get back a 200 HTTP response and that your response includes the `extproc: true` header. 
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
    ```
    
    Example output: 
@@ -409,7 +409,7 @@ You can enable ExtProc for all a Gateway. This way, the ExtProc configuration ap
 
 6. Send a request along the `/get` path. Verify that you get back a 200 HTTP response code and that you also see the `extproc: true` header. 
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: extproc.example" -H 'instructions: {"addHeaders":{"extproc":"true"}}' 
    ```
    
    Example output: 

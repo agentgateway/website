@@ -206,7 +206,7 @@ Now that your TLS backend and routing resources are configured, verify the TLS c
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/ -H "host: example.com:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/ -H "host: example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -348,7 +348,7 @@ Set up a Backend resource that represents your external service. Then, use a Bac
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2">}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything -H "host: httpbin-external.example" 
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: httpbin-external.example" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

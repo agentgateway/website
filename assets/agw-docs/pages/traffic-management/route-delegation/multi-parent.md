@@ -149,7 +149,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo -H "host: delegation-parent1.example"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/foo -H "host: delegation-parent1.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -175,7 +175,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar -H "host: delegation-parent1.example"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team2/bar -H "host: delegation-parent1.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -201,7 +201,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo -H "host: delegation-parent2.example"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/foo -H "host: delegation-parent2.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -227,7 +227,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar -H "host: delegation-parent2.example"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team2/bar -H "host: delegation-parent2.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
