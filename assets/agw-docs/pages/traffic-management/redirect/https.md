@@ -185,7 +185,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    kubectl delete httproute,secret -A -l gateway=https
    ```
 
-2. Remove the example_certs directory that stores your TLS credentials.
+2. Remove the `example_certs` directory that stores your TLS credentials.
    ```sh
    rm -rf example_certs
    ```
