@@ -85,7 +85,7 @@ You can set up the httpbin sample app. This app can be used to try out traffic m
    ```
 {{% /tab %}}
 {{% tab tabName="Port-forward for local testing"%}}
-1. Port-forward the gateway proxy `http` pod on port 8080. 
+1. Port-forward the gateway proxy `agentgateway-proxy` pod on port 8080. 
    
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80

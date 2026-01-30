@@ -2,9 +2,7 @@ Redirect requests to a different host.
 
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRequestRedirectFilter).
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up host redirects
 
@@ -18,7 +16,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - host.redirect.example
@@ -35,7 +33,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: host.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: host.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

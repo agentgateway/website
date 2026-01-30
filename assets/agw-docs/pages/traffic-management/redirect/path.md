@@ -2,9 +2,8 @@ Redirect requests to a different path prefix.
 
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRequestRedirectFilter).
 
-## Before you begin
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
 ## Set up path redirects
 
 Path redirects use the HTTP path modifier to replace either an entire path or path prefixes. 
@@ -24,7 +23,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - path.redirect.example
@@ -57,7 +56,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -84,7 +83,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get/headers -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get/headers -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -122,7 +121,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - path.redirect.example
@@ -155,7 +154,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -182,7 +181,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get/headers -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get/headers -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
