@@ -85,9 +85,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    metadata:
      name: httpbin
      namespace: httpbin
-   metadata:
-     name: static
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      static:
        host: httpbin.org
@@ -171,7 +168,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ```sh
 kubectl delete httproute httpbin-rewrite -n httpbin
 kubectl delete httproute backend-rewrite -n httpbin
-kubectl delete {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} static -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 
