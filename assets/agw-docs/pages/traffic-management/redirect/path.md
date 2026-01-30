@@ -56,7 +56,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -83,7 +83,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get/headers -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get/headers -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -154,7 +154,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
