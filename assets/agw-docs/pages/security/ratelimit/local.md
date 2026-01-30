@@ -97,7 +97,7 @@ Set up local rate limiting for a particular route.
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: ratelimit.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: ratelimit.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -128,7 +128,7 @@ Set up local rate limiting for a particular route.
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: ratelimit.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: ratelimit.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -192,7 +192,7 @@ Instead of applying local rate limiting to a particular route, you can also appl
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: www.example.com:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -223,7 +223,7 @@ Instead of applying local rate limiting to a particular route, you can also appl
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: www.example.com:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -308,7 +308,7 @@ Sometimes, you might want to disable {{< gloss "Rate Limiting" >}}rate limiting{
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   for i in {1..2}; do curl -vi http://$INGRESS_GW_ADDRESS:8080/anything -H "host: www.example.com:8080"; done
+   for i in {1..2}; do curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: www.example.com:80"; done
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -366,7 +366,7 @@ Sometimes, you might want to disable {{< gloss "Rate Limiting" >}}rate limiting{
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   for i in {1..2}; do curl -vi http://$INGRESS_GW_ADDRESS:8080/anything -H "host: www.example.com:8080"; done
+   for i in {1..2}; do curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: www.example.com:80"; done
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

@@ -85,7 +85,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -223,7 +223,7 @@ You can set up access logs to write to a file. The following example writes acce
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -297,7 +297,7 @@ You send access logs to a gRPC service. This way, you can collect logs from seve
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: www.example.com:8080" -H "x-my-cool-test-filter:test"
+   curl -i http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com:80" -H "x-my-cool-test-filter:test"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -323,7 +323,7 @@ You send access logs to a gRPC service. This way, you can collect logs from seve
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: www.example.com:8080" -H "x-my-cool-test-filter:test"
+   curl -i http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com:80" -H "x-my-cool-test-filter:test"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

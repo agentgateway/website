@@ -183,7 +183,7 @@ Now that your httpbin app is running and exposed on the gateway proxy, you can s
 2. Send a request to the httpbin app and verify that you get back a 200 HTTP response code. Note that it might take a few seconds for the load balancer service to become fully ready and accept traffic.
    
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
    
    Example output: 

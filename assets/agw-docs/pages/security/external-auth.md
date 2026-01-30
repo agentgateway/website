@@ -123,12 +123,12 @@ Note that in the following example, resources are created in the same namespace 
 
 You can apply a policy at two levels: the Gateway level or the HTTPRoute level. If you apply the policy at both levels, the request must pass both policies to be authorized.
 
-1. Send a test request to the httpbin sample app.  Verify that you get back a 200 HTTP response code and that no authorization is required.
+1. Send a test request to the httpbin sample app. Verify that you get back a 200 HTTP response code and that no authorization is required.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -172,7 +172,7 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -202,7 +202,7 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080" -H "x-ext-authz: allow"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80" -H "x-ext-authz: allow"
    ```  
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -287,7 +287,7 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

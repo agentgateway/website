@@ -37,7 +37,7 @@ To set up {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
 
    Example output: 

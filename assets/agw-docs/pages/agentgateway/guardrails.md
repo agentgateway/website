@@ -271,7 +271,7 @@ EOF
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}   
    ```sh
-   curl -vi "$INGRESS_GW_ADDRESS:8080/openai" -H content-type:application/json  -d '{
+   curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",
       "messages": [
         {
@@ -318,7 +318,7 @@ EOF
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi "$INGRESS_GW_ADDRESS:8080/openai" -H content-type:application/json  -d '{
+   curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",
       "messages": [
         {

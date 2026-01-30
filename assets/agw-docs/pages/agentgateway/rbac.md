@@ -49,7 +49,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
 
    ````sh
-   curl -vik "$INGRESS_GW_ADDRESS:8080/gemini" -H content-type:application/json  -d '{
+   curl -vik "$INGRESS_GW_ADDRESS:80/gemini" -H content-type:application/json  -d '{
      "model": "",
      "messages": [
       {"role": "user", "content": "Explain how AI works in simple terms."}
@@ -90,7 +90,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
 
    ```sh
-   curl -vik "$INGRESS_GW_ADDRESS:8080/gemini" \
+   curl -vik "$INGRESS_GW_ADDRESS:80/gemini" \
      -H "content-type: application/json" \
      -H "x-llm: gemini" -d '{
      "model": "",

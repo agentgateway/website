@@ -35,7 +35,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -97,7 +97,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:8080/post -H "host: match.example:8080" 
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post -H "host: match.example:80" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

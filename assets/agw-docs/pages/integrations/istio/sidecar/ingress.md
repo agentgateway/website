@@ -212,8 +212,8 @@ Create or update a Gateway that includes the Istio proxy.
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -I http://$INGRESS_GW_ADDRESS:8080/productpage \
-   -H "host: istio-sidecar.example:8080"
+   curl -I http://$INGRESS_GW_ADDRESS:80/productpage \
+   -H "host: istio-sidecar.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

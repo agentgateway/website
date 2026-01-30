@@ -37,7 +37,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"  %}}
@@ -70,7 +70,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -124,7 +124,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything/team1 -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/team1 -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -157,7 +157,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -240,9 +240,9 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything/this-is-my-path-1 -H "host: match.example:8080"
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything/stores/us/entities -H "host: match.example:8080"
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything/dogs/3.0-game -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/this-is-my-path-1 -H "host: match.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/stores/us/entities -H "host: match.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/dogs/3.0-game -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -282,9 +282,9 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything -H "host: match.example:8080"
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything/stores/us/south/entities -H "host: match.example:8080"
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/anything/birds/1.1-game -H "host: match.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: match.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/stores/us/south/entities -H "host: match.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/birds/1.1-game -H "host: match.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

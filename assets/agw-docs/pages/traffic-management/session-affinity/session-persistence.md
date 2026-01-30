@@ -228,8 +228,8 @@ To try out session persistence, you can follow these steps to define cookie-base
       {{% tab tabName="LoadBalancer IP address or hostname" %}}
    ```sh
    for i in {1..10}; do
-   curl -i -b cookie-jar -k http://$INGRESS_GW_ADDRESS:8080/headers \
-   -H "host: www.example.com:8080"; done
+   curl -i -b cookie-jar -k http://$INGRESS_GW_ADDRESS:80/headers \
+   -H "host: www.example.com:80"; done
    ```
       {{% /tab %}}
       {{% tab tabName="Port-forward for local testing" %}}

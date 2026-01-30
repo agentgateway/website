@@ -313,7 +313,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -H "Host: lambda.${AWS_LAMBDA_REGION}.amazonaws.com" \
-     $INGRESS_GW_ADDRESS:8080/echo \
+     $INGRESS_GW_ADDRESS:80/echo \
      -d '{"key1":"value1", "key2":"value2"}' -X POST
    ```
    {{% /tab %}}
