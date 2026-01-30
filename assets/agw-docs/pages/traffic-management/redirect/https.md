@@ -22,7 +22,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 80
+       port: 8080
        name: http
        allowedRoutes:
          namespaces:
@@ -208,7 +208,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 80
+       port: 8080
        name: http
        allowedRoutes:
          namespaces:
