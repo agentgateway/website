@@ -45,7 +45,7 @@ The AWS Load Balancer Controller only supports the creation of an ALB through an
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

@@ -31,7 +31,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        hostname: mydomain.com
        name: http
        allowedRoutes:
@@ -103,7 +103,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
           group: gateway.networking.k8s.io
         listeners:
         - protocol: HTTP
-          port: 8080
+          port: 80
           hostname: mydomain.com
           name: http-listener-set
           allowedRoutes:

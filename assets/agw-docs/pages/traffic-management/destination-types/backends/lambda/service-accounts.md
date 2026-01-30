@@ -202,7 +202,7 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
          kind: GatewayParameters        
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -368,7 +368,7 @@ If you no longer need to access Lambda functions from {{< reuse "/agw-docs/snipp
      gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

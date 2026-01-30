@@ -155,7 +155,7 @@ Create or update a Gateway that includes the Istio proxy.
          kind: GatewayParameters
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -249,7 +249,7 @@ To exclude a service from using Istio mTLS or to configure your own TLS settings
    kubectl delete gatewayparameters custom-gw-params -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
   
-2. Restore the http Gateway from the getting started tutorial. 
+2. Restore the `http` Gateway from the getting started tutorial. 
    ```yaml
    kubectl apply -f- <<EOF
    kind: Gateway
@@ -261,7 +261,7 @@ To exclude a service from using Istio mTLS or to configure your own TLS settings
      gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

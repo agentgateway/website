@@ -181,7 +181,7 @@ You can set up access logs to write to a file. The following example writes acce
          kind: GatewayParameters        
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

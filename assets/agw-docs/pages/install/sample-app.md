@@ -65,7 +65,7 @@ Create an API gateway with an HTTP listener by using the {{< reuse "agw-docs/sni
      gatewayClassName: {{< reuse "/agw-docs/snippets/agw-gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -141,7 +141,7 @@ Now that you have an app and a gateway proxy, you can create a route to access t
    kubectl get -n httpbin httproute/httpbin -o yaml
    ```
 
-   Example output: Note the status of the HTTPRoute resource. Check for `Accepted` and `ResolvedRefs` messages. The `parentRef` refers to the Gateway that that HTTPRoute is exposed on.
+   Example output: Note the status of the HTTPRoute resource. Check for `Accepted` and `ResolvedRefs` messages. The `parentRef` refers to the Gateway that HTTPRoute is exposed on.
 
    ```yaml
    status:
