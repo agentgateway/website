@@ -28,6 +28,7 @@ document.addEventListener('alpine:init', () => {
     isProcessing: false,
     userInput: '',
     messages: [],
+    selectedModel: 'local',
 
     // Internal state
     currentStage: '',
@@ -44,6 +45,9 @@ document.addEventListener('alpine:init', () => {
       this.streamer = new ChatStreamer(AGENT_ENDPOINT);
       this.thinkingAnimator = new ThinkingAnimator();
       this.markdownRenderer = new MarkdownRenderer(parseMarkdown);
+
+      // Detect model based on current URL path
+      this.selectedModel = this.detectModelFromPath();
 
       // Focus input when dialog opens
       this.$watch('isOpen', (value) => {
@@ -183,6 +187,7 @@ document.addEventListener('alpine:init', () => {
       try {
         this.currentEventSource = this.streamer.stream(query, {
           sessionId: this.sessionId,
+          model: this.selectedModel,
           onToken: (token) => {
             this.markdownRenderer.addToken(token);
             const html = this.markdownRenderer.render();
@@ -280,6 +285,16 @@ document.addEventListener('alpine:init', () => {
     // Helper to check if this is the last message (for animation refs)
     isLastMessage(index) {
       return index === this.messages.length - 1;
+    },
+
+    detectModelFromPath() {
+      const path = window.location.pathname;
+      if (path.includes('/docs/kubernetes/')) {
+        return 'kubernetes';
+      } else if (path.includes('/docs/local')) {
+        return 'local';
+      }
+      return 'local'; // default
     }
   }));
 });
