@@ -115,14 +115,12 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< /tabs >}}
    
    Example output: 
-   ```
-   * Mark bundle as not supporting multiuse
+   ```console {hl_lines=[2,3,4,5]}
+   * Request completely sent off
    < HTTP/1.1 301 Moved Permanently
    HTTP/1.1 301 Moved Permanently
    < location: https://redirect.example:8080/status/200
    location: https://redirect.example:8080/status/200
-   < date: Mon, 06 Nov 2024 01:48:12 GMT
-   date: Mon, 06 Nov 2024 01:48:12 GMT
    < server: envoy
    server: envoy
    < content-length: 0
@@ -150,7 +148,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< /tabs >}}
    
    Example output: 
-   ```
+   ```console {hl_lines=[2,3,4,5,6,7,8,16]}
    * ALPN: curl offers h2,http/1.1
    * (304) (OUT), TLS handshake, Client hello (1):
    * (304) (IN), TLS handshake, Server hello (2):
@@ -163,8 +161,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    * ALPN: server did not agree on a protocol. Uses default.
    * Server certificate:
    *  subject: CN=*; O=any domain
-   *  start date: Mar 14 13:37:22 2025 GMT
-   *  expire date: Mar 14 13:37:22 2026 GMT
    *  issuer: O=any domain; CN=*
    *  SSL certificate verify result: unable to get local issuer certificate (20), continuing anyway.
    * using HTTP/1.x
