@@ -3,7 +3,7 @@
  * Expects Alpine.js to be loaded globally via CDN
  */
 
-import { ChatStreamer } from './stream.js';
+import { ChatStreamer, ErrorType } from './stream.js';
 import { ThinkingAnimator, MarkdownRenderer, RESIZE_ICONS } from './ui.js';
 import { parseMarkdown } from './markdown.js';
 
@@ -185,7 +185,7 @@ document.addEventListener('alpine:init', () => {
 
       // Stream the response
       try {
-        this.currentEventSource = this.streamer.stream(query, {
+        this.currentEventSource = await this.streamer.stream(query, {
           sessionId: this.sessionId,
           model: this.selectedModel,
           onToken: (token) => {
@@ -231,13 +231,14 @@ document.addEventListener('alpine:init', () => {
             });
           },
 
-          onError: (errorMessage) => {
-            console.error('Stream error:', errorMessage);
+          onError: (errorMessage, errorType) => {
+            console.error('Stream error:', errorMessage, errorType);
             this.showThinking = false;
             this.thinkingAnimator.stop();
             const msgIndex = this.messages.length - 1;
             this.messages[msgIndex].content = errorMessage;
             this.messages[msgIndex].isError = true;
+            this.messages[msgIndex].isRateLimited = errorType === ErrorType.RATE_LIMITED;
             this.messages[msgIndex].isStreaming = false;
             this.messages[msgIndex].isLoading = false;
             this.isProcessing = false;
