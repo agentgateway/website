@@ -254,6 +254,6 @@ kubectl delete httproute model-failover -n {{< reuse "agw-docs/snippets/namespac
 
 Explore other agentgateway features.
 
-* Pass in [functions]({{< link-hextra path="/functions/">}}) to an LLM to request as a step towards agentic AI.
-* Set up [prompt guards]({{< link-hextra path="/prompt-guards/">}}) to block unwanted requests and mask sensitive data.
-* [Enrich your prompts]({{< link-hextra path="/prompt-enrichment/">}}) with system prompts to improve LLM outputs.
+* Pass in [functions]({{< link-hextra path="/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
+* Set up [prompt guards]({{< link-hextra path="/llm/prompt-guards/">}}) to block unwanted requests and mask sensitive data.
+* [Enrich your prompts]({{< link-hextra path="/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.

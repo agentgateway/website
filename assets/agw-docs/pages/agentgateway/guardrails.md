@@ -26,7 +26,7 @@ By applying guardrails to both input and output, you can:
 
 ### Support for guardrails {#about-guardrail-support}
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards]({{< link-hextra path="/prompt-guards/">}}) to reject, mask, or pass prompt data through a moderation endpoint.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards]({{< link-hextra path="/llm/prompt-guards/">}}) to reject, mask, or pass prompt data through a moderation endpoint.
 
 However, you might want to bring your own guardrails for situations such as:
 
