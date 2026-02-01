@@ -2,13 +2,11 @@ Replace the host header value before forwarding a request to a backend service b
 
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPURLRewriteFilter).
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## In-cluster service host rewrites
 
-1. Create an HTTPRoute resource for the httpbin app that uses the `URLRewrite` filter to rewrite the hostname of th request. In this example, all incoming requests on the `rewrite.example` domain are rewritten to the `www.example.com` host.
+1. Create an HTTPRoute resource for the httpbin app that uses the `URLRewrite` filter to rewrite the hostname of the request. In this example, all incoming requests on the `rewrite.example` domain are rewritten to the `www.example.com` host.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -18,7 +16,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      namespace: httpbin
    spec:
      parentRefs:
-     - name: http
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - rewrite.example
@@ -35,7 +33,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    
    |Setting|Description|
    |--|--|
-   |`spec.parentRefs`| The name and namespace of the Gateway that serves this HTTPRoute. In this example, you use the `http` gateway that was created as part of the get started guide. |
+   |`spec.parentRefs`| The name and namespace of the Gateway that serves this HTTPRoute. In this example, you use the `agentgateway-proxy` gateway that was created as part of the get started guide. |
    |`spec.rules.filters.type`| The type of filter that you want to apply to incoming requests. In this example, the `URLRewrite` filter is used.|
    |`spec.rules.filters.urlRewrite.hostname`| The hostname that you want to rewrite requests to. |
    |`spec.rules.backendRefs`|The backend destination you want to forward traffic to. In this example, all traffic is forwarded to the httpbin app that you set up as part of the get started guide. |
@@ -49,7 +47,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -71,16 +69,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
         "www.example.com"
       ],
       "User-Agent": [
-        "curl/7.77.0"
-      ],
-      "X-Envoy-Expected-Rq-Timeout-Ms": [
-        "15000"
-      ],
-      "X-Forwarded-Proto": [
-        "http"
-      ],
-      "X-Request-Id": [
-        "ffc55a3e-60ae-4c90-9a5c-62c8a1ba1076"
+        "curl/8.7.1"
       ]
     }
    }
@@ -88,34 +77,32 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    
 ## External service host rewrites
 
-1. Create a Backend that represents your external service. The following example creates a Backend for the `httpbin.org` domain. 
+1. Create an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} for the `httpbin.org` domain. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: Backend
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}
    metadata:
      name: httpbin
-     namespace: default
+     namespace: httpbin
    spec:
-     type: Static
      static:
-       hosts:
-         - host: httpbin.org
-           port: 80
+       host: httpbin.org
+       port: 80
    EOF
    ```
    
-2. Create an HTTPRoute resource that matches incoming traffic on the `external-rewrite.example` domain and forwards traffic to the Backend that you created. Because the Backend expects a different domain, you use the `URLRewrite` filter to rewrite the hostname from `external-rewrite.example` to `httpbin.org`. 
+2. Create an HTTPRoute resource that matches incoming traffic on the `external-rewrite.example` domain and forwards traffic to the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that you created. Because the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} expects a different domain, you use the `URLRewrite` filter to rewrite the hostname from `external-rewrite.example` to `httpbin.org`. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
      name: backend-rewrite
-     namespace: default
+     namespace: httpbin
    spec:
      parentRefs:
-     - name: http
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - external-rewrite.example
@@ -126,8 +113,8 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
               hostname: "httpbin.org"
           backendRefs:
           - name: httpbin
-            kind: Backend
-            group: gateway.kgateway.dev
+            kind: {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}
+            group: agentgateway.dev
    EOF
    ```
 
@@ -136,7 +123,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/headers -H "host: external-rewrite.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: external-rewrite.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -169,10 +156,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      "headers": {
        "Accept": "*/*", 
        "Host": "httpbin.org", 
-       "User-Agent": "curl/8.7.1", 
-       "X-Amzn-Trace-Id": "Root=1-6859932a-1fb1dc706dadcc183b407d4d", 
-       "X-Envoy-Expected-Rq-Timeout-Ms": "15000", 
-      "X-Envoy-External-Address": "10.0.15.215"
+       "User-Agent": "curl/8.7.1"
      }
    }   
    ```
@@ -183,8 +167,8 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 ```sh
 kubectl delete httproute httpbin-rewrite -n httpbin
-kubectl delete httproute backend-rewrite 
-kubectl delete backend httpbin
+kubectl delete httproute backend-rewrite -n httpbin
+kubectl delete {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} httpbin -n httpbin
 ```
 
 
