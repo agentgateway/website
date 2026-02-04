@@ -13,6 +13,7 @@ Secure backends and routes with different types of security, authentication, aut
   {{< card link="backend-authn" title="Backend authentication" >}}
   {{< card link="backend-tls" title="Backend TLS" >}}
   {{< card link="cors" title="CORS" >}}
+  {{< card link="csrf" title="CSRF protection" >}}
   {{< card link="external-authz" title="External authorization" >}}
   {{< card link="http-authz" title="HTTP authorization" >}}
   {{< card link="jwt-authn" title="JWT authentication" >}}
