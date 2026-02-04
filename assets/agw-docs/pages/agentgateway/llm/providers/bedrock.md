@@ -65,7 +65,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
      ai:
        provider:
          bedrock:
-           model: "amazon.titan-text-lite-v1"
+           model: "amazon.nova-micro-v1:0"
            region: "us-east-1"
      policies:
        auth:
@@ -79,16 +79,65 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.bedrock` | Define the LLM provider that you want to use. The example uses Amazon Bedrock. |
-   | `bedrock.model`     | The model to use to generate responses. In this example, you use the `amazon.titan-text-lite-v1` model. Keep in mind that some models support cross-region inference. These models begin with a `us.` prefix, such as `us.anthropic.claude-sonnet-4-20250514-v1:0`. For more models, see the [AWS Bedrock docs](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). |
+   | `bedrock.model`     | The model to use to generate responses. In this example, you use the `amazon.nova-micro-v1:0` model. Keep in mind that some models support cross-region inference. These models begin with a `us.` prefix, such as `us.anthropic.claude-sonnet-4-20250514-v1:0`. For more models, see the [AWS Bedrock docs](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). |
    | `bedrock.region`    | The AWS region where your Bedrock model is deployed. Multiple regions are not supported. |
    | `policies.auth` | Provide the credentials to use to access the Amazon Bedrock API. The example refers to the secret that you previously created. To use IRSA, omit the `auth` settings.|
 
-3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint that you set up (such as `/bedrock`) to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. The default Bedrock route is `/model/${MODEL}/converse`, such as `/model/amazon.nova-micro-v1:0/converse`.
+
+   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Bedrock default" %}}
    ```yaml
-   kubectl apply -f- <<EOF                                             
+   kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
-   metadata:       
+   metadata:
+     name: bedrock
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: bedrock
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: bedrock
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /v1/chat/completions
+       backendRefs:
+       - name: bedrock
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
      name: bedrock
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
@@ -107,12 +156,69 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 
-4. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
+4. Send a request to the LLM provider API along the route that you previously created, such as `/bedrock` or `/v1/chat/completions` depending on your route configuration. Verify that the request succeeds and that you get back a response from the chat completion API.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Bedrock default" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/model/amazon.nova-micro-v1:0/converse" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/model/amazon.nova-micro-v1:0/converse" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/bedrock" -H content-type:application/json -d '{
        "model": "",
@@ -123,10 +229,11 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
          }
        ]
      }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
-   curl "localhost:8080/bedrock" -H content-type:application/json  -d '{
+   curl "localhost:8080/bedrock" -H content-type:application/json -d '{
        "model": "",
        "messages": [
          {

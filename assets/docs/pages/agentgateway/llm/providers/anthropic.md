@@ -42,7 +42,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
      ai:
        provider:
          anthropic:
-           model: "claude-3-opus-20240229"
+           model: "claude-haiku-4-5-20251001"
      policies:
        auth:
          secretRef:
@@ -55,7 +55,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.anthropic` | Define the LLM provider that you want to use. The example uses Anthropic. |
-   | `anthropic.model`     | The model to use to generate responses. In this example, you use the `claude-3-opus-20240229` model. |
+   | `anthropic.model`     | The model to use to generate responses. In this example, you use the `claude-haiku-4-5-20251001` model. |
    | `policies.auth` | Provide the credentials to use to access the Anthropic API. The example refers to the secret that you previously created. The token is automatically sent in the `x-api-key` header.|
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/anthropic` path. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the Anthropic `/v1/messages` endpoint.
@@ -118,7 +118,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    Example output: 
    ```json
    {
-     "model": "claude-3-opus-20240229",
+     "model": "claude-haiku-4-5-20251001",
      "usage": {
        "prompt_tokens": 16,
        "completion_tokens": 318,

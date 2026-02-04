@@ -42,7 +42,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
      ai:
        provider:
          anthropic:
-           model: "claude-3-opus-20240229"
+           model: "claude-haiku-4-5-20251001"
      policies:
        auth:
          secretRef:
@@ -55,11 +55,59 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.anthropic` | Define the LLM provider that you want to use. The example uses Anthropic. |
-   | `anthropic.model`     | The model to use to generate responses. In this example, you use the `claude-3-opus-20240229` model. |
+   | `anthropic.model`     | The model to use to generate responses. In this example, you use the `claude-haiku-4-5-20251001` model. |
    | `policies.auth` | Provide the credentials to use to access the Anthropic API. The example refers to the secret that you previously created. The token is automatically sent in the `x-api-key` header.|
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/anthropic` path. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the Anthropic `/v1/messages` endpoint.
 
+   {{< tabs tabTotal="3" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Anthropic v1/messages" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: anthropic
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: anthropic
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: anthropic
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /v1/chat/completions
+       backendRefs:
+       - name: anthropic
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -83,12 +131,68 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   
+   {{% /tab %}}
+   {{< /tabs >}}
 
-6. Send a request to the LLM provider API. Note that Anthropic uses the `/v1/messages` endpoint format instead of `/v1/chat/completions`. Verify that the request succeeds and that you get back a response from the API.
+6. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="3" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Anthropic v1/messages" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/messages" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/messages" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/anthropic" -H content-type:application/json  -d '{
       "model": "",
@@ -99,8 +203,9 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
         }
       ]
     }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
    curl "localhost:8080/anthropic" -H content-type:application/json  -d '{
       "model": "",
@@ -118,7 +223,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    Example output: 
    ```json
    {
-     "model": "claude-3-opus-20240229",
+     "model": "claude-haiku-4-5-20251001",
      "usage": {
        "prompt_tokens": 16,
        "completion_tokens": 318,
