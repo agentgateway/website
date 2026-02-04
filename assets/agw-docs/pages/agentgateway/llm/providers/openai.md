@@ -112,10 +112,11 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    {{< /tabs >}}
    
 
-6. Send a request to the LLM provider API along the route that you previously created, such as `/v1/chat/completions` or `/openai` depending on your route configuration. Verify that the request succeeds and that you get back a response from the chat completion API.
+6. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
+   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
       "model": "",
@@ -130,11 +131,47 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
         }
       ]
     }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
    curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+        },
+        {
+          "role": "user",
+          "content": "Compose a poem that explains the concept of recursion in programming."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+        },
+        {
+          "role": "user",
+          "content": "Compose a poem that explains the concept of recursion in programming."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/openai" -H content-type:application/json  -d '{
+      "model": "",
       "messages": [
         {
           "role": "system",

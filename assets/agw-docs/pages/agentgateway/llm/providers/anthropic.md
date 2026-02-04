@@ -134,10 +134,11 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    {{% /tab %}}
    {{< /tabs >}}
 
-6. Send a request to the LLM provider API along the route that you previously created, such as `/v1/messages`. Verify that the request succeeds and that you get back a response from the API.
+6. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="3" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Anthropic v1/messages" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/messages" -H content-type:application/json  -d '{
       "model": "",
@@ -148,10 +149,65 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
         }
       ]
     }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
    curl "localhost:8080/v1/messages" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/anthropic" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/anthropic" -H content-type:application/json  -d '{
       "model": "",
       "messages": [
         {

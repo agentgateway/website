@@ -124,29 +124,71 @@
    {{< /tabs >}}
    
 
-5. Send a request to the LLM provider API along the route that you previously created, such as `/gemini` or `/v1/chat/completions` depending on your route configuration. Verify that the request succeeds and that you get back a response from the API.
+5. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the API.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-
-   ````sh
-   curl -vik "$INGRESS_GW_ADDRESS/gemini" -H content-type:application/json  -d '{
-     "model": "",
-     "messages": [
-      {"role": "user", "content": "Explain how AI works in simple terms."}
-    ]
-   }'
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{< tabs tabTotal="3" items="Gemini default, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Gemini default" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
-   curl -vik "localhost:8080/gemini" -H content-type:application/json  -d '{
+   curl "$INGRESS_GW_ADDRESS/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
      "model": "",
      "messages": [
       {"role": "user", "content": "Explain how AI works in simple terms."}
     ]
-   }'
-   ````
+   }' | jq
+   ```
 
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/gemini" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/gemini" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
    {{% /tab %}}
    {{< /tabs >}}
 

@@ -120,10 +120,11 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
 
    
 
-7. Send a request to the LLM provider API along the route that you previously created, such as `/v1/chat/completions` or `/azure-openai` depending on your route configuration. Verify that the request succeeds and that you get back a response from the chat completion API.
+7. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="2" items="OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
       "model": "",
@@ -138,10 +139,46 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
         }
       ]
     }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
    curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a helpful assistant."
+        },
+        {
+          "role": "user",
+          "content": "Write a short haiku about cloud computing."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/azure-openai" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a helpful assistant."
+        },
+        {
+          "role": "user",
+          "content": "Write a short haiku about cloud computing."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/azure-openai" -H content-type:application/json  -d '{
       "model": "",
       "messages": [
         {
