@@ -67,8 +67,31 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    | `azureopenai.apiVersion`    | The version of the Azure OpenAI API to use. For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#api-specs).|
    | `policies.auth` | Configure the authentication token for Azure OpenAI API. The example refers to the secret that you previously created. The token is automatically sent in the `api-key` header.|
 
-6. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/azure-openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+6. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
+   {{< tabs tabTotal="2" items="OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: azure-openai
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: azure-openai
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -92,15 +115,17 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
    
 
-7. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
+7. Send a request to the LLM provider API along the route that you previously created, such as `/v1/chat/completions` or `/azure-openai` depending on your route configuration. Verify that the request succeeds and that you get back a response from the chat completion API.
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl "$INGRESS_GW_ADDRESS/azure-openai" -H content-type:application/json  -d '{
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
       "model": "",
       "messages": [
         {
@@ -116,7 +141,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl "localhost:8080/azure-openai" -H content-type:application/json  -d '{
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
       "model": "",
       "messages": [
         {
