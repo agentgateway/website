@@ -2,13 +2,23 @@
   <a href="{{ .href }}" class="text-primary-text bg-tertiary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 font-semibold">
     {{ if ne .iconRight "true" }}
       {{ if .icon }}
-        {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- if eq .icon "github" -}}
+          <span class="dark:hidden">{{ partial "utils/icon.html" (dict "name" "github" "attributes" "class='w-5'") }}</span>
+          <span class="hidden dark:inline-block">{{ partial "utils/icon.html" (dict "name" "github-white" "attributes" "class='w-5'") }}</span>
+        {{- else -}}
+          {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- end -}}
       {{ end }}
     {{ end}}
     {{ .text }}
     {{ if eq .iconRight "true"}}
       {{ if .icon }}
-        {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- if eq .icon "github" -}}
+          <span class="dark:hidden">{{ partial "utils/icon.html" (dict "name" "github" "attributes" "class='w-5'") }}</span>
+          <span class="hidden dark:inline-block">{{ partial "utils/icon.html" (dict "name" "github-white" "attributes" "class='w-5'") }}</span>
+        {{- else -}}
+          {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- end -}}
       {{ end }}
     {{ end }}
   </a>
@@ -16,13 +26,23 @@
   <a href="{{ .href }}" class="text-primary-text h-10 px-8 rounded-md inline-flex items-center justify-center gap-2 border-secondary-border border-[1px] font-semibold">
     {{ if ne .iconRight "true" }}
       {{ if .icon }}
-        {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- if eq .icon "github" -}}
+          <span class="dark:hidden">{{ partial "utils/icon.html" (dict "name" "github" "attributes" "class='w-5'") }}</span>
+          <span class="hidden dark:inline-block">{{ partial "utils/icon.html" (dict "name" "github-white" "attributes" "class='w-5'") }}</span>
+        {{- else -}}
+          {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- end -}}
       {{ end }}
     {{ end}}
     {{ .text }}
     {{ if eq .iconRight "true"}}
       {{ if .icon }}
-        {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- if eq .icon "github" -}}
+          <span class="dark:hidden">{{ partial "utils/icon.html" (dict "name" "github" "attributes" "class='w-5'") }}</span>
+          <span class="hidden dark:inline-block">{{ partial "utils/icon.html" (dict "name" "github-white" "attributes" "class='w-5'") }}</span>
+        {{- else -}}
+          {{ partial "utils/icon.html" (dict "name" .icon "attributes" "class='w-5'") }}
+        {{- end -}}
       {{ end }}
     {{ end }}
   </a>

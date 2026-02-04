@@ -1,11 +1,23 @@
-{{ $announcements := site.Data.announcement }}
-{{ range $announcements }}
-  {{ if .visible }}
+{{/* Check for Hextra banner config first (params.banner) */}}
+{{ if isset site.Params "banner" }}
+  {{ if isset site.Params.banner "message" }}
     <div class="bg-[#151927] w-full font-secondary text-sm lg:text-base text-[#DDDFED] text-center inline-flex items-center justify-center leading-7 min-h-4">
-      <a class="p-4" href="{{ .link }}" target="_blank" rel="noreferrer" class="hover:underline">
-        {{ .title }}<span aria-hidden="true">&nbsp;{{ if .link }}&rarr;{{ end }}</span>
-      </a>
+      <div class="p-4">
+        {{ site.Params.banner.message | .Page.RenderString }}
+      </div>
     </div>
-    {{ break }}
+  {{ end }}
+{{ else }}
+  {{/* Fallback to data file announcements */}}
+  {{ $announcements := site.Data.announcement }}
+  {{ range $announcements }}
+    {{ if .visible }}
+      <div class="bg-[#151927] w-full font-secondary text-sm lg:text-base text-[#DDDFED] text-center inline-flex items-center justify-center leading-7 min-h-4">
+        <a class="p-4" href="{{ .link }}" target="_blank" rel="noreferrer" class="hover:underline">
+          {{ .title }}<span aria-hidden="true">&nbsp;{{ if .link }}&rarr;{{ end }}</span>
+        </a>
+      </div>
+      {{ break }}
+    {{ end }}
   {{ end }}
 {{ end }}

@@ -1,0 +1,13 @@
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: anthropic
+          provider:
+            anthropic:
+              model: claude-3-5-sonnet-20241022
+      policies:
+        backendAuth:
+          key: "$ANTHROPIC_API_KEY"

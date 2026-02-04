@@ -1,0 +1,70 @@
+# Cloudflare Pages Redirects for agentgateway.dev
+# This allows simplified URLs like agentgateway.dev/examples/basic/config.yaml
+# instead of the full GitHub raw URL
+
+# Installation script shortcut
+/install https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway
+
+# Redirect all paths under /examples to GitHub raw content
+/examples/* https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/:splat
+
+# Local docs redirects (legacy /docs/* -> versioned /docs/local/latest/*)
+# Quickstart
+/docs/quickstart /docs/local/latest/quickstart 301
+/docs/quickstart/ /docs/local/latest/quickstart 301
+/docs/quickstart/* /docs/local/latest/quickstart/:splat 301
+
+# About
+/docs/about /docs/local/latest/about 301
+/docs/about/ /docs/local/latest/about 301
+/docs/about/* /docs/local/latest/about/:splat 301
+
+# Deployment
+/docs/deployment /docs/local/latest/deployment 301
+/docs/deployment/ /docs/local/latest/deployment 301
+/docs/deployment/* /docs/local/latest/deployment/:splat 301
+
+# Configuration
+/docs/configuration /docs/local/latest/configuration 301
+/docs/configuration/ /docs/local/latest/configuration 301
+/docs/configuration/* /docs/local/latest/configuration/:splat 301
+
+# Tutorials
+/docs/tutorials /docs/local/latest/tutorials 301
+/docs/tutorials/ /docs/local/latest/tutorials 301
+/docs/tutorials/* /docs/local/latest/tutorials/:splat 301
+
+# LLM consumption
+/docs/llm /docs/local/latest/llm 301
+/docs/llm/ /docs/local/latest/llm 301
+/docs/llm/* /docs/local/latest/llm/:splat 301
+
+# Inference routing
+/docs/inference /docs/local/latest/inference 301
+/docs/inference/ /docs/local/latest/inference 301
+/docs/inference/* /docs/local/latest/inference/:splat 301
+
+# MCP connectivity
+/docs/mcp /docs/local/latest/mcp 301
+/docs/mcp/ /docs/local/latest/mcp 301
+/docs/mcp/* /docs/local/latest/mcp/:splat 301
+
+# Agent connectivity
+/docs/agent /docs/local/latest/agent 301
+/docs/agent/ /docs/local/latest/agent 301
+/docs/agent/* /docs/local/latest/agent/:splat 301
+
+# Integrations
+/docs/integrations /docs/local/latest/integrations 301
+/docs/integrations/ /docs/local/latest/integrations 301
+/docs/integrations/* /docs/local/latest/integrations/:splat 301
+
+# Reference
+/docs/reference /docs/local/latest/reference 301
+/docs/reference/ /docs/local/latest/reference 301
+/docs/reference/* /docs/local/latest/reference/:splat 301
+
+# FAQs
+/docs/faqs /docs/local/latest/faqs 301
+/docs/faqs/ /docs/local/latest/faqs 301
+

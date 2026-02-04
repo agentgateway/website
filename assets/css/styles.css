@@ -10,3 +10,16 @@
 .content, .sidebar-container, .hextra-toc, .hx-text-base {
   font-family: 'Open Sans', 'ui-sans-serif', 'system-ui', 'sans-serif', '"Apple Color Emoji"', '"Segoe UI Emoji"', '"Segoe UI Symbol"', '"Noto Color Emoji"'
 }
+
+/* Dark mode sidebar: strong contrast on hover and active so white text is readable */
+.dark .sidebar-container nav a.sidebar-active-item,
+.dark .sidebar-container a.sidebar-active-item {
+  background-color: rgb(17, 24, 39) !important; /* gray-900 */
+  color: rgb(255, 255, 255) !important;
+}
+
+.dark .sidebar-container nav a:hover:not(.sidebar-active-item),
+.dark .sidebar-container a:hover:not(.sidebar-active-item) {
+  background-color: rgb(17, 24, 39) !important; /* gray-900 */
+  color: rgb(255, 255, 255) !important;
+}

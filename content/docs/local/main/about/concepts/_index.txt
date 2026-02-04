@@ -1,0 +1,16 @@
+---
+title: Key concepts
+weight: 20
+description:
+---
+
+Review key concepts that are used in agentgateway. 
+
+{{< cards >}}
+  {{< card link="llms" title="LLMs" >}}
+  {{< card link="inference" title="Inference" >}}
+  {{< card link="mcp" title="MCP" >}}
+  {{< card link="a2a" title="A2A" >}}
+  {{< card link="k8sgwapi" title="Kubernetes Gateway API" >}}
+{{< /cards >}}
+

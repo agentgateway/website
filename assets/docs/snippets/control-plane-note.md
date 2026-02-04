@@ -1,0 +1,1 @@
+To use both Envoy-based {{< reuse "agw-docs/snippets/kgateway.md">}} and {{< reuse "agw-docs/snippets/agentgateway.md">}} data plane proxy types in the same cluster, make sure to create a {{< reuse "agw-docs/snippets/kgateway.md">}} control plane for each proxy type.

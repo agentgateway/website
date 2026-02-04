@@ -1,0 +1,12 @@
+* **Unified data plane**: Agentgateway is a unified data plane to manage agent connectivity with support for agent protocols including MCP and A2A, and the ability to integrate existing REST APIs as agent-native tools.
+* **Highly performant**: Built in Rust, agentgateway is designed to handle any scale. It is optimized for high throughput, low latency, reliability, and stability when handling long-lived connections and fan-out patterns. 
+* **Any agent framework**: Agentgateway is compatible with any agentic framework supporting MCP and A2A protocols, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use agentgateway to expose a REST API as an agent-native tool.
+* **Platform-agnostic**: Agentgateway can run in any environment, including bare metal, virtual machine, containers, and Kubernetes.
+* **Multiplexing and tool federation**: Agentgateway provides a single endpoint to federate multiple backend MCP servers and virtualize tool servers on a per-client basis.
+* **Automatic protocol upgrades/fallbacks**: Agentgateway is built to negotiate and gracefully handle protocol upgrades and fallbacks to avoid client or server failures as the MCP/A2A protocols evolve.
+* **Authentication and authorization**: Built-in JWT authentication and a robust RBAC system allow you to control access to MCP servers, tools and agents, and to protect against [tool poisoning attacks](https://invariantlabs.ai/blog/mcp-security-notification-tool-poisoning-attacks). 
+* **Built-in observability**: Agentgateway comes with built-in metrics and tracing capabilities that allow you to monitor the MCP client and backend tool interactions.
+* **Self-service portal**: Agentgateway provides a built-in self-service developer portal that allows agent developers to easily connect, discover, federate, integrate, and secure agents and tools in any environment, including bare metal, VMs, containers, and Kubernetes.
+* **Open source**: Agentgateway is open source, and licensed under the Apache 2.0 license.
+* **Conformant to the Gateway API project**: Agentgateway is conformant to the Kubernetes Gateway API project, which allows you to use it as a gateway with any Gateway API implementation.
+* **Dynamic configuration updates**: Agentgateway can be updated via an xDS interface without any downtime.

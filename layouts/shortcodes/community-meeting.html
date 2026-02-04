@@ -1,0 +1,189 @@
+{{ $meeting := .Site.Data.community.meeting }}
+
+<div class="community-meeting-container my-8">
+  <div class="bg-tertiary-bg border border-secondary-border rounded-lg p-6 hover:border-tertiary-text transition-all duration-300">
+    <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+
+      <!-- Left: Meeting Info -->
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="meeting-status-indicator w-3 h-3 rounded-full" id="meetingStatusDot"></div>
+          <h3 class="text-xl font-semibold text-primary-text">{{ $meeting.title }}</h3>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 text-secondary-text mb-3">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            <span>{{ $meeting.day }}s</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <span>{{ $meeting.time }} {{ $meeting.timezone }}</span>
+          </div>
+        </div>
+
+        <p class="text-secondary-text text-sm max-w-2xl">{{ $meeting.description }}</p>
+
+        <div class="meeting-status-text mt-3 text-sm font-medium" id="meetingStatusText"></div>
+      </div>
+
+      <!-- Right: Action Buttons -->
+      <div class="flex flex-col gap-3 min-w-fit">
+        <a href="{{ $meeting.meetingUrl }}"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="meeting-join-btn flex items-center justify-center gap-2 px-6 py-3 bg-tertiary-text text-white rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl"
+           id="joinMeetingBtn">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+          </svg>
+          <span id="joinBtnText">Join Meeting</span>
+        </a>
+
+        <div class="flex gap-2">
+          <a href="{{ $meeting.notesUrl }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-secondary-border text-secondary-text rounded-lg hover:border-tertiary-text hover:text-primary-text transition-all duration-200"
+             title="Meeting Notes">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            <span class="hidden sm:inline">Notes</span>
+          </a>
+
+          <a href="{{ $meeting.calendarUrl }}"
+             target="_blank"
+             rel="noopener noreferrer"
+             class="flex-1 flex items-center justify-center gap-2 px-4 py-2 border border-secondary-border text-secondary-text rounded-lg hover:border-tertiary-text hover:text-primary-text transition-all duration-200"
+             title="Subscribe to Calendar">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+            </svg>
+            <span class="hidden sm:inline">Calendar</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function() {
+  function updateMeetingStatus() {
+    const now = new Date();
+
+    // Convert to ET timezone
+    const etTime = new Date(now.toLocaleString('en-US', { timeZone: 'America/New_York' }));
+    const day = etTime.getDay(); // 0 = Sunday, 4 = Thursday
+    const hours = etTime.getHours();
+    const minutes = etTime.getMinutes();
+    const currentMinutes = hours * 60 + minutes;
+
+    // Meeting is Thursday (4) at 14:00 (2pm) ET, assume 1 hour duration
+    const meetingDay = 4;
+    const meetingStart = 14 * 60; // 2pm in minutes
+    const meetingEnd = 15 * 60; // 3pm in minutes
+
+    const statusDot = document.getElementById('meetingStatusDot');
+    const statusText = document.getElementById('meetingStatusText');
+    const joinBtn = document.getElementById('joinMeetingBtn');
+    const joinBtnText = document.getElementById('joinBtnText');
+
+    if (!statusDot || !statusText) return;
+
+    // Check if meeting is happening NOW
+    if (day === meetingDay && currentMinutes >= meetingStart && currentMinutes < meetingEnd) {
+      statusDot.className = 'meeting-status-indicator w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50';
+      statusText.className = 'meeting-status-text mt-3 text-sm font-medium text-green-400';
+      statusText.textContent = '🎉 Meeting is happening now! Join us!';
+      joinBtn.className = 'meeting-join-btn flex items-center justify-center gap-2 px-6 py-3 bg-green-500 text-white rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl animate-pulse';
+      joinBtnText.textContent = 'Join Now - Live!';
+      return;
+    }
+
+    // Calculate next meeting
+    let daysUntilMeeting = meetingDay - day;
+    if (daysUntilMeeting < 0 || (daysUntilMeeting === 0 && currentMinutes >= meetingEnd)) {
+      daysUntilMeeting += 7;
+    }
+
+    // Check if meeting is today but hasn't started
+    if (day === meetingDay && currentMinutes < meetingStart) {
+      const minutesUntil = meetingStart - currentMinutes;
+      const hoursUntil = Math.floor(minutesUntil / 60);
+      const minsUntil = minutesUntil % 60;
+
+      statusDot.className = 'meeting-status-indicator w-3 h-3 rounded-full bg-yellow-500 animate-pulse shadow-lg shadow-yellow-500/50';
+      statusText.className = 'meeting-status-text mt-3 text-sm font-medium text-white';
+
+      if (hoursUntil > 0) {
+        statusText.textContent = `⏰ Meeting starts in ${hoursUntil}h ${minsUntil}m`;
+      } else {
+        statusText.textContent = `⏰ Meeting starts in ${minsUntil} minutes!`;
+      }
+      joinBtn.className = 'meeting-join-btn flex items-center justify-center gap-2 px-6 py-3 bg-yellow-500 text-white rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl';
+      return;
+    }
+
+    // Meeting is in the future - calculate full countdown
+    statusDot.className = 'meeting-status-indicator w-3 h-3 rounded-full bg-secondary-border';
+    statusText.className = 'meeting-status-text mt-3 text-sm font-medium text-primary-text';
+
+    // Calculate exact time until next meeting
+    const nextMeetingDate = new Date(etTime);
+    nextMeetingDate.setDate(nextMeetingDate.getDate() + daysUntilMeeting);
+    nextMeetingDate.setHours(14, 0, 0, 0); // 2pm
+
+    const timeUntilMeeting = nextMeetingDate - etTime;
+    const daysLeft = Math.floor(timeUntilMeeting / (1000 * 60 * 60 * 24));
+    const hoursLeft = Math.floor((timeUntilMeeting % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutesLeft = Math.floor((timeUntilMeeting % (1000 * 60 * 60)) / (1000 * 60));
+
+    let countdownText = '🗓️ Next meeting in ';
+    if (daysLeft > 0) {
+      countdownText += `${daysLeft}d ${hoursLeft}h ${minutesLeft}m`;
+    } else if (hoursLeft > 0) {
+      countdownText += `${hoursLeft}h ${minutesLeft}m`;
+    } else {
+      countdownText += `${minutesLeft}m`;
+    }
+
+    statusText.textContent = countdownText;
+
+    joinBtn.className = 'meeting-join-btn flex items-center justify-center gap-2 px-6 py-3 bg-tertiary-text text-white rounded-lg font-medium hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl';
+    joinBtnText.textContent = 'Join Meeting';
+  }
+
+  // Update immediately and then every 30 seconds
+  updateMeetingStatus();
+  setInterval(updateMeetingStatus, 30000);
+})();
+</script>
+
+<style>
+.meeting-status-indicator {
+  transition: all 0.3s ease;
+}
+
+.meeting-join-btn {
+  transition: all 0.2s ease;
+}
+
+.meeting-join-btn:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+</style>
