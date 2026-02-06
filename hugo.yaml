@@ -33,6 +33,11 @@ build:
     - source: "assets/.*\\.(.*)$"
       target: "$1"
 
+caches:
+  getresource:
+    dir: ":cacheDir/:project"
+    maxAge: 1h  # Cache remote resources for 1 hour to balance freshness and build speed
+
 markup:
   goldmark:
     renderer:
