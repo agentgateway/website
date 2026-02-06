@@ -77,7 +77,7 @@ Dynamic tracing allows you to configure tracing at the frontend policy level, pr
 The following example shows how to configure dynamic tracing at the frontend policy level:
 
    * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
-   * **Traces**: Agentgateway is with the following details:
+   * **Traces**: Agentgateway is configured with the following details:
      * Sends traces to the OpenTelemetry collector on `localhost:4317` with the gRPC protocol.
      * Sets the resource attributes for the service name to `agentgateway`.
      * Sets the span attributes for the environment to `production` and the route to the request path.
