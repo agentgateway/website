@@ -31,7 +31,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        hostname: mydomain.com
        name: http
        allowedRoutes:
@@ -103,7 +103,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
           group: gateway.networking.k8s.io
         listeners:
         - protocol: HTTP
-          port: 8080
+          port: 80
           hostname: mydomain.com
           name: http-listener-set
           allowedRoutes:
@@ -277,7 +277,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: mydomain.com:8080" 
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: mydomain.com:80" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

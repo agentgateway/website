@@ -59,7 +59,7 @@ Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:8080/post -H "host: www.example.com:8080"
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -82,7 +82,7 @@ Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:8080/post -H "host: www.example.com:8080" -H "origin: allowThisOne.example.com"
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post -H "host: www.example.com:80" -H "origin: allowThisOne.example.com"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

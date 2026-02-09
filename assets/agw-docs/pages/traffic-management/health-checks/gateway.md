@@ -44,7 +44,7 @@ Enable a health check plugin on your gateway proxy to respond with common HTTP c
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i $INGRESS_GW_ADDRESS:8080/<path>
+   curl -i $INGRESS_GW_ADDRESS:80/<path>
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -74,7 +74,7 @@ Enable a health check plugin on your gateway proxy to respond with common HTTP c
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i $INGRESS_GW_ADDRESS:8080/<path>
+   curl -i $INGRESS_GW_ADDRESS:80/<path>
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

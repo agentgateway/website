@@ -91,7 +91,7 @@ To demonstrate weighted routing for multiple apps, deploy 3 versions of the Hell
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   for i in {1..20}; do curl -i http://$INGRESS_GW_ADDRESS:8080/hello \
+   for i in {1..20}; do curl -i http://$INGRESS_GW_ADDRESS:80/hello \
    -H "host: traffic.split.example:8080"; done
    ```
    {{% /tab %}}

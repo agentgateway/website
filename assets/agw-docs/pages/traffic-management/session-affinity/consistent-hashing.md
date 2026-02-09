@@ -304,21 +304,21 @@ Send a few requests to the httpbin app and verify that the request is served by 
    
    * **Headers**: 
      ```sh
-     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:8080/headers \
+     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:80/headers \
       -H "x-user-id: me" \
       -H "host: www.example.com"; done
      ```
      
    * **Source IP address**: 
      ```sh
-     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:8080/headers \
+     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:80/headers \
       -H "host: www.example.com"; done
      ```
      
    * **Cookies**: 
      1. Send a request to the httpbin app and verify that you get back a `set-cookie` header with a `session-id`. 
         ```sh
-        curl -i -c cookie-jar -k http://$INGRESS_GW_ADDRESS:8080/headers \
+        curl -i -c cookie-jar -k http://$INGRESS_GW_ADDRESS:80/headers \
         -H "host: www.example.com"
         ```
         
@@ -330,7 +330,7 @@ Send a few requests to the httpbin app and verify that the request is served by 
      2. Send a few more requests to the httpbin app and include the session ID from the previous step. 
         ```sh
         for i in {1..10}; do
-        curl -i -b session-id="<sessionID>" -k http://$INGRESS_GW_ADDRESS:8080/headers \
+        curl -i -b session-id="<sessionID>" -k http://$INGRESS_GW_ADDRESS:80/headers \
         -H "host: www.example.com"; done
         ```
    {{% /tab %}}

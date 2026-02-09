@@ -230,7 +230,7 @@ spec:
   listeners:
   - name: http
     protocol: HTTP
-    port: 8080
+    port: 80
     allowedRoutes:
       namespaces:
         from: All
