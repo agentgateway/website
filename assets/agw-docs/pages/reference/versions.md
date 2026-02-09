@@ -42,7 +42,7 @@ Stable builds for agentgateway on Kubernetes are released as minor versions appr
 
 ## Release development {#release}
 
-New features for agentgateway are developed on `main` and available as development builds. Stable branches are created off of `main` for each minor version, such as `v2.0.x`.
+New features for agentgateway are developed on `main` and available as development builds. Stable branches are created off of `main` for each minor version, such as `v2.2.x`.
 
 ### Release process {#release-process}
 
