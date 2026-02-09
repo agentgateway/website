@@ -1,0 +1,12 @@
+{{ $file := .Get "file" }}
+{{ $doc := resources.Get $file }}
+{{ $content := $doc.Content }}
+
+
+{{/* Optional: mark that this page may contain Mermaid diagrams */}}
+{{ .Page.Store.Set "hasMermaid" true }}
+
+{{/* Strip out front matter (--- ... ---) */}}
+{{ $clean := replaceRE `(?s)^---.*?---\s*` "" $content }}
+
+{{ $clean | markdownify  }}

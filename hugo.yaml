@@ -13,6 +13,10 @@ defaultContentLanguage: en
 module:
   imports:
     - path: github.com/imfing/hextra
+    - path: github.com/kgateway-dev/kgateway.dev
+      mounts:
+        - source: "content/docs"
+          target: "assets/docs" # This maps the module's docs to your assets
   mounts:
     - source: "assets"
       target: "assets"
