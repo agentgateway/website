@@ -5,7 +5,7 @@ publishDate: 2026-02-09
 author: Sebastian
 ---
 
-# How to: Building Agentgateway to support Multi-LLM providers.
+# How to: Building Agentgateway to support Multi-LLM providers
 
 Agentgateway makes it simple to route traffic to multiple LLM providers through a single gateway using the Kubernetes Gateway API. This guide walks through setting up agentgateway OSS on a local Kind cluster with xAI, Anthropic, and OpenAI backends, all routed through a listener named `llm-providers`.
 
@@ -13,7 +13,7 @@ One of the most common patterns in AI-native infrastructure is routing traffic t
 
 In this guide, we'll set up a complete working example on a local [Kind](https://kind.sigs.k8s.io/) cluster with three LLM providers routed via path-based `HTTPRoute` resources.
 
-<img width="3134" height="1766" alt="arch-llm-provider" src="https://github.com/user-attachments/assets/db7974f7-b841-4053-9a12-8b4a111d6bb6" />
+<img width="3134" height="1766" alt="arch-llm-provider" src="https://github.com/user-attachments/assets/45a23445-28c8-498a-b654-221f0f269c42" />
 
 ## What you'll build
 
