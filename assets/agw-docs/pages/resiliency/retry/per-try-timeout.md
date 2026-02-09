@@ -21,9 +21,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 {{< /callout >}}
 
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up per-retry timeouts
 

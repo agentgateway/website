@@ -9,9 +9,7 @@ You might commonly use retries alongside [Timeouts]({{< link-hextra path="/resil
 
 A request retry is the number of times a request is retried if it fails. This setting can be useful to avoid your apps from failing if they are temporarily unavailable. With retries, calls are retried a certain number of times before they are considered failed. Retries can enhance your app's availability by making sure that calls don't fail permanently because of transient problems, such as a temporarily overloaded service or network.
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Step 1: Set up your environment for retries
 
