@@ -1,1 +1,1 @@
-{{% conditional-text include-if="local" %}}0.11.3{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}2.2.0-main{{% /conditional-text %}}
+{{% conditional-text include-if="local" %}}0.11.3{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}}2.2.0{{% /conditional-text %}}

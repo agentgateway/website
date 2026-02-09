@@ -160,7 +160,7 @@ params:
           linkVersion: "main"
           url: "/main"
         - version: "2.2.x"
-          dropdown: "2.2 beta (latest)"
+          dropdown: "2.2 (latest)"
           linkVersion: "latest"
           url: "/latest"
   
