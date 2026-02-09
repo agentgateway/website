@@ -27,7 +27,7 @@ assignees: ''
     5. `,2.4.x"` > `"`
     6. Delete any content that is in `"2.4.x"` only tags (older than n-3)
     7. For anything that is now in `"2.9.x,2.8.x,2.7.x,2.6.x,2.5.x"` or `"2.5.x,2.6.x,2.7.x,2.8.x,2.9.x"` tags, keep the content but delete the version tags surrounding it
-- [ ] Update any hard-coded instances of `agentgateway.dev/docs/latest/` URLs in version-specific pages, such as the release notes. For example, 2.0 release notes no longer go to `/latest/` URLs but to `/2.0.x/` URLs.
+- [ ] Update any hard-coded instances of `agentgateway.dev/docs/kubernetes/latest/` URLs in version-specific pages, such as the release notes. For example, 2.0 release notes no longer go to `/latest/` URLs but to `/2.0.x/` URLs.
 - [ ] Search content for any hard-coded instances of the version, like `2.1`, as well as any retired versions, and update if needed. Example pages are upgrade, version skew, and reference pages.
 - [ ] Generate reference docs for the new version.
 
