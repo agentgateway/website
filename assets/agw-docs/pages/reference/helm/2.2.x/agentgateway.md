@@ -4,7 +4,7 @@
 | Key | Type | Description | Default |
 |-----|------|-------------|---------|
 | affinity | object | Set affinity rules for pod scheduling, such as 'nodeAffinity:'. | `{}` |
-| controller | object | Configure the agentgateway control plane deployment. | `{"extraEnv":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","replicaCount":1,"service":{"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"type":"ClusterIP"},"strategy":{},"xds":{"tls":{"enabled":false}}}` |
+| controller | object | Configure the agentgateway control plane deployment. | `{"extraEnv":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"replicaCount":1,"service":{"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"type":"ClusterIP"},"strategy":{},"xds":{"tls":{"enabled":false}}}` |
 | controller.extraEnv | object | Add extra environment variables to the controller container. | `{}` |
 | controller.image | object | Configure the controller container image. | `{"pullPolicy":"","registry":"","repository":"controller","tag":""}` |
 | controller.image.pullPolicy | string | Set the image pull policy for the controller. | `""` |
@@ -12,6 +12,7 @@
 | controller.image.repository | string | Set the image repository for the controller. | `"controller"` |
 | controller.image.tag | string | Set the image tag for the controller. | `""` |
 | controller.logLevel | string | Set the log level for the controller. | `"info"` |
+| controller.podDisruptionBudget | object | Set pod disruption budget for the controller. Note that this does not    affect the data plane. E.g.:  podDisruptionBudget:   minAvailable: 100% | `{}` |
 | controller.replicaCount | int | Set the number of controller pod replicas. | `1` |
 | controller.service | object | Configure the controller service. | `{"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"type":"ClusterIP"}` |
 | controller.service.ports | object | Set the service ports for gRPC and health endpoints. | `{"agwGrpc":9978,"health":9093,"metrics":9092}` |
