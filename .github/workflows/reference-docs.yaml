@@ -1,5 +1,5 @@
 # Generates Kubernetes API reference docs from kgateway-dev/kgateway.
-# Version-to-branch and output file mapping is read from .github/workflows/versions.json.
+# Version-to-branch and output file mapping is read from scripts/versions.json.
 # Each entry can include apiFile and kgatewayRef; add new versions there without editing this workflow.
 name: Generate API reference docs for agentgateway
 
@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
     inputs:
       doc_version:
-        description: 'Doc version to generate (must exist in .github/workflows/versions.json), e.g. 2.2.x, 2.3.x'
+        description: 'Doc version to generate (must exist in scripts/versions.json), e.g. 2.2.x, 2.3.x'
         required: true
         default: '2.2.x'
 
@@ -32,7 +32,7 @@ jobs:
       - name: Resolve version from versions.json
         id: version_variables
         run: |
-          VERSIONS_FILE="website/.github/workflows/versions.json"
+          VERSIONS_FILE="website/scripts/versions.json"
           if [[ "${{ github.event_name }}" == "release" ]]; then
             doc_version="2.2.x"
           else
@@ -74,7 +74,7 @@ jobs:
           REF="${{ steps.version_variables.outputs.kgateway_ref }}"
           echo "Checking kgateway ref refs/heads/${REF}..."
           if ! git ls-remote --heads https://github.com/kgateway-dev/kgateway.git "refs/heads/${REF}" | grep -q "${REF}"; then
-            echo "Error: kgateway branch ${REF} not found. Update .github/workflows/versions.json kgatewayRef for this version."
+            echo "Error: kgateway branch ${REF} not found. Update scripts/versions.json kgatewayRef for this version."
             exit 1
           fi
           echo "ref=${REF}" >> $GITHUB_OUTPUT
@@ -118,7 +118,7 @@ jobs:
             --source-path="$PWD/../kgateway/api/v1alpha1/agentgateway/" \
             --renderer=markdown \
             --output-path ./ \
-            --config=.github/workflows/crd-ref-docs-config.yaml
+            --config=scripts/crd-ref-docs-config.yaml
 
           if [ ! -f "./out.md" ]; then
             echo "Error: API docs generation failed - out.md not found"
@@ -152,7 +152,7 @@ jobs:
           DOC_VERSION="${{ needs.setup.outputs.doc_version }}" \
           WEBSITE_DIR="website" \
           KGATEWAY_DIR="kgateway" \
-          python3 website/.github/workflows/generate-ref-docs.py
+          python3 website/scripts/generate-ref-docs.py
 
       - name: Create PR for website repo
         uses: peter-evans/create-pull-request@v7
