@@ -62,6 +62,8 @@ A non-exhaustive list of these gaps is as follows:
 * `clear_route_cache` is ignored in responses. Agentgateway does not have a route cache.
 * `status.CONTINUE_AND_REPLACE` is ignored in responses.
 
+When an ExtProc server returns a header modification with `append_action` set to `OVERWRITE_IF_EXISTS_OR_ADD` (the Envoy default), agentgateway treats the `Unset` header append as `Overwrite` instead of ignoring it. This aligns behavior with Envoy's expectations.
+
 If any incompatibility causes issues for your external processing server, open an issue on the [agentgateway GitHub repository](https://github.com/agentgateway/agentgateway/issues).
 
 ## Setup

@@ -17,13 +17,13 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
 1. Open the agentgateway [metrics endpoint](http://localhost:15020/metrics). 
 2. Look for the `list_calls_total` metric. This metric shows the number of tool calls that were performed and includes important information about the call, such as:
    * `server`: The MCP server that was used for the tool call.  
-   * `name`: The name of the tool that was used. 
+   * `name`: The name of the tool that was used.
 
 ## View traces
 
 1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
 
-2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. 
+2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. This example uses static tracing configuration. For per-route dynamic tracing configuration, see [Dynamic tracing](../reference/observability/traces#configure-dynamic-tracing). 
    ```yaml
    cat <<EOF > config.yaml
    config:  
@@ -73,4 +73,27 @@ session_id="6b497ee9-3710-428a-96d2-31ebeab73dcd"Request(JsonRpcRequest
 { jsonrpc: JsonRpcVersion2_0, id: Number(4), request: CallToolRequest(Request
 { method: CallToolRequestMethod, params: CallToolRequestParam { name: "echo", 
 arguments: Some({"message": String("hello world")}) }, extensions: Extensions }) })	
+```
+
+### MCP logging fields
+
+Agentgateway includes the following MCP-specific fields in structured logs:
+
+| Field | Description |
+|-------|-------------|
+| `mcp.method` | The MCP method being invoked, such as `initialize`, `list_tools`, `call_tool`. |
+| `mcp.session.id` | The unique session identifier for the MCP connection. |
+| `mcp.target` | The target MCP server name. |
+| `mcp.resource.type` | The type of resource, such as a tool, prompt, resource, or templates. |
+| `mcp.resource.name` | The name of the specific resource being accessed. |
+
+These fields can be used in CEL expressions for access logging policies. For example:
+
+```yaml
+accessLog:
+  filter: 'mcp.method == "call_tool"'
+  fields:
+    add:
+      tool_name: 'mcp.resource.name'
+      session: 'mcp.session.id'
 ```
