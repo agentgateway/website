@@ -118,6 +118,7 @@ jobs:
             --source-path="$PWD/../kgateway/api/v1alpha1/agentgateway/" \
             --renderer=markdown \
             --output-path ./ \
+            --max-depth=100 \
             --config=scripts/crd-ref-docs-config.yaml
 
           if [ ! -f "./out.md" ]; then
