@@ -39,7 +39,7 @@ Target-level policies are configured under `binds[].listeners[].routes[].backend
 
 ### Authorization per target
 
-Apply different authorization rules to different MCP servers:
+Apply different authorization rules to different MCP servers.
 
 ```yaml
 binds:
@@ -72,7 +72,7 @@ binds:
 
 ### Authentication per target
 
-Use different authentication methods for different targets:
+Use different authentication methods for different targets.
 
 ```yaml
 binds:
@@ -103,7 +103,7 @@ binds:
 
 ### LLM policies per target
 
-Apply different prompt guards to different MCP servers:
+Apply different prompt guards to different MCP servers.
 
 ```yaml
 binds:
@@ -142,8 +142,8 @@ Target-level policies override backend-level policies for the same policy type.
 ### Inheritance
 
 In this example:
-- `public-server` allows anonymous access (target policy overrides backend policy)
-- `restricted-server` requires authentication (uses backend policy)
+- `public-server` allows anonymous access (target policy overrides backend policy).
+- `restricted-server` requires authentication (uses backend policy).
 
 ```yaml
 binds:
