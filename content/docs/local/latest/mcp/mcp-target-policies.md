@@ -141,6 +141,10 @@ Target-level policies override backend-level policies for the same policy type.
 
 ### Inheritance
 
+In this example:
+- `public-server` allows anonymous access (target policy overrides backend policy)
+- `restricted-server` requires authentication (uses backend policy)
+
 ```yaml
 binds:
 - port: 3000
@@ -177,10 +181,6 @@ binds:
               args: ["@mycompany/restricted-server"]
             # This target uses the backend-level policy (requires auth)
 ```
-
-In this example:
-- `public-server` allows anonymous access (target policy overrides backend policy)
-- `restricted-server` requires authentication (uses backend policy)
 
 ## Learn more
 
