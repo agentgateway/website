@@ -7,6 +7,7 @@ description:
 Agentgateway uses the {{< gloss "CEL (Common Expression Language)" >}}CEL{{< /gloss >}} expression language throughout the project to enable flexibility.
 CEL allows writing simple expressions based on the request context that evaluate to some result.
 
+
 ## Example expressions
 
 Review the following examples of expressions for different uses cases.
@@ -92,6 +93,15 @@ When using CEL expressions, a variety of variables and functions are made availa
 
 ### Variables
 
+Variables are only available when they exist in the current context. Previously in version 0.11 or earlier, variables like `jwt` were always present but could be `null`. Now, to check if a JWT claim exists, use the expression `has(jwt.sub)`. This expression returns `false` if there is no JWT, rather than always returning `true`.
+
+Additionally, fields are populated only if they are referenced in a CEL expression.
+This way, agentgateway avoids expensive buffering of request bodies if no CEL expression depends on the `body`.
+
+Each policy execution consistently gets the current view of the request and response. For example, during logging, any manipulations from earlier policies (such as transformations or external processing) are observable in the CEL context.
+
+#### Table of variables
+
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel.md" section="CEL context Schema" %}}
 
 #### Variables by policy type
@@ -100,16 +110,14 @@ Depending on the policy, different fields are accessible based on when in the re
 
 |Policy|Available Variables|
 |------|-------------------|
-|Transformation| `source`, `request`, `jwt` |
+|Transformation| `source`, `request`, `jwt`, `extauthz` |
 |Remote Rate Limit| `source`, `request`, `jwt` |
 |HTTP Authorization| `source`, `request`, `jwt` |
+|External Authorization| `source`, `request`, `jwt` |
 |MCP Authorization| `source`, `request`, `jwt`, `mcp` |
-|Logging| `source`, `request`, `jwt`, `mcp`, `response`, `llm`|
-|Tracing| `source`, `request`, `jwt`, `mcp`, `response`, `llm`|
-|Metrics| `source`, `request`, `jwt`, `mcp`, `response`, `llm`|
-
-Additionally, fields are populated only if they are referenced in a CEL expression.
-This way, agentgateway avoids expensive buffering of request bodies if no CEL expression depends on the `body`.
+|Logging| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
+|Tracing| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
+|Metrics| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm`|
 
 ### Functions {#functions-policy-all}
 

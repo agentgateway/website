@@ -8,6 +8,34 @@ Connect to an MCP server via streamable HTTP.
 
 {{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
 
+## About streamable HTTP
+
+Agentgateway automatically manages stateful MCP sessions when using HTTP-based transports. The session state (including backend pinning) is encoded in the session ID and persisted across requests, ensuring that subsequent tool calls in the same session are routed to the same backend server.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Agentgateway
+    participant MCP Server
+
+    Client->>Agentgateway: initialize (no session)
+    Agentgateway->>MCP Server: initialize
+    MCP Server-->>Agentgateway: initialized
+    Note over Agentgateway: Pin session to backend<br/>Encode state into session ID
+    Agentgateway-->>Client: Mcp-Session-Id: encrypted-state-abc123
+    
+    Client->>Agentgateway: call_tool (with session ID)
+    Note over Agentgateway: Decode session ID<br/>Route to pinned backend
+    Agentgateway->>MCP Server: call_tool (same server)
+    MCP Server-->>Agentgateway: tool result
+    Agentgateway-->>Client: result
+```
+
+1. **Session initialization**: When a client sends an `initialize` request, agentgateway creates a session and returns a session ID
+2. **Backend pinning**: The session is pinned to a specific backend server (important when using multiple targets)
+3. **State encoding**: The session state is encoded into the session ID using AES-256-GCM encryption
+4. **Session resumption**: Subsequent requests with the same session ID are automatically routed to the same backend
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -19,7 +47,7 @@ Connect to an MCP server via streamable HTTP.
    PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
    ```
 
-2. Create a configuration for your agentgateway to connect to your MCP server. 
+2. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
    ```yaml
    cat <<EOF > config.yaml
    binds:

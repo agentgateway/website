@@ -36,3 +36,25 @@ binds:
 | `ai.name` | The name of the LLM provider for this AI backend. |
 | `bedrock.region` | The AWS region. |
 | `bedrock.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
+
+## Token counting
+
+Bedrock supports token counting for Anthropic models via the `count_tokens` endpoint. Agentgateway automatically handles the required formatting for Bedrock's count-tokens endpoint, including adding the `max_tokens: 1` parameter and Base64 encoding the request body.
+
+```bash
+curl -X POST http://localhost:3000/v1/messages/count_tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "system": "You are a helpful assistant."
+  }'
+```
+
+Example response:
+
+```json
+{
+  "input_tokens": 15
+}
+```

@@ -121,3 +121,7 @@ routes:
    4. Repeat the steps with the `time_get_current_time` tool with your timezone, such as `America/New_York`. 
    
       {{< reuse-image src="img/ui-tool-time-current.png" >}}
+
+## Next steps
+
+- Apply different policies to different MCP targets with [MCP target policies]({{< link-hextra path="/mcp/mcp-target-policies/" >}}).

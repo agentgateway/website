@@ -18,6 +18,8 @@ Agentgateway is API-compatible with the Envoy External Authorization gRPC servic
 > [!NOTE]
 > gRPC refers to the protocol of the external authorization service. The service can authorize both gRPC and HTTP requests from the user.
 
+When an ExtAuthz server returns header modifications, agentgateway uses `insert` instead of `append` for response headers. This ensures headers are properly set rather than potentially duplicated.
+
 Example configuration:
 
 ```yaml
