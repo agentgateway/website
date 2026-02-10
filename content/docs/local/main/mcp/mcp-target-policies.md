@@ -12,14 +12,14 @@ MCP target policies allow you to configure policies for specific MCP backend tar
 
 Policies are merged from the backend group level down to the target level, with more specific policies taking precedence.
 
-Consider the following best practices when configuring MCP target policies:
+### Best practices
 
 - **Use backend-level policies for common settings**: Apply shared policies at the backend level to reduce duplication.
 - **Use target-level policies for exceptions**: Override specific targets that need different behavior.
 - **Be explicit about authorization**: Always configure authorization policies, even if permissive.
 - **Test policy inheritance**: Verify that policies merge correctly by checking logs and testing access.
 
-## Supported policy types
+### Supported policy types
 
 The following policies can be configured at the MCP target level.
 
@@ -32,6 +32,19 @@ The following policies can be configured at the MCP target level.
 | `responseHeaderModifier` | Modify response headers |
 | `ai` | LLM processing policies (prompt guards, overrides, defaults, model aliases) |
 | `a2a` | Mark traffic as agent-to-agent |
+
+### Policy inheritance
+
+Policies are merged hierarchically:
+
+1. **Backend group level**: Policies defined at `backends[].policies`
+2. **Target level**: Policies defined at `backends[].mcp.targets[].policies`
+
+Target-level policies override backend-level policies for the same policy type.
+
+## Before you begin
+
+[Set up MCP multiplexed backends]({{< link-hextra path="/mcp/connect/multiplex/" >}}).
 
 ## Configuration examples
 
@@ -129,15 +142,6 @@ binds:
               host: https://sandbox-llm.example.com
             # No prompt guard for sandbox environment
 ```
-
-## Policy inheritance
-
-Policies are merged hierarchically:
-
-1. **Backend group level**: Policies defined at `backends[].policies`
-2. **Target level**: Policies defined at `backends[].mcp.targets[].policies`
-
-Target-level policies override backend-level policies for the same policy type.
 
 ### Inheritance
 
