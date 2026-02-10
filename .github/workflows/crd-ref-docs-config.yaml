@@ -1,0 +1,12 @@
+processor:
+  ignoreGroupVersions:
+    - gateway.networking.k8s.io/v1
+    - gateway.networking.k8s.io/v1alpha2
+    - gateway.networking.k8s.io/v1beta1
+  ignoreTypes:
+    - metav1.ObjectMeta
+    - metav1.TypeMeta
+    - metav1.ListMeta
+
+renderer:
+  kubernetesVersion: "1.31"
