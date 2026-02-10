@@ -145,14 +145,19 @@ params:
   sections:
     local:
       versions:
-        - version: "0.12.x"
+        - version: "0.13.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "0.11.x"
-          dropdown: "0.11 (latest)"
+        - version: "0.12.x"
+          dropdown: "0.12 (latest)"
           linkVersion: "latest"
           url: "/latest"
+        # Hide 0.11.x docs until decide if we need to have back versions  
+        # - version: "0.11.x"
+        #   dropdown: "0.11"
+        #   linkVersion: "0.11.x"
+        #   url: "/0.11.x"
     kubernetes:
       versions:
         - version: "2.3.x"
