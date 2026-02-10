@@ -83,6 +83,28 @@ Example response:
 }
 ```
 
+## Token counting
+
+Anthropic's `count_tokens` API is supported for estimating token usage before making a request. Agentgateway automatically handles the required `anthropic-version` header and formats the request correctly for Anthropic's API.
+
+```bash
+curl -X POST http://localhost:3000/v1/messages/count_tokens \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-haiku-4-5-20251001",
+    "messages": [{"role": "user", "content": "Hello!"}],
+    "system": "You are a helpful assistant."
+  }'
+```
+
+Example response:
+
+```json
+{
+  "input_tokens": 15
+}
+```
+
 ## Connect to Claude Code
 
 Connect to Claude Code locally to verify access to the Anthropic provider through agentgateway.

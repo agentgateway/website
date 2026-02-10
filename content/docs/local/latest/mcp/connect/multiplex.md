@@ -50,56 +50,6 @@ routes:
 ```
 {{% /details %}}
 
-## About multiplexing {#about}
-
-Multiplexing combines multiple MCP servers (targets) within a single backend into one unified MCP server. All targets are exposed together so that clients can access tools from all targets simultaneously. Tools are prefixed with the target name (e.g., `time_get_current_time`, `everything_echo`) 
-
-{{% details title="Example multiplexing configuration" closed="false" %}}
-
-```yaml
-backends:
-  - mcp:
-      # Multiple targets for multiplexing
-      targets:
-        - name: time
-          stdio:
-            cmd: uvx
-            args: ["mcp-server-time"]
-        - name: everything
-          stdio:
-            cmd: npx
-            args: ["@modelcontextprotocol/server-everything"]
-```
-
-{{% /details %}}
-
-**Multiplexing vs. load balancing**
-
-Although configured similarly, multiplexing is different than load balancing. Load balancing distributes requests across multiple backends. Each request goes to one backend, selected based on weight. You configure load balancing with multiple backends in a route (instead of multiple targets). For more information, see [Backend routing]({{< link-hextra path="/configuration/traffic-management/matching/#backend-routing" >}}).
-
-{{% details title="Example load balancing configuration" closed="true" %}}
-
-```yaml
-routes:
-  - backends:           # Multiple backends = load balancing
-      - mcp:
-          targets:
-            - name: everything
-              stdio:
-                cmd: npx
-                args: ["@modelcontextprotocol/server-everything"]
-        weight: 1
-      - mcp:
-          targets:
-            - name: everything
-              stdio:
-                cmd: npx
-                args: ["@modelcontextprotocol/server-everything"]
-        weight: 1
-```
-
-{{% /details %}}
-
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
