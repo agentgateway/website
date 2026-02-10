@@ -118,6 +118,7 @@ jobs:
             --source-path="$PWD/../kgateway/api/v1alpha1/agentgateway/" \
             --renderer=markdown \
             --output-path ./ \
+            --max-depth=100 \
             --config=scripts/crd-ref-docs-config.yaml
 
           if [ ! -f "./out.md" ]; then
@@ -147,6 +148,22 @@ jobs:
           
           popd || exit 1
 
+      - name: Generate shared types documentation
+        run: |
+          API_FILE="${{ needs.setup.outputs.api_file }}"
+          TARGET_FILE="website/assets/agw-docs/pages/reference/api/${API_FILE}"
+          SHARED_DIR="kgateway/api/v1alpha1/shared"
+          AGENTGATEWAY_SOURCE_DIR="kgateway/api/v1alpha1/agentgateway"
+          if [ -f "$TARGET_FILE" ]; then
+            echo "Generating shared types documentation for ${API_FILE}..."
+            python3 website/scripts/generate-shared-types.py \
+              "$SHARED_DIR" \
+              "$TARGET_FILE" \
+              "$AGENTGATEWAY_SOURCE_DIR"
+          else
+            echo "API doc file not found - skipping shared types"
+          fi
+
       - name: Generate Helm and metrics docs
         run: |
           DOC_VERSION="${{ needs.setup.outputs.doc_version }}" \
@@ -154,6 +171,8 @@ jobs:
           KGATEWAY_DIR="kgateway" \
           python3 website/scripts/generate-ref-docs.py
 
+      # Create PR: needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions)
+      # or a repo secret CREATE_PR_TOKEN (PAT with pull_requests: write).
       - name: Create PR for website repo
         uses: peter-evans/create-pull-request@v7
         id: create-pr
@@ -164,17 +183,17 @@ jobs:
             Generate reference documentation for agentgateway (${{ needs.setup.outputs.api_file }}).
             
             Source: kgateway-dev/kgateway at `${{ needs.setup.outputs.ref }}`.
-            Updates API reference, Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ needs.setup.outputs.directory }} version.
+            Updates API reference (including shared types such as CEL expression), Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ needs.setup.outputs.directory }} version.
             
             This PR was created automatically by the reference-docs workflow.
             
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
           branch: ref-docs-${{ needs.setup.outputs.doc_version }}
-          commit-message: 'docs: update API, Helm, and metrics docs from kgateway ${{ needs.setup.outputs.ref }}'
+          commit-message: 'docs: update API (incl. shared types), Helm, and metrics docs from kgateway ${{ needs.setup.outputs.ref }}'
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ needs.setup.outputs.doc_version }}) from kgateway ${{ needs.setup.outputs.ref }}'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CREATE_PR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Output PR URL
         run: |
