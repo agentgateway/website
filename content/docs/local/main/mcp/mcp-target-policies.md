@@ -4,9 +4,6 @@ weight: 50
 description: Apply policies to individual MCP backend targets
 ---
 
-> [!NOTE]
-> This feature was introduced in v0.12.0.
-
 Apply policies at the MCP target level to control behavior for individual MCP servers within a multiplexed backend.
 
 ## Overview
@@ -15,9 +12,16 @@ MCP target policies allow you to configure policies for specific MCP backend tar
 
 Policies are merged from the backend group level down to the target level, with more specific policies taking precedence.
 
+Consider the following best practices when configuring MCP target policies:
+
+- **Use backend-level policies for common settings**: Apply shared policies at the backend level to reduce duplication.
+- **Use target-level policies for exceptions**: Override specific targets that need different behavior.
+- **Be explicit about authorization**: Always configure authorization policies, even if permissive.
+- **Test policy inheritance**: Verify that policies merge correctly by checking logs and testing access.
+
 ## Supported policy types
 
-The following policies can be configured at the MCP target level:
+The following policies can be configured at the MCP target level.
 
 | Policy | Description |
 |--------|-------------|
@@ -29,11 +33,11 @@ The following policies can be configured at the MCP target level:
 | `ai` | LLM processing policies (prompt guards, overrides, defaults, model aliases) |
 | `a2a` | Mark traffic as agent-to-agent |
 
-## Configuration
+## Configuration examples
 
 Target-level policies are configured under `binds[].listeners[].routes[].backends[].mcp.targets[].policies`.
 
-### Example: Authorization per target
+### Authorization per target
 
 Apply different authorization rules to different MCP servers:
 
@@ -66,7 +70,7 @@ binds:
                 - 'has(jwt.sub) && "admin" in jwt.roles'
 ```
 
-### Example: Authentication per target
+### Authentication per target
 
 Use different authentication methods for different targets:
 
@@ -97,7 +101,7 @@ binds:
                 sni: service-b.example.com
 ```
 
-### Example: LLM policies per target
+### LLM policies per target
 
 Apply different prompt guards to different MCP servers:
 
@@ -135,7 +139,7 @@ Policies are merged hierarchically:
 
 Target-level policies override backend-level policies for the same policy type.
 
-### Example: Inheritance
+### Inheritance
 
 ```yaml
 binds:
@@ -177,13 +181,6 @@ binds:
 In this example:
 - `public-server` allows anonymous access (target policy overrides backend policy)
 - `restricted-server` requires authentication (uses backend policy)
-
-## Best practices
-
-1. **Use backend-level policies for common settings**: Apply shared policies at the backend level to reduce duplication
-2. **Use target-level policies for exceptions**: Override specific targets that need different behavior
-3. **Be explicit about authorization**: Always configure authorization policies, even if permissive
-4. **Test policy inheritance**: Verify that policies merge correctly by checking logs and testing access
 
 ## Learn more
 
