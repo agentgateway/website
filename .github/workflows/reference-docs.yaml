@@ -155,6 +155,8 @@ jobs:
           KGATEWAY_DIR="kgateway" \
           python3 website/scripts/generate-ref-docs.py
 
+      # Create PR: needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions)
+      # or a repo secret CREATE_PR_TOKEN (PAT with pull_requests: write).
       - name: Create PR for website repo
         uses: peter-evans/create-pull-request@v7
         id: create-pr
@@ -175,7 +177,7 @@ jobs:
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ needs.setup.outputs.doc_version }}) from kgateway ${{ needs.setup.outputs.ref }}'
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.CREATE_PR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Output PR URL
         run: |
