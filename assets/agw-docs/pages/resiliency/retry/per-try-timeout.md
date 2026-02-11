@@ -6,12 +6,12 @@ Set separate timeouts for retries.
 
 ## About per-try timeouts
 
-The per-retry timeout allows you to set a timeout for retried requests. If the timeout expires, Envoy cancels the retry attempt and immediately retries on another upstream host. 
+The per-retry timeout allows you to set a timeout for retried requests. If the timeout expires, AgentGateway cancels the retry attempt and immediately retries on another upstream host. 
 
-By default, Envoy has a default overall request timeout of 15 seconds. A request timeout represents the time Envoy waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger [request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}}) to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
+By default, AgentGateway has a default overall request timeout of 15 seconds. A request timeout represents the time AgentGateway waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger [request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}}) to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
 
 <!--
-When per-try timeouts are enabled, Envoy returns the `x-envoy-upstream-rq-per-try-timeout-ms` header in the response.  -->
+When per-try timeouts are enabled, AgentGateway returns the `x-envoy-upstream-rq-per-try-timeout-ms` header in the response.  -->
 Note that if you configured a global request timeout, the per-try timeout must be less than the global request timeout.
 
 Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} instead. 
@@ -232,7 +232,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       curl -X POST 127.0.0.1:19000/config_dump\?include_eds > gateway-config.json
       ```
 
-   3. Open the config dump and find the route configuration for the `kube_default_reviews_9080` Envoy cluster on the `listener~8080~retry_example` virtual host. Verify that the retry policy is set as you configured it.
+   3. Open the config dump and find the route configuration for the `kube_default_reviews_9080` cluster on the `listener~8080~retry_example` virtual host. Verify that the retry policy is set as you configured it.
       
       Example `jq` command:
       ```sh
