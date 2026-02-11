@@ -199,13 +199,15 @@ spec:
       namespace: agentgateway-system
   rules:
   - matches:
-    - backendRefs:
-      - name: openai-backend
-        namespace: agentgateway-system
-        group: agentgateway.dev
-        kind: AgentgatewayBackend
+    - path:
+        type: PathPrefix
+        value: /openai
+    backendRefs:
+    - name: openai-backend
+      namespace: agentgateway-system
+      group: agentgateway.dev
+      kind: AgentgatewayBackend
 EOF
-
 ```
 
 ### Verify Configuration
