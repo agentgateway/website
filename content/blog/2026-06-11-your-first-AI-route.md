@@ -298,13 +298,6 @@ Port-forwarding creates a tunnel from your local machine to the AgentGateway ser
 # Port-forward AgentGateway service in background
 kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
 
-# Store the process ID to kill it later
-PORTFORWARD_PID=$!
-echo "Port-forward running as PID: $PORTFORWARD_PID"
-
-# Set gateway endpoint
-export GATEWAY_IP="localhost"
-export GATEWAY_PORT="8080"
 ```
 
 ### Test Chat Completions
@@ -312,7 +305,7 @@ export GATEWAY_PORT="8080"
 This is where the magic happens! Our request travels through AgentGateway, gets authenticated using our secret, routed to OpenAI's API, and returns with a complete AI response. Notice how the response includes token usage information that AgentGateway automatically captures for cost tracking and observability.
 ```bash
 # Test basic chat completion
-curl -i "$GATEWAY_IP:$GATEWAY_PORT/openai/chat/completions" \
+curl -i "$localhost:8080/openai/chat/completions" \
   -H "content-type: application/json" \
   -d '{
     "model": "gpt-4o-mini",
@@ -356,7 +349,7 @@ curl -i "$GATEWAY_IP:$GATEWAY_PORT/openai/chat/completions" \
 AgentGateway allows you to easily switch between different OpenAI models by simply changing the `model` parameter. The backend automatically routes to the appropriate model while maintaining consistent authentication and observability.
 ```bash
 # Test with GPT-4o
-curl -s "$GATEWAY_IP:$GATEWAY_PORT/openai/chat/completions" \
+curl -s "localhost:8080/openai/chat/completions" \
   -H "content-type: application/json" \
   -d '{
     "model": "gpt-4o",
@@ -368,91 +361,6 @@ curl -s "$GATEWAY_IP:$GATEWAY_PORT/openai/chat/completions" \
     ],
     "max_tokens": 50
   }' | jq '.choices[0].message.content'
-```
-
-### Test Models List
-
-The models endpoint demonstrates our dual-backend approach in action. This simple GET request uses our static backend to retrieve the list of available models directly from OpenAI, bypassing AI-specific processing since it's just metadata.
-```bash
-# List available models (check raw response first)
-curl -i "$GATEWAY_IP:$GATEWAY_PORT/openai/models"
-
-# If successful, filter for GPT models
-curl -s "$GATEWAY_IP:$GATEWAY_PORT/openai/models" | jq -r '.data[]? | select(.id | contains("gpt")) | .id'
-```
-
----
-
-## Step 5: Monitoring and Observability
-
-One of AgentGateway's key advantages is comprehensive observability out of the box. Every AI request generates structured logs with token usage, timing, and cost information. This visibility is crucial for production AI systems where costs can escalate quickly and performance directly impacts user experience.
-
-### View Real-Time Logs
-
-AgentGateway automatically enriches logs with AI-specific metadata like token counts, model information, and response times. The `gen_ai` fields follow OpenTelemetry semantic conventions, making logs compatible with standard observability tools.
-```bash
-# Check what logs look like first
-kubectl logs deploy/agentgateway -n agentgateway-system --tail=5
-
-# View structured logs with AI context (filter JSON lines only)
-kubectl logs deploy/agentgateway -n agentgateway-system --tail=50 | \
-  grep '^{' | \
-  jq 'select(.gen_ai?) | {
-    timestamp: .timestamp,
-    model: .gen_ai.request.model,
-    prompt_tokens: .gen_ai.usage.prompt_tokens,
-    completion_tokens: .gen_ai.usage.completion_tokens,
-    duration: .duration
-  }'
-```
-
-### Monitor Costs
-
-AI services bill based on token usage, making cost monitoring essential. This script demonstrates how to extract token usage from AgentGateway logs and calculate estimated costs using current OpenAI pricing. In production, you'd integrate this with alerting systems to prevent budget overruns.
-```bash
-# Create cost calculation script
-cat <<'EOF' > calculate-costs.sh
-#!/bin/bash
-
-echo "Analyzing recent token usage..."
-
-kubectl logs deploy/agentgateway -n agentgateway-system --tail=50 | \
-  grep '^{' | \
-  jq -r 'select(.gen_ai.usage?) | [
-    .timestamp,
-    .gen_ai.request.model,
-    .gen_ai.usage.prompt_tokens,
-    .gen_ai.usage.completion_tokens,
-    .gen_ai.usage.total_tokens
-  ] | @csv' | \
-  awk -F',' '
-BEGIN {
-  print "Model,Input Tokens,Output Tokens,Total Tokens,Estimated Cost"
-  total_cost = 0
-}
-{
-  model = $2
-  input = $3
-  output = $4
-  gsub(/"/, "", model)
-  
-  cost = 0
-  if (model ~ /gpt-4o-mini/) {
-    cost = (input * 0.000150 / 1000) + (output * 0.000600 / 1000)
-  } else if (model ~ /gpt-4o/) {
-    cost = (input * 0.0025 / 1000) + (output * 0.0100 / 1000)
-  }
-  
-  total_cost += cost
-  printf "%s,%d,%d,%d,$%.6f\n", model, input, output, input+output, cost
-}
-END {
-  printf "\nTotal estimated cost: $%.6f\n", total_cost
-}'
-EOF
-
-chmod +x calculate-costs.sh
-./calculate-costs.sh
 ```
 
 ---
