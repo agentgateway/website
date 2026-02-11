@@ -244,7 +244,7 @@ kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
 This is where the magic happens! Our request travels through AgentGateway, gets authenticated using our secret, routed to OpenAI's API, and returns with a complete AI response. Notice how the response includes token usage information that AgentGateway automatically captures for cost tracking and observability.
 ```bash
 # Test basic chat completion
-curl -i "$localhost:8080/openai/chat/completions" \
+curl -i "localhost:8080/openai/chat/completions" \
   -H "content-type: application/json" \
   -d '{
     "model": "gpt-4o-mini",
