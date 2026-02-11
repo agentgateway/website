@@ -16,10 +16,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 {{< /callout >}}
 
-{{< callout >}}
-{{< reuse "agw-docs/snippets/proxy-kgateway.md" >}}
-{{< /callout >}}
-
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -28,7 +24,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 1. Install the experimental Kubernetes Gateway API CRDs.
    
    ```sh
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
    ```
 
 2. Configure the per-retry timeout. You can apply the timeout to an HTTPRoute, or Gateway listener.

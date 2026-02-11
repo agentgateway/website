@@ -92,33 +92,6 @@ To use retries, you need to install the experimental channel. You can also set u
    EOF
    ```
 
-3. Apply an access log policy to the gateway that tracks the number of retries. The key log in the following example is `response_flags`, which is used to verify that the request was retried. For more information, see the [Access logging guide]({{< link-hextra path="/security/access-logging/">}}) and the [Envoy access logs response flags docs](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#response-flags).
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: HTTPListenerPolicy
-   metadata:
-     name: access-logs
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: agentgateway-proxy
-     accessLog:
-     - fileSink:
-         path: /dev/stdout
-         jsonFormat:
-           start_time: "%START_TIME%"
-           method: "%REQ(:METHOD)%"
-           path: "%REQ(:PATH)%"
-           response_code: "%RESPONSE_CODE%"
-           response_flags: "%RESPONSE_FLAGS%"
-           upstream_host: "%UPSTREAM_HOST%"
-           upstream_cluster: "%UPSTREAM_CLUSTER%"
-   EOF
-   ```
 
 ## Step 2: Set up request retries {#setup-retries}
 
