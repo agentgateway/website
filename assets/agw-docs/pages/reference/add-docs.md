@@ -90,11 +90,11 @@ The following example shows how to use conditional-text in an assets file that c
 
 Content in `assets/agw-docs/snippets/example-install.md`:
 ```markdown
-{{</* conditional-text include-if="envoy" */>}}
-Install kgateway using the Envoy-based proxy configuration.
+{{</* conditional-text include-if="standalone" */>}}
+Install the standalone binary of agentgateway.
 {{</* /conditional-text */>}}
-{{</* conditional-text include-if="agentgateway" */>}}
-Install kgateway using the agentgateway configuration.
+{{</* conditional-text include-if="kubernetes" */>}}
+Install agentgateway on Kubernetes.
 {{</* /conditional-text */>}}
 ```
 

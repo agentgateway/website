@@ -3,7 +3,7 @@ linkTitle: "Latest"
 title: Welcome
 ---
 
-Welcome to the documentation for using the local binary of the agentgateway open source project! 
+Welcome to the documentation for using the standalone binary of the agentgateway open source project! 
 
 <br />
 

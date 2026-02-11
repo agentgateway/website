@@ -123,7 +123,7 @@ spec:
 
 For configuration that is not exposed via the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}'s built-in or overlay configuration options, or if you prefer to pass in raw upstream configuration, such as to migrate more easily from the agentgateway standalone binary to agentgateway on Kubernetes, you can use the `rawConfig` option in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
-To find the raw configuration that you want to apply, review [Configuration](https://agentgateway.dev/docs/local/latest/configuration/) in the standalone agentgateway binary docs. 
+To find the raw configuration that you want to apply, review [Configuration](https://agentgateway.dev/docs/standalone/latest/configuration/) in the standalone agentgateway binary docs. 
 
 {{< callout context="danger">}}
 Note that raw configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
