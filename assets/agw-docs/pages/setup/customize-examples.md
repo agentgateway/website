@@ -425,7 +425,7 @@ spec:
 EOF
 ```
 
-### Shutdown configuration (config) {#shutdown}
+### Shutdown config {#shutdown}
 
 Configure graceful shutdown timeouts using the `shutdown` config.
 
@@ -589,7 +589,7 @@ EOF
 
 ### ServiceAccount annotations for IAM {#sa-annotation}
 
-Add annotations to the ServiceAccount for cloud provider IAM integration (e.g., AWS IRSA, GKE Workload Identity).
+Add annotations to the ServiceAccount for a cloud provider IAM integration, such as AWS IRSA or GKE Workload Identity.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
