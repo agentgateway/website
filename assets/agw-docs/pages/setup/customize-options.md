@@ -67,7 +67,7 @@ You can use overlays to also remove configuration from your resources, such as t
 
 **Set field value to null**
 
-Set a field to a `null` value. This option is best to removing scalar values and simple objects. 
+Set a field to a `null` value. This option is best for removing scalar values and simple objects. 
 
 The following example snippet sets the `securityContext` field in the container template to `null`. Note that you must use the `kubectl apply --server-side` command to apply the change and set the field to `null`. If you do not use the `--server-side` option, the `null` value is silently dropped when you apply the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
@@ -139,8 +139,8 @@ You can attach an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resourc
 1. **Built-in configuration in the GatewayClass is applied first** - This includes settings, such as `image`, `logging`, `resources`, and `env`. 
 2. **Built-in configuration in the Gateway overrides GatewayClass settings** - If conflicting built-in configuration is specified on the Gateway, the GatewayClass configuration is overridden.  
 3. **Overlay configuration in GatewayClass** - After all built-in configuration is processed, overlay configuration that is defined on the GatewayClass is applied and might modify the rendered resources. 
-4. **Overlay configuration in Gateway overrides GatewayClass settings** - If conflicting overlay configuration is specified on the Gateway, the GatewayClass is overridden by using strategic merge patch semantics. Consider the following examples: 
-   - For scalar values, such as `replicas`, the Gateway configuration takes precedence
+4. **Overlay configuration in Gateway overrides GatewayClass settings** - If conflicting overlay configuration is specified on the Gateway, the configuration in the GatewayClass is overridden by using strategic merge patch semantics. Consider the following examples: 
+   - For scalar values, such as `replicas`, the Gateway configuration takes precedence.
    - For maps, such as `labels`, the label keys are merged. If both the Gateway and GatewayClass specify the same label key, the label key on the Gateway takes precedence.  
 
 
@@ -148,6 +148,7 @@ You can attach an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resourc
 
 Consider the following GatewayClass configuration:
 ```yaml
+
 spec:
   deployment:
     spec:
@@ -163,6 +164,7 @@ spec:
 
 Consider the following Gateway configuration:
 ```yaml
+
 spec:
   deployment:
     spec:

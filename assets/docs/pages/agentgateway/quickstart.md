@@ -20,7 +20,7 @@ Good job! You now have the {{< reuse "/agw-docs/snippets/kgateway.md" >}} contro
 
 ## Next steps
 
-{{< icon "agentgateway" >}} [Create an agentgateway proxy]({{< link-hextra path="/setup/" >}}) that you can use for Model Context Protocol (MCP), agent-to-agent (A2A), large language model (LLM), and more AI-related use cases. For example, you can follow the [guide]({{< link-hextra path="/mcp/static-mcp/" >}}) to use agentgateway to proxy traffic to a sample MCP tool server. The example deploys a sample MCP server with a `fetch` tool, exposes the tool with agentgateway, and tests the tool with the MCP Inspector UI.
+{{< icon "agentgateway" >}} [Create an agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}) that you can use for Model Context Protocol (MCP), agent-to-agent (A2A), large language model (LLM), and more AI-related use cases. For example, you can follow the [guide]({{< link-hextra path="/mcp/static-mcp/" >}}) to use agentgateway to proxy traffic to a sample MCP tool server. The example deploys a sample MCP server with a `fetch` tool, exposes the tool with agentgateway, and tests the tool with the MCP Inspector UI.
 
 For other examples, see the [LLM consumption]({{< link-hextra path="/llm/" >}}), [inference routing]({{< link-hextra path="/inference/" >}}), [MCP]({{< link-hextra path="/mcp/" >}}), or [agent connectivity]({{< link-hextra path="/agent/" >}}) guides. 
 

@@ -72,7 +72,7 @@ You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewa
 
 ### Overlays {#overlays}
 
-You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} custom resource directly. This way, your configuration is validated when you apply the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource in your cluster. 
+You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to override default settings for the deployment, service, and service account that are created for an agentgateway proxy. 
 
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/setup/customize/configs/#overlays" >}}). 
    ```yaml
@@ -188,11 +188,10 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
 
    * **Cloud Provider LoadBalancer**:
      1. Get the external address of the gateway proxy and save it in an environment variable.
-   
-     ```sh
-     export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-config -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-     echo $INGRESS_GW_ADDRESS
-     ```
+        ```sh
+        export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-config -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+        echo $INGRESS_GW_ADDRESS
+        ```
 
      2. Send a request along the `/direct` path to the agentgateway proxy through port 3000. 
         ```sh
