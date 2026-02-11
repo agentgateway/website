@@ -1,11 +1,9 @@
 ---
-title: "Your First AI Route: Connecting to OpenAI with AgentGateway (Open Source)"
+title: "Your First AI Route: Connecting to OpenAI with AgentGateway"
 publishDate: 2026-02-11
 author: "Sebastian Maniak"
 description: "Step-by-step guide to connecting open source AgentGateway to OpenAI API with cost tracking, monitoring, security best practices, and production-ready configurations."
 ---
-
-# Your First AI Route: Connecting to OpenAI with AgentGateway (Open Source)
 
 ## Introduction
 This is a how-to guide to setup AgentGateway and get your first AI route working with OpenAI. We'll walk through the complete setup from scratch - creating a Kubernetes cluster, installing AgentGateway, and connecting it to OpenAI's API.
