@@ -7,7 +7,7 @@ You can set up the httpbin sample app. This app can be used to try out traffic m
 
 ## Before you begin
 
-[Set up an agentgateway proxy]({{< link-hextra path="/setup/" >}}). 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}). 
 
 ## Install httpbin
 

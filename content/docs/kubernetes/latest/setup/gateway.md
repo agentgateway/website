@@ -1,6 +1,6 @@
 ---
-title: Gateway setup
-weight: 15
+title: Set up an agentgateway
+weight: 10
 description:
 ---
 

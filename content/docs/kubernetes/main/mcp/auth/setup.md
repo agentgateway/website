@@ -11,7 +11,7 @@ In this guide, you explore how to configure the agentgateway proxy to protect a 
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/mcp/static-mcp/" >}}).
 3. Follow the steps to [set up Keycloak]({{< link-hextra path="/mcp/auth/keycloak/" >}}). 
 4. Install the experimental channel Gateway API. 

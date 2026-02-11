@@ -1,167 +1,232 @@
-The configuration that is used to spin up a gateway proxy is stored in several custom resources, including {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}, and a gateway proxy template. By default, {{< reuse "agw-docs/snippets/kgateway.md" >}} creates these resources for you during the installation so that you can spin up gateway proxies with the [default proxy configuration]({{< link-hextra path="/setup/default/" >}}). You have the following options to change the default configuration for your gateway proxies: 
+Customize your agentgateway proxy with the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
-| Option | Description | 
-| -- | -- | 
-| Create your own {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource (recommended) | To adjust the settings on the gateway proxy, you can create your own {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. This approach allows you to spin up gateway proxies with different configurations. Keep in mind that you must maintain the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resources that you created manually. The values in these resources are not automatically updated during upgrades.  | 
-| Change default proxy settings | You can change some of the values for the default gateway proxy updating the values in the {{< reuse "agw-docs/snippets/kgateway.md" >}} Helm chart. The values that you set in your Helm chart are automatically rolled out to the gateway proxies.  |
-| Create self-managed gateways with custom proxy templates | {{< reuse "agw-docs/snippets/byo-gateway.md" >}} | 
+## Before you begin
 
-## Customize the gateway proxy 
+Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 
-The example in this guide uses the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to change settings on the gateway proxy. To find other customization examples, see the [Gateway customization guides]({{< link-hextra path="/setup/customize/" >}}).
+## Customize the gateway
 
-1. Create a {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to add any custom settings to the gateway. The following example makes the following changes: 
-   
-   * The Envoy log level is set to `debug` (default value: `info`).
-   * The Kubernetes service type is changed to NodePort (default value: `LoadBalancer`). 
-   * The `gateway: custom` label is added to the gateway proxy service that exposes the proxy (default value: `gloo=kube-gateway`).
-   * The `externalTrafficPolicy` is set to `Local` to preserve the original client IP address.
-   * The `gateway: custom` label is added to the gateway proxy pod (default value: `gloo=kube-gateway` ). 
-   * The security context of the gateway proxy is changed to use the 50000 as the supplemental group ID and user ID (default values: `10101` ). 
+Choose between the following options to customize your agentgateway proxy: 
 
-   For other settings, see the [API docs]({{< link-hextra path="/reference/api/#gatewayparametersspec" >}}) or check out the [Gateway customization guides]({{< link-hextra path="/setup/customize/" >}}).
-   
+* [Built-in customization](#built-in)
+* [Overlays](#overlays)
+* [`rawConfig`](#rawconfig)
+
+### Built-in customization {#built-in}
+
+You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} custom resource directly. This way, your configuration is validated when you apply the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource in your cluster. 
+
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the logging format from `text` to `json`. For other examples, see [Built-in customization]({{< link-hextra path="/setup/customize/configs/#built-in-customization" >}}). 
    ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
-     name: custom-gw-params
+     name: agentgateway-config
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
-     kube: 
-       envoyContainer:
-         bootstrap:
-           logLevel: debug       
-       service:
-         type: NodePort
-         extraLabels: 
-           gateway: custom
-         
-         externalTrafficPolicy: Local
-         
-       podTemplate: 
-         extraLabels:
-           gateway: custom
-         securityContext: 
-           fsGroup: 50000
-           runAsUser: 50000
+     logging:
+        format: json
    EOF
    ```
 
-2. Create a Gateway resource that references your custom {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. 
+2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. 
+
    ```yaml
-   kubectl apply -f- <<EOF
-   kind: Gateway
+   kubectl apply --server-side -f- <<'EOF'
    apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
    metadata:
-     name: custom
+     name: agentgateway-config
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      infrastructure:
        parametersRef:
-         name: custom-gw-params
-         group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
+         name: agentgateway-config
+         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
      listeners:
-     - protocol: HTTP
-       port: 80
-       name: http
-       allowedRoutes:
-         namespaces:
-           from: All
+       - name: http
+         port: 3030
+         protocol: HTTP
+         allowedRoutes:
+           namespaces:
+             from: All
    EOF
    ```
 
-3. Verify that a pod is created for your gateway proxy and that it has the pod settings that you defined in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
-
+3. Check the pod logs to verify that the agentgateway logs are displayed in JSON format. 
    ```sh
-   kubectl get pods -l app.kubernetes.io/name=custom -n {{< reuse "agw-docs/snippets/namespace.md" >}}   -o yaml
-   ```
-
-   If the pod does not come up, try running `kubectl get events -n kgateway-system` to see if the Kubernetes API server logged any failures. If no events are logged, ensure that the `kgateway` GatewayClass is present in your cluster and that the Gateway resource shows an `Accepted` status. 
-
-   Example output:
-
-   ```yaml {linenos=table,hl_lines=[13,20,21,22],linenostart=1,filename="gateway-pod.yaml"}
-   apiVersion: v1
-   kind: Pod
-   metadata:
-     annotations:
-       prometheus.io/path: /metrics
-       prometheus.io/port: "9091"
-       prometheus.io/scrape: "true"
-     creationTimestamp: "2024-08-07T19:47:27Z"
-     generateName: custom-7d9bf46f96-
-     labels:
-       app.kubernetes.io/instance: custom
-       app.kubernetes.io/name: custom
-       gateway: custom
-       gateway.networking.k8s.io/gateway-name: custom
-       kgateway: kube-gateway
-   ...
-     priority: 0
-     restartPolicy: Always
-     schedulerName: default-scheduler
-     securityContext:
-       fsGroup: 50000
-       runAsUser: 50000
-   ...
-   ```
-
-4. Get the details of the service that exposes the gateway proxy. Verify that the service is of type NodePort and that the extra label was added to the service. 
-
-   ```sh
-   kubectl get service custom -n kgateway-system -o yaml
+   kubectl logs deployment/agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
    Example output: 
+   ```
+   {"level":"info","time":"2025-12-16T15:58:18.245219Z","scope":"agent_core::readiness","message":"Task 'agentgateway' complete (2.378042ms), still awaiting 1 tasks"}
+   {"level":"info","time":"2025-12-16T15:58:18.245221Z","scope":"agentgateway::management::hyper_helpers","message":"listener established","address":"127.0.0.1:15000","component":"admin"}
+   {"level":"info","time":"2025-12-16T15:58:18.245231Z","scope":"agentgateway::management::hyper_helpers","message":"listener established","address":"[::]:15020","component":"stats"}
+   {"level":"info","time":"2025-12-16T15:58:18.248025Z","scope":"agent_xds::client","message":"Stream established","xds":{"id":1}}
+   {"level":"info","time":"2025-12-16T15:58:18.248081Z","scope":"agent_xds::client","message":"received response","type_url":"type.googleapis.com/agentgateway.dev.workload.Address","size":44,"removes":0,"xds":{"id":1}}
+   ```
 
-   ```yaml {linenos=table,hl_lines=[10,36],linenostart=1,filename="gateway-service.yaml"}
-   apiVersion: v1
-   kind: Service
+### Overlays {#overlays}
+
+You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} custom resource directly. This way, your configuration is validated when you apply the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource in your cluster. 
+
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/setup/customize/configs/#overlays" >}}). 
+   ```yaml
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
-     creationTimestamp: "2024-08-07T19:47:27Z"
-     labels:
-       app.kubernetes.io/instance: custom
-       app.kubernetes.io/managed-by: Helm
-       app.kubernetes.io/name: custom
-       app.kubernetes.io/version: kgateway-proxy-v{{< reuse "agw-docs/versions/n-patch.md" >}}
-       gateway: custom
-       gateway.networking.k8s.io/gateway-name: custom
-       kgateway: kube-gateway
-       helm.sh/chart: kgateway-proxy-v{{< reuse "agw-docs/versions/n-patch.md" >}}
-     name: custom
-     namespace: kgateway-system
-     ownerReferences:
-     - apiVersion: gateway.networking.k8s.io/v1
-       controller: true
-       kind: Gateway
-       name: custom
-       uid: d29417ba-60f9-410c-a023-283b250f3d57
-     resourceVersion: "7371789"
-     uid: 67945b5f-e55f-42bb-b5f2-c35932659831
+     name: agentgateway-config
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
-     ports:
-     - name: http
-       nodePort: 30579
-       port: 80
-       protocol: TCP
-       targetPort: 8080
-     selector:
-       app.kubernetes.io/instance: custom
-       app.kubernetes.io/name: custom
-       gateway.networking.k8s.io/gateway-name: custom
-     sessionAffinity: None
-     type: NodePort
+     deployment:
+       spec:
+         replicas: 3
+   EOF
+   ```
+
+2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. 
+
+   ```yaml
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: agentgateway-config
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     infrastructure:
+       parametersRef:
+         name: agentgateway-config
+         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
+     listeners:
+       - name: http
+         port: 3030
+         protocol: HTTP
+         allowedRoutes:
+           namespaces:
+             from: All
+   EOF
+   ```
+
+3. Check the number of agentgateway pods that are created. Verify that you see 3 replicas. 
+   ```sh
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output: 
+   ```
+   NAME                                   READY   STATUS    RESTARTS       AGE
+   agentgateway-config-54975d9598-qrh8v   1/1     Running   0              7s
+   agentgateway-config-54975d9598-tb6qx   1/1     Running   0              7s
+   agentgateway-config-54975d9598-w4cx2   1/1     Running   0              7s
+   ```
+
+### `rawConfig`
+
+Use the `rawConfig` option to pass in raw upstream configuration to your agentgateway proxy. Note that the configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
+
+1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example sets up a simple direct response listener on port 3000 that returns a `200 OK` response with the body `"hello!"` for requests to the `/direct` path.
+   ```yaml
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+   metadata:
+     name: agentgateway-config
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     rawConfig:
+       binds: 
+       - port: 3000
+         listeners: 
+         - protocol: HTTP
+           routes: 
+           - name: direct-response
+             matches: 
+             - path: 
+                 pathPrefix: /direct
+             policies: 
+               directResponse:
+                 body: "hello!"
+                 status: 200
+   EOF
+   ```
+
+2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. Set the port to a dummy value like `3030` to avoid conflicts with the binds defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+
+   ```yaml
+   kubectl apply --server-side -f- <<'EOF'
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: agentgateway-config
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     infrastructure:
+       parametersRef:
+         name: agentgateway-config
+         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}  
+         kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
+     listeners:
+       - name: http
+         port: 3030
+         protocol: HTTP
+         allowedRoutes:
+           namespaces:
+             from: All
+   EOF
+   ```
+
+3. Send a test request.
+
+   * **Cloud Provider LoadBalancer**:
+     1. Get the external address of the gateway proxy and save it in an environment variable.
+   
+     ```sh
+     export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-config -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+     echo $INGRESS_GW_ADDRESS
+     ```
+
+     2. Send a request along the `/direct` path to the agentgateway proxy through port 3000. 
+        ```sh
+        curl -i http://$INGRESS_GW_ADDRESS:3000/direct
+        ```
+   * **Port-forward for local testing**
+     1. Port-forward the `agentgateway-config` pod on port 3000.
+        ```sh
+        kubectl port-forward deployment/agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}} 3000:3000
+        ```
+
+     2. Send a request to verify that you get back the expected response from your direct response configuration.
+        ```sh
+        curl -i localhost:3000/direct
+        ```
+
+   Example output:
+   
+   ```txt
+   HTTP/1.1 200 OK
+   content-length: 6
+   date: Tue, 28 Oct 2025 14:13:48 GMT
+   
+   hello!
    ```
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
-
 ```sh
-kubectl delete gateway custom -n kgateway-system
-kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} custom-gw-params -n kgateway-system
-``` 
+kubectl delete Gateway agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+## Next
+
+[Explore other common agentgateway proxy configurations]({{< link-hextra path="/setup/customize/configs/" >}}) that you can apply in your environment. 
