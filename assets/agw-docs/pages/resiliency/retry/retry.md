@@ -30,14 +30,14 @@ To use retries, you need to install the experimental channel. You can also set u
    kind: Service
    metadata:
      name: reviews
-     namespace: default
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      labels:
        app: reviews
        service: reviews
    spec:
      ports:
      - port: 9080
-       name: http
+       name: agentgateway-proxy
      selector:
        app: reviews
    ---
@@ -45,7 +45,7 @@ To use retries, you need to install the experimental channel. You can also set u
    kind: ServiceAccount
    metadata:
      name: bookinfo-reviews
-     namespace: default
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      labels:
        account: reviews
    ---
@@ -53,7 +53,7 @@ To use retries, you need to install the experimental channel. You can also set u
    kind: Deployment
    metadata:
      name: reviews-v1
-     namespace: default
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      labels:
        app: reviews
        version: v1
@@ -105,7 +105,7 @@ To use retries, you need to install the experimental channel. You can also set u
      targetRefs:
      - group: gateway.networking.k8s.io
        kind: Gateway
-       name: http
+       name: agentgateway-proxy
      accessLog:
      - fileSink:
          path: /dev/stdout
@@ -133,14 +133,14 @@ Set up retries to the reviews app.
    kind: HTTPRoute
    metadata:
      name: retry
-     namespace: default
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      hostnames:
      - retry.example
      parentRefs:
      - group: gateway.networking.k8s.io
        kind: Gateway
-       name: http
+       name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches: 
@@ -182,14 +182,14 @@ Set up retries to the reviews app.
       kind: HTTPRoute
       metadata:
         name: retry
-        namespace: default
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
       spec:
         hostnames:
         - retry.example
         parentRefs:
         - group: gateway.networking.k8s.io
           kind: Gateway
-          name: http
+          name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -211,7 +211,7 @@ Set up retries to the reviews app.
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
       metadata:
         name: retry
-        namespace: default
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
       spec:
         targetRefs:
         - kind: HTTPRoute
@@ -248,14 +248,14 @@ Set up retries to the reviews app.
       kind: HTTPRoute
       metadata:
         name: retry
-        namespace: default
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
       spec:
         hostnames:
         - retry.example
         parentRefs:
         - group: gateway.networking.k8s.io
           kind: Gateway
-          name: http
+          name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -281,7 +281,7 @@ Set up retries to the reviews app.
         targetRefs:
         - kind: Gateway
           group: gateway.networking.k8s.io
-          name: http
+          name: agentgateway-proxy
           sectionName: http
         retry:
           attempts: 3
@@ -409,7 +409,7 @@ Simulate a failure for the reviews app so that you can verify that the request i
 1. Send the reviews app to sleep, to simulate an app failure.
 
    ```sh
-   kubectl -n default patch deploy reviews-v1 --patch '{"spec":{"template":{"spec":{"containers":[{"name":"reviews","command":["sleep","20h"]}]}}}}'
+   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} patch deploy reviews-v1 --patch '{"spec":{"template":{"spec":{"containers":[{"name":"reviews","command":["sleep","20h"]}]}}}}'
    ```
 
 2. Send another request to the reviews app. This time, the request fails.
@@ -465,15 +465,15 @@ Simulate a failure for the reviews app so that you can verify that the request i
 1. Delete the HTTPRoute resource.
    
    ```sh
-   kubectl delete httproute retry -n default
+   kubectl delete httproute retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 2. Delete the reviews app.
 
    ```sh
-   kubectl delete deploy reviews-v1 -n default
-   kubectl delete svc reviews -n default
-   kubectl delete sa bookinfo-reviews -n default
+   kubectl delete deploy reviews-v1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete svc reviews -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete sa bookinfo-reviews -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 3. Delete the access log policy.

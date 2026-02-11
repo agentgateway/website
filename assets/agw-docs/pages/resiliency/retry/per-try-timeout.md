@@ -48,7 +48,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
      parentRefs:
      - group: gateway.networking.k8s.io
        kind: Gateway
-       name: http
+       name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches: 
@@ -83,7 +83,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         parentRefs:
         - group: gateway.networking.k8s.io
           kind: Gateway
-          name: http
+          name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -136,7 +136,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         parentRefs:
         - group: gateway.networking.k8s.io
           kind: Gateway
-          name: http
+          name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -162,7 +162,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         targetRefs:
         - kind: Gateway
           group: gateway.networking.k8s.io
-          name: http
+          name: agentgateway-proxy
           sectionName: http
         retry:
           attempts: 2
