@@ -340,6 +340,7 @@ EOF
 **Important:** Place `$patch: replace` as a separate list item before your actual items. If you include it in the same item as your config, you might end up with an empty list.
 {{< /callout >}}
 
+
 ### Custom labels and annotations {#labels-annotations}
 
 Add custom labels and annotations to deployments, pods, and services.
@@ -374,6 +375,7 @@ spec:
 EOF
 ```
 
+<!--
 
 ### Remove label with null {#recipe-remove-label}
 
@@ -394,6 +396,7 @@ spec:
         app.kubernetes.io/instance: "null"
 EOF
 ```
+-->
 
 ### Custom service ports {#service-ports}
 
