@@ -226,3 +226,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
 kubectl delete Gateway agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} agentgateway-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
+
+## Next
+
+[Explore other common agentgateway proxy configurations]({{< link-hextra path="/setup/customize/configs/" >}}) that you can apply in your environment. 

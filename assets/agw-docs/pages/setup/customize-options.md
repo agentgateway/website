@@ -1,10 +1,10 @@
-In upstream agentgateway, you can manage [configuration](https://agentgateway.dev/docs/configuration/overview/) via a YAML or JSON file. The configuration features of agentgateway are captured in the [schema of the agentgateway codebase](https://github.com/agentgateway/agentgateway/tree/main/schema). 
+In the upstream standalone agentgateway project, you can manage [configuration](https://agentgateway.dev/docs/configuration/overview/) via a YAML or JSON file. The configuration features of agentgateway are captured in the [schema of the agentgateway codebase](https://github.com/agentgateway/agentgateway/tree/main/schema). 
 
-Unlike in the upstream agentgateway project, you do not configure these features in a raw configuration file when running agentgateway on Kubernetes. Instead, you configure them in a Kubernetes Gateway API-native way as explained in the guides throughout this doc set. 
+Unlike in the upstream standalone agentgateway project, you do not configure these features in a raw configuration file when running agentgateway on Kubernetes. Instead, you configure them in a Kubernetes Gateway API-native way by using an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
-You can choose between the following options to provide custom configuration to your agentgateway proxy.
+The following options can be used to provide custom agentgateway proxy configuration in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
-* [Built-in config options in {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} CRD (recommended)](#built-in) 
+* [Built-in config options (recommended)](#built-in) 
 * [Overlays (strategic merge patch)](#overlays) 
 * [Raw upstream config](#raw-config)
 
@@ -24,12 +24,12 @@ Review the built-in configurations that are provided via the [{{< reuse "agw-doc
 | `resources` | Set resource limits and requests. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/). | 
 
 {{< callout type="info" >}}
-Because the built-in customization options are provided by the agentgateway API, they are considered stable and do not change between upgrades. 
+Because the built-in customization options are provided by the agentgateway API, they are considered stable and do not change between upgrades. Use the built-in customization options where possible. To change configuration that is not exposed via the built-in options, use [overlays](#overlays) instead, or [add raw upstream agentgateway configuration](#raw-config) to your proxies. 
 {{< /callout >}}
 
 To find common configuration examples, [Example configs]({{< link-hextra path="/setup/customize/configs/" >}}). 
 
-To change configuration that is not exposed via the built-in options, use [overlays](#overlays) instead, or [add raw upstream agentgateway configuration](#raw-config) to your proxies. 
+
 
 
 ## Overlays
@@ -85,7 +85,7 @@ spec:
 
 **Remove an entire field**
 
-To remove an entire object, such as when setting the field to `null` is not an option, use the `$patch: delete` method instead.
+To remove an entire field, use the `$patch: delete` method instead.
 
 The following example snippets removes the `securityContext` field from the deployment template. 
 
@@ -105,9 +105,9 @@ spec:
 
 For configuration that is not exposed via the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}'s built-in or overlay configuration options, or if you prefer to pass in raw upstream configuration, such as to migrate more easily from the agentgateway standalone binary to agentgateway on Kubernetes, you can use the `rawConfig` option in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
-To find the configuration that you want to apply, review [Configuration](https://agentgateway.dev/docs/local/latest/configuration/) in the standalone agentgateway binary docs. 
+To find the raw configuration that you want to apply, review [Configuration](https://agentgateway.dev/docs/local/latest/configuration/) in the standalone agentgateway binary docs. 
 
-{{< callout context="warning">}}
+{{< callout context="danger">}}
 Note that raw configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
 {{< /callout >}}
 

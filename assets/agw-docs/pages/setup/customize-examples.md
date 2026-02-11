@@ -8,14 +8,14 @@ To learn more, see [Built-in customization]({{< link-hextra path="" >}}).
 
 ### Add environment variables {#env-vars}
 
-Add custom environment variables to the agentgateway container. Use `null` to remove default environment variables.
+Add custom environment variables to the agentgateway container. To set a default environment variable to an empty value, set `value: ""`  as shown for the `RUST_BACKTRACE` environment variable. 
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-env
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   env:
@@ -23,9 +23,9 @@ spec:
       value: "my-value"
     - name: CONNECTION_MIN_TERMINATION_DEADLINE
       value: "500s"
-    # Remove a default env var by setting value to null
+    # Set a default env variable to null
     - name: RUST_BACKTRACE
-      value: null
+      value: ""
 EOF
 ```
 
@@ -38,7 +38,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-image
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   image:
@@ -84,7 +84,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-resources
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   resources:
@@ -110,7 +110,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-replicas
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -128,7 +128,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-pull-secrets
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -142,14 +142,14 @@ EOF
 
 ### Remove security context for OpenShift {#ssc-openshift}
 
-OpenShift manages security contexts through Security Context Constraints (SCCs). Remove the default security context to allow OpenShift to assign appropriate values.
+OpenShift manages security contexts through Security Context Constraints (SCCs). Remove the default security context to allow OpenShift to assign appropriate values. Use `$patch: delete` to remove security contexts, or set the field to `null` to set the security context to a null value. 
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-openshift
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -166,34 +166,6 @@ spec:
 EOF
 ```
 
-### Delete security context with $patch: delete {#delete-security-context}
-
-Use `$patch: delete` to remove security contexts without requiring server-side apply. This is useful when you cannot use server-side apply in your deployment pipeline.
-
-```yaml
-kubectl apply -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
-metadata:
-  name: agentgateway-delete-security
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  deployment:
-    spec:
-      template:
-        spec:
-          # Delete pod-level securityContext using $patch: delete
-          securityContext:
-            $patch: delete
-          containers:
-            - name: agentgateway
-              # Delete container-level securityContext:
-              securityContext:
-                $patch: delete
-EOF
-```
-
-
 ### Custom pod security context {#security-context}
 
 Configure custom security settings for the pod and containers.
@@ -203,7 +175,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-security
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -226,7 +198,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-scheduling
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -270,13 +242,13 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-hpa
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   horizontalPodAutoscaler:
     metadata:
       labels:
-        app: agentgateway
+        app.kubernetes.io/name: agentgateway-config
     spec:
       minReplicas: 2
       maxReplicas: 10
@@ -292,20 +264,20 @@ EOF
 
 ### PodDisruptionBudget (PDB) {#pdb}
 
-Configure a Pod Disruption Budget to ensure availability during voluntary disruptions. The PDB resource is created only when you specify this overlay.
+Configure a Pod Disruption Budget to ensure that at least one instance of your agentgateway proxy is up an running at any given time during voluntary disruptions, such as upgrades. The PDB resource is only created when you specify this overlay.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-pdb
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   podDisruptionBudget:
     metadata:
       labels:
-        app: agentgateway
+        app.kubernetes.io/name: agentgateway-config
     spec:
       minAvailable: 1
 EOF
@@ -313,14 +285,14 @@ EOF
 
 ### Custom ConfigMap as volume {#configmap-volume}
 
-Mount a custom ConfigMap into the agentgateway container. This example replaces the default volumes and adds a custom config.
+Mount a custom ConfigMap to the `agentgateway` container that runs inside your agentgateway proxy pod. This example replaces the default volumes with a custom config.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-custom-volume
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -349,7 +321,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-replace-volumes
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -377,7 +349,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-labels
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -412,14 +384,14 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-remove-label
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
     metadata:
       labels:
-        # Remove the managed-by label
-        app.kubernetes.io/managed-by: null
+        # Remove the app.kubernetes.io/instance label
+        app.kubernetes.io/instance: "null"
 EOF
 ```
 
@@ -432,7 +404,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-service-ports
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   service:
@@ -459,7 +431,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-shutdown
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   shutdown:
@@ -477,7 +449,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-static-ip
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   service:
@@ -495,7 +467,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-gke
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   service:
@@ -519,7 +491,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-aws
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   service:
@@ -545,7 +517,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-azure
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   service:
@@ -568,7 +540,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-init
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -594,7 +566,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-sidecar
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   deployment:
@@ -621,7 +593,7 @@ kubectl apply --server-side -f- <<'EOF'
 apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
-  name: agentgateway-iam
+  name: agentgateway-config
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   serviceAccount:
