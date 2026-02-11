@@ -72,6 +72,7 @@ Set a field to a `null` value. This option is best to removing scalar values and
 The following example snippet sets the `securityContext` field in the container template to `null`. Note that you must use the `kubectl apply --server-side` command to apply the change and set the field to `null`. If you do not use the `--server-side` option, the `null` value is silently dropped when you apply the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
 ```yaml
+
 spec:
   deployment:
     spec:
@@ -85,11 +86,12 @@ spec:
 
 **Remove an entire field**
 
-To remove an entire field, use the `$patch: delete` method instead.
+To remove an entire field, use the `$patch: delete` method instead. 
 
 The following example snippets removes the `securityContext` field from the deployment template. 
 
 ```yaml
+
 spec:
   deployment:
     spec:
@@ -98,6 +100,22 @@ spec:
           # Removes the pod-level securityContext
           securityContext:
             $patch: delete
+```
+
+To replace a list, `$patch: delete` must be added as a separate list item as shown in the following snippet: 
+
+```yaml
+
+spec:
+  deployment:
+    spec:
+      template:
+        spec:
+          volumes:
+            - $patch: replace
+            - name: custom-config
+              configMap:
+                name: my-custom-config
 ```
 
 
