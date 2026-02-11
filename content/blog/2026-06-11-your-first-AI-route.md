@@ -163,7 +163,7 @@ EOF
 
 AgentgatewayBackend resources define how to connect to AI services. The `ai.provider.openai` section tells AgentGateway this is an AI service that expects OpenAI-compatible requests. The authentication policy references our secret, and the timeout ensures long-running AI requests don't hang indefinitely.
 ```bash
-kubectl apply -f- <<'EOF'
+kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
@@ -178,42 +178,16 @@ spec:
     auth:
       secretRef:
         name: openai-secret
-    http:
-      requestTimeout: 120s
 EOF
 ```
 
 ### Create HTTP Routes
 
-HTTPRoutes define how incoming requests map to backend services. We need two different backend types because OpenAI's API has two distinct patterns: AI endpoints that process JSON payloads (like chat completions) and simple REST endpoints for metadata (like listing models).
+Create an HTTPRoute resource that routes incoming traffic to the AgentgatewayBackend. The following example sets up a route. Note that agentgateway automatically rewrites the endpoint to the OpenAI /v1/chat/completions endpoint.
 
-**Why two backends?** AgentGateway's AI-aware backends expect JSON payloads and provide token counting, cost tracking, and observability. But simple GET endpoints like `/models` don't fit this pattern, so we use a static HTTP backend that passes requests through unchanged.
-
-First, create a backend for non-AI endpoints (like models list):
-
+Create the HTTP routes:
 ```bash
-kubectl apply -f- <<'EOF'
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
-metadata:
-  name: openai-models-backend
-  namespace: agentgateway-system
-spec:
-  policies:
-    auth:
-      secretRef:
-        name: openai-secret
-    http:
-      requestTimeout: 30s
-  static:
-    host: api.openai.com
-    port: 443
-EOF
-```
-
-Then create the HTTP routes:
-```bash
-kubectl apply -f- <<'EOF'
+kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
@@ -221,51 +195,17 @@ metadata:
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: agentgateway-proxy
-    namespace: agentgateway-system
+    - name: agentgateway-proxy
+      namespace: agentgateway-system
   rules:
   - matches:
-    - path:
-        type: PathPrefix
-        value: /openai/chat/completions
-    backendRefs:
-    - name: openai-backend
-      group: agentgateway.dev
-      kind: AgentgatewayBackend
-    timeouts:
-      request: "120s"
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /v1/chat/completions
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: openai-models
-  namespace: agentgateway-system
-spec:
-  parentRefs:
-  - name: agentgateway-proxy
-    namespace: agentgateway-system
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /openai/models
-    backendRefs:
-    - name: openai-models-backend
-      group: agentgateway.dev
-      kind: AgentgatewayBackend
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /v1/models
+    - backendRefs:
+      - name: openai-backend
+        namespace: agentgateway-system
+        group: agentgateway.dev
+        kind: AgentgatewayBackend
 EOF
+
 ```
 
 ### Verify Configuration
