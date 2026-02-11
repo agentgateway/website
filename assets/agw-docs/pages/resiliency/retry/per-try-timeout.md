@@ -1,5 +1,9 @@
 Set separate timeouts for retries. 
 
+{{< callout type="warning" >}} 
+{{< reuse "agw-docs/versions/warn-experimental.md" >}}
+{{< /callout >}}
+
 ## About per-try timeouts
 
 The per-retry timeout allows you to set a timeout for retried requests. If the timeout expires, Envoy cancels the retry attempt and immediately retries on another upstream host. 
@@ -12,9 +16,7 @@ Note that if you configured a global request timeout, the per-try timeout must b
 
 Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} instead. 
 
-{{< callout type="warning" >}} 
-{{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /callout >}}
+
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
