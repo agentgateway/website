@@ -1,6 +1,6 @@
 {{ define "main" }}
   <style>
-    /* Hide sidebar on local landing page */
+    /* Hide sidebar on standalone landing page */
     .sidebar-container,
     aside.sidebar-container,
     aside.hx-order-first,
@@ -41,7 +41,7 @@
       }
     }
     
-    /* Center text above cards on local landing page */
+    /* Center text above cards on standalone landing page */
     .hx-w-full .content {
       text-align: center !important;
     }
@@ -64,7 +64,7 @@
     <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center">
       <main class="hx-w-full hx-min-w-0 hx-max-w-6xl">
         <div class="hx-text-center hx-mb-12">
-          <h1 class="hx-text-4xl hx-font-bold hx-mb-4">{{ if .Title }}{{ .Title }}{{ else }}Agentgateway (Local binary) Documentation{{ end }}</h1>
+          <h1 class="hx-text-4xl hx-font-bold hx-mb-4">{{ if .Title }}{{ .Title }}{{ else }}Agentgateway (Standalone) Documentation{{ end }}</h1>
         </div>
         
         <div class="content">

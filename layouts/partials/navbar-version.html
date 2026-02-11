@@ -1,7 +1,7 @@
 {{- $path := page.RelPermalink -}}
 {{- $segments := split $path "/" -}}
 {{- $section := index $segments 1 -}}  {{- /* "docs" */ -}}
-{{- $subSection := index $segments 2 -}}  {{- /* "local" or "kubernetes" */ -}}
+{{- $subSection := index $segments 2 -}}  {{- /* "standalone" or "kubernetes" */ -}}
 {{- $currentVersion := "" -}}
 {{- /* Extract current version from path */ -}}
 {{- if and (ge (len $segments) 4) (eq $section "docs") -}}
@@ -15,7 +15,7 @@
 {{- end -}}
 
 {{- /* Build path without version but with section */ -}}
-{{- /* Skip first 4 segments: "", "docs", "local"/"kubernetes", "latest"/"main" - take everything after version */ -}}
+{{- /* Skip first 4 segments: "", "docs", "standalone"/"kubernetes", "latest"/"main" - take everything after version */ -}}
 {{- $filtered := after 4 $segments -}}
 {{- $newPath := printf "/%s" (delimit $filtered "/") -}}
 {{- $baseurl := site.BaseURL -}}

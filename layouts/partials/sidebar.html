@@ -3,9 +3,9 @@
 
 {{- /* Check if this is a docs landing page - don't show sidebar */ -}}
 {{- $isDocsIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/") -}}
-{{- $isLocalIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/local/") -}}
+{{- $isStandaloneIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/standalone/") -}}
 {{- $isKubernetesIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/kubernetes/") -}}
-{{- $isLandingPage := or $isDocsIndex $isLocalIndex $isKubernetesIndex -}}
+{{- $isLandingPage := or $isDocsIndex $isStandaloneIndex $isKubernetesIndex -}}
 
 {{- if or $disableSidebar $isLandingPage -}}
   <aside class="hx-hidden"></aside>
