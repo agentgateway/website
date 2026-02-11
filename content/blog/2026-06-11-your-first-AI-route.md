@@ -14,13 +14,12 @@ This is a how-to guide to setup AgentGateway and get your first AI route working
 
 AgentGateway is an open source, AI-native data plane built in Rust for connecting, securing, and observing AI traffic. Originally created by Solo.io and now a Linux Foundation project, it acts as a purpose-built proxy layer between your applications and AI services like LLMs, MCP tool servers, and other AI agents.
 
-Traditional API gateways were designed for standard web traffic, where requests are small, fast, and stateless. AI workloads are fundamentally different: inference requests can take minutes instead of milliseconds, payloads are larger, and a single request can consume an entire GPU. AgentGateway is designed from the ground up for these characteristics.
-
-At its core, AgentGateway provides three things for AI traffic: **connectivity** to route requests to LLM providers (OpenAI, Anthropic, AWS Bedrock, and others), self-hosted models, and MCP tool servers through a unified interface; **security** with built-in authentication, authorization, RBAC policies, and secrets management so API keys and sensitive data are handled properly; and **observability** with automatic token counting, cost tracking, and structured logs that follow OpenTelemetry conventions, giving you full visibility into what your AI systems are doing and how much they cost.
-
-AgentGateway also natively supports modern AI interoperability protocols including the Model Context Protocol (MCP) for connecting LLMs to tools and data sources, and Agent-to-Agent (A2A) for secure communication between AI agents. It can federate multiple MCP servers behind a single endpoint and even expose legacy REST APIs as MCP-native tools via OpenAPI integration.
-
-When deployed on Kubernetes, AgentGateway pairs with [kgateway](https://kgateway.dev) as its control plane, implementing the Kubernetes Gateway API for declarative configuration and dynamic provisioning. This is the setup we'll use in this guide. For standalone or local deployments, AgentGateway can also run as a single binary configured with a YAML file.
+* Traditional API gateways don't fit AI workloads — AI inference requests are long-running (minutes vs milliseconds), have larger payloads, and can consume entire GPUs, unlike standard web traffic.
+* Connectivity — Unified interface to route requests to LLM providers (OpenAI, Anthropic, Bedrock, etc.), self-hosted models, and MCP tool servers.
+* Security — Built-in auth, RBAC, and secrets management for API keys and sensitive data.
+* Observability — Automatic token counting, cost tracking, and OpenTelemetry-compatible structured logs.
+* MCP support — Can federate multiple MCP servers behind a single endpoint, and expose legacy REST APIs as MCP tools via OpenAPI integration.
+* A2A support — Native Agent-to-Agent protocol for secure inter-agent communication..
 
 In this tutorial, we'll focus on one of AgentGateway's most common use cases: routing requests to an LLM provider (OpenAI) with secure credential management and built-in cost observability.
 
