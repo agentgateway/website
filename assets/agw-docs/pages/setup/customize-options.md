@@ -1,6 +1,6 @@
 In the upstream standalone agentgateway project, you can manage [configuration](https://agentgateway.dev/docs/configuration/overview/) via a YAML or JSON file. The configuration features of agentgateway are captured in the [schema of the agentgateway codebase](https://github.com/agentgateway/agentgateway/tree/main/schema). 
 
-Unlike in the upstream standalone agentgateway project, you do not configure these features in a raw configuration file when running agentgateway on Kubernetes. Instead, you configure them in a Kubernetes Gateway API-native way by using an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
+Unlike in the standalone agentgateway deployment, you do not configure these features in a raw configuration file when running agentgateway on Kubernetes. Instead, you configure them in a Kubernetes Gateway API-native way by using an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
 The following options can be used to provide custom agentgateway proxy configuration in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
@@ -34,9 +34,9 @@ To find common configuration examples, [Example configs]({{< link-hextra path="/
 
 ## Overlays
 
-For advanced customization of the Kubernetes resources that the agentgateway control plane generates, such as Deployments, Services, ServiceAccounts, you can configure overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. Overlays use [Kubernetes strategic merge patch (SMP)](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics to modify the generated resources after they are rendered. For additional examples, see the [kubectl patch documentation](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/update-api-object-kubectl-patch/#use-a-strategic-merge-patch-to-update-a-deployment).
+For advanced customization of the Kubernetes resources that the agentgateway control plane generates, such as Deployments, Services, and ServiceAccounts, you can configure overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. Overlays use [Kubernetes strategic merge patch (SMP)](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics to modify the generated resources after they are rendered. For additional examples, see the [kubectl patch documentation](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/update-api-object-kubectl-patch/#use-a-strategic-merge-patch-to-update-a-deployment).
 
-You can overlay the following resource types in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} spec:
+Review the following table for the resource types that you can overlay in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} spec.
 
 | Field | Resource Type | Description |
 |-------|--------------|-------------|
@@ -48,7 +48,7 @@ You can overlay the following resource types in the {{< reuse "agw-docs/snippets
 
 ### How overlays work
 
-Overlays are applied **after** the control plane renders the base Kubernetes resources. The control plane runs through the following steps: 
+Overlays are applied **after** the agentgateway control plane renders the base Kubernetes resources. The control plane runs through the following steps: 
 
 1. The control plane reads built-in customization options from the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, such as `image`, `logging`, and `resources`. 
 2. The control plane generates the base resources for the agentgateway proxy, including the Deployment, Service, and ServiceAccount.
