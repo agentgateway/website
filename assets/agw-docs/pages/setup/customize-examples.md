@@ -1,8 +1,8 @@
-Review common proxy customizations that you might want to apply in your environment. For steps on how to apply these configurations, see [Customize the gateway]({{< link-hextra path="/setup/customize/" >}}).
+Review common proxy customizations that you might want to apply in your environment. For steps on how to apply these configurations, see [Customize the gateway]({{< link-hextra path="/setup/customize/customize/" >}}).
 
 ## Built-in customization
 
-Use built-in customization options automatically validate your changes when you create the agentgateway proxy in your cluster.
+Use built-in customization options to automatically validate your changes when you create the agentgateway proxy in your cluster.
 
 To learn more, see [Built-in customization]({{< link-hextra path="/setup/customize/options/#built-in" >}}). 
 
@@ -31,7 +31,7 @@ EOF
 
 ### Custom image {#custom-image}
 
-Use the `image` config to specify a custom container image. This is a config, not an overlay, so it is validated at apply time.
+Use the `image` config to specify a custom container image, such as in airgapped environments.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
