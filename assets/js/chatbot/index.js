@@ -10,84 +10,133 @@ import { ChatStreamer, ErrorType } from './stream.js';
 import { ThinkingAnimator, MarkdownRenderer } from './ui.js';
 import { parseMarkdown } from './markdown.js';
 
-const AGENT_ENDPOINT = 'https://docs-search-agent.is.solo.io';
+const AGENT_ENDPOINT = 'http://localhost:3000';
+// const AGENT_ENDPOINT = 'https://docs-search-agent.is.solo.io';
 const STORAGE_KEY = 'chatbot-state';
+const INPUT_STORAGE_KEY = 'chatbot-input';
+const MAX_CONTEXT_PAGES = 3;
+const INPUT_SAVE_DEBOUNCE_MS = 300;
+
+/**
+ * A URL is only eligible as a context page if it is same-origin AND
+ * sits under a recognised docs version path.
+ *   /docs/local/latest/...
+ *   /docs/local/main/...
+ *   /docs/kubernetes/latest/...
+ *   /docs/kubernetes/main/...
+ */
+const DOCS_PATH_RE = /^\/docs\/(local|kubernetes)\/(latest|main)(\/|$)/;
+
+/**
+ * Load the page index embedded by Hugo at build time.
+ * Returns an array of { title, url, section } objects.
+ */
+function loadPageIndex() {
+  try {
+    const el = document.getElementById('chatbot-page-index');
+    if (el) return JSON.parse(el.textContent);
+  } catch (e) {
+    console.warn('Chatbot: could not load page index', e);
+  }
+  return [];
+}
 
 /**
  * Register chatbot component with Alpine.js before it initializes
  */
 document.addEventListener('alpine:init', () => {
   Alpine.data('chatbot', () => ({
-    // State
+    // ── Visible state ────────────────────────────────────────
     isOpen: false,
     isExpanded: false,
     isProcessing: false,
     userInput: '',
     messages: [],
     selectedModel: 'local',
-    pageContextEnabled: false,
+    contextPages: [],
 
-    // Internal state
+    // ── Internal / UI state ──────────────────────────────────
     showThinking: false,
     sessionId: '',
-    inputHeight: 68,
     showContextMenu: false,
     showModelMenu: false,
 
-    // Utilities
+    // @ Mention
+    showMentionMenu: false,
+    mentionFilter: '',
+    mentionSelectedIndex: 0,
+    mentionStartPos: -1,
+    filteredMentionPages: [],
+    pageIndex: [],
+
+    // Non-reactive helpers (assigned in init)
     streamer: null,
     thinkingAnimator: null,
     markdownRenderer: null,
     currentEventSource: null,
+    _saveInputTimer: null,
+
+    // ─── Lifecycle ───────────────────────────────────────────
 
     init() {
       this.streamer = new ChatStreamer(AGENT_ENDPOINT);
       this.thinkingAnimator = new ThinkingAnimator();
       this.markdownRenderer = new MarkdownRenderer(parseMarkdown);
 
-      // Restore persisted state from previous page (must happen before detectModelFromPath)
+      // Hugo-generated page index for @ mentions
+      this.pageIndex = loadPageIndex();
+
+      // Restore persisted conversation (runs BEFORE watchers are set up,
+      // so setting isOpen / messages here does NOT fire the watchers).
       this.restoreState();
 
-      // Detect model based on current URL path (only if no restored model)
+      // First visit: detect model from URL
       if (!this.sessionId) {
         this.selectedModel = this.detectModelFromPath();
       }
 
-      // Focus input when dialog opens
-      this.$watch('isOpen', (value) => {
-        if (value) {
-          // Generate session ID if we don't have one yet
-          if (!this.sessionId) {
-            this.sessionId = this.generateSessionId();
-          }
+      // ── Watchers ───────────────────────────────────────────
+
+      this.$watch('isOpen', (open) => {
+        if (open) {
+          if (!this.sessionId) this.sessionId = this.generateSessionId();
           this.$nextTick(() => {
+            this.autoResizeInput();
             this.$refs.input?.focus();
           });
         } else {
-          // Stop any active stream on close, but preserve messages
           this.stopActiveStream();
           this.showContextMenu = false;
           this.showModelMenu = false;
+          this.closeMentionMenu();
         }
         this.saveState();
       });
 
-      // Auto-resize textarea as user types
       this.$watch('userInput', () => {
         this.autoResizeInput();
+        this.checkForMention();
+        this.debouncedSaveInput();
       });
 
-      // Save state before navigating away (safety net for in-flight streams)
+      // Restore textarea content AFTER watchers (the watcher will fire
+      // once for the restored value – that is harmless: autoResize may
+      // return early if the dialog is hidden, and debouncedSaveInput
+      // simply writes back the same value).
+      this.restoreInputState();
+
+      // Safety net: persist state before unload
       window.addEventListener('beforeunload', () => {
+        this.flushInputSave();
         this.finalizeAndSave();
       });
     },
 
-    // ─── Persistence ────────────────────────────────────────────
+    // ─── Persistence ─────────────────────────────────────────
 
     /**
      * Save conversation state to sessionStorage.
-     * Only finalized messages are saved (no streaming/loading flags).
+     * Only finalized messages are persisted (no streaming / loading flags).
      */
     saveState() {
       try {
@@ -95,28 +144,25 @@ document.addEventListener('alpine:init', () => {
           isOpen: this.isOpen,
           sessionId: this.sessionId,
           selectedModel: this.selectedModel,
-          pageContextEnabled: this.pageContextEnabled,
+          contextPages: this.contextPages,
           messages: this.messages.map((msg) => ({
             role: msg.role,
             content: msg.content,
             markdown: msg.markdown || '',
             isError: msg.isError || false,
             isRateLimited: msg.isRateLimited || false,
-            pageContext: msg.pageContext || false,
-            pageContextLabel: msg.pageContextLabel || '',
-            pageContextUrl: msg.pageContextUrl || ''
+            contextPages: msg.contextPages || []
           }))
         };
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       } catch (e) {
-        // sessionStorage may be unavailable (private browsing, quota, etc.)
         console.warn('Chatbot: could not save state', e);
       }
     },
 
     /**
      * Restore conversation state from sessionStorage.
-     * Called once during init() to survive page navigations.
+     * Called once during init() – before watchers are registered.
      */
     restoreState() {
       try {
@@ -125,15 +171,13 @@ document.addEventListener('alpine:init', () => {
 
         const state = JSON.parse(raw);
 
-        if (state.sessionId) {
-          this.sessionId = state.sessionId;
+        if (state.sessionId) this.sessionId = state.sessionId;
+        if (state.selectedModel) this.selectedModel = state.selectedModel;
+
+        if (Array.isArray(state.contextPages)) {
+          this.contextPages = state.contextPages;
         }
-        if (state.selectedModel) {
-          this.selectedModel = state.selectedModel;
-        }
-        if (state.pageContextEnabled !== undefined) {
-          this.pageContextEnabled = state.pageContextEnabled;
-        }
+
         if (Array.isArray(state.messages) && state.messages.length > 0) {
           this.messages = state.messages.map((msg) => ({
             role: msg.role,
@@ -144,18 +188,72 @@ document.addEventListener('alpine:init', () => {
             isStreaming: false,
             isLoading: false,
             showAvatar: msg.role === 'assistant',
-            pageContext: msg.pageContext || false,
-            pageContextLabel: msg.pageContextLabel || '',
-            pageContextUrl: msg.pageContextUrl || ''
+            contextPages: msg.contextPages || []
           }));
           this.isExpanded = true;
         }
-        if (state.isOpen) {
-          this.isOpen = true;
-        }
+
+        if (state.isOpen) this.isOpen = true;
       } catch (e) {
         console.warn('Chatbot: could not restore state', e);
       }
+    },
+
+    /**
+     * Debounced save of textarea input to localStorage.
+     * Removes the key when the input is empty.
+     */
+    debouncedSaveInput() {
+      clearTimeout(this._saveInputTimer);
+      this._saveInputTimer = setTimeout(() => {
+        try {
+          if (this.userInput) {
+            localStorage.setItem(INPUT_STORAGE_KEY, this.userInput);
+          } else {
+            localStorage.removeItem(INPUT_STORAGE_KEY);
+          }
+        } catch (e) {
+          console.warn('Chatbot: could not save input state', e);
+        }
+      }, INPUT_SAVE_DEBOUNCE_MS);
+    },
+
+    /**
+     * Immediately flush any pending debounced input save.
+     * Called on beforeunload to avoid losing data.
+     */
+    flushInputSave() {
+      clearTimeout(this._saveInputTimer);
+      try {
+        if (this.userInput) {
+          localStorage.setItem(INPUT_STORAGE_KEY, this.userInput);
+        } else {
+          localStorage.removeItem(INPUT_STORAGE_KEY);
+        }
+      } catch (_) { /* ignore during unload */ }
+    },
+
+    /**
+     * Restore textarea input from localStorage.
+     * Called once during init, after watchers are set up.
+     */
+    restoreInputState() {
+      try {
+        const saved = localStorage.getItem(INPUT_STORAGE_KEY);
+        if (saved) {
+          this.userInput = saved;
+        }
+      } catch (e) {
+        console.warn('Chatbot: could not restore input state', e);
+      }
+    },
+
+    /** Clear saved textarea input and cancel any pending save. */
+    clearSavedInput() {
+      clearTimeout(this._saveInputTimer);
+      try {
+        localStorage.removeItem(INPUT_STORAGE_KEY);
+      } catch (_) { /* ignore */ }
     },
 
     /**
@@ -167,15 +265,11 @@ document.addEventListener('alpine:init', () => {
         this.currentEventSource.close();
         this.currentEventSource = null;
       }
-      // Finalize any streaming message
       const lastMsg = this.messages[this.messages.length - 1];
-      if (lastMsg && lastMsg.isStreaming) {
-        // Flush whatever markdown content we have so far
+      if (lastMsg?.isStreaming) {
         try {
           const html = this.markdownRenderer.flush();
-          if (html) {
-            lastMsg.content = html;
-          }
+          if (html) lastMsg.content = html;
           lastMsg.markdown = this.markdownRenderer.getContent();
         } catch (_) { /* ignore flush errors during unload */ }
         lastMsg.isStreaming = false;
@@ -185,7 +279,7 @@ document.addEventListener('alpine:init', () => {
       this.saveState();
     },
 
-    // ─── Open / Close / Reset ───────────────────────────────────
+    // ─── Open / Close / Reset ────────────────────────────────
 
     toggle() {
       this.isOpen = !this.isOpen;
@@ -200,8 +294,8 @@ document.addEventListener('alpine:init', () => {
     },
 
     /**
-     * Start a new conversation. Clears all messages and
-     * generates a fresh session ID.
+     * Start a new conversation: clears messages, context, input,
+     * and generates a fresh session ID.
      */
     newChat() {
       this.stopActiveStream();
@@ -210,15 +304,17 @@ document.addEventListener('alpine:init', () => {
       this.isExpanded = false;
       this.isProcessing = false;
       this.showThinking = false;
-      this.pageContextEnabled = false;
+      this.contextPages = [];
       this.showContextMenu = false;
       this.showModelMenu = false;
+      this.closeMentionMenu();
       this.sessionId = this.generateSessionId();
       this.thinkingAnimator.stop();
       this.markdownRenderer.reset();
-      this.inputHeight = 68;
+      this.clearSavedInput();
       this.saveState();
       this.$nextTick(() => {
+        this.autoResizeInput();
         this.$refs.input?.focus();
       });
     },
@@ -229,31 +325,26 @@ document.addEventListener('alpine:init', () => {
     exportChat() {
       if (this.messages.length === 0) return;
 
-      const lines = [];
-      lines.push('# Agentgateway Assistant Conversation');
-      lines.push('');
-      lines.push(`**Date:** ${new Date().toLocaleString()}`);
-      lines.push(`**Model:** ${this.getModelLabel()}`);
-      lines.push('');
-      lines.push('---');
-      lines.push('');
+      const lines = [
+        '# Agentgateway Assistant Conversation',
+        '',
+        `**Date:** ${new Date().toLocaleString()}`,
+        `**Model:** ${this.getModelLabel()}`,
+        '',
+        '---',
+        ''
+      ];
 
       for (const msg of this.messages) {
         if (msg.role === 'user') {
-          lines.push(`## User`);
-          lines.push('');
-          lines.push(msg.content);
-          lines.push('');
+          lines.push('## User', '', msg.content, '');
         } else if (msg.role === 'assistant') {
-          lines.push(`## Assistant`);
-          lines.push('');
+          lines.push('## Assistant', '');
           if (msg.isError) {
             lines.push(`> **Error:** ${msg.content}`);
           } else if (msg.markdown) {
-            // Use the stored raw markdown for full-fidelity export
             lines.push(msg.markdown);
           } else {
-            // Fallback: extract text from HTML
             const tmp = document.createElement('div');
             tmp.innerHTML = msg.content;
             lines.push(tmp.innerText);
@@ -281,9 +372,8 @@ document.addEventListener('alpine:init', () => {
         this.currentEventSource.close();
         this.currentEventSource = null;
       }
-      // Finalize any streaming message in place
       const lastMsg = this.messages[this.messages.length - 1];
-      if (lastMsg && lastMsg.isStreaming) {
+      if (lastMsg?.isStreaming) {
         lastMsg.isStreaming = false;
         lastMsg.isLoading = false;
       }
@@ -292,61 +382,403 @@ document.addEventListener('alpine:init', () => {
       this.thinkingAnimator.stop();
     },
 
-    // ─── Page Context ───────────────────────────────────────────
+    // ─── URL Validation ──────────────────────────────────────
 
-    togglePageContext() {
-      this.pageContextEnabled = !this.pageContextEnabled;
+    /**
+     * Check whether a URL is eligible as a context page.
+     * Must be same-origin AND under a recognised docs version path.
+     */
+    isValidDocsUrl(url) {
+      try {
+        const parsed = new URL(url, window.location.origin);
+        if (parsed.hostname !== window.location.hostname) return false;
+        return DOCS_PATH_RE.test(parsed.pathname);
+      } catch (_) {
+        return false;
+      }
+    },
+
+    // ─── Page Context ────────────────────────────────────────
+
+    /**
+     * Look up a human-readable title for a URL from the page index.
+     * Falls back to a breadcrumb derived from the last path segments.
+     */
+    getTitleForUrl(url) {
+      try {
+        const pathname = new URL(url, window.location.origin).pathname.replace(/\/$/, '');
+        const page = this.pageIndex.find(
+          (p) => p.url.replace(/\/$/, '') === pathname
+        );
+        if (page) return page.title;
+      } catch (_) { /* fall through to breadcrumb */ }
+
+      try {
+        const segments = new URL(url, window.location.origin)
+          .pathname.replace(/\/$/, '')
+          .split('/')
+          .filter(Boolean);
+        return segments.length === 0 ? 'Home page' : segments.slice(-2).join(' / ');
+      } catch (_) {
+        return 'Page';
+      }
+    },
+
+    /**
+     * Normalise a URL to a canonical form for deduplication:
+     * absolute URL with trailing slash, no query or hash.
+     */
+    normaliseUrl(url) {
+      const parsed = new URL(
+        url.startsWith('http')
+          ? url
+          : window.location.origin + (url.startsWith('/') ? '' : '/') + url
+      );
+      let pathname = parsed.pathname;
+      if (!pathname.endsWith('/')) pathname += '/';
+      return parsed.origin + pathname;
+    },
+
+    /**
+     * Add the current page to contextPages.
+     * Silently no-ops if the page is invalid or a duplicate.
+     * Pages beyond MAX_CONTEXT_PAGES are kept in the UI (shown as
+     * overflow pills) but are NOT sent in the API request.
+     */
+    addCurrentPage() {
+      const url = window.location.href;
+      if (!this.isValidDocsUrl(url)) return;
+      const normalised = this.normaliseUrl(url);
+      if (this.contextPages.some((p) => p.url === normalised)) return;
+      this.contextPages.push({ title: this.getTitleForUrl(normalised), url: normalised });
       this.saveState();
     },
 
     /**
-     * Returns a short label for the page context pill.
-     * Uses the last meaningful segment of the URL path.
+     * Add a page from the page index (via @ mention) to contextPages.
      */
-    getPageContextLabel() {
-      const path = window.location.pathname.replace(/\/$/, '');
-      const segments = path.split('/').filter(Boolean);
-      if (segments.length === 0) return 'Home page';
-      // Use last 2 segments for context, e.g. "local / quickstart"
-      const tail = segments.slice(-2);
-      return tail.join(' / ');
+    addContextPage(page) {
+      const fullUrl = page.url.startsWith('http')
+        ? page.url
+        : window.location.origin + page.url;
+      if (this.contextPages.some((p) => p.url === fullUrl)) return;
+      this.contextPages.push({ title: page.title, url: fullUrl });
+      this.saveState();
     },
 
     /**
-     * Returns the full page URL for sending as context.
+     * Remove a context page by index.
      */
-    getPageUrl() {
-      return this.pageContextEnabled ? window.location.href : '';
+    removeContextPage(index) {
+      this.contextPages.splice(index, 1);
+      this.saveState();
     },
 
-    // ─── Model ──────────────────────────────────────────────────
+    // ─── Paste & Drop ────────────────────────────────────────
+
+    /**
+     * Handle pasted content – if it's a plain URL paste, add as a pill.
+     */
+    handlePaste(event) {
+      const text = event.clipboardData?.getData('text') || '';
+      const urls = this.extractUrls(text);
+      if (urls.length > 0 && text.trim() === urls[0]) {
+        event.preventDefault();
+        urls.forEach((url) => this.addPastedUrl(url));
+      }
+    },
+
+    /**
+     * Handle dropped content – extract URLs and add as pills.
+     */
+    handleDrop(event) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const text = event.dataTransfer?.getData('text') || '';
+      const html = event.dataTransfer?.getData('text/html') || '';
+
+      // Try HTML first (drag from browser)
+      const urlFromHtml = this.extractUrlFromHtml(html);
+      if (urlFromHtml) { this.addPastedUrl(urlFromHtml); return; }
+
+      // Plain-text URLs
+      const urls = this.extractUrls(text);
+      if (urls.length > 0) { urls.forEach((u) => this.addPastedUrl(u)); return; }
+
+      // Fallback: insert text at cursor
+      const pos = this.$refs.input?.selectionStart || this.userInput.length;
+      this.userInput =
+        this.userInput.substring(0, pos) + text + this.userInput.substring(pos);
+    },
+
+    handleDragOver(event) {
+      event.preventDefault();
+      event.stopPropagation();
+    },
+
+    /**
+     * Extract valid docs URLs from plain text.
+     */
+    extractUrls(text) {
+      const urlRe = /(https?:\/\/[^\s]+|\/docs\/[^\s]+)/gi;
+      return (text.match(urlRe) || [])
+        .map((u) => u.replace(/[,;.!?)]*$/, ''))
+        .filter((u) => u.length > 0 && this.isValidDocsUrl(u));
+    },
+
+    /**
+     * Extract a valid docs URL from an HTML href attribute.
+     */
+    extractUrlFromHtml(html) {
+      try {
+        const m = html.match(/href=["']([^"']+)["']/);
+        if (m && this.isValidDocsUrl(m[1])) return m[1];
+      } catch (_) { /* ignore */ }
+      return null;
+    },
+
+    /**
+     * Add a URL (from paste/drop) as a context page pill.
+     */
+    addPastedUrl(url) {
+      if (!this.isValidDocsUrl(url)) return;
+      try {
+        const fullUrl = this.normaliseUrl(url);
+        if (this.contextPages.some((p) => p.url === fullUrl)) return;
+        this.contextPages.push({ title: this.getTitleForUrl(fullUrl), url: fullUrl });
+        this.saveState();
+      } catch (_) { /* invalid URL */ }
+    },
+
+    // ─── @ Mention System ────────────────────────────────────
+
+    /**
+     * Check the textarea for an active @ mention trigger.
+     * Updates `filteredMentionPages` so the template can bind to a
+     * stable array instead of calling a filter function on every render.
+     */
+    checkForMention() {
+      const input = this.$refs.input;
+      if (!input) return;
+
+      const cursorPos = input.selectionStart;
+      const text = this.userInput;
+
+      // Walk backward from cursor to find '@'
+      let atPos = -1;
+      for (let i = cursorPos - 1; i >= 0; i--) {
+        if (text[i] === '@') { atPos = i; break; }
+        if (text[i] === '\n') break;
+      }
+
+      if (atPos >= 0) {
+        const charBefore = atPos > 0 ? text[atPos - 1] : ' ';
+        if (atPos === 0 || /\s/.test(charBefore)) {
+          const filter = text.substring(atPos + 1, cursorPos);
+          this.mentionStartPos = atPos;
+          this.mentionFilter = filter;
+          this.mentionSelectedIndex = 0;
+          this.filteredMentionPages = this.computeFilteredPages(filter);
+          this.showMentionMenu = true;
+          return;
+        }
+      }
+
+      this.closeMentionMenu();
+    },
+
+    /**
+     * Detect the version prefix for the current docs path.
+     * e.g. "/docs/local/latest/"
+     */
+    getVersionPrefix() {
+      const m = window.location.pathname.match(DOCS_PATH_RE);
+      return m ? `/docs/${m[1]}/${m[2]}/` : '';
+    },
+
+    /**
+     * Compute filtered page results for the mention popup.
+     *
+     * The current page is treated specially:
+     *  - It is marked with `_isCurrentPage: true` and hoisted to the
+     *    top of the list so users can quickly add the page they are on.
+     *  - It is matched by its real title/section/url AND by the alias
+     *    "current page", so typing "@current" will surface it.
+     *  - There is always only ONE entry per page (no duplicates).
+     *  - If the current page is already in contextPages it is omitted.
+     */
+    computeFilteredPages(filter = '') {
+      const versionPrefix = this.getVersionPrefix();
+      const scoped = versionPrefix
+        ? this.pageIndex.filter((p) => p.url.startsWith(versionPrefix))
+        : this.pageIndex;
+
+      // Identify the current page's pathname for matching
+      let currentPathname = null;
+      const currentUrl = window.location.href;
+      if (this.isValidDocsUrl(currentUrl)) {
+        const normalised = this.normaliseUrl(currentUrl);
+        // Only treat as current page if not already added
+        if (!this.contextPages.some((p) => p.url === normalised)) {
+          currentPathname = new URL(normalised).pathname;
+        }
+      }
+
+      const terms = filter.toLowerCase().trim();
+      const termList = terms ? terms.split(/\s+/) : [];
+
+      // Helper: does a page match the filter terms?
+      const matchesFilter = (haystack) =>
+        termList.length === 0 || termList.every((t) => haystack.includes(t));
+
+      let currentPageResult = null;
+      const otherResults = [];
+
+      for (const page of scoped) {
+        const pagePath = page.url.replace(/\/$/, '');
+        const isCurrentPage =
+          currentPathname && pagePath === currentPathname.replace(/\/$/, '');
+
+        const haystack = `${page.title} ${page.section} ${page.url}`.toLowerCase();
+        // Current page also matches the alias "current page"
+        const fullHaystack = isCurrentPage
+          ? `current page ${haystack}`
+          : haystack;
+
+        if (!matchesFilter(fullHaystack)) continue;
+
+        if (isCurrentPage && !currentPageResult) {
+          currentPageResult = { ...page, _isCurrentPage: true };
+        } else {
+          otherResults.push(page);
+          if (otherResults.length >= 8) break;
+        }
+      }
+
+      // Hoist the current page to the top
+      if (currentPageResult) {
+        return [currentPageResult, ...otherResults.slice(0, 7)];
+      }
+      return otherResults.slice(0, 8);
+    },
+
+    /**
+     * Select a page from the mention popup: remove the @filter text
+     * from the textarea and add the page to contextPages.
+     */
+    selectMention(page) {
+      const cursorPos = this.$refs.input?.selectionStart || this.userInput.length;
+      const before = this.userInput.substring(0, this.mentionStartPos);
+      const after = this.userInput.substring(cursorPos);
+      this.userInput = before + after;
+
+      if (page._isCurrentPage) {
+        this.addCurrentPage();
+      } else {
+        this.addContextPage(page);
+      }
+      this.closeMentionMenu();
+      this.$nextTick(() => this.$refs.input?.focus());
+    },
+
+    closeMentionMenu() {
+      this.showMentionMenu = false;
+      this.mentionFilter = '';
+      this.mentionSelectedIndex = 0;
+      this.mentionStartPos = -1;
+      this.filteredMentionPages = [];
+    },
+
+    /**
+     * Insert '@' at the cursor and trigger the mention popup.
+     * Called from the context dropdown "Mention a page" button.
+     */
+    insertMention() {
+      const input = this.$refs.input;
+      if (!input) return;
+
+      const cursorPos = input.selectionStart;
+      const before = this.userInput.substring(0, cursorPos);
+      const after = this.userInput.substring(cursorPos);
+      const prefix = before.length > 0 && !/\s$/.test(before) ? ' ' : '';
+      this.userInput = before + prefix + '@' + after;
+
+      this.$nextTick(() => {
+        const newPos = cursorPos + prefix.length + 1;
+        input.focus();
+        input.setSelectionRange(newPos, newPos);
+      });
+    },
+
+    // ─── Model ───────────────────────────────────────────────
 
     getModelLabel() {
-      const labels = { local: 'Local', kubernetes: 'Kubernetes' };
-      return labels[this.selectedModel] || this.selectedModel;
+      return { local: 'Local', kubernetes: 'Kubernetes' }[this.selectedModel] || this.selectedModel;
     },
 
-    // ─── Input ──────────────────────────────────────────────────
+    // ─── Input ───────────────────────────────────────────────
 
+    /**
+     * Auto-resize the textarea to fit its content.
+     * Operates directly on the DOM element to avoid a reactive cycle
+     * (no reactive `inputHeight` property involved).
+     */
     autoResizeInput() {
-      if (!this.$refs.input) return;
-      // Temporarily shrink to measure scroll height accurately
-      this.$refs.input.style.height = '0px';
-      const scrollH = this.$refs.input.scrollHeight;
-      const minHeight = 68;
-      const maxHeight = 150;
-      this.inputHeight = Math.max(minHeight, Math.min(scrollH, maxHeight));
-      this.$refs.input.style.height = this.inputHeight + 'px';
+      const el = this.$refs.input;
+      if (!el) return;
+      const min = 68;
+      const max = 150;
+      el.style.height = '0px';
+      el.style.height = Math.max(min, Math.min(el.scrollHeight, max)) + 'px';
+    },
+
+    scrollMentionIntoView() {
+      this.$nextTick(() => {
+        const list = this.$refs.mentionList;
+        if (!list) return;
+        const items = list.querySelectorAll('.chatbot-mention-item');
+        const active = items[this.mentionSelectedIndex];
+        if (active) active.scrollIntoView({ block: 'nearest' });
+      });
     },
 
     handleKeydown(event) {
+      // ── Mention popup keyboard navigation ──────────────────
+      if (this.showMentionMenu) {
+        const filtered = this.filteredMentionPages;
+        if (event.key === 'ArrowDown') {
+          event.preventDefault();
+          this.mentionSelectedIndex = Math.min(this.mentionSelectedIndex + 1, filtered.length - 1);
+          this.scrollMentionIntoView();
+          return;
+        }
+        if (event.key === 'ArrowUp') {
+          event.preventDefault();
+          this.mentionSelectedIndex = Math.max(this.mentionSelectedIndex - 1, 0);
+          this.scrollMentionIntoView();
+          return;
+        }
+        if ((event.key === 'Enter' || event.key === 'Tab') && filtered.length > 0) {
+          event.preventDefault();
+          this.selectMention(filtered[this.mentionSelectedIndex]);
+          return;
+        }
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          this.closeMentionMenu();
+          return;
+        }
+      }
+
+      // ── Send on Enter ──────────────────────────────────────
       if (event.key === 'Enter' && !event.shiftKey && !this.isProcessing) {
         event.preventDefault();
         this.sendQuery();
       }
     },
 
-    // ─── Query ──────────────────────────────────────────────────
+    // ─── Query ───────────────────────────────────────────────
 
     async sendQuery() {
       const query = this.userInput.trim();
@@ -358,115 +790,93 @@ document.addEventListener('alpine:init', () => {
 
       this.isProcessing = true;
 
-      // Capture page context state before clearing
-      const hasPageContext = this.pageContextEnabled;
-      const pageContextLabel = hasPageContext ? this.getPageContextLabel() : '';
-      const pageContextUrl = hasPageContext ? window.location.href : '';
+      // Snapshot context pages (only first MAX_CONTEXT_PAGES are sent)
+      const capturedContextPages = this.contextPages.map((p) => ({ ...p }));
+      const pages = capturedContextPages
+        .slice(0, MAX_CONTEXT_PAGES)
+        .map((p) => p.url)
+        .join(',');
 
-      // Add user message with page context info
+      // Push user message
       this.messages.push({
         role: 'user',
         content: query,
-        pageContext: hasPageContext,
-        pageContextLabel: pageContextLabel,
-        pageContextUrl: pageContextUrl
+        contextPages: capturedContextPages
       });
 
-      // Expand dialog on first message
-      if (this.messages.length === 1) {
-        this.isExpanded = true;
-      }
+      if (this.messages.length === 1) this.isExpanded = true;
 
-      // Clear input and page context
+      // Clear input and context
       this.userInput = '';
-      this.inputHeight = 68;
-      this.pageContextEnabled = false;
-
-      // Save after adding user message
+      this.contextPages = [];
+      this.closeMentionMenu();
+      this.clearSavedInput();
       this.saveState();
 
-      // Create assistant message placeholder
-      const assistantMessage = {
+      // Streaming assistant message placeholder
+      this.messages.push({
         role: 'assistant',
         content: '',
         isStreaming: true,
         showAvatar: true,
         isLoading: true,
         isError: false
-      };
-      this.messages.push(assistantMessage);
+      });
 
-      // Reset markdown renderer
       this.markdownRenderer.reset();
-
-      // Show thinking state
       this.showThinking = true;
 
-      // Wait for DOM to render thinking element
       await this.$nextTick();
-
-      // Start thinking animation on the dots
       if (this.$refs.thinkingDots) {
         this.thinkingAnimator.start(this.$refs.thinkingDots);
       }
 
-      // Stream the response
       try {
         this.currentEventSource = await this.streamer.stream(query, {
           sessionId: this.sessionId,
           model: this.selectedModel,
-          pageUrl: pageContextUrl,
+          pages,
+
           onToken: (token) => {
             this.markdownRenderer.addToken(token);
             const html = this.markdownRenderer.render();
+            const idx = this.messages.length - 1;
+            this.messages[idx].content = html;
 
-            // Update using Alpine's reactivity system
-            const msgIndex = this.messages.length - 1;
-            this.messages[msgIndex].content = html;
-
-            // Hide thinking on first content
             if (this.markdownRenderer.getContent().length > 0 && this.showThinking) {
               this.showThinking = false;
               this.thinkingAnimator.stop();
-              this.messages[msgIndex].isLoading = false;
+              this.messages[idx].isLoading = false;
             }
           },
 
           onDone: () => {
-            // Flush remaining content
             const html = this.markdownRenderer.flush();
-            const msgIndex = this.messages.length - 1;
-            this.messages[msgIndex].content = html;
-            this.messages[msgIndex].markdown = this.markdownRenderer.getContent();
-            this.messages[msgIndex].isStreaming = false;
-            this.messages[msgIndex].isLoading = false;
+            const idx = this.messages.length - 1;
+            this.messages[idx].content = html;
+            this.messages[idx].markdown = this.markdownRenderer.getContent();
+            this.messages[idx].isStreaming = false;
+            this.messages[idx].isLoading = false;
             this.showThinking = false;
             this.thinkingAnimator.stop();
             this.isProcessing = false;
             this.currentEventSource = null;
-
-            // Persist completed response
             this.saveState();
-
-            this.$nextTick(() => {
-              this.$refs.input?.focus();
-            });
+            this.$nextTick(() => this.$refs.input?.focus());
           },
 
           onError: (errorMessage, errorType) => {
             console.error('Stream error:', errorMessage, errorType);
             this.showThinking = false;
             this.thinkingAnimator.stop();
-            const msgIndex = this.messages.length - 1;
-            this.messages[msgIndex].content = errorMessage;
-            this.messages[msgIndex].isError = true;
-            this.messages[msgIndex].isRateLimited = errorType === ErrorType.RATE_LIMITED;
-            this.messages[msgIndex].isStreaming = false;
-            this.messages[msgIndex].isLoading = false;
+            const idx = this.messages.length - 1;
+            this.messages[idx].content = errorMessage;
+            this.messages[idx].isError = true;
+            this.messages[idx].isRateLimited = errorType === ErrorType.RATE_LIMITED;
+            this.messages[idx].isStreaming = false;
+            this.messages[idx].isLoading = false;
             this.isProcessing = false;
             this.currentEventSource = null;
-
-            // Persist error state
             this.saveState();
           }
         });
@@ -474,50 +884,37 @@ document.addEventListener('alpine:init', () => {
         console.error('Chat error:', error);
         this.showThinking = false;
         this.thinkingAnimator.stop();
-        const msgIndex = this.messages.length - 1;
-        this.messages[msgIndex].content = `Error: ${error.message}`;
-        this.messages[msgIndex].isError = true;
-        this.messages[msgIndex].isStreaming = false;
-        this.messages[msgIndex].isLoading = false;
+        const idx = this.messages.length - 1;
+        this.messages[idx].content = `Error: ${error.message}`;
+        this.messages[idx].isError = true;
+        this.messages[idx].isStreaming = false;
+        this.messages[idx].isLoading = false;
         this.isProcessing = false;
         this.currentEventSource = null;
-
-        // Persist error state
         this.saveState();
       }
     },
 
-    // ─── Utilities ──────────────────────────────────────────────
+    // ─── Utilities ───────────────────────────────────────────
 
     generateSessionId() {
-      if (window.crypto?.randomUUID) {
-        return window.crypto.randomUUID();
-      }
+      if (window.crypto?.randomUUID) return window.crypto.randomUUID();
       const bytes = new Uint8Array(16);
       window.crypto.getRandomValues(bytes);
       return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
     },
 
     scrollToBottom() {
-      const container = this.$refs.messagesContainer;
-      if (container) {
-        container.scrollTop = container.scrollHeight;
-      }
+      const c = this.$refs.messagesContainer;
+      if (c) c.scrollTop = c.scrollHeight;
     },
 
-    // Helper to check if this is the last message (for animation refs)
     isLastMessage(index) {
       return index === this.messages.length - 1;
     },
 
     detectModelFromPath() {
-      const path = window.location.pathname;
-      if (path.includes('/docs/kubernetes/')) {
-        return 'kubernetes';
-      } else if (path.includes('/docs/local')) {
-        return 'local';
-      }
-      return 'local'; // default
+      return window.location.pathname.includes('/docs/kubernetes/') ? 'kubernetes' : 'local';
     }
   }));
 });

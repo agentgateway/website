@@ -10,9 +10,9 @@
 <div id="chatbot-widget" x-data="chatbot" @keydown.escape.window="close()">
   <!-- Trigger Button -->
   <button
-    @click="isOpen ? null : open()"
-    class="chatbot-trigger fixed bottom-6 right-6 z-[9998] flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-violet-600 to-violet-700 text-white border-none rounded-full font-inherit text-sm font-medium transition-all duration-200 sm:bottom-4 sm:right-4 sm:px-4 sm:py-2.5 sm:text-[13px]"
-    :class="isOpen ? 'opacity-50 cursor-default shadow-[0_2px_8px_rgba(124,58,237,0.3)]' : 'cursor-pointer shadow-[0_4px_14px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.5)] active:translate-y-0'"
+    @click="toggle()"
+    class="chatbot-trigger fixed bottom-6 right-6 z-[9998] flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-violet-600 to-violet-700 text-white border-none rounded-full font-inherit text-sm font-medium cursor-pointer transition-all duration-200 sm:bottom-4 sm:right-4 sm:px-4 sm:py-2.5 sm:text-[13px]"
+    :class="isOpen ? 'shadow-[0_2px_8px_rgba(124,58,237,0.3)] opacity-80 hover:opacity-100' : 'shadow-[0_4px_14px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.5)] active:translate-y-0'"
     aria-label="Ask AI"
   >
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -25,7 +25,6 @@
   <div
     x-cloak
     x-show="isOpen"
-    @click.outside="close()"
     x-transition:enter="transition ease-out duration-200"
     x-transition:enter-start="opacity-0 translate-y-4 scale-95"
     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
@@ -107,19 +106,21 @@
               class="chatbot-message user bg-gradient-to-br from-violet-600 to-violet-700 text-white px-3 py-2 rounded-2xl rounded-br-sm text-sm leading-relaxed font-normal shadow-[0_2px_8px_rgba(124,58,237,0.2)] dark:shadow-[0_2px_8px_rgba(124,58,237,0.3)] break-words w-full"
               x-text="msg.content"
             ></div>
-            <!-- Page context pill for this message -->
-            <div x-show="msg.pageContext" class="pr-1">
-              <a
-                :href="msg.pageContextUrl"
-                class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-violet-100/90 dark:bg-violet-500/20 border border-violet-300/50 dark:border-violet-500/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200/90 dark:hover:bg-violet-500/30 hover:border-violet-400 dark:hover:border-violet-500/40 rounded-md text-[11px] font-medium cursor-pointer transition-colors no-underline"
-                title="Go to page"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                </svg>
-                <span class="truncate max-w-[200px]" x-text="msg.pageContextLabel"></span>
-              </a>
+            <!-- Context page pills for this message -->
+            <div x-show="msg.contextPages && msg.contextPages.length > 0" class="flex flex-wrap gap-1 pr-1">
+              <template x-for="(cp, cpIdx) in (msg.contextPages || [])" :key="cpIdx">
+                <a
+                  :href="cp.url"
+                  class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-violet-100/90 dark:bg-violet-500/20 border border-violet-300/50 dark:border-violet-500/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200/90 dark:hover:bg-violet-500/30 hover:border-violet-400 dark:hover:border-violet-500/40 rounded-md text-[11px] font-medium cursor-pointer transition-colors no-underline"
+                  title="Go to page"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                  </svg>
+                  <span class="truncate max-w-[200px]" x-text="cp.title"></span>
+                </a>
+              </template>
             </div>
           </div>
 
@@ -192,25 +193,71 @@
       <!-- Unified input card -->
       <div class="chatbot-input-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors duration-150 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500/20">
 
-        <!-- Page context pill (shown when enabled) -->
-        <div x-show="pageContextEnabled" x-transition.duration.150ms class="px-3 pt-2.5 pb-0">
-          <span class="inline-flex items-center gap-1.5 max-w-full px-2 py-1 bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-            </svg>
-            <span class="truncate" x-text="getPageContextLabel()"></span>
-            <button
-              @click="pageContextEnabled = false; saveState()"
-              class="shrink-0 ml-0.5 p-0 bg-transparent border-none text-violet-400 hover:text-violet-700 dark:hover:text-violet-200 cursor-pointer transition-colors"
-              aria-label="Remove page context"
+        <!-- Context page pills (shown when pages are added) -->
+        <div x-show="contextPages.length > 0" x-transition.duration.150ms class="px-3 pt-2.5 pb-0 flex flex-wrap gap-1.5">
+          <template x-for="(page, pageIdx) in contextPages" :key="page.url">
+            <span
+              :class="pageIdx < 3 ? 'bg-violet-50 dark:bg-violet-500/10 border-violet-200 dark:border-violet-500/20 text-violet-700 dark:text-violet-300' : 'bg-red-50 dark:bg-red-500/10 border-red-200 dark:border-red-500/20 text-red-600 dark:text-red-400'"
+              :title="pageIdx >= 3 ? 'Exceeds the 3-page limit — this page will not be sent as context.' : ''"
+              class="inline-flex items-center gap-1.5 max-w-full px-2 py-1 border rounded-lg text-xs font-medium"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
               </svg>
-            </button>
-          </span>
+              <span class="truncate max-w-[150px]" x-text="page.title"></span>
+              <button
+                @click="removeContextPage(pageIdx)"
+                :class="pageIdx < 3 ? 'text-violet-400 hover:text-violet-700 dark:hover:text-violet-200' : 'text-red-400 hover:text-red-700 dark:hover:text-red-200'"
+                class="shrink-0 ml-0.5 p-0 bg-transparent border-none cursor-pointer transition-colors"
+                aria-label="Remove page context"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </span>
+          </template>
+        </div>
+
+        <!-- @ Mention autocomplete popup -->
+        <div class="relative">
+          <div
+            x-show="showMentionMenu && filteredMentionPages.length > 0"
+            x-transition:enter="transition ease-out duration-100"
+            x-transition:enter-start="opacity-0 -translate-y-1"
+            x-transition:enter-end="opacity-100 translate-y-0"
+            x-transition:leave="transition ease-in duration-75"
+            x-transition:leave-start="opacity-100 translate-y-0"
+            x-transition:leave-end="opacity-0 -translate-y-1"
+            class="chatbot-mention-menu absolute bottom-full left-0 right-0 mb-1 mx-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-20 overflow-hidden"
+          >
+            <div x-ref="mentionList" class="chatbot-mention-list max-h-[240px] overflow-y-auto py-1">
+              <template x-for="(page, mIdx) in filteredMentionPages" :key="page._isCurrentPage ? '__current__' : page.url">
+                <button
+                  @click="selectMention(page)"
+                  @mouseenter="mentionSelectedIndex = mIdx"
+                  :class="mIdx === mentionSelectedIndex ? 'bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300' : 'text-gray-700 dark:text-gray-200'"
+                  class="chatbot-mention-item w-full flex flex-col gap-0.5 px-3 py-2 text-left bg-transparent border-none cursor-pointer text-sm hover:bg-violet-50 dark:hover:bg-violet-500/10 transition-colors"
+                >
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-medium truncate" x-text="page.title"></span>
+                    <span
+                      x-show="page._isCurrentPage"
+                      class="shrink-0 px-1.5 py-0.5 rounded text-[10px] font-medium bg-violet-100 dark:bg-violet-500/20 text-violet-600 dark:text-violet-400"
+                    >Current page</span>
+                  </div>
+                  <span class="text-[11px] text-gray-400 dark:text-gray-500 truncate" x-text="page.section ? page.section + ' — ' + page.url : page.url"></span>
+                </button>
+              </template>
+            </div>
+            <div class="px-3 py-1.5 border-t border-gray-100 dark:border-gray-700 text-[11px] text-gray-400 dark:text-gray-500 flex items-center gap-2">
+              <span class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-mono">↑↓</span> navigate
+              <span class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-mono">↵</span> select
+              <span class="px-1 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-[10px] font-mono">esc</span> dismiss
+            </div>
+          </div>
         </div>
 
         <!-- Textarea -->
@@ -218,9 +265,12 @@
           x-ref="input"
           x-model="userInput"
           @keydown="handleKeydown($event)"
+          @paste="handlePaste($event)"
+          @drop="handleDrop($event)"
+          @dragover="handleDragOver($event)"
           class="w-full box-border px-3 py-2.5 bg-transparent border-none font-inherit text-sm text-gray-900 dark:text-gray-50 resize-none leading-relaxed outline-none overflow-y-auto placeholder:text-gray-400"
-          :style="'height:' + inputHeight + 'px'"
-          placeholder="Ask about agentgateway..."
+          style="height: 68px"
+          placeholder="Ask about agentgateway... (type @ to mention a page, paste/drag links here)"
           rows="1"
         ></textarea>
 
@@ -231,7 +281,7 @@
           <div class="relative">
             <button
               @click="showContextMenu = !showContextMenu"
-              :class="pageContextEnabled ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+              :class="contextPages.length > 0 ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
               class="flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg cursor-pointer transition-all duration-150"
               aria-label="Add context"
               title="Add context"
@@ -254,26 +304,32 @@
               @click.outside="showContextMenu = false"
               class="absolute bottom-full left-0 mb-1.5 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-1.5 z-10"
             >
-              <!-- Page context toggle -->
+              <!-- Add this page button -->
               <button
-                @click="togglePageContext(); showContextMenu = false"
+                @click="() => { addCurrentPage(); showContextMenu = false; }"
                 class="w-full flex items-center gap-3 px-3 py-2 text-left bg-transparent border-none cursor-pointer text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-gray-400 dark:text-gray-500">
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                   <polyline points="14 2 14 8 20 8"></polyline>
                 </svg>
-                <span class="flex-1">Add page to chat</span>
-                <!-- Toggle indicator -->
-                <span
-                  :class="pageContextEnabled ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'"
-                  class="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200"
-                >
-                  <span
-                    :class="pageContextEnabled ? 'translate-x-4' : 'translate-x-0.5'"
-                    class="inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow-sm transition-transform duration-200"
-                  ></span>
-                </span>
+                <span class="flex-1">Add this page</span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-gray-400 dark:text-gray-500">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <!-- Mention a page -->
+              <button
+                @click="insertMention(); showContextMenu = false"
+                class="w-full flex items-center gap-3 px-3 py-2 text-left bg-transparent border-none cursor-pointer text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-gray-400 dark:text-gray-500">
+                  <circle cx="12" cy="12" r="4"></circle>
+                  <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"></path>
+                </svg>
+                <span class="flex-1">Mention a page</span>
+                <span class="text-[11px] text-gray-400 dark:text-gray-500 font-mono">@</span>
               </button>
             </div>
           </div>
@@ -382,6 +438,19 @@
       attributeFilter: ['class']
     });
   })();
+</script>
+
+<!-- Page index for @ mention autocomplete (built by Hugo at compile time) -->
+<script id="chatbot-page-index" type="application/json">
+{{- $pages := slice -}}
+{{- range where .Site.RegularPages "Section" "docs" -}}
+  {{- $parentTitle := "" -}}
+  {{- with .Parent -}}
+    {{- $parentTitle = .Title -}}
+  {{- end -}}
+  {{- $pages = $pages | append (dict "title" .Title "url" .RelPermalink "section" $parentTitle) -}}
+{{- end -}}
+{{ $pages | jsonify | safeJS }}
 </script>
 
 <!-- Bundle chatbot with Hugo Pipes (must load before Alpine) -->

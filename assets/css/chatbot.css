@@ -374,6 +374,55 @@ textarea::-webkit-scrollbar-thumb:hover {
   border-top-color: #374151;
 }
 
+/* ===== @ Mention Autocomplete ===== */
+.chatbot-mention-menu {
+  max-height: 280px;
+}
+
+.chatbot-mention-list {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(156, 163, 175, 0.3) transparent;
+}
+
+.chatbot-mention-list::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chatbot-mention-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chatbot-mention-list::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.3);
+  border-radius: 3px;
+}
+
+.chatbot-mention-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.5);
+}
+
+.dark .chatbot-mention-list {
+  scrollbar-color: rgba(107, 114, 128, 0.3) transparent;
+}
+
+.dark .chatbot-mention-list::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.3);
+}
+
+.dark .chatbot-mention-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(107, 114, 128, 0.5);
+}
+
+.chatbot-mention-item.active,
+.chatbot-mention-item:hover {
+  background: #f5f3ff;
+}
+
+.dark .chatbot-mention-item.active,
+.dark .chatbot-mention-item:hover {
+  background: rgba(139, 92, 246, 0.1);
+}
+
 /* ===== Responsive Overrides ===== */
 @media (max-width: 640px) {
   .chatbot-dialog {
