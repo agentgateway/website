@@ -87,7 +87,7 @@ INFO:     Uvicorn running on http://0.0.0.0:9999 (Press CTRL+C to quit)
 ### Step 4: Install Agent Gateway
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+curl -sL https://agentgateway.dev/install | bash
 ```
 
 ### Step 5: Create the config
