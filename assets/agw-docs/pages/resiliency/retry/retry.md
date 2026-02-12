@@ -1,5 +1,5 @@
-Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service.
-You might commonly use retries alongside [Timeouts]({{< link-hextra path="/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable.
+Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service.<!--
+You might commonly use retries alongside [Timeouts]({{< link-hextra path="/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable. -->
 
 {{< callout type="warning" >}} 
 {{< reuse "agw-docs/versions/warn-experimental.md" >}}
@@ -139,7 +139,7 @@ Set up retries to the reviews app.
    | Field | Description |
    |-------|-------------|
    | `hostnames` | The hostnames to match the request, such as `retry.example`. |
-   | `parentRefs` | The gateway to which the request is sent. In this example, you select the `http` gateway that you set up before you began. |
+   | `parentRefs` | The gateway to which the request is sent. In this example, you select the `agentgateway-proxy` gateway that you set up before you began. |
    | `rules` | The rules to apply to requests. |
    | `matches` | The path to match the request. In this example, you match any requests to the reviews app with `/`. |
    | `path` | The path to match the request. In this example, you match the request to the `/reviews/1` path. |
@@ -242,7 +242,7 @@ Set up retries to the reviews app.
             port: 9080 
       EOF
       ```
-   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the `http` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.  
+   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.  
       ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}

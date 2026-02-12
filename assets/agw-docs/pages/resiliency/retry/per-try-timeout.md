@@ -8,13 +8,13 @@ Set separate timeouts for retries.
 
 The per-retry timeout allows you to set a timeout for retried requests. If the timeout expires, AgentGateway cancels the retry attempt and immediately retries on another upstream host. 
 
-By default, AgentGateway has a default overall request timeout of 15 seconds. A request timeout represents the time AgentGateway waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger [request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}}) to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
+By default, AgentGateway has a default overall request timeout of 15 seconds. A request timeout represents the time AgentGateway waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger request timeout<!--[request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}})--> to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
 
 <!--
 When per-try timeouts are enabled, AgentGateway returns the `x-envoy-upstream-rq-per-try-timeout-ms` header in the response.  -->
 Note that if you configured a global request timeout, the per-try timeout must be less than the global request timeout.
 
-Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} instead. 
+Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} instead. 
 
 
 
@@ -30,7 +30,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    ```
 
 2. Configure the per-retry timeout. You can apply the timeout to an HTTPRoute, or Gateway listener.
-   {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute (TrafficPolicy),Gateway listener" >}}
+   {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute (AgentGatewayPolicy),Gateway listener" >}}
    {{% tab tabName="HTTPRoute (Kubernetes GW API)" %}}
    Use the `timeouts.backendRequest` field to configure the per-try timeout. Note that you must set a retry policy also to configure a per-try timeout. 
    ```yaml
@@ -66,7 +66,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="HTTPRoute (EnterpriseKgatewayTrafficPolicy)" %}}
+   {{% tab tabName="HTTPRoute (AgentGatewayPolicy)" %}}
    1. Create an HTTPRoute to route requests along the `retry.example` domain to the httpbin app. Note that you add a name `timeout` to your HTTPRoute rule so that you can configure the per-try timeout for that rule later. 
       ```yaml
       kubectl apply -f- <<EOF
@@ -96,7 +96,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: timeout 
       EOF
       ```
-   2. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `timeout` HTTPRoute rule. Note that you must set a retry policy also to apply a per-try timeout. 
+   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `timeout` HTTPRoute rule. Note that you must set a retry policy also to apply a per-try timeout. 
       ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -110,11 +110,11 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           group: gateway.networking.k8s.io
           name: retry
           sectionName: timeout
-        retry:
-          attempts: 3
-          perTryTimeout: 5s
-          statusCodes:
-          - 517
+        traffic:
+          retry:
+            attempts: 3
+            backoff: 5s
+            codes: [517]
       EOF
       ```
    
@@ -155,7 +155,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
       metadata:
         name: retry
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        namespace: httpbin
       spec:
         targetRefs:
         - kind: Gateway
@@ -164,9 +164,8 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           sectionName: http
         retry:
           attempts: 2
-          perTryTimeout: 5s
-          statusCodes:
-          - 517
+          backoff: 5s
+          codes: [517]
       EOF
       ```
    {{% /tab %}}
@@ -223,7 +222,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    1. Port-forward the gateway proxy on port 19000.
 
       ```sh
-      kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 19000
+      kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
       ```
 
    2. Get the configuration of your gateway proxy as a config dump.
