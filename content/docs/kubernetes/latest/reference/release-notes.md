@@ -35,8 +35,8 @@ For more details, review the [GitHub release notes in the kgateway repository](h
 Agentgateway now has dedicated APIs and a separate installation from kgateway:
 
 * New APIs in the `agentgateway.dev` API group
-* New `AgentgatewayPolicy` to replace `TrafficPolicy` for agentgateway configurations
-* New `AgentgatewayParameters` API in `agentgateway.dev/v1alpha1`
+* New `AgentgatewayPolicy` API to replace `TrafficPolicy` for agentgateway policy configurations
+* New `AgentgatewayParameters` API to replace GatewayParameters for agentgateway proxy configurations
 * Split Helm installation with dedicated charts for agentgateway
 
 Key changes include:
@@ -131,7 +131,7 @@ As previously mentioned, the kgateway APIs are no longer supported for agentgate
 
 ### Inference Extension in 2.2.1
 
-Version 2.2.0 includes an inference plugin regression due to [GitHub issue #13456](https://github.com/kgateway-dev/kgateway/issues/13456). Users of this plugin should not upgrade to v2.2.0 and should instead wait for the upcoming v2.2.1 patch release. v2.2.0 only supports the agentgateway data plane for inference.
+Version 2.2.0 includes an inference plugin regression due to [GitHub issue #13456](https://github.com/kgateway-dev/kgateway/issues/13456). Users of this plugin should not upgrade to v2.2.0 and should instead wait for the upcoming v2.2.1 patch release.
 
 ## 🔮 Future releases
 
