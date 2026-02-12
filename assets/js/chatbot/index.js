@@ -19,12 +19,12 @@ const INPUT_SAVE_DEBOUNCE_MS = 300;
 /**
  * A URL is only eligible as a context page if it is same-origin AND
  * sits under a recognised docs version path.
- *   /docs/local/latest/...
- *   /docs/local/main/...
+ *   /docs/standalone/latest/...
+ *   /docs/standalone/main/...
  *   /docs/kubernetes/latest/...
  *   /docs/kubernetes/main/...
  */
-const DOCS_PATH_RE = /^\/docs\/(local|kubernetes)\/(latest|main)(\/|$)/;
+const DOCS_PATH_RE = /^\/docs\/(standalone|kubernetes)\/(latest|main)(\/|$)/;
 
 /**
  * Load the page index embedded by Hugo at build time.
@@ -51,7 +51,7 @@ document.addEventListener('alpine:init', () => {
     isProcessing: false,
     userInput: '',
     messages: [],
-    selectedModel: 'local',
+    selectedModel: 'standalone',
     contextPages: [],
 
     // ── Internal / UI state ──────────────────────────────────
@@ -589,7 +589,7 @@ document.addEventListener('alpine:init', () => {
 
     /**
      * Detect the version prefix for the current docs path.
-     * e.g. "/docs/local/latest/"
+     * e.g. "/docs/standalone/latest/"
      */
     getVersionPrefix() {
       const m = window.location.pathname.match(DOCS_PATH_RE);
@@ -713,7 +713,7 @@ document.addEventListener('alpine:init', () => {
     // ─── Model ───────────────────────────────────────────────
 
     getModelLabel() {
-      return { local: 'Local', kubernetes: 'Kubernetes' }[this.selectedModel] || this.selectedModel;
+      return { standalone: 'Standalone', kubernetes: 'Kubernetes' }[this.selectedModel] || this.selectedModel;
     },
 
     // ─── Input ───────────────────────────────────────────────
@@ -913,7 +913,7 @@ document.addEventListener('alpine:init', () => {
     },
 
     detectModelFromPath() {
-      return window.location.pathname.includes('/docs/kubernetes/') ? 'kubernetes' : 'local';
+      return window.location.pathname.includes('/docs/kubernetes/') ? 'kubernetes' : 'standalone';
     }
   }));
 });

@@ -362,15 +362,15 @@
                 class="absolute bottom-full right-0 mb-1.5 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-1.5 z-10"
               >
                 <button
-                  @click="selectedModel = 'local'; showModelMenu = false; saveState()"
+                  @click="selectedModel = 'standalone'; showModelMenu = false; saveState()"
                   class="w-full flex items-center justify-between px-3 py-2 text-left bg-transparent border-none cursor-pointer text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                  :class="selectedModel === 'local' ? 'text-gray-900 dark:text-gray-50 font-medium' : 'text-gray-600 dark:text-gray-300'"
+                  :class="selectedModel === 'standalone' ? 'text-gray-900 dark:text-gray-50 font-medium' : 'text-gray-600 dark:text-gray-300'"
                 >
                   <div>
-                    <div>Local</div>
-                    <div class="text-[11px] text-gray-400 dark:text-gray-500 font-normal">Local deployment docs</div>
+                    <div>Standalone</div>
+                    <div class="text-[11px] text-gray-400 dark:text-gray-500 font-normal">Standalone deployment docs</div>
                   </div>
-                  <svg x-show="selectedModel === 'local'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-600 shrink-0">
+                  <svg x-show="selectedModel === 'standalone'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-600 shrink-0">
                     <polyline points="20 6 9 17 4 12"></polyline>
                   </svg>
                 </button>

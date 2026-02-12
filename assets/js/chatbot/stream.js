@@ -22,11 +22,11 @@ export class ChatStreamer {
    * @param {Function} callbacks.onToken - Called when a token is received
    * @param {Function} callbacks.onDone - Called when streaming completes
    * @param {Function} callbacks.onError - Called on error with (message, errorType)
-   * @param {string} callbacks.model - The model/deployment type (local or kubernetes)
+   * @param {string} callbacks.model - The model/deployment type (standalone or kubernetes)
    * @param {string} [callbacks.pages] - Optional comma-separated page URLs sent as context
    * @returns {Promise<EventSource>} The event source instance (for external cleanup if needed)
    */
-  async stream(query, { sessionId, model = 'local', pages = '', onToken, onDone, onError }) {
+  async stream(query, { sessionId, model = 'standalone', pages = '', onToken, onDone, onError }) {
     const queryParams = new URLSearchParams({
       q: query,
       model: model,
