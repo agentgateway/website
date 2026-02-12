@@ -3,6 +3,9 @@
 <div class="hamburger-menu hx-hidden" style="display: none !important;"><svg></svg></div>
 <div class="sidebar-container hx-hidden" style="display: none !important;"></div>
 
+<!-- Hide Alpine.js elements until initialized to prevent flash -->
+<style>[x-cloak] { display: none !important; }</style>
+
 <!-- Chat Bot Widget for Docs Pages -->
 <div id="chatbot-widget" x-data="chatbot" @keydown.escape.window="close()">
   <!-- Trigger Button -->
@@ -20,6 +23,7 @@
 
   <!-- Chat Dialog Overlay -->
   <div
+    x-cloak
     x-show="isOpen"
     x-transition
     @click="$event.target === $el && close()"
