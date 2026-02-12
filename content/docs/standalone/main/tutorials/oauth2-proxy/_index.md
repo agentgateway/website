@@ -18,7 +18,7 @@ In this tutorial, you'll:
 ## Prerequisites
 
 - [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
-- [Docker](https://docs.docker.com/get-docker/) installed and running
+- [Docker](https://docs.docker.com/get-started/get-docker/) installed and running
 - A GitHub account (for creating an OAuth app)
 
 ## Step 1: Create a GitHub OAuth Application

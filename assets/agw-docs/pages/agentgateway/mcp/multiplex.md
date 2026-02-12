@@ -207,7 +207,7 @@ Route to the federated MCP servers with agentgateway.
 
 ## Step 3: Verify the connection {#verify}
 
-Use the [MCP Inspector tool](https://modelcontextprotocol.io/legacy/tools/inspector) to verify that you can connect to your federated MCP servers through agentgateway.
+Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspector) to verify that you can connect to your federated MCP servers through agentgateway.
 
 1. Get the agentgateway address.
    

@@ -235,7 +235,7 @@ Create a `.env` file with your API keys:
 ```bash
 # LLM Provider API Keys
 OPENAI_API_KEY=sk-...        # https://platform.openai.com/api-keys
-ANTHROPIC_API_KEY=sk-ant-... # https://console.anthropic.com/settings/keys
+ANTHROPIC_API_KEY=sk-ant-... # https://platform.claude.com/settings/keys
 XAI_API_KEY=xai-...          # https://console.x.ai
 GEMINI_API_KEY=...           # https://aistudio.google.com/app/apikey
 
