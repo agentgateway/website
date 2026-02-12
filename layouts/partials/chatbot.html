@@ -71,13 +71,13 @@
         </button>
         <!-- Close Button -->
         <button
-          @click="close()"
-          class="chatbot-close flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg text-gray-500 cursor-pointer transition-all duration-150 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-50"
-          aria-label="Close"
+          @click="isOpen = false"
+          class="chatbot-minimize flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg text-gray-500 cursor-pointer transition-all duration-150 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-50"
+          aria-label="Minimize"
+          title="Minimize conversation"
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
+            <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
         </button>
       </div>

@@ -10,8 +10,7 @@ import { ChatStreamer, ErrorType } from './stream.js';
 import { ThinkingAnimator, MarkdownRenderer } from './ui.js';
 import { parseMarkdown } from './markdown.js';
 
-const AGENT_ENDPOINT = 'http://localhost:3000';
-// const AGENT_ENDPOINT = 'https://docs-search-agent.is.solo.io';
+const AGENT_ENDPOINT = 'https://docs-search-agent.is.solo.io';
 const STORAGE_KEY = 'chatbot-state';
 const INPUT_STORAGE_KEY = 'chatbot-input';
 const MAX_CONTEXT_PAGES = 3;
