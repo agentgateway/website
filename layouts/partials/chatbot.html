@@ -10,9 +10,9 @@
 <div id="chatbot-widget" x-data="chatbot" @keydown.escape.window="close()">
   <!-- Trigger Button -->
   <button
-    @click="open()"
-    x-show="!isOpen"
-    class="chatbot-trigger fixed bottom-6 right-6 z-[9998] flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-violet-600 to-violet-700 text-white border-none rounded-full font-inherit text-sm font-medium cursor-pointer shadow-[0_4px_14px_rgba(124,58,237,0.4)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.5)] active:translate-y-0 sm:bottom-4 sm:right-4 sm:px-4 sm:py-2.5 sm:text-[13px]"
+    @click="isOpen ? null : open()"
+    class="chatbot-trigger fixed bottom-6 right-6 z-[9998] flex items-center gap-2 px-5 py-3 bg-gradient-to-br from-violet-600 to-violet-700 text-white border-none rounded-full font-inherit text-sm font-medium transition-all duration-200 sm:bottom-4 sm:right-4 sm:px-4 sm:py-2.5 sm:text-[13px]"
+    :class="isOpen ? 'opacity-50 cursor-default shadow-[0_2px_8px_rgba(124,58,237,0.3)]' : 'cursor-pointer shadow-[0_4px_14px_rgba(124,58,237,0.4)] hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(124,58,237,0.5)] active:translate-y-0'"
     aria-label="Ask AI"
   >
     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -21,27 +21,56 @@
     <span>Ask AI</span>
   </button>
 
-  <!-- Chat Dialog Overlay -->
+  <!-- Chat Dialog (bottom-right docked widget) -->
   <div
     x-cloak
     x-show="isOpen"
-    x-transition
-    @click="$event.target === $el && close()"
-    class="chatbot-overlay fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-5 sm:p-2.5"
+    @click.outside="close()"
+    x-transition:enter="transition ease-out duration-200"
+    x-transition:enter-start="opacity-0 translate-y-4 scale-95"
+    x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+    x-transition:leave="transition ease-in duration-150"
+    x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+    x-transition:leave-end="opacity-0 translate-y-4 scale-95"
+    :class="{ 'expanded': isExpanded }"
+    class="chatbot-dialog fixed bottom-20 right-6 z-[9999] w-[min(700px,calc(100vw-3rem))] h-[50vh] max-h-[calc(100vh-8rem)] flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden transition-[height] duration-300 sm:bottom-16 sm:right-4"
   >
-    <div
-      @click.stop
-      :class="{ 'expanded': isExpanded }"
-      class="chatbot-dialog w-full max-w-[700px] h-[50vh] max-h-[90vh] flex flex-col bg-white dark:bg-gray-800 dark:border dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden transition-[height,transform] duration-300"
-    >
-      <!-- Header -->
-      <div class="chatbot-header flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
-        <div class="chatbot-header-title flex items-center gap-2.5 text-[15px] font-semibold text-gray-900 dark:text-gray-50">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-600">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+    <!-- Header -->
+    <div class="chatbot-header flex items-center justify-between px-5 py-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
+      <div class="chatbot-header-title flex items-center gap-2.5 text-[15px] font-semibold text-gray-900 dark:text-gray-50">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-violet-600">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+        </svg>
+        <span>Agentgateway assistant</span>
+      </div>
+      <div class="flex items-center gap-1">
+        <!-- New Chat Button -->
+        <button
+          @click="newChat()"
+          class="flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg text-gray-500 cursor-pointer transition-all duration-150 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-50"
+          aria-label="New Chat"
+          title="New conversation"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
-          <span>Agentgateway assistant</span>
-        </div>
+        </button>
+        <!-- Export Button -->
+        <button
+          @click="exportChat()"
+          x-show="messages.length > 0"
+          class="flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg text-gray-500 cursor-pointer transition-all duration-150 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-50"
+          aria-label="Export conversation"
+          title="Export as Markdown"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+        <!-- Close Button -->
         <button
           @click="close()"
           class="chatbot-close flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg text-gray-500 cursor-pointer transition-all duration-150 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-50"
@@ -53,138 +82,272 @@
           </svg>
         </button>
       </div>
+    </div>
 
-      <!-- Messages Container -->
-      <div
-        x-ref="messagesContainer"
-        class="chatbot-messages flex-1 overflow-y-auto p-4 flex flex-col gap-5"
-      >
-        <!-- Welcome Message -->
-        <div x-show="messages.length === 0" class="chatbot-welcome text-center py-4 px-5 text-gray-800 dark:text-gray-400 text-sm">
-          <p>Ask me anything about agentgateway configuration, features, or usage.</p>
-          <p>Note: AI-generated content might contain errors; please verify and test all returned information.</p>
-        </div>
+    <!-- Messages Container -->
+    <div
+      x-ref="messagesContainer"
+      class="chatbot-messages flex-1 overflow-y-auto p-4 flex flex-col gap-5"
+    >
+      <!-- Welcome Message -->
+      <div x-show="messages.length === 0" class="chatbot-welcome text-center py-4 px-5 text-gray-800 dark:text-gray-400 text-sm">
+        <p>Ask me anything about agentgateway configuration, features, or usage.</p>
+        <p>Note: AI-generated content might contain errors; please verify and test all returned information.</p>
+      </div>
 
-        <!-- Messages -->
-        <template x-for="(msg, index) in messages" :key="index">
-          <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
-            <!-- User Message -->
+      <!-- Messages -->
+      <template x-for="(msg, index) in messages" :key="index">
+        <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
+          <!-- User Message -->
+          <div
+            x-show="msg.role === 'user'"
+            class="flex flex-col items-end gap-1.5 max-w-[85%]"
+          >
             <div
-              x-show="msg.role === 'user'"
-              class="chatbot-message user bg-gradient-to-br from-violet-600 to-violet-700 text-white px-3 py-2 rounded-2xl rounded-br-sm text-sm leading-relaxed font-normal shadow-[0_2px_8px_rgba(124,58,237,0.2)] dark:shadow-[0_2px_8px_rgba(124,58,237,0.3)] mb-1 break-words max-w-[85%]"
+              class="chatbot-message user bg-gradient-to-br from-violet-600 to-violet-700 text-white px-3 py-2 rounded-2xl rounded-br-sm text-sm leading-relaxed font-normal shadow-[0_2px_8px_rgba(124,58,237,0.2)] dark:shadow-[0_2px_8px_rgba(124,58,237,0.3)] break-words w-full"
               x-text="msg.content"
             ></div>
-
-            <!-- Assistant Message -->
-            <div
-              x-show="msg.role === 'assistant'"
-              class="chatbot-message assistant flex gap-3 items-start pr-3 max-w-[90%]"
-            >
-              <!-- Avatar -->
-              <div
-                :class="{ 'loading': msg.isLoading }"
-                class="chatbot-avatar shrink-0 w-8 h-8 flex items-center justify-center rounded-lg p-1 relative"
+            <!-- Page context pill for this message -->
+            <div x-show="msg.pageContext" class="pr-1">
+              <a
+                :href="msg.pageContextUrl"
+                class="inline-flex items-center gap-1.5 px-2 py-0.5 bg-violet-100/90 dark:bg-violet-500/20 border border-violet-300/50 dark:border-violet-500/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200/90 dark:hover:bg-violet-500/30 hover:border-violet-400 dark:hover:border-violet-500/40 rounded-md text-[11px] font-medium cursor-pointer transition-colors no-underline"
+                title="Go to page"
               >
-                <img src="/favicon.svg" alt="Agent" class="w-full h-full transition-all duration-200">
+                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span class="truncate max-w-[200px]" x-text="msg.pageContextLabel"></span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Assistant Message -->
+          <div
+            x-show="msg.role === 'assistant'"
+            class="chatbot-message assistant flex gap-3 items-start pr-3 max-w-[90%]"
+          >
+            <!-- Avatar -->
+            <div
+              :class="{ 'loading': msg.isLoading }"
+              class="chatbot-avatar shrink-0 w-8 h-8 flex items-center justify-center rounded-lg p-1 relative"
+            >
+              <img src="/favicon.svg" alt="Agent" class="w-full h-full transition-all duration-200">
+            </div>
+
+            <!-- Content -->
+            <div class="chatbot-message-content flex-1 min-w-0 max-w-[90%]">
+              <!-- Thinking Indicator -->
+              <div
+                x-show="msg.isStreaming && showThinking && isLastMessage(index)"
+                class="chatbot-thinking mb-1"
+              >
+                <div class="thinking-dots inline-flex gap-1" x-ref="thinkingDots">
+                  <span class="dot">•</span>
+                  <span class="dot">•</span>
+                  <span class="dot">•</span>
+                </div>
               </div>
 
-              <!-- Content -->
-              <div class="chatbot-message-content flex-1 min-w-0 max-w-[90%]">
-                <!-- Thinking Indicator -->
+              <!-- Response -->
+              <div x-show="!msg.isError">
                 <div
-                  x-show="msg.isStreaming && showThinking && isLastMessage(index)"
-                  class="chatbot-thinking mb-1"
+                  class="chatbot-response text-gray-900 dark:text-gray-200 text-sm leading-relaxed"
+                  x-html="msg.content"
+                ></div>
+              </div>
+
+              <!-- Error Message -->
+              <div x-show="msg.isError">
+                <!-- Rate Limit Error -->
+                <div
+                  x-show="msg.isRateLimited"
+                  class="chatbot-error chatbot-error-rate-limit bg-amber-50 dark:bg-amber-600/10 border border-amber-200 dark:border-amber-600/30 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-lg text-[13px] flex items-start gap-3"
                 >
-                  <div class="thinking-text text-xs text-violet-600 italic inline-flex" x-ref="thinkingText">
-                    <template x-for="(char, charIndex) in getStageMessage(currentStage).split('')" :key="charIndex">
-                      <span x-text="char"></span>
-                    </template>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <div>
+                    <div class="font-medium mb-1">Rate limit reached</div>
+                    <div class="text-amber-600 dark:text-amber-300/80" x-text="msg.content"></div>
                   </div>
                 </div>
-
-                <!-- Response -->
-                <div x-show="!msg.isError">
-                  <div
-                    class="chatbot-response text-gray-900 dark:text-gray-200 text-sm leading-relaxed"
-                    x-html="msg.content"
-                  ></div>
-                </div>
-
-                <!-- Error Message -->
-                <div x-show="msg.isError">
-                  <!-- Rate Limit Error -->
-                  <div
-                    x-show="msg.isRateLimited"
-                    class="chatbot-error chatbot-error-rate-limit bg-amber-50 dark:bg-amber-600/10 border border-amber-200 dark:border-amber-600/30 text-amber-700 dark:text-amber-400 px-4 py-3 rounded-lg text-[13px] flex items-start gap-3"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <polyline points="12 6 12 12 16 14"></polyline>
-                    </svg>
-                    <div>
-                      <div class="font-medium mb-1">Rate limit reached</div>
-                      <div class="text-amber-600 dark:text-amber-300/80" x-text="msg.content"></div>
-                    </div>
-                  </div>
-                  <!-- Generic Error -->
-                  <div
-                    x-show="!msg.isRateLimited"
-                    class="chatbot-error bg-red-50 dark:bg-red-600/10 border border-red-200 dark:border-red-600/30 text-red-600 px-4 py-3 rounded-lg text-[13px]"
-                    x-text="msg.content"
-                  ></div>
-                </div>
+                <!-- Generic Error -->
+                <div
+                  x-show="!msg.isRateLimited"
+                  class="chatbot-error bg-red-50 dark:bg-red-600/10 border border-red-200 dark:border-red-600/30 text-red-600 px-4 py-3 rounded-lg text-[13px]"
+                  x-text="msg.content"
+                ></div>
               </div>
             </div>
           </div>
-        </template>
-      </div>
+        </div>
+      </template>
+    </div>
 
-      <!-- Input Container -->
-      <div class="chatbot-input-container px-5 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0 flex flex-row gap-3">
-        <!-- Left column: Textarea with resize button -->
-        <div class="flex-1 relative">
-          <textarea
-            x-ref="input"
-            x-model="userInput"
-            @keydown="handleKeydown($event)"
-            class="w-full box-border px-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl font-inherit text-sm text-gray-900 dark:text-gray-50 resize-none h-[100px] leading-relaxed outline-none transition-[height,border-color] duration-200 overflow-y-auto focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20 placeholder:text-gray-400"
-            placeholder="Ask about agentgateway..."
-            rows="1"
-          ></textarea>
-          <button
-            @click="toggleInputSize()"
-            class="chatbot-resize-btn absolute bottom-2 right-2 w-6 h-6 flex items-center justify-center bg-white/80 dark:bg-gray-700/80 border-none rounded text-gray-400 dark:text-gray-500 cursor-pointer hover:text-violet-600 dark:hover:text-violet-400 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors"
-            :aria-label="isInputExpanded ? 'Collapse input' : 'Expand input'"
-            :title="isInputExpanded ? 'Collapse input' : 'Expand input'"
-            x-html="getResizeIcon()"
-          ></button>
+    <!-- Input Container -->
+    <div class="chatbot-input-container px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
+      <!-- Unified input card -->
+      <div class="chatbot-input-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors duration-150 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500/20">
+
+        <!-- Page context pill (shown when enabled) -->
+        <div x-show="pageContextEnabled" x-transition.duration.150ms class="px-3 pt-2.5 pb-0">
+          <span class="inline-flex items-center gap-1.5 max-w-full px-2 py-1 bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 text-violet-700 dark:text-violet-300 rounded-lg text-xs font-medium">
+            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+            </svg>
+            <span class="truncate" x-text="getPageContextLabel()"></span>
+            <button
+              @click="pageContextEnabled = false; saveState()"
+              class="shrink-0 ml-0.5 p-0 bg-transparent border-none text-violet-400 hover:text-violet-700 dark:hover:text-violet-200 cursor-pointer transition-colors"
+              aria-label="Remove page context"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </span>
         </div>
 
-        <!-- Right column: Select and Button stacked -->
-        <div class="flex flex-col gap-2 shrink-0 w-[140px] h-[100px]">
-          <!-- Select -->
-          <select
-            x-model="selectedModel"
-            id="model-select"
-            class="w-full text-sm px-3 py-2.5 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl text-gray-700 dark:text-gray-300 cursor-pointer hover:border-violet-500 dark:hover:border-violet-400 focus:border-violet-600 focus:ring-2 focus:ring-violet-600/20 transition-colors outline-none appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20viewBox%3D%220%200%2024%2024%22%20fill%3D%22none%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%222%22%3E%3Cpath%20d%3D%22M6%209l6%206%206-6%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px] bg-[right_12px_center] bg-no-repeat pr-8"
-          >
-            <option value="local">Local</option>
-            <option value="kubernetes">Kubernetes</option>
-          </select>
+        <!-- Textarea -->
+        <textarea
+          x-ref="input"
+          x-model="userInput"
+          @keydown="handleKeydown($event)"
+          class="w-full box-border px-3 py-2.5 bg-transparent border-none font-inherit text-sm text-gray-900 dark:text-gray-50 resize-none leading-relaxed outline-none overflow-y-auto placeholder:text-gray-400"
+          :style="'height:' + inputHeight + 'px'"
+          placeholder="Ask about agentgateway..."
+          rows="1"
+        ></textarea>
 
-          <!-- Submit Button -->
-          <button
-            @click="sendQuery()"
-            :disabled="isProcessing"
-            class="chatbot-submit w-full flex-1 flex items-center justify-center gap-2 bg-gradient-to-br from-violet-600 to-violet-700 border-none rounded-xl text-white text-sm font-medium cursor-pointer transition-all duration-150 hover:from-violet-500 hover:to-violet-600 hover:shadow-lg hover:shadow-violet-500/25 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-none"
-            aria-label="Send"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="block">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-            <span>Send</span>
-          </button>
+        <!-- Bottom toolbar -->
+        <div class="flex items-center justify-between px-1.5 pb-1.5">
+
+          <!-- Left: + context menu -->
+          <div class="relative">
+            <button
+              @click="showContextMenu = !showContextMenu"
+              :class="pageContextEnabled ? 'text-violet-600 dark:text-violet-400 bg-violet-50 dark:bg-violet-500/10' : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'"
+              class="flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg cursor-pointer transition-all duration-150"
+              aria-label="Add context"
+              title="Add context"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+
+            <!-- Context dropdown menu -->
+            <div
+              x-show="showContextMenu"
+              x-transition:enter="transition ease-out duration-100"
+              x-transition:enter-start="opacity-0 scale-95"
+              x-transition:enter-end="opacity-100 scale-100"
+              x-transition:leave="transition ease-in duration-75"
+              x-transition:leave-start="opacity-100 scale-100"
+              x-transition:leave-end="opacity-0 scale-95"
+              @click.outside="showContextMenu = false"
+              class="absolute bottom-full left-0 mb-1.5 w-56 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-1.5 z-10"
+            >
+              <!-- Page context toggle -->
+              <button
+                @click="togglePageContext(); showContextMenu = false"
+                class="w-full flex items-center gap-3 px-3 py-2 text-left bg-transparent border-none cursor-pointer text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-gray-400 dark:text-gray-500">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span class="flex-1">Add page to chat</span>
+                <!-- Toggle indicator -->
+                <span
+                  :class="pageContextEnabled ? 'bg-violet-600' : 'bg-gray-300 dark:bg-gray-600'"
+                  class="relative inline-flex h-5 w-9 shrink-0 rounded-full transition-colors duration-200"
+                >
+                  <span
+                    :class="pageContextEnabled ? 'translate-x-4' : 'translate-x-0.5'"
+                    class="inline-block h-4 w-4 mt-0.5 rounded-full bg-white shadow-sm transition-transform duration-200"
+                  ></span>
+                </span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: model selector + send -->
+          <div class="flex items-center gap-1">
+
+            <!-- Custom model selector -->
+            <div class="relative">
+              <button
+                @click="showModelMenu = !showModelMenu"
+                class="flex items-center gap-1 px-2 py-1.5 bg-transparent border-none rounded-lg text-xs font-medium text-gray-500 dark:text-gray-400 cursor-pointer hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              >
+                <span x-text="getModelLabel()"></span>
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="opacity-50">
+                  <path d="M6 9l6 6 6-6"></path>
+                </svg>
+              </button>
+
+              <!-- Model dropdown menu -->
+              <div
+                x-show="showModelMenu"
+                x-transition:enter="transition ease-out duration-100"
+                x-transition:enter-start="opacity-0 scale-95"
+                x-transition:enter-end="opacity-100 scale-100"
+                x-transition:leave="transition ease-in duration-75"
+                x-transition:leave-start="opacity-100 scale-100"
+                x-transition:leave-end="opacity-0 scale-95"
+                @click.outside="showModelMenu = false"
+                class="absolute bottom-full right-0 mb-1.5 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg py-1.5 z-10"
+              >
+                <button
+                  @click="selectedModel = 'local'; showModelMenu = false; saveState()"
+                  class="w-full flex items-center justify-between px-3 py-2 text-left bg-transparent border-none cursor-pointer text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  :class="selectedModel === 'local' ? 'text-gray-900 dark:text-gray-50 font-medium' : 'text-gray-600 dark:text-gray-300'"
+                >
+                  <div>
+                    <div>Local</div>
+                    <div class="text-[11px] text-gray-400 dark:text-gray-500 font-normal">Local deployment docs</div>
+                  </div>
+                  <svg x-show="selectedModel === 'local'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-600 shrink-0">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+                <button
+                  @click="selectedModel = 'kubernetes'; showModelMenu = false; saveState()"
+                  class="w-full flex items-center justify-between px-3 py-2 text-left bg-transparent border-none cursor-pointer text-sm hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                  :class="selectedModel === 'kubernetes' ? 'text-gray-900 dark:text-gray-50 font-medium' : 'text-gray-600 dark:text-gray-300'"
+                >
+                  <div>
+                    <div>Kubernetes</div>
+                    <div class="text-[11px] text-gray-400 dark:text-gray-500 font-normal">Kubernetes deployment docs</div>
+                  </div>
+                  <svg x-show="selectedModel === 'kubernetes'" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-600 shrink-0">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Send button -->
+            <button
+              @click="sendQuery()"
+              :disabled="isProcessing || !userInput.trim()"
+              class="chatbot-submit flex items-center justify-center w-8 h-8 border-none rounded-lg cursor-pointer transition-all duration-150 active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
+              :class="userInput.trim() && !isProcessing ? 'bg-violet-600 text-white hover:bg-violet-500 shadow-sm' : 'bg-transparent text-gray-300 dark:text-gray-600'"
+              aria-label="Send"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

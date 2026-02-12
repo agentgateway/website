@@ -11,7 +11,7 @@ export class ThinkingAnimator {
   }
 
   start(element) {
-    const chars = element.querySelectorAll('.thinking-text span');
+    const chars = element.querySelectorAll('span');
     if (chars.length === 0) return;
 
     // Stop any existing animation

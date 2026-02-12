@@ -20,51 +20,24 @@ export class ChatStreamer {
    * @param {string} query - The user's question
    * @param {Object} callbacks - Event callbacks
    * @param {Function} callbacks.onToken - Called when a token is received
-   * @param {Function} callbacks.onStage - Called when processing stage changes
    * @param {Function} callbacks.onDone - Called when streaming completes
    * @param {Function} callbacks.onError - Called on error with (message, errorType)
    * @param {string} callbacks.model - The model/deployment type (local or kubernetes)
+   * @param {string} [callbacks.pageUrl] - Optional current page URL sent as context
    * @returns {Promise<EventSource>} The event source instance (for external cleanup if needed)
    */
-  async stream(query, { sessionId, model = 'local', onToken, onStage, onDone, onError }) {
+  async stream(query, { sessionId, model = 'local', pageUrl = '', onToken, onDone, onError }) {
     const queryParams = new URLSearchParams({
       q: query,
       model: model,
       sessionId: sessionId
     });
+    if (pageUrl) {
+      queryParams.set('pageUrl', pageUrl);
+    }
     const url = `${this.endpoint}/query?${queryParams.toString()}`;
 
-    // Pre-flight check to detect rate limiting and other HTTP errors
-    // EventSource doesn't expose HTTP status codes, so we use fetch first
-    try {
-      const checkResponse = await fetch(url, { method: 'HEAD' });
-      if (checkResponse.status === 429) {
-        if (onError) {
-          onError(
-            'You have reached the rate limit. Please try again in an hour.',
-            ErrorType.RATE_LIMITED
-          );
-        }
-        return null;
-      }
-    } catch (prefetchError) {
-      // HEAD request failed - proceed with EventSource anyway
-      // The server might not support HEAD, or there could be CORS issues
-      console.warn('Pre-flight check failed, proceeding with EventSource:', prefetchError);
-    }
-
     const eventSource = new EventSource(url);
-
-    eventSource.addEventListener('stage', (e) => {
-      try {
-        const data = JSON.parse(e.data);
-        if (data.status !== 'done' && onStage) {
-          onStage(data.stage);
-        }
-      } catch (err) {
-        console.error('Stage parsing error:', err);
-      }
-    });
 
     eventSource.addEventListener('token', (e) => {
       try {

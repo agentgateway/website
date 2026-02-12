@@ -58,39 +58,14 @@
 }
 
 /* ===== Component States ===== */
-
-/* Dialog animations and states */
-.chatbot-dialog {
-  animation: dialogSlideIn 0.2s ease-out;
-}
-
 .chatbot-dialog.expanded {
   height: 80vh;
 }
 
-/* Keep buttons visible by shrinking message area when input expands */
-.chatbot-dialog.input-is-expanded .chatbot-messages {
-  flex: 0 1 150px;
-}
-
-
-.chatbot-dialog.input-is-expanded .chatbot-textarea-container {
-  flex: 1;
-  align-items: stretch;
-}
-
-.chatbot-dialog.input-is-expanded textarea {
-  flex: 1;
-  height: auto;
-  min-height: 250px;
-}
-
-.chatbot-dialog.input-is-expanded .chatbot-submit {
-  align-self: flex-end;
-}
-
-/* Message animation */
-.chatbot-message {
+/* Unified input card focus glow */
+.chatbot-input-card:focus-within {
+  border-color: #8b5cf6;
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
 }
 
 /* User message - fit content width */
@@ -127,12 +102,21 @@
 }
 
 /* ===== Thinking Animation ===== */
-.thinking-text span {
+.thinking-dots {
+  color: #7c3aed;
+  font-size: 1.5rem;
+}
+
+.dark .thinking-dots {
+  color: #a78bfa;
+}
+
+.thinking-dots .dot {
   display: inline-block;
   transition: transform 0.3s ease-in-out;
 }
 
-.thinking-text span.bouncing {
+.thinking-dots .dot.bouncing {
   animation: bounceSingle 0.6s ease-in-out;
 }
 
@@ -223,16 +207,6 @@ textarea::-webkit-scrollbar-thumb:hover {
 
 .dark textarea::-webkit-scrollbar-thumb:hover {
   background: rgba(107, 114, 128, 0.5);
-}
-
-/* ===== Resize Button Visibility ===== */
-.chatbot-resize-btn {
-  opacity: 0;
-  transition: all 0.15s ease;
-}
-
-.chatbot-textarea-container:hover .chatbot-resize-btn {
-  opacity: 1;
 }
 
 /* ===== Markdown Content Styling ===== */
