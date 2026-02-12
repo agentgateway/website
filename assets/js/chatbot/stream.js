@@ -14,11 +14,17 @@ export class ChatStreamer {
    * @param {Function} callbacks.onStage - Called when processing stage changes
    * @param {Function} callbacks.onDone - Called when streaming completes
    * @param {Function} callbacks.onError - Called on error
+   * @param {string} callbacks.model - The model/deployment type (local or kubernetes)
    * @returns {EventSource} The event source instance (for external cleanup if needed)
    */
-  stream(query, { sessionId, onToken, onStage, onDone, onError }) {
+  stream(query, { sessionId, model = 'local', onToken, onStage, onDone, onError }) {
+    const queryParams = new URLSearchParams({
+      q: query,
+      model: model,
+      sessionId: sessionId
+    });
     const eventSource = new EventSource(
-      `${this.endpoint}/query?q=${encodeURIComponent(query)}&sessionId=${encodeURIComponent(sessionId)}`
+      `${this.endpoint}/query?${queryParams.toString()}`
     );
 
     eventSource.addEventListener('stage', (e) => {
