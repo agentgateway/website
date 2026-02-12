@@ -8,4 +8,4 @@ Refer to the agentgateway on Kubernetes documentation for more information about
 
 {{< cards>}}
   {{< card link="/docs/kubernetes/latest/inference/" title="Inference routing" >}}
-{{< /card >}}
+{{< /cards >}}
