@@ -17,7 +17,7 @@ In this tutorial, you'll:
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) installed (for Jaeger)
+- [Docker](https://docs.docker.com/get-started/get-docker/) installed (for Jaeger)
 - [Node.js](https://nodejs.org/) installed (for MCP servers)
 
 ## Step 1: Install Agent Gateway

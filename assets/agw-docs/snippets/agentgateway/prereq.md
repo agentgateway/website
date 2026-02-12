@@ -1,4 +1,4 @@
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}). 
-2. [Install the httpbin sample app]({{< link-hextra path="/operations/sample-app/" >}}).
+2. [Install the httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}).

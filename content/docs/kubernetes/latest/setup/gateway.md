@@ -23,4 +23,4 @@ Explore how you can use {{< reuse "agw-docs/snippets/agentgateway.md" >}} by che
 * [MCP connectivity]({{< link-hextra path="/mcp" >}}) 
 * [Agent connectivity]({{< link-hextra path="/agent" >}}) 
 
-You can also install the [httpbin sample app]({{< link-hextra path="/operations/sample-app/" >}}) and use this app to test traffic management, security, and resiliency guides with your agentgateway proxy. 
+You can also install the [httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}) and use this app to test traffic management, security, and resiliency guides with your agentgateway proxy. 

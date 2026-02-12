@@ -176,7 +176,7 @@ Set up OpenAI-compatible provider access to [Mistral AI](https://mistral.ai/) mo
 
 ### DeepSeek example {#deepseek}
 
-Set up OpenAI-compatible provider access to [DeepSeek](https://www.deepseek.com/en) models.
+Set up OpenAI-compatible provider access to [DeepSeek](https://www.deepseek.com/en/) models.
 
 1. Get a [DeepSeek API key](https://platform.deepseek.com/). 
 

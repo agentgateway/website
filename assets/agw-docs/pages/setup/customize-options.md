@@ -1,4 +1,4 @@
-In the standalone agentgateway deployment, you can manage [configuration](https://agentgateway.dev/docs/configuration/overview/) via a YAML or JSON file. The configuration features of agentgateway are captured in the [schema of the agentgateway codebase](https://github.com/agentgateway/agentgateway/tree/main/schema). 
+In the standalone agentgateway deployment, you can manage [configuration](https://agentgateway.dev/docs/standalone/latest/configuration/overview/) via a YAML or JSON file. The configuration features of agentgateway are captured in the [schema of the agentgateway codebase](https://github.com/agentgateway/agentgateway/tree/main/schema). 
 
 Unlike in the standalone agentgateway deployment, you do not configure these features in a raw configuration file when running agentgateway on Kubernetes. Instead, you configure them in a Kubernetes Gateway API-native way by using an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
 
