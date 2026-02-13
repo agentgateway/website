@@ -40,22 +40,23 @@ You’ll see it in action, with a human in the loop making real-time decisions.
 
 Here’s the flow:
 
-1. Visit or refresh the app to trigger a request that enters agentgateway.
+1. Visit or refresh the match app and scan the QR code to connect your phone. 
 
-{{< reuse-image src="img/blog/happy-v-day/UI.png" width="700px" >}}
+{{< reuse-image src="img/blog/happy-v-day/UI.png" width="500px" >}}
 
-2. The request is routed using `Gateway` and `HTTPRoute`.
+2. Once connected, refresh the match app to trigger a request that enters agentgateway. Alternatively, you can click the **Not seeing requests? Try again** button. The request is routed using `Gateway` and `HTTPRoute`. 
+
 3. Before the request is matched, agentgateway triggers an external authorization check.
 
-{{< reuse-image src="img/blog/happy-v-day/UI-pending-match.png" width="700px" >}}
+{{< reuse-image src="img/blog/happy-v-day/UI-pending-match.png" width="500px" >}}
 
 4. The external auth match check appears in a playful swipe card on your phone.
 5. You swipe:
    - 👉 Right = allow  
    - 👈 Left = deny  
-6. The decision is returned to the gateway, which either approves or denies the match.
 
 {{< reuse-image src="img/blog/happy-v-day/Match-card.png" width="400px" >}}
+6. The decision is returned to the gateway, which either approves or denies the match.
 
 7. You are presented with five cards in total, representing external authorization checks for five different resources.
 
@@ -76,7 +77,7 @@ If you have a Kubernetes cluster, this Valentine’s Day, we invite you to:
 - Follow the [quick start guide](https://github.com/yuval-k/extauthz-match/tree/master?tab=readme-ov-file#quick-start---kubernetes-deployment-no-need-to-clone-repo) to deploy the game.
 - Explore Gateway API resources.
 - Experiment with `AgentGatewayPolicy`.
-- Visit/refresh the app from your browser following the [instruction](#how-the-extauth-match-game-works) to trigger a request to agentgateway. Swipe the cards left or right on your phone to approve or deny.
+- Visit/refresh the match app from your browser following the [instruction](#how-the-extauth-match-game-works) to trigger a request to agentgateway. Swipe the cards left or right on your phone to approve or deny.
 - Learn something new. 
 - Share your love for Kubernetes Gateway API and agentgateway in the open. Tag @agentgateway when you share on LinkedIn — we’ll select one lucky winner on February 20th for the most fun post.
 
