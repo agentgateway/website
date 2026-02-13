@@ -68,15 +68,12 @@
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
 }
 
-/* User message - fit content width */
+/* User message - shrink-wrap to text content */
 .chatbot-message.user {
-  display: inline-flex;
   width: fit-content;
-  min-width: 0;
-  max-width: 70%;
-  align-self: flex-end;
-  flex-shrink: 0;
-  flex-grow: 0;
+  max-width: 100%;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 /* ===== Avatar Loading Animation ===== */
