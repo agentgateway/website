@@ -1,11 +1,9 @@
 ---
-title: "Explore Gateway API and agentgateway with ExtAuth Match – A Valentine’s Game"
+title: "Explore Gateway API and Agentgateway with ExtAuth Match – A Valentine’s Game"
 publishDate: 2026-02-13
 author: "Lin Sun & Yuval Kohavi"
-description: "Let’s have some fun and share some love while learning Kubernetes Gateway API and agentgateway with the extAuth match game."
+description: "Let’s have some fun and share love while learning Kubernetes Gateway API and agentgateway with the ExtAuth Match game."
 ---
-
-## Introduction
 
 Over the past few months, we’ve been blown away by the number of contributions and the growing interest in agentgateway. Not only did agentgateway make it onto the CNCF Agentic AI Tech Radar in the Trial category, but the Istio community has also started integrating more deeply with agentgateway after validating its performance and scalability benefits.
 
@@ -21,7 +19,7 @@ Agentgateway is a high-performance, lightweight gateway designed specifically fo
 
 There are many gateways available today, but most were designed before the rise of AI agents. As a result, they often struggle to support modern AI protocols without significant rearchitecture. To keep pace with rapid innovation in the age of AI, we needed a purpose-built solution designed specifically for AI-driven workloads. That’s how agentgateway was born.
 
-One of the biggest challenge of agentgateway in Kubernetes is that the control plane doesn't envolve fast enough with the rapid change from the agentgateway data plane. In the new agentgateway 2.2 release, we re-engineered the control plane and its API to allow us to iterate much faster. This enabled us to have feature parity as much as possible as you move from agentgateway standalone to kubernetes, while improving control plane performance significantly. 
+One of the biggest challenges for agentgateway in Kubernetes has been ensuring that the control plane evolves as quickly as the rapidly changing data plane. In the new agentgateway 2.2 release, we re-engineered the control plane and its APIs to enable much faster iteration. This allows us to maintain strong feature parity between standalone and Kubernetes deployments while significantly improving control plane performance.
 
 ---
 
@@ -42,12 +40,12 @@ You’ll see it in action, with a human in the loop making real-time decisions.
 
 Here’s the flow:
 
-1. Visit or refresh the app to trigger a request to enter agentgateway.
+1. Visit or refresh the app to trigger a request that enters agentgateway.
 
 {{< reuse-image src="img/blog/happy-v-day/UI.png"  >}}
 
-2. It is routed using `Gateway` and `HTTPRoute`.
-3. Before getting your requests matched, agentgateway triggers external auth checks.
+2. The request is routed using `Gateway` and `HTTPRoute`.
+3. Before the request is matched, agentgateway triggers an external authorization check.
 
 {{< reuse-image src="img/blog/happy-v-day/UI-pending-match.png"  >}}
 
@@ -55,17 +53,17 @@ Here’s the flow:
 5. You swipe:
    - 👉 Right = allow  
    - 👈 Left = deny  
-6. The decision is returned to the gateway, which approve or deny the match.
+6. The decision is returned to the gateway, which either approves or denies the match.
 
 {{< reuse-image src="img/blog/happy-v-day/Match-card.png"  >}}
 
-7. You are presented 5 cards total, representing external auth match check for 5 different resources.
+7. You are presented with five cards in total, representing external authorization checks for five different resources.
 
 Under the hood, this demonstrates a production-grade pattern with agentgateway:
 
-- External auth policy enforcement.
-- Dynamic request evaluation. 
-- Real-time traffic control.
+- External auth policy enforcement
+- Dynamic request evaluation
+- Real-time traffic control
 
 It’s a fun, interactive way to understand how agentgateway enforces external auth policy — made with ❤️ by the agentgateway community.
 
@@ -78,8 +76,8 @@ This Valentine’s Day, we invite you to:
 - Follow the [quick start guide](https://github.com/yuval-k/extauthz-match/tree/master?tab=readme-ov-file#quick-start---kubernetes-deployment-no-need-to-clone-repo) to deploy the demo.
 - Explore Gateway API resources.
 - Experiment with `AgentGatewayPolicy`.
-- Swipe the cards left and/or right.
+- Swipe the cards left and right.
 - Learn something new. 
-- Share your love of Kubernetes Gateway API and agentgateway in the open. Tag @agentgateway when you share on LinkedIn, we'll select one lucky winner on Feb 20th for the most fun post.
+- Share your love for Kubernetes Gateway API and agentgateway in the open. Tag @agentgateway when you share on LinkedIn — we’ll select one lucky winner on February 20th for the most fun post.
 
-Got questions? 💌 Join us on our [discord](https://discord.gg/y9efgEmppm), we'd love to help with your NGINX ingress migration or support you on your agentic AI journey.
+Got questions? Join us on our [discord](https://discord.gg/y9efgEmppm). We'd love to help with your NGINX ingress migration or support you on your agentic AI journey.
