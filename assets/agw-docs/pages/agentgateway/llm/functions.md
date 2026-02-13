@@ -55,7 +55,7 @@ Keep in mind the following behaviors when using function calling with other agen
 Each AI provider has a different way of handling function calling. For example, OpenAI might expect an array of `functions`, while Anthropic expects individual `tools`. Or, the response formats might differ. The capabilities of function calling also differ across providers, with some providing more support for particular cloud providers, others focusing on response time optimization, or others offering more fine-grained control over the response structure. For more information, consult your AI provider's documentation.
 
 * [Anthropic](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
-* [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/?view=foundry-classichow-to/function-calling)
+* [Azure OpenAI](https://azure.microsoft.com/en-us/products/ai-foundry/models/openai)
 * [Gemini](https://ai.google.dev/gemini-api/docs/function-calling)
 * [Mistral AI](https://docs.mistral.ai/capabilities/function_calling)
 * [OpenAI](https://developers.openai.com/api/docs/guides/function-calling)
