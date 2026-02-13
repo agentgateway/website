@@ -103,7 +103,7 @@
             class="flex flex-col items-end gap-1.5 max-w-[85%]"
           >
             <div
-              class="chatbot-message user bg-gradient-to-br from-violet-600 to-violet-700 text-white px-3 py-2 rounded-2xl rounded-br-sm text-sm leading-relaxed font-normal shadow-[0_2px_8px_rgba(124,58,237,0.2)] dark:shadow-[0_2px_8px_rgba(124,58,237,0.3)] break-words w-full"
+              class="chatbot-message user bg-gradient-to-br from-violet-600 to-violet-700 text-white px-4 py-2 rounded-2xl rounded-br-sm text-sm leading-relaxed font-normal shadow-[0_2px_8px_rgba(124,58,237,0.2)] dark:shadow-[0_2px_8px_rgba(124,58,237,0.3)] break-words"
               x-text="msg.content"
             ></div>
             <!-- Context page pills for this message -->
@@ -181,6 +181,47 @@
                   class="chatbot-error bg-red-50 dark:bg-red-600/10 border border-red-200 dark:border-red-600/30 text-red-600 px-4 py-3 rounded-lg text-[13px]"
                   x-text="msg.content"
                 ></div>
+              </div>
+
+              <!-- Feedback (thumb up / thumb down) -->
+              <div
+                x-show="!msg.isError && !msg.isStreaming && msg.content"
+                class="flex items-center gap-0.5 mt-1.5 -ml-1"
+              >
+                <!-- Thumb up -->
+                <button
+                  @click="submitFeedback(index, 'up')"
+                  :disabled="!!msg.feedback"
+                  :class="{
+                    'text-green-500 dark:text-green-400': msg.feedback === 'up',
+                    'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400': !msg.feedback,
+                    'text-gray-200 dark:text-gray-700': msg.feedback && msg.feedback !== 'up'
+                  }"
+                  class="p-1 bg-transparent border-none rounded transition-colors duration-150"
+                  :style="msg.feedback && msg.feedback !== 'up' ? 'cursor:default' : 'cursor:pointer'"
+                  aria-label="Thumbs up"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+                  </svg>
+                </button>
+                <!-- Thumb down -->
+                <button
+                  @click="submitFeedback(index, 'down')"
+                  :disabled="!!msg.feedback"
+                  :class="{
+                    'text-red-500 dark:text-red-400': msg.feedback === 'down',
+                    'text-gray-300 dark:text-gray-600 hover:text-gray-500 dark:hover:text-gray-400': !msg.feedback,
+                    'text-gray-200 dark:text-gray-700': msg.feedback && msg.feedback !== 'down'
+                  }"
+                  class="p-1 bg-transparent border-none rounded transition-colors duration-150"
+                  :style="msg.feedback && msg.feedback !== 'down' ? 'cursor:default' : 'cursor:pointer'"
+                  aria-label="Thumbs down"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+                  </svg>
+                </button>
               </div>
             </div>
           </div>
@@ -404,6 +445,65 @@
               </svg>
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback Comment Modal (thumb-down follow-up) -->
+    <div
+      x-cloak
+      x-show="showFeedbackModal"
+      x-transition:enter="transition ease-out duration-150"
+      x-transition:enter-start="opacity-0"
+      x-transition:enter-end="opacity-100"
+      x-transition:leave="transition ease-in duration-100"
+      x-transition:leave-start="opacity-100"
+      x-transition:leave-end="opacity-0"
+      @click="closeFeedbackModal()"
+      class="absolute inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/50 rounded-2xl"
+    >
+      <div
+        x-show="showFeedbackModal"
+        x-transition:enter="transition ease-out duration-150 delay-75"
+        x-transition:enter-start="opacity-0 scale-95 translate-y-2"
+        x-transition:enter-end="opacity-100 scale-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-100"
+        x-transition:leave-start="opacity-100 scale-100 translate-y-0"
+        x-transition:leave-end="opacity-0 scale-95 translate-y-2"
+        @click.stop
+        class="w-[min(400px,calc(100%-2rem))] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-xl p-5"
+      >
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-semibold text-gray-900 dark:text-gray-50 m-0">What could be improved?</h3>
+          <button
+            @click="closeFeedbackModal()"
+            class="flex items-center justify-center w-6 h-6 bg-transparent border-none rounded text-gray-400 cursor-pointer hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+            aria-label="Close"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <textarea
+          x-ref="feedbackInput"
+          x-model="feedbackComment"
+          @keydown.escape.stop="closeFeedbackModal()"
+          class="w-full box-border px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg text-sm text-gray-900 dark:text-gray-50 resize-none outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-500/20 transition-colors font-inherit"
+          rows="3"
+          placeholder="Tell us what went wrong (optional)..."
+        ></textarea>
+        <div class="flex items-center justify-end gap-2 mt-3">
+          <button
+            @click="closeFeedbackModal()"
+            class="px-3 py-1.5 bg-transparent border border-gray-200 dark:border-gray-600 rounded-lg text-sm text-gray-600 dark:text-gray-400 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors font-inherit"
+          >Skip</button>
+          <button
+            @click="submitFeedbackComment()"
+            :disabled="!feedbackComment.trim()"
+            class="px-3 py-1.5 bg-violet-600 border-none rounded-lg text-sm text-white cursor-pointer hover:bg-violet-500 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-inherit"
+          >Submit</button>
         </div>
       </div>
     </div>

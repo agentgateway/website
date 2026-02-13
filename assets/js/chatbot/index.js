@@ -60,6 +60,11 @@ document.addEventListener('alpine:init', () => {
     showContextMenu: false,
     showModelMenu: false,
 
+    // Feedback
+    showFeedbackModal: false,
+    feedbackModalIndex: -1,
+    feedbackComment: '',
+
     // @ Mention
     showMentionMenu: false,
     mentionFilter: '',
@@ -150,7 +155,8 @@ document.addEventListener('alpine:init', () => {
             markdown: msg.markdown || '',
             isError: msg.isError || false,
             isRateLimited: msg.isRateLimited || false,
-            contextPages: msg.contextPages || []
+            contextPages: msg.contextPages || [],
+            feedback: msg.feedback || null
           }))
         };
         sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -187,7 +193,8 @@ document.addEventListener('alpine:init', () => {
             isStreaming: false,
             isLoading: false,
             showAvatar: msg.role === 'assistant',
-            contextPages: msg.contextPages || []
+            contextPages: msg.contextPages || [],
+            feedback: msg.feedback || null
           }));
           this.isExpanded = true;
         }
@@ -289,6 +296,10 @@ document.addEventListener('alpine:init', () => {
     },
 
     close() {
+      if (this.showFeedbackModal) {
+        this.closeFeedbackModal();
+        return;
+      }
       this.isOpen = false;
     },
 
@@ -306,6 +317,9 @@ document.addEventListener('alpine:init', () => {
       this.contextPages = [];
       this.showContextMenu = false;
       this.showModelMenu = false;
+      this.showFeedbackModal = false;
+      this.feedbackModalIndex = -1;
+      this.feedbackComment = '';
       this.closeMentionMenu();
       this.sessionId = this.generateSessionId();
       this.thinkingAnimator.stop();
@@ -819,7 +833,8 @@ document.addEventListener('alpine:init', () => {
         isStreaming: true,
         showAvatar: true,
         isLoading: true,
-        isError: false
+        isError: false,
+        feedback: null
       });
 
       this.markdownRenderer.reset();
@@ -892,6 +907,88 @@ document.addEventListener('alpine:init', () => {
         this.currentEventSource = null;
         this.saveState();
       }
+    },
+
+    // ─── Feedback ─────────────────────────────────────────────
+
+    /**
+     * Submit a thumb-up or thumb-down for an assistant message.
+     * The vote is sent to the backend immediately (fire-and-forget).
+     * For thumb-down, a comment modal is shown afterwards; the vote
+     * has already been recorded even if the user dismisses the modal.
+     */
+    async submitFeedback(index, type) {
+      const msg = this.messages[index];
+      if (!msg || msg.role !== 'assistant' || msg.feedback) return;
+
+      // Record feedback in UI immediately
+      msg.feedback = type;
+      this.saveState();
+
+      // Find the user query that prompted this response
+      const userMsg = index > 0 ? this.messages[index - 1] : null;
+      const query = userMsg?.role === 'user' ? userMsg.content : '';
+
+      // Send vote to backend (fire-and-forget)
+      try {
+        await fetch(`${AGENT_ENDPOINT}/feedback`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: this.sessionId,
+            messageIndex: index,
+            type,
+            query,
+            response: msg.markdown || msg.content
+          })
+        });
+      } catch (e) {
+        console.warn('Chatbot: could not submit feedback', e);
+      }
+
+      // Show comment modal for thumb-down
+      if (type === 'down') {
+        this.feedbackModalIndex = index;
+        this.feedbackComment = '';
+        this.showFeedbackModal = true;
+        this.$nextTick(() => this.$refs.feedbackInput?.focus());
+      }
+    },
+
+    /**
+     * Submit the optional comment from the thumb-down modal.
+     * Only sends if the user typed something.
+     */
+    async submitFeedbackComment() {
+      const comment = this.feedbackComment.trim();
+      const index = this.feedbackModalIndex;
+      this.closeFeedbackModal();
+
+      if (!comment) return;
+
+      try {
+        await fetch(`${AGENT_ENDPOINT}/feedback/comment`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            sessionId: this.sessionId,
+            messageIndex: index,
+            comment
+          })
+        });
+      } catch (e) {
+        console.warn('Chatbot: could not submit feedback comment', e);
+      }
+    },
+
+    /**
+     * Close the feedback comment modal without sending anything extra.
+     * The thumb-down vote was already sent when the button was clicked.
+     */
+    closeFeedbackModal() {
+      this.showFeedbackModal = false;
+      this.feedbackModalIndex = -1;
+      this.feedbackComment = '';
     },
 
     // ─── Utilities ───────────────────────────────────────────
