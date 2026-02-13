@@ -22,6 +22,11 @@
 </script>
 
 <style>
+  /* Prevent horizontal scroll from off-screen mobile nav (left: 100% + w-screen) */
+  html, body {
+    overflow-x: hidden;
+  }
+
   .nav-container {
     display: none
   }
