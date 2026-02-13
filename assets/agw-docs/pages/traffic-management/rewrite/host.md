@@ -80,7 +80,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 1. Create an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} for the `httpbin.org` domain. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}
    metadata:
      name: httpbin
