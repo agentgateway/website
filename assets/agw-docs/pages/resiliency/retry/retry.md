@@ -188,10 +188,9 @@ Set up retries to the reviews app.
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
       spec:
         targetRefs:
-        - kind: Gateway
+        - kind: HTTPRoute
           group: gateway.networking.k8s.io
-          name: agentgateway-proxy
-          sectionName: http
+          name: retry
         traffic:
           timeouts:
             request: 20s
@@ -472,7 +471,6 @@ Simulate a failure for the reviews app so that you can verify that the request i
    <!-- TO DO: Remove step?-->
 3. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry 
    kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
