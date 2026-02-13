@@ -4,8 +4,11 @@ weight: 70
 icon: import_contacts
 ---
 
-Review reference docs for the API, Helm, version support,and more.
+Control traffic with external processing, request matching, redirects, and transformations.
 
 {{< cards >}}
+  {{< card link="extproc" title="External processing" >}}
+  {{< card link="match" title="Matching" >}}
+  {{< card link="redirect" title="Redirects" >}}
   {{< card link="transformations" title="Transformations" >}}
 {{< /cards >}}

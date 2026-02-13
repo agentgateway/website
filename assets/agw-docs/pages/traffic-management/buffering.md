@@ -57,7 +57,7 @@ Use an annotation to set a per-connection buffer limit on your Gateway, which ap
      gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -74,8 +74,8 @@ Use an annotation to set a per-connection buffer limit on your Gateway, which ap
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik -X POST http://$INGRESS_GW_ADDRESS:8080/anything \
-   -H "host: www.example.com:8080" \
+   curl -vik -X POST http://$INGRESS_GW_ADDRESS:80/anything \
+   -H "host: www.example.com:80" \
    -H "Content-Type: text/plain" \
    -d "{\"payload\": \"$(< /tmp/large_payload_2k.txt)\"}"
    ```
@@ -111,7 +111,7 @@ Use an annotation to set a per-connection buffer limit on your Gateway, which ap
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik -X POST http://$INGRESS_GW_ADDRESS:8080/anything \
+   curl -vik -X POST http://$INGRESS_GW_ADDRESS:80/anything \
       -H "host: www.example.com:8080" \
       -H "Content-Type: application/json" \
       -d "{\"payload\":  \"hello world\"}" 

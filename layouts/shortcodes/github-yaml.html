@@ -1,5 +1,7 @@
 {{- $url := .Get "url" -}}
-{{- with resources.GetRemote $url -}}
+{{- /* Use daily cache key to ensure content refreshes at least once per day */ -}}
+{{- $cacheKey := printf "%s-%s" $url (now.Format "2006-01-02") -}}
+{{- with resources.GetRemote $url (dict "key" $cacheKey) -}}
 ```yaml {base_url="{{ $url | path.Dir}}",filename="{{ $url | path.Base}}"}
 {{ .Content | replaceRE "^# yaml-language-server.*\n" "" | safe.HTML}}
 ```

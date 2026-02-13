@@ -96,7 +96,7 @@ Run agentgateway anywhere—bare metal, VMs, containers, or Kubernetes. Conforma
 
 ## Next steps
 
-{{< conditional-text include-if="local" >}}
+{{< conditional-text include-if="standalone" >}}
 {{< cards >}}
   {{< card link="quickstart" title="Quickstart" >}}
   {{< card link="about" title="About" >}}

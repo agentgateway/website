@@ -20,7 +20,7 @@ Agentgateway supports many of these experimental features, as shown in the follo
 | Client Certificate Validation for TLS terminating at the Gateway Listener | [GEP-91](https://gateway-api.sigs.k8s.io/geps/gep-91)     | ✅ Supported                             |
 | HTTP Auth                                                                 | [GEP-1494](https://gateway-api.sigs.k8s.io/geps/gep-1494) | ✅ Supported                             |
 | Session Persistence                                                       | [GEP-1619](https://gateway-api.sigs.k8s.io/geps/gep-1619) | ❌ Unsupported                           |
-| ListenerSets                                                              | [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713) | ✅ Supported                             |
+| ListenerSets                                                              | [GEP-1713](https://gateway-api.sigs.k8s.io/geps/gep-1713/) | ✅ Supported                             |
 | HTTPRoute Retries                                                         | [GEP-1731](https://gateway-api.sigs.k8s.io/geps/gep-1731) | ✅ Supported                             |
 | Gateway API Interaction with Multi-Cluster Services                       | [GEP-1748](https://gateway-api.sigs.k8s.io/geps/gep-1748) | ❌ Unsupported                           |
 | CORS Filter                                                               | [GEP-1767](https://gateway-api.sigs.k8s.io/geps/gep-1767) | ✅ Supported                             |

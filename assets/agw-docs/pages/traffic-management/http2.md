@@ -148,7 +148,7 @@ To demonstrate the HTTP/2 routing capabilities, deploy a sample nginx server and
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:8080/ -H "host: http2.example.com:8080" --http2-prior-knowledge 
+   curl -vik http://$INGRESS_GW_ADDRESS:80/ -H "host: http2.example.com:80" --http2-prior-knowledge 
    ```
 
    {{% /tab %}}
@@ -278,7 +278,7 @@ To demonstrate the HTTP/2 routing capabilities, deploy a sample nginx server and
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:8080/ -H "host: static.example:8080" --http2-prior-knowledge 
+   curl -vik http://$INGRESS_GW_ADDRESS:80/ -H "host: static.example:80" --http2-prior-knowledge 
    ```
 
    {{% /tab %}}

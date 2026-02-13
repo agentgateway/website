@@ -1,0 +1,204 @@
+# Generates Kubernetes API reference docs from kgateway-dev/kgateway.
+# Version-to-branch and output file mapping is read from scripts/versions.json.
+# Each entry can include apiFile and kgatewayRef; add new versions there without editing this workflow.
+name: Generate API reference docs for agentgateway
+
+on:
+  release:
+    types: [created]
+  workflow_dispatch:
+    inputs:
+      doc_version:
+        description: 'Doc version to generate (must exist in scripts/versions.json), e.g. 2.2.x, 2.3.x'
+        required: true
+        default: '2.2.x'
+
+jobs:
+  setup:
+    name: Setup and validate
+    runs-on: ubuntu-22.04
+    outputs:
+      ref: ${{ steps.kgateway_ref.outputs.ref }}
+      directory: ${{ steps.version_variables.outputs.directory }}
+      api_file: ${{ steps.version_variables.outputs.api_file }}
+      doc_version: ${{ steps.version_variables.outputs.doc_version }}
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v4
+        with:
+          path: website
+          fetch-depth: 1
+
+      - name: Resolve version from versions.json
+        id: version_variables
+        run: |
+          VERSIONS_FILE="website/scripts/versions.json"
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            doc_version="2.2.x"
+          else
+            doc_version="${{ inputs.doc_version }}"
+          fi
+          echo "doc_version=${doc_version}" >> $GITHUB_OUTPUT
+          ENTRY=$(jq -r --arg v "${doc_version}" '.[] | select(.version == $v) | @base64' "$VERSIONS_FILE" | head -1)
+          if [[ -z "$ENTRY" ]]; then
+            echo "Error: version '${doc_version}' not found in ${VERSIONS_FILE}. Valid versions:"
+            jq -r '.[].version' "$VERSIONS_FILE"
+            exit 1
+          fi
+          DECODED=$(echo "$ENTRY" | base64 -d)
+          directory=$(echo "$DECODED" | jq -r '.linkVersion')
+          api_file=$(echo "$DECODED" | jq -r '.apiFile')
+          kgateway_ref=$(echo "$DECODED" | jq -r '.kgatewayRef')
+          if [[ "$directory" == "null" || "$directory" == "" ]]; then
+            echo "Error: ${VERSIONS_FILE} entry for ${doc_version} missing .linkVersion"
+            exit 1
+          fi
+          if [[ "$api_file" == "null" || "$api_file" == "" ]]; then
+            echo "Error: ${VERSIONS_FILE} entry for ${doc_version} missing .apiFile"
+            exit 1
+          fi
+          if [[ "$kgateway_ref" == "null" || "$kgateway_ref" == "" ]]; then
+            echo "Error: ${VERSIONS_FILE} entry for ${doc_version} missing .kgatewayRef"
+            exit 1
+          fi
+          echo "directory=${directory}" >> $GITHUB_OUTPUT
+          echo "api_file=${api_file}" >> $GITHUB_OUTPUT
+          echo "kgateway_ref=${kgateway_ref}" >> $GITHUB_OUTPUT
+          echo "Using ${doc_version}: directory=${directory}, api_file=${api_file}, kgatewayRef=${kgateway_ref}"
+
+      - name: Verify kgateway branch exists
+        id: kgateway_ref
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          REF="${{ steps.version_variables.outputs.kgateway_ref }}"
+          echo "Checking kgateway ref refs/heads/${REF}..."
+          if ! git ls-remote --heads https://github.com/kgateway-dev/kgateway.git "refs/heads/${REF}" | grep -q "${REF}"; then
+            echo "Error: kgateway branch ${REF} not found. Update scripts/versions.json kgatewayRef for this version."
+            exit 1
+          fi
+          echo "ref=${REF}" >> $GITHUB_OUTPUT
+          echo "Using kgateway branch: ${REF}"
+
+  api-docs:
+    name: Generate API docs
+    runs-on: ubuntu-22.04
+    needs: setup
+    env:
+      GOTOOLCHAIN: auto
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: website
+          fetch-depth: 0
+
+      - name: Setup Go for docs generation
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.25.7
+          cache: false
+
+      - name: Checkout kgateway source repository
+        uses: actions/checkout@v4
+        with:
+          repository: kgateway-dev/kgateway
+          token: ${{ secrets.GITHUB_TOKEN }}
+          path: kgateway
+          ref: ${{ needs.setup.outputs.ref }}
+
+      - name: Generate agentgateway API docs from kgateway
+        run: |
+          pushd website || exit 1
+
+          # API types live in kgateway api/v1alpha1/agentgateway/
+          echo "Generating agentgateway API docs from kgateway api/v1alpha1/agentgateway/"
+          go run github.com/elastic/crd-ref-docs@latest \
+            --source-path="$PWD/../kgateway/api/v1alpha1/agentgateway/" \
+            --renderer=markdown \
+            --output-path ./ \
+            --max-depth=100 \
+            --config=scripts/crd-ref-docs-config.yaml
+
+          if [ ! -f "./out.md" ]; then
+            echo "Error: API docs generation failed - out.md not found"
+            exit 1
+          fi
+
+          # Output to assets/agw-docs/pages/reference/api/api-22x.md or api-23x.md
+          API_FILE="${{ needs.setup.outputs.api_file }}"
+          TARGET_DIR="assets/agw-docs/pages/reference/api"
+          mkdir -p "$TARGET_DIR"
+          TARGET_FILE="${TARGET_DIR}/${API_FILE}"
+          
+          echo "Processing API docs -> ${TARGET_FILE}"
+          
+          # Remove first 3 lines and fix common artifacts
+          tail -n +4 "./out.md" | \
+            sed 's/Required: {}/Required/g; s/Optional: {}/Optional/g; /^# API Reference$/,/^$/d' \
+            > "$TARGET_FILE"
+          
+          # Simplify complex struct types
+          sed -i.bak -E 's/_Underlying type:_ _\[?struct\{[^}]*\}[]\)]*(\([^)]+\))?_/_Underlying type:_ _struct_/g' "$TARGET_FILE"
+          rm -f "$TARGET_FILE.bak"
+          
+          rm "./out.md"
+          echo "API docs generated successfully at $TARGET_FILE"
+          
+          popd || exit 1
+
+      - name: Generate shared types documentation
+        run: |
+          API_FILE="${{ needs.setup.outputs.api_file }}"
+          TARGET_FILE="website/assets/agw-docs/pages/reference/api/${API_FILE}"
+          SHARED_DIR="kgateway/api/v1alpha1/shared"
+          AGENTGATEWAY_SOURCE_DIR="kgateway/api/v1alpha1/agentgateway"
+          if [ -f "$TARGET_FILE" ]; then
+            echo "Generating shared types documentation for ${API_FILE}..."
+            python3 website/scripts/generate-shared-types.py \
+              "$SHARED_DIR" \
+              "$TARGET_FILE" \
+              "$AGENTGATEWAY_SOURCE_DIR"
+          else
+            echo "API doc file not found - skipping shared types"
+          fi
+
+      - name: Generate Helm and metrics docs
+        run: |
+          DOC_VERSION="${{ needs.setup.outputs.doc_version }}" \
+          WEBSITE_DIR="website" \
+          KGATEWAY_DIR="kgateway" \
+          python3 website/scripts/generate-ref-docs.py
+
+      # Create PR: needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions)
+      # or a repo secret CREATE_PR_TOKEN (PAT with pull_requests: write).
+      - name: Create PR for website repo
+        uses: peter-evans/create-pull-request@v7
+        id: create-pr
+        with:
+          path: website
+          base: main
+          body: |
+            Generate reference documentation for agentgateway (${{ needs.setup.outputs.api_file }}).
+            
+            Source: kgateway-dev/kgateway at `${{ needs.setup.outputs.ref }}`.
+            Updates API reference (including shared types such as CEL expression), Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ needs.setup.outputs.directory }} version.
+            
+            This PR was created automatically by the reference-docs workflow.
+            
+            Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
+          branch: ref-docs-${{ needs.setup.outputs.doc_version }}
+          commit-message: 'docs: update API (incl. shared types), Helm, and metrics docs from kgateway ${{ needs.setup.outputs.ref }}'
+          committer: GitHub Action <action@github.com>
+          delete-branch: true
+          title: '[Automated] Update reference docs (${{ needs.setup.outputs.doc_version }}) from kgateway ${{ needs.setup.outputs.ref }}'
+          token: ${{ secrets.CREATE_PR_TOKEN || secrets.GITHUB_TOKEN }}
+
+      - name: Output PR URL
+        run: |
+          if [ -n "${{ steps.create-pr.outputs.pull-request-url }}" ]; then
+            echo "PR created: ${{ steps.create-pr.outputs.pull-request-url }}"
+          else
+            echo "No changes detected - PR not created"
+          fi

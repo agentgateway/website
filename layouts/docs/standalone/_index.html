@@ -1,0 +1,76 @@
+{{ define "main" }}
+  <style>
+    /* Hide sidebar on standalone landing page */
+    .sidebar-container,
+    aside.sidebar-container,
+    aside.hx-order-first,
+    .hx-order-first {
+      display: none !important;
+      visibility: hidden !important;
+    }
+    
+    /* Hide Hextra theme navbar on docs pages - we use custom nav.html instead */
+    .nav-container,
+    .hx-sticky.hx-top-0,
+    div.nav-container {
+      display: none !important;
+      visibility: hidden !important;
+    }
+    
+    /* Full width for landing page - override theme's flex layout */
+    .hx-mx-auto.hx-flex {
+      max-width: 100% !important;
+      justify-content: center !important;
+    }
+    
+    /* Hide TOC on landing page - must override xl:hx-block */
+    .toc-container,
+    .hextra-toc,
+    nav.hextra-toc,
+    nav[aria-label="table of contents"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
+    
+    /* Override Tailwind responsive classes */
+    @media (min-width: 1280px) {
+      .hextra-toc,
+      nav.hextra-toc,
+      nav[aria-label="table of contents"] {
+        display: none !important;
+      }
+    }
+    
+    /* Center text above cards on standalone landing page */
+    .hx-w-full .content {
+      text-align: center !important;
+    }
+    
+    .hx-w-full .content p {
+      text-align: center !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+    }
+  </style>
+  
+  {{ partial "nav.html" . }}
+  
+  <div class="w-full z-10 pt-10 lg:pt-20">
+    {{ partial "announcement.html" .}}
+  </div>
+  
+  <!-- Explicitly structure without sidebar wrapper -->
+  <div class="hx-mx-auto hx-flex hx-justify-center hx-px-6 md:hx-px-12" style="padding-top: 3rem; margin-top: 0;">
+    <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center">
+      <main class="hx-w-full hx-min-w-0 hx-max-w-6xl">
+        <div class="hx-text-center hx-mb-12">
+          <h1 class="hx-text-4xl hx-font-bold hx-mb-4">{{ if .Title }}{{ .Title }}{{ else }}Agentgateway (Standalone) Documentation{{ end }}</h1>
+        </div>
+        
+        <div class="content">
+          {{ .Content }}
+        </div>
+      </main>
+    </article>
+  </div>
+{{ end }}

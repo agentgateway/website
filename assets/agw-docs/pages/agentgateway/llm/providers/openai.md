@@ -59,8 +59,32 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
    | `policies.auth` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created.|
 
-5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
+5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the OpenAI `/v1/chat/completions` endpoint.
 
+   {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
+   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: openai
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - backendRefs:
+         - name: openai
+           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+           group: agentgateway.dev
+           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -84,12 +108,50 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
    
 
-6. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
+6. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
+   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+        },
+        {
+          "role": "user",
+          "content": "Compose a poem that explains the concept of recursion in programming."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+        },
+        {
+          "role": "user",
+          "content": "Compose a poem that explains the concept of recursion in programming."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
       "model": "",
@@ -104,11 +166,12 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
         }
       ]
     }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "",
       "messages": [
         {
           "role": "system",

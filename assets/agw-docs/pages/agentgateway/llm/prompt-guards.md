@@ -284,4 +284,4 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "
 
 ## Next
 
-[Enrich your prompts]({{< link-hextra path="/prompt-enrichment/">}}) with system prompts to improve LLM outputs.
+[Enrich your prompts]({{< link-hextra path="/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.

@@ -6,10 +6,10 @@
 {{- $parts := split $trimmed "/" -}}
 {{- $version := "" -}}
 
-{{- /* Extract version from path: /docs/kubernetes/latest/... or /docs/local/... or /docs/latest/... */ -}}
+{{- /* Extract version from path: /docs/kubernetes/latest/... or /docs/standalone/... or /docs/latest/... */ -}}
 {{- if and (ge (len $parts) 2) (eq (index $parts 0) "docs") -}}
-    {{- /* Check if we have a section (local/kubernetes) before the version */ -}}
-    {{- if and (ge (len $parts) 3) (or (eq (index $parts 1) "local") (eq (index $parts 1) "kubernetes")) -}}
+    {{- /* Check if we have a section (standalone/kubernetes) before the version */ -}}
+    {{- if and (ge (len $parts) 3) (or (eq (index $parts 1) "standalone") (eq (index $parts 1) "kubernetes")) -}}
         {{- /* If there's a version segment after the section, use it */ -}}
         {{- if ge (len $parts) 4 -}}
             {{- $version = index $parts 2 -}}

@@ -2,27 +2,25 @@ Redirect HTTP traffic to HTTPS.
 
 For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRequestRedirectFilter).
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up an HTTPS listener
 
 {{% reuse "agw-docs/snippets/listeners-https-create-cert.md" %}}
 
-5. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect. 
+6. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect. 
    ```yaml
    kubectl apply -f- <<EOF                                                          
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -55,7 +53,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
        gateway: https
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          sectionName: http
      hostnames: 
@@ -90,7 +88,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
        gateway: https
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          sectionName: https
      hostnames: 
@@ -106,7 +104,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:8080/status/200 -H "host: redirect.example"
+   curl -vik http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: redirect.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -117,14 +115,12 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< /tabs >}}
    
    Example output: 
-   ```
-   * Mark bundle as not supporting multiuse
+   ```console {hl_lines=[2,3,4,5]}
+   * Request completely sent off
    < HTTP/1.1 301 Moved Permanently
    HTTP/1.1 301 Moved Permanently
    < location: https://redirect.example:8080/status/200
    location: https://redirect.example:8080/status/200
-   < date: Mon, 06 Nov 2024 01:48:12 GMT
-   date: Mon, 06 Nov 2024 01:48:12 GMT
    < server: envoy
    server: envoy
    < content-length: 0
@@ -141,7 +137,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{% tab tabName="Port-forward for local testing" %}}
    1. Port-forward the gateway proxy on port 8443. 
       ```sh
-      kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:8443
+      kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:443
       ```
    
    2. Send an HTTPS request to the httpbin app. 
@@ -152,7 +148,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{< /tabs >}}
    
    Example output: 
-   ```
+   ```console {hl_lines=[2,3,4,5,6,7,8,16]}
    * ALPN: curl offers h2,http/1.1
    * (304) (OUT), TLS handshake, Client hello (1):
    * (304) (IN), TLS handshake, Server hello (2):
@@ -165,8 +161,6 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    * ALPN: server did not agree on a protocol. Uses default.
    * Server certificate:
    *  subject: CN=*; O=any domain
-   *  start date: Mar 14 13:37:22 2025 GMT
-   *  expire date: Mar 14 13:37:22 2026 GMT
    *  issuer: O=any domain; CN=*
    *  SSL certificate verify result: unable to get local issuer certificate (20), continuing anyway.
    * using HTTP/1.x
@@ -191,7 +185,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    kubectl delete httproute,secret -A -l gateway=https
    ```
 
-2. Remove the example_certs directory that stores your TLS credentials.
+2. Remove the `example_certs` directory that stores your TLS credentials.
    ```sh
    rm -rf example_certs
    ```
@@ -202,13 +196,13 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
-     name: http
+     name: agentgateway-proxy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

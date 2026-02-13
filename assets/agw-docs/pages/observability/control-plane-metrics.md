@@ -1,4 +1,4 @@
-By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment. For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/tree/main/devel/architecture/metrics.md).
+By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment. For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
 
 ## View control plane metrics {#control-plane-metrics}
 
@@ -41,4 +41,9 @@ Helpful terms:
 
 * Transform: The process of the control plane converting high-level resources or intermediate representations (IR) into lower-level representations into the structure that the XDS API expects for a snapshot.
 
-{{< reuse "agw-docs/snippets/latest/metrics-control-plane.md" >}}
+{{< version include-if="2.2.x" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-22x.md" >}}
+{{< /version >}}
+{{< version include-if="2.3.x" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-23x.md" >}}
+{{< /version >}}

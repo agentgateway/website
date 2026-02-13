@@ -4,7 +4,7 @@ Use Common Language Expressions (CEL) expressions to secure access to AI resourc
 
 Agentgateway proxies use CEL expressions to match requests or responses on specific parameters, such as a request header or source address. If the request matches the condition, it is allowed. Requests that do not match any of the conditions are denied. 
 
-For an overview of supported CEL expressions, see the [agentgateway docs](https://agentgateway.dev/docs/reference/cel/).
+For an overview of supported CEL expressions, see the [agentgateway docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/).
 
 ## Before you begin
 
@@ -49,7 +49,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
 
    ````sh
-   curl -vik "$INGRESS_GW_ADDRESS:8080/gemini" -H content-type:application/json  -d '{
+   curl -vik "$INGRESS_GW_ADDRESS:80/gemini" -H content-type:application/json  -d '{
      "model": "",
      "messages": [
       {"role": "user", "content": "Explain how AI works in simple terms."}
@@ -90,7 +90,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
 
    ```sh
-   curl -vik "$INGRESS_GW_ADDRESS:8080/gemini" \
+   curl -vik "$INGRESS_GW_ADDRESS:80/gemini" \
      -H "content-type: application/json" \
      -H "x-llm: gemini" -d '{
      "model": "",

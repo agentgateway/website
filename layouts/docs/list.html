@@ -1,7 +1,7 @@
 {{ define "main" }}
   {{- /* Check if this is the /docs/ index page */ -}}
   {{- $isDocsIndex := and (eq .Section "docs") (eq .RelPermalink "/docs/") -}}
-  
+
   {{- if $isDocsIndex -}}
     {{- /* Use the _index.html layout for docs landing page - hide sidebar */ -}}
     <style>
@@ -19,61 +19,61 @@
         margin: 0 !important;
         padding: 0 !important;
       }
-      
+
       /* Hide Hextra theme navbar on docs pages - we use custom nav.html instead */
       .nav-container,
       .hx-sticky.hx-top-0 {
         display: none !important;
       }
-      
+
       /* Full width for landing page - override theme's flex layout */
       .hx-mx-auto.hx-flex {
         max-width: 100% !important;
         justify-content: center !important;
       }
-      
+
       /* Hide TOC on landing page */
       .toc-container,
       aside[class*="toc"] {
         display: none !important;
         visibility: hidden !important;
       }
-      
+
       /* Center title on docs landing page */
       .hx-w-full .content h1 {
         text-align: center !important;
       }
-      
+
       /* Left-align description text */
       .hx-w-full .content p {
         text-align: left !important;
       }
-      
+
       /* Center cards on docs landing page - use text-align on wrapper, don't change display */
       .hx-w-full .content > div[class*="hx-block"] {
         text-align: center !important;
       }
-      
+
       /* Center the cards grid container */
       .hx-w-full .content .hextra-cards {
         margin-left: auto !important;
         margin-right: auto !important;
         width: fit-content !important;
       }
-      
+
       /* Left-align card subtitles */
       .hx-w-full .content .hextra-card p,
       .hx-w-full .content .hextra-card .hextra-card-subtitle {
         text-align: left !important;
       }
     </style>
-    
+
     {{ partial "nav.html" . }}
-    
-    <div class="w-full z-10 pt-10 lg:pt-20">
+
+    <div class="w-full z-10 pt-10 lg:pt-20" style="padding-top: 5rem;">
       {{ partial "announcement.html" .}}
     </div>
-    
+
     <!-- Explicitly structure without sidebar wrapper -->
     <div class="hx-mx-auto hx-flex hx-justify-center hx-px-6 md:hx-px-12" style="padding-top: 5rem; margin-top: 0;">
       <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center">
@@ -81,7 +81,7 @@
           <div class="hx-text-center hx-mb-12">
             <h1 class="hx-text-4xl hx-font-bold hx-mb-4">{{ .Title | default "Documentation" }}</h1>
           </div>
-          
+
           <div class="content">
             {{ .Content }}
           </div>
@@ -120,4 +120,5 @@
       </article>
     </div>
   {{- end -}}
+  {{ partial "chatbot.html" . }}
 {{ end }}

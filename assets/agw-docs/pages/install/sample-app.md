@@ -65,7 +65,7 @@ Create an API gateway with an HTTP listener by using the {{< reuse "agw-docs/sni
      gatewayClassName: {{< reuse "/agw-docs/snippets/agw-gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -141,7 +141,7 @@ Now that you have an app and a gateway proxy, you can create a route to access t
    kubectl get -n httpbin httproute/httpbin -o yaml
    ```
 
-   Example output: Note the status of the HTTPRoute resource. Check for `Accepted` and `ResolvedRefs` messages. The `parentRef` refers to the Gateway that that HTTPRoute is exposed on.
+   Example output: Note the status of the HTTPRoute resource. Check for `Accepted` and `ResolvedRefs` messages. The `parentRef` refers to the Gateway that HTTPRoute is exposed on.
 
    ```yaml
    status:
@@ -183,7 +183,7 @@ Now that your httpbin app is running and exposed on the gateway proxy, you can s
 2. Send a request to the httpbin app and verify that you get back a 200 HTTP response code. Note that it might take a few seconds for the load balancer service to become fully ready and accept traffic.
    
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
    
    Example output: 
