@@ -1,4 +1,4 @@
-By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment. For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/tree/main/devel/architecture/metrics.md).
+By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment. For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
 
 ## View control plane metrics {#control-plane-metrics}
 

@@ -11,7 +11,7 @@ The data plane proxy of your Gateway determines the templating language that you
 To learn more about how to use CEL, refer to the following resources:
 
 * [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
-* [Agentgateway reference docs](https://agentgateway.dev/docs/reference/cel/)
+* [Agentgateway reference docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/)
 
 ### Log CEL variables in agentgateway {#cel-log}
 

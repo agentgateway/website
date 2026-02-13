@@ -19,6 +19,7 @@ description: Integrate Agent Gateway with Auth0 for identity management
 Configure Agent Gateway to validate Auth0 JWTs:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

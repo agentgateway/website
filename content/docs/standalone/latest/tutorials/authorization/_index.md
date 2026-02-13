@@ -21,7 +21,7 @@ In this tutorial, you'll:
 ## Step 1: Install Agent Gateway
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+curl -sL https://agentgateway.dev/install | bash
 ```
 
 ## Step 2: Download the test keys
@@ -52,6 +52,7 @@ npx mcp-proxy --port 3001 -- npx @modelcontextprotocol/server-everything
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

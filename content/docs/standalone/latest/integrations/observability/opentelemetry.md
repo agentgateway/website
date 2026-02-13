@@ -11,6 +11,7 @@ Agent Gateway natively supports OpenTelemetry (OTLP) for distributed tracing and
 Enable OpenTelemetry tracing in your Agent Gateway configuration:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317
@@ -38,6 +39,7 @@ docker run -d --name jaeger \
 Configure Agent Gateway:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317

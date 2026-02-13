@@ -19,7 +19,7 @@ In this tutorial, you'll:
 ### Step 1: Install Agent Gateway
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+curl -sL https://agentgateway.dev/install | bash
 ```
 
 ### Step 2: Choose your LLM provider
@@ -35,6 +35,7 @@ export OPENAI_API_KEY=your-api-key
 #### Create the config
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -79,6 +80,7 @@ export ANTHROPIC_API_KEY=your-api-key
 #### Create the config
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -128,6 +130,7 @@ export GEMINI_API_KEY=your-api-key
 #### Create the config
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -172,6 +175,7 @@ export XAI_API_KEY=your-api-key
 #### Create the config
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -221,6 +225,7 @@ aws configure
 #### Create the config
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -264,6 +269,7 @@ export AZURE_CLIENT_SECRET=your-client-secret
 #### Create the config
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -314,6 +320,7 @@ ollama serve
 #### Create the config
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -383,6 +390,7 @@ export GEMINI_API_KEY=your-gemini-key
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

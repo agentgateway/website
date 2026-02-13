@@ -1,4 +1,4 @@
-Configure [Anthropic (Claude)](https://claude.ai/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 ## Before you begin
 
@@ -6,7 +6,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
 
 ## Set up access to Anthropic
 
-1. Get an API key to access the [Anthropic API](https://console.anthropic.com/). 
+1. Get an API key to access the [Anthropic API](https://platform.claude.com/). 
 
 2. Save the API key in an environment variable.
    

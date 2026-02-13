@@ -12,7 +12,7 @@ Agentgateway uses {{< gloss "Transformation" >}}transformation{{< /gloss >}} tem
 To learn more about how to use CEL, refer to the following resources:
 
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
-- [Agentgateway reference docs](https://agentgateway.dev/docs/reference/cel/)
+- [Agentgateway reference docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/)
 
 ### Header transformation
 
@@ -25,6 +25,7 @@ To provide a specific string value, add your string in single quotes `'` followe
 {{< tabs items="Route-level,Gateway-level" >}}
 {{% tab %}}
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -58,6 +59,7 @@ binds:
 {{% /tab %}}
 {{% tab %}}
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

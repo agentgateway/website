@@ -11,6 +11,7 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -119,6 +120,7 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
    
    ```yaml
    cat > config.yaml << EOF
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
    - port: 3000
      listeners:

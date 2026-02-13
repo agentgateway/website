@@ -77,7 +77,8 @@ routes:
 3. Optional: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
       
       ```yaml
-      binds:
+      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
       - port: 3000
         listeners:
         - routes:

@@ -50,6 +50,7 @@ sequenceDiagram
 2. Create a configuration for your agentgateway to connect to your MCP server. Make sure to expose the `Mcp-Session-Id` header in the CORS configuration for session persistence.
    ```yaml
    cat <<EOF > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
    - port: 3000
      listeners:

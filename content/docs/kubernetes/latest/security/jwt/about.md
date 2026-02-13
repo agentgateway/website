@@ -20,7 +20,7 @@ Keep in mind that JWT data is encoded but not encrypted. As such, consider using
 
 ### JWT structure {#structure}
 
-A JWT has three parts: header, payload, and signature. These three parts are base64 encoded, combined, and separated by the dot character (`.`) to form the final token. To review and decode JWTs, you can use a tool such as [the jwt.io debugger](https://jwt.io/).
+A JWT has three parts: header, payload, and signature. These three parts are base64 encoded, combined, and separated by the dot character (`.`) to form the final token. To review and decode JWTs, you can use a tool such as [the jwt.io debugger](https://www.jwt.io/).
 JWT parts are structured as follows:
 * A header with metadata, such as the signing algorithm.
 * A payload of user information or "claims" that provide identity information, such as the following common claims:

@@ -20,6 +20,7 @@ docker run -d --name jaeger \
 Configure Agent Gateway to send traces:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317

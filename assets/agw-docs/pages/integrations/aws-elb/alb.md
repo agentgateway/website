@@ -149,7 +149,7 @@ The AWS Load Balancer Controller only supports the creation of an ALB through an
    {{< /callout >}}
 
 6. Review the load balancer in the AWS EC2 dashboard. 
-   1. Go to the [AWS EC2 dashboard](https://console.aws.amazon.com/ec2). 
+   1. Go to the [AWS EC2 dashboard](https://console.aws.amazon.com/console/homeconsole/homeec2). 
    2. In the left navigation, go to **Load Balancing > Load Balancers**.
    3. Find and open the ALB that was created for you, with a name such as `k8s-{{< reuse "agw-docs/snippets/alb-elb-name.md" >}}-alb-<hash>`. Note that it might take a few minutes for the ALB to provision.
    4. On the **Resource map** tab, verify that the load balancer points to healthy EC2 targets in your cluster. For example, you can click on the target EC2 name to verify that the instance summary lists your cluster name.

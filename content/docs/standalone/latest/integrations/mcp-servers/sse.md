@@ -16,6 +16,7 @@ SSE transport is useful when:
 ## Configuration
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

@@ -11,6 +11,7 @@ Configure any LLM provider that provides OpenAI-compatible endpoints with agentg
 [xAI](https://x.ai/) provides OpenAI-compatible endpoints for their Grok models.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -36,6 +37,7 @@ binds:
 [Cohere](https://cohere.com/) provides an OpenAI-compatible endpoint for their models.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -63,6 +65,7 @@ binds:
 [Ollama](https://ollama.ai/) runs models locally and provides an OpenAI-compatible API.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -85,6 +88,7 @@ binds:
 [Together AI](https://together.ai/) provides access to open-source models via OpenAI-compatible endpoints.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -110,6 +114,7 @@ binds:
 [Groq](https://groq.com/) provides fast inference via OpenAI-compatible endpoints.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -137,6 +142,7 @@ binds:
 For any OpenAI-compatible provider, use this template:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

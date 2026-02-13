@@ -108,7 +108,8 @@ Build the Docker image from the source code. The example builds the image for an
    ```
 
    ```yaml
-   binds:
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
    - port: 3000
      listeners:
      - routes:

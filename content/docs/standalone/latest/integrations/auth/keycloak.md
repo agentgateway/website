@@ -18,6 +18,7 @@ description: Integrate Agent Gateway with Keycloak for identity management
 Configure Agent Gateway to validate Keycloak JWTs:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

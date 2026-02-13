@@ -28,6 +28,7 @@ agentgateway -f config.yaml
 Configure an stdio MCP backend in your `config.yaml`:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

@@ -33,6 +33,7 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
 1. Create a configuration file with your token-based local rate limiting settings. The following example uses the OpenAI provider, but you can adjust this example to use the provider of your choice. For an overview of supported providers, see [Providers](../providers).
    ```yaml
    cat <<EOF > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
    - port: 3000
      listeners:
@@ -130,6 +131,7 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
 3. Change your agentgateway rate limiting configuration to include the `tokenize: true` setting in your LLM provider. This setting allows agentgateway to estimate the number of tokens that are required for completion. 
    ```yaml
    cat <<EOF > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
    - port: 3000
      listeners:

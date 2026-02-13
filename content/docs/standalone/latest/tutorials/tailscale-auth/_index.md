@@ -51,6 +51,7 @@ Create a `config.yaml` file:
 **Linux configuration:**
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   accessLog:
     add:
@@ -95,6 +96,7 @@ EOF
 **macOS configuration:**
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   accessLog:
     add:

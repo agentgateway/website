@@ -21,7 +21,7 @@ In this tutorial, you'll:
 ## Step 1: Install Agent Gateway
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+curl -sL https://agentgateway.dev/install | bash
 ```
 
 ## Step 2: Download the example config
@@ -95,6 +95,7 @@ You'll see the response in the **Response** panel:
 ## What's in the config?
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000              # Listen on port 3000
   listeners:

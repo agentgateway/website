@@ -1,4 +1,4 @@
-Configure [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-services/openai/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Configure [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/?view=foundry-classic) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 ## Before you begin
 
@@ -64,7 +64,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    | `ai.provider.azureopenai` | Define the Azure OpenAI provider. |
    | `azureopenai.endpoint`     | The endpoint of the Azure OpenAI deployment that you created, such as `my-endpoint.cognitiveservices.azure.com`. |
    | `azureopenai.deployment`    | The name of the Azure OpenAI model deployment that you created earlier. For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/how-to/deploy-foundry-models?view=foundry).|
-   | `azureopenai.apiVersion`    | The version of the Azure OpenAI API to use. For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/ai-services/openai/reference#api-specs).|
+   | `azureopenai.apiVersion`    | The version of the Azure OpenAI API to use. For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/ai-foundry/?view=foundry-classicreference#api-specs).|
    | `policies.auth` | Configure the authentication token for Azure OpenAI API. The example refers to the secret that you previously created. The token is automatically sent in the `api-key` header.|
 
 6. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.

@@ -126,6 +126,7 @@ Use the agentgateway playground to send a request to the ADK agent that you set 
    1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
 
       ```yaml
+      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
       binds:
       - post: 3000
         listeners:

@@ -24,6 +24,7 @@ Policies that are attached at multiple levels are applied at all levels.
 Review the following example configuration that uses one of each policy type.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

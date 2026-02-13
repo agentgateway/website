@@ -49,6 +49,7 @@ Agentgateway's core configuration is made up of {{< gloss "Listener" >}}listener
 A minimal configuration that accepts HTTP traffic on port 3000 and forwards it to a backend running on `localhost:8000` looks like the following example.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

@@ -17,13 +17,13 @@ In this tutorial, you'll:
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) installed (for Jaeger)
+- [Docker](https://docs.docker.com/get-started/get-docker/) installed (for Jaeger)
 - [Node.js](https://nodejs.org/) installed (for MCP servers)
 
 ## Step 1: Install Agent Gateway
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+curl -sL https://agentgateway.dev/install | bash
 ```
 
 ## Step 2: Start Jaeger
@@ -53,6 +53,7 @@ Create a configuration file with tracing enabled:
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317
@@ -162,6 +163,7 @@ Key LLM metrics:
 To trace LLM requests, use a config like this:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317
@@ -199,6 +201,7 @@ INFO request ... llm.provider=openai llm.request.model=gpt-4o-mini llm.request.t
 ### Random Sampling (all traces - for development)
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317
@@ -210,6 +213,7 @@ config:
 Sample a percentage of traces to reduce overhead:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317
@@ -223,6 +227,7 @@ config:
 Enrich access logs with custom fields from JWT claims or MCP context:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   accessLog:
     add:

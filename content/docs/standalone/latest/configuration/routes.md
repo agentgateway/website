@@ -20,6 +20,7 @@ You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`t
 Example configuration:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 8080
   listeners:
@@ -43,6 +44,7 @@ Keep in mind that TCP routes do not support HTTP features such as path, header, 
 Example configuration:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 5432
   listeners:

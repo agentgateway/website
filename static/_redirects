@@ -3,7 +3,10 @@
 # instead of the full GitHub raw URL
 
 # Installation script shortcut
-/install https://agentgateway.dev/install
+/install https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/tools/get-agentgateway
+
+# JSON schema
+/schema/config https://raw.githubusercontent.com/agentgateway/agentgateway/main/schema/config.json
 
 # Redirect all paths under /examples to GitHub raw content
 /examples/* https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/:splat

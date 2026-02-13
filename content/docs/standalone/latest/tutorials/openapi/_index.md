@@ -23,7 +23,7 @@ In this tutorial, you'll:
 Download and install Agent Gateway:
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+curl -sL https://agentgateway.dev/install | bash
 ```
 
 ## Step 2: Create an OpenAPI specification
@@ -118,6 +118,7 @@ Create a configuration file that tells Agent Gateway to expose your OpenAPI spec
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

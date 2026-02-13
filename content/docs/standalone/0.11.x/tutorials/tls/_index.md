@@ -22,7 +22,7 @@ In this tutorial, you'll:
 ## Step 1: Install Agent Gateway
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash
+curl -sL https://agentgateway.dev/install | bash
 ```
 
 ## Step 2: Create a directory and generate certificates
@@ -56,6 +56,7 @@ Create a configuration file with HTTPS enabled:
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -134,6 +135,7 @@ This configuration:
 For production, use certificates from Let's Encrypt or another trusted CA:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 443
   listeners:
@@ -157,6 +159,7 @@ binds:
 You can run both HTTP and HTTPS, redirecting HTTP traffic to HTTPS:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 # HTTP listener - redirects to HTTPS
 - port: 80

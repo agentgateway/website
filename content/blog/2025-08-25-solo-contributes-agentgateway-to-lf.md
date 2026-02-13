@@ -5,7 +5,7 @@ publishDate: 2025-08-25T00:00:00-00:00
 author: Lin Sun
 ---
 
-Today at Open Source Summit Europe, the [Linux Foundation accepted **agentgateway**](https://www.linuxfoundation.org/press/linux-foundation-welcomes-agentgateway-project-to-accelerate-ai-agent-adoption-while-maintaining-security-observability-and-governance), a new open source AI-native project created by [Solo.io](http://Solo.io). [Agentgateway](https://agentgateway.dev/) provides drop-in security, observability, and governance for agent-to-agent and agent-to-tool communication and supports leading interoperable protocols, including [Agent2Agent (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/) and [Model Context Protocol (MCP)](https://modelcontextprotocol.io/introduction).
+Today at Open Source Summit Europe, the [Linux Foundation accepted **agentgateway**](https://www.linuxfoundation.org/press/linux-foundation-welcomes-agentgateway-project-to-accelerate-ai-agent-adoption-while-maintaining-security-observability-and-governance), a new open source AI-native project created by [Solo.io](http://Solo.io). [Agentgateway](https://agentgateway.dev/) provides drop-in security, observability, and governance for agent-to-agent and agent-to-tool communication and supports leading interoperable protocols, including [Agent2Agent (A2A)](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/) and [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro).
 
 ### **Building the Go-To AI Gateway**
 
