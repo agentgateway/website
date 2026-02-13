@@ -71,7 +71,7 @@ It’s a fun, interactive way to understand how agentgateway enforces external a
 
 ## Have Fun! ❤️
 
-This Valentine’s Day, we invite you to:
+If you have a Kubernetes cluster, this Valentine’s Day, we invite you to:
 
 - Follow the [quick start guide](https://github.com/yuval-k/extauthz-match/tree/master?tab=readme-ov-file#quick-start---kubernetes-deployment-no-need-to-clone-repo) to deploy the demo.
 - Explore Gateway API resources.
