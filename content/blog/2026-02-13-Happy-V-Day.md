@@ -5,6 +5,8 @@ author: "Lin Sun & Yuval Kohavi"
 description: "Let’s have some fun and share love while learning Kubernetes Gateway API and agentgateway with the ExtAuth Match game."
 ---
 
+{{< reuse-image src="img/blog/happy-v-day/V-card.png" width="800px" >}}
+
 Over the past few months, we’ve been blown away by the number of contributions and the growing interest in agentgateway. Not only did agentgateway make it onto the [CNCF Agentic AI Tech Radar](https://www.cncf.io/wp-content/uploads/2025/11/cncf_report_techradar_111025a.pdf) in the Trial category, but the Istio community has also [started integrating](https://github.com/istio/istio/pull/58619) more deeply with agentgateway after validating its performance and scalability benefits.
 
 With Valentine’s Day around the corner, we started thinking about the amazing contributors and users in our community. What better way to celebrate than by sending some love ❤️ — while having a little fun learning together?
