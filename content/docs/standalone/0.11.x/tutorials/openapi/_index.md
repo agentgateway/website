@@ -118,6 +118,7 @@ Create a configuration file that tells Agent Gateway to expose your OpenAPI spec
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

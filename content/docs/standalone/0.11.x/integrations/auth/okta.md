@@ -19,6 +19,7 @@ description: Integrate Agent Gateway with Okta for enterprise identity managemen
 Configure Agent Gateway to validate Okta JWTs:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

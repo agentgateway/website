@@ -95,6 +95,7 @@ You'll see the response in the **Response** panel:
 ## What's in the config?
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000              # Listen on port 3000
   listeners:

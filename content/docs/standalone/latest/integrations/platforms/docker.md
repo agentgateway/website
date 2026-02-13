@@ -20,6 +20,7 @@ export OPENAI_API_KEY=your-api-key
 
 # Create config for OpenAI
 cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -56,6 +57,7 @@ export ANTHROPIC_API_KEY=your-api-key
 
 # Create config for Anthropic
 cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -92,6 +94,7 @@ export XAI_API_KEY=your-api-key
 
 # Create config for xAI
 cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -136,6 +139,7 @@ ollama pull llama3.2
 
 # Create config for Ollama
 cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -176,6 +180,7 @@ export AZURE_ENDPOINT=your-resource.openai.azure.com
 
 # Create config for Azure OpenAI
 cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -223,6 +228,7 @@ export AWS_REGION=us-east-1
 
 # Create config for Amazon Bedrock
 cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -259,6 +265,7 @@ export GEMINI_API_KEY=your-api-key
 
 # Create config for Google Gemini
 cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

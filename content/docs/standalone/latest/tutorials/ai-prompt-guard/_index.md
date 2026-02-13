@@ -34,6 +34,7 @@ Create a `config.yaml` file with prompt guard policies:
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

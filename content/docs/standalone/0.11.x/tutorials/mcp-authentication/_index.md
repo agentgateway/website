@@ -52,6 +52,7 @@ Create a configuration file with MCP authentication enabled:
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -196,6 +197,7 @@ When an MCP client connects to a protected resource:
 For production with Keycloak:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

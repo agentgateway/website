@@ -128,7 +128,8 @@ You can optionally enrich the metrics that are captured by the agentgateway with
       1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
       
       ```yaml
-      binds:
+      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
       - post: 3000
         listeners:
         - routes:

@@ -25,6 +25,7 @@ To provide a specific string value, add your string in single quotes `'` followe
 {{< tabs items="Route-level,Gateway-level" >}}
 {{% tab %}}
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -58,6 +59,7 @@ binds:
 {{% /tab %}}
 {{% tab %}}
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

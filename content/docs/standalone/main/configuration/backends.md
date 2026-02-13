@@ -13,6 +13,7 @@ Agentgateway supports a variety of backends, such as simple hostnames and IP add
 The simplest form of backend is a static hostname or IP address. For example:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

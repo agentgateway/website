@@ -22,6 +22,7 @@ Agent Gateway supports multiple LLM providers, allowing you to route requests to
 To use an LLM provider with Agent Gateway, configure an `ai` backend:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
