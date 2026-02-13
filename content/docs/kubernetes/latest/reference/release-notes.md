@@ -72,7 +72,7 @@ Agentgateway ExtAuth policies now fail closed when the `backendRef` to the auth 
 
 ### AI prompt guard API alignment {#ai-prompt-guard}
 
-The AI prompt guard API is updated to align with other enums. The values changed from `MASK` to `Mask` and `REJECT` to `Reject`. These changes are enforced by CEL validation in the API. Update any existing prompt guard configurations accordingly.
+The [AI prompt guard API]({{< link-hextra path="/llm/prompt-guards/">}}) is updated to align with other enums. The values changed from `MASK` to `Mask` and `REJECT` to `Reject`. These changes are enforced by CEL validation in the API. Update any existing prompt guard configurations accordingly.
 
 ## 🌟 New features {#v22-new-features}
 
@@ -113,11 +113,21 @@ The AI prompt guard API is updated to align with other enums. The values changed
 * **CSRF**: Configure CSRF policies using the `traffic` field in `AgentgatewayPolicy`
 * **ExtAuth**: ExtAuth with HTTP support and configurable timeout
 
-### Observability and TLS
+### Observability
 
-**Tracing support**: Dynamically configure tracing for agentgateway using the `AgentgatewayPolicy` `frontend` field. See the [tracing setup guide](/docs/kubernetes/latest/observability/tracing/).
+Dynamically configure tracing for agentgateway using the `AgentgatewayPolicy` `frontend` field. See the [tracing setup guide]({{< link-hextra path="/observability/tracing/">}}).
 
-**Cipher suite configuration**: Configure cipher suites and min and max TLS version on the agentgateway proxy using the `spec.frontend.tls` fields in `AgentgatewayPolicy`.
+### mTLS
+
+**TLS encryption for the control plane**: Enable [server-side TLS encryption for the control plane]({{< link-hextra path="/install/tls/">}}).
+
+**mTLS for agentgateway proxy connections**: Support for mTLS listeners is now available, which includes configuring:
+
+- Cipher suites
+- Minimum and maximum TLS versions
+- Certificate validation
+
+To configure mTLS, use the `spec.frontend.tls` fields in `AgentgatewayPolicy`.
 
 ### Ingress to Gateway API migration {#v22-ingress-migration}
 
@@ -135,8 +145,6 @@ Version 2.2.0 includes an inference plugin regression due to [GitHub issue #1345
 
 ## 🔮 Future releases
 
-Note that version 2.2 of agentgateway on Kubernetes is the **last version to use the kgateway control plane**. The next release plans to:
-- Migrate the control plane to the `agentgateway` project.
-- Standardize the versioning for standalone agentgateway and agentgateway on Kubernetes.
+Note that version 2.2 of agentgateway on Kubernetes is the **last version to use the kgateway control plane**. The next release plans to standardize the versioning for standalone agentgateway and agentgateway on Kubernetes.
 
 As such, the documentation in the [agentgateway.dev](https://agentgateway.dev/docs/kubernetes/latest/) website is for version 2.2 and later. Version 2.1 documentation is no longer available, as it was previously on the [kgateway.dev](https://kgateway.dev/docs/) website.
