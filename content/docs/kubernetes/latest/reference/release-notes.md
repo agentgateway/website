@@ -68,7 +68,7 @@ Or use the Helm flag: `--set controller.extraEnv.KGW_ENABLE_EXPERIMENTAL_GATEWAY
 
 ### ExtAuth fail closed {#extauth-fail-closed}
 
-Agentgateway ExtAuth policies now fail closed when the `backendRef` to the auth server is invalid. Previously, invalid backend references might have allowed requests through. Update your ExtAuth policies to ensure backend references are valid before upgrading.
+Agentgateway ExtAuth policies now fail closed when the `backendRef` to the auth server is invalid. Previously, invalid backend references might have allowed requests through. Update your [ExtAuth policies]({{< link-hextra path="/security/byo-ext-auth-service/" >}}) to ensure backend references are valid before upgrading.
 
 ### AI prompt guard API alignment {#ai-prompt-guard}
 
@@ -92,15 +92,15 @@ The [AI prompt guard API]({{< link-hextra path="/llm/prompt-guards/">}}) is upda
 **Model aliases**: Added `modelAliases` support to `AgentgatewayPolicy` to allow friendly model name aliases for your AI backends (for example, "fast" can map to "gpt-3.5-turbo").
 
 **Provider support**:
-* Added support for Azure OpenAI backends
-* Added support for multiple AI backend route types including OpenAI Responses API, Anthropic token counting, and prompt caching configuration for Bedrock (enabling up to 90% cost reduction)
+* Added support for [Azure OpenAI]({{< link-hextra path="/llm/providers/azureopenai/" >}}) backends
+* Added support for [multiple AI backend route types]({{< link-hextra path="/llm/providers/multiple-endpoints/" >}}) including OpenAI Responses API, Anthropic token counting, and prompt caching configuration for Bedrock (enabling up to 90% cost reduction)
 * Path-based API format routing (completions, messages, models, passthrough) to enable a single backend to support multiple LLM API formats based on request URL
 
 **Canadian Social Insurance Number prompt guards**: Added support for detecting and guarding Canadian Social Insurance Numbers in prompts.
 
 ### MCP support
 
-**MCP authentication**: MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the MCP Authorization specification. Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
+**MCP authentication**: [MCP authentication]({{< link-hextra path="/mcp/auth/" >}}) enables OAuth 2.0 protection for MCP servers, helping to implement the MCP Authorization specification. Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
 
 **Stateful/stateless session routing**: You can now configure the MCP session behavior for requests to be `Stateful` or `Stateless` on the `AgentgatewayBackend`. Behavior defaults to `Stateful` if not set.
 
@@ -108,10 +108,10 @@ The [AI prompt guard API]({{< link-hextra path="/llm/prompt-guards/">}}) is upda
 
 ### Authentication and security
 
-* **Basic auth, API key auth, and JWT auth**: Agentgateway proxies now support basic auth, API key auth, and JWT auth
+* **Basic auth, API key auth, and JWT auth**: Agentgateway proxies now support basic auth, API key auth, and [JWT auth]({{< link-hextra path="/security/jwt/" >}}).
 * **Inline and remote JWKS support**: Define both inline and remote JWKS endpoints to automatically fetch and rotate keys from your identity provider on the `AgentgatewayPolicy`, including TLS options when connecting to a remote JWKS source
-* **CSRF**: Configure CSRF policies using the `traffic` field in `AgentgatewayPolicy`
-* **ExtAuth**: ExtAuth with HTTP support and configurable timeout
+* **CSRF**: Configure [CSRF policies]({{< link-hextra path="/security/csrf/" >}}) using the `traffic` field in `AgentgatewayPolicy`.
+* **ExtAuth**: ExtAuth with HTTP support and configurable timeout.
 
 ### Observability
 
@@ -131,7 +131,7 @@ To configure mTLS, use the `spec.frontend.tls` fields in `AgentgatewayPolicy`.
 
 ### Ingress to Gateway API migration {#v22-ingress-migration}
 
-If you are currently running [Ingress Nginx](https://kubernetes.github.io/ingress-nginx/) to support the Kubernetes Ingress API, the [ingress2gateway](https://github.com/kgateway-dev/ingress2gateway) tool can help you migrate to Gateway API by translating your existing Ingress manifests into Gateway, HTTPRoute, and implementation-specific policy resources. The tool can emit resources tailored for agentgateway. See the [agentgateway migration guide](/docs/kubernetes/latest/migrate/).
+If you are currently running [Ingress Nginx](https://kubernetes.github.io/ingress-nginx/) to support the Kubernetes Ingress API, the [ingress2gateway](https://github.com/kgateway-dev/ingress2gateway) tool can help you migrate to Gateway API by translating your existing Ingress manifests into Gateway, HTTPRoute, and implementation-specific policy resources. The tool can emit resources tailored for agentgateway. See the [ingress to agentgateway migration guide]({{< link-hextra path="/migrate/" >}}).
 
 ## 🗑️ Deprecated or removed features {#v22-removed-features}
 
@@ -147,4 +147,4 @@ Version 2.2.0 includes an inference plugin regression due to [GitHub issue #1345
 
 Note that version 2.2 of agentgateway on Kubernetes is the **last version to use the kgateway control plane**. The next release plans to standardize the versioning for standalone agentgateway and agentgateway on Kubernetes.
 
-As such, the documentation in the [agentgateway.dev](https://agentgateway.dev/docs/kubernetes/latest/) website is for version 2.2 and later. Version 2.1 documentation is no longer available, as it was previously on the [kgateway.dev](https://kgateway.dev/docs/) website.
+As such, the documentation in this [agentgateway.dev](https://agentgateway.dev/docs/kubernetes/latest/) website is for version 2.2 and later. Version 2.1 documentation is no longer available, as it was previously on the [kgateway.dev](https://kgateway.dev/docs/) website.
