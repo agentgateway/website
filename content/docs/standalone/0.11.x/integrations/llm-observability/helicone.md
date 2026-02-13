@@ -20,6 +20,7 @@ description: Integrate Agent Gateway with Helicone for LLM monitoring and cachin
 Helicone works as a proxy. Configure Agent Gateway to route through Helicone:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

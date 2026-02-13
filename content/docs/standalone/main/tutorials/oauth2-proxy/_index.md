@@ -81,6 +81,7 @@ Create a `config.yaml` file:
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   accessLog:
     add:

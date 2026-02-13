@@ -32,6 +32,7 @@ You can provide your API key directly in the agentgateway configuration. This op
 1. Configure the agentgateway proxy and enter your key in the `policies.backendAuth.key` field directly. 
    ```yaml
    cat <<EOF > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
    - port: 3000
      listeners:
@@ -60,6 +61,7 @@ You can provide your API key directly in the agentgateway configuration. This op
 2. Configure the agentgateway proxy to refer to that environment variable. Agentgateway automatically replaces the value of the variable with the value that is stored in the environment. 
    ```yaml
    cat <<'EOF' > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
    - port: 3000
      listeners:
@@ -90,6 +92,7 @@ You can store your API key in a file and load the file into agentgateway during 
 2. Configure the agentgateway proxy. 
    ```yaml
    cat <<EOF > config.yaml
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
    - port: 3000
      listeners:

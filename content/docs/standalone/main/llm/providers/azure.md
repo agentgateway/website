@@ -28,6 +28,7 @@ For more information, see the [Azure documentation](https://learn.microsoft.com/
 **Azure AI Foundry**: Set the host and path to the Foundry endpoint. For the credentials, you can use one of the authentication methods, such as user-assigned managed identity in the following example.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -64,6 +65,7 @@ binds:
 {{% tab %}}
 **Client secret authentication**
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -101,6 +103,7 @@ To use system-assigned managed identity:
 
 Leave the `managedIdentity` field empty so that the system assigns a managed identity to use.
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -136,6 +139,7 @@ To use user-assigned managed identity:
 
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -174,6 +178,7 @@ To use workload identity:
 * The federated identity must link the Azure identity with access to Azure AI services to the Kubernetes service account.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

@@ -94,6 +94,7 @@ spec:
 Then reference it in your Agent Gateway config:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 443
   listeners:

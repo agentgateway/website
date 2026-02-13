@@ -15,6 +15,7 @@ Before you can use Bedrock as an LLM provider, you must authenticate by using th
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

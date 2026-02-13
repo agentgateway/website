@@ -22,7 +22,8 @@ Connect to an MCP server via streamable HTTP.
 2. Create a configuration for your agentgateway to connect to your MCP server. 
    ```yaml
    cat <<EOF > config.yaml
-   binds:
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
    - port: 3000
      listeners:
      - routes:

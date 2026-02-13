@@ -59,6 +59,7 @@ service:
 Configure Agent Gateway:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
     otlpEndpoint: http://localhost:4317

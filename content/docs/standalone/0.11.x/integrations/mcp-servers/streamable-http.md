@@ -22,6 +22,7 @@ PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
 
 # Create config.yaml
 cat <<EOF > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -51,6 +52,7 @@ agentgateway -f config.yaml
 Configure a streamable HTTP MCP backend:
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

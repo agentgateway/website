@@ -55,6 +55,7 @@ Target-level policies are configured under `binds[].listeners[].routes[].backend
 Apply different authorization rules to different MCP servers.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -88,6 +89,7 @@ binds:
 Use different authentication methods for different targets.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -119,6 +121,7 @@ binds:
 Apply different prompt guards to different MCP servers.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -150,6 +153,7 @@ In this example:
 - `restricted-server` requires authentication (uses backend policy).
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

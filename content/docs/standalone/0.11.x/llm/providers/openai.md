@@ -11,6 +11,7 @@ Configure OpenAI as an LLM provider in agentgateway.
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
@@ -51,6 +52,7 @@ If no route is set, the route defaults to the `completions` endpoint.
 In the following example, the `/v1/chat/completions` route is fully processed by the LLM provider. The `/v1/models` route and any other route (`*`) are passed through to the LLM provider as-is.
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

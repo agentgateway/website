@@ -52,6 +52,7 @@ npx mcp-proxy --port 3001 -- npx @modelcontextprotocol/server-everything
 
 ```bash
 cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:

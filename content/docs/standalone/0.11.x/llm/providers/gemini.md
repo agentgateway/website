@@ -11,6 +11,7 @@ Configure Google Gemini as an LLM provider in agentgateway.
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
 - port: 3000
   listeners:
