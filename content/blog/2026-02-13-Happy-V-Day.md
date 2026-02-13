@@ -19,7 +19,7 @@ Agentgateway is a high-performance, lightweight gateway designed specifically fo
 
 There are many gateways available today, but most were designed before the rise of AI agents. As a result, they often struggle to support modern AI protocols without significant rearchitecture. To keep pace with rapid innovation in the age of AI, we needed a purpose-built solution designed specifically for AI-driven workloads. That’s how agentgateway was born.
 
-One of the biggest challenges for agentgateway in Kubernetes has been ensuring that the control plane evolves as quickly as the rapidly changing data plane. In the new agentgateway 2.2 release, we re-engineered the control plane and its APIs to enable much faster iteration. This allows us to maintain strong feature parity between standalone and Kubernetes deployments while significantly improving control plane performance.
+Since launching agentgateway last year, one of the biggest challenges in Kubernetes has been ensuring that the control plane evolves as quickly as the rapidly changing data plane. In the newly released agentgateway 2.2 version, we re-engineered the control plane and its APIs to enable much faster iteration. This allows us to maintain strong feature parity between standalone and Kubernetes deployments while significantly improving control plane performance.
 
 ---
 
@@ -42,12 +42,12 @@ Here’s the flow:
 
 1. Visit or refresh the app to trigger a request that enters agentgateway.
 
-{{< reuse-image src="img/blog/happy-v-day/UI.png"  >}}
+{{< reuse-image src="img/blog/happy-v-day/UI.png" width="700px" >}}
 
 2. The request is routed using `Gateway` and `HTTPRoute`.
 3. Before the request is matched, agentgateway triggers an external authorization check.
 
-{{< reuse-image src="img/blog/happy-v-day/UI-pending-match.png"  >}}
+{{< reuse-image src="img/blog/happy-v-day/UI-pending-match.png" width="700px" >}}
 
 4. The external auth match check appears in a playful swipe card on your phone.
 5. You swipe:
@@ -55,7 +55,7 @@ Here’s the flow:
    - 👈 Left = deny  
 6. The decision is returned to the gateway, which either approves or denies the match.
 
-{{< reuse-image src="img/blog/happy-v-day/Match-card.png"  >}}
+{{< reuse-image src="img/blog/happy-v-day/Match-card.png" width="400px" >}}
 
 7. You are presented with five cards in total, representing external authorization checks for five different resources.
 
