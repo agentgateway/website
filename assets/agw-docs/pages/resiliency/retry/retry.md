@@ -54,7 +54,7 @@ Set up retries to the sample app.
          kind: Service
          name: httpbin
          namespace: httpbin
-         port: 9080
+         port: 8000
        retry:
          attempts: 3
          backoff: 1s      
@@ -197,7 +197,7 @@ Set up retries to the sample app.
             kind: Service
             name: httpbin
             namespace: httpbin
-            port: 9080 
+            port: 8000 
       EOF
       ```
    2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the HTTPRoute rule. 
@@ -358,7 +358,7 @@ Set up retries to the sample app.
             kind: Service
             name: httpbin
             namespace: httpbin
-            port: 9080 
+            port: 8000 
       EOF
       ```
    2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.  
@@ -545,7 +545,7 @@ Simulate a failure for the sample app so that you can verify that the request is
 1. Send the sample app to sleep, to simulate an app failure.
 
    ```sh
-   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} patch deploy httpbin-v1 --patch '{"spec":{"template":{"spec":{"containers":[{"name":"httpbin","command":["sleep","20h"]}]}}}}'
+   kubectl -n httpbin patch deploy httpbin --patch '{"spec":{"template":{"spec":{"containers":[{"name":"httpbin","command":["sleep","20h"]}]}}}}'
    ```
 
 2. Send another request to the sample app. This time, the request fails.
