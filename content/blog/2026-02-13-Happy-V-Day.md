@@ -73,10 +73,10 @@ It’s a fun, interactive way to understand how agentgateway enforces external a
 
 If you have a Kubernetes cluster, this Valentine’s Day, we invite you to:
 
-- Follow the [quick start guide](https://github.com/yuval-k/extauthz-match/tree/master?tab=readme-ov-file#quick-start---kubernetes-deployment-no-need-to-clone-repo) to deploy the demo.
+- Follow the [quick start guide](https://github.com/yuval-k/extauthz-match/tree/master?tab=readme-ov-file#quick-start---kubernetes-deployment-no-need-to-clone-repo) to deploy the game.
 - Explore Gateway API resources.
 - Experiment with `AgentGatewayPolicy`.
-- Swipe the cards left and right.
+- Visit/refresh the app from your browser following the [instruction](#how-the-extauth-match-game-works) to trigger a request to agentgateway. Swipe the cards left or right on your phone to approve or deny.
 - Learn something new. 
 - Share your love for Kubernetes Gateway API and agentgateway in the open. Tag @agentgateway when you share on LinkedIn — we’ll select one lucky winner on February 20th for the most fun post.
 
