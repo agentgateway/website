@@ -66,6 +66,8 @@
   }
 
   .mobile-nav {
+    position: fixed;
+    top: 0;
     left: 100%;
     transition: left 400ms ease-out;
     height: 100vh;
@@ -348,7 +350,7 @@
   </nav>
 
   <div class="mobile-nav-overflow-wrapper block lg:hidden">
-  <div class="mobile-nav absolute bg-primary-bg w-screen z-40">
+  <div class="mobile-nav bg-primary-bg w-screen z-40">
     <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/blog">Blog</a>
@@ -498,7 +500,7 @@
   </nav>
 
   <div class="mobile-nav-overflow-wrapper block lg:hidden">
-  <div class="mobile-nav absolute bg-primary-bg w-screen z-40">
+  <div class="mobile-nav bg-primary-bg w-screen z-40">
     <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
       <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/standalone/latest/">Standalone</a>
