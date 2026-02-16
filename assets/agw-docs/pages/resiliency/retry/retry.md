@@ -433,7 +433,7 @@ Set up retries to the sample app.
 4. Verify that the request was not retried.
 
    ```sh
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=20 | grep -E 'retry.example' 
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=1 | grep -E 'retry.example' 
    ```
   
    The most recent log shows the successful request.
@@ -447,25 +447,17 @@ Set up retries to the sample app.
 
 Simulate a failure for the sample app so that you can verify that the request is retried.
 
-1. Make the sample app stop serving traffic while keeping its pods and endpoints so the gateway can attempt connections and retry. Patch the deployment so the container runs `sleep` instead of the app.
-
-   ```sh
-   kubectl -n httpbin patch deploy httpbin --patch '{"spec":{"template":{"spec":{"containers":[{"name":"httpbin","command":["sleep","20h"]}]}}}}'
-   ```
-
-   The pods stay up and remain as service endpoints, but they no longer accept HTTP. The gateway will try to connect, get connection refused (or similar), wait for the backoff, then retry, up to the configured number of attempts.
-
-2. Send another request to the sample app. This time, the request fails after retries.
+1. Send another request to the sample app. This time, the request fails after retries.
    
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: retry.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/500 -H "host: retry.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/headers -H "host: retry.example"
+   curl -vi localhost:8080/status/500 -H "host: retry.example"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -473,18 +465,19 @@ Simulate a failure for the sample app so that you can verify that the request is
    Example output:
 
    ```
-   HTTP/1.1 503 Service Unavailable
-   ...
-   upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
+   < HTTP/1.1 500 Internal Server Error
    ```
 
-3. Verify that the request was retried. Check the gateway proxy logs for multiple attempts or retry-related messages, such as retry count or connection failures.
+2. Verify that the request was retried. Look for `retry.attempt=3` in the output.
 
    ```sh
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=20 | grep -E 'retry.example' 
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=1 | grep -E 'retry.example' 
    ```
 
-   Look for evidence of multiple attempts or retries for the same request. For example, look for several log lines for the same path, or a message indicating retries.
+   Output:
+   ```
+   info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/retry endpoint=10.244.0.21:8080 src.addr=127.0.0.1:59284 http.method=GET http.host=retry.example http.path=/status/500 http.version=HTTP/1.1 http.status=500 protocol=http retry.attempt=3 duration=1ms
+   ```
 
 
 
@@ -493,19 +486,13 @@ Simulate a failure for the sample app so that you can verify that the request is
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Revert the httpbin deployment to remove the `sleep` command and so the app serves again.
-
-   ```sh
-   kubectl -n httpbin patch deploy httpbin --type=json -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
-   ```
-
-2. Delete the HTTPRoute resource. If you used the HTTPRoute (Kubernetes GW API) tab, the route is in the `httpbin` namespace; otherwise delete from both namespaces as needed.
+1. Delete the HTTPRoute resource. If you used the HTTPRoute (Kubernetes GW API) tab, the route is in the `httpbin` namespace; otherwise delete from both namespaces as needed.
    
    ```sh
    kubectl delete httproute retry -n httpbin
    kubectl delete httproute retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
-If you used the AgentgatewayPolicy or Gateway listener tab, delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+2. If you used the AgentgatewayPolicy or Gateway listener tab, delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
    ```sh
    kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
