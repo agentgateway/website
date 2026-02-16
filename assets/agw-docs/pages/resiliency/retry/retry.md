@@ -465,7 +465,9 @@ Simulate a failure for the sample app so that you can verify that the request is
    Example output:
 
    ```
+   ...
    < HTTP/1.1 500 Internal Server Error
+   ...
    ```
 
 2. Verify that the request was retried. Look for `retry.attempt=3` in the output.
