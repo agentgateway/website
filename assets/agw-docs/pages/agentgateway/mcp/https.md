@@ -4,7 +4,9 @@ In this guide, you configure your agentgateway proxy to connect to the remote [G
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+The example HTTPRoute in the following steps uses a CORS policy, which requires the experimental channel of the Kubernetes Gateway API.
+
+{{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
 
 ## Connect to the MCP server
 
@@ -35,6 +37,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
                sni: api.githubcopilot.com       
    EOF
    ```
+
 3. Create an HTTPRoute that routes traffic to the GitHub MCP server along the `/mcp-github` path. To properly connect to the MCP server, you must allow traffic from `http://localhost:8080`, which is the domain and port you expose your agentgateway proxy on later. If you expose the proxy under a different domain, make sure to add this domain to the allowed origins. Because the MCP server also requires a GitHub access token to connect, you set the `Authorization` header to the token that you created earlier. 
    ```yaml
    kubectl apply -f- <<EOF
@@ -72,9 +75,6 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   
-   
-
    
 ## Verify the connection {#verify}
 
@@ -120,5 +120,4 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} github-mcp-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete HTTPRoute mcp-github -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
-
 ```
