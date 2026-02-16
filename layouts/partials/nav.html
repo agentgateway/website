@@ -22,6 +22,15 @@
 </script>
 
 <style>
+  /* Prevent horizontal scroll from off-screen mobile nav (left: 100% + w-screen).
+     Apply overflow only to the mobile-nav wrapper, NOT html/body - overflow on
+     body creates a containing block that breaks position:fixed for mobile-nav-bar. */
+  .mobile-nav-overflow-wrapper {
+    overflow-x: hidden;
+    width: 100%;
+    position: relative;
+  }
+
   .nav-container {
     display: none
   }
@@ -57,6 +66,8 @@
   }
 
   .mobile-nav {
+    position: fixed;
+    top: 0;
     left: 100%;
     transition: left 400ms ease-out;
     height: 100vh;
@@ -82,6 +93,21 @@
 
   .visible.hamburger {
     display: block;
+  }
+
+  /* Hamburger/x in mobile-nav-bar (docs) - ensure visibility toggle works.
+     These are siblings of .mobile-nav, not inside it. */
+  .mobile-nav-bar .hamburger.visible {
+    display: block !important;
+  }
+  .mobile-nav-bar .x.visible {
+    display: block !important;
+  }
+  .mobile-nav-bar .hamburger:not(.visible) {
+    display: none !important;
+  }
+  .mobile-nav-bar .x:not(.visible) {
+    display: none !important;
   }
 
   .dropdown {
@@ -212,6 +238,32 @@
     background-color: rgb(31, 41, 55) !important; /* gray-800 */
     color: rgb(255, 255, 255) !important;
   }
+
+  /* Mobile nav bar: force background so it stays light in light mode */
+  .mobile-nav-bar {
+    background-color: white !important;
+  }
+  .dark .mobile-nav-bar {
+    background-color: rgb(17, 24, 39) !important; /* gray-900 */
+  }
+  /* Mobile nav bar: constrain logo size and ensure correct light/dark logo */
+  .mobile-nav-bar a[href="/"] img {
+    height: 32px !important;
+    width: auto !important;
+    max-width: 160px !important;
+  }
+  .mobile-nav-bar a[href="/"] img.dark\:hidden {
+    display: block !important;
+  }
+  .mobile-nav-bar a[href="/"] img.hidden.dark\:block {
+    display: none !important;
+  }
+  .dark .mobile-nav-bar a[href="/"] img.dark\:hidden {
+    display: none !important;
+  }
+  .dark .mobile-nav-bar a[href="/"] img.hidden.dark\:block {
+    display: block !important;
+  }
 </style>
 
 {{- /* Determine if we're on the landing page */ -}}
@@ -297,7 +349,8 @@
     </div>
   </nav>
 
-  <div class="mobile-nav absolute bg-primary-bg w-screen z-40">
+  <div class="mobile-nav-overflow-wrapper block lg:hidden">
+  <div class="mobile-nav bg-primary-bg w-screen z-40">
     <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/blog">Blog</a>
@@ -307,6 +360,7 @@
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://github.com/agentgateway/agentgateway">GitHub</a>
       {{ partial "community-meeting-compact.html" . }}
     </div>
+  </div>
   </div>
 {{- else -}}
   {{- /* Docs pages navbar with dropdown */ -}}
@@ -426,8 +480,8 @@
     </div>
   </nav>
 
-  <nav class="fixed top-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-50">
-    <div class="py-6 pr-4 flex justify-between items-center">
+  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-gray-900">
+    <div class="py-3 pr-4 flex justify-between items-center">
       {{- $page := . -}}
       {{- if $page -}}
         <a href="/">{{ partial "utils/logo.html" (dict "Page" $page "attributes" "height=\"50\"" ) }}</a>
@@ -445,7 +499,8 @@
     </div>
   </nav>
 
-  <div class="mobile-nav absolute bg-primary-bg w-screen z-40">
+  <div class="mobile-nav-overflow-wrapper block lg:hidden">
+  <div class="mobile-nav bg-primary-bg w-screen z-40">
     <div class="h-full flex flex-col px-4 items-stretch justify-end w-screen">
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
       <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/standalone/latest/">Standalone</a>
@@ -456,5 +511,6 @@
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/quickstart/">Get Started</a>
       <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://github.com/agentgateway/agentgateway">GitHub</a>
     </div>
+  </div>
   </div>
 {{- end -}}
