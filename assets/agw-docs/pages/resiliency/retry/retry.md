@@ -35,14 +35,12 @@ Set up retries to the sample app.
    kind: HTTPRoute
    metadata:
      name: retry
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     namespace: httpbin
    spec:
      hostnames:
      - retry.example
      parentRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: agentgateway-proxy
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches: 
@@ -50,14 +48,14 @@ Set up retries to the sample app.
            type: PathPrefix
            value: /
        backendRefs:
-       - group: ""
-         kind: Service
-         name: httpbin
-         namespace: httpbin
+       - name: httpbin
          port: 8000
        retry:
          attempts: 3
-         backoff: 1s      
+         backoff: 1s
+         codes: 
+         - 500
+         - 503
    EOF
    ```
 
@@ -68,11 +66,12 @@ Set up retries to the sample app.
    | `hostnames` | The hostnames to match the request, such as `retry.example`. |
    | `parentRefs` | The gateway to which the request is sent. In this example, you select the `agentgateway-proxy` gateway that you set up before you began. |
    | `rules` | The rules to apply to requests. |
-   | `matches` | The path to match the request. In this example, you match any requests to the sample app with `/`. |
-   | `path` | The path to match the request. In this example, you match the request to the `/httpbin/1` path. |
+   | `matches` | The path to match the request. In this example, you match any requests to the sample app with path prefix `/`. |
+   | `path` | The path to match the request. In this example, you match all paths with the prefix `/`. |
    | `backendRefs` | The backend service to which the request is sent. In this example, you select the `httpbin` service that you set up in the previous step. |
    | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
    | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
+   | `retry.codes` | The HTTP status codes for which the gateway retries the request. In this example, the request is retried if the backend returns 500 or 503. The gateway also retries on connection failures (for example, connection refused). |
 
 2. Verify that the gateway proxy is configured to retry the request.
 
@@ -93,11 +92,11 @@ Set up retries to the sample app.
       Example `jq` command:
       
       ```sh
-      jq '.listeners."agentgateway-system/agentgateway-proxy.http".routes | to_entries[] | select(.value.name == "retry" and (.value.inlinePolicies[]? | has("retry"))) | .value'
+      curl -s http://localhost:15000/config_dump | jq '.listeners."agentgateway-system/agentgateway-proxy.http".routes | to_entries[] | select(.value.name == "retry" and (.value.inlinePolicies[]? | has("retry"))) | .value'
       ```
 
       Example output:
-      ```json {linenos=table,hl_lines=[57,58,59,60,61],filename="http://localhost:15000/config_dump"}
+      ```json {linenos=table,hl_lines=[36,37,38,39,40,41,42,43,44],filename="http://localhost:15000/config_dump"}
       ...
       "listeners": {
         "agentgateway-system/agentgateway-proxy.http": {
@@ -108,12 +107,12 @@ Set up retries to the sample app.
           "hostname": "",
           "protocol": "HTTP",
           "routes": {
-            "httpbin/httpbin.0.0.http": {
-              "key": "httpbin/httpbin.0.0.http",
-              "name": "httpbin",
+            "httpbin/retry.0.0.http": {
+              "key": "httpbin/retry.0.0.http",
+              "name": "retry",
               "namespace": "httpbin",
               "hostnames": [
-                "www.example.com"
+                "retry.example"
               ],
               "matches": [
                 {
@@ -130,43 +129,23 @@ Set up retries to the sample app.
                     "port": 8000
                   }
                 }
-              ]
-            },
-            "agentgateway-system/retry.0.0.http": {
-              "key": "agentgateway-system/retry.0.0.http",
-              "name": "retry",
-              "namespace": "agentgateway-system",
-              "hostnames": [
-                "retry.example"
-              ],
-              "matches": [
-                {
-                  "path": {
-                    "pathPrefix": "/"
-                  }
-                }
-              ],
-              "backends": [
-                {
-                  "weight": 0,
-                  "invalid": null
-                }
               ],
               "inlinePolicies": [
                 {
                   "retry": {
                     "attempts": 3,
                     "backoff": "1s",
-                    "codes": []
+                    "codes": [
+                      "500 Internal Server Error",
+                      "503 Service Unavailable",
+                    ]
                   }
                 }
               ]
             }
-          },
-          "tcpRoutes": {}
+          }
         }
       }
-      ...
       ```
    
    {{% /tab %}}
@@ -178,14 +157,12 @@ Set up retries to the sample app.
       kind: HTTPRoute
       metadata:
         name: retry
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        namespace: httpbin
       spec:
         hostnames:
         - retry.example
         parentRefs:
-        - group: gateway.networking.k8s.io
-          kind: Gateway
-          name: agentgateway-proxy
+        - name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -193,9 +170,7 @@ Set up retries to the sample app.
               type: PathPrefix
               value: /
           backendRefs:
-          - group: ""
-            kind: Service
-            name: httpbin
+          - name: httpbin
             namespace: httpbin
             port: 8000 
       EOF
@@ -217,7 +192,9 @@ Set up retries to the sample app.
           retry:
             attempts: 3
             backoff: 1s
-            codes: [500, 503]
+            codes: 
+            - 500
+            - 503
       EOF
       ```
       
@@ -250,82 +227,41 @@ Set up retries to the sample app.
       Example `jq` command:
       
       ```sh
-      jq '.listeners."agentgateway-system/agentgateway-proxy.http".routes | to_entries[] | select(.value.name == "retry" and (.value.inlinePolicies[]? | has("retry"))) | .value'
+      curl -s http://localhost:15000/config_dump | jq '[.. | objects | select(has("policy") and .policy.traffic.retry?.attempts == 3 and .name.name? == "retry")] | .[0]'
       ```
 
       Example output:
-      ```json {linenos=table,hl_lines=[60,61,62,63,64],filename="http://localhost:15000/config_dump"}
+      ```json {linenos=table,hl_lines=[19,20,21,22,23,24,25,26],filename="http://localhost:15000/config_dump"}
       ...
-      "listeners": {
-        "agentgateway-system/agentgateway-proxy.http": {
-          "key": "agentgateway-system/agentgateway-proxy.http",
-          "gatewayName": "agentgateway-proxy",
-          "gatewayNamespace": "agentgateway-system",
-          "listenerName": "http",
-          "hostname": "",
-          "protocol": "HTTP",
-          "routes": {
-            "httpbin/httpbin.0.0.http": {
-              "key": "httpbin/httpbin.0.0.http",
-              "name": "httpbin",
-              "namespace": "httpbin",
-              "hostnames": [
-                "www.example.com"
-              ],
-              "matches": [
-                {
-                  "path": {
-                    "pathPrefix": "/"
-                  }
-                }
-              ],
-              "backends": [
-                {
-                  "weight": 1,
-                  "service": {
-                    "name": "httpbin/httpbin.httpbin.svc.cluster.local",
-                    "port": 8000
-                  }
-                }
-              ]
-            },
-            "agentgateway-system/retry.0.0.http": {
-              "key": "agentgateway-system/retry.0.0.http",
+      "policies": [
+        {
+          "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/retry",
+          "name": {
+            "kind": "AgentgatewayPolicy",
+            "name": "retry",
+            "namespace": "agentgateway-system"
+          },
+          "target": {
+            "route": {
               "name": "retry",
-              "namespace": "agentgateway-system",
-              "hostnames": [
-                "retry.example"
-              ],
-              "matches": [
-                {
-                  "path": {
-                    "pathPrefix": "/"
-                  }
-                }
-              ],
-              "backends": [
-                {
-                  "weight": 1,
-                  "service": {
-                    "name": "agentgateway-system/agentgateway-proxy.agentgateway-system.svc.cluster.local",
-                    "port": 9080
-                  }
-                }
-              ],
-              "inlinePolicies": [
-                {
-                  "retry": {
-                    "attempts": 3,
-                    "backoff": "1s",
-                    "codes": []
-                  }
-                }
-              ]
+              "namespace": "agentgateway-system"
             }
           },
-          "tcpRoutes": {}
+          "policy": {
+            "traffic": {
+              "phase": "route",
+              "retry": {
+                "attempts": 3,
+                "backoff": "1s",
+                "codes": [
+                  "500 Internal Server Error",
+                  "503 Service Unavailable"
+                ]
+              }
+            }
+          }
         }
-      }
+      ],
       ...
       ```
 
@@ -339,14 +275,12 @@ Set up retries to the sample app.
       kind: HTTPRoute
       metadata:
         name: retry
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        namespace: httpbin
       spec:
         hostnames:
         - retry.example
         parentRefs:
-        - group: gateway.networking.k8s.io
-          kind: Gateway
-          name: agentgateway-proxy
+        - name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -354,9 +288,7 @@ Set up retries to the sample app.
               type: PathPrefix
               value: /
           backendRefs:
-          - group: ""
-            kind: Service
-            name: httpbin
+          - name: httpbin
             namespace: httpbin
             port: 8000 
       EOF
@@ -379,7 +311,9 @@ Set up retries to the sample app.
           retry:
             attempts: 3
             backoff: 1s
-            codes: [500, 503]
+            codes: 
+            - 500
+            - 503
       EOF
       ```
       
@@ -409,89 +343,46 @@ Set up retries to the sample app.
       Example `jq` command:
       
       ```sh
-      jq '.listeners."agentgateway-system/agentgateway-proxy.http".routes | to_entries[] | select(.value.name == "retry" and (.value.inlinePolicies[]? | has("retry"))) | .value'
+      curl -s http://localhost:15000/config_dump | jq '[.. | objects | select(has("policy") and .policy.traffic.retry?.attempts == 3 and .name.name? == "retry")] | .[0]'
       ```
 
       Example output:
-      ```json {linenos=table,hl_lines=[60,61,62,63,64],filename="http://localhost:15000/config_dump"}
+      ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,27],filename="http://localhost:15000/config_dump"}
       ...
-      "listeners": {
-        "agentgateway-system/agentgateway-proxy.http": {
-          "key": "agentgateway-system/agentgateway-proxy.http",
-          "gatewayName": "agentgateway-proxy",
-          "gatewayNamespace": "agentgateway-system",
-          "listenerName": "http",
-          "hostname": "",
-          "protocol": "HTTP",
-          "routes": {
-            "httpbin/httpbin.0.0.http": {
-              "key": "httpbin/httpbin.0.0.http",
-              "name": "httpbin",
-              "namespace": "httpbin",
-              "hostnames": [
-                "www.example.com"
-              ],
-              "matches": [
-                {
-                  "path": {
-                    "pathPrefix": "/"
-                  }
-                }
-              ],
-              "backends": [
-                {
-                  "weight": 1,
-                  "service": {
-                    "name": "httpbin/httpbin.httpbin.svc.cluster.local",
-                    "port": 8000
-                  }
-                }
-              ]
-            },
-            "agentgateway-system/retry.0.0.http": {
-              "key": "agentgateway-system/retry.0.0.http",
-              "name": "retry",
-              "namespace": "agentgateway-system",
-              "hostnames": [
-                "retry.example"
-              ],
-              "matches": [
-                {
-                  "path": {
-                    "pathPrefix": "/"
-                  }
-                }
-              ],
-              "backends": [
-                {
-                  "weight": 1,
-                  "service": {
-                    "name": "agentgateway-system/agentgateway-proxy.agentgateway-system.svc.cluster.local",
-                    "port": 9080
-                  }
-                }
-              ],
-              "inlinePolicies": [
-                {
-                  "retry": {
-                    "attempts": 3,
-                    "backoff": "1s",
-                    "codes": []
-                  }
-                }
+      "policies": [
+      {
+        "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/agentgateway-proxy/http",
+        "name": {
+          "kind": "AgentgatewayPolicy",
+          "name": "retry",
+          "namespace": "agentgateway-system"
+        },
+        "target": {
+          "gateway": {
+            "gatewayName": "agentgateway-proxy",
+            "gatewayNamespace": "agentgateway-system",
+            "listenerName": "http"
+          }
+        },
+        "policy": {
+          "traffic": {
+            "phase": "route",
+            "retry": {
+              "attempts": 3,
+              "backoff": "1s",
+              "codes": [
+                "500 Internal Server Error",
+                "503 Service Unavailable"
               ]
             }
-          },
-          "tcpRoutes": {}
+          }
         }
-      }
+      }]
       ...
       ```
 
    {{% /tab %}}
    {{< /tabs >}}
-
-END OF TABS
 
 
 3. Send a request to the sample app. Verify that the request succeeds.
@@ -499,12 +390,12 @@ END OF TABS
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/httpbin/1 -H "host: retry.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: retry.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/httpbin/1 -H "host: retry.example"
+   curl -vi localhost:8080/headers -H "host: retry.example"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -512,53 +403,69 @@ END OF TABS
    Example output for a successful response:
 
    ```
+   < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
-   ...
+   < access-control-allow-credentials: true
+   access-control-allow-credentials: true
+   < access-control-allow-origin: *
+   access-control-allow-origin: *
+   < content-type: application/json; encoding=utf-8
+   content-type: application/json; encoding=utf-8
+   < content-length: 146
+   content-length: 146
+   < 
 
+   {
+     "headers": {
+       "Accept": [
+         "*/*"
+       ],
+       "Host": [
+         "retry.example"
+       ],
+       "User-Agent": [
+         "curl/8.7.1"
+      ]
+     }
+   }
    ```
 
 4. Verify that the request was not retried.
-   <!--
+
    ```sh
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy | tail -1 | jq
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=20 | grep -E 'retry.example' 
    ```
   
-   Example output: Note that the `response_flags` field is `-`, which means that the request was not retried.
+   The most recent log shows the successful request.
 
-   ```json
-   {
-     "method": "GET",
-     "path": "/httpbin/1",
-     "response_code": 200,
-     "response_flags": "-",
-     "start_time": "2025-06-16T17:24:04.268Z",
-     "upstream_cluster": "kube_default_httpbin_9080",
-     "upstream_host": "10.244.0.24:9080"
-   }
+   ```txt
+     info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/retry endpoint=10.244.0.13:8080 src.addr=127.0.0.1:34300 http.method=GET http.host=retry.example http.path=/headers http.version=HTTP/1.1 http.status=200 protocol=http duration=0ms
    ```
-   -->
+
 
 ## Step 3: Trigger a retry {#trigger-retry}
 
 Simulate a failure for the sample app so that you can verify that the request is retried.
 
-1. Send the sample app to sleep, to simulate an app failure.
+1. Make the sample app stop serving traffic while keeping its pods and endpoints so the gateway can attempt connections and retry. Patch the deployment so the container runs `sleep` instead of the app.
 
    ```sh
    kubectl -n httpbin patch deploy httpbin --patch '{"spec":{"template":{"spec":{"containers":[{"name":"httpbin","command":["sleep","20h"]}]}}}}'
    ```
 
-2. Send another request to the sample app. This time, the request fails.
+   The pods stay up and remain as service endpoints, but they no longer accept HTTP. The gateway will try to connect, get connection refused (or similar), wait for the backoff, then retry, up to the configured number of attempts.
+
+2. Send another request to the sample app. This time, the request fails after retries.
    
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/httpbin/1 -H "host: retry.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: retry.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/httpbin/1 -H "host: retry.example"
+   curl -vi localhost:8080/headers -H "host: retry.example"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -571,42 +478,34 @@ Simulate a failure for the sample app so that you can verify that the request is
    upstream connect error or disconnect/reset before headers. retried and the latest reset reason: remote connection failure, transport failure reason: delayed connect error: Connection refused
    ```
 
-3. Verify that the request was retried.
-   <!--
+3. Verify that the request was retried. Check the gateway proxy logs for multiple attempts or retry-related messages, such as retry count or connection failures.
+
    ```sh
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=http | tail -1 | jq
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=20 | grep -E 'retry.example' 
    ```
 
-   Example output: Note that the `response_flags` field now has values as follows:
+   You should see evidence of multiple attempts or retries for the same request. For example, look for several log lines for the same path, or a message indicating retries.
 
-   * `URX` means `UpstreamRetryLimitExceeded`, which verifies that the request was retried.
-   * `UF` means `UpstreamOverflow`, which verifies that the request failed.
-   
-   ```json
-   {
-     "method": "GET",
-     "path": "/httpbin/1",
-     "response_code": 503,
-     "response_flags": "URX,UF",
-     "start_time": "2025-06-16T17:26:07.287Z",
-     "upstream_cluster": "kube_default_httpbin_9080",
-     "upstream_host": "10.244.0.25:9080"
-   }
-   ```
-   -->
+
+
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Delete the HTTPRoute resource.
-   
+1. Revert the httpbin deployment to remove the `sleep` command and so the app serves again.
+
    ```sh
-   kubectl delete httproute retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   kubectl delete httproute retry -n httpbin
+   kubectl -n httpbin patch deploy httpbin --type=json -p='[{"op": "remove", "path": "/spec/template/spec/containers/0/command"}]'
    ```
 
-2. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+2. Delete the HTTPRoute resource. If you used the HTTPRoute (Kubernetes GW API) tab, the route is in the `httpbin` namespace; otherwise delete from both namespaces as needed.
+   
+   ```sh
+   kubectl delete httproute retry -n httpbin
+   kubectl delete httproute retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+If you used the AgentgatewayPolicy or Gateway listener tab, delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
    ```sh
    kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
