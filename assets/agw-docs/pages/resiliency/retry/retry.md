@@ -484,7 +484,7 @@ Simulate a failure for the sample app so that you can verify that the request is
    kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=20 | grep -E 'retry.example' 
    ```
 
-   You should see evidence of multiple attempts or retries for the same request. For example, look for several log lines for the same path, or a message indicating retries.
+   Look for evidence of multiple attempts or retries for the same request. For example, look for several log lines for the same path, or a message indicating retries.
 
 
 
