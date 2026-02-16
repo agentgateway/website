@@ -110,6 +110,6 @@ volumes:
 ## Learn more
 
 {{< cards >}}
-  {{< card link="prometheus" title="Prometheus" subtitle="Configure Prometheus metrics" >}}
-  {{< card link="opentelemetry" title="OpenTelemetry" subtitle="Distributed tracing setup" >}}
+  {{< card link="../../observability/prometheus" title="Prometheus" subtitle="Configure Prometheus metrics" >}}
+  {{< card link="../../observability/opentelemetry" title="OpenTelemetry" subtitle="Distributed tracing setup" >}}
 {{< /cards >}}

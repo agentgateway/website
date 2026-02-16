@@ -29,13 +29,13 @@ Review the following table for a list of supported LLM providers.
 
 | Provider                  | Chat Completions | Streaming |
 |---------------------------|:---------------:|:---------:|
-| [OpenAI]({{< link-hextra path="/llm/providers/openai">}})          | ✅           | ✅         |
-| [Vertex AI]({{< link-hextra path="/llm/providers/vertex">}})      | ✅           | ✅         |
-| [Gemini]({{< link-hextra path="/llm/providers/gemini">}})          | ✅           | ✅         |
-| [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock">}}) | ✅           | ✅         |
-| [Anthropic]({{< link-hextra path="/llm/providers/anthropic">}})    | ✅           | ✅         |
-| [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible">}})    | ✅           | ✅         |
-| [Azue OpenAI]({{< link-hextra path="/llm/providers/azureopenai">}})    | ✅           | ✅         |
+| [OpenAI]({{< link-hextra path="../providers/openai">}})          | ✅           | ✅         |
+| [Vertex AI]({{< link-hextra path="../providers/vertex">}})      | ✅           | ✅         |
+| [Gemini]({{< link-hextra path="../providers/gemini">}})          | ✅           | ✅         |
+| [Amazon Bedrock]({{< link-hextra path="../providers/bedrock">}}) | ✅           | ✅         |
+| [Anthropic]({{< link-hextra path="../providers/anthropic">}})    | ✅           | ✅         |
+| [OpenAI compatible]({{< link-hextra path="../providers/openai-compatible">}})    | ✅           | ✅         |
+| [Azure OpenAI]({{< link-hextra path="../providers/azureopenai">}})    | ✅           | ✅         |
 
 * Chat Completions: support for the `/v1/chat/completions` API.
 * Streaming: support for streaming (`"stream": true` in the completions request)

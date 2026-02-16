@@ -268,7 +268,7 @@ routes:
 
 ## TCP routes
 
-For routes configured with [TCP listeners](../../listeners/tcp), you can configure the following matching conditions.
+For routes configured with [TCP listeners](../../routes/#tcp-routes), you can configure the following matching conditions.
 
 ### Hostname matching
 
