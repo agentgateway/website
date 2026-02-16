@@ -4,15 +4,9 @@
    kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml
    ```
 
-2. Deploy the CRDs for the agentgateway control plane by using Helm.
-   ```sh
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
-   --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version v{{< reuse "agw-docs/versions/patch-dev.md" >}} \
-   --set controller.image.pullPolicy=Always
-   ```
-
-3. **Important**: To use experimental Gateway API features in kgateway, you must enable the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable in your kgateway controller deployment. This setting defaults to `false` and must be explicitly enabled. For more information, see the [Get started guide]({{< link-hextra path="/quickstart/">}}) to install kgateway.
+2. [Upgrade]({{< link-hextra path="/operations/upgrade/" >}}) or [install]({{< link-hextra path="/install/" >}}) {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable. This setting defaults to `false` and must be explicitly enabled to use Gateway API experimental features, such as CORS.
+   
+   Example command:
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
