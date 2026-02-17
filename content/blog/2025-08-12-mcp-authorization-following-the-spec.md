@@ -74,7 +74,7 @@ Then you can add the new `mcpAuthentication` configuration to implement this beh
 
 There are a couple important points to make here. When we use this configuration, we automatically get a spec-compliant implementation for MCP Auth. But, depending on the OAuth provider we use, it may need some massaging. For example, Keycloak has some challenges with Dynamic Client Registration (ie, registration endpoint, CORS, etc). `agentgateway` can automatically wrap this and expose it in a way that's spec compliant. That's the point of the `provider: keycloak {}` configuration. 
 
-Out of the box `provider: auth0 {}` is also supported. If your provider correctly supports all of the OAuth RFC / specs, then you can ommit `provider: ` completely. 
+Out of the box `provider: auth0 {}` is also supported. If your provider correctly supports all of the OAuth RFC / specs, then you can omit `provider: ` completely. 
 
 Take a look at this demo video to see how it all works:
 

@@ -97,7 +97,7 @@ Set up a route on your listener.
    * Rule Name: An optional name for the matching rules of the route.
    * Target Listener: Select the listener that you previously created. The Route Type is automatically determined based on the listener protocol.
    * Hostnames: Add the hostnames that the route serves traffic on.
-   * Path Match Type: Select the type of path matching that you want to use, such as `Path Prefix`, and then configure its details. For more options, see the [Request matching]({{< link-hextra path="/traffic-management/matching" >}}) guide.
+   * Path Match Type: Select the type of path matching that you want to use, such as `Path Prefix`, and then configure its details. For more options, see the [Request matching]({{< link-hextra path="/configuration/traffic-management/matching/" >}}) guide.
    * Headers: Optional header configuration, such as the authorization header.
    * HTTP Methods: Optional HTTP methods to allow, such as `GET, POST, PUT`.
    * Query Parameters: Optional query parameters to allow, such as `version=v1`.
@@ -113,7 +113,7 @@ Set up a route on your listener.
    curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
    ```
 
-2. Review the configuration file. The example sets up an HTTP listener on port 3000 that matches on all hosts. For more options, see the [Request matching]({{< link-hextra path="/traffic-management/matching" >}}) guide.
+2. Review the configuration file. The example sets up an HTTP listener on port 3000 that matches on all hosts. For more options, see the [Request matching]({{< link-hextra path="/configuration/traffic-management/matching/" >}}) guide.
    
    ```yaml
    cat config.yaml
@@ -171,8 +171,8 @@ Update the configuration file to remove the route.
 After you create routes, you might want to apply policies to them.
 
 {{< cards >}}
-  {{< card link="/docs/traffic-management/matching" title="Request matching" >}}
-  {{< card link="/docs/traffic-management/" title="Traffic management" >}}
-  {{< card link="/docs/resiliency/" title="Resiliency" >}}
-  {{< card link="/docs/configuration/security/" title="Security" >}}
+  {{< card link="../traffic-management/matching/" title="Request matching" >}}
+  {{< card link="../traffic-management/" title="Traffic management" >}}
+  {{< card link="../resiliency/" title="Resiliency" >}}
+  {{< card link="../security/" title="Security" >}}
 {{< /cards >}}

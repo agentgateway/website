@@ -189,7 +189,7 @@ spec:
 EOF
 ```
 
-### Pod and node affiinity {#pod-scheduling}
+### Pod and node affinity {#pod-scheduling}
 
 Configure node selectors, affinities, tolerations, and topology spread constraints to control where agentgateway proxy pods are scheduled.
 

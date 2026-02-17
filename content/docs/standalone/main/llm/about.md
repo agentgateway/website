@@ -20,12 +20,12 @@ Don't see your provider? You might still be able to use it with agentgateway! Ma
 
 | Provider                  | Chat Completions | Streaming |
 |---------------------------|:---------------:|:---------:|
-| [OpenAI](providers/openai)          | ✅           | ✅         |
-| [Vertex AI](providers/vertex)       | ✅           | ✅         |
-| [Gemini](providers/gemini)          | ✅           | ✅         |
-| [Amazon Bedrock](providers/bedrock) | ✅           | ✅         |
-| [Anthropic](providers/anthropic)    | ✅           | ✅         |
-| [OpenAI compatible](providers/openai-compatible)    | ✅           | ✅         |
+| [OpenAI](../providers/openai)          | ✅           | ✅         |
+| [Vertex AI](../providers/vertex)       | ✅           | ✅         |
+| [Gemini](../providers/gemini)          | ✅           | ✅         |
+| [Amazon Bedrock](../providers/bedrock) | ✅           | ✅         |
+| [Anthropic](../providers/anthropic)    | ✅           | ✅         |
+| [OpenAI compatible](../providers/openai-compatible)    | ✅           | ✅         |
 
 * Chat Completions: support for the `/v1/chat/completions` API.
 * Streaming: support for streaming (`"stream": true`) in the completions request)

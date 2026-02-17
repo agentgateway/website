@@ -105,6 +105,6 @@ spec:
 ## Learn more
 
 {{< cards >}}
-  {{< card link="grafana" title="Grafana" subtitle="Visualize metrics with Grafana" >}}
-  {{< card link="/docs/tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step observability setup" >}}
+  {{< card link="../../observability/grafana" title="Grafana" subtitle="Visualize metrics with Grafana" >}}
+  {{< card link="../../../tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step observability setup" >}}
 {{< /cards >}}

@@ -15,8 +15,8 @@ Each example walks through the following steps:
 Pick the example that matches your use case, or work through them all to get familiar with the migration workflow.
 
 {{< cards >}}
-  {{< card link="basic" title="Basic Ingress" >}}
-  {{< card link="session-affinity" title="Session Affinity" >}}
+  {{< card link="basic" title="Basic Ingress" >}}<!--
+  {{< card link="session-affinity" title="Session Affinity" >}}-->
   {{< card link="rate-limiting" title="Rate Limiting" >}}
   {{< card link="cors" title="CORS" >}}
   {{< card link="ssl-redirect" title="SSL Redirect" >}}

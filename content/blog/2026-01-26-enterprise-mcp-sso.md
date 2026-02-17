@@ -149,7 +149,7 @@ At this point you can use your own OAuth client_ids.
 
 ### Caveat for MCP Inspector
 
-MCP Inspector very closely follows the MCP Authorization spec, and unforunately for Entra ID this casues some issues. 
+MCP Inspector very closely follows the MCP Authorization spec, and unfortunately for Entra ID this causes some issues. 
 
 For example, if we take a look at our OAuth Protected Resource Metadata (PRM):
 
@@ -188,7 +188,7 @@ resource=https://ceposta-agw.ngrok.io/entra/mcp
 scope=api%3A%2F%2Fb92d6e60-86ff-4359-b971-04404fe079ec%2Fmcp_access
 ```
 
-The problem is, this is not the correct resource in Entra. The correct resouce in entra is our `api://b92d6e60-86ff-4359-b971-04404fe079ec` client_id. If we configure the Agentgateway to return this in our PRM, then that breaks the rest of the OAuth flow, since that's not the real URL for our MCP resource.
+The problem is, this is not the correct resource in Entra. The correct resource in entra is our `api://b92d6e60-86ff-4359-b971-04404fe079ec` client_id. If we configure the Agentgateway to return this in our PRM, then that breaks the rest of the OAuth flow, since that's not the real URL for our MCP resource.
 
 The fix here is to:
 
@@ -198,7 +198,7 @@ The fix here is to:
 
 {{< reuse-image src="img/blog/entra-sso/correct-app-url.png"  >}}
 
-If you are doing this in production, you'd want to user a verified custom domain. Alternatively, in your custom MCP clients, make a way to override the `resource` parameter when calling tha authorize endpoint and use the real client_id like this example:
+If you are doing this in production, you'd want to user a verified custom domain. Alternatively, in your custom MCP clients, make a way to override the `resource` parameter when calling the authorize endpoint and use the real client_id like this example:
 
 
 ```bash

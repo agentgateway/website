@@ -40,7 +40,7 @@ Review the following table for the resource types that you can overlay in the {{
 
 | Field | Resource Type | Description |
 |-------|--------------|-------------|
-| `deployment` | Deployment | The agentgateway proxy deployment. Common use casese include adding image pull secrets to pull images from private registries, removing default security contexts, configuring node selectors, affinities, and tolerations, adding custom labels and annotations, or mounting custom ConfigMaps or Secrets as volumes.   |
+| `deployment` | Deployment | The agentgateway proxy deployment. Common use cases include adding image pull secrets to pull images from private registries, removing default security contexts, configuring node selectors, affinities, and tolerations, adding custom labels and annotations, or mounting custom ConfigMaps or Secrets as volumes.   |
 | `service` | Service | The service that exposes the agentgateway proxy. A common use case is configuring cloud provider-specific service annotations.  |
 | `serviceAccount` | ServiceAccount | The service account for the proxy pods |
 | `horizontalPodAutoscaler` | HorizontalPodAutoscaler (HPA) | Unlike Deployment, Service, and ServiceAccount, HPA are created **only** when an overlay is specified.|
