@@ -34,7 +34,6 @@ Do not use other variations, such as:
 - **Second-person**: "In this guide, you configure" (not "let's configure" or "we will configure").
 - **Conversational but technical:** Explain "why" and "how it works", not just "what".
 - **No emojis** in body text.
-- **Professional objectivity:** Prioritize accuracy over validation.
 
 ### Sentence structure
 
