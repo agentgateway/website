@@ -42,6 +42,7 @@ Do not use other variations, such as:
 - **One idea per sentence:** Complex ideas get multiple sentences.
 - **Paragraph length:** 2-5 sentences per paragraph.
 - **Lists for enumeration:** Use bullet points or numbered lists for 3+ items. Unless bullets are short (one or two words), punctuate them with a period.
+- **End sentences with the proper punctuation:** Generally, end sentences with a period. If it is a question, end with a question mark. Use exclamation marks sparingly. Do **not** end sentences with a colon, unless it is a short phrase that introduces an immediate example, such as `Example output:`. The first sentence after a heading that introduces steps should end with a period, **not** a colon.
 
 ### Technical terms
 
