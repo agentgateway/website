@@ -26,10 +26,13 @@ Any prereq steps, often a `reuse` shortcode to include a snippet from the `agw-d
 3. Start with an imperative verb.
 4. Most steps include a code example, command, configuration block, or similar example.
 
+   ```sh
    curl -sL https://agentgateway.dev/install | bash
+   ```
 
    Example output:
 
+   ```
    % Total    % Received % Xferd  Average Speed   Time    Time     Time  Current
                                  Dload  Upload   Total   Spent    Left  Speed
    100  8878  100  8878    0     0  68998      0 --:--:-- --:--:-- --:--:-- 69359
@@ -39,6 +42,7 @@ Any prereq steps, often a `reuse` shortcode to include a snippet from the `agw-d
    Preparing to install agentgateway into /usr/local/bin
    Password:
    agentgateway installed into /usr/local/bin/agentgateway
+   ```
 
 ### [Step 1: Start with a verb or a single noun, no ending punctuation]
 
@@ -50,11 +54,17 @@ Optional section to provide troubleshooting information.
 
 ### Common Issue 1
 
-**What's happening:** Error message or behavior
+**What's happening:**
 
-**Why it's happening:** Why this happens
+Describe the user-facing behavior. When possible, include logs or error messages that match what they might search for.
+
+**Why it's happening:** 
+
+Possible reasons why the issue happens.
 
 **How to fix it:**
+
+Steps or options for how to fix the issue.
 
 ## What's next
 
