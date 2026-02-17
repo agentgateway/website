@@ -15,7 +15,7 @@ backendAuth:
   key: $MY_API_KEY
 ```
 
-A filepath can also be used:
+A file path can also be used:
 
 ```yaml
 backendAuth:
