@@ -1,24 +1,25 @@
 ---
 title: JWT Authorization
 weight: 4
-description: Secure your Agent Gateway with JWT authentication and fine-grained tool access control
+description: Secure your agentgateway with JWT authentication and fine-grained tool access control
 ---
 
 Secure your MCP endpoints with JWT authentication and fine-grained tool access control.
 
 ## What you'll build
 
-In this tutorial, you'll:
-1. Configure JWT authentication for Agent Gateway
+In this tutorial, you configure the following.
+
+1. Configure JWT authentication for agentgateway
 2. Set up fine-grained authorization rules using CEL expressions
 3. Control which tools are accessible based on JWT claims
 4. Test authenticated requests with a pre-generated token
 
-## Prerequisites
+## Before you begin
 
 - [Node.js](https://nodejs.org/) installed (for the MCP server)
 
-## Step 1: Install Agent Gateway
+## Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -26,7 +27,7 @@ curl -sL https://agentgateway.dev/install | bash
 
 ## Step 2: Download the test keys
 
-For this tutorial, use the pre-generated test keys from the Agent Gateway repository:
+For this tutorial, use the pre-generated test keys from the agentgateway repository:
 
 ```bash
 # Download the JWKS public key
@@ -84,7 +85,7 @@ binds:
 EOF
 ```
 
-## Step 5: Start Agent Gateway
+## Step 5: Start agentgateway
 
 Open a new terminal and run:
 
@@ -92,7 +93,7 @@ Open a new terminal and run:
 agentgateway -f config.yaml
 ```
 
-You should see:
+Example output:
 
 ```
 INFO agentgateway: Listening on 0.0.0.0:3000
@@ -188,7 +189,7 @@ mcpAuthorization:
   - 'jwt.email.endsWith("@company.com") && mcp.tool.name == "internal_tool"'
 ```
 
-## Next Steps
+## Next steps
 
 {{< cards >}}
   {{< card link="/docs/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}

@@ -1,7 +1,7 @@
 ---
 title: Helicone
 weight: 40
-description: Integrate Agent Gateway with Helicone for LLM monitoring and caching
+description: Integrate agentgateway with Helicone for LLM monitoring and caching
 ---
 
 [Helicone](https://helicone.ai/) is an LLM observability platform with built-in caching, rate limiting, and cost tracking.
@@ -17,7 +17,7 @@ description: Integrate Agent Gateway with Helicone for LLM monitoring and cachin
 
 ## Configuration
 
-Helicone works as a proxy. Configure Agent Gateway to route through Helicone:
+Helicone works as a proxy. Configure agentgateway to route through Helicone:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -45,11 +45,11 @@ binds:
           key: "$OPENAI_API_KEY"
 ```
 
-## Benefits with Agent Gateway
+## Benefits with agentgateway
 
-Using Agent Gateway with Helicone provides:
+Using agentgateway with Helicone provides:
 
-| Feature | Agent Gateway | Helicone | Combined |
+| Feature | agentgateway | Helicone | Combined |
 |---------|--------------|----------|----------|
 | Request routing | ✅ | ❌ | Route to multiple LLMs via Helicone |
 | Caching | ❌ | ✅ | Helicone caches responses |

@@ -1,12 +1,12 @@
 ---
 title: VS Code
 weight: 5
-description: Connect VS Code with GitHub Copilot to Agent Gateway
+description: Connect VS Code with GitHub Copilot to agentgateway
 ---
 
-Configure Visual Studio Code with GitHub Copilot's MCP extension to use Agent Gateway.
+Configure Visual Studio Code with GitHub Copilot's MCP extension to use agentgateway.
 
-## Prerequisites
+## Before you begin
 
 - VS Code with GitHub Copilot extension installed
 - GitHub Copilot Chat enabled
@@ -14,7 +14,7 @@ Configure Visual Studio Code with GitHub Copilot's MCP extension to use Agent Ga
 
 ## Configuration
 
-Add Agent Gateway to your VS Code settings. Open settings (`Cmd/Ctrl + ,`) and add to `settings.json`:
+Add agentgateway to your VS Code settings. Open settings (`Cmd/Ctrl + ,`) and add to `settings.json`:
 
 ```json
 {
@@ -77,4 +77,4 @@ After configuration:
 
 1. Reload VS Code (`Cmd/Ctrl + Shift + P` → "Developer: Reload Window")
 2. Open GitHub Copilot Chat
-3. Type `@agentgateway` to see available tools from Agent Gateway
+3. Type `@agentgateway` to see available tools from agentgateway

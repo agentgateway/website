@@ -1,6 +1,6 @@
 ---
 title: Open WebUI
-description: Secure and observe Open WebUI with Agent Gateway for enterprise LLM governance
+description: Secure and observe Open WebUI with agentgateway for enterprise LLM governance
 ---
 
 [Open WebUI](https://github.com/open-webui/open-webui) is a self-hosted, feature-rich web interface for interacting with LLMs. It supports multiple model providers, conversation history, RAG pipelines, and tool integrations.
@@ -16,11 +16,11 @@ Open WebUI provides a ChatGPT-like experience that you can run on your own infra
 - User management and authentication
 - Markdown and code rendering
 
-## Why Use Agent Gateway with Open WebUI?
+## Why Use agentgateway with Open WebUI?
 
 While Open WebUI provides a great user experience, enterprises need additional controls for production deployments:
 
-| Challenge | Agent Gateway Solution |
+| Challenge | agentgateway Solution |
 |-----------|----------------------|
 | No centralized audit trail | Complete logging of all LLM requests and responses |
 | Direct API key exposure | Proxy authentication - no keys in Open WebUI config |
@@ -32,7 +32,7 @@ While Open WebUI provides a great user experience, enterprises need additional c
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Open WebUI    │────▶│  Agent Gateway  │────▶│   LLM Provider  │
+│   Open WebUI    │────▶│  agentgateway  │────▶│   LLM Provider  │
 │                 │     │                 │     │  (OpenAI, etc)  │
 └─────────────────┘     │  - Auth         │     └─────────────────┘
                         │  - Audit        │
@@ -43,9 +43,9 @@ While Open WebUI provides a great user experience, enterprises need additional c
 
 ## Configuration
 
-### 1. Configure Agent Gateway
+### 1. Configure agentgateway
 
-Set up Agent Gateway with your LLM providers:
+Set up agentgateway with your LLM providers:
 
 ```yaml
 listeners:
@@ -63,7 +63,7 @@ llm:
 
 ### 2. Configure Open WebUI
 
-Point Open WebUI to Agent Gateway instead of directly to OpenAI:
+Point Open WebUI to agentgateway instead of directly to OpenAI:
 
 ```bash
 docker run -d \
@@ -167,7 +167,7 @@ rate_limiting:
 
 ## MCP Tool Governance
 
-If Open WebUI uses MCP tools, Agent Gateway provides:
+If Open WebUI uses MCP tools, agentgateway provides:
 
 - **Tool Authorization** - Control which tools users can invoke
 - **Parameter Validation** - Ensure tool inputs meet security requirements
@@ -186,7 +186,7 @@ See [Observability]({{< link-hextra path="/integrations/observability/" >}}) for
 
 ## Tutorial: Multi-LLM Platform with SSO and Observability
 
-This tutorial walks through deploying a complete enterprise platform that unifies multiple AI providers (Anthropic, OpenAI, xAI, Gemini) through Agent Gateway with Keycloak SSO and full observability.
+This tutorial walks through deploying a complete enterprise platform that unifies multiple AI providers (Anthropic, OpenAI, xAI, Gemini) through agentgateway with Keycloak SSO and full observability.
 
 {{< callout type="info" >}}
 A complete reference implementation is available at [agentgateway-webui-multi-llm-docker](https://github.com/aiagentplayground/agentgateway-webui-multi-llm-docker).
@@ -196,7 +196,7 @@ A complete reference implementation is available at [agentgateway-webui-multi-ll
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Open WebUI    │────▶│  Agent Gateway  │────▶│   Anthropic     │
+│   Open WebUI    │────▶│  agentgateway  │────▶│   Anthropic     │
 │   (Port 8888)   │     │   (Port 3000)   │     │   (Claude)      │
 └─────────────────┘     │                 │     └─────────────────┘
         │               │  Unified API    │     ┌─────────────────┐
@@ -221,8 +221,8 @@ A complete reference implementation is available at [agentgateway-webui-multi-ll
 | Service | Port | Purpose |
 |---------|------|---------|
 | Open WebUI | 8888 | Chat interface |
-| Agent Gateway | 3000 | Unified LLM API endpoint |
-| Agent Gateway UI | 15000 | Admin interface |
+| agentgateway | 3000 | Unified LLM API endpoint |
+| agentgateway UI | 15000 | Admin interface |
 | Keycloak | 8090 | SSO authentication |
 | Grafana | 3100 | Metrics dashboards |
 | Prometheus | 9090 | Metrics collection |
@@ -244,7 +244,7 @@ KEYCLOAK_DB_PASSWORD=keycloak_password
 POSTGRES_PASSWORD=postgres_password
 ```
 
-### Step 2: Configure Agent Gateway
+### Step 2: Configure agentgateway
 
 Create `agentgateway.yaml` with a unified gateway that routes to all providers:
 
@@ -430,7 +430,7 @@ docker-compose up -d
 # Check service health
 docker-compose ps
 
-# View Agent Gateway logs
+# View agentgateway logs
 docker-compose logs -f agentgateway
 ```
 
@@ -439,7 +439,7 @@ docker-compose logs -f agentgateway
 | Interface | URL | Credentials |
 |-----------|-----|-------------|
 | Open WebUI | http://localhost:8888 | Create account or SSO |
-| Agent Gateway UI | http://localhost:15000 | No auth required |
+| agentgateway UI | http://localhost:15000 | No auth required |
 | Keycloak Admin | http://localhost:8090 | admin / admin |
 | Grafana | http://localhost:3100 | admin / admin |
 | Jaeger | http://localhost:16686 | No auth required |
@@ -462,11 +462,11 @@ After deployment, configure the models in Open WebUI:
 
 **View metrics in Grafana:**
 - Open http://localhost:3100
-- Import Agent Gateway dashboard
+- Import agentgateway dashboard
 - Monitor request rates, latency, and token usage
 
 **Common issues:**
-- If models don't appear, verify Agent Gateway is running: `curl http://localhost:3000/v1/models`
+- If models don't appear, verify agentgateway is running: `curl http://localhost:3000/v1/models`
 - Check logs for API key issues: `docker-compose logs agentgateway`
 
 ### Production Considerations

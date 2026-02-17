@@ -4,21 +4,22 @@ weight: 8
 description: Implement OAuth-based authentication for MCP connections using the MCP auth spec
 ---
 
-Agent Gateway supports the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization), enabling OAuth-based authentication for MCP endpoints. This tutorial shows you how to secure MCP tools with token-based access.
+Agentgateway supports the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization), enabling OAuth-based authentication for MCP endpoints. This tutorial shows you how to secure MCP tools with token-based access.
 
 ## What you'll build
 
-In this tutorial, you'll:
+In this tutorial, you configure the following.
+
 1. Configure MCP authentication with JWT token validation
 2. Expose OAuth protected resource metadata
 3. Test authenticated and unauthenticated requests
 4. Understand the MCP authentication flow
 
-## Prerequisites
+## Before you begin
 
 - [Node.js](https://nodejs.org/) installed (for the MCP server)
 
-## Step 1: Install Agent Gateway
+## Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -26,13 +27,13 @@ curl -sL https://agentgateway.dev/install | bash
 
 ## Step 2: Download test keys
 
-Create a directory for this tutorial:
+Create a directory for this tutorial.
 
 ```bash
 mkdir mcp-auth-tutorial && cd mcp-auth-tutorial
 ```
 
-Download the pre-generated test keys from the Agent Gateway repository:
+Download the pre-generated test keys from the agentgateway repository.
 
 ```bash
 # Download the JWKS public key
@@ -48,7 +49,7 @@ These are **test keys only**. For production, use keys from your OAuth provider 
 
 ## Step 3: Create the config
 
-Create a configuration file with MCP authentication enabled:
+Create a configuration file with MCP authentication enabled.
 
 ```bash
 cat > config.yaml << 'EOF'
@@ -96,13 +97,14 @@ Key configuration:
 - `jwks.file` - Path to public key for token validation
 - `resourceMetadata` - OAuth protected resource metadata for MCP clients
 
-## Step 4: Start Agent Gateway
+## Step 4: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
 ```
 
-You should see:
+Example output:
+
 ```
 INFO agentgateway: Listening on 0.0.0.0:3000
 INFO agentgateway: Admin UI available at http://localhost:15000/ui/
@@ -110,7 +112,7 @@ INFO agentgateway: Admin UI available at http://localhost:15000/ui/
 
 ## Step 5: Test without authentication
 
-Try to access the MCP endpoint without a token:
+Try to access the MCP endpoint without a token.
 
 ```bash
 curl -s -i http://localhost:3000/mcp \
@@ -119,7 +121,7 @@ curl -s -i http://localhost:3000/mcp \
   -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}'
 ```
 
-You should get a `401 Unauthorized` response:
+You get a `401 Unauthorized` response.
 
 ```
 HTTP/1.1 401 Unauthorized
@@ -133,13 +135,14 @@ Notice the `www-authenticate` header points to the protected resource metadata e
 
 ## Step 6: Check the protected resource metadata
 
-MCP clients can discover authentication requirements from the metadata endpoint:
+MCP clients can discover authentication requirements from the metadata endpoint.
 
 ```bash
 curl -s http://localhost:3000/.well-known/oauth-protected-resource/mcp | jq .
 ```
 
-Response:
+Example output:
+
 ```json
 {
   "resource": "http://localhost:3000/mcp",
@@ -151,14 +154,14 @@ Response:
 }
 ```
 
-This tells clients:
+This tells clients the following.
 - Which authorization servers to use
 - What scopes are required
 - How to send the bearer token (header, body, or query)
 
 ## Step 7: Test with a valid token
 
-Now test with the pre-generated JWT token:
+Now test with the pre-generated JWT token.
 
 ```bash
 curl -s -i http://localhost:3000/mcp \
@@ -182,7 +185,7 @@ You should see a successful `200 OK` response with the MCP session initialized.
 
 ## MCP Authentication Flow
 
-When an MCP client connects to a protected resource:
+When an MCP client connects to a protected resource, the flow is as follows.
 
 1. **Client requests resource** - Sends initialize request to `/mcp`
 2. **Gateway returns 401** - Includes `www-authenticate` header with metadata URL
@@ -194,7 +197,7 @@ When an MCP client connects to a protected resource:
 
 ## Keycloak Integration
 
-For production with Keycloak:
+For production with Keycloak, use the following configuration.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -245,7 +248,7 @@ The `provider.keycloak` setting enables special handling for Keycloak's non-stan
 
 ## Auth0 Integration
 
-For production with Auth0:
+For production with Auth0, use the following configuration.
 
 ```yaml
 mcpAuthentication:
@@ -267,7 +270,7 @@ mcpAuthentication:
 
 ## Cleanup
 
-Stop Agent Gateway with `Ctrl+C`, then remove the tutorial directory:
+Stop agentgateway with `Ctrl+C`, then remove the tutorial directory.
 
 ```bash
 cd .. && rm -rf mcp-auth-tutorial

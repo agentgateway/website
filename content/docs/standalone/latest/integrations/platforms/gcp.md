@@ -1,10 +1,10 @@
 ---
 title: Google Cloud
 weight: 40
-description: Deploy Agent Gateway on Google Cloud Platform
+description: Deploy agentgateway on Google Cloud Platform
 ---
 
-Run Agent Gateway on GCP to leverage Vertex AI, GKE, and Google Cloud services.
+Run agentgateway on GCP to leverage Vertex AI, GKE, and Google Cloud services.
 
 ## Deployment options
 
@@ -18,7 +18,7 @@ For GKE deployments, use [Agentgateway on Kubernetes](https://agentgateway.dev/d
 
 ### Cloud Run
 
-Run Agent Gateway as a serverless container on Cloud Run.
+Run agentgateway as a serverless container on Cloud Run.
 
 ```bash
 gcloud run deploy agentgateway \
@@ -47,7 +47,7 @@ Create a service account with these roles:
 ```bash
 # Create service account
 gcloud iam service-accounts create agentgateway \
-  --display-name "Agent Gateway"
+  --display-name "agentgateway"
 
 # Grant Vertex AI access
 gcloud projects add-iam-policy-binding my-project \

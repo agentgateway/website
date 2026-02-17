@@ -1,16 +1,16 @@
 ---
 title: stdio Transport
 weight: 10
-description: Connect Agent Gateway to local process-based MCP servers
+description: Connect agentgateway to local process-based MCP servers
 ---
 
-The stdio transport connects Agent Gateway to MCP servers that run as local processes, communicating via standard input/output.
+The stdio transport connects agentgateway to MCP servers that run as local processes, communicating via standard input/output.
 
 ## Overview
 
 stdio transport is ideal when:
 - MCP servers run as local command-line tools
-- You want to manage MCP server lifecycle with Agent Gateway
+- You want to manage MCP server lifecycle with agentgateway
 - The server is distributed as an npm package or binary
 
 ## Quick start
@@ -19,7 +19,7 @@ stdio transport is ideal when:
 # Download the stdio MCP configuration
 curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/examples/basic/config.yaml -o config.yaml
 
-# Run Agent Gateway
+# Run agentgateway
 agentgateway -f config.yaml
 ```
 
@@ -85,9 +85,9 @@ backends:
           - "/path/to/allowed/directory"
 ```
 
-## Why use Agent Gateway?
+## Why use agentgateway?
 
-| Direct stdio | With Agent Gateway |
+| Direct stdio | With agentgateway |
 |--------------|-------------------|
 | One client per server | Multiple clients share servers |
 | No authentication | OAuth2, API keys, or custom auth |
@@ -97,7 +97,7 @@ backends:
 
 ## Verify access
 
-1. Open the [Agent Gateway UI](http://localhost:15000/ui/) to view your configuration
+1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your configuration
 2. Go to [Playground](http://localhost:15000/ui/playground/) to test tools
 3. Click **Connect** to retrieve available tools
 4. Select a tool and click **Run Tool** to test

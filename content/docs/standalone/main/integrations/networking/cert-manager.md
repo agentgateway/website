@@ -1,19 +1,19 @@
 ---
 title: cert-manager
 weight: 10
-description: Automatic TLS certificate management for Agent Gateway
+description: Automatic TLS certificate management for agentgateway
 ---
 
-[cert-manager](https://cert-manager.io/) automates TLS certificate management in Kubernetes. Use it to automatically provision and renew certificates for Agent Gateway.
+[cert-manager](https://cert-manager.io/) automates TLS certificate management in Kubernetes. Use it to automatically provision and renew certificates for agentgateway.
 
-## Why use cert-manager with Agent Gateway?
+## Why use cert-manager with agentgateway?
 
 - **Automatic provisioning** - Request certificates from Let's Encrypt or other CAs
 - **Auto-renewal** - Certificates are renewed before expiration
 - **Multiple issuers** - Support for ACME, Vault, Venafi, and self-signed
 - **Gateway API integration** - Native support for Gateway resources
 
-## Prerequisites
+## Before you begin
 
 Install cert-manager:
 
@@ -91,7 +91,7 @@ spec:
   - api.example.com
 ```
 
-Then reference it in your Agent Gateway config:
+Then reference it in your agentgateway config:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

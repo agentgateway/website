@@ -1,19 +1,19 @@
 ---
 title: External DNS
 weight: 20
-description: Automatic DNS management for Agent Gateway
+description: Automatic DNS management for agentgateway
 ---
 
-[External DNS](https://github.com/kubernetes-sigs/external-dns) automatically manages DNS records for Kubernetes resources. Use it to automatically create DNS records for Agent Gateway endpoints.
+[External DNS](https://github.com/kubernetes-sigs/external-dns) automatically manages DNS records for Kubernetes resources. Use it to automatically create DNS records for agentgateway endpoints.
 
-## Why use External DNS with Agent Gateway?
+## Why use External DNS with agentgateway?
 
 - **Automatic DNS** - DNS records created automatically from Gateway/Service resources
 - **Multiple providers** - AWS Route53, Google Cloud DNS, Cloudflare, Azure DNS, and more
 - **Sync on change** - Records updated when resources change
 - **TTL management** - Configurable DNS TTL
 
-## Prerequisites
+## Before you begin
 
 Install External DNS for your cloud provider. Example for AWS Route53:
 

@@ -1,10 +1,10 @@
 ---
 title: Grafana
 weight: 30
-description: Visualize Agent Gateway metrics and traces with Grafana
+description: Visualize agentgateway metrics and traces with Grafana
 ---
 
-Use Grafana to create dashboards for Agent Gateway metrics and visualize distributed traces.
+Use Grafana to create dashboards for agentgateway metrics and visualize distributed traces.
 
 ## Quick start
 
@@ -110,6 +110,6 @@ volumes:
 ## Learn more
 
 {{< cards >}}
-  {{< card link="../../observability/prometheus" title="Prometheus" subtitle="Configure Prometheus metrics" >}}
+  {{< card link="../../observability/prometheus/" title="Prometheus" subtitle="Configure Prometheus metrics" >}}
   {{< card link="../../observability/opentelemetry" title="OpenTelemetry" subtitle="Distributed tracing setup" >}}
 {{< /cards >}}

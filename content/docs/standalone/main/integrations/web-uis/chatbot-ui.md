@@ -1,6 +1,6 @@
 ---
 title: Chatbot UI
-description: Secure and observe Chatbot UI with Agent Gateway for enterprise LLM governance
+description: Secure and observe Chatbot UI with agentgateway for enterprise LLM governance
 ---
 
 [Chatbot UI](https://github.com/mckaywrigley/chatbot-ui) is an open-source ChatGPT interface created by Mckay Wrigley. It provides a clean, modern UI for interacting with OpenAI and other LLM providers.
@@ -16,11 +16,11 @@ Chatbot UI offers a streamlined chat experience:
 - **Export/Import** - Backup and restore conversations
 - **Local Storage** - Conversations stored in browser (Supabase option available)
 
-## Why Use Agent Gateway with Chatbot UI?
+## Why Use agentgateway with Chatbot UI?
 
 Chatbot UI is designed for simplicity, but enterprises need additional controls:
 
-| Challenge | Agent Gateway Solution |
+| Challenge | agentgateway Solution |
 |-----------|----------------------|
 | Direct API key exposure | Proxy authentication |
 | No server-side logging | Complete audit trail |
@@ -32,7 +32,7 @@ Chatbot UI is designed for simplicity, but enterprises need additional controls:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Chatbot UI    │────▶│  Agent Gateway  │────▶│   LLM Provider  │
+│   Chatbot UI    │────▶│  agentgateway  │────▶│   LLM Provider  │
 │   (Browser)     │     │                 │     │  (OpenAI, etc)  │
 └─────────────────┘     │  - Auth         │     └─────────────────┘
                         │  - Audit        │
@@ -43,7 +43,7 @@ Chatbot UI is designed for simplicity, but enterprises need additional controls:
 
 ## Configuration
 
-### 1. Configure Agent Gateway
+### 1. Configure agentgateway
 
 ```yaml
 listeners:
@@ -71,7 +71,7 @@ security:
 
 ### 2. Configure Chatbot UI
 
-Set the OpenAI API endpoint to Agent Gateway:
+Set the OpenAI API endpoint to agentgateway:
 
 ```bash
 # Environment variables
@@ -260,10 +260,10 @@ Create dashboards showing:
 
 ## Supabase Integration
 
-The current version of Chatbot UI requires Supabase for data persistence. When using Supabase, Agent Gateway can validate Supabase JWTs for additional security:
+The current version of Chatbot UI requires Supabase for data persistence. When using Supabase, agentgateway can validate Supabase JWTs for additional security:
 
 ```yaml
-# Agent Gateway can validate Supabase JWTs
+# agentgateway can validate Supabase JWTs
 security:
   authentication:
     type: jwt

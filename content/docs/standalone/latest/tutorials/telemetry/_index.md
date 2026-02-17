@@ -1,26 +1,27 @@
 ---
 title: Telemetry & Observability
 weight: 6
-description: Enable OpenTelemetry tracing and metrics for Agent Gateway
+description: Enable OpenTelemetry tracing and metrics for agentgateway
 ---
 
-Agent Gateway has built-in OpenTelemetry support for distributed tracing, metrics, and logs. This tutorial shows you how to enable telemetry and visualize it with Jaeger.
+Agentgateway has built-in OpenTelemetry support for distributed tracing, metrics, and logs. This tutorial shows you how to enable telemetry and visualize it with Jaeger.
 
 ## What you'll build
 
-In this tutorial, you'll:
-1. Enable OpenTelemetry tracing in Agent Gateway
+In this tutorial, you configure the following.
+
+1. Enable OpenTelemetry tracing in agentgateway
 2. Set up Jaeger for trace visualization
 3. View traces for MCP tool calls and LLM requests
 4. Access Prometheus-compatible metrics
 5. Configure sampling strategies for production
 
-## Prerequisites
+## Before you begin
 
 - [Docker](https://docs.docker.com/get-started/get-docker/) installed (for Jaeger)
 - [Node.js](https://nodejs.org/) installed (for MCP servers)
 
-## Step 1: Install Agent Gateway
+## Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -28,7 +29,7 @@ curl -sL https://agentgateway.dev/install | bash
 
 ## Step 2: Start Jaeger
 
-Jaeger is an open-source distributed tracing platform. Start it with Docker:
+Jaeger is an open-source distributed tracing platform. Start it with Docker.
 
 ```bash
 docker run -d --name jaeger \
@@ -43,13 +44,13 @@ This exposes:
 
 ## Step 3: Create the config
 
-Create a directory for this tutorial:
+Create a directory for this tutorial.
 
 ```bash
 mkdir telemetry-tutorial && cd telemetry-tutorial
 ```
 
-Create a configuration file with tracing enabled:
+Create a configuration file with tracing enabled.
 
 ```bash
 cat > config.yaml << 'EOF'
@@ -82,13 +83,13 @@ Key configuration:
 - `config.tracing.otlpEndpoint`: Where to send traces (Jaeger's OTLP endpoint)
 - `config.tracing.randomSampling: true`: Sample all requests (for testing)
 
-## Step 4: Start Agent Gateway
+## Step 4: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
 ```
 
-You should see output including:
+Example output:
 ```
 INFO agent_core::trcng initializing tracer endpoint="http://localhost:4317"
 INFO agentgateway: Listening on 0.0.0.0:3000
@@ -96,7 +97,7 @@ INFO agentgateway: Listening on 0.0.0.0:3000
 
 ## Step 5: Generate some traces
 
-Open the Agent Gateway Playground at [http://localhost:15000/ui/playground](http://localhost:15000/ui/playground):
+Open the agentgateway Playground at [http://localhost:15000/ui/playground](http://localhost:15000/ui/playground).
 
 1. Click **Connect** to connect to your MCP server
 2. Select the **echo** tool from Available Tools
@@ -110,7 +111,7 @@ INFO request ... trace.id=286cb6c44380a45e1f77f29ce4d146fd span.id=f7f30629c29d9
 
 ## Step 6: View traces in Jaeger
 
-Open the Jaeger UI at [http://localhost:16686](http://localhost:16686):
+Open the Jaeger UI at [http://localhost:16686](http://localhost:16686).
 
 1. Select **agentgateway** from the Service dropdown
 2. Click **Find Traces**
@@ -125,7 +126,7 @@ You'll see spans for:
 
 ## Viewing Metrics
 
-Agent Gateway exposes Prometheus-compatible metrics on port 15020:
+Agentgateway exposes Prometheus-compatible metrics on port 15020:
 
 ```bash
 curl -s http://localhost:15020/metrics | head -50
@@ -256,7 +257,7 @@ binds:
 
 ## Cleanup
 
-Stop and remove the Jaeger container:
+Stop and remove the Jaeger container.
 
 ```bash
 docker stop jaeger && docker rm jaeger

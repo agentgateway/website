@@ -4,24 +4,25 @@ weight: 9
 description: Protect LLM requests from prompt injection and sensitive data exposure
 ---
 
-Agent Gateway can inspect and filter LLM requests to prevent prompt injection attacks and block sensitive data like PII from being sent to AI models.
+Agentgateway can inspect and filter LLM requests to prevent prompt injection attacks and block sensitive data like PII from being sent to AI models.
 
 ## What you'll build
 
-In this tutorial, you'll:
+In this tutorial, you configure the following.
+
 1. Configure prompt guard policies for LLM requests
 2. Block sensitive data like SSNs and email addresses from reaching the LLM
 3. Use both custom regex patterns and built-in patterns for filtering
 4. Test the prompt guard to see requests blocked in real-time
 
-## Prerequisites
+## Before you begin
 
-- [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
+- [agentgateway installed]({{< link-hextra path="/quickstart/" >}})
 - An OpenAI API key (get one at [platform.openai.com](https://platform.openai.com/api-keys))
 
 ## Step 1: Set up your environment
 
-Create a working directory and set your API key:
+Create a working directory and set your API key.
 
 ```bash
 mkdir prompt-guard-test && cd prompt-guard-test
@@ -30,7 +31,7 @@ export OPENAI_API_KEY=your-api-key-here
 
 ## Step 2: Create the configuration
 
-Create a `config.yaml` file with prompt guard policies:
+Create a `config.yaml` file with prompt guard policies.
 
 ```bash
 cat > config.yaml << 'EOF'
@@ -103,7 +104,7 @@ EOF
 | `builtin` | Use a built-in pattern (like `email`) |
 | `rejection` | Custom response returned when a request is blocked |
 
-## Step 3: Start Agent Gateway
+## Step 3: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
@@ -113,7 +114,7 @@ You should see output indicating the gateway is running on port 3000.
 
 ## Step 4: Test normal requests
 
-In a new terminal, send a normal request:
+In a new terminal, send a normal request.
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -177,7 +178,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 ## Built-in patterns
 
-Agent Gateway includes built-in patterns for common PII types:
+Agentgateway includes built-in patterns for common PII types.
 
 | Pattern | Description |
 |---------|-------------|
@@ -197,7 +198,7 @@ Example using built-in SSN pattern:
 
 ## Custom regex patterns
 
-Add your own regex patterns to catch credentials, secrets, or custom data:
+Add your own regex patterns to catch credentials, secrets, or custom data.
 
 ```yaml
 policies:
@@ -243,7 +244,7 @@ policies:
 
 ## Cleanup
 
-Stop the Agent Gateway with `Ctrl+C` and remove the test directory:
+Stop the agentgateway with `Ctrl+C` and remove the test directory:
 
 ```bash
 cd .. && rm -rf prompt-guard-test

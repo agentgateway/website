@@ -1,14 +1,14 @@
 ---
 title: Claude
 weight: 1
-description: Connect Claude Desktop and Claude Code to Agent Gateway
+description: Connect Claude Desktop and Claude Code to agentgateway
 ---
 
-Configure Anthropic's Claude Desktop app or Claude Code CLI to use Agent Gateway as an MCP server.
+Configure Anthropic's Claude Desktop app or Claude Code CLI to use agentgateway as an MCP server.
 
 ## Claude Desktop
 
-Add Agent Gateway to your Claude Desktop configuration file:
+Add agentgateway to your Claude Desktop configuration file:
 
 {{< tabs items="macOS,Windows" >}}
 {{< tab >}}
@@ -41,7 +41,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ## Claude Code CLI
 
-Configure Claude Code to connect to Agent Gateway:
+Configure Claude Code to connect to agentgateway:
 
 ```bash
 claude mcp add agentgateway --transport sse http://localhost:15000/mcp/sse
@@ -76,7 +76,7 @@ For better performance, use the streamable HTTP transport:
 
 ## Authentication
 
-If Agent Gateway requires authentication, include the token in the URL or headers:
+If agentgateway requires authentication, include the token in the URL or headers:
 
 ```json
 {

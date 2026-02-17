@@ -1,10 +1,10 @@
 ---
 title: SSE Transport
 weight: 20
-description: Connect Agent Gateway to MCP servers via Server-Sent Events
+description: Connect agentgateway to MCP servers via Server-Sent Events
 ---
 
-Server-Sent Events (SSE) transport allows Agent Gateway to connect to remote MCP servers over HTTP with real-time streaming responses.
+Server-Sent Events (SSE) transport allows agentgateway to connect to remote MCP servers over HTTP with real-time streaming responses.
 
 ## Overview
 
@@ -37,9 +37,9 @@ binds:
               host: http://mcp-server:8080/sse
 ```
 
-## Why use Agent Gateway?
+## Why use agentgateway?
 
-| Direct SSE Connection | With Agent Gateway |
+| Direct SSE Connection | With agentgateway |
 |----------------------|-------------------|
 | Client manages connection lifecycle | Gateway handles reconnection and buffering |
 | No authentication | OAuth2, API keys, or custom auth |

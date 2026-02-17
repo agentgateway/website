@@ -4,20 +4,21 @@ weight: 12
 description: Configure advanced HTTP routing with matching, policies, and traffic management
 ---
 
-Agent Gateway provides powerful HTTP routing capabilities including path matching, header-based routing, rate limiting, retries, and request/response modification.
+Agentgateway provides powerful HTTP routing capabilities including path matching, header-based routing, rate limiting, retries, and request/response modification.
 
 ## What you'll build
 
-In this tutorial, you'll:
+In this tutorial, you configure the following.
+
 1. Configure HTTP routing with path, header, and query matching
 2. Create health check endpoints with direct responses
 3. Set up CORS, rate limiting, retries, and timeouts
 4. Implement IP-based authorization
 5. Modify requests and responses with header transformations
 
-## Prerequisites
+## Before you begin
 
-- [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
+- [agentgateway installed]({{< link-hextra path="/quickstart/" >}})
 
 ## Step 1: Create a working directory
 
@@ -27,7 +28,7 @@ mkdir http-routing-test && cd http-routing-test
 
 ## Step 2: Create a basic routing configuration
 
-Create a `config.yaml` file with multiple routing examples:
+Create a `config.yaml` file with multiple routing examples.
 
 ```bash
 cat > config.yaml << 'EOF'
@@ -109,7 +110,7 @@ binds:
 EOF
 ```
 
-## Step 3: Start Agent Gateway
+## Step 3: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
@@ -130,7 +131,7 @@ curl http://localhost:3000/health
 
 ### Test path + query + header matching
 
-The API v2 route requires all conditions to match:
+The API v2 route requires all conditions to match.
 
 ```bash
 # Missing query param and header - falls through to 404
@@ -341,7 +342,7 @@ policies:
 
 ## Routing with backends
 
-When routing to actual backend services:
+When routing to actual backend services, use the following configuration.
 
 ```yaml
 routes:
@@ -378,7 +379,7 @@ routes:
 
 ## Cleanup
 
-Stop the Agent Gateway with `Ctrl+C` and remove the test directory:
+Stop the agentgateway with `Ctrl+C` and remove the test directory.
 
 ```bash
 cd .. && rm -rf http-routing-test

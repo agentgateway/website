@@ -1,14 +1,14 @@
 ---
 title: OpenTelemetry
 weight: 10
-description: Integrate Agent Gateway with OpenTelemetry for distributed tracing and metrics
+description: Integrate agentgateway with OpenTelemetry for distributed tracing and metrics
 ---
 
-Agent Gateway natively supports OpenTelemetry (OTLP) for distributed tracing and metrics export.
+Agentgateway natively supports OpenTelemetry (OTLP) for distributed tracing and metrics export.
 
 ## Configuration
 
-Enable OpenTelemetry tracing in your Agent Gateway configuration:
+Enable OpenTelemetry tracing in your agentgateway configuration.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -27,7 +27,7 @@ config:
 
 ## With Jaeger
 
-Run Jaeger with OTLP support:
+Run Jaeger with OTLP support.
 
 ```bash
 docker run -d --name jaeger \
@@ -36,7 +36,7 @@ docker run -d --name jaeger \
   jaegertracing/all-in-one:latest
 ```
 
-Configure Agent Gateway:
+Configure agentgateway.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -91,7 +91,7 @@ service:
 
 ## Trace attributes
 
-Agent Gateway includes the following attributes in traces:
+Agentgateway includes the following attributes in traces:
 
 - `http.method` - HTTP request method
 - `http.url` - Request URL

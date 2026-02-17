@@ -1,10 +1,10 @@
 ---
 title: Kubernetes
 weight: 10
-description: Deploy Agent Gateway on any Kubernetes distribution
+description: Deploy agentgateway on any Kubernetes distribution
 ---
 
-Agent Gateway runs on any Kubernetes distribution through [Agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/), which provides native Kubernetes Gateway API support, dynamic configuration via CRDs, and MCP service discovery.
+agentgateway runs on any Kubernetes distribution through [Agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/), which provides native Kubernetes Gateway API support, dynamic configuration via CRDs, and MCP service discovery.
 
 {{< cards >}}
   {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Get Started with kgateway" icon="external-link" subtitle="Complete installation and configuration guide" >}}
@@ -12,7 +12,7 @@ Agent Gateway runs on any Kubernetes distribution through [Agentgateway on Kuber
 
 ## Supported distributions
 
-Agent Gateway works on all Kubernetes distributions, both in the cloud and on-premises.
+Agentgateway works on all Kubernetes distributions, both in the cloud and on-premises.
 
 ### Cloud-managed Kubernetes
 
@@ -61,6 +61,6 @@ Agent Gateway works on all Kubernetes distributions, both in the cloud and on-pr
 ## Learn more
 
 {{< cards >}}
-  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="kgateway Documentation" icon="external-link" subtitle="Full Agent Gateway on Kubernetes guide" >}}
-  {{< card link="https://kgateway.dev/docs/agentgateway/latest/quickstart/" title="Quick Start" icon="external-link" subtitle="Deploy Agent Gateway in minutes" >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="kgateway Documentation" icon="external-link" subtitle="Full agentgateway on Kubernetes guide" >}}
+  {{< card link="https://kgateway.dev/docs/agentgateway/latest/quickstart/" title="Quick Start" icon="external-link" subtitle="Deploy agentgateway in minutes" >}}
 {{< /cards >}}

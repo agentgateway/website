@@ -1,12 +1,12 @@
 ---
 title: Keycloak
 weight: 20
-description: Integrate Agent Gateway with Keycloak for identity management
+description: Integrate agentgateway with Keycloak for identity management
 ---
 
-[Keycloak](https://www.keycloak.org/) is an open-source identity and access management solution. Agent Gateway can validate JWTs issued by Keycloak.
+[Keycloak](https://www.keycloak.org/) is an open-source identity and access management solution. agentgateway can validate JWTs issued by Keycloak.
 
-## Why use Keycloak with Agent Gateway?
+## Why use Keycloak with agentgateway?
 
 - **Open source** - Self-hosted identity management
 - **Standards-based** - OAuth2, OIDC, SAML support
@@ -15,7 +15,7 @@ description: Integrate Agent Gateway with Keycloak for identity management
 
 ## Configuration
 
-Configure Agent Gateway to validate Keycloak JWTs:
+Configure agentgateway to validate Keycloak JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -74,7 +74,7 @@ services:
 ## Keycloak setup
 
 1. Create a realm (e.g., `myrealm`)
-2. Create a client for Agent Gateway:
+2. Create a client for agentgateway:
    - Client ID: `agentgateway`
    - Client Protocol: `openid-connect`
    - Access Type: `confidential` or `public`
@@ -82,7 +82,7 @@ services:
 
 ## Role-based authorization
 
-Combine Keycloak roles with Agent Gateway authorization:
+Combine Keycloak roles with agentgateway authorization:
 
 ```yaml
 policies:

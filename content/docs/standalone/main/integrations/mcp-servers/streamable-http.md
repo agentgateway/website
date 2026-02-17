@@ -1,10 +1,10 @@
 ---
 title: Streamable HTTP Transport
 weight: 30
-description: Connect Agent Gateway to MCP servers via HTTP with streaming
+description: Connect agentgateway to MCP servers via HTTP with streaming
 ---
 
-Streamable HTTP transport connects Agent Gateway to remote MCP servers over HTTP with streaming support for real-time responses.
+Streamable HTTP transport connects agentgateway to remote MCP servers over HTTP with streaming support for real-time responses.
 
 ## Overview
 
@@ -43,7 +43,7 @@ binds:
               host: http://localhost:3005/mcp/
 EOF
 
-# Run Agent Gateway
+# Run agentgateway
 agentgateway -f config.yaml
 ```
 
@@ -96,9 +96,9 @@ backends:
         host: http://mcp-server-b:8080/mcp/
 ```
 
-## Why use Agent Gateway?
+## Why use agentgateway?
 
-| Direct HTTP Connection | With Agent Gateway |
+| Direct HTTP Connection | With agentgateway |
 |-----------------------|-------------------|
 | Client manages connections | Gateway handles reconnection and buffering |
 | No authentication | OAuth2, API keys, or custom auth |
@@ -109,7 +109,7 @@ backends:
 
 ## Verify access
 
-1. Open the [Agent Gateway UI](http://localhost:15000/ui/) to view your configuration
+1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your configuration
 2. Go to [Playground](http://localhost:15000/ui/playground/) to test tools
 3. Click **Connect** to retrieve available tools from all configured servers
 4. Select a tool and click **Run Tool** to test

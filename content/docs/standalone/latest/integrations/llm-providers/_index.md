@@ -1,10 +1,10 @@
 ---
 title: LLM Providers
 weight: 10
-description: Connect Agent Gateway to LLM providers for AI-powered applications
+description: Connect agentgateway to LLM providers for AI-powered applications
 ---
 
-Agent Gateway supports multiple LLM providers, allowing you to route requests to different AI models and manage API keys centrally.
+Agentgateway supports multiple LLM providers, allowing you to route requests to different AI models and manage API keys centrally.
 
 {{< cards >}}
   {{< card link="/docs/llm/providers/openai" title="OpenAI" subtitle="GPT-4, GPT-4o, and more" >}}
@@ -19,7 +19,7 @@ Agent Gateway supports multiple LLM providers, allowing you to route requests to
 
 ## Quick start
 
-To use an LLM provider with Agent Gateway, configure an `ai` backend:
+To use an LLM provider with agentgateway, configure an `ai` backend.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

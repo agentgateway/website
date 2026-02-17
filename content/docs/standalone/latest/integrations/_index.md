@@ -1,10 +1,10 @@
 ---
 title: Integrations
 weight: 65
-description: Connect Agent Gateway with popular tools, platforms, and services
+description: Connect agentgateway with popular tools, platforms, and services
 ---
 
-Integrate Agent Gateway with your existing infrastructure and tools.
+Integrate agentgateway with your existing infrastructure and tools.
 
 ## LLM Providers
 

@@ -1,10 +1,10 @@
 ---
 title: Grafana
 weight: 30
-description: Visualize Agent Gateway metrics and traces with Grafana
+description: Visualize agentgateway metrics and traces with Grafana
 ---
 
-Use Grafana to create dashboards for Agent Gateway metrics and visualize distributed traces.
+Use Grafana to create dashboards for agentgateway metrics and visualize distributed traces.
 
 ## Quick start
 

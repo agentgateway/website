@@ -8,17 +8,18 @@ Expose a single MCP endpoint that aggregates tools from multiple backend servers
 
 ## What you'll build
 
-In this tutorial, you'll:
-1. Configure Agent Gateway to federate multiple MCP servers
+In this tutorial, you configure the following.
+
+1. Configure agentgateway to federate multiple MCP servers
 2. Combine filesystem and memory servers into a single endpoint
 3. Access tools from both servers with automatic name prefixing
 4. Test federated tools in the Playground
 
-## Prerequisites
+## Before you begin
 
 - [Node.js](https://nodejs.org/) installed
 
-## Step 1: Install Agent Gateway
+## Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -52,13 +53,13 @@ binds:
 EOF
 ```
 
-## Step 3: Start Agent Gateway
+## Step 3: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
 ```
 
-You should see:
+Example output:
 
 ```
 INFO agentgateway: Listening on 0.0.0.0:3000
@@ -125,7 +126,7 @@ targets:
     GITHUB_PERSONAL_ACCESS_TOKEN: "${GITHUB_TOKEN}"
 ```
 
-## Next Steps
+## Next steps
 
 {{< cards >}}
   {{< card link="/docs/tutorials/authorization" title="Authorization" subtitle="Add JWT authentication" >}}

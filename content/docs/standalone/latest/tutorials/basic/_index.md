@@ -1,24 +1,25 @@
 ---
 title: Basic MCP Server
 weight: 1
-description: Get started with Agent Gateway by exposing a single MCP server
+description: Get started with agentgateway by exposing a single MCP server
 ---
 
-Get up and running with Agent Gateway in under 2 minutes.
+Get up and running with agentgateway in under 2 minutes.
 
 ## What you'll build
 
-In this tutorial, you'll:
-1. Install and run Agent Gateway
+In this tutorial, you configure the following.
+
+1. Install and run agentgateway
 2. Connect to a sample MCP server with demo tools
 3. Use the Admin UI to explore your configuration
 4. Test tools in the built-in Playground
 
-## Prerequisites
+## Before you begin
 
 - [Node.js](https://nodejs.org/) installed (for the MCP server)
 
-## Step 1: Install Agent Gateway
+## Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -30,13 +31,13 @@ curl -sL https://agentgateway.dev/install | bash
 curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml
 ```
 
-## Step 3: Start Agent Gateway
+## Step 3: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
 ```
 
-You should see:
+Example output:
 
 ```
 INFO agentgateway: Listening on 0.0.0.0:3000
@@ -47,11 +48,11 @@ INFO agentgateway: Admin UI available at http://localhost:15000/ui/
 
 Open your browser and go to [http://localhost:15000/ui/](http://localhost:15000/ui/)
 
-You'll see the Agent Gateway dashboard showing your configured listeners:
+You see the agentgateway dashboard showing your configured listeners.
 
 ![Port Binds & Listeners](/images/tutorials/basic-listeners.png)
 
-The UI shows:
+The UI shows the following.
 - **Port 3000** is bound with 1 listener
 - **listener-1** using HTTP protocol
 - **1 backend** configured (your MCP server)
@@ -65,7 +66,7 @@ Click **Playground** in the left sidebar to test your MCP server.
 1. In **Routes**, select **Route 1** (your MCP route)
 2. The **Testing** panel shows your connection at `http://localhost:3000/`
 3. Click **Connect** (or it auto-connects)
-4. **Available Tools** shows all tools from your MCP server:
+4. **Available Tools** shows all tools from your MCP server.
    - `echo` - Echoes back the input
    - `add` - Adds two numbers
    - `longRunningOperation` - Demonstrates progress updates
@@ -77,14 +78,14 @@ Click **Playground** in the left sidebar to test your MCP server.
 2. In the right panel, enter a message in the **message** field
 3. Click **Run Tool**
 
-You'll see the response in the **Response** panel:
+You see the response in the **Response** panel.
 
 ```json
 {
   "content": [
     {
       "type": "text",
-      "text": "Echo: Hello from Agent Gateway!"
+      "text": "Echo: Hello from agentgateway!"
     }
   ]
 }
@@ -118,7 +119,7 @@ binds:
 - **Enables CORS** so browser-based clients can connect
 - **Runs the "everything" MCP server** which provides sample tools
 
-## Next Steps
+## Next steps
 
 {{< cards >}}
   {{< card link="/docs/tutorials/multiplex" title="Multiplex" subtitle="Combine multiple MCP servers" >}}

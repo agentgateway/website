@@ -1,6 +1,6 @@
 ---
 title: LibreChat
-description: Secure and observe LibreChat with Agent Gateway for enterprise LLM governance
+description: Secure and observe LibreChat with agentgateway for enterprise LLM governance
 ---
 
 [LibreChat](https://github.com/danny-avila/LibreChat) is an open-source, multi-model chat interface that supports OpenAI, Anthropic, Google, and many other LLM providers. It offers a modern UI with features like conversation branching, presets, and plugins.
@@ -16,11 +16,11 @@ LibreChat provides a unified interface for multiple LLM providers:
 - **User Management** - Multi-user support with authentication
 - **File Uploads** - Image and document analysis
 
-## Why Use Agent Gateway with LibreChat?
+## Why Use agentgateway with LibreChat?
 
 LibreChat connects to multiple providers, creating governance challenges:
 
-| Challenge | Agent Gateway Solution |
+| Challenge | agentgateway Solution |
 |-----------|----------------------|
 | Multiple API keys to manage | Single gateway, centralized credentials |
 | Inconsistent logging across providers | Unified audit trail |
@@ -32,7 +32,7 @@ LibreChat connects to multiple providers, creating governance challenges:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   LibreChat     │────▶│  Agent Gateway  │────▶│     OpenAI      │
+│   LibreChat     │────▶│  agentgateway  │────▶│     OpenAI      │
 │                 │     │                 │     └─────────────────┘
 │  - OpenAI       │     │  - Unified Auth │     ┌─────────────────┐
 │  - Anthropic    │     │  - Audit Log    │────▶│   Anthropic     │
@@ -44,7 +44,7 @@ LibreChat connects to multiple providers, creating governance challenges:
 
 ## Configuration
 
-### 1. Configure Agent Gateway
+### 1. Configure agentgateway
 
 Set up multiple LLM providers:
 
@@ -72,10 +72,10 @@ llm:
 
 ### 2. Configure LibreChat
 
-Update LibreChat's `.env` to route through Agent Gateway:
+Update LibreChat's `.env` to route through agentgateway:
 
 ```bash
-# Point all providers to Agent Gateway
+# Point all providers to agentgateway
 OPENAI_API_BASE=http://agentgateway:8080/v1
 ANTHROPIC_API_BASE=http://agentgateway:8080/anthropic
 GOOGLE_API_BASE=http://agentgateway:8080/google
@@ -276,7 +276,7 @@ observability:
 
 ## Docker Compose Example
 
-Complete setup with LibreChat and Agent Gateway:
+Complete setup with LibreChat and agentgateway:
 
 ```yaml
 version: '3.8'
@@ -313,7 +313,7 @@ volumes:
 
 ## Best Practices
 
-1. **Centralize Credentials** - Store API keys in Agent Gateway, not LibreChat
+1. **Centralize Credentials** - Store API keys in agentgateway, not LibreChat
 2. **Enable All Providers** - Configure all providers in gateway for flexibility
 3. **Set User Quotas** - Implement per-user token budgets
 4. **Log Conversations** - Enable audit logging for compliance

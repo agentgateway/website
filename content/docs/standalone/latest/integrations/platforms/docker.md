@@ -1,10 +1,10 @@
 ---
 title: Docker
 weight: 20
-description: Run Agent Gateway as a Docker container
+description: Run agentgateway as a Docker container
 ---
 
-Run Agent Gateway as a Docker container for local development or small deployments.
+Run agentgateway as a Docker container for local development or small deployments.
 
 ## Quick start
 
@@ -36,7 +36,7 @@ binds:
           key: $OPENAI_API_KEY
 EOF
 
-# Run Agent Gateway
+# Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e OPENAI_API_KEY=$OPENAI_API_KEY \
   cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
@@ -73,7 +73,7 @@ binds:
           key: $ANTHROPIC_API_KEY
 EOF
 
-# Run Agent Gateway
+# Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
   cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
@@ -115,7 +115,7 @@ binds:
               model: grok-2-latest
 EOF
 
-# Run Agent Gateway
+# Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e XAI_API_KEY=$XAI_API_KEY \
   cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
@@ -157,7 +157,7 @@ binds:
               model: llama3.2
 EOF
 
-# Run Agent Gateway (use host.docker.internal to reach Ollama on the host)
+# Run agentgateway (use host.docker.internal to reach Ollama on the host)
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   --add-host=host.docker.internal:host-gateway \
   cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
@@ -203,7 +203,7 @@ binds:
               deployment: $AZURE_DEPLOYMENT
 EOF
 
-# Run Agent Gateway
+# Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
   -e AZURE_DEPLOYMENT=$AZURE_DEPLOYMENT \
@@ -242,7 +242,7 @@ binds:
               model: anthropic.claude-3-5-sonnet-20241022-v2:0
 EOF
 
-# Run Agent Gateway
+# Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
@@ -281,7 +281,7 @@ binds:
           key: $GEMINI_API_KEY
 EOF
 
-# Run Agent Gateway
+# Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e GEMINI_API_KEY=$GEMINI_API_KEY \
   cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
@@ -298,7 +298,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 ## Access the Admin UI
 
-By default, the Agent Gateway admin UI listens on localhost. To access it from your host machine:
+By default, the agentgateway admin UI listens on localhost. To access it from your host machine:
 
 ```bash
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \

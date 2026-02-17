@@ -4,22 +4,23 @@ weight: 7
 description: Enable HTTPS with TLS certificates for secure connections
 ---
 
-Agent Gateway supports TLS termination for secure HTTPS connections. This tutorial shows you how to configure TLS with your own certificates.
+Agentgateway supports TLS termination for secure HTTPS connections. This tutorial shows you how to configure TLS with your own certificates.
 
 ## What you'll build
 
-In this tutorial, you'll:
+In this tutorial, you configure the following.
+
 1. Generate self-signed TLS certificates for testing
-2. Configure Agent Gateway with HTTPS enabled
+2. Configure agentgateway with HTTPS enabled
 3. Test secure connections to your MCP server
 4. Learn how to use Let's Encrypt certificates for production
 
-## Prerequisites
+## Before you begin
 
 - [Node.js](https://nodejs.org/) installed (for MCP servers)
 - OpenSSL installed (for generating certificates)
 
-## Step 1: Install Agent Gateway
+## Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -27,20 +28,20 @@ curl -sL https://agentgateway.dev/install | bash
 
 ## Step 2: Create a directory and generate certificates
 
-Create a directory for this tutorial:
+Create a directory for this tutorial.
 
 ```bash
 mkdir tls-tutorial && cd tls-tutorial
 ```
 
-Generate self-signed certificates for testing:
+Generate self-signed certificates for testing.
 
 ```bash
 mkdir -p certs
 openssl req -x509 -newkey rsa:4096 -keyout certs/key.pem -out certs/cert.pem -days 365 -nodes -subj "/CN=localhost"
 ```
 
-You should see output ending with the certificates being created:
+Example output:
 ```
 certs/key.pem
 certs/cert.pem
@@ -52,7 +53,7 @@ Self-signed certificates are for **testing only**. Browsers and clients will sho
 
 ## Step 3: Create the config
 
-Create a configuration file with HTTPS enabled:
+Create a configuration file with HTTPS enabled.
 
 ```bash
 cat > config.yaml << 'EOF'
@@ -86,13 +87,14 @@ Key configuration:
 - `tls.cert` - Path to the certificate file
 - `tls.key` - Path to the private key file
 
-## Step 4: Start Agent Gateway
+## Step 4: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
 ```
 
-You should see:
+Example output:
+
 ```
 INFO agentgateway: Listening on 0.0.0.0:3000
 INFO agentgateway: Admin UI available at http://localhost:15000/ui/
@@ -100,7 +102,7 @@ INFO agentgateway: Admin UI available at http://localhost:15000/ui/
 
 ## Step 5: Test the HTTPS connection
 
-Use curl with `-k` to skip certificate verification (needed for self-signed certs):
+Use curl with `-k` to skip certificate verification (needed for self-signed certs).
 
 ```bash
 curl -k -s -i https://localhost:3000/mcp \
@@ -109,7 +111,7 @@ curl -k -s -i https://localhost:3000/mcp \
   -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}'
 ```
 
-You should see a successful response with `HTTP/2 200` and an `mcp-session-id` header:
+Example output:
 
 ```
 HTTP/2 200
@@ -123,16 +125,16 @@ This confirms your HTTPS connection is working!
 
 ## How it works
 
-This configuration:
+This configuration includes the following.
 - **Enables HTTPS** - Uses TLS for encrypted connections
-- **Terminates TLS** - Agent Gateway handles certificate management
+- **Terminates TLS** - Agentgateway handles certificate management
 - **Secures traffic** - All communication between clients and the gateway is encrypted
 
 ---
 
 ## Using Let's Encrypt Certificates
 
-For production, use certificates from Let's Encrypt or another trusted CA:
+For production, use certificates from Let's Encrypt or another trusted CA.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -156,7 +158,7 @@ binds:
 
 ## HTTP to HTTPS Redirect
 
-You can run both HTTP and HTTPS, redirecting HTTP traffic to HTTPS:
+You can run both HTTP and HTTPS, redirecting HTTP traffic to HTTPS.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -197,7 +199,7 @@ binds:
 
 ## Cleanup
 
-Stop Agent Gateway with `Ctrl+C`, then remove the test directory:
+Stop agentgateway with `Ctrl+C`, then remove the test directory.
 
 ```bash
 cd .. && rm -rf tls-tutorial

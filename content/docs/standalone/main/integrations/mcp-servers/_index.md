@@ -1,10 +1,10 @@
 ---
 title: MCP Servers
 weight: 60
-description: Connect Agent Gateway to MCP servers using various transports
+description: Connect agentgateway to MCP servers using various transports
 ---
 
-Agent Gateway supports connecting to MCP servers via multiple transport protocols. Choose the transport that best fits your deployment model.
+Agentgateway supports connecting to MCP servers via multiple transport protocols. Choose the transport that best fits your deployment model.
 
 ## Transports
 
@@ -14,9 +14,9 @@ Agent Gateway supports connecting to MCP servers via multiple transport protocol
   {{< card link="streamable-http" title="Streamable HTTP" subtitle="HTTP with streaming support" >}}
 {{< /cards >}}
 
-## Why use Agent Gateway with MCP Servers?
+## Why use agentgateway with MCP Servers?
 
-| Without Agent Gateway | With Agent Gateway |
+| Without agentgateway | With agentgateway |
 |----------------------|-------------------|
 | Direct client-to-server connections | Centralized gateway for all MCP traffic |
 | No authentication layer | External authentication (OAuth2, Tailscale, etc.) |

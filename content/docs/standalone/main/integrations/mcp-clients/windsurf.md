@@ -1,14 +1,14 @@
 ---
 title: Windsurf
 weight: 4
-description: Connect Windsurf IDE to Agent Gateway
+description: Connect Windsurf IDE to agentgateway
 ---
 
-Configure Windsurf, Codeium's AI-powered IDE, to use Agent Gateway as an MCP server.
+Configure Windsurf, Codeium's AI-powered IDE, to use agentgateway as an MCP server.
 
 ## Configuration
 
-Add Agent Gateway to your Windsurf MCP configuration. Create or edit `~/.windsurf/mcp.json`:
+Add agentgateway to your Windsurf MCP configuration. Create or edit `~/.windsurf/mcp.json`:
 
 ```json
 {
@@ -67,4 +67,4 @@ Include authentication headers if required:
 
 ## Verifying the Connection
 
-After configuration, restart Windsurf and verify that Agent Gateway tools are available in the Cascade agent's tool list.
+After configuration, restart Windsurf and verify that agentgateway tools are available in the Cascade agent's tool list.

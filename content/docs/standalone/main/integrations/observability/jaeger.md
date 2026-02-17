@@ -1,10 +1,10 @@
 ---
 title: Jaeger
 weight: 40
-description: Distributed tracing with Jaeger for Agent Gateway
+description: Distributed tracing with Jaeger for agentgateway
 ---
 
-Jaeger is a distributed tracing backend that works with Agent Gateway's OpenTelemetry integration.
+Jaeger is a distributed tracing backend that works with agentgateway's OpenTelemetry integration.
 
 ## Quick start
 
@@ -17,7 +17,7 @@ docker run -d --name jaeger \
   jaegertracing/all-in-one:latest
 ```
 
-Configure Agent Gateway to send traces:
+Configure agentgateway to send traces:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -43,7 +43,7 @@ View traces at [http://localhost:16686](http://localhost:16686).
 
 ## Trace information
 
-Agent Gateway traces include:
+Agentgateway traces include:
 
 - **HTTP spans**: Request method, URL, status code, duration
 - **MCP spans**: Session ID, method name, tool calls
@@ -117,6 +117,6 @@ spec:
 ## Learn more
 
 {{< cards >}}
-  {{< card link="../../observability/opentelemetry" title="OpenTelemetry" subtitle="Configure tracing in Agent Gateway" >}}
+  {{< card link="../../observability/opentelemetry" title="OpenTelemetry" subtitle="Configure tracing in agentgateway" >}}
   {{< card link="../../../tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step setup guide" >}}
 {{< /cards >}}
