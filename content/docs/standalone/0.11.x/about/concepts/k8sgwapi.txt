@@ -1,5 +1,0 @@
----
-title: Kubernetes Gateway API
-weight: 50 
-description: 
----
