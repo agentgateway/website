@@ -6,7 +6,7 @@ description:
 
 Most agentgateway configurations dynamically update as you make changes to the binds, policies, backends, and so on. 
 
-However, a few configurations are staticly configured at startup. These static configurations are under the `config` section.
+However, a few configurations are statically configured at startup. These static configurations are under the `config` section.
 
 ## Static configuration file schema
 
