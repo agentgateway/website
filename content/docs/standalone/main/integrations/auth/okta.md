@@ -1,12 +1,12 @@
 ---
 title: Okta
 weight: 50
-description: Integrate Agent Gateway with Okta for enterprise identity management
+description: Integrate agentgateway with Okta for enterprise identity management
 ---
 
-[Okta](https://www.okta.com/) is an enterprise identity platform. Agent Gateway can validate JWTs issued by Okta for API authentication.
+[Okta](https://www.okta.com/) is an enterprise identity platform. agentgateway can validate JWTs issued by Okta for API authentication.
 
-## Why use Okta with Agent Gateway?
+## Why use Okta with agentgateway?
 
 - **Enterprise SSO** - Centralized identity for organizations
 - **Directory integration** - Active Directory, LDAP sync
@@ -16,7 +16,7 @@ description: Integrate Agent Gateway with Okta for enterprise identity managemen
 
 ## Configuration
 
-Configure Agent Gateway to validate Okta JWTs:
+Configure agentgateway to validate Okta JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -48,7 +48,7 @@ binds:
 
 2. Add a custom scope:
    - Name: `agentgateway`
-   - Description: Access to Agent Gateway
+   - Description: Access to agentgateway
 
 3. Create an API Services application:
    - Applications → Create App Integration
@@ -70,7 +70,7 @@ curl -X POST "https://your-org.okta.com/oauth2/default/v1/token" \
 
 ## Group-based authorization
 
-Use Okta groups with Agent Gateway authorization:
+Use Okta groups with agentgateway authorization:
 
 ```yaml
 policies:

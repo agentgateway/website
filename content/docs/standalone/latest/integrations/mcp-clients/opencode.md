@@ -1,14 +1,14 @@
 ---
 title: OpenCode
 weight: 3
-description: Connect OpenCode to Agent Gateway
+description: Connect OpenCode to agentgateway
 ---
 
-Configure OpenCode, the open source AI coding assistant, to use Agent Gateway as an MCP server.
+Configure OpenCode, the open source AI coding assistant, to use agentgateway as an MCP server.
 
 ## Configuration
 
-Add Agent Gateway to your OpenCode configuration file `~/.opencode/config.json`:
+Add agentgateway to your OpenCode configuration file `~/.opencode/config.json`:
 
 ```json
 {

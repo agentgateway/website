@@ -18,7 +18,7 @@
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-   --version v{{< reuse "agw-docs/versions/patch-dev.md" >}} \
+   --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
    --set controller.image.pullPolicy=Always
    ```
 
@@ -26,7 +26,7 @@
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --version v{{< reuse "agw-docs/versions/patch-dev.md" >}} \
+     --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
      --set controller.image.pullPolicy=Always \
      --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
    ```

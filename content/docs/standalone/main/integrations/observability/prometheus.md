@@ -1,14 +1,14 @@
 ---
 title: Prometheus
 weight: 20
-description: Collect metrics from Agent Gateway with Prometheus
+description: Collect metrics from agentgateway with Prometheus
 ---
 
-Agent Gateway exposes Prometheus-compatible metrics for monitoring and alerting.
+Agentgateway exposes Prometheus-compatible metrics for monitoring and alerting.
 
 ## Metrics endpoint
 
-Agent Gateway exposes metrics on port `15020` by default:
+Agentgateway exposes metrics on port `15020` by default:
 
 ```bash
 curl http://localhost:15020/metrics
@@ -49,7 +49,7 @@ curl http://localhost:15020/metrics
 
 ## Prometheus configuration
 
-Add Agent Gateway to your Prometheus configuration:
+Add agentgateway to your Prometheus configuration:
 
 ```yaml
 # prometheus.yml

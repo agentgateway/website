@@ -1,12 +1,12 @@
 ---
 title: Auth0
 weight: 30
-description: Integrate Agent Gateway with Auth0 for identity management
+description: Integrate agentgateway with Auth0 for identity management
 ---
 
-[Auth0](https://auth0.com/) is an identity platform that provides authentication and authorization services. Agent Gateway can validate JWTs issued by Auth0.
+[Auth0](https://auth0.com/) is an identity platform that provides authentication and authorization services. agentgateway can validate JWTs issued by Auth0.
 
-## Why use Auth0 with Agent Gateway?
+## Why use Auth0 with agentgateway?
 
 - **Managed identity** - No infrastructure to maintain
 - **Social login** - Google, GitHub, Microsoft, and more
@@ -16,7 +16,7 @@ description: Integrate Agent Gateway with Auth0 for identity management
 
 ## Configuration
 
-Configure Agent Gateway to validate Auth0 JWTs:
+Configure agentgateway to validate Auth0 JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -44,7 +44,7 @@ binds:
 ## Auth0 setup
 
 1. Create an API in Auth0 Dashboard:
-   - Name: `Agent Gateway API`
+   - Name: `agentgateway API`
    - Identifier: `https://api.example.com`
 
 2. Create an Application:
@@ -79,7 +79,7 @@ curl http://localhost:3000/mcp \
 
 ## Permission-based authorization
 
-Use Auth0 permissions with Agent Gateway:
+Use Auth0 permissions with agentgateway:
 
 ```yaml
 policies:

@@ -1,6 +1,6 @@
 ---
 title: Kagent
-description: Secure and observe Kagent with Agent Gateway for Kubernetes-native AI governance
+description: Secure and observe Kagent with agentgateway for Kubernetes-native AI governance
 ---
 
 [Kagent](https://github.com/kagent-dev/kagent) is a Kubernetes-native AI agent framework that brings autonomous agents to cloud-native environments. It leverages Kubernetes primitives for agent lifecycle management, scaling, and orchestration.
@@ -15,11 +15,11 @@ Kagent provides a Kubernetes-native approach to running AI agents:
 - **A2A Communication** - Agent-to-agent messaging via Kubernetes services
 - **GitOps Ready** - Declarative agent definitions for Flux/ArgoCD
 
-## Why Use Agent Gateway with Kagent?
+## Why Use agentgateway with Kagent?
 
 Kagent agents running in Kubernetes need enterprise governance:
 
-| Kubernetes Challenge | Agent Gateway Solution |
+| Kubernetes Challenge | agentgateway Solution |
 |---------------------|----------------------|
 | Multi-tenant clusters | Namespace-aware policies |
 | Service-to-service auth | mTLS and JWT validation |
@@ -34,7 +34,7 @@ Kagent agents running in Kubernetes need enterprise governance:
 │                    Kubernetes Cluster                        │
 │                                                              │
 │  ┌──────────────┐    ┌─────────────────┐    ┌────────────┐ │
-│  │   Kagent     │───▶│  Agent Gateway  │───▶│    LLM     │ │
+│  │   Kagent     │───▶│  agentgateway  │───▶│    LLM     │ │
 │  │   Agents     │    │   (Deployment)  │    │  Provider  │ │
 │  │              │    │                 │    └────────────┘ │
 │  │  ┌────────┐  │    │  - Auth/AuthZ   │                   │
@@ -52,9 +52,9 @@ Kagent agents running in Kubernetes need enterprise governance:
 
 ## Deployment
 
-### 1. Deploy Agent Gateway
+### 1. Deploy agentgateway
 
-Deploy Agent Gateway in your cluster:
+Deploy agentgateway in your cluster:
 
 ```yaml
 apiVersion: apps/v1
@@ -104,7 +104,7 @@ spec:
       port: 8082
 ```
 
-### 2. Configure Agent Gateway
+### 2. Configure agentgateway
 
 ```yaml
 apiVersion: v1
@@ -142,9 +142,9 @@ data:
         service_account_validation: true
 ```
 
-### 3. Create ModelConfig for Agent Gateway
+### 3. Create ModelConfig for agentgateway
 
-First, create a ModelConfig that points to Agent Gateway:
+First, create a ModelConfig that points to agentgateway:
 
 ```yaml
 apiVersion: kagent.dev/v1alpha2
@@ -288,7 +288,7 @@ rate_limiting:
 
 ### Kubernetes-Native Metrics
 
-Agent Gateway exposes Prometheus metrics compatible with kube-prometheus-stack:
+agentgateway exposes Prometheus metrics compatible with kube-prometheus-stack:
 
 ```yaml
 apiVersion: monitoring.coreos.com/v1

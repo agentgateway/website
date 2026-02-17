@@ -1,14 +1,14 @@
 ---
 title: Cursor
 weight: 2
-description: Connect Cursor IDE to Agent Gateway
+description: Connect Cursor IDE to agentgateway
 ---
 
-Configure Cursor, the AI-powered code editor, to use Agent Gateway as an MCP server.
+Configure Cursor, the AI-powered code editor, to use agentgateway as an MCP server.
 
 ## Configuration
 
-Add Agent Gateway to your Cursor MCP settings. Create or edit `.cursor/mcp.json` in your project root:
+Add agentgateway to your Cursor MCP settings. Create or edit `.cursor/mcp.json` in your project root:
 
 ```json
 {
@@ -67,4 +67,4 @@ Include authentication headers if required:
 
 ## Verifying the Connection
 
-After configuration, restart Cursor and check that Agent Gateway tools appear in the MCP tools list. You can verify connectivity by asking Cursor to list available tools.
+After configuration, restart Cursor and check that agentgateway tools appear in the MCP tools list. You can verify connectivity by asking Cursor to list available tools.

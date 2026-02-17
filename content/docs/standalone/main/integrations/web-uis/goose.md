@@ -1,9 +1,9 @@
 ---
 title: Goose
-description: Secure and observe Goose autonomous agent with Agent Gateway for enterprise governance
+description: Secure and observe Goose autonomous agent with agentgateway for enterprise governance
 ---
 
-[Goose](https://github.com/block/goose) is an autonomous AI agent developed by Block that can perform complex tasks by combining LLM reasoning with tool execution. It uses MCP (Model Context Protocol) for tool interactions, making it ideal for Agent Gateway integration.
+[Goose](https://github.com/block/goose) is an autonomous AI agent developed by Block that can perform complex tasks by combining LLM reasoning with tool execution. It uses MCP (Model Context Protocol) for tool interactions, making it ideal for agentgateway integration.
 
 ## What is Goose?
 
@@ -16,7 +16,7 @@ Goose is a developer-focused AI agent that can:
 - Chain multiple actions to complete complex tasks
 - Maintain context across long-running sessions
 
-## Why Use Agent Gateway with Goose?
+## Why Use agentgateway with Goose?
 
 Autonomous agents like Goose require careful governance because they can:
 - Make multiple LLM calls per task
@@ -24,7 +24,7 @@ Autonomous agents like Goose require careful governance because they can:
 - Access sensitive data and systems
 - Accumulate significant costs quickly
 
-| Risk | Agent Gateway Mitigation |
+| Risk | agentgateway Mitigation |
 |------|-------------------------|
 | Uncontrolled LLM spending | Token budgets and rate limits |
 | Unauthorized tool access | MCP tool authorization policies |
@@ -36,7 +36,7 @@ Autonomous agents like Goose require careful governance because they can:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│     Goose       │────▶│  Agent Gateway  │────▶│   LLM Provider  │
+│     Goose       │────▶│  agentgateway  │────▶│   LLM Provider  │
 │   (Agent)       │     │                 │     │  (Anthropic)    │
 └─────────────────┘     │  - Auth         │     └─────────────────┘
         │               │  - Audit        │
@@ -48,7 +48,7 @@ Autonomous agents like Goose require careful governance because they can:
 
 ## Configuration
 
-### 1. Configure Agent Gateway for LLM and MCP
+### 1. Configure agentgateway for LLM and MCP
 
 ```yaml
 listeners:
@@ -82,15 +82,15 @@ mcp:
 
 ### 2. Configure Goose
 
-Configure Goose to route LLM requests through Agent Gateway using environment variables:
+Configure Goose to route LLM requests through agentgateway using environment variables:
 
 ```bash
-# For OpenAI-compatible endpoint via Agent Gateway
+# For OpenAI-compatible endpoint via agentgateway
 export GOOSE_PROVIDER=openai
 export OPENAI_HOST=localhost:8080
 export OPENAI_API_KEY=your-gateway-api-key
 
-# For Anthropic via Agent Gateway
+# For Anthropic via agentgateway
 export GOOSE_PROVIDER=anthropic
 export ANTHROPIC_HOST=localhost:8080
 export ANTHROPIC_API_KEY=your-gateway-api-key

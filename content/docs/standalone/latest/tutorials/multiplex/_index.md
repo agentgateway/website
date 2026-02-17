@@ -8,18 +8,18 @@ Aggregate tools from multiple MCP servers into a single endpoint.
 
 ## What you'll build
 
-In this tutorial, you'll:
-1. Configure Agent Gateway to multiplex multiple MCP servers
+In this tutorial, you configure the following.
+1. Configure agentgateway to multiplex multiple MCP servers
 2. Combine a time server (Python) and an everything server (Node.js)
 3. Access all tools through a single unified endpoint
 4. Test tools with automatic server name prefixing
 
-## Prerequisites
+## Before you begin
 
 - [Node.js](https://nodejs.org/) installed
 - [uv](https://docs.astral.sh/uv/) installed (for Python MCP servers)
 
-## Step 1: Install Agent Gateway
+## Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -53,13 +53,13 @@ binds:
 EOF
 ```
 
-## Step 3: Start Agent Gateway
+## Step 3: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
 ```
 
-You should see:
+Example output:
 
 ```
 INFO agentgateway: Listening on 0.0.0.0:3000
@@ -68,7 +68,7 @@ INFO agentgateway: Admin UI available at http://localhost:15000/ui/
 
 ## Step 4: View backends in the UI
 
-Go to [http://localhost:15000/ui/](http://localhost:15000/ui/) and click **Backends** to see your multiplexed MCP servers:
+Go to [http://localhost:15000/ui/](http://localhost:15000/ui/) and click **Backends** to see your multiplexed MCP servers.
 
 ![Multiplex Backends](/images/tutorials/multiplex-backends.png)
 
@@ -79,7 +79,7 @@ The UI shows:
 
 ## Step 5: Test in the Playground
 
-Click **Playground** to test your multiplexed tools:
+Click **Playground** to test your multiplexed tools.
 
 ![Multiplex Playground](/images/tutorials/multiplex-playground.png)
 
@@ -106,11 +106,11 @@ You'll see the current time in the response panel.
 
 ## What's happening?
 
-Agent Gateway federates multiple MCP servers:
+Agentgateway federates multiple MCP servers:
 
 ```
 ┌─────────────────────────────────────────────┐
-│              Agent Gateway                   │
+│              agentgateway                   │
 │                 :3000                        │
 ├─────────────────────────────────────────────┤
 │  time_*        →  mcp-server-time           │
@@ -122,7 +122,7 @@ Agent Gateway federates multiple MCP servers:
 - Clients connect to one endpoint and access all tools
 - Each backend MCP server runs as a subprocess
 
-## Next Steps
+## Next steps
 
 {{< cards >}}
   {{< card link="/docs/tutorials/openapi" title="OpenAPI to MCP" subtitle="Expose REST APIs as tools" >}}

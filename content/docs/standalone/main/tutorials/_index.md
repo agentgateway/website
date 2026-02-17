@@ -1,15 +1,15 @@
 ---
 title: Tutorials
 weight: 23
-description: Step-by-step guides for common Agent Gateway use cases
+description: Step-by-step guides for common agentgateway use cases
 ---
 
-Learn how to use Agent Gateway through hands-on tutorials. Start with the basics and progress to more advanced configurations.
+Learn how to use agentgateway through hands-on tutorials. Start with the basics and progress to more advanced configurations.
 
 ## Getting Started
 
 {{< cards >}}
-  {{< card link="basic" title="Basic MCP Server" subtitle="Your first Agent Gateway setup" icon="play" >}}
+  {{< card link="basic" title="Basic MCP Server" subtitle="Your first agentgateway setup" icon="play" >}}
   {{< card link="multiplex" title="Multiplex MCP Servers" subtitle="Combine multiple tool servers" icon="collection" >}}
 {{< /cards >}}
 

@@ -1,7 +1,7 @@
 ---
 title: LangSmith
 weight: 20
-description: Integrate Agent Gateway with LangSmith for LLM debugging and monitoring
+description: Integrate agentgateway with LangSmith for LLM debugging and monitoring
 ---
 
 [LangSmith](https://smith.langchain.com/) is LangChain's platform for debugging, testing, evaluating, and monitoring LLM applications.
@@ -45,7 +45,7 @@ service:
       exporters: [otlphttp]
 ```
 
-Configure Agent Gateway:
+Configure agentgateway:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

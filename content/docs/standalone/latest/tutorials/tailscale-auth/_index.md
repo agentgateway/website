@@ -4,25 +4,26 @@ weight: 11
 description: Authenticate users using Tailscale identity for zero-trust access
 ---
 
-Agent Gateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, enabling zero-trust access to your MCP servers.
+Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, enabling zero-trust access to your MCP servers.
 
 ## What you'll build
 
-In this tutorial, you'll:
-1. Configure Agent Gateway to use Tailscale for authentication
+In this tutorial, you configure the following.
+
+1. Configure agentgateway to use Tailscale for authentication
 2. Query the Tailscale daemon to identify connecting users
 3. Extract node name and user email from Tailscale identity
 4. Enable zero-trust access to your MCP servers
 
-## Prerequisites
+## Before you begin
 
-- [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
+- [agentgateway installed]({{< link-hextra path="/quickstart/" >}})
 - [Tailscale](https://tailscale.com/download) installed and connected to your tailnet
 - Another device on your tailnet to test from (or use the same machine via its Tailscale IP)
 
 ## Step 1: Verify Tailscale is running
 
-Check that Tailscale is connected:
+Check that Tailscale is connected.
 
 ```bash
 tailscale status
@@ -30,7 +31,7 @@ tailscale status
 
 You should see your machine listed with a `100.x.x.x` IP address.
 
-Note your Tailscale IP:
+Note your Tailscale IP.
 
 ```bash
 tailscale ip -4
@@ -38,13 +39,13 @@ tailscale ip -4
 
 ## Step 2: Create the configuration
 
-Create a working directory:
+Create a working directory.
 
 ```bash
 mkdir tailscale-auth-test && cd tailscale-auth-test
 ```
 
-Create a `config.yaml` file:
+Create a `config.yaml` file.
 
 {{< tabs items="Linux,macOS" >}}
 {{% tab %}}
@@ -150,13 +151,14 @@ EOF
 | `metadata.tailscaleNode` | Extracts machine name from Tailscale response |
 | `metadata.tailscaleEmail` | Extracts user email from Tailscale response |
 
-## Step 3: Start Agent Gateway
+## Step 3: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
 ```
 
-You should see:
+Example output:
+
 ```
 info proxy::gateway started bind bind="bind/3000"
 ```
@@ -165,7 +167,7 @@ info proxy::gateway started bind bind="bind/3000"
 
 ### Test from localhost (should fail)
 
-Requests from localhost won't have a Tailscale identity:
+Requests from localhost do not have a Tailscale identity.
 
 ```bash
 curl -i http://localhost:3000/mcp
@@ -181,7 +183,7 @@ This is expected - localhost isn't a Tailscale IP.
 
 ### Test via Tailscale IP (should succeed)
 
-Use your Tailscale IP address:
+Use your Tailscale IP address.
 
 ```bash
 # Get your Tailscale IP
@@ -212,7 +214,7 @@ curl -X POST "http://$TAILSCALE_IP:3000/mcp" \
 
 ### Check the logs
 
-After a successful request, the Agent Gateway logs will show Tailscale identity:
+After a successful request, the agentgateway logs show Tailscale identity.
 
 ```
 info request ... tailscale.node=your-machine-name tailscale.email=you@example.com
@@ -222,7 +224,7 @@ info request ... tailscale.node=your-machine-name tailscale.email=you@example.co
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌─────────────────┐
-│   Client     │────▶│Agent Gateway │────▶│ Tailscale Daemon│
+│   Client     │────▶│agentgateway │────▶│ Tailscale Daemon│
 │(100.x.x.x)   │     │              │     │                 │
 └──────────────┘     └──────────────┘     └─────────────────┘
        │                    │                      │
@@ -238,13 +240,13 @@ info request ... tailscale.node=your-machine-name tailscale.email=you@example.co
 ```
 
 1. Client connects from their Tailscale IP (100.x.x.x)
-2. Agent Gateway calls Tailscale's local `whois` API with the source IP
+2. Agentgateway calls Tailscale's local `whois` API with the source IP
 3. Tailscale returns the node and user information
-4. Agent Gateway allows/denies the request and logs the identity
+4. Agentgateway allows/denies the request and logs the identity
 
 ## Adding authorization rules
 
-Restrict access based on Tailscale identity:
+Restrict access based on Tailscale identity.
 
 ```yaml
 policies:
@@ -277,7 +279,7 @@ policies:
 
 ## Cleanup
 
-Stop the Agent Gateway with `Ctrl+C` and remove the test directory:
+Stop the agentgateway with `Ctrl+C` and remove the test directory.
 
 ```bash
 cd .. && rm -rf tailscale-auth-test
@@ -287,7 +289,7 @@ cd .. && rm -rf tailscale-auth-test
 
 ### "external authorization failed" for Tailscale IPs
 
-Check that the Tailscale socket exists and is accessible:
+Check that the Tailscale socket exists and is accessible.
 
 ```bash
 # Linux

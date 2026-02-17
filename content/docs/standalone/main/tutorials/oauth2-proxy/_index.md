@@ -4,20 +4,21 @@ weight: 10
 description: Integrate with OAuth2 Proxy for GitHub, Google, and other OAuth providers
 ---
 
-Agent Gateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add authentication using GitHub, Google, Azure AD, and other OAuth providers.
+Agentgateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add authentication using GitHub, Google, Azure AD, and other OAuth providers.
 
 ## What you'll build
 
-In this tutorial, you'll:
+In this tutorial, you configure the following.
+
 1. Create a GitHub OAuth application for authentication
 2. Set up OAuth2 Proxy with Docker
-3. Configure Agent Gateway to use external authorization
+3. Configure agentgateway to use external authorization
 4. Protect MCP endpoints with OAuth login
 5. Extract and log user identity from authenticated requests
 
-## Prerequisites
+## Before you begin
 
-- [Agent Gateway installed]({{< link-hextra path="/quickstart/" >}})
+- [agentgateway installed]({{< link-hextra path="/quickstart/" >}})
 - [Docker](https://docs.docker.com/get-started/get-docker/) installed and running
 - A GitHub account (for creating an OAuth app)
 
@@ -25,8 +26,8 @@ In this tutorial, you'll:
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Click **OAuth Apps** → **New OAuth App**
-3. Fill in the application details:
-   - **Application name**: `Agent Gateway Dev` (or any name)
+3. Fill in the application details.
+   - **Application name**: `agentgateway dev` (or any name)
    - **Homepage URL**: `http://localhost:3000`
    - **Authorization callback URL**: `http://localhost:4180/oauth2/callback`
 4. Click **Register application**
@@ -35,7 +36,7 @@ In this tutorial, you'll:
 
 ## Step 2: Set up your environment
 
-Create a working directory and set your credentials:
+Create a working directory and set your credentials.
 
 ```bash
 mkdir oauth2-proxy-test && cd oauth2-proxy-test
@@ -50,7 +51,7 @@ export OAUTH2_PROXY_COOKIE_SECRET=$(python3 -c 'import os,base64; print(base64.b
 
 ## Step 3: Start OAuth2 Proxy
 
-Run OAuth2 Proxy in Docker:
+Run OAuth2 Proxy in Docker.
 
 ```bash
 docker run -d --name oauth2-proxy \
@@ -69,15 +70,15 @@ docker run -d --name oauth2-proxy \
   --reverse-proxy=true
 ```
 
-Verify it's running:
+Verify it is running.
 
 ```bash
 docker logs oauth2-proxy
 ```
 
-## Step 4: Create the Agent Gateway configuration
+## Step 4: Create the agentgateway configuration
 
-Create a `config.yaml` file:
+Create a `config.yaml` file.
 
 ```bash
 cat > config.yaml << 'EOF'
@@ -153,7 +154,7 @@ EOF
 | `extAuthz.protocol.http.redirect` | Where to send unauthenticated users |
 | `extAuthz.protocol.http.metadata` | Extract user info from OAuth2 Proxy headers |
 
-## Step 5: Start Agent Gateway
+## Step 5: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
@@ -178,11 +179,11 @@ location: /oauth2/start?rd=/mcp
 1. Open [http://localhost:3000/mcp](http://localhost:3000/mcp) in your browser
 2. You'll be redirected to GitHub for authentication
 3. After logging in, you'll be redirected back to the MCP endpoint
-4. The Agent Gateway logs will show your GitHub username and email
+4. The agentgateway logs will show your GitHub username and email
 
 ### Verify user info in logs
 
-After authenticating, check the Agent Gateway logs:
+After authenticating, check the agentgateway logs:
 
 ```bash
 # Look for github.user and github.email in the access log
@@ -192,7 +193,7 @@ After authenticating, check the Agent Gateway logs:
 
 ```
 ┌──────────┐     ┌──────────────┐     ┌─────────────┐     ┌────────┐
-│  Client  │────▶│Agent Gateway │────▶│OAuth2 Proxy │────▶│ GitHub │
+│  Client  │────▶│agentgateway │────▶│OAuth2 Proxy │────▶│ GitHub │
 └──────────┘     └──────────────┘     └─────────────┘     └────────┘
      │                  │                    │                 │
      │ 1. Request /mcp  │                    │                 │
@@ -222,7 +223,7 @@ After authenticating, check the Agent Gateway logs:
 
 ## Using other OAuth providers
 
-OAuth2 Proxy supports many providers. Update the Docker command:
+OAuth2 Proxy supports many providers. Update the Docker command for your provider.
 
 ### Google
 
@@ -265,7 +266,7 @@ docker run -d --name oauth2-proxy \
 
 ## Cleanup
 
-Stop and remove the containers:
+Stop and remove the containers.
 
 ```bash
 docker stop oauth2-proxy && docker rm oauth2-proxy
@@ -274,7 +275,7 @@ cd .. && rm -rf oauth2-proxy-test
 
 ## Production considerations
 
-For production deployments:
+For production deployments, consider the following.
 
 - Set `OAUTH2_PROXY_COOKIE_SECURE=true` and use HTTPS
 - Restrict `email-domain` to your organization's domain

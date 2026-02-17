@@ -1,10 +1,10 @@
 ---
 title: Observability
 weight: 20
-description: Monitor and trace Agent Gateway with observability tools
+description: Monitor and trace agentgateway with observability tools
 ---
 
-Agent Gateway provides built-in support for observability through OpenTelemetry, Prometheus metrics, and structured logging.
+Agentgateway provides built-in support for observability through OpenTelemetry, Prometheus metrics, and structured logging.
 
 {{< cards >}}
   {{< card link="opentelemetry" title="OpenTelemetry" subtitle="Distributed tracing and metrics" >}}

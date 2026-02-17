@@ -1,10 +1,10 @@
 ---
 title: Azure
 weight: 50
-description: Deploy Agent Gateway on Microsoft Azure
+description: Deploy agentgateway on Microsoft Azure
 ---
 
-Run Agent Gateway on Azure to leverage Azure OpenAI, AKS, and Azure services.
+Run agentgateway on Azure to leverage Azure OpenAI, AKS, and Azure services.
 
 ## Deployment options
 
@@ -18,7 +18,7 @@ For AKS deployments, use [Agentgateway on Kubernetes](https://agentgateway.dev/d
 
 ### Azure Container Apps
 
-Run Agent Gateway as a serverless container.
+Run agentgateway as a serverless container.
 
 ```bash
 az containerapp create \

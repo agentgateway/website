@@ -1,10 +1,10 @@
 ---
 title: Platforms
 weight: 80
-description: Deploy Agent Gateway on various platforms and cloud providers
+description: Deploy agentgateway on various platforms and cloud providers
 ---
 
-Agent Gateway runs anywhere—from local development to production cloud environments.
+Agentgateway runs anywhere—from local development to production cloud environments.
 
 ## Deployment Options
 
@@ -18,7 +18,7 @@ Agent Gateway runs anywhere—from local development to production cloud environ
 
 ## Kubernetes distributions
 
-Agent Gateway runs on all Kubernetes distributions through [kgateway](https://agentgateway.dev/docs/kubernetes/):
+Agentgateway runs on all Kubernetes distributions through [kgateway](https://agentgateway.dev/docs/kubernetes/).
 
 | Category | Distributions |
 |----------|---------------|

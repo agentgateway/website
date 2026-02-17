@@ -1,10 +1,10 @@
 ---
 title: Authentication & Identity
 weight: 40
-description: Integrate Agent Gateway with identity providers and authentication systems
+description: Integrate agentgateway with identity providers and authentication systems
 ---
 
-Agent Gateway supports multiple authentication methods and integrates with popular identity providers.
+Agentgateway supports multiple authentication methods and integrates with popular identity providers.
 
 {{< cards >}}
   {{< card link="oauth2-proxy" title="OAuth2 Proxy" subtitle="GitHub, Google, Azure AD authentication" >}}
@@ -16,7 +16,7 @@ Agent Gateway supports multiple authentication methods and integrates with popul
 
 ## Authentication methods
 
-Agent Gateway supports several authentication approaches:
+Agentgateway supports several authentication approaches.
 
 | Method | Use Case | Tutorial |
 |--------|----------|----------|

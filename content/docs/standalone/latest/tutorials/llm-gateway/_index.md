@@ -8,15 +8,16 @@ Route requests to OpenAI, Anthropic, Google Gemini, and other LLM providers thro
 
 ## What you'll build
 
-In this tutorial, you'll:
-1. Configure Agent Gateway as an LLM proxy
+In this tutorial, you configure the following.
+
+1. Configure agentgateway as an LLM proxy
 2. Connect to your preferred LLM provider (OpenAI, Anthropic, Gemini, etc.)
 3. Route requests through a unified OpenAI-compatible API
 4. Optionally set up header-based routing to multiple providers
 
 ## Single Provider
 
-### Step 1: Install Agent Gateway
+### Step 1: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -55,7 +56,7 @@ binds:
 EOF
 ```
 
-#### Start Agent Gateway
+#### Start agentgateway
 ```bash
 agentgateway -f config.yaml
 ```
@@ -105,7 +106,7 @@ binds:
 EOF
 ```
 
-#### Start Agent Gateway
+#### Start agentgateway
 ```bash
 agentgateway -f config.yaml
 ```
@@ -150,7 +151,7 @@ binds:
 EOF
 ```
 
-#### Start Agent Gateway
+#### Start agentgateway
 ```bash
 agentgateway -f config.yaml
 ```
@@ -200,7 +201,7 @@ binds:
 EOF
 ```
 
-#### Start Agent Gateway
+#### Start agentgateway
 ```bash
 agentgateway -f config.yaml
 ```
@@ -244,7 +245,7 @@ binds:
 EOF
 ```
 
-#### Start Agent Gateway
+#### Start agentgateway
 ```bash
 agentgateway -f config.yaml
 ```
@@ -295,7 +296,7 @@ binds:
 EOF
 ```
 
-#### Start Agent Gateway
+#### Start agentgateway
 ```bash
 agentgateway -f config.yaml
 ```
@@ -339,7 +340,7 @@ binds:
 EOF
 ```
 
-#### Start Agent Gateway
+#### Start agentgateway
 ```bash
 agentgateway -f config.yaml
 ```
@@ -357,7 +358,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{< /tabs >}}
 
-You should see a response like:
+Example output:
 
 ```json
 {
@@ -453,7 +454,7 @@ binds:
 EOF
 ```
 
-### Step 3: Start Agent Gateway
+### Step 3: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
@@ -461,7 +462,7 @@ agentgateway -f config.yaml
 
 ### Step 4: Open the UI
 
-Go to [http://localhost:15000/ui/](http://localhost:15000/ui/) and click **Routes** to see your configured providers:
+Go to [http://localhost:15000/ui/](http://localhost:15000/ui/) and click **Routes** to see your configured providers.
 
 ![Multiple LLM Providers Routes](/images/tutorials/llm-multiple-providers.png)
 
@@ -470,7 +471,7 @@ The UI shows:
 - **gemini** - Routes requests with `x-provider: gemini` header
 - **openai-default** - Default route for all other requests
 
-Click **Backends** to see all configured AI providers:
+Click **Backends** to see all configured AI providers.
 
 ![Multiple LLM Providers Backends](/images/tutorials/llm-multiple-backends.png)
 
@@ -481,7 +482,7 @@ The Backends page shows:
 
 ### Step 5: Test each provider
 
-Use Anthropic:
+Use Anthropic.
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -490,7 +491,7 @@ curl http://localhost:3000/v1/chat/completions \
   -d '{"model": "claude-sonnet-4-20250514", "messages": [{"role": "user", "content": "Hello!"}]}'
 ```
 
-Use Gemini:
+Use Gemini.
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -499,7 +500,7 @@ curl http://localhost:3000/v1/chat/completions \
   -d '{"model": "gemini-2.0-flash", "messages": [{"role": "user", "content": "Hello!"}]}'
 ```
 
-Use OpenAI (default, no header needed):
+Use OpenAI (default, no header needed).
 
 ```bash
 curl http://localhost:3000/v1/chat/completions \
@@ -509,7 +510,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 ---
 
-## Next Steps
+## Next steps
 
 {{< cards >}}
   {{< card link="/docs/llm/" title="LLM Overview" subtitle="Understanding LLM gateway features" >}}

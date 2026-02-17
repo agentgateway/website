@@ -8,13 +8,14 @@ Enable secure communication between AI agents using the A2A protocol.
 
 ## What you'll build
 
-In this tutorial, you'll:
+In this tutorial, you configure the following.
+
 1. Run a sample A2A "Hello World" agent
-2. Configure Agent Gateway to proxy A2A requests
+2. Configure agentgateway to proxy A2A requests
 3. Discover agent skills through the gateway
 4. Send tasks to the agent and receive responses
 
-## Prerequisites
+## Before you begin
 
 - [uv](https://docs.astral.sh/uv/) installed (for running the sample agent)
 
@@ -25,11 +26,11 @@ This tutorial requires **two terminal windows**:
 | Terminal | Purpose |
 |----------|---------|
 | **Terminal 1** | Run the Hello World A2A agent on port 9999 |
-| **Terminal 2** | Run Agent Gateway on port 3000 |
+| **Terminal 2** | Run agentgateway on port 3000 |
 
 ```
 ┌──────────────┐      ┌──────────────────┐      ┌─────────────────┐
-│   Playground │ ──── │  Agent Gateway   │ ──── │  Hello World    │
+│   Playground │ ──── │  agentgateway   │ ──── │  Hello World    │
 │   (Browser)  │      │     :3000        │      │  Agent :9999    │
 └──────────────┘      └──────────────────┘      └─────────────────┘
                            Terminal 2              Terminal 1
@@ -72,7 +73,7 @@ uv run --python 3.12 .
 **macOS users:** If you see a `pydantic-core` build error about Python version compatibility, make sure to use `--python 3.12` (or 3.11/3.13). Python 3.14 is not yet supported by some dependencies.
 {{< /callout >}}
 
-You should see:
+Example output:
 
 ```
 INFO:     Uvicorn running on http://0.0.0.0:9999 (Press CTRL+C to quit)
@@ -82,9 +83,9 @@ INFO:     Uvicorn running on http://0.0.0.0:9999 (Press CTRL+C to quit)
 
 ---
 
-## Terminal 2: Start Agent Gateway
+## Terminal 2: Start agentgateway
 
-### Step 4: Install Agent Gateway
+### Step 4: Install agentgateway
 
 ```bash
 curl -sL https://agentgateway.dev/install | bash
@@ -109,7 +110,7 @@ binds:
 EOF
 ```
 
-### Step 6: Start Agent Gateway
+### Step 6: Start agentgateway
 
 ```bash
 agentgateway -f config.yaml
@@ -135,7 +136,7 @@ Visit [http://localhost:15000/ui/playground](http://localhost:15000/ui/playgroun
 3. Select the "Returns hello world" skill
 4. Type a message and click **Send Task**
 
-You should see a response:
+Example output:
 
 ```json
 {"kind":"text","text":"Hello World"}
@@ -148,15 +149,15 @@ You should see a response:
 ## What's happening?
 
 - **Terminal 1**: The Hello World agent runs on port 9999 and handles A2A requests
-- **Terminal 2**: Agent Gateway runs on port 3000 and proxies requests to the agent
-- **Browser**: The Playground UI connects through Agent Gateway to interact with the agent
+- **Terminal 2**: Agentgateway runs on port 3000 and proxies requests to the agent
+- **Browser**: The Playground UI connects through agentgateway to interact with the agent
 
-Agent Gateway provides:
+Agentgateway provides:
 - Automatic agent card URL rewriting to point to the gateway
 - Add authentication, rate limiting, and observability transparently
 - A unified endpoint for multiple backend agents
 
-## Next Steps
+## Next steps
 
 {{< cards >}}
   {{< card link="/docs/tutorials/authorization" title="Authorization" subtitle="Add JWT authentication" >}}

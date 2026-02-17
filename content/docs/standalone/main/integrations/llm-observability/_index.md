@@ -4,7 +4,7 @@ weight: 25
 description: Monitor and analyze LLM usage with specialized observability platforms
 ---
 
-Agent Gateway can send LLM telemetry to specialized observability platforms for prompt analytics, cost tracking, and performance monitoring.
+Agentgateway can send LLM telemetry to specialized observability platforms for prompt analytics, cost tracking, and performance monitoring.
 
 {{< cards >}}
   {{< card link="langfuse" title="Langfuse" subtitle="Open-source LLM analytics" >}}
@@ -15,7 +15,7 @@ Agent Gateway can send LLM telemetry to specialized observability platforms for 
 
 ## How it works
 
-Agent Gateway exports LLM telemetry via OpenTelemetry, which can be forwarded to LLM-specific observability platforms. These platforms provide:
+Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to LLM-specific observability platforms. These platforms provide the following.
 
 - **Prompt/response logging** - Full request and response capture
 - **Token usage tracking** - Monitor costs across models and users
@@ -25,7 +25,7 @@ Agent Gateway exports LLM telemetry via OpenTelemetry, which can be forwarded to
 
 ## Configuration
 
-Enable OpenTelemetry tracing with LLM-specific attributes:
+Enable OpenTelemetry tracing with LLM-specific attributes.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -49,7 +49,7 @@ binds:
           key: "$OPENAI_API_KEY"
 ```
 
-Agent Gateway automatically includes these LLM-specific trace attributes:
+Agentgateway automatically includes these LLM-specific trace attributes:
 
 | Attribute | Description |
 |-----------|-------------|

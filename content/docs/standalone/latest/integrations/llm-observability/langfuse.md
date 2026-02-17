@@ -1,7 +1,7 @@
 ---
 title: Langfuse
 weight: 10
-description: Integrate Agent Gateway with Langfuse for LLM analytics and prompt management
+description: Integrate agentgateway with Langfuse for LLM analytics and prompt management
 ---
 
 [Langfuse](https://langfuse.com/) is an open-source LLM observability platform that provides prompt management, analytics, and evaluation.
@@ -58,7 +58,7 @@ service:
       exporters: [otlphttp]
 ```
 
-Configure Agent Gateway:
+Configure agentgateway:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

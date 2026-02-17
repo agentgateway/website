@@ -1,14 +1,14 @@
 ---
 title: Web UIs & Agent Frameworks
 weight: 1
-description: Integrate Agent Gateway with popular web interfaces and agent frameworks for enterprise governance
+description: Integrate agentgateway with popular web interfaces and agent frameworks for enterprise governance
 ---
 
-Agent Gateway provides a unified control plane to secure, observe, and audit all AI communications from web UIs and agent frameworks. By routing LLM, A2A, and MCP traffic through Agent Gateway, enterprises gain complete visibility and governance over their AI infrastructure.
+Agentgateway provides a unified control plane to secure, observe, and audit all AI communications from web UIs and agent frameworks. By routing LLM, A2A, and MCP traffic through agentgateway, enterprises gain complete visibility and governance over their AI infrastructure.
 
-## Why Use Agent Gateway with Web UIs?
+## Why Use agentgateway with Web UIs?
 
-Web UIs and agent frameworks typically connect directly to LLM providers and tool servers, creating blind spots for security and compliance teams. Agent Gateway sits between these interfaces and your AI backends to provide:
+Web UIs and agent frameworks typically connect directly to LLM providers and tool servers, creating blind spots for security and compliance teams. Agentgateway sits between these interfaces and your AI backends to provide the following.
 
 - **Centralized Authentication** - Enforce consistent auth policies across all AI interfaces
 - **Access Control** - Fine-grained RBAC for models, tools, and agent capabilities

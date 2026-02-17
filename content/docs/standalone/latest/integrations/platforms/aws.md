@@ -1,16 +1,16 @@
 ---
 title: AWS
 weight: 30
-description: Deploy Agent Gateway on Amazon Web Services
+description: Deploy agentgateway on Amazon Web Services
 ---
 
-Run Agent Gateway on AWS to leverage Amazon Bedrock, ECS/EKS, and other AWS services.
+Run agentgateway on AWS to leverage Amazon Bedrock, ECS/EKS, and other AWS services.
 
 ## Deployment options
 
 ### Amazon ECS
 
-Run Agent Gateway as an ECS service with Fargate or EC2.
+Run agentgateway as an ECS service with Fargate or EC2.
 
 ```json
 {
@@ -68,7 +68,7 @@ For EKS deployments, use [Agentgateway on Kubernetes](https://agentgateway.dev/d
 
 ## IAM permissions
 
-Create an IAM role for Agent Gateway with these permissions:
+Create an IAM role for agentgateway with these permissions:
 
 ```json
 {
