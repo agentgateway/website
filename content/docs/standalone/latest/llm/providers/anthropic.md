@@ -31,6 +31,7 @@ binds:
         backendAuth:
           key: "$ANTHROPIC_API_KEY"
 ```
+
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
@@ -121,7 +122,7 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
    ```yaml
    cat > config.yaml << EOF
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
+   binds:
    - port: 3000
      listeners:
      - routes:
