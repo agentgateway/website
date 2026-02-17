@@ -53,7 +53,7 @@ These controls allow you to run production-grade agent infrastructure that meets
 
 ## LLM Gateway
 
-Agentgateway can now be used as an "AI Gateway" and route traffic directly to LLMs (OpenAI, Anthropic, Gemini, Bedrock, etc). Top usecases here are unified LLM API, prompt guarding, and resilience (failover, rate limiting, etc).
+Agentgateway can now be used as an "AI Gateway" and route traffic directly to LLMs (OpenAI, Anthropic, Gemini, Bedrock, etc). Top use cases here are unified LLM API, prompt guarding, and resilience (failover, rate limiting, etc).
 
 Agentgateway now provides a unified OpenAI-compatible API across:
 

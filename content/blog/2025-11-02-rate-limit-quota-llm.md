@@ -186,7 +186,7 @@ By enriching with JWT claims (user_id, team, app, env), you can easily break dow
 
 ## Model Failover
 
-While rate limit and attribution makes up a big part of the usage usecases in enterprises to ensure fairness, accounting, and attribution, one aspect that should not get overlooked. Usage is still beholden to the LLM provider and those will have their own usage limits and uptime guarantees. When those limits get exhausted (ie, you hit provider rate limiting / exhaustion of quota) or a particular model has an issue, or the entire provider has out outage, we can't just sit dead in the water. 
+While rate limit and attribution makes up a big part of the usage use cases in enterprises to ensure fairness, accounting, and attribution, one aspect that should not get overlooked. Usage is still beholden to the LLM provider and those will have their own usage limits and uptime guarantees. When those limits get exhausted (ie, you hit provider rate limiting / exhaustion of quota) or a particular model has an issue, or the entire provider has out outage, we can't just sit dead in the water. 
 
 Enterprises will need to effectively plan for failover. If traffic is managed through agentgateway, we can explicitly specify failover rules / degradation paths. For example in the following route, we can explicitly plan to failover from `gpt-5` to `gpt-4o`:
 

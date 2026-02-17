@@ -58,7 +58,7 @@ extAuthz:
 ```
 
 For advanced cases, configure settings for the request to the authorization service, as well as the response from the authorization service.
-For example, configure `redirect` to redirect users to a signin page, and `metadata` to extract information from the authorization response to include in logs. Review the following table for more advanced options.
+For example, configure `redirect` to redirect users to a sign-in page, and `metadata` to extract information from the authorization response to include in logs. Review the following table for more advanced options.
 
 |Option|Description|
 |---|---|

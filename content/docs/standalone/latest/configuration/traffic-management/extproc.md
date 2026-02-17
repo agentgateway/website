@@ -58,7 +58,7 @@ Although agentgateway aims to support the API as closely as possible, there are 
 A non-exhaustive list of these gaps is as follows:
 * Headers and Body are *always* sent, with Body in streaming mode. This means your server must process both headers and the body.
 * `attributes`, `metadata_context`, and `protocol_config` are never sent in requests.
-* `dynamic_metadata`, `mode_override`, and `override_message_timeout` are ignored in all responess.
+* `dynamic_metadata`, `mode_override`, and `override_message_timeout` are ignored in all responses.
 * `clear_route_cache` is ignored in responses. Agentgateway does not have a route cache.
 * `status.CONTINUE_AND_REPLACE` is ignored in responses.
 
