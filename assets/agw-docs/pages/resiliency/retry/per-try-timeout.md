@@ -44,9 +44,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
      hostnames:
      - retry.example
      parentRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: agentgateway-proxy
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches: 
@@ -54,9 +52,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
            type: PathPrefix
            value: /
        backendRefs:
-       - group: ""
-         kind: Service
-         name: httpbin
+       - name: httpbin
          port: 8000
        retry:
          attempts: 3
@@ -79,9 +75,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         hostnames:
         - retry.example
         parentRefs:
-        - group: gateway.networking.k8s.io
-          kind: Gateway
-          name: agentgateway-proxy
+        - name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -89,9 +83,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
               type: PathPrefix
               value: /
           backendRefs:
-          - group: ""
-            kind: Service
-            name: httpbin
+          - name: httpbin
             port: 8000
           name: timeout 
       EOF
@@ -132,9 +124,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         hostnames:
         - retry.example
         parentRefs:
-        - group: gateway.networking.k8s.io
-          kind: Gateway
-          name: agentgateway-proxy
+        - name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
@@ -142,9 +132,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
               type: PathPrefix
               value: /
           backendRefs:
-          - group: ""
-            kind: Service
-            name: httpbin
+          - name: httpbin
             port: 8000
       EOF
       ```
@@ -158,9 +146,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         namespace: httpbin
       spec:
         targetRefs:
-        - kind: Gateway
-          group: gateway.networking.k8s.io
-          name: agentgateway-proxy
+        - name: agentgateway-proxy
           sectionName: http
         retry:
           attempts: 2
@@ -171,7 +157,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    {{% /tab %}}
    {{< /tabs >}}
 
-2. Send a request to the httpbin app along the `retry.example` domain. Verify that the `X-Envoy-Expected-Rq-Timeout-Ms` header is set to the 5 second timeout that you configured.
+2. DELETE? Send a request to the httpbin app along the `retry.example` domain. Verify that the `X-Envoy-Expected-Rq-Timeout-Ms` header is set to the 5 second timeout that you configured.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
@@ -219,7 +205,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    ```
 
 3. Verify that the gateway proxy is configured with the per-try timeout.
-   1. Port-forward the gateway proxy on port 19000.
+   1. Port-forward the gateway proxy on port 15000.
 
       ```sh
       kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
@@ -228,14 +214,14 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    2. Get the configuration of your gateway proxy as a config dump.
 
       ```sh
-      curl -X POST 127.0.0.1:19000/config_dump\?include_eds > gateway-config.json
+      curl -s http://localhost:15000/config_dump\?include_eds > gateway-config.json
       ```
 
    3. Open the config dump and find the route configuration for the `kube_default_reviews_9080` cluster on the `listener~8080~retry_example` virtual host. Verify that the retry policy is set as you configured it.
       
       Example `jq` command:
       ```sh
-      jq '.configs[] | select(."@type" == "type.googleapis.com/envoy.admin.v3.RoutesConfigDump") | .dynamic_route_configs[].route_config.virtual_hosts[] | select(.routes[].route.cluster == "kube_httpbin_httpbin_8000")' gateway-config.json
+      curl -s http://localhost:15000/config_dump | jq '.configs[] | select(."@type" == "type.googleapis.com/envoy.admin.v3.RoutesConfigDump") | .dynamic_route_configs[].route_config.virtual_hosts[] | select(.routes[].route.cluster == "kube_httpbin_httpbin_8000")' gateway-config.json
       ```
       
       Example output: 

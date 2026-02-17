@@ -492,7 +492,6 @@ Simulate a failure for the sample app so that you can verify that the request is
    
    ```sh
    kubectl delete httproute retry -n httpbin
-   kubectl delete httproute retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 2. If you used the AgentgatewayPolicy or Gateway listener tab, delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
    ```sh
