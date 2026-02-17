@@ -135,7 +135,7 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
        - path:
            type: PathPrefix
            value: /mcp
-       # Path to access resouce server metadata
+       # Path to access resource server metadata
        - path:
            type: PathPrefix
            value: /.well-known/oauth-protected-resource/mcp
