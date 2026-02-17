@@ -6,7 +6,7 @@ Set separate timeouts for retries.
 
 ## About per-try timeouts
 
-The per-retry timeout allows you to set a timeout for retried requests. If the timeout expires, AgentGateway cancels the retry attempt and immediately retries on another upstream host. 
+The per-try timeout allows you to set a timeout for retried requests. If the timeout expires, AgentGateway cancels the retry attempt and immediately retries on another upstream host. 
 
 By default, AgentGateway has a default overall request timeout of 15 seconds. A request timeout represents the time AgentGateway waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger request timeout<!--[request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}})--> to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
 
@@ -21,7 +21,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Set up per-retry timeouts
+## Set up per-try timeouts
 
 1. Install the experimental Kubernetes Gateway API CRDs.
    
@@ -29,7 +29,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
    ```
 
-2. Configure the per-retry timeout. You can apply the timeout to an HTTPRoute, or Gateway listener.
+2. Configure the per-try timeout. You can apply the timeout to an HTTPRoute, or Gateway listener.
    {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute (AgentGatewayPolicy),Gateway listener" >}}
    {{% tab tabName="HTTPRoute (Kubernetes GW API)" %}}
    Use the `timeouts.backendRequest` field to configure the per-try timeout. Note that you must set a retry policy also to configure a per-try timeout. 
@@ -61,6 +61,75 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
          backendRequest: 5s 
    EOF
    ```
+
+3. Verify that the gateway proxy is configured with the per-try timeout.
+
+   1. Port-forward the gateway proxy on port 15000.
+
+      ```sh
+      kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+      ```
+
+   2. Get the configuration of your gateway proxy as a config dump and find the route configuration for the cluster. Verify that the policy is set as you configured it, with both a retry and a timeout.
+      
+      Example `jq` command:
+      ```sh
+      curl -s http://localhost:15000/config_dump | jq '[.binds[].listeners | to_entries[] | .value.routes | to_entries[] | select(.value.name == "retry") | .value] | .[0] | { retry: (.inlinePolicies[]? | select(has("retry"))? | .retry), timeout: (.inlinePolicies[]? | select(has("timeout"))? | .timeout) }'
+      ```
+
+      Example output:
+      ```json {linenos=table,hl_lines=[34,35,36,37,38,39,40,41,42,43,44,45],filename="http://localhost:15000/config_dump"}
+      ...
+      "agentgateway-system/agentgateway-proxy.http": {
+        "key": "agentgateway-system/agentgateway-proxy.http",
+        "gatewayName": "agentgateway-proxy",
+        "gatewayNamespace": "agentgateway-system",
+        "listenerName": "http",
+        "hostname": "",
+        "protocol": "HTTP",
+        "routes": {
+          "httpbin/retry.0.0.http": {
+            "key": "httpbin/retry.0.0.http",
+            "name": "retry",
+            "namespace": "httpbin",
+            "hostnames": [
+              "retry.example"
+            ],
+            "matches": [
+              {
+                "path": {
+                  "pathPrefix": "/"
+                }
+              }
+            ],
+            "backends": [
+              {
+                "weight": 1,
+                "service": {
+                  "name": "httpbin/httpbin.httpbin.svc.cluster.local",
+                  "port": 8000
+                }
+              }
+            ],
+            "inlinePolicies": [
+              {
+                "timeout": {
+                  "backendRequestTimeout": "5s"
+                }
+              },
+              {
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "1s",
+                  "codes": [517]
+                }
+              }
+            ]
+          }
+        }}
+      ...
+      ```
+
    {{% /tab %}}
    {{% tab tabName="HTTPRoute (AgentGatewayPolicy)" %}}
    1. Create an HTTPRoute to route requests along the `retry.example` domain to the httpbin app. Note that you add a name `timeout` to your HTTPRoute rule so that you can configure the per-try timeout for that rule later. 
@@ -105,9 +174,84 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         traffic:
           retry:
             attempts: 3
-            backoff: 5s
+            backoff: 1s
             codes: [517]
+          timeouts:
+            request: 5s 
       EOF
+      ```
+
+3. Verify that the gateway proxy is configured with the per-try timeout.
+
+   1. Port-forward the gateway proxy on port 15000.
+
+      ```sh
+      kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+      ```
+
+   2. Get the configuration of your gateway proxy as a config dump and find the route configuration for the cluster. Verify that the policy is set as you configured it, with both a retry and a timeout.
+      
+      Example `jq` command:
+      ```sh
+      curl -s http://localhost:15000/config_dump | jq '[.. | objects | select(has("policy") and .policy.traffic? and ((.policy.traffic.retry? != null) or (.policy.traffic.timeout? != null)) and .name.name? == "retry")] | { retry: (map(select(.policy.traffic.retry?)) | .[0]), timeout: (map(select(.policy.traffic.timeout?)) | .[0]) }'
+      ```
+
+      Example output:
+      ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,47,48,49],filename="http://localhost:15000/config_dump"}
+      ...
+      "policies": [
+        {
+          "key": "traffic/httpbin/retry:retry:httpbin/retry/timeout",
+          "name": {
+            "kind": "AgentgatewayPolicy",
+            "name": "retry",
+            "namespace": "httpbin"
+          },
+          "target": {
+            "route": {
+              "name": "retry",
+              "namespace": "httpbin",
+              "ruleName": "timeout"
+            }
+          },
+          "policy": {
+            "traffic": {
+              "phase": "route",
+              "retry": {
+                "attempts": 3,
+                "backoff": "1s",
+                "codes": [
+                  "517 <unknown status code>"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "key": "traffic/httpbin/retry:timeout:httpbin/retry/timeout",
+          "name": {
+            "kind": "AgentgatewayPolicy",
+            "name": "retry",
+            "namespace": "httpbin"
+          },
+          "target": {
+            "route": {
+              "name": "retry",
+              "namespace": "httpbin",
+              "ruleName": "timeout"
+            }
+          },
+          "policy": {
+            "traffic": {
+              "phase": "route",
+              "timeout": {
+                "requestTimeout": "5s"
+              }
+            }
+          }
+        }
+      ],
+      ...
       ```
    
    {{% /tab %}}
@@ -146,108 +290,99 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         namespace: httpbin
       spec:
         targetRefs:
-        - name: agentgateway-proxy
+        - kind: Gateway
+          group: gateway.networking.k8s.io
+          name: agentgateway-proxy
           sectionName: http
-        retry:
-          attempts: 2
-          backoff: 5s
-          codes: [517]
+        traffic:
+          retry:
+            attempts: 3
+            backoff: 1s
+            codes: [517]
+          timeouts:
+            request: 5s 
       EOF
       ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-2. DELETE? Send a request to the httpbin app along the `retry.example` domain. Verify that the `X-Envoy-Expected-Rq-Timeout-Ms` header is set to the 5 second timeout that you configured.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: retry.example:80"
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vi localhost:8080/anything -H "host: retry.example"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-   
-   Example output: 
-   ```console {hl_lines=[14,15]}
-   ...
-   {
-    "args": {},
-    "headers": {
-      "Accept": [
-        "*/*"
-      ],
-      "Host": [
-        "retry.example"
-      ],
-      "User-Agent": [
-        "curl/8.7.1"
-      ],
-      "X-Envoy-Expected-Rq-Timeout-Ms": [
-        "5000"
-      ],
-      "X-Envoy-External-Address": [
-        "127.0.0.1"
-      ],
-      "X-Forwarded-For": [
-        "10.244.0.55"
-      ],
-      "X-Forwarded-Proto": [
-        "http"
-      ],
-      "X-Request-Id": [
-        "9178dc39-297f-438a-8bd9-4e8203c06b59"
-      ]
-   },
-   ```
 
 3. Verify that the gateway proxy is configured with the per-try timeout.
+
    1. Port-forward the gateway proxy on port 15000.
 
       ```sh
       kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
       ```
 
-   2. Get the configuration of your gateway proxy as a config dump.
-
-      ```sh
-      curl -s http://localhost:15000/config_dump\?include_eds > gateway-config.json
-      ```
-
-   3. Open the config dump and find the route configuration for the `kube_default_reviews_9080` cluster on the `listener~8080~retry_example` virtual host. Verify that the retry policy is set as you configured it.
+   2. Get the configuration of your gateway proxy as a config dump and find the route configuration for the cluster. Verify that the policy is set as you configured it, with both a retry and a timeout.
       
       Example `jq` command:
       ```sh
-      curl -s http://localhost:15000/config_dump | jq '.configs[] | select(."@type" == "type.googleapis.com/envoy.admin.v3.RoutesConfigDump") | .dynamic_route_configs[].route_config.virtual_hosts[] | select(.routes[].route.cluster == "kube_httpbin_httpbin_8000")' gateway-config.json
+      curl -s http://localhost:15000/config_dump | jq '[.. | objects | select(has("policy") and .policy.traffic? and ((.policy.traffic.retry? != null) or (.policy.traffic.timeout? != null)) and .name.name? == "retry")] | { retry: (map(select(.policy.traffic.retry?)) | .[0]), timeout: (map(select(.policy.traffic.timeout?)) | .[0]) }'
       ```
-      
-      Example output: 
-      ```console {hl_lines=[12]}
-      "routes": [
+
+      Example output:
+      ```json {linenos=table,hl_lines=[21,22,23,24,25,26,27,48,49,50],filename="http://localhost:15000/config_dump"}
+      ...
+      "policies": [
         {
-          "match": {
-            "prefix": "/"
+        "retry": {
+          "key": "traffic/httpbin/retry:retry:httpbin/agentgateway-proxy/http",
+          "name": {
+            "kind": "AgentgatewayPolicy",
+            "name": "retry",
+            "namespace": "httpbin"
           },
-          "route": {
-            "cluster": "kube_httpbin_httpbin_8000",
-            "timeout": "5s",
-            "retry_policy": {
-              "retry_on": "cancelled,connect-failure,refused-stream,retriable-headers,retriable-status-codes,unavailable",
-              "num_retries": 3,
-              "per_try_timeout": "5s",
-              "retry_back_off": {
-                "base_interval": "1s"
+          "target": {
+            "gateway": {
+              "gatewayName": "agentgateway-proxy",
+              "gatewayNamespace": "httpbin",
+              "listenerName": "http"
+            }
+          },
+          "policy": {
+            "traffic": {
+              "phase": "route",
+              "retry": {
+                "attempts": 3,
+                "backoff": "1s",
+                "codes": [
+                  "517 <unknown status code>"
+                ]
               }
-            },
-            "cluster_not_found_response_code": "INTERNAL_SERVER_ERROR"
+            }
+          }
+        },
+        "timeout": {
+          "key": "traffic/httpbin/retry:timeout:httpbin/agentgateway-proxy/http",
+          "name": {
+            "kind": "AgentgatewayPolicy",
+            "name": "retry",
+            "namespace": "httpbin"
           },
-          "name": "listener~8080~retry_example-route-0-httproute-retry-httpbin-0-0-matcher-0"
+          "target": {
+            "gateway": {
+              "gatewayName": "agentgateway-proxy",
+              "gatewayNamespace": "httpbin",
+              "listenerName": "http"
+            }
+          },
+          "policy": {
+            "traffic": {
+              "phase": "route",
+              "timeout": {
+                "requestTimeout": "5s"
+              }
+            }
+          }
         }
+      }
       ]
+      ...
       ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+
+
 
 
 
@@ -257,7 +392,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute retry -n httpbin
 ```
 
