@@ -83,6 +83,7 @@ This project has a few custom Hugo shortcodes that are used for content manageme
 - `link-hextra` to link to a topic within the documentation in a way that is compatible with the versioning strategy.
 - `conditional-text` to conditionally include text based on the current section of the docs (`standalone` for the agentgateway binary or `kubernetes` for agentgateway deployed on Kubernetes).
 - `gloss` to add a glossary term to the page.
+- `redirect` to redirect a page to a different location within the doc set that has the same content. Useful for "placeholder" pages where we want the page to appear in several different sections in the navigation, but do not want to duplicate or reuse the content.
 - `reuse` to include a piece of content from the `assets/agw-docs/` directory.
 - `version` to conditionally include text based on the current version. The versions for each section are defined in the `hugo.yaml` file.
 
