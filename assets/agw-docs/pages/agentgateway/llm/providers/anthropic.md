@@ -247,9 +247,13 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
 
 ## Connect to Claude CLI
 
-1. Update your {{< reuse "agw-docs/snippets/backend.md" >}} resource to allow connections to the Claude Code CLI. The following example removes the model that you previously configured and replaces it with `{}`. This configuration allows you to use any model from the Claude Code CLI. If you specify a specific model in the {{< reuse "agw-docs/snippets/backend.md" >}} resource and then use a different model in the Claude Code CLI, you get a 400 HTTP response with an error message similar to `thinking mode isn't enabled`. 
-   
-   In addition, you specify the routes that you want to allow. By default, the Claude Code CLI sends requests to the `/v1/messages` API endpoint. However, it might send requests to other endpoints, such as `/v1/models`. To ensure that the Claude Code CLI forwards these requests to Anthropic accordingly without using the `/v1/messages`, add the `*` passthrough route to your {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+Configure your {{< reuse "agw-docs/snippets/backend.md" >}} resource to allow connections to the Claude Code CLI.
+
+Keep the following things in mind: 
+* **Model selection**: If you specify a specific model in the {{< reuse "agw-docs/snippets/backend.md" >}} resource and then use a different model in the Claude Code CLI, you get a 400 HTTP response with an error message similar to `thinking mode isn't enabled`. To use any model, remove the `spec.ai.provider.anthropic.model` field and replace it with `{}`. 
+* **Routes**: To use the Claude Code CLI, you must explicitly set the routes that you want to allow. By default, the Claude Code CLI sends requests to the `/v1/messages` API endpoint. However, it might send requests to other endpoints, such as `/v1/models`. To ensure that the Claude Code CLI forwards these requests to Anthropic accordingly without using the `/v1/messages` API, add a `*` passthrough route to your {{< reuse "agw-docs/snippets/backend.md" >}} resource as shown in this guide. 
+
+1. Update your {{< reuse "agw-docs/snippets/backend.md" >}} resource to allow connections to the Claude Code CLI. The following example sets the default `/v1/messages` and a catch-all passthrough API endpoints, and allows you to use any  model via the Claude Code CLI. 
    
    ```yaml
    kubectl apply -f- <<EOF
@@ -277,24 +281,24 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Local host" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
 
-   Include a prompt: 
+   Run the Claude Code CLI with a prompt: 
    ```sh
    ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS:80" claude -p "What is a credit card"
    ```
 
-   Start the Claude Code CLI and start prompting it: 
+   Start the Claude Code CLI terminal and start prompting it: 
    ```sh
    ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS:80" claude
    ```
    {{% /tab %}}
    {{% tab tabName="Local host" %}}
 
-   Include a prompt: 
+   Run the Claude Code CLI with a prompt: 
    ```sh
    ANTHROPIC_BASE_URL="http://localhost:8080" claude -p "What is a credit card"
    ```
 
-   Start the Claude Code CLI and start prompting it: 
+   Start the Claude Code CLI terminal and start prompting it: 
    ```sh
    ANTHROPIC_BASE_URL="http://localhost:8080" claude
    ```

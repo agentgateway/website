@@ -117,7 +117,6 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
    ```
 
 2. Start agentgateway with the following configuration. Make sure that the `v1/messages` route is set so that Claude Code can connect to agentgateway.
-   
    ```yaml
    cat > config.yaml << EOF
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
