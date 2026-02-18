@@ -2,7 +2,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/" >}}). 
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}). 
 2. Make sure that your [Amazon credentials](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html) have access to the Bedrock models that you want to use. You can alternatively use an [AWS Bedrock API key](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html). 
 
 ## Set up access to Amazon Bedrock {#setup}
@@ -11,7 +11,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    {{< tabs tabTotal="2" items="AWS credentials,AWS Bedrock API key" >}}
    {{% tab tabName="AWS credentials" %}}
 
-   1. Log in to the [AWS console](https://console.aws.amazon.com) and store your access credentials as environment variables.
+   1. Log in to the [AWS console](https://console.aws.amazon.com/console/home) and store your access credentials as environment variables.
       ```bash
       export AWS_ACCESS_KEY_ID="<aws-access-key-id>"
       export AWS_SECRET_ACCESS_KEY="<aws-secret-access-key>"

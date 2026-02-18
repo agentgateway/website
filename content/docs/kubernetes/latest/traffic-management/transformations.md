@@ -8,7 +8,7 @@ description: Use CEL expressions to transform requests and responses to LLMs, MC
 
 CEL (Common Expression Language) transformations allows you to use dynamic expressions to extract and transform values from requests and responses. 
 
-For an overview of supported CEL expressions, see the [agentgateway docs](https://agentgateway.dev/docs/reference/cel/).
+For an overview of supported CEL expressions, see the [agentgateway docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/).
 
 ## About this guide
 

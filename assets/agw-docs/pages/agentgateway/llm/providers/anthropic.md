@@ -1,4 +1,4 @@
-Configure [Anthropic (Claude)](https://claude.ai/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 ## Before you begin
 
@@ -6,7 +6,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
 
 ## Set up access to Anthropic
 
-1. Get an API key to access the [Anthropic API](https://console.anthropic.com/). 
+1. Get an API key to access the [Anthropic API](https://platform.claude.com/). 
 
 2. Save the API key in an environment variable.
    
@@ -244,5 +244,152 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
      "object": "chat.completion"
    }
    ```
+
+## Connect to Claude CLI
+
+Configure your {{< reuse "agw-docs/snippets/backend.md" >}} resource to allow connections to the Claude Code CLI.
+
+Keep the following things in mind: 
+* **Model selection**: If you specify a specific model in the {{< reuse "agw-docs/snippets/backend.md" >}} resource and then use a different model in the Claude Code CLI, you get a 400 HTTP response with an error message similar to `thinking mode isn't enabled`. To use any model, remove the `spec.ai.provider.anthropic.model` field and replace it with `{}`. 
+* **Routes**: To use the Claude Code CLI, you must explicitly set the routes that you want to allow. By default, the Claude Code CLI sends requests to the `/v1/messages` API endpoint. However, it might send requests to other endpoints, such as `/v1/models`. To ensure that the Claude Code CLI forwards these requests to Anthropic accordingly without using the `/v1/messages` API, add a `*` passthrough route to your {{< reuse "agw-docs/snippets/backend.md" >}} resource as shown in this guide. 
+
+1. Update your {{< reuse "agw-docs/snippets/backend.md" >}} resource to allow connections to the Claude Code CLI. The following example sets the default `/v1/messages` and a catch-all passthrough API endpoints, and allows you to use any model via the Claude Code CLI. 
+   
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: anthropic
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         anthropic: {}
+     policies:
+       ai: 
+         routes:
+           '/v1/messages': Messages
+           '*': Passthrough
+       auth:
+         secretRef:
+           name: anthropic-secret
+   EOF
+   ```
+
+2. Test the connection via the Claude Code CLI by sending a prompt. 
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Local host" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+
+   Run the Claude Code CLI with a prompt: 
+   ```sh
+   ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS:80" claude -p "What is a credit card"
+   ```
+
+   Start the Claude Code CLI terminal and start prompting it: 
+   ```sh
+   ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS:80" claude
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Local host" %}}
+
+   Run the Claude Code CLI with a prompt: 
+   ```sh
+   ANTHROPIC_BASE_URL="http://localhost:8080" claude -p "What is a credit card"
+   ```
+
+   Start the Claude Code CLI terminal and start prompting it: 
+   ```sh
+   ANTHROPIC_BASE_URL="http://localhost:8080" claude
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output: 
+   ```console
+   A credit card is a payment card issued by a financial institution (typically a bank) that allows the cardholder to borrow funds to pay for goods and services, with the agreement to repay the borrowed amount, usually with interest.
+
+   ## Key characteristics:
+
+   **How it works:**
+   - The issuer extends a **credit limit** — the maximum you can spend
+   - You make purchases on credit (borrowed money)
+   - You receive a monthly statement
+   - You can pay the full balance or a minimum payment
+
+   **Costs:**
+   - **APR (Annual Percentage Rate):** Interest charged on unpaid balances, typically 15-30%
+   - **Annual fee:** Some cards charge a yearly fee
+   - **Late fees:** Charged if you miss payment deadlines
+
+   **Benefits:**
+   - Build credit history/score
+   - Purchase protections and fraud liability limits
+   - Rewards (cashback, points, miles)
+   - Emergency purchasing power
+
+   **Key difference from a debit card:**
+   - Debit cards draw directly from your bank account (your money)
+   - Credit cards use borrowed money you repay later
+
+   **Risks:**
+   - Debt accumulation if balances aren't paid in full
+   - High interest charges
+   - Potential negative impact on credit score if mismanaged
+
+   In short: a credit card is a short-term loan instrument that, when used responsibly, offers convenience and benefits, but can become costly if balances carry over month-to-month.
+   ```
+
+<!--
+
+3. Add a prompt guard to your {{< reuse "agw-docs/snippets/backend.md" >}} resource. The following example rejects prompts that contain `credit card` with a custom message. 
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: anthropic
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         anthropic: {}
+     policies:
+       ai: 
+         routes:
+           '/v1/messages': Messages
+           '*': Passthrough
+         promptGuard:
+           request:
+           - response:
+               message: "Rejected due to inappropriate content"
+             regex:
+               action: Reject
+               matches:
+               - "credit card"
+       auth:
+         secretRef:
+           name: anthropic-secret    
+   EOF
+   ```
+
+4. Repeat the same request. 
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Local host" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS:80" claude -p "What is a credit card"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Local host" %}}
+
+   Include a prompt: 
+   ```sh
+   ANTHROPIC_BASE_URL="http://localhost:8080" claude -p "What is a credit card"
+   ```
+
+   {{% /tab %}}
+   {{< /tabs >}}
+
+-->
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

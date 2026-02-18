@@ -33,6 +33,11 @@ build:
     - source: "assets/.*\\.(.*)$"
       target: "$1"
 
+caches:
+  getresource:
+    dir: ":cacheDir/:project"
+    maxAge: 1h  # Cache remote resources for 1 hour to balance freshness and build speed
+
 markup:
   goldmark:
     renderer:
@@ -51,10 +56,10 @@ menu:
       url: /docs
       weight: 2
     - name: Tutorials
-      url: /docs/local/latest/tutorials
+      url: /docs/standalone/latest/tutorials
       weight: 3
     - name: Integrations
-      url: /docs/local/latest/integrations
+      url: /docs/standalone/latest/integrations
       weight: 4
     - name: Blog
       weight: 5
@@ -138,16 +143,21 @@ params:
   
   # Section-specific configurations
   sections:
-    local:
+    standalone:
       versions:
-        - version: "0.12.x"
+        - version: "0.13.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "0.11.x"
-          dropdown: "0.11 (latest)"
+        - version: "0.12.x"
+          dropdown: "0.12 (latest)"
           linkVersion: "latest"
           url: "/latest"
+        # Hide 0.11.x docs until decide if we need to have back versions  
+        # - version: "0.11.x"
+        #   dropdown: "0.11"
+        #   linkVersion: "0.11.x"
+        #   url: "/0.11.x"
     kubernetes:
       versions:
         - version: "2.3.x"
@@ -155,7 +165,7 @@ params:
           linkVersion: "main"
           url: "/main"
         - version: "2.2.x"
-          dropdown: "2.2 beta (latest)"
+          dropdown: "2.2 (latest)"
           linkVersion: "latest"
           url: "/latest"
   

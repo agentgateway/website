@@ -38,7 +38,7 @@
 
 3. Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart.
 
-   1. **Optional**: Pull and inspect the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart values before installation. You might want to update the Helm chart values files to customize the installation. For example, you might change the namespace, update the resource limits and requests, or enable extensions such as for AI. For more information, see [Advanced settings]({{< link-hextra path="/advanced">}}).
+   1. **Optional**: Pull and inspect the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart values before installation. You might want to update the Helm chart values files to customize the installation. For example, you might change the namespace, update the resource limits and requests, or enable extensions such as for AI.
 
       ```sh
       helm pull oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}

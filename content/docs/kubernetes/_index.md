@@ -15,4 +15,4 @@ Select the version for the agentgateway docs.
 {{< /cards >}}
 
 > [!TIP] 
-> Looking to use agentgateway locally and not in a Kubernetes cluster? Check out the [local binary docs]({{< link-hextra path="/local/latest/" >}}) instead.
+> Looking to use agentgateway as a standalone binary and not in a Kubernetes cluster? Check out the [standalone binary docs]({{< link-hextra path="/standalone/latest/" >}}) instead.

@@ -3,7 +3,7 @@ To federate multiple MCP servers on the same gateway, you can use a label select
 This approach makes it easier for you to add more MCP servers by adding labels. It also lets your clients access tools from multiple MCP servers through a single endpoint and MCP connection.
 
 {{< callout type="warning" >}}
-Note that only streamable HTTP is currently supported for label selectors. If you have SSE, use a [static MCP Backend]({{< link-hextra path="/static-mcp">}}).
+Note that only streamable HTTP is currently supported for label selectors. If you have SSE, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
 {{< /callout >}}
 
 ## Before you begin
@@ -207,7 +207,7 @@ Route to the federated MCP servers with agentgateway.
 
 ## Step 3: Verify the connection {#verify}
 
-Use the [MCP Inspector tool](https://modelcontextprotocol.io/legacy/tools/inspector) to verify that you can connect to your federated MCP servers through agentgateway.
+Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspector) to verify that you can connect to your federated MCP servers through agentgateway.
 
 1. Get the agentgateway address.
    

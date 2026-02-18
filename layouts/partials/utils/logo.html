@@ -16,7 +16,7 @@
 {{- $logoLight := "/logo.svg" -}}
 {{- $logoDark := "/logo-dark.svg" -}}
 
-{{- if eq $section "local" -}}
+{{- if eq $section "standalone" -}}
   {{- $logoLight = "/logo-local-binary.svg" -}}
   {{- $logoDark = "/logo-dark-local-binary.svg" -}}
 {{- else if eq $section "kubernetes" -}}

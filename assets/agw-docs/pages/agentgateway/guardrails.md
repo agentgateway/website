@@ -110,7 +110,7 @@ EOF
 ### More information
 
 * [Example scenario](#example-scenario) of a simple Python webhook server that integrates with the Guardrail Webhook API.
-* [Guardrail Webhook API reference docs]({{< link-hextra path="/openapi-spec/">}}).
+* [Guardrail Webhook API reference docs]({{< link-hextra path="/llm/guardrail-api/openapi-spec/">}}).
 
 ## Example scenario
 

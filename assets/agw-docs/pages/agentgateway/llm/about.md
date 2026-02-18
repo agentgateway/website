@@ -10,9 +10,9 @@ While LLMs were originally designed to be trained on text and natural language, 
 
 When adopting an LLM on an enterprise-level, you typically run into the following issues: 
 
-* **Data leakage and privacy**: When interacting with LLMs, it is essential to comply with federal laws and to not leak any PII (personally identifiable information) or other sensitive information in prompts. For example, users might enter personal credit card or customer related information, such as account numbers and names. Attackers might also trick the model into revealing previous user data that is still stored in the context. To prevent sensitive information from leaking to the LLM provider, prompt guards must be in place that help to fitler, block, monitor, and control LLM inputs and outputs to find offensive content, prevent misuse, and ensure ethical and responsible AI usage.
+* **Data leakage and privacy**: When interacting with LLMs, it is essential to comply with federal laws and to not leak any PII (personally identifiable information) or other sensitive information in prompts. For example, users might enter personal credit card or customer related information, such as account numbers and names. Attackers might also trick the model into revealing previous user data that is still stored in the context. To prevent sensitive information from leaking to the LLM provider, prompt guards must be in place that help to filter, block, monitor, and control LLM inputs and outputs to find offensive content, prevent misuse, and ensure ethical and responsible AI usage.
 
-* **Cost controls**: Compared to traditional APIs, LLM queries are long-running, meaning the LLM must parse through its large data set iteratively to compute one token at a time. All tokens must then be summarized to generate a prediction. Given the large amounts of data that the LLM parses, GPUs are required to run LLMs efficently, which are costly to run and maintain. Limiting the amount of tokens that can be used and monitoring token consumption are critical to keep costs to a minimum. 
+* **Cost controls**: Compared to traditional APIs, LLM queries are long-running, meaning the LLM must parse through its large data set iteratively to compute one token at a time. All tokens must then be summarized to generate a prediction. Given the large amounts of data that the LLM parses, GPUs are required to run LLMs efficiently, which are costly to run and maintain. Limiting the amount of tokens that can be used and monitoring token consumption are critical to keep costs to a minimum. 
 
 * **Fan-out patterns**: LLMs are limited by static training data. This limitation can make seemingly simple questions difficult to answer. For example, answering a simple question, such as `What is the weather today?` requires the LLM to have access to several real-time information, such as the location, time, and weather forecast. Integrating LLMs with other MCP servers and agents to perform these tasks becomes essential to accurately answer questions of this nature. 
 
@@ -35,7 +35,7 @@ Review the following table for a list of supported LLM providers.
 | [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock">}}) | ✅           | ✅         |
 | [Anthropic]({{< link-hextra path="/llm/providers/anthropic">}})    | ✅           | ✅         |
 | [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible">}})    | ✅           | ✅         |
-| [Azue OpenAI]({{< link-hextra path="/llm/providers/azureopenai">}})    | ✅           | ✅         |
+| [Azure OpenAI]({{< link-hextra path="/llm/providers/azureopenai">}})    | ✅           | ✅         |
 
 * Chat Completions: support for the `/v1/chat/completions` API.
 * Streaming: support for streaming (`"stream": true` in the completions request)

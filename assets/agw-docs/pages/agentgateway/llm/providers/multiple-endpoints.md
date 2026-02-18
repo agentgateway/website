@@ -48,9 +48,9 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
 
    | Setting | Description |
    |---------|-------------|
-   | `v1/chat/completions` | Routes to the chat completions endpoint with LLM-specific processing. This endpoint is used for chat-based interactions. For more information, see the [OpenAI API docs for the endpoint](https://platform.openai.com/docs/api-reference/chat).|
-   | `v1/embeddings` | Routes to the embeddings endpoint with passthrough processing. This endpoint is used to to get vector embeddings that machine learning models can use more easily than chat-based interactions. For more information, see the [OpenAI API docs for the endpoint](https://platform.openai.com/docs/api-reference/embeddings).|
-   | `v1/models` | Routes to the models endpoint with passthrough processing. This endpoint is used to get basic information about the models that are available. For more information, see the [OpenAI API docs for the endpoint](https://platform.openai.com/docs/api-reference/models/list).|
+   | `v1/chat/completions` | Routes to the chat completions endpoint with LLM-specific processing. This endpoint is used for chat-based interactions. For more information, see the [OpenAI API docs for the endpoint](https://developers.openai.com/api/reference/resources/chat).|
+   | `v1/embeddings` | Routes to the embeddings endpoint with passthrough processing. This endpoint is used to get vector embeddings that machine learning models can use more easily than chat-based interactions. For more information, see the [OpenAI API docs for the endpoint](https://developers.openai.com/api/reference/resources/embeddings).|
+   | `v1/models` | Routes to the models endpoint with passthrough processing. This endpoint is used to get basic information about the models that are available. For more information, see the [OpenAI API docs for the endpoint](https://developers.openai.com/api/reference/resources/models/methods/list).|
    | `*` | Matches any path that doesn't match the specific endpoints otherwise set. Typically, you set this value to `passthrough` to pass through to the provider API without LLM-specific processing.|
 
 2. Create an HTTPRoute resource that routes traffic to the OpenAI {{< reuse "agw-docs/snippets/backend.md" >}} along the `/openai` path matcher. Note that because you set up the `routes` map on the {{< reuse "agw-docs/snippets/backend.md" >}}, you do not need to create any URLRewrite filters to point your route matcher to the correct LLM provider endpoint.

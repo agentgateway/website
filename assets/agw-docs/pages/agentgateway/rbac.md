@@ -4,7 +4,7 @@ Use Common Language Expressions (CEL) expressions to secure access to AI resourc
 
 Agentgateway proxies use CEL expressions to match requests or responses on specific parameters, such as a request header or source address. If the request matches the condition, it is allowed. Requests that do not match any of the conditions are denied. 
 
-For an overview of supported CEL expressions, see the [agentgateway docs](https://agentgateway.dev/docs/reference/cel/).
+For an overview of supported CEL expressions, see the [agentgateway docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/).
 
 ## Before you begin
 

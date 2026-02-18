@@ -44,7 +44,7 @@ Let's see how [agentgateway](https://agentgateway.dev) can be used here.
 
 ## Fine Grained Rate Limiting, Cost Control, Spike Arrest
 
-Agentgateway can perform [rate limiting]({{< relref "/docs/local/latest/configuration/resiliency/rate-limits/" >}}) based on "requests" or "tokens" just like you see from the providers. The time window is configurable, unlike with the providers. You can specify your rate limiting window in terms of seconds, minutes, hours, days, etc. 
+Agentgateway can perform [rate limiting]({{< relref "/docs/standalone/latest/configuration/resiliency/rate-limits/" >}}) based on "requests" or "tokens" just like you see from the providers. The time window is configurable, unlike with the providers. You can specify your rate limiting window in terms of seconds, minutes, hours, days, etc. 
 
 The key to getting "fine-grained" rate limit is in how agentgateway applies these limits. It can do so on a _local_ or _global_ basis. For example, if we configure rate limits locally with the following:
 
@@ -122,7 +122,7 @@ policies:
         type: "tokens"
 ```
 
-This will enforce rate limit per route/user/source_ip tuple. This gives extremely fine-grained control over how to administer rate limiting. This can then be used to control [LLM spend]({{< relref "/docs/local/latest/llm/spending/" >}}).
+This will enforce rate limit per route/user/source_ip tuple. This gives extremely fine-grained control over how to administer rate limiting. This can then be used to control [LLM spend]({{< relref "/docs/standalone/latest/llm/spending/" >}}).
 
 
 ## Enriching Call Metrics
@@ -131,7 +131,7 @@ Once we have fine-grained control over what clients, applications, users, teams,
 
 Organizations are beginning to think about Agentic Infrastructure like they have been thinking about cloud environments for years utilizing failover, High Availability, Usage (in this case, Tokens), and network connectivity. Because of that, understanding what is going on underneath the hood is crucial for all teams utilizing LLMs.
 
-Agentgateway has a [wealth of metrics]({{< relref "docs/local/latest/reference/observability/metrics/" >}}) about LLM usage. The important point here is that the metric dimensions are fully configurable. Let's take a look. Here are the main metrics that get tracked:
+Agentgateway has a [wealth of metrics]({{< relref "docs/standalone/latest/reference/observability/metrics/" >}}) about LLM usage. The important point here is that the metric dimensions are fully configurable. Let's take a look. Here are the main metrics that get tracked:
 
 * **agentgateway_gen_ai_client_token_usage** - Tracks the number of tokens used per request to the LLM. Understanding cost and request size distribution.
 
@@ -186,7 +186,7 @@ By enriching with JWT claims (user_id, team, app, env), you can easily break dow
 
 ## Model Failover
 
-While rate limit and attribution makes up a big part of the usage usecases in enterprises to ensure fairness, accounting, and attribution, one aspect that should not get overlooked. Usage is still beholden to the LLM provider and those will have their own usage limits and uptime guarantees. When those limits get exhausted (ie, you hit provider rate limiting / exhaustion of quota) or a particular model has an issue, or the entire provider has out outage, we can't just sit dead in the water. 
+While rate limit and attribution makes up a big part of the usage use cases in enterprises to ensure fairness, accounting, and attribution, one aspect that should not get overlooked. Usage is still beholden to the LLM provider and those will have their own usage limits and uptime guarantees. When those limits get exhausted (ie, you hit provider rate limiting / exhaustion of quota) or a particular model has an issue, or the entire provider has out outage, we can't just sit dead in the water. 
 
 Enterprises will need to effectively plan for failover. If traffic is managed through agentgateway, we can explicitly specify failover rules / degradation paths. For example in the following route, we can explicitly plan to failover from `gpt-5` to `gpt-4o`:
 

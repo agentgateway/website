@@ -18,13 +18,13 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
 2. From the root directory, build the sample A2A server.
 
    ```sh
-   VERSION={{< reuse "agw-docs/versions/patch-dev.md" >}} make test-a2a-agent-docker
+   VERSION={{< reuse "agw-docs/versions/n-patch.md" >}} make test-a2a-agent-docker
    ```
 
 3. Load the image into your cluster. The following `make` command assumes that you are using a local Kind cluster.
 
    ```sh
-   CLUSTER_NAME=<your-cluster-name> VERSION={{< reuse "agw-docs/versions/patch-dev.md" >}} make kind-load-test-a2a-agent
+   CLUSTER_NAME=<your-cluster-name> VERSION={{< reuse "agw-docs/versions/n-patch.md" >}} make kind-load-test-a2a-agent
    ```
 
 4. Deploy the A2A server. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting. This way, kgateway configures the agentgateway proxy to use  the A2A protocol.
@@ -48,7 +48,7 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
        spec:
          containers:
            - name: a2a-agent
-             image: ghcr.io/kgateway-dev/test-a2a-agent:{{< reuse "agw-docs/versions/patch-dev.md" >}}
+             image: ghcr.io/kgateway-dev/test-a2a-agent:{{< reuse "agw-docs/versions/n-patch.md" >}}
              ports:
                - containerPort: 9090
    ---

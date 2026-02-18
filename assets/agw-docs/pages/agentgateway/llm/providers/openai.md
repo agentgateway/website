@@ -75,7 +75,6 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
        - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
-     - matches:
        - backendRefs:
          - name: openai
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

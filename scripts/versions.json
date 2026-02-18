@@ -1,0 +1,18 @@
+[
+  {
+    "version": "2.3.x",
+    "linkVersion": "main",
+    "url": "main",
+    "apiFile": "api-23x.md",
+    "kgatewayRef": "main",
+    "metricsSnippet": "metrics-control-plane-23x.md"
+  },
+  {
+    "version": "2.2.x",
+    "linkVersion": "latest",
+    "url": "latest",
+    "apiFile": "api-22x.md",
+    "kgatewayRef": "v2.2.x",
+    "metricsSnippet": "metrics-control-plane-22x.md"
+  }
+]
