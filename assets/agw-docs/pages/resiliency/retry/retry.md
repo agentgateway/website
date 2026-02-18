@@ -478,7 +478,7 @@ Simulate a failure for the sample app so that you can verify that the request is
    --tail=1 | grep -E 'retry.example' 
    ```
 
-   Output:
+   Example output:
    ```
    info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/retry endpoint=10.244.0.21:8080 src.addr=127.0.0.1:59284 http.method=GET http.host=retry.example http.path=/status/500 http.version=HTTP/1.1 http.status=500 protocol=http retry.attempt=3 duration=1ms
    ```
