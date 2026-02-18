@@ -155,6 +155,7 @@ Set up retries to the sample app.
           - name: httpbin
             namespace: httpbin
             port: 8000
+          name: http
       EOF
       ```
 
@@ -265,7 +266,7 @@ Set up retries to the sample app.
           backendRefs:
           - name: httpbin
             namespace: httpbin
-            port: 8000 
+            port: 8000
       EOF
       ```
    2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.  
