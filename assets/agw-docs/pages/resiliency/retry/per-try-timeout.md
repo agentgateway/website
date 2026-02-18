@@ -10,8 +10,6 @@ The per-try timeout allows you to set a timeout for retried requests. If the tim
 
 By default, the proxy has a default overall request timeout of 15 seconds. A request timeout represents the time the proxy waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger request timeout<!--[request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}})--> to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
 
-Note that if you configured a global request timeout, the per-try timeout must be less than the global request timeout.
-
 Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} instead. 
 
 
