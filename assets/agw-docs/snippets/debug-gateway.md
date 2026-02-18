@@ -34,6 +34,20 @@
    | stats/prometheus | View metrics that Envoy emitted and sent to the built-in Prometheus instance. |
 
    {{< /conditional-text >}}
+
+   {{< conditional-text include-if="kubernetes" >}}
+   ```sh
+   kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000 &  
+   ```
+
+   Open your browser to the following endpoint.
+
+   | Endpoint | Description| 
+   | -- | -- | 
+   | [http://localhost:15000/config_dump](http://localhost:15000/config_dump) | Get the configuration that is available in the agentgateway proxy. Any custom resources that you create are translated in to agentgateway configuration. Depending on whether or not you enabled resource validation, you might have applied invalid configuration that is rejected in agentgateway. | 
+
+
+   {{< /conditional-text >}}
    
    {{< conditional-text include-if="agentgateway" >}}
    ```sh
