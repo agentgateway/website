@@ -155,7 +155,6 @@ Set up retries to the sample app.
           - name: httpbin
             namespace: httpbin
             port: 8000
-          name: http
       EOF
       ```
 
@@ -166,7 +165,7 @@ Set up retries to the sample app.
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
       metadata:
         name: retry
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        namespace: httpbin
       spec:
         targetRefs:
         - kind: HTTPRoute
@@ -452,7 +451,7 @@ Simulate a failure for the sample app so that you can verify that the request is
    ```
 2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it.
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
    ```
 
 
