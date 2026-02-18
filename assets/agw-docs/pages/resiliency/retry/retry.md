@@ -148,13 +148,14 @@ Set up retries to the sample app.
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
-           - path:
+          - path:
               type: PathPrefix
               value: /
           backendRefs:
           - name: httpbin
             namespace: httpbin
-            port: 8000 
+            port: 8000
+          name: http
       EOF
       ```
 
@@ -221,7 +222,7 @@ Set up retries to the sample app.
               "route": {
                 "name": "retry",
                 "namespace": "agentgateway-system",
-                "ruleName": "http"
+                "ruleName": "agentgateway-proxy"
               }
             },
             "policy": {
