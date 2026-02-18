@@ -1,12 +1,11 @@
-Review the following information about supported release versions for agentgateway. Agentgateway on Kubernetes runs with the [kgateway project](https://github.com/kgateway-dev/kgateway) control plane.
+Review the following information about supported release versions for [agentgateway project](https://github.com/agentgateway/agentgateway).
 
 ## Supported versions
 
-| Kgateway | Release date | Kubernetes | Gateway API`*` | Envoy | Helm | Istio`†` |
-|----------|--------------|------------|----------------|-------|------|----------|
-| 2.2.x | 09 Feb 2026 | 1.31 - 1.35 | 1.4.x | Proxy 1.35, API v3 | >= 3.12 | 1.23 - 1.27 |
-| 2.1.x | 10 Oct 2025 | 1.31 - 1.34 | 1.4.x | Proxy 1.35, API v3 | >= 3.12 | 1.23 - 1.27 |
-| 2.0.x | 01 Apr 2025 | 1.27 - 1.31 | 1.2.x | Proxy 1.33, API v3 | >= 3.12 | 1.18 - 1.23 |
+| Kgateway | Release date | Kubernetes | Gateway API`*` | Helm | Istio`†` |
+|----------|--------------|------------|----------------|------|----------|
+| 2.2.x | 09 Feb 2026 | 1.31 - 1.35 | 1.4.x | >= 3.12 | 1.23 - 1.27 |
+
 
 <!--See tested min/max versions in https://github.com/kgateway-dev/kgateway/tree/main/.github/workflows/.env/nightly-tests-->
 
@@ -38,7 +37,7 @@ You have two options for specifying the variant for a kgateway image in your Hel
 
 ## Release cadence {#cadence}
 
-Stable builds for agentgateway on Kubernetes are released as minor versions approximately every three months. A stable branch for a minor version, such as {{< reuse "/agw-docs/versions/short.md" >}}, is tagged from `main`, and stable builds are supported from that branch.
+Stable builds for agentgateway on Kubernetes are released as minor versions. A stable branch for a minor version, such as {{< reuse "/agw-docs/versions/short.md" >}}, is tagged from `main`, and stable builds are supported from that branch.
 
 ## Release development {#release}
 
