@@ -68,7 +68,7 @@ Set up retries to the sample app.
    | `rules` | The rules to apply to requests. |
    | `matches` | The path to match the request. In this example, you match any requests to the sample app with path prefix `/`. |
    | `path` | The path to match the request.  |
-   | `backendRefs` | The backend service to which the request is sent. In this example, you select the `httpbin` service that you set up in the previous step. |
+   | `backendRefs` | The backend service to which the request is sent. In this example, you select the `httpbin` service that you set up in [before you begin](#before-you-begin). |
    | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
    | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
    | `retry.codes` | The HTTP status codes for which the gateway retries the request. In this example, the request is retried if the backend returns 500 or 503. The gateway also retries on connection failures (for example, connection refused). |
