@@ -1,1 +1,1 @@
-{{< conditional-text include-if="standalone" >}}0.12.0{{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}{{< version include-if="latest">}}2.2.0{{< /version >}}{{< version include-if="main">}}2.3.0-main{{< /version >}}{{< /conditional-text >}}
+{{< conditional-text include-if="standalone" >}}0.12.0{{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}{{< version include-if="latest">}}2.2.1{{< /version >}}{{< version include-if="main">}}2.3.0-main{{< /version >}}{{< /conditional-text >}}

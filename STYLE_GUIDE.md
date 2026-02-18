@@ -178,7 +178,7 @@ Break up long commands into multiple lines.
 helm upgrade -i agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
   --create-namespace \
   --namespace agentgateway-system \
-  --version v2.2.0
+  --version v{{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 
 **Show expected output when helpful:**

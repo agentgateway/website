@@ -76,7 +76,7 @@ helm upgrade -i agentgateway-crds \
   oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
   --create-namespace \
   --namespace agentgateway-system \
-  --version v2.2.0-main
+  --version v{{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 
 ### Install the agentgateway control plane
@@ -85,7 +85,7 @@ helm upgrade -i agentgateway-crds \
 helm upgrade -i agentgateway \
   oci://ghcr.io/kgateway-dev/charts/agentgateway \
   --namespace agentgateway-system \
-  --version v2.2.0-main \
+  --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
   --set controller.image.pullPolicy=Always
 ```
 

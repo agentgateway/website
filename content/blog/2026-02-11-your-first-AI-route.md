@@ -78,13 +78,13 @@ kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/downloa
 # 2. Install AgentGateway CRDs
 helm upgrade -i --create-namespace \
   --namespace agentgateway-system \
-  --version v2.2.0 agentgateway-crds \
+  --version v{{< reuse "agw-docs/versions/n-patch.md" >}} agentgateway-crds \
   oci://ghcr.io/kgateway-dev/charts/agentgateway-crds
 
 # 3. Install AgentGateway control plane
 helm upgrade -i -n agentgateway-system agentgateway \
   oci://ghcr.io/kgateway-dev/charts/agentgateway \
-  --version v2.2.0
+  --version v{{< reuse "agw-docs/versions/n-patch.md" >}}
 
 # 4. Verify installation
 kubectl get pods -n agentgateway-system
