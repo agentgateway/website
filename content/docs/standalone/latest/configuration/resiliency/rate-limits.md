@@ -120,4 +120,4 @@ remoteRateLimit:
     type: tokens # or 'requests'
 ```
 
-Each descriptor value is a [CEL expression]({{< link-hextra path="/operations/cel" >}}).
+Each descriptor value is a [CEL expression]({{< link-hextra path="/configuration/traffic-management/transformations" >}}).

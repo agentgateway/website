@@ -61,7 +61,7 @@ For EKS deployments, use [Agentgateway on Kubernetes](https://agentgateway.dev/d
 | Integration | Purpose |
 |-------------|---------|
 | [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}) | Access Claude, Llama, and other models |
-| [AWS Secrets Manager]({{< link-hextra path="https://aws.amazon.com/secrets-manager/" >}}) | Secure API key storage |
+| [AWS Secrets Manager](https://aws.amazon.com/secrets-manager/) | Secure API key storage |
 | AWS ALB | Load balancing with SSL termination |
 | CloudWatch | Logs and metrics |
 | X-Ray | Distributed tracing |
@@ -96,5 +96,5 @@ Create an IAM role for agentgateway with these permissions:
 ## Learn more
 
 - [Amazon Bedrock Provider]({{< link-hextra path="/llm/providers/bedrock/" >}})
-- [AWS Secrets Manager Integration]({{< link-hextra path="https://aws.amazon.com/secrets-manager/" >}})
+- [AWS Secrets Manager Integration](https://aws.amazon.com/secrets-manager/)
 - [Deployment Guide]({{< link-hextra path="/deployment/" >}})

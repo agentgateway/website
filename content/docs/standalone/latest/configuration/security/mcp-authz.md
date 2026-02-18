@@ -26,4 +26,4 @@ mcpAuthorization:
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
-Refer to the [CEL reference]({{< link-hextra path="/operations/cel" >}}) for allowed variables.
+Refer to the [CEL reference]({{< link-hextra path="/configuration/traffic-management/transformations" >}}) for allowed variables.

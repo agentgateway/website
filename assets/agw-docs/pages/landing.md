@@ -125,7 +125,6 @@ Run agentgateway anywhere—bare metal, VMs, containers, or Kubernetes. Conforma
   {{< card link="agent" title="Agent connectivity" >}}
   {{< card link="traffic-management" title="Traffic management" >}}
   {{< card link="security" title="Security" >}}
-  {{< card link="configuration" title="Configuration" >}}
   {{< card link="observability" title="Observability" >}}
   {{< card link="operations" title="Operations" >}}
   {{< card link="reference" title="Reference" >}}
