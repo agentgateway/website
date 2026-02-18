@@ -1,4 +1,4 @@
-Review the following information about supported release versions for [agentgateway project](https://github.com/agentgateway/agentgateway).
+Review the following information about supported release versions for the [agentgateway project](https://github.com/agentgateway/agentgateway).
 
 ## Supported versions
 
