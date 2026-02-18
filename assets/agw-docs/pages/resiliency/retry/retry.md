@@ -149,7 +149,7 @@ Set up retries to the sample app.
       ```
    
    {{% /tab %}}
-   {{% tab tabName="HTTPRoute (AgentgatewayPolicy)" %}}
+   {{% tab tabName="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
       ```yaml
       kubectl apply -f- <<EOF
