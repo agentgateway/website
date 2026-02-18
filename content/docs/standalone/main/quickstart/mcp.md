@@ -1,5 +1,5 @@
 ---
-title: MCP
+title: MCP servers
 weight: 12
 description: Connect to an MCP server and try tools in the agentgateway playground.
 ---
@@ -8,8 +8,13 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 ## Before you begin
 
-- [Install the agentgateway binary]({{< link-hextra path="/quickstart/#binary" >}}).
-- Install [Node.js](https://nodejs.org/) (to run the MCP server via `npx`).
+1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+
+   ```sh
+   curl -sL https://agentgateway.dev/install | bash
+   ```
+
+2. Install [Node.js](https://nodejs.org/) to run the MCP server via `npx`.
 
 ## Steps
 

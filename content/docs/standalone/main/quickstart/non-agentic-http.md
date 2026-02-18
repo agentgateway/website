@@ -1,5 +1,5 @@
 ---
-title: Non-agentic HTTP
+title: Non-agentic HTTP traffic
 weight: 13
 description: Route HTTP traffic to a non-agentic backend such as httpbin with the agentgateway binary.
 ---
@@ -18,8 +18,13 @@ flowchart LR
 
 ## Before you begin
 
-- [Install the agentgateway binary]({{< link-hextra path="/quickstart/#binary" >}})
-- Install [Docker](https://docs.docker.com/get-docker/) (to run httpbin)
+1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+
+   ```sh
+   curl -sL https://agentgateway.dev/install | bash
+   ```
+
+2. Install [Docker](https://docs.docker.com/get-docker/) to run httpbin.
 
 ## Steps
 

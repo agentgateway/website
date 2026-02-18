@@ -8,8 +8,13 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 ## Before you begin
 
-- [Install the agentgateway binary]({{< link-hextra path="/quickstart/#binary" >}}).
-- Get an [OpenAI API key](https://platform.openai.com/api-keys).
+1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
+   
+   ```sh
+   curl -sL https://agentgateway.dev/install | bash
+   ```
+
+2. Get an [OpenAI API key](https://platform.openai.com/api-keys).
 
 ## Steps
 
