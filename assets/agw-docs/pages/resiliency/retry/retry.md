@@ -490,7 +490,7 @@ Simulate a failure for the sample app so that you can verify that the request is
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Delete the HTTPRoute resource. If you used the HTTPRoute (Kubernetes GW API) tab, the route is in the `httpbin` namespace; otherwise delete from both namespaces as needed.
+1. Delete the HTTPRoute resource. 
    
    ```sh
    kubectl delete httproute retry -n httpbin
