@@ -208,36 +208,34 @@ Set up retries to the sample app.
          ```
 
          Example output:
-         ```json {linenos=table,hl_lines=[19,20,21,22,23,24,25,26],filename="http://localhost:15000/config_dump"}
-         ...
+         ```json {linenos=table,hl_lines=[17,18,19,20,21,22,23,24],filename="http://localhost:15000/config_dump"}
          {
-           "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/retry",
-           "name": {
-             "kind": "AgentgatewayPolicy",
-             "name": "retry",
-             "namespace": "agentgateway-system"
-           },
-           "target": {
-             "route": {
-               "name": "retry",
-               "namespace": "agentgateway-system"
-             }
-           },
-           "policy": {
-             "traffic": {
-               "phase": "route",
-               "retry": {
-                 "attempts": 3,
-                 "backoff": "1s",
-                 "codes": [
-                   "500 Internal Server Error",
-                   "503 Service Unavailable"
-                 ]
-               }
-             }
-           }
-         }
-         ...
+            "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/retry",
+            "name": {
+              "kind": "AgentgatewayPolicy",
+              "name": "retry",
+              "namespace": "agentgateway-system"
+            },
+            "target": {
+              "route": {
+                "name": "retry",
+                "namespace": "agentgateway-system"
+              }
+            },
+            "policy": {
+              "traffic": {
+                "phase": "route",
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "1s",
+                  "codes": [
+                    "500 Internal Server Error",
+                    "503 Service Unavailable"
+                  ]
+                }
+              }
+            }
+          }
          ```
 
     
@@ -317,37 +315,34 @@ Set up retries to the sample app.
 
          Example output:
          ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,27],filename="http://localhost:15000/config_dump"}
-         ...
-         "policies": [
          {
-           "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/agentgateway-proxy/http",
-           "name": {
-             "kind": "AgentgatewayPolicy",
-             "name": "retry",
-             "namespace": "agentgateway-system"
-           },
-           "target": {
-             "gateway": {
-               "gatewayName": "agentgateway-proxy",
-               "gatewayNamespace": "agentgateway-system",
-               "listenerName": "http"
-             }
-           },
-           "policy": {
-             "traffic": {
-               "phase": "route",
-               "retry": {
-                 "attempts": 3,
-                 "backoff": "1s",
-                 "codes": [
-                   "500 Internal Server Error",
-                   "503 Service Unavailable"
-                 ]
-               }
-             }
-           }
-         }]
-         ...
+            "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/agentgateway-proxy/http",
+            "name": {
+              "kind": "AgentgatewayPolicy",
+              "name": "retry",
+              "namespace": "agentgateway-system"
+            },
+            "target": {
+              "gateway": {
+                "gatewayName": "agentgateway-proxy",
+                "gatewayNamespace": "agentgateway-system",
+                "listenerName": "http"
+              }
+            },
+            "policy": {
+              "traffic": {
+                "phase": "route",
+                "retry": {
+                  "attempts": 3,
+                  "backoff": "1s",
+                  "codes": [
+                    "500 Internal Server Error",
+                    "503 Service Unavailable"
+                  ]
+                }
+              }
+            }
+          }
          ```
 
    {{% /tab %}}
@@ -369,46 +364,30 @@ Set up retries to the sample app.
    {{% /tab %}}
    {{< /tabs >}}
 
-   Example output for a successful response:
+   Example output:
 
    ```
+   ...
    < HTTP/1.1 200 OK
-   HTTP/1.1 200 OK
-   < access-control-allow-credentials: true
-   access-control-allow-credentials: true
-   < access-control-allow-origin: *
-   access-control-allow-origin: *
-   < content-type: application/json; encoding=utf-8
-   content-type: application/json; encoding=utf-8
-   < content-length: 146
-   content-length: 146
-   < 
-
-   {
-     "headers": {
-       "Accept": [
-         "*/*"
-       ],
-       "Host": [
-         "retry.example"
-       ],
-       "User-Agent": [
-         "curl/8.7.1"
-      ]
-     }
-   }
+   ...
    ```
 
 5. Verify that the request was not retried.
 
    ```sh
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=1 | grep -E 'retry.example' 
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy \
+   --tail=1 | grep -E 'retry.example' 
    ```
   
-   Example output: The most recent log shows the successful request.
+   Example output:
 
    ```txt
-   info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/retry endpoint=10.244.0.13:8080 src.addr=127.0.0.1:34300 http.method=GET http.host=retry.example http.path=/headers http.version=HTTP/1.1 http.status=200 protocol=http duration=0ms
+   info	request gateway=agentgateway-system/agentgateway-proxy
+   listener=http route=httpbin/retry endpoint=10.244.0.13:8080
+   src.addr=127.0.0.1:34300 http.method=GET http.host=retry.example
+   http.path=/headers http.version=HTTP/1.1 http.status=200
+   protocol=http duration=0ms
    ```
 
 
@@ -449,7 +428,11 @@ Simulate a failure for the sample app so that you can verify that the request is
 
    Example output:
    ```
-   info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/retry endpoint=10.244.0.21:8080 src.addr=127.0.0.1:59284 http.method=GET http.host=retry.example http.path=/status/500 http.version=HTTP/1.1 http.status=500 protocol=http retry.attempt=3 duration=1ms
+   info	request gateway=agentgateway-system/agentgateway-proxy
+   listener=http route=httpbin/retry endpoint=10.244.0.21:8080
+   src.addr=127.0.0.1:59284 http.method=GET http.host=retry.example
+   http.path=/status/500 http.version=HTTP/1.1 http.status=500
+   protocol=http retry.attempt=3 duration=1ms
    ```
 
 
