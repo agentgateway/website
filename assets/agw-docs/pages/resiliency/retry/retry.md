@@ -450,9 +450,10 @@ Simulate a failure for the sample app so that you can verify that the request is
    ```sh
    kubectl delete httproute retry -n httpbin
    ```
-2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it.
+2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it from the namespace you created it in.
    ```sh
    kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 
