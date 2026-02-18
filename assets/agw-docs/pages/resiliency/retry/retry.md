@@ -447,7 +447,7 @@ Set up retries to the sample app.
 
 Simulate a failure for the sample app so that you can verify that the request is retried.
 
-1. Send another request to the sample app. This time, the request fails after retries.
+1. Send another request to the httpbin app along the `/status/500` path. This path returns a 500 HTTP response code. Because the  agentgateway proxy is configured to retry a request when a 500 HTTP response code is received, the proxy starts retrying the request.
    
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
