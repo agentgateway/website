@@ -6,7 +6,7 @@ Set separate timeouts for retries.
 
 ## About per-try timeouts
 
-The per-try timeout allows you to set a timeout for retried requests. If the timeout expires, AgentGateway cancels the retry attempt and immediately retries on another upstream host. 
+The per-try timeout allows you to set a timeout for retried requests. If the timeout expires, the agentgateway proxy cancels the retry attempt and immediately retries on another upstream host. 
 
 By default, AgentGateway has a default overall request timeout of 15 seconds. A request timeout represents the time AgentGateway waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger request timeout<!--[request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}})--> to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
 
