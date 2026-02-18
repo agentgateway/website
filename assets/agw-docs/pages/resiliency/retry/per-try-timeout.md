@@ -53,6 +53,9 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
        retry:
          attempts: 3
          backoff: 1s  
+         codes: 
+         - 500
+         - 503
        timeouts:
          backendRequest: 5s 
    EOF
