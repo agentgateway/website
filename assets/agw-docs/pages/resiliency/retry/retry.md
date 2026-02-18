@@ -436,7 +436,7 @@ Set up retries to the sample app.
    kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=1 | grep -E 'retry.example' 
    ```
   
-   The most recent log shows the successful request.
+   Example output: The most recent log shows the successful request.
 
    ```txt
      info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/retry endpoint=10.244.0.13:8080 src.addr=127.0.0.1:34300 http.method=GET http.host=retry.example http.path=/headers http.version=HTTP/1.1 http.status=200 protocol=http duration=0ms
