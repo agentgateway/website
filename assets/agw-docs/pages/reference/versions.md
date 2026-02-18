@@ -34,11 +34,11 @@ Kgateway supports image variants for the following component images:
 
 You have two options for specifying the variant for a kgateway image in your Helm values:
 * Specify the image variant for all kgateway components in the `global.image.variant` Helm field. Supported values include `standard`, and `distroless`. If unset, the default value is `standard`.
-* Specify images for individual components by using variant tags in the `gloo.<component>.deployment.image.tag` field of the component's Helm settings, such as `quay.io/solo-io/gloo:v{{< reuse "agw-docs/versions/n-patch.md" >}}-distroless`. -->
+* Specify images for individual components by using variant tags in the `gloo.<component>.deployment.image.tag` field of the component's Helm settings, such as `quay.io/solo-io/gloo:v{{< reuse "/agw-docs/versions/n-patch.md" >}}-distroless`. -->
 
 ## Release cadence {#cadence}
 
-Stable builds for agentgateway on Kubernetes are released as minor versions approximately every three months. A stable branch for a minor version, such as {{< reuse "agw-docs/versions/short.md" >}}, is tagged from `main`, and stable builds are supported from that branch.
+Stable builds for agentgateway on Kubernetes are released as minor versions approximately every three months. A stable branch for a minor version, such as {{< reuse "/agw-docs/versions/short.md" >}}, is tagged from `main`, and stable builds are supported from that branch.
 
 ## Release development {#release}
 
@@ -49,7 +49,7 @@ New features for agentgateway are developed on `main` and available as developme
 Development of a quality stable release on `main` typically follows this process:
 
 1. New feature development is suspended on `main`.
-2. Release candidates are created, such as `{{< reuse "agw-docs/versions/short.md" >}}.0-rc1`, `{{< reuse "agw-docs/versions/short.md" >}}.0-rc2`, and so on.
+2. Release candidates are created, such as `{{< reuse "/agw-docs/versions/short.md" >}}.0-rc1`, `{{< reuse "/agw-docs/versions/short.md" >}}.0-rc2`, and so on.
 3. A full suite of tests is performed for each release candidate. Testing includes all documented workflows, a test matrix of all supported platforms, and more.
 4. Documentation for that release is prepared, vetted, and staged.
 5. The stable minor version is released as part of a stable branch, such as `v2.0.x`.
@@ -57,7 +57,7 @@ Development of a quality stable release on `main` typically follows this process
 
 ### Feature development on main branch {#release-main}
 
-Feature development is performed on the `main` branch. Upon a merge to `main`, a development build is automatically released. The current development release is `{{< reuse "agw-docs/versions/patch-dev.md" >}}`. 
+Feature development is performed on the `main` branch. Upon a merge to `main`, a development build is automatically released. The current development release is `{{< reuse "/agw-docs/versions/patch-dev.md" >}}`. 
 
 {{< callout type="warning" >}}
 Development releases are unstable, subject to change, and not recommended for production usage.
@@ -69,4 +69,4 @@ New features are not developed on or backported to stable branches, such as `v2.
 
 ## Experimental features in Gateway API {#experimental-features}
 
-{{< reuse "agw-docs/snippets/k8sgwapi-exp.md" >}}
+{{< reuse "/agw-docs/snippets/k8sgwapi-exp.md" >}}
