@@ -22,4 +22,4 @@ requestHeaderModifier:
 
 More advanced operations are available with the [`transformation` policy](../transformations).
 Like the `HeaderModifier` policies, this can also `add`, `set`, or `remove` headers, but can also manipulate HTTP bodies.
-Additionally, each modification is based on a [CEL expression]({{< link-hextra path="/operations/cel" >}}) rather than static strings.
+Additionally, each modification is based on a [CEL expression]({{< link-hextra path="/configuration/traffic-management/transformations" >}}) rather than static strings.
