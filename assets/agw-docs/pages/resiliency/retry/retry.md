@@ -171,6 +171,7 @@ Set up retries to the sample app.
         - kind: HTTPRoute
           group: gateway.networking.k8s.io
           name: retry
+          sectionName: http
         traffic:
           retry:
             attempts: 3
@@ -219,7 +220,8 @@ Set up retries to the sample app.
             "target": {
               "route": {
                 "name": "retry",
-                "namespace": "agentgateway-system"
+                "namespace": "agentgateway-system",
+                "ruleName": "http"
               }
             },
             "policy": {
