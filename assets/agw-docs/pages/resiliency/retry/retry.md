@@ -67,7 +67,7 @@ Set up retries to the sample app.
    | `parentRefs` | The gateway to which the request is sent. In this example, you select the `agentgateway-proxy` gateway that you set up before you began. |
    | `rules` | The rules to apply to requests. |
    | `matches` | The path to match the request. In this example, you match any requests to the sample app with path prefix `/`. |
-   | `path` | The path to match the request. In this example, you match all paths with the prefix `/`. |
+   | `path` | The path to match the request.  |
    | `backendRefs` | The backend service to which the request is sent. In this example, you select the `httpbin` service that you set up in the previous step. |
    | `retry.attempts` | The number of times to retry the request. In this example, you retry the request 3 times. |
    | `retry.backoff` | The duration to wait before retrying the request. In this example, you wait 1 second before retrying the request. |
