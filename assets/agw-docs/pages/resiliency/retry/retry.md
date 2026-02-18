@@ -473,7 +473,9 @@ Simulate a failure for the sample app so that you can verify that the request is
 2. Verify that the request was retried. Look for `retry.attempt=3` in the output.
 
    ```sh
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=1 | grep -E 'retry.example' 
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy \
+   --tail=1 | grep -E 'retry.example' 
    ```
 
    Output:
