@@ -2,6 +2,15 @@
 
 This framework generates and runs end-to-end tests directly from documentation markdown files. Tests are assembled from code blocks tagged with path selectors, chained across prerequisite files, and executed against a real Kubernetes cluster.
 
+### Dependencies
+
+Install yamltest and cloud-provider-kind to run the tests:
+
+```bash
+npm i -y -g yamltest@latest
+go install sigs.k8s.io/cloud-provider-kind@latest
+```
+
 ---
 
 ## How it works

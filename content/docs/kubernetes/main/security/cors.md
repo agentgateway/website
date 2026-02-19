@@ -7,7 +7,7 @@ test:
     path: experimental
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/operations/sample-app.md
+  - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
   - file: content/docs/kubernetes/main/security/cors.md
     path: cors-in-httproute
@@ -17,7 +17,7 @@ test:
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/operations/sample-app.md
+  - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
   - file: content/docs/kubernetes/main/security/cors.md
     path: cors-in-agentgatewaypolicy
