@@ -8,3 +8,5 @@ resources/
 .devcontainer.json
 .DS_Store
 _plans/
+out/
+**/__pycache__/

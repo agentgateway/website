@@ -1,12 +1,31 @@
 ---
 title: CORS
 weight: 10
-description:
+test:
+  cors-in-httproute:
+  - file: content/docs/kubernetes/latest/install/helm.md
+    path: experimental
+  - file: content/docs/kubernetes/latest/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/security/cors.md
+    path: cors-in-httproute
+
+  cors-in-agentgatewaypolicy:
+  - file: content/docs/kubernetes/latest/install/helm.md
+    path: standard
+  - file: content/docs/kubernetes/latest/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/security/cors.md
+    path: cors-in-agentgatewaypolicy
 ---
 
 Enforce client-site access controls with cross-origin resource sharing (CORS).
 
-{{< callout type="warning" >}} 
+{{< callout type="warning" >}}
 {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 {{< /callout >}}
 
@@ -42,7 +61,7 @@ You can configure the CORS policy at two levels:
 
    {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy"  >}}
    {{% tab tabName="HTTPRoute" %}}
-   ```yaml
+   ```sh,paths="cors-in-httproute"
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -59,11 +78,11 @@ You can configure the CORS policy at two levels:
              cors:
                allowCredentials: true
                allowHeaders:
-                 - Origin               
+                 - Origin
                allowMethods:
                  - GET
                  - POST
-                 - OPTIONS               
+                 - OPTIONS
                allowOrigins:
                  - "https://example.com"
                exposeHeaders:
@@ -76,32 +95,58 @@ You can configure the CORS policy at two levels:
    EOF
    ```
 
+  {{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
+  YAMLTest -f - <<'EOF'
+  - name: CORS preflight returns expected headers
+    http:
+      url: "http://${INGRESS_GW_ADDRESS}:80/get"
+      method: OPTIONS
+      headers:
+        host: www.example.com
+        Origin: https://example.com
+    source:
+      type: local
+    expect:
+      statusCode: 200
+      headers:
+        - name: access-control-allow-origin
+          comparator: equals
+          value: https://example.com
+        - name: access-control-allow-methods
+          comparator: contains
+          value: GET
+        - name: access-control-max-age
+          comparator: equals
+          value: "86400"
+  EOF
+  {{< /doc-test >}}
+
    {{% /tab %}}
    {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
 
-   ```yaml
+   ```sh,paths="cors-in-agentgatewaypolicy"
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: httpbin-cors
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec: 
+   spec:
      targetRefs:
        - group: gateway.networking.k8s.io
          kind: Gateway
-         name: agentgateway-proxy   
+         name: agentgateway-proxy
      traffic:
        cors:
          allowCredentials: true
          allowHeaders:
            - "Origin"
            - "Authorization"
-           - "Content-Type"             
+           - "Content-Type"
          allowMethods:
            - "GET"
            - "POST"
-           - "OPTIONS"               
+           - "OPTIONS"
          allowOrigins:
            - "https://example.com"
          exposeHeaders:
@@ -114,22 +159,22 @@ You can configure the CORS policy at two levels:
    {{< /tabs >}}
 
 2. Send a request to the httpbin app and use `https://example.com` as the origin. Verify that your request succeeds and that you get back the configured CORS headers.
-   
+
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" \
-    -H "Origin: https://example.com" 
+    -H "Origin: https://example.com"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -I -X OPTIONS localhost:8080/headers -H "host: www.example.com" \
-    -H "Origin: https://example.com" 
+    -H "Origin: https://example.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   
+
    Example output: Notice that the `access-control-*` values reflect your CORS policy and change depending on the resources that you created.
    * If you created an HTTPRoute with a CORS filter, you see the `Origin` and `X-HTTPRoute-Header` headers.
    * If you created a TrafficPolicy with a CORS filter, you see the `Origin` and `X-TrafficPolicy-Header` headers.
@@ -145,24 +190,24 @@ You can configure the CORS policy at two levels:
    content-length: 0
    ```
 
-3. Send another request to the httpbin app. This time, you use `notallowed.com` as your origin. Although the request succeeds, you do not get back your configured CORS settings such as max age, allowed origin, or allowed methods, because `notallowed.com` is not configured as a supported origin.  
-   
+3. Send another request to the httpbin app. This time, you use `notallowed.com` as your origin. Although the request succeeds, you do not get back your configured CORS settings such as max age, allowed origin, or allowed methods, because `notallowed.com` is not configured as a supported origin.
+
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" \
-    -H "Origin: https://notallowed.com" 
+    -H "Origin: https://notallowed.com"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -I -X OPTIONS localhost:8080/headers -H "host: www.example.com" \
-    -H "Origin: https://notallowed.com" 
+    -H "Origin: https://notallowed.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   
-   Example output: 
+
+   Example output:
    ```console {hl_lines=[2,3,4,5]}
    HTTP/1.1 200 OK
    access-control-allow-credentials: true
@@ -172,6 +217,32 @@ You can configure the CORS policy at two levels:
    content-length: 0
    ```
 
+  {{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
+  YAMLTest -f - <<'EOF'
+  - name: CORS preflight returns expected headers
+    http:
+      url: "http://${INGRESS_GW_ADDRESS}:80/get"
+      method: OPTIONS
+      headers:
+        host: www.example.com
+        Origin: https://notallowed.com
+    source:
+      type: local
+    expect:
+      statusCode: 200
+      headers:
+        - name: access-control-allow-origin
+          comparator: equals
+          value: https://notallowed.com
+        - name: access-control-allow-methods
+          comparator: contains
+          value: HEAD # contains all methods not just the ones you configured, because the origin is not allowed
+        - name: access-control-max-age
+          comparator: equals
+          value: "3600"
+  EOF
+  {{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -179,7 +250,7 @@ You can configure the CORS policy at two levels:
 {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy" >}}
 {{% tab tabName="HTTPRoute" %}}
 
-Restore the HTTPRoute for the httpbin app. 
+Restore the HTTPRoute for the httpbin app.
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
