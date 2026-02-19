@@ -72,3 +72,68 @@ binds:
         backendAuth:
           key: "$OPENAI_API_KEY"
 ```
+
+## Connect to Codex
+
+Use agentgateway as a proxy to your OpenAI provider from the [Codex](https://chatgpt.com/codex) client.
+
+1. Update your agentgateway configuration to include passthrough routes to the [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses). Leave the OpenAI provider `model` unset so the Codex client's model choice is used.
+   
+   ```yaml
+   cat > config.yaml << 'EOF'
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   binds:
+   - port: 3000
+     listeners:
+     - protocol: HTTP
+       routes:
+       - backends:
+         - ai:
+             name: openai
+             provider:
+               openAI: {}
+         policies:
+           backendAuth:
+             key: "$OPENAI_API_KEY"
+           ai:
+             routes:
+               /v1/chat/completions: completions
+               /v1/responses: passthrough
+               /sse: passthrough
+   EOF
+   ```
+
+2. Point Codex at agentgateway through one of the following methods.
+
+   {{< tabs items="Environment variable,CLI override,Config file" totalItems="3" >}}
+{{% tab tabName="Environment variable" %}}
+
+Codex uses the [OPENAI_BASE_URL](https://developers.openai.com/codex/config-advanced) environment variable to override the default OpenAI endpoint. Use a base URL that includes `/v1` so requests go to `/v1/responses` and OpenAI does not return 404.
+
+```sh
+export OPENAI_BASE_URL="http://localhost:3000/v1"
+codex
+```
+
+{{% /tab %}}
+{{% tab tabName="CLI override" %}}
+
+To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
+
+```sh
+codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via agentgateway"' -c 'model_providers.proxy.base_url="http://localhost:3000/v1"'
+```
+
+{{% /tab %}}
+{{% tab tabName="Config file" %}}
+
+To configure the base URL permanently, add the following to your `~/.codex/config.toml`. See [Advanced Configuration](https://developers.openai.com/codex/config-advanced). The `name` field is required for custom providers.
+
+```toml
+[model_providers.proxy]
+name = "OpenAI via agentgateway"
+base_url = "http://localhost:3000/v1"
+```
+
+{{% /tab %}}
+   {{< /tabs >}}
