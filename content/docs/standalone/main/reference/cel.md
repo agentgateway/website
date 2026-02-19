@@ -87,6 +87,34 @@ remoteRateLimit:
         value: 'has(jwt.sub)'
 ```
 
+## CEL in YAML
+
+When writing CEL expressions in agentgateway, typically they are expressed as YAML string values, which can cause confusion.
+Any string literals within the expression need to be escaped with additional quotes.
+
+These examples all represent the same CEL expression, a string literal `"hello"`.
+
+```yaml
+doubleQuote: "'hello'"
+doubleQuoteEscaped: "\"hello\""
+singleQuote: '"hello"'
+blockSingle: |
+  'hello'
+blockDouble: |
+  "hello"
+```
+
+These examples all represent the same CEL expression, a variable `request`:
+
+```yaml
+doubleQuote: "request"
+singleQuote: 'request'
+block: |
+  request
+```
+
+The `block` style is often the most readable for complex expressions, and also allows for multi-line expressions without needing to escape quotes.
+
 ## Context reference
 
 When using CEL expressions, a variety of variables and functions are made available.
