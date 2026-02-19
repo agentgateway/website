@@ -1,5 +1,5 @@
-1. Create a Gateway that uses the `{{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}` GatewayClass. The following example sets up a Gateway that uses the [default agentgateway proxy template](https://github.com/agentgateway/agentgateway/blob/main/controller/pkg/kgateway/helm/agentgateway/templates/deployment.yaml). 
-   ```yaml
+1. Create a Gateway that uses the `{{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}` GatewayClass. The following example sets up a Gateway that uses the [default agentgateway proxy template](https://github.com/agentgateway/agentgateway/blob/main/controller/pkg/kgateway/helm/agentgateway/templates/deployment.yaml).
+   ```sh,paths="all"
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -17,8 +17,8 @@
            from: All
    EOF
    ```
-   
-2. Verify that the agentgateway proxy is created. 
+
+2. Verify that the agentgateway proxy is created.
 
    * Gateway: Note that it might take a few minutes for an address to be assigned.
    * Pod for `agentgateway-proxy`: The pod has one container: `agent-gateway`.
@@ -27,8 +27,8 @@
    kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
-   
-   Example output: 
+
+   Example output:
    ```
    NAME           CLASS          ADDRESS                                                                  PROGRAMMED   AGE
    agentgateway-proxy   {{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}   a1cff4bd974a34d8b882b2fa01d357f0-119963959.us-east-2.elb.amazonaws.com   True         6m9s
@@ -53,7 +53,7 @@
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-   echo $INGRESS_GW_ADDRESS  
+   echo $INGRESS_GW_ADDRESS
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
