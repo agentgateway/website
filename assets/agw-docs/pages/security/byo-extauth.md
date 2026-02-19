@@ -1,9 +1,3 @@
----
-title: BYO ext auth service
-weight: 100
-description: 
----
-
 Bring your own external authorization service to protect requests that go through your Gateway.
 
 ## About external auth {#about}
@@ -287,6 +281,3 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} gateway-ext-au
 kubectl delete deployment ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
-
-
-
