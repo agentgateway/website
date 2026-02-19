@@ -1,7 +1,7 @@
 ---
 title: Timeouts
 weight: 10
-description: 
+description: Configure timeouts.
 ---
 
 {{< cards >}}
