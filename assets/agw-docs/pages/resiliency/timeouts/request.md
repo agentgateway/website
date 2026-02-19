@@ -1,8 +1,6 @@
-Change the default route-level timeout of 15 seconds with an HTTPRoute or {{< reuse "agw-docs/snippets/kgateway.md" >}} {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. To ensure that your apps are available even if they are temporarily unavailable, you can use timeouts alongside [Retries]({{< link-hextra path="/resiliency/retry/" >}}).
+Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/kgateway.md" >}} {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. To ensure that your apps are available even if they are temporarily unavailable, you can use timeouts alongside [Retries]({{< link-hextra path="/resiliency/retry/" >}}).
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up timeouts {#timeouts}
    
@@ -12,18 +10,17 @@ Specify timeouts for a specific route.
    {{< tabs tabTotal="2" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: TrafficPolicy" >}}
    {{% tab tabName="Option 1: HTTPRoute (Kubernetes GW API)" %}}
    ```yaml
-   kubectl apply -n httpbin -f- <<EOF
+   kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
      name: httpbin-timeout
+     namespace: httpbin
    spec:
      hostnames:
      - timeout.example
      parentRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: http
+     - name: agentgateway-proxy
        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches: 
@@ -31,21 +28,20 @@ Specify timeouts for a specific route.
            type: PathPrefix
            value: /headers
        backendRefs:
-       - group: ""
-         kind: Service
-         name: httpbin
+       - name: httpbin
          port: 8000
+         namespace: httpbin
        timeouts:
-         request: "20s"
+         request: 20s
+         backendRequest: 2s
      - matches: 
        - path:
            type: PathPrefix
            value: /anything
        backendRefs:
-       - group: ""
-         kind: Service
-         name: httpbin
+       - name: httpbin
          port: 8000
+         namespace: httpbin
    EOF
    ```
    {{% /tab %}}
@@ -116,7 +112,7 @@ Specify timeouts for a specific route.
    {{% /tab %}}
    {{< /tabs >}}
 
-2. Send a request to the httpbin app along the `/headers` path that you configured a custom timeout for. Verify that the request succeeds and that you see a `X-Envoy-Expected-Rq-Timeout-Ms` header with the custom timeout of 20 seconds (20000).
+2. Send a request to the httpbin app along the `/headers` path that you configured a custom timeout for. 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
@@ -142,21 +138,12 @@ Specify timeouts for a specific route.
       ],
       "User-Agent": [
         "curl/7.77.0"
-      ],
-      "X-Envoy-Expected-Rq-Timeout-Ms": [
-        "20000"
-      ],
-      "X-Forwarded-Proto": [
-        "http"
-      ],
-      "X-Request-Id": [
-        "0ae53bc3-2644-44f2-8603-158d2ccf9f78"
       ]
     }
    }
    ```
   
-3. Send a request to the httpbin app along the `anything` path that does not have a custom timeout. Verify that the request succeeds and that you see a `X-Envoy-Expected-Rq-Timeout-Ms` header with the default timeout of 15 seconds (15000). 
+3. Send a request to the httpbin app along the `anything` path that does not have a custom timeout.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
@@ -178,19 +165,10 @@ Specify timeouts for a specific route.
         "*/*"
       ],
       "Host": [
-        "www.example.com:8080"
+        "timeout.example"
       ],
       "User-Agent": [
         "curl/7.77.0"
-      ],
-      "X-Envoy-Expected-Rq-Timeout-Ms": [
-        "15000"
-      ],
-      "X-Forwarded-Proto": [
-        "http"
-      ],
-      "X-Request-Id": [
-        "0ae53bc3-2644-44f2-8603-158d2ccf9f78"
       ]
     }
    }
