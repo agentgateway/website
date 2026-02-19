@@ -6,7 +6,6 @@
 When you use API keys, your services are only as secure as the API keys. Storing and rotating the API key securely is up to the user.
 {{< /callout >}}
 
-
 ## API key auth in agentgateway
 
 The agentgateway proxy comes with built-in API key auth support via the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. To secure your services with API keys, first provide your agentgateway proxy with your API keys in the form of Kubernetes secrets. Then in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource, you refer to the secrets in one of two ways.
@@ -14,7 +13,46 @@ The agentgateway proxy comes with built-in API key auth support via the {{< reus
 * Specify a **label selector** that matches the label of one or more API key secrets. Labels are the more flexible, scalable approach.
 * Refer to the **name and namespace** of each secret.
 
-The proxy matches a request to a route that is secured by the external auth policy. The request must have a valid API key in the `Authorization` header to be accepted. You can configure the name of the expected header. If the header is missing, or the API key is invalid, the proxy denies the request and returns a `401` response.
+The proxy matches a request to a route that is secured by the external auth policy. The request must have a valid API key in the `Authorization` header to be accepted. You can configure the name of the expected header. If the header is missing, or the API key is invalid, the proxy denies the request and returns a `401` response. 
+
+The following diagram illustrates the flow: 
+
+```mermaid
+sequenceDiagram
+    participant C as Client / Agent
+    participant AGW as Agentgateway Proxy
+    participant K8s as K8s Secrets<br/>(API Keys)
+    participant Backend as Backend<br/>(LLM / MCP / Agent / HTTP)
+
+    C->>AGW: POST /api<br/>(no Authorization header)
+
+    AGW->>AGW: API key auth check:<br/>No API key found
+
+    AGW-->>C: 401 Unauthorized<br/>"no API Key found"
+
+    Note over C,Backend: Retry with API key
+
+    C->>AGW: POST /api<br/>Authorization: Bearer N2YwMDIx...
+
+    AGW->>K8s: Lookup referenced secret<br/>(by name or label selector)
+    K8s-->>AGW: Secret found
+
+    AGW->>AGW: Compare API key from<br/>request header vs secret
+
+    alt mode: Strict — Key valid
+        AGW->>Backend: Forward request
+        Backend-->>AGW: Response
+        AGW-->>C: 200 OK + Response
+    else Key invalid
+        AGW-->>C: 401 Unauthorized
+    end
+
+    Note over C,Backend: Optional Mode
+
+    rect rgb(245, 245, 255)
+        Note over AGW: mode: Optional<br/>• Valid API key → forward<br/>• Invalid API key → 401 reject<br/>• No API key → allow through
+    end
+```
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

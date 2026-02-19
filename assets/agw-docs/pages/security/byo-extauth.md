@@ -4,31 +4,31 @@ Bring your own external authorization service to protect requests that go throug
 
 {{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway. Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
 
+Review the following diagram to understand the flow of a request: 
+
 ```mermaid
 sequenceDiagram
-    participant Client
-    participant Gateway
-    participant Ext Auth
-    participant Backend
+    participant C as Client / Agent
+    participant AGW as Agentgateway Proxy
+    participant BYO as Your Ext Auth Service<br/>(gRPC)
+    participant Backend as Backend<br/>(LLM / MCP / Agent / HTTP)
 
-    Client->>Gateway: 1. HTTP Request
-    Gateway->>Ext Auth: 2. Authorization Request
-    Ext Auth-->>Gateway: 3. Authorization Decision
-    
+    C->>AGW: Request to protected route
+
+    AGW->>BYO: gRPC Authorization Request<br/>(headers, path, method)
+
+    BYO->>BYO: Custom authorization logic<br/>(check headers, tokens,<br/>database lookups, etc.)
+
     alt Authorized
-        Gateway->>Backend: 4. Forward Request
-        Backend-->>Gateway: Response
-        Gateway-->>Client: Response
+        BYO-->>AGW: ALLOW<br/>(optional: inject headers)
+        AGW->>Backend: Forward request
+        Backend-->>AGW: Response
+        AGW-->>C: 200 OK + Response
     else Not Authorized
-        Gateway-->>Client: 5. 403 Forbidden
+        BYO-->>AGW: DENY<br/>(status code, message)
+        AGW-->>C: 403 Forbidden<br/>"denied by ext_authz"
     end
 ```
-
-1. The Client sends a request to the Gateway.
-2. The Gateway forwards the request to the Ext Auth service.
-3. The Ext Auth service makes a decision as to whether the request is authorized, based on headers, parameters, or other credentials.
-4. If authorized, the Gateway forwards the request to the Backend app, which then sends back a response to the Client through the Gateway.
-5. If not authorized, the Gateway rejects the request and by default returns a 403 Forbidden response to the Client.
 
 ## Before you begin 
 

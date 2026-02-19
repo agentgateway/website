@@ -1,6 +1,43 @@
 
 [Basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) sends encoded user credentials in a standard header within the request. The agentgateway proxy authenticates the request against a dictionary of usernames and passwords that is stored in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. If the credentials in the `Authorization` request header match the credentials in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource, the request is authenticated and forwarded to the destination. If not, the proxy returns a 401 response.
 
+The following diagram illustrates the flow: 
+
+```mermaid
+sequenceDiagram
+    participant C as Client / Agent
+    participant AGW as Agentgateway Proxy
+    participant Backend as Backend<br/>(LLM / MCP / Agent / HTTP)
+
+    C->>AGW: POST /api<br/>(no credentials)
+
+    AGW->>AGW: Basic auth check:<br/>No Authorization header found
+
+    AGW-->>C: 401 Unauthorized<br/>"no basic authentication credentials found"
+
+    Note over C,Backend: Retry with credentials
+
+    C->>AGW: POST /api<br/>Authorization: Basic dXNlcjpwYXNzd29yZA==
+
+    AGW->>AGW: Decode base64 → user:password
+    AGW->>AGW: Lookup user in policy config
+    AGW->>AGW: Verify APR1 hash<br/>(salt + hashed password)
+
+    alt mode: Strict — Credentials valid
+        AGW->>Backend: Forward request
+        Backend-->>AGW: Response
+        AGW-->>C: 200 OK + Response
+    else Credentials invalid
+        AGW-->>C: 401 Unauthorized
+    end
+
+    Note over C,Backend: Optional Mode
+
+    rect rgb(245, 245, 255)
+        Note over AGW: mode: Optional<br/>• Valid credentials → forward<br/>• Invalid credentials → 401 reject<br/>• No credentials → allow through
+    end
+```
+
 The agentgateway proxy requires the password that the user uses to authenticate to be hashed and [salted](https://en.wikipedia.org/wiki/Salt_(cryptography)) by using the [APR1](https://httpd.apache.org/docs/2.4/misc/password_encryptions.html) format. Passwords in this format follow the following pattern: `$apr1$SALT$HASHED_PASSWORD`. You can use tools, such as `htpasswd` to generate a salt and hashed password. 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
