@@ -16,7 +16,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
    kubectl apply -f https://raw.githubusercontent.com/kgateway-dev/kgateway/refs/heads/main/examples/httpbin.yaml
    ```
 
-  <!-- doc-test paths="install-httpbin" -->
+  {{< doc-test paths="install-httpbin" >}}
   YAMLTest -f - <<'EOF'
   - name: wait for httpbin deployment to be ready
     wait:
@@ -33,7 +33,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
         timeoutSeconds: 300
         intervalSeconds: 5
   EOF
-  <!-- /doc-test -->
+  {{< /doc-test >}}
 3. Verify that the httpbin app is up and running.
    ```sh
    kubectl get pods -n httpbin
@@ -59,7 +59,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
    EOF
    ```
 
-  <!-- doc-test paths="install-httpbin" -->
+  {{< doc-test paths="install-httpbin" >}}
   YAMLTest -f - <<'EOF'
   - name: wait for httpbin HTTPRoute to be accepted
     wait:
@@ -90,7 +90,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
         timeoutSeconds: 300
         intervalSeconds: 5
   EOF
-  <!-- /doc-test -->
+  {{< /doc-test >}}
 
 5. Send a request to the httpbin app.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}

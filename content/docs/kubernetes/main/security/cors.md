@@ -95,7 +95,7 @@ You can configure the CORS policy at two levels:
    EOF
    ```
 
-  <!-- doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" -->
+  {{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
   YAMLTest -f - <<'EOF'
   - name: CORS preflight returns expected headers
     http:
@@ -119,7 +119,7 @@ You can configure the CORS policy at two levels:
           comparator: equals
           value: "86400"
   EOF
-  <!-- /doc-test -->
+  {{< /doc-test >}}
 
    {{% /tab %}}
    {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
@@ -217,7 +217,7 @@ You can configure the CORS policy at two levels:
    content-length: 0
    ```
 
-  <!-- doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" -->
+  {{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
   YAMLTest -f - <<'EOF'
   - name: CORS preflight returns expected headers
     http:
@@ -241,7 +241,7 @@ You can configure the CORS policy at two levels:
           comparator: equals
           value: "3600"
   EOF
-  <!-- /doc-test -->
+  {{< /doc-test >}}
 
 ## Cleanup
 

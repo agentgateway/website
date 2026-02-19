@@ -312,7 +312,10 @@ class Extractor:
 
     def _extract_hidden_shell_blocks(self, source_file: Path, text: str) -> List[CodeBlock]:
         blocks: List[CodeBlock] = []
-        pattern = re.compile(r"<!--\s*doc-test\b([^>]*)-->(.*?)<!--\s*/doc-test\s*-->", re.DOTALL)
+        # Format: {{< doc-test paths="..." >}}\nBODY\n{{< /doc-test >}}
+        # An empty shortcode template (layouts/shortcodes/doc-test.html) causes
+        # Hugo to emit nothing for these blocks, keeping tests out of HTML output.
+        pattern = re.compile(r"\{\{<\s*doc-test\b([^>]*?)>\}\}(.*?)\{\{<\s*/doc-test\s*>\}\}", re.DOTALL)
 
         for match in pattern.finditer(text):
             attrs = match.group(1) or ""

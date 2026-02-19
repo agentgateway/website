@@ -48,16 +48,16 @@ Only `sh`/`bash`/`shell`/`yaml`/`yml` blocks are extracted.
 
 ### Tagging hidden command blocks
 
-Use HTML comment directives for commands that must run during tests but must **not** appear on the website (waits, retries, cleanup):
+Use the `{{< doc-test >}}` Hugo shortcode for commands that must run during tests but must **not** appear in the website HTML (waits, retries, cleanup). The shortcode template outputs nothing, so the content is completely absent from rendered pages:
 
 ```md
-<!-- doc-test paths="install-httpbin" -->
+{{< doc-test paths="install-httpbin" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for httpbin deployment
   wait:
     ...
 EOF
-<!-- /doc-test -->
+{{< /doc-test >}}
 ```
 
 The `paths=` attribute works identically to fenced blocks.
@@ -149,12 +149,12 @@ If the same block already belongs to another path and you need to add yours:
 
 ## Waiting for resources with YAMLTest
 
-Use `YAMLTest -f - <<'EOF' ... EOF` inside a hidden `<!-- doc-test ... -->` block immediately after the `kubectl apply` it depends on. The `wait` test type polls a Kubernetes resource until a JSONPath condition is met.
+Use `YAMLTest -f - <<'EOF' ... EOF` inside a `{{< doc-test >}}` shortcode block immediately after the `kubectl apply` it depends on. The `wait` test type polls a Kubernetes resource until a JSONPath condition is met.
 
 ### Wait for a Deployment to be ready
 
 ```md
-<!-- doc-test paths="all" -->
+{{< doc-test paths="all" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for agentgateway-proxy deployment to be ready
   wait:
@@ -171,13 +171,13 @@ YAMLTest -f - <<'EOF'
       timeoutSeconds: 300
       intervalSeconds: 5
 EOF
-<!-- /doc-test -->
+{{< /doc-test >}}
 ```
 
 ### Wait for a Service to get a load balancer address and export it
 
 ```md
-<!-- doc-test paths="all" -->
+{{< doc-test paths="all" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for agentgateway-proxy service LB address
   wait:
@@ -194,7 +194,7 @@ YAMLTest -f - <<'EOF'
       timeoutSeconds: 300
       intervalSeconds: 5
 EOF
-<!-- /doc-test -->
+{{< /doc-test >}}
 ```
 
 `targetEnv` exports the matched value as an environment variable for downstream steps.
@@ -202,7 +202,7 @@ EOF
 ### Wait for an HTTPRoute condition
 
 ```md
-<!-- doc-test paths="install-httpbin" -->
+{{< doc-test paths="install-httpbin" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for httpbin HTTPRoute to be accepted
   wait:
@@ -219,7 +219,7 @@ YAMLTest -f - <<'EOF'
       timeoutSeconds: 300
       intervalSeconds: 5
 EOF
-<!-- /doc-test -->
+{{< /doc-test >}}
 ```
 
 ### Comparators
@@ -238,7 +238,7 @@ EOF
 After all resources are ready and `INGRESS_GW_ADDRESS` is exported, add an HTTP test inside a hidden block on the feature page itself:
 
 ```md
-<!-- doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" -->
+{{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
 YAMLTest -f - <<'EOF'
 - name: CORS preflight returns expected headers
   http:
@@ -262,7 +262,7 @@ YAMLTest -f - <<'EOF'
         comparator: equals
         value: "86400"
 EOF
-<!-- /doc-test -->
+{{< /doc-test >}}
 ```
 
 - `source.type: local` sends the request from the local machine (default).
@@ -337,7 +337,7 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 2. **Verify path labels** on all prerequisite code blocks; add `paths="..."` where missing.
 3. **Add wait blocks** after each `kubectl apply` that creates something tests depend on.
 4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `targetEnv`.
-5. **Add the feature assertion** as a hidden `<!-- doc-test ... -->` block on the feature page.
+5. **Add the feature assertion** as a `{{< doc-test >}}` shortcode block on the feature page.
 6. **Write the `test:` front matter** on the feature page, listing sources in dependency order (install → setup → prereqs → feature).
 7. **Regenerate** with `--generate-only` and inspect the script for unresolved shortcodes or missing commands.
 8. **Run locally** with `bash out/tests/generated/<script>.sh` against an existing cluster to verify before committing.

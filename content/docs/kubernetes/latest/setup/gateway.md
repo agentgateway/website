@@ -14,7 +14,7 @@ Set up an agentgateway proxy.
 
 {{< reuse "agw-docs/snippets/agentgateway-setup.md" >}}
 
-<!-- doc-test paths="all" -->
+{{< doc-test paths="all" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for agentgateway-proxy deployment to be ready
   wait:
@@ -46,7 +46,7 @@ YAMLTest -f - <<'EOF'
       timeoutSeconds: 300
       intervalSeconds: 5
 EOF
-<!-- /doc-test -->
+{{< /doc-test >}}
 
 
 ## Next
