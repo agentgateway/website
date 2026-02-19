@@ -1,22 +1,31 @@
 /**
- * Search section filter - when in standalone or kubernetes docs, show only
- * results from that section. A "Switch to [other] docs" button at the bottom
- * toggles to show the other section's results.
+ * Search section filter:
+ * - On docs (standalone/kubernetes): show only that section's results, with a
+ *   "See results in [other] docs" button to toggle.
+ * - On blog: show only blog results, with a "Search docs" button to show docs
+ *   results (and "Search blog" to switch back).
  */
 (function () {
+  var BLOG_PREFIX = '/blog/';
+  var DOCS_PREFIX = '/docs/';
   var STANDALONE_PREFIX = '/docs/standalone/';
   var KUBERNETES_PREFIX = '/docs/kubernetes/';
   var SWITCHER_ID = 'search-section-switcher';
 
   function getSectionFromPath(pathname) {
+    if (pathname.startsWith(BLOG_PREFIX)) return 'blog';
     if (pathname.startsWith(STANDALONE_PREFIX)) return 'standalone';
     if (pathname.startsWith(KUBERNETES_PREFIX)) return 'kubernetes';
+    if (pathname.startsWith(DOCS_PREFIX)) return 'docs';
     return 'other';
   }
 
   function getCurrentSection() {
     var path = window.location.pathname;
-    return getSectionFromPath(path);
+    if (path.startsWith(BLOG_PREFIX)) return 'blog';
+    if (path.startsWith(STANDALONE_PREFIX)) return 'standalone';
+    if (path.startsWith(KUBERNETES_PREFIX)) return 'kubernetes';
+    return 'other';
   }
 
   function getPathFromHref(href) {
@@ -48,15 +57,36 @@
 
       var path = getPathFromHref(link.getAttribute('href') || '');
       var section = getSectionFromPath(path);
+      /* On blog page, treat all docs (standalone + kubernetes) as one "docs" section */
+      if (currentSection === 'blog' && (section === 'standalone' || section === 'kubernetes')) {
+        section = 'docs';
+      }
       groups.push({ prefix: prevPrefix, node: child, section: section });
       prevPrefix = null;
     }
 
     if (groups.length === 0) return;
 
-    var hasCurrent = groups.some(function (g) { return g.section === currentSection; });
-    var otherSection = currentSection === 'standalone' ? 'kubernetes' : 'standalone';
-    var hasOther = groups.some(function (g) { return g.section === otherSection; });
+    var hasCurrent, hasOther, otherSection, showSection, switcherLabelFn;
+
+    if (currentSection === 'blog') {
+      hasCurrent = groups.some(function (g) { return g.section === 'blog'; });
+      hasOther = groups.some(function (g) { return g.section === 'docs'; });
+      otherSection = 'docs';
+      showSection = hasCurrent ? 'blog' : 'docs';
+      switcherLabelFn = function () {
+        return showSection === 'blog' ? 'Search docs' : 'Search blog';
+      };
+    } else {
+      hasCurrent = groups.some(function (g) { return g.section === currentSection; });
+      otherSection = currentSection === 'standalone' ? 'kubernetes' : 'standalone';
+      hasOther = groups.some(function (g) { return g.section === otherSection; });
+      showSection = hasCurrent ? currentSection : otherSection;
+      switcherLabelFn = function () {
+        var label = showSection === 'standalone' ? 'Kubernetes' : 'Standalone';
+        return 'See results in ' + label + ' docs';
+      };
+    }
 
     if (!hasCurrent && !hasOther) return;
 
@@ -69,9 +99,6 @@
     var existingSwitcher = resultsContainer.querySelector('#' + SWITCHER_ID);
     if (existingSwitcher) existingSwitcher.remove();
 
-    var showSection = currentSection;
-    if (!hasCurrent) showSection = otherSection;
-
     function setVisibility() {
       for (var k = 0; k < groups.length; k++) {
         var grp = groups[k];
@@ -81,8 +108,7 @@
         if (grp.prefix) grp.prefix.style.display = display;
       }
       if (switcherBtn) {
-        var label = showSection === 'standalone' ? 'Kubernetes' : 'Standalone';
-        switcherBtn.textContent = 'See results in ' + label + ' docs';
+        switcherBtn.textContent = switcherLabelFn();
         switcherBtn.dataset.showing = showSection;
       }
     }
@@ -102,7 +128,11 @@
       switcherBtn.dataset.showing = showSection;
 
       switcherBtn.addEventListener('click', function () {
-        showSection = showSection === 'standalone' ? 'kubernetes' : 'standalone';
+        if (currentSection === 'blog') {
+          showSection = showSection === 'blog' ? 'docs' : 'blog';
+        } else {
+          showSection = showSection === 'standalone' ? 'kubernetes' : 'standalone';
+        }
         setVisibility();
       });
 

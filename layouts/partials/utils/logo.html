@@ -30,8 +30,21 @@
   {{- $attributes = .attributes -}}
 {{- end -}}
 
-{{- /* Render logo with dark mode support */ -}}
-{{- if $attributes -}}
+{{- /* forceDark: render only dark logo (e.g. for blog navbar) */ -}}
+{{- $forceDark := false -}}
+{{- if isset . "forceDark" -}}
+  {{- $forceDark = .forceDark -}}
+{{- end -}}
+
+{{- /* Render logo */ -}}
+{{- if $forceDark -}}
+  {{- /* Single dark logo for dark navbar */ -}}
+  {{- if $attributes -}}
+    <img src="{{ $logoDark }}" alt="agentgateway logo" {{ $attributes | safeHTML }} />
+  {{- else -}}
+    <img src="{{ $logoDark }}" alt="agentgateway logo" height="50" />
+  {{- end -}}
+{{- else if $attributes -}}
   <img src="{{ $logoLight }}" alt="agentgateway logo" class="dark:hidden" {{ $attributes | safeHTML }} />
   <img src="{{ $logoDark }}" alt="agentgateway logo" class="hidden dark:block" {{ $attributes | safeHTML }} />
 {{- else -}}
