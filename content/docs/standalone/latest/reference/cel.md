@@ -107,10 +107,10 @@ blockDouble: |
 These examples all represent the same CEL expression, a variable `request`:
 
 ```yaml
-doubleQuote: "hello"
-singleQuote: 'hello'
+doubleQuote: "request"
+singleQuote: 'request'
 block: |
-  hello
+  request
 ```
 
 The `block` style is often the most readable for complex expressions, and also allows for multi-line expressions without needing to escape quotes.
