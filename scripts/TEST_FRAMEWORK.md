@@ -8,6 +8,7 @@ Install yamltest and cloud-provider-kind to run the tests:
 
 ```bash
 npm i -y -g yamltest@latest
+pip3 install PyYAML
 go install sigs.k8s.io/cloud-provider-kind@latest
 ```
 
