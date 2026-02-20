@@ -11,7 +11,7 @@ Review the following table to compare agentgateway's support of different LLM pr
 | Token Count | ❌ No | ✅ Native|  ✅ Translation | ❌ No| ❌ No | ✅ Translation |
 
 **Notes**:
-- **✅ Native**: Agentgateway supports the API natively, mostly via passthrough. As such, even if you use extra fields or new models, the proxying likely works.
+- **✅ Native**: Agentgateway has complete support for the API, and the provider supports the API natively. This allows Agentgateway to passthrough unknown fields without change. As such, even if you use extra fields or new models, the proxying likely works.
 - **✅ Translation**: Agentgateway translates from one API to another. As such, agentgateway only supports fields that it aware of. New models or LLM APIs require code changes that can impact functionality. For example, Opus 4.6 added adaptive thinking, which required updates to agentgateway's support of Amazon Bedrock. In the interim, using the Opus 4.6 model on Bedrock was not supported.
 - **❌ No**: Agentgateway does not currently support the API for this provider.
 - `*`: Agentgateway supports the API natively via a compatibility endpoint. Note that Google Gemini does a translation for their Completions API support.
