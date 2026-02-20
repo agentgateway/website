@@ -291,13 +291,7 @@ You should see MCP connection events and tool call forwards to `api.githubcopilo
 
 ## IDE Comparison
 
-| IDE | Config File | Transport | Auth Headers |
-|-----|------------|-----------|--------------|
-| **Cursor** | `~/.cursor/mcp.json` | streamable-http | ✅ supported |
-| **VS Code** | `settings.json` | streamable-http | ✅ supported |
-| **Windsurf** | `~/.windsurf/mcp.json` | streamable-http | ✅ supported |
-| **Claude Code** | `.mcp.json` or CLI | SSE | ✅ supported |
-| **OpenCode** | `opencode.json` | SSE | ✅ supported |
+{{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
 
 > **Note**: All IDEs connect to the same `http://localhost:8080/github/mcp` endpoint. The gateway doesn't care which client is calling — it applies the same auth, rate limiting, and observability to all of them.
 

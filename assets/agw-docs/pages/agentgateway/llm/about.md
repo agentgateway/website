@@ -24,19 +24,9 @@ When adopting an LLM on an enterprise-level, you typically run into the followin
 
 ## Supported providers
 
-Review the following table for a list of supported LLM providers.
+{{< callout type="info" >}}
+Don't see your provider? You might still be able to use it with agentgateway! Many LLM providers offer OpenAI-compatible APIs. To get started, follow the [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) docs.
+{{< /callout >}}
 
-
-| Provider                  | Chat Completions | Streaming |
-|---------------------------|:---------------:|:---------:|
-| [OpenAI]({{< link-hextra path="/llm/providers/openai">}})          | ✅           | ✅         |
-| [Vertex AI]({{< link-hextra path="/llm/providers/vertex">}})      | ✅           | ✅         |
-| [Gemini]({{< link-hextra path="/llm/providers/gemini">}})          | ✅           | ✅         |
-| [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock">}}) | ✅           | ✅         |
-| [Anthropic]({{< link-hextra path="/llm/providers/anthropic">}})    | ✅           | ✅         |
-| [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible">}})    | ✅           | ✅         |
-| [Azure OpenAI]({{< link-hextra path="/llm/providers/azureopenai">}})    | ✅           | ✅         |
-
-* Chat Completions: support for the `/v1/chat/completions` API.
-* Streaming: support for streaming (`"stream": true` in the completions request)
+{{< reuse "agw-docs/snippets/llm-comparison.md" >}}
 
