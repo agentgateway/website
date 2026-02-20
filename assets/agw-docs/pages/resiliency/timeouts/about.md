@@ -4,12 +4,12 @@ The time an app needs to process a request can vary a lot. For this reason, appl
 
 ## Configuration options
 
-You can configure different types of timeouts by using a Kubernetes Gateway API-native configuration, HTTPListenerPolicy, or a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} as shown in the following table.
+You can configure different types of timeouts by using a Kubernetes Gateway API-native configuration or an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} as shown in the following table.
 
 | Type of timeout| Description | Configured via | Attach to | 
 | -- | -- | -- | --- | 
 | [Request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}}) | Request timeouts configure the time the proxy allows for the entire request stream to be received from the client. | <ul><li>HTTPRoute </li><li>{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} </li></ul>| <ul><li>HTTPRoute </li><li>HTTPRoute rule </li></ul> | 
-| [Idle timeout]({{< link-hextra path="/resiliency/timeouts/idle/" >}})  | An idle timeout is the time when the proxy terminates the connection to a downstream or upstream service if there no active streams.| <ul><li>HTTPRoute </li><li>{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} </li> | <ul><li>Gateway listener</ul> | 
+| [Idle timeout]({{< link-hextra path="/resiliency/timeouts/idle/" >}})  | An idle timeout is the time when the proxy terminates the connection to a downstream or upstream service if there no active streams.| <ul><li>{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} </li> | <ul><li>Gateway listener</ul> | 
 | [Per-try timeout]({{< link-hextra path="/resiliency/retry/per-try-timeout" >}}) | Set a shorter timeout for retries than the overall request timeout.  | <ul><li>HTTPRoute</li><li>{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} </li></ul>| <ul><li>HTTPRoute </li><li>HTTPRoute rule</li><li>Gateway listener ({{< reuse "agw-docs/snippets/trafficpolicy.md" >}} only)</li></ul> | 
 
 
