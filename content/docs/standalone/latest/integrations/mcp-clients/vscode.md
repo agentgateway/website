@@ -12,16 +12,16 @@ Configure Visual Studio Code to use **agentgateway** via GitHub Copilot's native
 * **GitHub Copilot Chat** enabled.
 * **Agent Mode** active (MCP tools are primarily utilized when Copilot is in "Agent" mode).
 
-## Configuration Locations
+## Configuration locations
 
-VS Code now reads MCP configurations from two primary locations. You no longer need to bury these in the giant `settings.json` file, though that still works.
+VS Code reads MCP configurations from two primary locations. You no longer need to set these in the giant `settings.json` file. However, you can continue to use the `settings.json` file if your workflows depend on it. 
 
 1. **Global (All Projects):** Create or edit `%USERPROFILE%\.mcp.json` (Windows) or `~/.mcp.json` (macOS/Linux).
-2. **Workspace (Current Project):** Create or edit `.vscode/mcp.json` in your project root.
+2. **Workspace (Current Project):** Create or edit `.vscode/mcp.json` in your project root directory.
 
-## Server Configuration
+## Server configuration
 
-Add the following to your `mcp.json` file:
+Add the following snippet to your `mcp.json` file:
 
 ```json
 {
@@ -38,9 +38,9 @@ Add the following to your `mcp.json` file:
 
 You have two ways to handle security, depending on your setup:
 
-### Option 1: Native MCP Authentication Flow
+### Option 1: Native MCP authentication flow
 
-If your agentgateway is configured to use an OIDC/OAuth provider (like Okta or Entra ID), VS Code will automatically detect the challenge and prompt you to "Sign In" via a browser pop-up.
+If your agentgateway proxy is configured to use an OIDC/OAuth provider (like Okta or Entra ID), VS Code automatically detects the challenge and prompts you to "Sign In" via a browser pop-up.
 
 ```json
 {
@@ -53,9 +53,9 @@ If your agentgateway is configured to use an OIDC/OAuth provider (like Okta or E
 }
 ```
 
-### Option 2: Manual Bearer Token
+### Option 2: Manual bearer token
 
-If you prefer to explicitly pass a token (e.g., for local development or simple API key setups), use the `headers` object:
+If you prefer to explicitly pass a token, such as for local development or simple API key setups, use the `headers` object:
 
 ```json
 {
@@ -77,4 +77,4 @@ If you prefer to explicitly pass a token (e.g., for local development or simple 
 2. **Open Chat:** Open the GitHub Copilot Chat panel.
 3. **Switch to Agent Mode:** Ensure the dropdown at the bottom of the chat is set to **Agent**.
 4. **Check Tools:** Click the **Tools (plus icon)** in the chat box. You should see `agentgateway` listed with its available tools.
-5. **Test:** Type `#` followed by a tool name (e.g., `#get_k8s_logs`) to see it in action.
+5. **Test:** Type `#` followed by a tool name, such as `#get_k8s_logs` to see it in action.
