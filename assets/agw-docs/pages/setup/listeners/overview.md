@@ -1,4 +1,4 @@
-Set up listeners on your API Gateway. A listener configures how your API Gateway accepts and processes incoming requests.
+Set up listeners on your agentgateway proxy. A listener configures how your proxy accepts and processes incoming requests.
 
 In the Kubernetes Gateway API, you can create listeners in two main ways:
 
@@ -14,7 +14,7 @@ Most examples in both the {{< reuse "agw-docs/snippets/kgateway.md" >}} and Kube
 ## ListenerSets (experimental) {#listenersets}
 
 {{< callout type="warning" >}}
-{{< reuse "agw-docs/versions/warn-2-1-only.md" >}} {{< reuse "agw-docs/versions/warn-experimental.md" >}} As such, the ListenerSet CRD is prefixed with `X` to indicate that it is experimental.
+{{< reuse "agw-docs/versions/warn-experimental.md" >}} As such, the ListenerSet CRD is prefixed with `X` to indicate that it is experimental.
 {{< /callout >}}
 
 With ListenerSets, you can group together listeners that have their own unique configuration, such as different protocols, ports, hostnames, or TLS settings. Then, the ListenerSet refers to a Gateway, which can be in a different namespace than the ListenerSet. The same Gateway can also have multiple ListenerSets.

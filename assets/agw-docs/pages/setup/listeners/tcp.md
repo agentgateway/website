@@ -6,19 +6,12 @@ The following guide deploys a sample TCP echo app, sets up a TCP listener on the
 
 ## Before you begin
 
-1. Follow the [Get started guide]({{< link-hextra path="/quickstart">}}) to install {{< reuse "agw-docs/snippets/kgateway.md" >}}.
-
-2. Install the experimental channel of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} so that you can use TCPRoutes.
-
-   ```shell
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml
+1. Install the experimental channel of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} so that you can use TCPRoutes.
+   ```sh
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```
 
-3. {{< reuse "agw-docs/snippets/prereq-listenerset.md" >}}
-
-   **ListenerSets**: {{< reuse "agw-docs/versions/warn-2-1-only.md" >}} Also, you must install the experimental channel of the Kubernetes Gateway API at version 1.3 or later.
-
-4. Deploy the sample TCP echo app.
+2. Deploy the sample TCP echo app.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -56,13 +49,9 @@ The following guide deploys a sample TCP echo app, sets up a TCP listener on the
 
 ## Set up the Gateway for TCP routes {#tcp-setup}
 
-Create a TCP listener so that the gateway can route TCP traffic. In the following example, all TCP streams on port 8000 of the gateway are forwarded to port 1025 of the example TCP echo service.
+Create a TCP listener so that the Gateway can serve TCP traffic. In the following example, all TCP streams on port 8000 of the gateway are forwarded to port 1025 of the example TCP echo service.
 
-If you plan to set up your listener as part of a ListenerSet, keep the following considerations in mind. For more information, see [ListenerSets (experimental)]({{< link-hextra path="/setup/listeners/overview/#listenersets" >}}).
-* {{< reuse "agw-docs/versions/warn-2-1-only.md" >}} 
-* You must install the experimental channel of the Kubernetes Gateway API at version 1.3 or later.
-
-1. Create a Gateway with a TCP listener. {{< reuse "agw-docs/snippets/agw-gatewayclass-choice.md" >}}
+1. Create a Gateway with a TCP listener. 
    {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
    ```yaml
@@ -90,7 +79,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
  
    |Setting|Description|
    |--|--|
-   |`spec.gatewayClassName`| The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you. {{< reuse "agw-docs/snippets/agw-gatewayclass-choice.md" >}} |
+   |`spec.gatewayClassName`| The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you.  |
    |`spec.listeners`|Configure the listeners for this Gateway. In this example, you configure a TCP Gateway that listens for incoming traffic on port 8000. The Gateway can serve TCPRoutes from any namespace. |
 
    {{% /tab %}}
@@ -126,7 +115,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
    
       |Setting|Description|
       |---|---|
-      |`spec.gatewayClassName`|The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you. {{< reuse "agw-docs/snippets/agw-gatewayclass-choice.md" >}}|
+      |`spec.gatewayClassName`|The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you. |
       |`spec.allowedListeners`|Enable the attachment of ListenerSets to this Gateway. The example allows listeners from any namespace.|
       |`spec.listeners`|{{< reuse "agw-docs/snippets/generic-listener.md" >}} In this example, the generic listener is configured on port 80, which differs from port 8000 in the ListenerSet that you create later.|
    
@@ -179,13 +168,13 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
      - type: IPAddress
        value: ${INGRESS_GW_ADDRESS}
      conditions:
-     - lastTransitionTime: "2024-11-20T16:01:25Z"
+     - lastTransitionTime: "2026-02-20T16:01:25Z"
        message: ""
        observedGeneration: 2
        reason: Accepted
        status: "True"
        type: Accepted
-     - lastTransitionTime: "2024-11-20T16:01:25Z"
+     - lastTransitionTime: "2026-02-20T16:01:25Z"
        message: ""
        observedGeneration: 2
        reason: Programmed
