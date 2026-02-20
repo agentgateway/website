@@ -1,4 +1,4 @@
-Create an HTTPS listener on your API gateway. Then, your API gateway listens for secured HTTPS traffic on the specified port and hostname that you configure. 
+Create an HTTPS listener on your agentgateway proxy so that your proxy listens for secured HTTPS traffic.
 
 ## Before you begin
 
@@ -12,11 +12,7 @@ Create an HTTPS listener on your API gateway. Then, your API gateway listens for
 
 Set up an HTTPS listener on your Gateway. 
 
-If you plan to set up your listener as part of a ListenerSet, keep the following considerations in mind. For more information, see [ListenerSets (experimental)]({{< link-hextra path="/setup/listeners/overview/#listenersets" >}}).
-* {{< reuse "agw-docs/versions/warn-2-1-only.md" >}} 
-* You must install the experimental channel of the Kubernetes Gateway API at version 1.3 or later.
-
-1. Create a gateway resource with an HTTPS listener. {{< reuse "agw-docs/snippets/agw-gatewayclass-choice.md" >}}
+1. Create a Gateway resource with an HTTPS listener. The following Gateway listener terminates incoming TLS traffic on port 443 by using the TLS certificates that you created earlier. 
 
    {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
@@ -50,7 +46,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
 
    |Setting|Description|
    |---|---|
-   |`spec.gatewayClassName`|The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you. {{< reuse "agw-docs/snippets/agw-gatewayclass-choice.md" >}} |
+   |`spec.gatewayClassName`|The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you.  |
    |`spec.listeners`|Configure the listeners for this Gateway. The Gateway can serve HTTPS routes from any namespace. |
    |`spec.listeners.tls.mode`|The TLS mode that you want to use for incoming requests. In this example, HTTPS requests are terminated at the Gateway and the unencrypted request is forwarded to the service in the cluster. |
    |`spec.listeners.tls.certificateRefs`|The Kubernetes secret that holds the TLS certificate and key for the Gateway. The Gateway uses these credentials to establish the TLS connection with a client, and to decrypt incoming HTTPS requests.|
@@ -75,9 +71,9 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
           namespaces:
             from: All        
         listeners:
-        - protocol: HTTPS
+        - protocol: HTTP
           port: 80
-          name: https
+          name: http-dummy
           allowedRoutes:
             namespaces:
               from: All
@@ -88,12 +84,11 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
 
       |Setting|Description|
       |---|---|
-      |`spec.gatewayClassName`|The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you. {{< reuse "agw-docs/snippets/agw-gatewayclass-choice.md" >}} |
+      |`spec.gatewayClassName`|The name of the Kubernetes GatewayClass that you want to use to configure the Gateway. When you set up {{< reuse "agw-docs/snippets/kgateway.md" >}}, a default GatewayClass is set up for you.  |
       |`spec.allowedListeners`|Enable the attachment of ListenerSets to this Gateway. The example allows listeners from any namespace, which is helpful in multitenant environments. You can also limit the allowed listeners. To limit to listeners in the same namespace as the Gateway, set this value to `Same`. To limit to listeners with a particular label, set this value to `Selector`. |
       |`spec.listeners`| {{< reuse "agw-docs/snippets/generic-listener.md" >}} In this example, the generic listener is configured on port 80, which differs from port 443 in the ListenerSet that you create later. |
 
    2. Create a ListenerSet that configures an HTTPS listener for the Gateway.
-
       ```yaml
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.x-k8s.io/v1alpha1
@@ -142,7 +137,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
    kubectl get gateway https -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
    ```
 
-3. Create an HTTPRoute resource for the httpbin app that is served by the gateway or ListenerSet that you created.
+3. Create an HTTPRoute resource for the httpbin app that is served by the Gateway or ListenerSet that you created.
    
    {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
@@ -203,21 +198,7 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
    ```yaml
    ...
    status:
-     parents:
-     - conditions:
-       - lastTransitionTime: "2025-04-29T20:48:51Z"
-         message: ""
-         observedGeneration: 3
-         reason: Accepted
-         status: "True"
-         type: Accepted
-       - lastTransitionTime: "2025-04-29T20:48:51Z"
-         message: ""
-         observedGeneration: 3
-         reason: ResolvedRefs
-         status: "True"
-         type: ResolvedRefs
-       controllerName: kgateway.dev/kgateway
+   ...
      parentRef:
        group: gateway.networking.k8s.io
        kind: Gateway
@@ -306,42 +287,41 @@ If you plan to set up your listener as part of a ListenerSet, keep the following
 
    Example output: 
    ```
-   * ALPN, offering h2
-   * ALPN, offering http/1.1
-   * successfully set certificate verify locations:
-   *  CAfile: /etc/ssl/cert.pem
-   *  CApath: none
-   * TLSv1.2 (OUT), TLS handshake, Client hello (1):
-   * TLSv1.2 (IN), TLS handshake, Server hello (2):
-   * TLSv1.2 (IN), TLS handshake, Certificate (11):
-   * TLSv1.2 (IN), TLS handshake, Server key exchange (12):
-   * TLSv1.2 (IN), TLS handshake, Server finished (14):
-   * TLSv1.2 (OUT), TLS handshake, Client key exchange (16):
-   * TLSv1.2 (OUT), TLS change cipher, Change cipher spec (1):
-   * TLSv1.2 (OUT), TLS handshake, Finished (20):
-   * TLSv1.2 (IN), TLS change cipher, Change cipher spec (1):
-   * TLSv1.2 (IN), TLS handshake, Finished (20):
-   * SSL connection using TLSv1.2 / ECDHE-RSA-CHACHA20-POLY1305
-   * ALPN, server accepted to use h2
+   * Added https.example.com:443:172.18.0.5 to DNS cache
+   * Hostname https.example.com was found in DNS cache
+   *   Trying 172.18.0.5:443...
+   * Connected to https.example.com (172.18.0.5) port 443
+   * ALPN: curl offers h2,http/1.1
+   * (304) (OUT), TLS handshake, Client hello (1):
+   * (304) (IN), TLS handshake, Server hello (2):
+   * (304) (IN), TLS handshake, Unknown (8):
+   * (304) (IN), TLS handshake, Certificate (11):
+   * (304) (IN), TLS handshake, CERT verify (15):
+   * (304) (IN), TLS handshake, Finished (20):
+   * (304) (OUT), TLS handshake, Finished (20):
+   * SSL connection using TLSv1.3 / AEAD-AES256-GCM-SHA384 / [blank] / UNDEF
+   * ALPN: server accepted h2
    * Server certificate:
-   *  subject: CN=*; O=gateway
-   *  start date: Nov  5 01:54:04 2023 GMT
-   *  expire date: Nov  2 01:54:04 2033 GMT
-   *  issuer: CN=*; O=root
+   *  subject: CN=*.example.com; O=any domain
+   *  issuer: O=any domain; CN=*
    *  SSL certificate verify result: unable to get local issuer certificate (20), continuing anyway.
-   * Using HTTP2, server supports multi-use
-   * Connection state changed (HTTP/2 confirmed)
-   * Copying HTTP/2 data in stream buffer to connection buffer after upgrade: len=0
-   * Using Stream ID: 1 (easy handle 0x15200e800)
-   * > GET /status/200 HTTP/2
-   * > Host: https.example.com
-   * > user-agent: curl/7.77.0
-   * > accept: */*
-   * > 
-   * *  Connection state changed (MAX_CONCURRENT_STREAMS == 2147483647)!
-   * < HTTP/2 200 
-   * HTTP/2 200 
-   * ...
+   * using HTTP/2
+   * [HTTP/2] [1] OPENED stream for https://https.example.com:443/status/200
+   * [HTTP/2] [1] [:method: GET]
+   * [HTTP/2] [1] [:scheme: https]
+   * [HTTP/2] [1] [:authority: https.example.com]
+   * [HTTP/2] [1] [:path: /status/200]
+   * [HTTP/2] [1] [user-agent: curl/8.7.1]
+   * [HTTP/2] [1] [accept: */*]
+   > GET /status/200 HTTP/2
+   > Host: https.example.com
+   > User-Agent: curl/8.7.1
+   > Accept: */*
+   > 
+   * Request completely sent off
+   < HTTP/2 200 
+   HTTP/2 200 
+   ...
    ```
 
 ## Cleanup

@@ -6,10 +6,15 @@
 2. Create a self-signed root certificate. The following command creates a root certificate that is valid for a year and can serve any hostname. You use this certificate to sign the server certificate for the gateway later. For other command options, see the [OpenSSL docs](https://docs.openssl.org/master/man1/openssl-req/).
    ```sh
    # root cert
-   openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=any domain/CN=*' -keyout example_certs/root.key -out example_certs/root.crt
+   openssl req -x509 -sha256 \
+   -nodes -days 365 \
+   -newkey rsa:2048 \
+   -subj '/O=any domain/CN=*' \
+   -keyout example_certs/root.key \
+   -out example_certs/root.crt
    ```
 
-3. Create an OpenSSL configuration that matches the HTTPS hostname you plan to use. Replace every `example.com` reference with the base domain that your listener serves.
+3. Create an OpenSSL configuration that matches the HTTPS hostname you plan to use. This example assumes that you want to use `example.com` as your domain. To use a different one, replace every `example.com` reference with the base domain that you want your listener to serve.
    ```sh
    cat <<'EOF' > example_certs/gateway.cnf
    [ req ]
@@ -38,10 +43,10 @@
      -extfile example_certs/gateway.cnf -extensions req_ext
    ```
 
-5. Create a Kubernetes secret to store your server TLS certificate. You create the secret in the same cluster and namespace that the gateway is deployed to.
+5. Create a Kubernetes secret to store your server TLS certificate. You create the secret in the same cluster and namespace that the gateway will be deployed to.
    ```sh
    kubectl create secret tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} https \
      --key example_certs/gateway.key \
      --cert example_certs/gateway.crt
-   kubectl label secret https gateway=https --namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl label secret https example=httpbin-https --namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
