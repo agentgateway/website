@@ -87,9 +87,13 @@ metadata:
 spec:
   parentRefs:
     - name: agentgateway-proxy
-      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}  
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
-    - backendRefs:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /mcp
+      backendRefs:
       - name: mcp-backend
         group: agentgateway.dev
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}  
