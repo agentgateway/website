@@ -9,7 +9,7 @@ FrontendTLS supports the following configurations:
 * **Default (required)**: Create the default client certificate validation configuration for all Gateway listeners that handle HTTPS traffic. For an example, see the [Default configuration for all listeners](#default) guide. 
 * **perPort (optional)**: Override the default configuration with port-specific configuration. The configuration is applied only to matching ports that handle HTTPS traffic. For all other ports that handle HTTPS traffic, the default configuration continues to apply. For an example, see the [Per port configuration](#perport) guide.
 
-In addition, you can choose between the following validation modes. Note that you must install the Kubernetes Gateway API version 1.5 or higher to use these capabilities. 
+In addition, you can choose between the following validation modes. Note that you must install version 1.5 or later of the Kubernetes Gateway API to use these capabilities. 
 * **AllowValidOnly**: A connection between a client and the gateway proxy can only be established if the gateway can validate the client's TLS certificate successfully. For an example, see the [Default configuration for all listeners](#default) guide.
 * **AllowInsecureFallback**: The gateway proxy can establish a TLS connection, even if the client TLS certificate could not be validated successfully. For an example, see the [Per port configuration](#perport) guide. 
 
