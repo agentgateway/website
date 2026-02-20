@@ -116,7 +116,8 @@ Note that the idle timeout configures the timeout for the entire connection from
    pip install pycurl
    ```
    
-   Save and run the following Python script:
+   Save and run the following AI-generated Python script:
+   <!-- How do you attribute AI examples? I used the Auto setting in Cursor, so it doesn't provide the model name. -->
 
    ```python
    #!/usr/bin/env python3
