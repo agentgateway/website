@@ -173,6 +173,16 @@
     display: block;
   }
   
+  /* Blog (and any dark navbar): always show dark logo, hide light logo */
+  .navbar.navbar-dark-bg a[href="/"] img.dark\:hidden,
+  .mobile-nav-bar.navbar-dark-bg a[href="/"] img.dark\:hidden {
+    display: none !important;
+  }
+  .navbar.navbar-dark-bg a[href="/"] img.hidden.dark\:block,
+  .mobile-nav-bar.navbar-dark-bg a[href="/"] img.hidden.dark\:block {
+    display: block !important;
+  }
+  
   /* Navbar link styles - ensure visibility in both light and dark mode */
   .navbar .link {
     color: rgb(55, 65, 81); /* gray-700 - visible on light backgrounds */
@@ -264,16 +274,56 @@
   .dark .mobile-nav-bar a[href="/"] img.hidden.dark\:block {
     display: block !important;
   }
+  
+  /* Blog navbar: dark background so dark logo is visible (blog single has dark hero; blog list uses dark nav for consistency) */
+  .navbar.navbar-dark-bg {
+    background-color: rgb(17, 24, 39); /* gray-900 */
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  .navbar.navbar-dark-bg.scrolled {
+    background-color: rgb(17, 24, 39);
+  }
+  .navbar.navbar-dark-bg .link {
+    color: rgb(209, 213, 219); /* gray-300 */
+  }
+  .navbar.navbar-dark-bg.scrolled .link {
+    color: rgb(209, 213, 219);
+  }
+  .navbar.navbar-dark-bg a.link svg,
+  .navbar.navbar-dark-bg.scrolled a.link svg {
+    fill: rgb(209, 213, 219);
+  }
+  .mobile-nav-bar.navbar-dark-bg {
+    background-color: rgb(17, 24, 39) !important;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+  /* Blog dark navbar: show white GitHub icon */
+  .navbar.navbar-dark-bg a[href*="github"] span.inline-block.dark\:hidden {
+    display: none !important;
+  }
+  .navbar.navbar-dark-bg a[href*="github"] span.hidden.dark\:inline-block {
+    display: inline-block !important;
+  }
+  .navbar.navbar-dark-bg a[href*="github"] span.hidden.dark\:inline-block svg path {
+    fill: rgb(209, 213, 219) !important;
+  }
 </style>
 
-{{- /* Determine if we're on the landing page */ -}}
+{{- /* Determine if we're on the landing page, docs, or blog */ -}}
 {{- $isLandingPage := eq .RelPermalink "/" -}}
 {{- $isDocsPage := false -}}
+{{- $isBlogPage := false -}}
+{{- if eq .Section "blog" -}}
+  {{- $isBlogPage = true -}}
+{{- end -}}
 {{- if .RelPermalink -}}
   {{- $path := .RelPermalink -}}
   {{- $segments := split $path "/" -}}
   {{- if and (ge (len $segments) 2) (eq (index $segments 1) "docs") -}}
     {{- $isDocsPage = true -}}
+  {{- end -}}
+  {{- if and (not $isBlogPage) (ge (len $segments) 2) (eq (index $segments 1) "blog") -}}
+    {{- $isBlogPage = true -}}
   {{- end -}}
 {{- end -}}
 
@@ -363,16 +413,16 @@
   </div>
   </div>
 {{- else -}}
-  {{- /* Docs pages navbar with dropdown */ -}}
-  <nav class="navbar py-[1.875rem] px-12 xl:px-25 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20">
+  {{- /* Docs/blog navbar with dropdown - use dark navbar (and dark logo) on blog */ -}}
+  <nav class="navbar py-[1.875rem] px-12 xl:px-25 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
     <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
       <div class="flex items-center gap-8">
         {{- $page := . -}}
-        {{- if $page -}}
-          <a href="/">{{ partial "utils/logo.html" (dict "Page" $page "attributes" "id=\"logo\" height=\"50\"" ) }}</a>
-        {{- else -}}
-          <a href="/">{{ partial "utils/logo.html" (dict "Page" . "attributes" "id=\"logo\" height=\"50\"" ) }}</a>
+        {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\" height=\"50\"" -}}
+        {{- if $isBlogPage -}}
+          {{- $logoParams = merge $logoParams (dict "forceDark" true) -}}
         {{- end -}}
+        <a href="/">{{ partial "utils/logo.html" $logoParams }}</a>
       </div>
       <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between gap-4">
         {{- /* Extract version and section for version dropdown */ -}}
@@ -480,14 +530,14 @@
     </div>
   </nav>
 
-  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-gray-900">
+  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-gray-900{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
     <div class="py-3 pr-4 flex justify-between items-center">
       {{- $page := . -}}
-      {{- if $page -}}
-        <a href="/">{{ partial "utils/logo.html" (dict "Page" $page "attributes" "height=\"50\"" ) }}</a>
-      {{- else -}}
-        <a href="/">{{ partial "utils/logo.html" (dict "Page" . "attributes" "height=\"50\"" ) }}</a>
+      {{- $mobileLogoParams := dict "Page" $page "attributes" "height=\"50\"" -}}
+      {{- if $isBlogPage -}}
+        {{- $mobileLogoParams = merge $mobileLogoParams (dict "forceDark" true) -}}
       {{- end -}}
+      <a href="/">{{ partial "utils/logo.html" $mobileLogoParams }}</a>
       <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">
         <div class="visible hamburger hidden">
           {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}

@@ -40,13 +40,7 @@ Agentgateway is a unified data plane for managing agent connectivity, built in R
 
 Route traffic to major LLM providers through a **unified OpenAI-compatible API**. Seamlessly switch between providers without changing your application code.
 
-| Provider | Chat Completions | Streaming |
-|----------|:----------------:|:---------:|
-| OpenAI / Azure OpenAI | ✅ | ✅ |
-| Anthropic | ✅ | ✅ |
-| Google Gemini | ✅ | ✅ |
-| Google Vertex AI | ✅ | ✅ |
-| Amazon Bedrock | ✅ | ✅ |
+{{< reuse "agw-docs/snippets/llm-comparison.md" >}}
 
 #### OpenAI-compatible providers
 
@@ -55,6 +49,8 @@ Don't see your provider? Many LLMs expose OpenAI-compatible APIs. Agentgateway c
 - **Cohere**, **Mistral**, **Groq**, **Together AI**, **Fireworks**
 - **Ollama**, **LM Studio**, **vLLM**, **llama.cpp** (local models)
 - Any custom or self-hosted endpoint with OpenAI-compatible `/v1/chat/completions`
+
+For more information, see the [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) docs.
 
 #### Self-hosted models & Inference routing
 
@@ -125,7 +121,6 @@ Run agentgateway anywhere—bare metal, VMs, containers, or Kubernetes. Conforma
   {{< card link="agent" title="Agent connectivity" >}}
   {{< card link="traffic-management" title="Traffic management" >}}
   {{< card link="security" title="Security" >}}
-  {{< card link="configuration" title="Configuration" >}}
   {{< card link="observability" title="Observability" >}}
   {{< card link="operations" title="Operations" >}}
   {{< card link="reference" title="Reference" >}}

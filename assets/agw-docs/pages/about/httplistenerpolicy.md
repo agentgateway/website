@@ -21,7 +21,7 @@ apiVersion: gateway.kgateway.dev/v1alpha1
 kind: HTTPListenerPolicy
 metadata:
   name: access-logs
-  namespace: kgateway-system
+  namespace: agentgateway-system
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
