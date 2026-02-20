@@ -1,6 +1,6 @@
 A timeout is the amount of time ([duration](https://protobuf.dev/reference/protobuf/google.protobuf/#duration)) that the gateway waits for replies from a backend service before the service is considered unavailable. This setting can be useful to prevent your apps from hanging or to fail if no response is returned in a specific timeframe. With timeouts, calls either succeed or fail within a predictable timeframe.
 
-The time an app needs to process a request can vary a lot. For this reason, applying the same timeout across services can cause a variety of issues. For example, a timeout that is too long can result in excessive latency from waiting for replies from failing services. On the other hand, a timeout that is too short can result in calls failing unnecessarily while waiting for an operation that needs responses from multiple services.
+The time an app needs to process a request can vary a lot. For this reason, applying the same timeout across services can cause a variety of issues. For example, a timeout that is too long can result in excessive latency from waiting for replies from failing services. On the other hand, a timeout that is too short can result in calls failing unnecessarily while waiting for an operation that needs responses from multiple services. Set app-specific timeouts instead of a single timeout.
 
 ## Configuration options
 
