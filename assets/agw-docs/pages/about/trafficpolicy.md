@@ -1,4 +1,4 @@
-Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to attach policies to one, multiple, or all routes in an HTTPRoute resource, or all the routes that a Gateway serves. 
+Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to attach policies to one, multiple, or all routes in an HTTPRoute resource, or all the routes that a Gateway serves. 
 
 ## Policy attachment {#policy-attachment-TrafficPolicy}
 
@@ -67,7 +67,7 @@ Instead of applying the policy to all routes that are defined in an HTTPRoute re
 Attaching a policy via the `ExtensionRef` filter is legacy behavior and might be deprecated in a future release. Instead, use the [HTTPRoute rule attachment option](#attach-to-rule) to apply a policy to an individual route, which requires the Kubernetes Gateway API experimental channel version 1.3.0 or later. Also, the `ExtensionRef` filter is not supported for agentgateway proxies.
 {{< /callout >}}
 
-The following example shows a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that defines a transformation rule. Note that the `spec.targetRef` field is not set. Because of that, the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} does not apply until it is referenced in an HTTPRoute by using the `ExtensionRef` filter. 
+The following example shows an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that defines a transformation rule. Note that the `spec.targetRef` field is not set. Because of that, the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} does not apply until it is referenced in an HTTPRoute by using the `ExtensionRef` filter. 
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -126,7 +126,7 @@ spec:
 To use this feature, you must install the Kubernetes Gateway API experimental channel version 1.3.0 or later.
 {{< /callout >}}
 
-Instead of using the `extensionRef` filter to apply a policy to a specific route, you can attach a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to an HTTPRoute rule by using the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}'s `targetRefs.sectionName` option. 
+Instead of using the `extensionRef` filter to apply a policy to a specific route, you can attach an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to an HTTPRoute rule by using the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}'s `targetRefs.sectionName` option. 
 
 You can also use this attachment option alongside the `extensionRef` filter. However, policies that are attached via the `extensionRef` filter take precedence over policies that are attached via the `targetRefs.sectionName` option.
 
@@ -164,7 +164,7 @@ spec:
 EOF
 ```
 
-To apply a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a specific HTTPRoute rule (`rule1`), use the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}'s `targetRefs.sectionName` option as shown in the following example. 
+To apply an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a specific HTTPRoute rule (`rule1`), use the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}'s `targetRefs.sectionName` option as shown in the following example. 
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -192,7 +192,7 @@ EOF
 
 Some policies, such as a local rate limiting policy, can be applied to all the routes that the Gateway serves. This way, you can apply gateway-level rules and do not have to keep track of new HTTPRoutes that are attached to the Gateway in your environment. 
 
-To attach a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a Gateway, you simply use the `targetRefs` section in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to reference the Gateway you want the policy to apply to as shown in the following example. 
+To attach an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a Gateway, you simply use the `targetRefs` section in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to reference the Gateway you want the policy to apply to as shown in the following example. 
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -215,7 +215,7 @@ spec:
 
 ### Gateway listener {#attach-to-listener}
 
-Instead of applying a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to all the routes that the Gateway serves, you can select specific Gateway listeners by using the `targetRefs.sectionName` option. 
+Instead of applying an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to all the routes that the Gateway serves, you can select specific Gateway listeners by using the `targetRefs.sectionName` option. 
 
 The following Gateway resource defines two listeners, an HTTP (`http`) and HTTPS (`https`) listener. 
 
@@ -289,19 +289,19 @@ Review the following Gateway and HTTPRoute policy priorities, sorted from highes
 
 | Priority | Attachment option | Description | 
 | -- | -- | -- | 
-| 1 | [Gateway listener policy](#attach-to-listener) | A {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references a Gateway listener by using the `targetRefs.sectionName` field has the highest priority. Note that if you have multiple Gateway listener policies that define the same top-level policy, only the one with the oldest timestamp is applied. |
-| 2 | [Gateway policy](#attach-to-gateway) | A {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references a Gateway in the `targetRefs` section has the lowest priority. This policy can still augment any higher priority policies by defining different top-level policies. Note that if you have multiple Gateway policies that all define the same top-level policy, only the one with the oldest timestamp is applied. |
+| 1 | [Gateway listener policy](#attach-to-listener) | an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references a Gateway listener by using the `targetRefs.sectionName` field has the highest priority. Note that if you have multiple Gateway listener policies that define the same top-level policy, only the one with the oldest timestamp is applied. |
+| 2 | [Gateway policy](#attach-to-gateway) | an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references a Gateway in the `targetRefs` section has the lowest priority. This policy can still augment any higher priority policies by defining different top-level policies. Note that if you have multiple Gateway policies that all define the same top-level policy, only the one with the oldest timestamp is applied. |
 
 **HTTPRoute**: 
 
 | Priority | Attachment option | Description | 
 | -- | -- | -- | 
-| 1 | [Individual HTTPRoute policy](#attach-to-route) | A {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that is attached to an individual route by using the `extensionRef` filter in the HTTPRoute has the highest priority. Note that if you have multiple HTTPRoute policies that are attached via the `extensionRef` option and all define the same top-level policy, only the one with the oldest timestamp is applied. | 
-| 2 | [HTTPRoute rule policy](#attach-to-rule) | A {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that is attached to an HTTPRoute rule by using the `targetRefs.sectionName` option has a lower priority. This policy can still augment any `extensionRef` policies by defining different top-level policies. Note that if you have multiple HTTPRoute rule policies and all define the same top-level policy, only the one with the oldest timestamp is applied. | 
-| 3 | [All HTTPRoute routes policy](#attach-to-all-routes) | A {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that is attached to all routes in an HTTPRoute resource by using the `targetRefs` option has the lowest priority. You can still augment any higher priority policies by defining different top-level policies. If you have multiple HTTPRoute rule policies and they all specify the same top-level policy, only the one with the oldest timestamp is applied. | 
+| 1 | [Individual HTTPRoute policy](#attach-to-route) | an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that is attached to an individual route by using the `extensionRef` filter in the HTTPRoute has the highest priority. Note that if you have multiple HTTPRoute policies that are attached via the `extensionRef` option and all define the same top-level policy, only the one with the oldest timestamp is applied. | 
+| 2 | [HTTPRoute rule policy](#attach-to-rule) | an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that is attached to an HTTPRoute rule by using the `targetRefs.sectionName` option has a lower priority. This policy can still augment any `extensionRef` policies by defining different top-level policies. Note that if you have multiple HTTPRoute rule policies and all define the same top-level policy, only the one with the oldest timestamp is applied. | 
+| 3 | [All HTTPRoute routes policy](#attach-to-all-routes) | an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that is attached to all routes in an HTTPRoute resource by using the `targetRefs` option has the lowest priority. You can still augment any higher priority policies by defining different top-level policies. If you have multiple HTTPRoute rule policies and they all specify the same top-level policy, only the one with the oldest timestamp is applied. | 
 
 {{< callout type="info" >}} 
-If you apply a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with the same top-level policy to a Gateway and an HTTPRoute, the policy on the HTTPRoute takes precedence and the one on the Gateway is ignored. For example, you might have two local rate limiting policies. One is applied to a Gateway and one is applied to the HTTPRoute. Because the same top-level policy is defined, the policy on the HTTPRoute is considered higher priority and therefore enforced. 
+If you apply an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with the same top-level policy to a Gateway and an HTTPRoute, the policy on the HTTPRoute takes precedence and the one on the Gateway is ignored. For example, you might have two local rate limiting policies. One is applied to a Gateway and one is applied to the HTTPRoute. Because the same top-level policy is defined, the policy on the HTTPRoute is considered higher priority and therefore enforced. 
 {{< /callout >}}
 
 ### Policy inheritance and overrides in delegation setups {#delegation}

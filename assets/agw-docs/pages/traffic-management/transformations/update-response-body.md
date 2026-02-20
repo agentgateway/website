@@ -52,7 +52,7 @@ In this guide, you use the following methods to transform a JSON body:
    }
    ```
 
-2. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules: 
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules: 
    * A new body is created in the response with the values of the `author`, `title`, and `slides` fields.
    * To extract the values, you use dot notation. Because the response is parsed as a JSON file, no extractors need to be defined. Instead, you can access the fields directly.   
 

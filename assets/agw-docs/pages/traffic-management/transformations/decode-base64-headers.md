@@ -21,7 +21,7 @@ Combine multiple Inja functions to accomplish the following tasks:
    dHJhbnNmb3JtYXRpb24gdGVzdA==
    ```
    
-2. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. Make sure to create the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}in the same namespace as the HTTPRoute resource. In the following example, you decode the base64-encoded value from the `x-base64-encoded` request header and populate the decoded value into an `x-base64-decoded` header starting from the 11th character. 
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. Make sure to create the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}in the same namespace as the HTTPRoute resource. In the following example, you decode the base64-encoded value from the `x-base64-encoded` request header and populate the decoded value into an `x-base64-decoded` header starting from the 11th character. 
 
    {{< tabs items="Envoy-based kgateway,Agentgateway" tabTotal="2" >}}
    {{% tab tabName="Envoy-based kgateway" %}}

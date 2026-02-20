@@ -18,7 +18,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
 
 ## Set up RBAC permissions
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your CEL rules. The following example allows requests with the `x-llm: gemini` header.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your CEL rules. The following example allows requests with the `x-llm: gemini` header.
 
    ```yaml
    kubectl apply -f- <<EOF

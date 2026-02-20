@@ -220,7 +220,7 @@ The webhook server is configured to take the following actions:
 
 ### Step 2: Configure the gateway proxy to use the webhook server {#ai-gateway}
 
-Configure a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
+Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
 
 
 ```yaml

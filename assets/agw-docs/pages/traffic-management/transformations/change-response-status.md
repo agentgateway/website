@@ -8,7 +8,7 @@ Update the response status based on headers being present in a response.
 
 ## Change the response status
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In this example, you change the value of the `:status` pseudo response header to 401 if the response header `foo:bar` is present. If the `foo:bar` response header is not present, you return a 403 HTTP response code. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In this example, you change the value of the `:status` pseudo response header to 401 if the response header `foo:bar` is present. If the `foo:bar` response header is not present, you return a 403 HTTP response code. 
 
    {{< tabs items="Envoy-based kgateway,Agentgateway" tabTotal="2" >}}
    {{% tab tabName="Envoy-based kgateway" %}}

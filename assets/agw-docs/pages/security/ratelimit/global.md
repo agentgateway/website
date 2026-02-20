@@ -48,7 +48,7 @@ sequenceDiagram
 
 The global rate limiting feature consists of three components:
 
-1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with rateLimit.global**: Configure your rate limit policy in a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The rate limit policy includes the descriptors to extract from requests for the Gateway to send to the Rate Limit Service.
+1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with rateLimit.global**: Configure your rate limit policy in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The rate limit policy includes the descriptors to extract from requests for the Gateway to send to the Rate Limit Service.
 2. **GatewayExtension**: Connect {{< reuse "/agw-docs/snippets/kgateway.md" >}} with the Rate Limit Service by using a kgateway GatewayExtension.
 3. **Rate Limit Service** - An external service that you set up to implement the Envoy Rate Limit protocol. The Rate Limit Service has the actual rate limit values to enforce on requests, based on the descriptors that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} includes.
 
@@ -206,9 +206,9 @@ Create a GatewayExtension resource that points to your Rate Limit Service.
    EOF
    ```
 
-## Step 4: Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} {#traffic-policy}
+## Step 4: Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} {#traffic-policy}
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that applies rate limits to your routes. Note that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} must be in the same namespace as the GatewayExtension to select it.
+Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that applies rate limits to your routes. Note that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} must be in the same namespace as the GatewayExtension to select it.
 
 The {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} configures the descriptors that define the dimensions for rate limiting. Each descriptor consists of one or more entries that help categorize and count requests. The descriptor entries match on the descriptor keys that you defined previously in the Rate Limit Service.
 
@@ -221,7 +221,7 @@ Entries can be of one of the following types: `RemoteAddress`, `Path`, `Header`,
 | Path | Use the request path as the descriptor value. The `Path` entry type is mapped to the `path` descriptor key in the Rate Limit Service. | None |
 | RemoteAddress | Use the client's IP address as the descriptor value. The `RemoteAddress` entry type is mapped to the `remote_address` descriptor key in the Rate Limit Service. | None |
 
-Flip through the tabs for different example rate limit policies. Note that the examples apply to the Gateway that you created before you began, but you can also apply a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to an HTTPRoute or specific route.
+Flip through the tabs for different example rate limit policies. Note that the examples apply to the Gateway that you created before you began, but you can also apply an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to an HTTPRoute or specific route.
 
 {{< tabs tabTotal="5" items="Client IP address, Request path, User ID, Nested global rate limits, Local and global rate limits" >}}
 

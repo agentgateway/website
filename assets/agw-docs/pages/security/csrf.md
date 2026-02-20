@@ -22,9 +22,9 @@ To learn more about CSRF, you can try out the [CSRF sandbox](https://www.envoypr
 
 ## Set up CSRF 
 
-Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your CSRF rules. 
+Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your CSRF rules. 
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your CSRF rules. The following example allows request from only the `allowThisOne.example.com` origin.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your CSRF rules. The following example allows request from only the `allowThisOne.example.com` origin.
    
    ```yaml
    kubectl apply -f- <<EOF

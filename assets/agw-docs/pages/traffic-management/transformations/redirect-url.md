@@ -69,7 +69,7 @@ Common pseudo headers include:
 
 ## Set up redirect URLs
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
    * Build a redirect URL with the values of the `:authority` and `:path` pseudo headers. These headers are extracted from the request with the `request_header` function that is provided in {{< reuse "agw-docs/snippets/kgateway.md" >}}.
    * The `:authority` pseudo header contains the hostname that the request is sent to.
    * The `:path` pseudo header is set to the request path.
