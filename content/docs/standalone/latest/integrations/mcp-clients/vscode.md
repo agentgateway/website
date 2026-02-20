@@ -6,7 +6,7 @@ description: Connect VS Code with GitHub Copilot to agentgateway
 
 Configure Visual Studio Code to use **agentgateway** via GitHub Copilot's native MCP support.
 
-## Before You Begin
+## Before you begin
 
 * Install **VS Code (1.92+)** with the **GitHub Copilot** extension.
 * Enable **GitHub Copilot Chat**.
@@ -65,7 +65,7 @@ If you prefer to explicitly pass a token, such as for local development or simpl
 }
 ```
 
-## Verifying the Connection
+## Verify the connection
 
 In agentgateway, run a configuration that includes the URL that you configured in the `mcp.json` file. 
 
