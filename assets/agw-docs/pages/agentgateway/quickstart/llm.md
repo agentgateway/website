@@ -1,1 +1,1 @@
-{{< redirect "../../llm/providers/openai/" >}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/openai.md" >}}

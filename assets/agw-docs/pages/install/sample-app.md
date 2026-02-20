@@ -20,89 +20,104 @@ flowchart LR
 
 ## Install httpbin
 
+{{% steps %}}
+
+### Step 1: Install the httpbin app
+
+Install the sample httpbin app.
+
 1. Install the httpbin app.
    ```sh,paths="install-httpbin"
    kubectl apply -f https://raw.githubusercontent.com/kgateway-dev/kgateway/refs/heads/main/examples/httpbin.yaml
    ```
 
-  {{< doc-test paths="install-httpbin" >}}
-  YAMLTest -f - <<'EOF'
-  - name: wait for httpbin deployment to be ready
-    wait:
-      target:
-        kind: Deployment
-        metadata:
-          namespace: httpbin
-          name: httpbin
-      jsonPath: "$.status.availableReplicas"
-      jsonPathExpectation:
-        comparator: greaterThan
-        value: 0
-      polling:
-        timeoutSeconds: 300
-        intervalSeconds: 5
-  EOF
-  {{< /doc-test >}}
-3. Verify that the httpbin app is up and running.
+   {{< doc-test paths="install-httpbin" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for httpbin deployment to be ready
+     wait:
+       target:
+         kind: Deployment
+         metadata:
+           namespace: httpbin
+           name: httpbin
+       jsonPath: "$.status.availableReplicas"
+       jsonPathExpectation:
+         comparator: greaterThan
+         value: 0
+       polling:
+         timeoutSeconds: 300
+         intervalSeconds: 5
+   EOF
+   {{< /doc-test >}}
+
+2. Verify that the httpbin app is up and running.
+   
    ```sh
    kubectl get pods -n httpbin
    ````
-4. Create a route to the httpbin app.
-   ```sh,paths="install-httpbin"
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: httpbin
-     namespace: httpbin
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     hostnames:
-       - "www.example.com"
-     rules:
-       - backendRefs:
-           - name: httpbin
-             port: 8000
-   EOF
-   ```
 
-  {{< doc-test paths="install-httpbin" >}}
-  YAMLTest -f - <<'EOF'
-  - name: wait for httpbin HTTPRoute to be accepted
-    wait:
-      target:
-        kind: HTTPRoute
-        metadata:
-          namespace: httpbin
-          name: httpbin
-      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-      jsonPathExpectation:
-        comparator: equals
-        value: "True"
-      polling:
-        timeoutSeconds: 300
-        intervalSeconds: 5
-  - name: wait for httpbin HTTPRoute refs to be resolved
-    wait:
-      target:
-        kind: HTTPRoute
-        metadata:
-          namespace: httpbin
-          name: httpbin
-      jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
-      jsonPathExpectation:
-        comparator: equals
-        value: "True"
-      polling:
-        timeoutSeconds: 300
-        intervalSeconds: 5
-  EOF
-  {{< /doc-test >}}
+### Step 2: Create a route to the httpbin app
 
-5. Send a request to the httpbin app.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+Create an HTTPRoute resource that routes requests to the httpbin app through the Gateway that you created before you began.
+
+```sh,paths="install-httpbin"
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: httpbin
+  namespace: httpbin
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  hostnames:
+    - "www.example.com"
+  rules:
+    - backendRefs:
+        - name: httpbin
+          port: 8000
+EOF
+```
+
+{{< doc-test paths="install-httpbin" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbin HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: httpbin
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+- name: wait for httpbin HTTPRoute refs to be resolved
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: httpbin
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+### Step 3: Send a request to the httpbin app
+
+Send a request to the httpbin app through the agentgateway proxy.
+
+{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider LoadBalancer" %}}
 1. Get the external address of the gateway proxy and save it in an environment variable.
 
@@ -186,15 +201,19 @@ flowchart LR
    }
    ```
 {{% /tab %}}
-   {{< /tabs >}}
+{{< /tabs >}}
+
+{{% /steps %}}
 
 ## Next steps
 
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your API gateway capabilities.
 
-- Add routing capabilities to your httpbin route by using the [Traffic management]({{< link-hextra path="/traffic-management">}}) guides. 
-- Explore ways to make your routes more resilient by using the [Resiliency]({{< link-hextra path="/resiliency">}}) guides. 
-- Secure your routes with external authentication and rate limiting policies by using the [Security]({{< link-hextra path="/security">}}) guides.
+{{< cards >}}
+  {{< card link="traffic-management" title="Traffic management" subtitle="Add routing capabilities to your httpbin route." >}}
+  {{< card link="resiliency" title="Resiliency" subtitle="Make your routes more resilient to failures and disruptions." >}}
+  {{< card link="security" title="Security" subtitle="Secure routes with external authentication and rate limiting policies." >}}
+{{< /cards >}}
 
 ## Cleanup
 

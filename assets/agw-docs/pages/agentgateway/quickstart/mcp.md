@@ -1,1 +1,1 @@
-{{< redirect "../../mcp/static-mcp/" >}}
+{{< reuse "agw-docs/pages/agentgateway/mcp/static.md" >}}

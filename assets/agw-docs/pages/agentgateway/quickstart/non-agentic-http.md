@@ -1,1 +1,1 @@
-{{< redirect "../../install/sample-app/" >}}
+{{< reuse "agw-docs/pages/install/sample-app.md" >}}
