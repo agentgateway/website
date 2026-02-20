@@ -4,9 +4,9 @@ Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/tr
 
 ## Set up timeouts {#timeouts}
    
-Specify timeouts for a specific route. 
+Specify timeouts for specific routes. 
 
-1. Configure a timeout for a specific route by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using {{< reuse "agw-docs/snippets/kgateway.md" >}}'s {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. In the following example, you set a timeout of 2 seconds for httpbin's `/delay` path, which is short for testing purposes. You might choose to use 20-30 seconds as a more realistic timeout. However, no timeout is set along the `/headers` path. 
+1. Configure a timeout for specific routes by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using {{< reuse "agw-docs/snippets/kgateway.md" >}}'s {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. In the following example, you set a timeout of 2 seconds for httpbin's `/delay` path, which is short for testing purposes. You might choose to use 20-30 seconds as a more realistic timeout. However, no timeout is set along the `/headers` path. 
    {{< tabs tabTotal="2" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: AgentgatewayPolicy" >}}
    {{% tab tabName="Option 1: HTTPRoute (Kubernetes GW API)" %}}
 
@@ -55,7 +55,7 @@ Specify timeouts for a specific route.
          kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
          ```
 
-      2. Find the route configuration for the cluster in the config dump. Verify that the timeout policy is set as you configured it. The following `jq` command includes the `delay` prefix because it has a timeout set. The `headers` prefix is not included because it does not have a timeout.
+      2. Find the route configuration for the cluster in the config dump. Verify that the timeout policy is set as you configured it. In the output for the following `jq` command, the `delay` prefix is included because it has a timeout set. The `headers` prefix is not included because it does not have a timeout.
         
          Example `jq` command:
         
@@ -223,7 +223,7 @@ Specify timeouts for a specific route.
    ...
    ```
 
-5. From the logs, you can see that the request duration was less than the timeout.
+5. From the logs, you can see that the request duration was less than the timeout, so it was successful.
 
    ```sh
    kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \

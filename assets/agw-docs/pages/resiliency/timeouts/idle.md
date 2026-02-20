@@ -1,10 +1,8 @@
-Customize the default idle timeout of 1 hour (3600s). 
+You can customize an idle timeout for a connection to a downstream or upstream service if there are no active streams.
 
 ## About idle timeouts
 
-You can customize an idle timeout for a connection to a downstream or upstream service if there are no active streams.
-
-The idle timeout applies when there is no activity on the connection, no bytes sent or received. It does not limit how long a single request or response can take. For example, calling httpbin’s `/delay/10` keeps a request in flight for 10 seconds, so the connection is not idle and you will get a normal 200 response after 10 seconds. To limit how long a request can run, use a [request timeout]({{< ref "request.md" >}}) instead.
+The idle timeout applies when there is no activity on the connection, no bytes sent or received. It does not limit how long a single request or response can take. For example, calling httpbin’s `/delay/10` keeps a request in flight for 10 seconds, so the connection is not idle and you will get a normal 200 response after 10 seconds. To limit how long a request can run, use a [request timeout]({{< ref "request.md" >}}) for this scenario instead.
 
 {{< callout type="info" >}}
 The idle timeout is configured for entire HTTP/1 connections from a downstream service to the gateway proxy, and to the upstream service. 
@@ -15,7 +13,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
 
 ## Set up idle timeouts
 
-1. Create an HTTPRoute.
+1. Create an HTTPRoute for the `/headers` route.
 
    ```yaml
    kubectl apply -n httpbin -f- <<EOF
@@ -118,7 +116,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
    pip install pycurl
    ```
    
-   Save and run the following AI-generated Python script:
+   Save and run the following Python script:
    <!-- How do you attribute AI examples? I used the Auto setting in Cursor, so it doesn't provide the model name. -->
 
    ```python
