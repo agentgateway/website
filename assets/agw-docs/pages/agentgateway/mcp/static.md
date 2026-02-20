@@ -9,8 +9,8 @@ Route to a Model Context Protocol (MCP) server through a static address. For mor
 Deploy a Model Context Protocol (MCP) server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The following example sets up a simple MCP server with one tool, `fetch`, that retrieves the content of a website URL that you pass in.
 
 1. Create the MCP server workload. Notice the following details about the Service:
-   * `appProtocol: kgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy uses the MCP protocol when connecting to the service.
-   * `kgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
+   * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy uses the MCP protocol when connecting to the service.
+   * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -44,7 +44,7 @@ Deploy a Model Context Protocol (MCP) server that you want {{< reuse "agw-docs/s
      ports:
      - port: 80
        targetPort: 8000
-       appProtocol: kgateway.dev/mcp
+       appProtocol: agentgateway.dev/mcp
    EOF
    ```
 
@@ -70,10 +70,7 @@ Deploy a Model Context Protocol (MCP) server that you want {{< reuse "agw-docs/s
 
 ## Step 2: Route with agentgateway {#agentgateway}
 
-Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step.
-
-
-
+Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. Use a path match so that requests to `/mcp` go to the MCP backend and are not routed to an LLM or other backend.
 
 ```yaml
 kubectl apply -f- <<EOF

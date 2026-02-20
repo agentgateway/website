@@ -13,8 +13,8 @@ Note that only streamable HTTP is currently supported for label selectors. If yo
 Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The following example sets up an MCP server that provides various utility tools.
 
 1. Create an MCP server (`mcp-server`) that provides various utility tools. Notice the following details about the Service:
-   * `appProtocol: kgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the agentgateway proxy uses the MCP protocol when connecting to the service.
-   * `kgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
+   * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the agentgateway proxy uses the MCP protocol when connecting to the service.
+   * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -55,7 +55,7 @@ Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md"
        - protocol: TCP
          port: 3001
          targetPort: 3001
-         appProtocol: kgateway.dev/mcp
+         appProtocol: agentgateway.dev/mcp
      type: ClusterIP
    EOF
    ```

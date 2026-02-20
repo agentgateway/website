@@ -14,7 +14,7 @@ Note that only streamable HTTP is currently supported for label selectors. If yo
 
 Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway to proxy traffic to. The following example sets up two MCP servers with different tools: one `npx` based MCP server that provides various utility tools and an MCP server with a website `fetch` tool.
 
-1. Create an MCP server (`mcp-server-everything`) that provides various utility tools. Notice that the Service uses the `appProtocol: kgateway.dev/mcp` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the agentgateway proxy to look for an equivalent {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+1. Create an MCP server (`mcp-server-everything`) that provides various utility tools. Notice that the Service uses the `appProtocol: agentgateway.dev/mcp` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the agentgateway proxy to look for an equivalent {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -55,7 +55,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
        - protocol: TCP
          port: 3001
          targetPort: 3001
-         appProtocol: kgateway.dev/mcp
+         appProtocol: agentgateway.dev/mcp
      type: ClusterIP
    EOF
    ```
@@ -94,7 +94,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
      ports:
      - port: 80
        targetPort: 8000
-       appProtocol: kgateway.dev/mcp
+       appProtocol: agentgateway.dev/mcp
    EOF
    ```
 

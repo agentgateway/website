@@ -41,9 +41,11 @@ Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "agw-doc
      ai:
        provider:
          openai:
-           model: gpt-3.5-turbo  # Optional: specify default model
-        # host: api.openai.com  # Optional: custom host if needed
-        # port: 443  # Optional: custom port
+           # Optional: specify a default  model
+           model: gpt-3.5-turbo
+        # Optional: custom host and port, if needed
+        # host: api.openai.com  
+        # port: 443
      policies:
        auth:
          secretRef:
@@ -221,3 +223,13 @@ Configure [OpenAI](https://openai.com/) as an LLM provider in {{< reuse "agw-doc
    ```
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
+
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete HTTPRoute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete secret openai-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
