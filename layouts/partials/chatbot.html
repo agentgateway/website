@@ -8,14 +8,14 @@
 
 <!-- Chat Bot Widget for Docs Pages -->
 <div id="chatbot-widget" x-data="chatbot" @keydown.escape.window="close()">
-  <!-- Trigger Button: compact pill, sits below dialog -->
+  <!-- Trigger Button: compact pill, scaled up on desktop (keeps proportions) -->
   <button
     @click="toggle()"
-    class="chatbot-trigger fixed bottom-4 right-4 z-[9998] flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] bg-gradient-to-br from-violet-600 to-violet-700 text-white border-none rounded-full font-inherit font-medium cursor-pointer transition-all duration-200 shadow-[0_4px_14px_rgba(124,58,237,0.4)] sm:gap-2.5 sm:px-5 sm:py-3 sm:text-sm sm:shadow-[0_4px_18px_rgba(124,58,237,0.45)] sm:bottom-6 sm:right-6"
+    class="chatbot-trigger fixed bottom-4 right-4 z-[9998] flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] bg-gradient-to-br from-violet-600 to-violet-700 text-white border-none rounded-full font-inherit font-medium cursor-pointer transition-all duration-200 shadow-[0_4px_14px_rgba(124,58,237,0.4)] sm:gap-3 sm:px-6 sm:py-3.5 sm:text-base sm:shadow-[0_4px_18px_rgba(124,58,237,0.45)] sm:bottom-6 sm:right-6"
     :class="isOpen ? 'shadow-[0_2px_8px_rgba(124,58,237,0.3)] opacity-80 hover:opacity-100' : 'hover:-translate-y-0.5 hover:shadow-[0_6px_22px_rgba(124,58,237,0.55)] active:translate-y-0'"
     aria-label="Ask AI"
   >
-    <svg class="shrink-0 w-5 h-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <svg class="shrink-0 w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
     </svg>
     <span>Ask AI</span>
