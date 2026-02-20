@@ -426,7 +426,7 @@ In this example, you override the default certificate validation configuration f
    {{% /tab %}}
    {{< /tabs >}}
 
-3. Send a request to the httpbin app on both ports without a valid certificate. Verify that the request on port 8443 fails, because the default validation configuration does not allow to establish a connection without a valid certificate. The connection on port 8444 however is established as the port-specific validation configuration mode is set to `AllowInsecureFallback`.
+3. Send a request to the httpbin app on both ports without a valid certificate. Verify that the request on port 8443 fails, because the default validation configuration does not allow you to establish a connection without a valid certificate. However, the connection on port 8444 is established, as the port-specific validation configuration mode is set to `AllowInsecureFallback`.
    {{< tabs tabTotal="3" items="LoadBalancer IP address,LoadBalancer hostname,Port-forward for local testing" >}}
    {{% tab tabName="LoadBalancer IP address" %}}
    ```sh
