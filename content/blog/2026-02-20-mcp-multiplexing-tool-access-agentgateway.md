@@ -24,19 +24,8 @@ We'll deploy two MCP servers (`mcp-server-everything` for utility tools and `mcp
 
 ## Architecture
 
-```
-┌──────────────┐
-│   Cursor     │──┐
-├──────────────┤  │
-│   VS Code    │──┤
-├──────────────┤  │       ┌──────────────────┐       ┌──────────────────────┐
-│  Claude Code │──┼─MCP──▶│  AgentGateway    │──────▶│  mcp-server-everything│
-├──────────────┤  │       │  /mcp endpoint   │       │  (echo, add, etc.)   │
-│   Windsurf   │──┘       │                  │──────▶├──────────────────────┤
-└──────────────┘          │  Multiplexing    │       │  mcp-website-fetcher │
-                          └──────────────────┘       │  (fetch web content) │
-                                                     └──────────────────────┘
-```
+![mcp-multiplexing-architecture](https://github.com/user-attachments/assets/f81ffbc6-96b3-4771-bb47-c61c1823ad77)
+
 
 ## Prerequisites
 
