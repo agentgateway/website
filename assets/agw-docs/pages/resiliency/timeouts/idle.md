@@ -6,7 +6,9 @@ You can customize an idle timeout for a connection to a downstream or upstream s
 
 The idle timeout applies when there is no activity on the connection, no bytes sent or received. It does not limit how long a single request or response can take. For example, calling httpbin’s `/delay/10` keeps a request in flight for 10 seconds, so the connection is not idle and you will get a normal 200 response after 10 seconds. To limit how long a request can run, use a [request timeout]({{< ref "request.md" >}}) instead.
 
-Note that the idle timeout configures the timeout for the entire connection from a downstream service to the gateway proxy, and to the upstream service. 
+{{< callout type="info" >}}
+The idle timeout is configured for entire HTTP/1 connections from a downstream service to the gateway proxy, and to the upstream service. 
+{{< /callout >}}
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
