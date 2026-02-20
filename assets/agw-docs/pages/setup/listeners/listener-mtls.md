@@ -46,6 +46,9 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
    kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```
 
+4. Ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+   
+
 
 ## Create TLS certificates 
 
@@ -55,9 +58,6 @@ Create self-signed TLS certificates that you use for the mutual TLS connection b
 Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trust Certificate Authority. 
 {{< /callout >}}
 
-<!-- >
-When generating your Envoy certificates, make sure to use encryption algorithms that are supported in Envoy. To learn more about supported algorithms that you can use for your certificates and keys, see the <a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ssl#certificate-selection">Envoy documentation</a>. 
--->
 
 1. Create the `example_certs` directory and navigate to this directory. 
    ```sh
@@ -129,6 +129,8 @@ When generating your Envoy certificates, make sure to use encryption algorithms 
 
 ## Default configuration for all listeners {#default}
 
+Create the default client certificate validation configuration for all Gateway listeners that handle HTTPS traffic. In this example, the configuration is applied to two TLS ports, 8443 and 8444. 
+
 1. Create a Gateway with a default frontend TLS configuration that applies to all listeners that handle HTTPS traffic. The following example configures two HTTPS listeners on the Gateway. Both listeners use the same server TLS credentials to terminate incoming HTTPS connections. The validation mode is set to `AllowValidOnly` to allow connection only if a valid certificate is presented during the TLS handshake. 
    ```yaml
    kubectl apply -f- <<EOF
@@ -197,7 +199,7 @@ When generating your Envoy certificates, make sure to use encryption algorithms 
    EOF
    ```
 
-5. Get the external address of the gateway and save it in an environment variable. Note that it might take a few seconds for the gateway address to become available. 
+3. Get the external address of the gateway and save it in an environment variable. Note that it might take a few seconds for the gateway address to become available. 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing">}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
@@ -212,7 +214,7 @@ When generating your Envoy certificates, make sure to use encryption algorithms 
    {{% /tab %}}
    {{< /tabs >}}
 
-6. Send a request to the httpbin app without a client certificate on both 8443 and 8444 ports. Verify that the TLS handshake fails, because a TLS certificate is required to establish the connection. 
+4. Send a request to the httpbin app without a client certificate on both 8443 and 8444 ports. Verify that the TLS handshake fails, because a TLS certificate is required to establish the connection. 
    {{< tabs tabTotal="3" items="LoadBalancer IP address,LoadBalancer hostname,Port-forward for local testing" >}}
    {{% tab tabName="LoadBalancer IP address" %}}
    ```sh
@@ -251,7 +253,7 @@ When generating your Envoy certificates, make sure to use encryption algorithms 
    curl: (56) LibreSSL SSL_read: LibreSSL/3.3.6: error:1404C45C:SSL routines:ST_OK:reason(1116), errno 0
    ```
 
-7. Repeat the request. This time, you include the client certificate that you created earlier. 
+5. Repeat the request. This time, you include the client certificate that you created earlier. 
    {{< tabs tabTotal="3" items="LoadBalancer IP address,LoadBalancer hostname,Port-forward for local testing" >}}
    {{% tab tabName="LoadBalancer IP address" %}}
    ```sh

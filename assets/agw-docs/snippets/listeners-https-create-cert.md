@@ -43,7 +43,7 @@
      -extfile example_certs/gateway.cnf -extensions req_ext
    ```
 
-5. Create a Kubernetes secret to store your server TLS certificate. You create the secret in the same cluster and namespace that the gateway is going to be deployed to.
+5. Create a Kubernetes secret to store your server TLS certificate. You create the secret in the same cluster and namespace that the gateway will be deployed to.
    ```sh
    kubectl create secret tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} https \
      --key example_certs/gateway.key \
