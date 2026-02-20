@@ -4,6 +4,8 @@ Customize the default idle timeout of 1 hour (3600s).
 
 You can customize an idle timeout for a connection to a downstream or upstream service if there are no active streams.
 
+The idle timeout applies when there is no activity on the connection, no bytes sent or received. It does not limit how long a single request or response can take. For example, calling httpbin’s `/delay/10` keeps a request in flight for 10 seconds, so the connection is not idle and you will get a normal 200 response after 10 seconds. To limit how long a request can run, use a [request timeout]({{< ref "request.md" >}}) instead.
+
 Note that the idle timeout configures the timeout for the entire connection from a downstream service to the gateway proxy, and to the upstream service. 
 
 
@@ -30,34 +32,16 @@ Note that the idle timeout configures the timeout for the entire connection from
      - matches: 
        - path:
            type: PathPrefix
-           value: /stream
-       backendRefs:
-       - kind: Service
-         name: httpbin
-         port: 8000
-       name: timeout
-     - matches: 
-       - path:
-           type: PathPrefix
            value: /headers
        backendRefs:
        - kind: Service
          name: httpbin
          port: 8000
-       name: no-timeout
-     - matches: 
-       - path:
-           type: PathPrefix
-           value: /delay
-       backendRefs:
-       - kind: Service
-         name: httpbin
-         port: 8000
-       name: delay-timeout
+       name: timeout
    EOF
    ```
 
-1. Create an AgentgatewayPolicy with the idle timeout configuration. In this example, you apply an idle timeout of 2 seconds, which is short for testing purposes. A more realistic timeout might be 20-30 seconds.
+1. Create an AgentgatewayPolicy with the idle timeout configuration. In this example, you apply an idle timeout of 1 second, which is short for testing purposes. You might choose to use 20-30 seconds as a more realistic timeout.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -112,7 +96,7 @@ Note that the idle timeout configures the timeout for the entire connection from
             "hTTP": {
               "maxBufferSize": 2097152,
               "http1MaxHeaders": null,
-              "http1IdleTimeout": "5s",
+              "http1IdleTimeout": "1s",
               "http2WindowSize": null,
               "http2ConnectionWindowSize": null,
               "http2FrameSize": null,
@@ -124,6 +108,111 @@ Note that the idle timeout configures the timeout for the entire connection from
       }
 
       ```
+
+3. Verify the idle timeout. Using `pycurl`, you can run this example script to show two connections. One connection is made normally, but the other connection is made with `CONNECT_ONLY`, sleeps, then sends the HTTP request over the same connection to simulate an idle connection. After the sleep, the proxy's idle timeout has closed the connection, so sending or receiving fails. This method works on Unix-like systems, such as Linux or macOS, where the active socket is a file descriptor.
+
+   Install `pycurl`: 
+   ```sh
+   pip install pycurl
+   ```
+   
+   Save and run the following Python script:
+
+   ```python
+   #!/usr/bin/env python3
+   """Demonstrate idle timeout: one run where it fires (idle too long), one where it does not."""
+   import pycurl
+   import socket
+   import time
+
+   URL = "http://localhost:8080/headers"
+   HEADERS = ["Host: idle.example"]
+   IDLE_TIMEOUT_SEC = 1  # match proxy config
+
+   # ACTIVESOCKET in newer pycurl/libcurl; LASTSOCKET in older (deprecated but common)
+   sock_info = getattr(pycurl, "ACTIVESOCKET", getattr(pycurl, "LASTSOCKET", None))
+   if sock_info is None:
+       raise RuntimeError("pycurl has no ACTIVESOCKET or LASTSOCKET; upgrade pycurl/libcurl")
+
+
+   def connect_idle_then_send(sleep_sec: float) -> bool:
+       """Connect with CONNECT_ONLY, sleep, then send request. Returns True if request succeeded."""
+       c = pycurl.Curl()
+       c.setopt(pycurl.URL, URL)
+       c.setopt(pycurl.HTTPHEADER, HEADERS)
+       c.setopt(pycurl.CONNECT_ONLY, 1)
+       c.perform()
+
+       time.sleep(sleep_sec)
+
+       fd = c.getinfo(sock_info)
+       if fd == -1:
+           c.close()
+           return False
+       s = socket.socket(fileno=fd)
+       try:
+           s.sendall(b"GET /headers HTTP/1.1\r\nHost: idle.example\r\n\r\n")
+           data = s.recv(4096).decode()
+           # Check we got an HTTP response (e.g. 200)
+           if data.strip().startswith("HTTP/"):
+               return True
+           return False
+       except (BrokenPipeError, ConnectionResetError, OSError):
+           return False
+       finally:
+           c.close()
+
+
+   def normal_request() -> bool:
+       """Do a normal GET (connect + request + response in one go). No idle period."""
+       c = pycurl.Curl()
+       c.setopt(pycurl.URL, URL)
+       c.setopt(pycurl.HTTPHEADER, HEADERS)
+       c.setopt(pycurl.WRITEFUNCTION, lambda _: None)  # discard body
+       try:
+           c.perform()
+           code = c.getinfo(pycurl.RESPONSE_CODE)
+           c.close()
+           return 200 <= code < 400
+       except pycurl.error:
+           c.close()
+           return False
+
+   def main():
+       # Scenario 1: idle LONGER than timeout -> connection closed, send fails
+       print("=== 1. Idle timeout HIT (sleep > 1s) ===")
+       print("Connect, then wait 2s with no data (proxy closes connection after 1s)...")
+       ok = connect_idle_then_send(2.0)
+       if ok:
+           print("Unexpected: request succeeded (idle timeout may not be 1s or proxy didn't close).\n")
+       else:
+           print("Result: connection was closed by proxy (idle timeout worked).\n")
+       # Scenario 2: normal request (no idle period) -> succeeds
+       # No CONNECT_ONLY; we send the request immediately as part of perform().
+       print("=== 2. Idle timeout NOT hit (normal request) ===")
+       print("Send a normal GET (connect + request in one step; connection never idle)...")
+       ok = normal_request()
+       if ok:
+           print("Result: request succeeded (connection was still open).\n")
+       else:
+           print("Unexpected: request failed (check URL and proxy).\n")
+
+
+   if __name__ == "__main__":
+       main()
+   ```
+   Expected output: 
+   
+   ```txt
+   === 1. Idle timeout HIT (sleep > 1s) ===
+   Connect, then wait 2s with no data (proxy closes connection after 1s)...
+   Result: connection was closed by proxy (idle timeout worked).
+ 
+   === 2. Idle timeout NOT hit (normal request) ===
+   Send a normal GET (connect + request in one step; connection never idle)...
+   Result: request succeeded (connection was still open).
+
+   ```
       
 ## Cleanup
 
