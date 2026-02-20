@@ -59,7 +59,7 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
 When generating your Envoy certificates, make sure to use encryption algorithms that are supported in Envoy. To learn more about supported algorithms that you can use for your certificates and keys, see the <a href="https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ssl#certificate-selection">Envoy documentation</a>. 
 -->
 
-1. Create the `example_certs` directory and navigate into this directory. 
+1. Create the `example_certs` directory and navigate to this directory. 
    ```sh
    mkdir example_certs && cd example_certs
    ```
