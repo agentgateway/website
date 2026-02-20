@@ -2,7 +2,7 @@ Route to a Model Context Protocol (MCP) server through a static address. For mor
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Step 1: Deploy an MCP server {#mcp-server}
 

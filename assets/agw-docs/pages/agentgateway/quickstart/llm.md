@@ -1,0 +1,1 @@
+{{< redirect "../../llm/providers/openai/" >}}

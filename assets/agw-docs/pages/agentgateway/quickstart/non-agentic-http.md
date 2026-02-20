@@ -1,0 +1,1 @@
+{{< redirect "../../install/sample-app/" >}}
