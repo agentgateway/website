@@ -2,7 +2,7 @@ You can customize an idle timeout for a connection to a downstream or upstream s
 
 ## About idle timeouts
 
-The idle timeout applies when there is no activity on the connection, no bytes sent or received. It does not limit how long a single request or response can take. For example, calling httpbin’s `/delay/10` keeps a request in flight for 10 seconds, so the connection is not idle and you will get a normal 200 response after 10 seconds. To limit how long a request can run, use a [request timeout]({{< ref "request.md" >}}) for this scenario instead.
+The idle timeout applies when there is no activity on the connection, no bytes sent or received. It does not limit how long a single request or response can take. For example, calling httpbin’s `/delay/10` keeps a request active for 10 seconds, so the connection is not idle and you get a successful 200 response after 10 seconds. To limit how long a request can run, use a [request timeout]({{< ref "request.md" >}}) for this scenario instead.
 
 {{< callout type="info" >}}
 The idle timeout is configured for entire HTTP/1 connections from a downstream service to the gateway proxy, and to the upstream service. 
