@@ -1,4 +1,4 @@
-Create an HTTP listener on your gateway proxy. Then, your proxy listens for HTTP traffic on the specified port and hostname that you configure.
+Create an HTTP listener on your gateway proxy. Your proxy listens for HTTP traffic on the specified port and hostname that you configure.
 
 ## Before you begin
 
