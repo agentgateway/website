@@ -23,7 +23,7 @@ This guide shows you how to route MCP traffic from **any IDE** — Cursor, VS Co
 
 ## Architecture
 
-![Uploading architecture_1.gif…]()
+![Uploading architecture.gif…]()
 
 ## Prerequisites
 
