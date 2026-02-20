@@ -283,7 +283,7 @@ Specify timeouts for a specific route.
 
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
 
 1. Delete the HTTPRoute resource. 
   ```sh

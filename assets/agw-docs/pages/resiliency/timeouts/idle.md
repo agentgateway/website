@@ -219,7 +219,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
       
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
    
 ```sh
 kubectl delete httproute idle-timeout -n httpbin
