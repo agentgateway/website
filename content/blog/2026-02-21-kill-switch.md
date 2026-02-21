@@ -2,7 +2,7 @@
 title: "Multi-Agent Architecture with a Kill Switch: Why Every AI Agent Needs a Gateway"
 publishDate: 2026-02-21
 author: "Sebastian Maniak"
-description: "A multi-agent system where a coordinator routes tasks to specialist sub-agents — and every LLM call and MCP tool invocation passes through AgentGateway for cost control, rate limiting, governance, and a kill switch."
+description: "A multi-agent system where a coordinator routes tasks to specialist sub-agents — and every LLM call and MCP tool invocation passes through agentgateway running in Kubernetes for cost control, rate limiting, governance, and a kill switch."
 ---
 
 ## The Setup
@@ -13,7 +13,7 @@ It works. The specialists are good at their jobs. The coordinator knows when to 
 
 But here's what keeps me up at night: **what happens when one of these agents goes rogue?**
 
-A security agent with access to nmap and trivy decides to scan every host on the network in a loop. A cloud agent burns through $500 of Opus tokens chasing a hallucinated Terraform state. A general agent with SSH access starts "fixing" things on production hosts that don't need fixing.
+A security agent with access to nmap and trivy decides to scan every host on the network in a loop. A cloud agent burns through $500 of Opus tokens chasing a hallucinated Terraform state or decides to reconfigure your Istio ambient mesh routing because it misread a waypoint proxy status. A general agent with SSH access starts "fixing" things on production hosts that don't need fixing.
 
 Without a control plane between your agents and the outside world, you have no way to stop any of this. No kill switch. No cost ceiling. No audit trail. No rate limits. Just agents with direct access to LLMs and tools, hoping nothing goes wrong.
 
@@ -23,7 +23,7 @@ That's not engineering. That's negligence.
 
 ## The Architecture
 
-Here's what I actually run. Every LLM call and every MCP tool invocation from every agent — coordinator and specialists alike — routes through [AgentGateway](https://agentgateway.dev).
+Here's what I actually run. Every LLM call and every MCP tool invocation from every agent — coordinator and specialists alike — routes through [agentgateway](https://agentgateway.dev).
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -53,23 +53,28 @@ Here's what I actually run. Every LLM call and every MCP tool invocation from ev
                   │
                   │  ALL traffic
                   ▼
-   ┌──────────────────────────────┐
-   │        AgentGateway          │
-   │                              │
-   │  • Kill switch               │
-   │  • Rate limiting             │
-   │  • Cost controls             │
-   │  • JWT auth + RBAC           │
-   │  • Observability (OTel)      │
-   │  • Tool poisoning protection │
-   └──────┬───────────┬───────────┘
-          │           │
-     ┌────▼────┐  ┌───▼────────────┐
-     │  LLMs   │  │  MCP Servers   │
-     │Anthropic│  │  nmap, trivy   │
-     │ OpenAI  │  │  aws-cli, ssh  │
-     │  xAI    │  │  docker, git   │
-     └─────────┘  └────────────────┘
+   ┌──────────────────────────────────────────┐
+   │          Kubernetes Cluster              │
+   │  ┌──────────────────────────────┐        │
+   │  │        agentgateway          │        │
+   │  │          (Pod)               │        │
+   │  │                              │        │
+   │  │  • Kill switch               │        │
+   │  │  • Rate limiting             │        │
+   │  │  • Cost controls             │        │
+   │  │  • JWT auth + RBAC           │        │
+   │  │  • Observability (OTel)      │        │
+   │  │  • Tool poisoning protection │        │
+   │  └──────┬───────────┬───────────┘        │
+   │         │           │                    │
+   └─────────┼───────────┼────────────────────┘
+             │           │
+        ┌────▼────┐  ┌───▼────────────────┐
+        │  LLMs   │  │    MCP Servers     │
+        │Anthropic│  │  nmap, trivy       │
+        │ OpenAI  │  │  aws-cli, kubectl  │
+        │  xAI    │  │  istioctl, docker  │
+        └─────────┘  └───────────────────-┘
 ```
 
 Nothing reaches an LLM or a tool without passing through the gateway. That's the entire point.
@@ -104,10 +109,10 @@ The coordinator synthesizes the result and delivers it back to the user. If a ta
 
 ### Cloud Agent
 
-- **Domain**: AWS/GCP/Azure resource management, Terraform, cost optimization, architecture
-- **Tools**: aws-cli, gcloud, az, terraform, kubectl, helm
+- **Domain**: AWS/GCP/Azure resource management, Terraform, cost optimization, architecture, Kubernetes, Istio service mesh, ambient mesh
+- **Tools**: aws-cli, gcloud, az, terraform, kubectl, helm, istioctl
 - **Model**: Sonnet — balance of speed and capability
-- **Access**: Cloud provider credentials (scoped IAM roles)
+- **Access**: Cloud provider credentials (scoped IAM roles), Kubernetes clusters, Istio control plane
 
 ### General / Infra Agent
 
@@ -126,7 +131,7 @@ The coordinator classifies each request and routes to the appropriate specialist
 |----------|-----------|
 | CVE, vulnerability, audit, compliance, secrets | Security Agent |
 | DNS, firewall, routing, VPN, latency, ports | Network Agent |
-| AWS, Terraform, GCP, Azure, S3, EC2, cost | Cloud Agent |
+| AWS, Terraform, GCP, Azure, S3, EC2, cost, Istio, mesh, Kubernetes, k8s | Cloud Agent |
 | VM, Docker, git, systemd, Proxmox, backup | General Agent |
 
 Ambiguous requests stay with the coordinator. Multi-domain tasks fan out to multiple specialists in parallel.
@@ -143,46 +148,65 @@ Picture this: your cloud agent is debugging a Terraform plan. It calls Opus to r
 
 Without a gateway: you find out when the invoice arrives. $2,000 spent on a conversation with itself.
 
-With AgentGateway: the agent hits a token-per-minute ceiling after the third iteration. The request is rejected. You get an alert. You investigate. Total damage: $12.
+With agentgateway: the agent hits a token-per-minute ceiling after the third iteration. The request is rejected. You get an alert. You investigate. Total damage: $12.
 
 That's not a hypothetical. That's Tuesday.
 
 ### Kill Switch
 
-AgentGateway gives me a single point where I can shut everything down. If I see an agent misbehaving — through the metrics, through the traces, through an alert — I can:
+agentgateway gives me a single point where I can shut everything down. If I see an agent misbehaving — through the metrics, through the traces, through an alert — I can:
 
 1. **Revoke the JWT** for that specific agent's identity. Immediate. That agent can't make another LLM call or tool invocation.
 2. **Update the rate limit** to zero for that agent class. Every security agent stops. Every cloud agent stops. Surgical.
 3. **Pull the gateway entirely.** Nuclear option. Everything stops. Nothing reaches any LLM or tool.
 
-Without a gateway, killing a rogue agent means finding the process, SSHing into the right host, and hoping you're faster than the agent. With a gateway, it's a config change.
+Without a gateway, killing a rogue agent means finding the pod, kubectl exec-ing into the right node, and hoping you're faster than the agent. With a gateway running in Kubernetes, it's a config change — or a `kubectl rollout restart` away from a full reset.
 
 ### Cost Controls
 
 Every agent has a budget. Not a suggestion — a hard limit enforced at the gateway level.
 
 ```yaml
-rate_limiting:
-  - match:
-      identity: security-agent
-    limits:
-      - tokens_per_minute: 50000
-      - requests_per_minute: 20
-  - match:
-      identity: cloud-agent
-    limits:
-      - tokens_per_minute: 100000
-      - requests_per_minute: 30
-  - match:
-      identity: general-agent
-    limits:
-      - tokens_per_minute: 20000
-      - requests_per_minute: 15
+# Security agent route — Opus workloads
+policies:
+  localRateLimit:
+    - maxTokens: 50000
+      tokensPerFill: 50000
+      fillInterval: 1m
+      type: tokens
+    - maxTokens: 20
+      tokensPerFill: 20
+      fillInterval: 1m
+      type: requests
+
+# Cloud agent route — higher throughput
+policies:
+  localRateLimit:
+    - maxTokens: 100000
+      tokensPerFill: 100000
+      fillInterval: 1m
+      type: tokens
+    - maxTokens: 30
+      tokensPerFill: 30
+      fillInterval: 1m
+      type: requests
+
+# General agent route — simple ops
+policies:
+  localRateLimit:
+    - maxTokens: 20000
+      tokensPerFill: 20000
+      fillInterval: 1m
+      type: tokens
+    - maxTokens: 15
+      tokensPerFill: 15
+      fillInterval: 1m
+      type: requests
 ```
 
-The security agent running Opus gets 50k tokens per minute. That's enough for serious threat analysis but not enough to bankrupt me on a hallucination loop. The general agent on Haiku gets 20k — simple ops don't need more.
+Each route gets a token-bucket rate limit scoped by the route's identity. The security agent running Opus gets 50k tokens per minute. That's enough for serious threat analysis but not enough to bankrupt me on a hallucination loop. The general agent on Haiku gets 20k — simple ops don't need more.
 
-AgentGateway tracks token usage per provider and per model with `agentgateway_gen_ai_client_token_usage` metrics, tagged with provider, model, and operation labels. I know exactly what each agent costs, in real time.
+agentgateway tracks token usage per provider and per model with `agentgateway_gen_ai_client_token_usage` metrics, tagged with provider, model, and operation labels. I know exactly what each agent costs, in real time.
 
 ### Rate Limiting
 
@@ -196,40 +220,41 @@ Same for LLM calls. An agent that retries on every 429 or timeout — something 
 
 Each agent has a JWT identity with scoped permissions. The security agent can call `nmap` and `trivy` tools but cannot call `terraform apply`. The cloud agent can call `terraform plan` but not `ssh`. The general agent can SSH to designated hosts but cannot touch cloud credentials.
 
-This is enforced at the gateway with CEL expressions:
+This is enforced at the gateway with CEL expressions in `mcpAuthorization` rules:
 
 ```yaml
-backend:
-  mcp:
-    authorization:
-      action: Allow
-      policy:
-        matchExpressions:
-        - >-
-          claims.agent_role == 'security' && (
-            tool.name.startsWith('nmap') ||
-            tool.name.startsWith('trivy') ||
-            tool.name.startsWith('falco')
-          )
-        - >-
-          claims.agent_role == 'cloud' && (
-            tool.name.startsWith('terraform') ||
-            tool.name.startsWith('kubectl')
-          )
+# Security agent backend
+mcpAuthorization:
+  rules:
+  - >-
+    jwt.agent_role == "security" && (
+      mcp.tool.name.startsWith("nmap") ||
+      mcp.tool.name.startsWith("trivy") ||
+      mcp.tool.name.startsWith("falco")
+    )
+
+# Cloud agent backend
+mcpAuthorization:
+  rules:
+  - >-
+    jwt.agent_role == "cloud" && (
+      mcp.tool.name.startsWith("terraform") ||
+      mcp.tool.name.startsWith("kubectl") ||
+      mcp.tool.name.startsWith("istioctl") ||
+      mcp.tool.name.startsWith("helm")
+    )
 ```
 
-Even if a specialist agent's system prompt gets jailbroken and it tries to invoke tools outside its domain, the gateway blocks it. The agent literally cannot see tools it doesn't have access to — `tools/list` responses are filtered based on its JWT claims.
+Even if a specialist agent's system prompt gets jailbroken and it tries to invoke tools outside its domain, the gateway blocks it. If a tool isn't matched by a rule, it's automatically filtered from the `tools/list` response — the agent literally cannot see tools it doesn't have access to.
 
-And there's always a deny list for the truly destructive operations:
+And since unmatched tools are denied by default, I only whitelist what's explicitly allowed. Any tool not covered by an `mcpAuthorization` rule is invisible to the agent. For HTTP-level operations, I add explicit deny rules:
 
 ```yaml
-denyPolicy:
-  matchExpressions:
-  - >-
-    tool.name.contains('delete') ||
-    tool.name.contains('destroy') ||
-    tool.name.contains('drop') ||
-    tool.name.contains('rm_rf')
+authorization:
+  rules:
+  - deny: 'request.path.contains("delete")'
+  - deny: 'request.path.contains("destroy")'
+  - deny: 'request.path.contains("drop")'
 ```
 
 No agent gets to run destructive operations without explicit human escalation. Period.
@@ -261,7 +286,7 @@ I can see:
 └─────────────────────────────────────────────────────┘
 ```
 
-Metrics go to Prometheus. Traces go to Jaeger. LLM-specific telemetry goes to Langfuse for prompt/completion pair analysis. All of it through AgentGateway's built-in OpenTelemetry support — no instrumentation code in the agents themselves.
+Metrics go to Prometheus. Traces go to Jaeger. LLM-specific telemetry goes to Langfuse for prompt/completion pair analysis. All of it through agentgateway's built-in OpenTelemetry support — no instrumentation code in the agents themselves.
 
 When something goes wrong, I don't grep through logs hoping to find what happened. I open a dashboard and see exactly which agent, which call, which tool, at what time, with what parameters.
 
@@ -277,13 +302,96 @@ When something goes wrong, I don't grep through logs hoping to find what happene
 
 **Tool isolation.** Each specialist only gets the tools it needs. Not through prompt instructions (which can be jailbroken) but through gateway-enforced RBAC (which can't).
 
-**Single gateway for all traffic.** Not one gateway per agent. Not a sidecar pattern. One AgentGateway instance that every agent routes through. One place to set policy, one place to monitor, one place to kill.
+**Single gateway for all traffic.** Not one gateway per agent. Not a sidecar pattern. One agentgateway instance running in Kubernetes that every agent routes through. One place to set policy, one place to monitor, one place to kill. K8s gives me rolling updates, health checks, and resource limits on the gateway itself — so the control plane has its own control plane.
 
 **Extensible.** New domain = new agent config + system prompt + tool set. The coordinator's routing logic gets a new keyword match. The gateway gets a new JWT scope. No architectural changes needed.
 
 ---
 
-## Why AgentGateway and Not a Traditional Proxy
+## Running agentgateway in Kubernetes
+
+agentgateway runs as a deployment in my Kubernetes cluster. This isn't just convenience — it's operational discipline. The gateway that controls all my agents is itself managed by K8s primitives: health checks, resource limits, rolling updates, and restart policies.
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agentgateway
+  namespace: agent-infra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agentgateway
+  template:
+    metadata:
+      labels:
+        app: agentgateway
+    spec:
+      containers:
+      - name: agentgateway
+        image: ghcr.io/agentgateway/agentgateway:latest
+        ports:
+        - containerPort: 3000
+          name: proxy
+        - containerPort: 15000
+          name: admin
+        - containerPort: 15020
+          name: metrics
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /healthz/ready
+            port: 15020
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        volumeMounts:
+        - name: config
+          mountPath: /etc/agentgateway
+      volumes:
+      - name: config
+        configMap:
+          name: agentgateway-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: agentgateway
+  namespace: agent-infra
+spec:
+  selector:
+    app: agentgateway
+  ports:
+  - name: proxy
+    port: 3000
+    targetPort: 3000
+  - name: admin
+    port: 15000
+    targetPort: 15000
+  - name: metrics
+    port: 15020
+    targetPort: 15020
+```
+
+The kill switch becomes even simpler in K8s. Scale to zero replicas and every agent loses its gateway instantly:
+
+```bash
+kubectl scale deployment agentgateway -n agent-infra --replicas=0
+```
+
+Everything stops. Scale back up when you've fixed the issue. The gateway comes back with the same config, same policies, same state.
+
+The cloud agent — the one that handles Kubernetes, Istio, and ambient mesh — is particularly interesting in this setup. It manages the same cluster that hosts the gateway. That's a circular dependency I've thought carefully about: the agent that manages K8s infrastructure talks through a gateway that runs on K8s infrastructure. The circuit breaker here is the RBAC policy — the cloud agent's JWT scope explicitly excludes the `agent-infra` namespace. It can manage workloads, configure Istio routing, and deploy ambient mesh policies, but it cannot touch the gateway deployment itself.
+
+---
+
+## Why agentgateway and Not a Traditional Proxy
 
 Traditional API gateways (Envoy, Kong, NGINX) were built for HTTP request/response. AI agent traffic is fundamentally different:
 
@@ -292,7 +400,7 @@ Traditional API gateways (Envoy, Kong, NGINX) were built for HTTP request/respon
 - **Token-based economics.** Cost isn't about request count — it's about token count. A gateway that can't count tokens can't enforce budgets.
 - **Bidirectional communication.** MCP servers can push messages back to clients asynchronously. This breaks the request/response model traditional gateways assume.
 
-[AgentGateway](https://agentgateway.dev) is purpose-built for this. Written in Rust for performance and memory safety on stateful, long-lived connections. Understands MCP sessions natively. Counts tokens per-provider. Handles fan-out patterns where one agent call becomes multiple downstream requests.
+[agentgateway](https://agentgateway.dev) is purpose-built for this. Written in Rust for performance and memory safety on stateful, long-lived connections. Understands MCP sessions natively. Counts tokens per-provider. Handles fan-out patterns where one agent call becomes multiple downstream requests.
 
 It's open source, Apache 2.0 licensed, and part of the Linux Foundation. No vendor lock-in.
 
@@ -310,12 +418,12 @@ The architecture is straightforward:
 
 The coordinator decides *what* gets done. The gateway decides *whether* it's allowed to happen. That separation is what makes the system safe to run autonomously.
 
-AgentGateway isn't optional in this architecture. It's the thing that makes the entire system possible without me staring at a terminal 24/7 wondering if an agent is about to do something catastrophic.
+agentgateway isn't optional in this architecture. It's the thing that makes the entire system possible without me staring at a terminal 24/7 wondering if an agent is about to do something catastrophic.
 
 Build the agents. Put the gateway in front. Sleep at night.
 
 **Resources:**
-- [AgentGateway](https://agentgateway.dev)
-- [AgentGateway GitHub](https://github.com/agentgateway/agentgateway)
-- [AgentGateway Docs — MCP](https://agentgateway.dev/docs/standalone/latest/about/introduction/)
-- [AgentGateway Telemetry & Observability](https://agentgateway.dev/docs/standalone/latest/tutorials/telemetry/)
+- [agentgateway](https://agentgateway.dev)
+- [agentgateway GitHub](https://github.com/agentgateway/agentgateway)
+- [agentgateway Docs — MCP](https://agentgateway.dev/docs/standalone/latest/about/introduction/)
+- [agentgateway Telemetry & Observability](https://agentgateway.dev/docs/standalone/latest/tutorials/telemetry/)
