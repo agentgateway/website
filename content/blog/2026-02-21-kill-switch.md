@@ -123,6 +123,12 @@ The coordinator synthesizes the result and delivers it back to the user. If a ta
 
 ---
 
+## Memory System
+
+OpenClaw's memory system gives your agent persistent recall across sessions using plain markdown files in the workspace. There are two layers: daily logs (memory/YYYY-MM-DD.md) for raw running notes, and MEMORY.md for curated long-term facts and preferences. Since the agent has no RAM between sessions, everything it "remembers" must be written to disk. To make these files searchable by meaning (not just keywords), OpenClaw chunks them into small pieces and converts each chunk into a numerical vector using a local embedding model — in your case, Qwen3-Embedding-0.6B running via node-llama-cpp, fully private on your machine. These vectors are stored in a SQLite database (~/.openclaw/memory/main.sqlite) and searched using a hybrid approach that combines vector similarity (semantic matching) with BM25 full-text search (exact keyword matching). Recent memories are weighted higher via temporal decay. When the agent needs context, it calls memory_search to find relevant past notes even if the wording is completely different from the query, or memory_get to read a specific file directly. If a session runs long and hits token limits, OpenClaw automatically prompts the agent to save important context to files before compacting, so nothing critical gets lost.st.
+
+---
+
 ## Routing Logic
 
 The coordinator classifies each request and routes to the appropriate specialist:
