@@ -1,5 +1,5 @@
 ---
-title: "Multi-Agent Architecture with a Kill Switch: Why Every AI Agent Needs a Gateway"
+title: "Multi-Agent Openclaw Architecture with a Kill Switch: Why Every AI Agent Needs a Gateway"
 publishDate: 2026-02-21
 author: "Sebastian Maniak"
 description: "A multi-agent system where a coordinator routes tasks to specialist sub-agents — and every LLM call and MCP tool invocation passes through agentgateway running in Kubernetes for cost control, rate limiting, governance, and a kill switch."
