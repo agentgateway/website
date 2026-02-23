@@ -91,5 +91,5 @@ Check out more guides for using MCP servers with agentgateway.
 {{< cards >}}
   {{< card link="../../mcp/connect/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
   {{< card link="../../mcp/connect/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
-  {{< card link="../../mcp/connect/openapi" title="OpenAPI" subtitle="Connect to an OpenAPI server." >}}
+  {{< card link="../../mcp/authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
 {{< /cards >}}
