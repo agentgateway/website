@@ -1,6 +1,6 @@
 To federate multiple MCP servers on the same gateway, you can use a label selector in the MCP Backend.
 
-This approach makes it easier for you to add more MCP servers by adding labels. It also lets your clients access tools from multiple MCP servers through a single endpoint and MCP connection.
+This approach, also referred to as multiplexing, makes it easier for you to add more MCP servers by adding labels. It also lets your clients access tools from multiple MCP servers through a single endpoint and MCP connection.
 
 {{< callout type="warning" >}}
 Note that only streamable HTTP is currently supported for label selectors. If you have SSE, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
