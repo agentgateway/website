@@ -109,8 +109,6 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
 
       ```
 
-3. Optional: Verify the idle timeout. You can generate a Python script and use `pycurl` to test an idle connection. Simulate an idle connection with `CONNECT_ONLY`, set a sleep, then send the HTTP request over the same connection. After the sleep, the proxy's idle timeout has closed the connection, so sending or receiving fails. This method works on Unix-like systems, such as Linux or macOS, where the active socket is a file descriptor.
-
       
 ## Cleanup
 
