@@ -127,7 +127,7 @@ codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via age
 {{% /tab %}}
 {{% tab tabName="Config file" %}}
 
-To configure the base URL permanently, add the following to your `~/.codex/config.toml`. See [Advanced Configuration](https://developers.openai.com/codex/config-advanced). The `name` field is required for custom providers.
+To configure the base URL permanently, add the following to your `~/.codex/config.toml`. For more information, see [Advanced Configuration](https://developers.openai.com/codex/config-advanced). The `name` field is required for custom providers.
 
 ```toml
 [model_providers.proxy]
