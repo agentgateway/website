@@ -67,7 +67,7 @@ Set up an HTTP listener on your Gateway.
         listeners:
         - protocol: HTTP
           port: 8080
-          name: http-dummy
+          name: http-mock
           allowedRoutes:
             namespaces:
               from: All
