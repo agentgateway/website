@@ -10,7 +10,7 @@ Review the following table for a quick comparison of MCP auth and JWT auth.
 
 | **Feature** | **MCP Auth** | **JWT Auth** |
 | :---- | :---- | :---- |
-| Goal | Full MCP OAuth flow (discovery, registration, token) | Validate tokens and optional claim-based RBAC |
+| Goal | Full MCP OAuth flow (discovery, client registration, token validation) | Validate tokens and optional claim-based RBAC |
 | Policy section | `spec.backend.mcp.authentication` | `spec.traffic.jwtAuthentication` |
 | Target ref | `AgentgatewayBackend` | `Gateway` or `HTTPRoute` |
 | Discovery | `/.well-known/oauth-protected-resource` | None |
