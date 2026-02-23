@@ -269,7 +269,7 @@ Specify timeouts for specific routes.
    {{% /tab %}}
    {{< /tabs >}}
 
-4. Send a request to the `/delay` path in the sample app with a time that is less than the timeout, like `1` second. Verify that the request succeeds.
+4. Send a request along the `/delay` path of the httpbin. This path delays requests for the number of seconds that you specify. In this example, you delay the request by 1 second. Because the delay is shorter than the timeout that you configured, the request succeeds and a 200 HTTP response code is returned.  
  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
