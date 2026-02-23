@@ -11,7 +11,7 @@ Get started with agentgateway on Kubernetes. Install the control plane, or jump 
   {{< card link="install" title="Install agentgateway" subtitle="Install the agentgateway control plane in your cluster." >}}
   {{< card link="llm" title="LLM (OpenAI)" subtitle="Route requests to OpenAI's chat completions API." >}}
   {{< card link="mcp" title="MCP servers" subtitle="Connect to an MCP server and try tools." >}}
-  {{< card link="non-agentic-http" title="Non-agentic HTTP" subtitle="Route HTTP traffic to a backend such as httpbin." >}}
+  {{< card link="non-agentic-http" title="Non-agentic HTTP" subtitle="Route HTTP traffic to a backend service such as httpbin." >}}
 {{< /cards >}}
 
 ## Before you begin
