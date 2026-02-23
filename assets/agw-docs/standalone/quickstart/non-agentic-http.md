@@ -144,5 +144,5 @@ docker stop httpbin
 {{< cards >}}
   {{< card link="../../configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
   {{< card link="../../configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to test that your gateway and apps continue to function." >}}
-  {{< card link="../../configuration/security" title="Security" subtitle="Secure backends and routes with different types of security, authentication, authorization, and rate limiting policies." >}}
+  {{< card link="../../configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
 {{< /cards >}}
