@@ -205,7 +205,6 @@ Specify timeouts for a specific route.
           - kind: Service
             name: httpbin
             port: 8000
-          name: timeout
       EOF
       ```
    
@@ -290,6 +289,26 @@ Specify timeouts for a specific route.
    ...
    < HTTP/1.1 200 OK
    ...
+   {
+      "args": {},
+      "headers": {
+        "Accept": [
+          "*/*"
+        ],
+        "Host": [
+          "timeout.example"
+        ],
+        "User-Agent": [
+          "curl/8.7.1"
+        ]
+      },
+      "origin": "10.244.0.2:37150",
+      "url": "http://timeout.example/delay/1",
+      "data": "",
+      "files": null,
+      "form": null,
+      "json": null
+   }
    ```
 
 5. Review the logs of the httpbin app and verify that you can see the successful request.
