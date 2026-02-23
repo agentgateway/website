@@ -334,7 +334,7 @@ Specify timeouts for specific routes.
    request timeout%    
    ```
 
-7. From the logs, the request took longer than 2 seconds, which triggered the request timeout.
+7. In the httpbin logs, verify that the request took longer than 2 seconds, which triggered the request timeout. 
 
    ```sh
    kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
