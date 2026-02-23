@@ -292,7 +292,7 @@ Specify timeouts for specific routes.
    ...
    ```
 
-5. From the logs, you can see that the request was successful.
+5. Review the logs of the httpbin app and verify that you can see the successful request.
 
    ```sh
    kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
