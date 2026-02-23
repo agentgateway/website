@@ -7,7 +7,7 @@ Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/tr
 Specify timeouts for specific routes. 
 
 1. Configure a timeout for specific routes by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. In the following example, you configure a route to the httpbin app that matches requests along the `/delay` path and sets a request timeout of 2 seconds. 
-   {{< tabs tabTotal="2" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: AgentgatewayPolicy" >}}
+   {{< tabs tabTotal="3" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: AgentgatewayPolicy,Option 3: Gateway listener" >}}
    {{% tab tabName="Option 1: HTTPRoute (Kubernetes GW API)" %}}
 
    1. Configure the HTTPRoute.
@@ -179,6 +179,94 @@ Specify timeouts for specific routes.
       ```
    
    {{% /tab %}}
+
+   {{% tab tabName="Option 3: Gateway listener"  %}}
+   
+   1. Create the HTTPRoute with the `/delay` route, and add an HTTPRoute rule name to the path. You use the rule name later to apply the timeout to a particular route. 
+      ```yaml
+      kubectl apply -n httpbin -f- <<EOF
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: httpbin-timeout
+        namespace: httpbin
+      spec:
+        hostnames:
+        - timeout.example
+        parentRefs:
+        - name: agentgateway-proxy
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        rules:
+        - matches: 
+          - path:
+              type: PathPrefix
+              value: /delay
+          backendRefs:
+          - kind: Service
+            name: httpbin
+            port: 8000
+          name: timeout
+      EOF
+      ```
+   
+
+   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a specific HTTPRoute rule. In this example, you apply the policy to the `timeout` rule that points to the `/delay` path in your HTTPRoute resource.
+
+      ```yaml
+      kubectl apply -f- <<EOF
+      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      metadata:
+        name: timeout
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+      spec:
+        targetRefs:
+        - kind: Gateway
+          group: gateway.networking.k8s.io
+          name: agentgateway-proxy
+          sectionName: http
+        traffic:
+          timeouts:
+            request: 2s
+      EOF
+      ```
+
+   3. Find the route configuration for the cluster in the config dump. Verify that the timeout policy is set as you configured it. 
+        
+      Example `jq` command:
+        
+      ```sh
+      curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.traffic.timeout?)] | .[0]'
+      ```
+
+      Example output:
+      ```json {linenos=table,hl_lines=[16,17,18,19,20],filename="http://localhost:15000/config_dump"}
+      {
+        "key": "traffic/agentgateway-system/timeout:timeout:agentgateway-system/agentgateway-proxy/http",
+        "name": {
+          "kind": "AgentgatewayPolicy",
+          "name": "timeout",
+          "namespace": "agentgateway-system"
+        },
+        "target": {
+          "gateway": {
+            "gatewayName": "agentgateway-proxy",
+            "gatewayNamespace": "agentgateway-system",
+            "listenerName": "http"
+          }
+        },
+        "policy": {
+          "traffic": {
+            "phase": "route",
+            "timeout": {
+              "requestTimeout": "2s"
+            }
+          }
+        }
+      }
+      ```
+   
+   {{% /tab %}}
    {{< /tabs >}}
 
 4. Send a request to the `/delay` path in the sample app with a time that is less than the timeout, like `1` second. Verify that the request succeeds.
@@ -274,4 +362,5 @@ Specify timeouts for specific routes.
 2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it from the namespace you created it in.
   ```sh
   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n httpbin
+  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n {{< reuse "agw-docs/snippets/namespace.md" >}}
   ```
