@@ -94,7 +94,7 @@ Specify timeouts for specific routes.
    {{% /tab %}}
    {{% tab tabName="Option 2: EnterpriseKgatewayTrafficPolicy"  %}}
    
-   1. Create the HTTPRoute with the `/delay` route, and add an HTTPRoute rule name to the path. You use the rule name later to apply the timeout to a particular route. 
+   1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app and add an HTTPRoute rule name to the path. You use the rule name later to apply the timeout to a particular route. 
       ```yaml
       kubectl apply -n httpbin -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
