@@ -310,7 +310,7 @@ Specify timeouts for specific routes.
    protocol=http duration=0ms
    ```
 
-6. Send a request along the `/delay` path with a longer delay. This delay simulates an app that is slow to respond. Use a delay that is longer than the timeout that you set. Verify that the request times out.
+6. Repeat the request along the `/delay` path. This time, you use a delay that is longer than the request timeout that you previously specified and therefore simulates an app that is slow to respond. Verify that the request times out and that you get back a 504 HTTP response code. 
  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
