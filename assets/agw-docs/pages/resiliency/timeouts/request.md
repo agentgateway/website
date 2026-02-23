@@ -264,6 +264,7 @@ Specify timeouts for specific routes.
    ...
    < HTTP/1.1 504 Gateway Timeout
    ...
+   request timeout%    
    ```
 
 7. From the logs, you can see that the request duration was delayed and the request timed out.
