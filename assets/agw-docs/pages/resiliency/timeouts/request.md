@@ -182,7 +182,7 @@ Specify timeouts for specific routes.
 
    {{% tab tabName="Option 3: Gateway listener"  %}}
    
-   1. Create the HTTPRoute with the `/delay` route, and add an HTTPRoute rule name to the path. You use the rule name later to apply the timeout to a particular route. 
+   1. Create an HTTPRoute that configures a route to the `/delay` path of the httpbin app. 
       ```yaml
       kubectl apply -n httpbin -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
