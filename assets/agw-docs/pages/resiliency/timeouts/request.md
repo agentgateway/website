@@ -142,7 +142,9 @@ Specify timeouts for specific routes.
       EOF
       ```
    
-   3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a specific HTTPRoute rule. In this example, you apply the policy to the `timeout` rule that points to the `/delay` path in your HTTPRoute resource.
+
+   3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a specific HTTPRoute rule. In this example, you apply the policy to the `timeout` rule that points to the `/headers` path in your HTTPRoute resource.
+
       ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}

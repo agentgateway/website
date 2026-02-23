@@ -38,7 +38,7 @@ Note that if you apply a policy to an HTTPRoute and to a Gateway at the same tim
 
 Set up local rate limiting for a particular route. 
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}TrafficPolicy with your local rate limiting settings. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}TrafficPolicy with your local rate limiting settings. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -159,7 +159,7 @@ Set up local rate limiting for a particular route.
 
 Instead of applying local rate limiting to a particular route, you can also apply it to an entire gateway. This way, the local rate limiting settings are applied to all the routes that the gateway serves. 
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your local rate limiting settings. Use the `targetRefs` section to apply the policy to a specific Gateway. The policy automatically applies to all the routes that the Gateway serves. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your local rate limiting settings. Use the `targetRefs` section to apply the policy to a specific Gateway. The policy automatically applies to all the routes that the Gateway serves. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -342,7 +342,7 @@ Sometimes, you might want to disable {{< gloss "Rate Limiting" >}}rate limiting{
    local_rate_limited      
    ```
 
-4. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to disable rate limiting for the HTTPRoute.
+4. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to disable rate limiting for the HTTPRoute.
 
    ```yaml
    kubectl apply -f- <<EOF

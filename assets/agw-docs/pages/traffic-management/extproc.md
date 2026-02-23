@@ -123,7 +123,7 @@ You can enable ExtProc for a particular route in an HTTPRoute resource.
    EOF
    ```
    
-2. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references the GatewayExtension resource that you created earlier. 
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references the GatewayExtension resource that you created earlier. 
    ```yaml
    kubectl apply -n {{< reuse "agw-docs/snippets/namespace.md" >}} -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}

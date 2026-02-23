@@ -8,5 +8,5 @@ icon: secure
   {{< card link="jwt" title="JWT auth" >}}
   {{< card link="cors" title="CORS" >}}
   {{< card link="csrf" title="CSRF protection" >}}
-  {{< card link="byo-ext-auth-service" title="Bring your own external auth service" >}}
+  {{< card link="extauth" title="External authentication" >}}
 {{< /cards >}}

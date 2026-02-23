@@ -123,7 +123,7 @@ In the following example, you explore how to refactor system and user prompts to
 
 ## Append or prepend prompts
 
-Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich prompts by appending or prepending system and user prompts to each request. This way, you can centrally manage common prompts that you want to add to each request.
+Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich prompts by appending or prepending system and user prompts to each request. This way, you can centrally manage common prompts that you want to add to each request.
 
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich your prompts and configure additional settings. The following example prepends a system prompt of `Parse the unstructured text into CSV format.` to each request that is sent to the `openai` HTTPRoute.
@@ -196,7 +196,7 @@ Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to enrich prom
 
 ## Overwrite settings on the route level
 
-To overwrite a setting that you added to a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource, you simply include that setting in your request.
+To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource, you simply include that setting in your request.
 
 1. Send a request to the AI API and include a custom system prompt that instructs the API to transform unstructured text into JSON format.
 

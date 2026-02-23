@@ -6,6 +6,12 @@ description: Connect AI coding assistants and tools to agentgateway
 
 Configure popular AI coding assistants and tools to use agentgateway as their MCP server.
 
+## IDE Comparison
+
+{{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
+
+## Guides
+
 {{< cards >}}
   {{< card link="claude" title="Claude" subtitle="Anthropic's Claude Desktop and CLI" >}}
   {{< card link="cursor" title="Cursor" subtitle="AI-powered code editor" >}}

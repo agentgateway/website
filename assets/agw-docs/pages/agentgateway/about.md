@@ -34,7 +34,7 @@ Review the following table to understand how to configure agentgateway resources
 
 Review the following considerations for using agentgateway.
 
-- Attaching a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a particular route via the `ExtensionRef` filter is not supported. Instead, use the [HTTPRoute rule attachment option]({{< link-hextra path="/about/policies/trafficpolicy/#attach-to-rule" >}}) to apply a policy to an individual route, which requires the Kubernetes Gateway API experimental channel version 1.3.0 or later.
+- Attaching an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to a particular route via the `ExtensionRef` filter is not supported. Instead, use the [HTTPRoute rule attachment option]({{< link-hextra path="/about/policies/trafficpolicy/#attach-to-rule" >}}) to apply a policy to an individual route, which requires the Kubernetes Gateway API experimental channel version 1.3.0 or later.
 - HTTPListenerPolicy and BackendConfigPolicy resources that configure Envoy-specific filters, such as health checks, TLS, and access logging, cannot be applied to agentgateway proxies. You can use these policies with Envoy-based kgateway proxies only. 
 - External processing (extProc) as part of the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} is not supported.
 - Configuring your agentgateway proxy as a Dynamic Forward Proxy (DFP) is currently not supported.

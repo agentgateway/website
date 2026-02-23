@@ -1,6 +1,6 @@
 ---
 title: Customize the gateway
-weight: 20
+weight: 30
 description:
 ---
 
