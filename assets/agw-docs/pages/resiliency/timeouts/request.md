@@ -10,7 +10,7 @@ Specify timeouts for specific routes.
    {{< tabs tabTotal="3" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: AgentgatewayPolicy,Option 3: Gateway listener" >}}
    {{% tab tabName="Option 1: HTTPRoute (Kubernetes GW API)" %}}
 
-   1. Configure the HTTPRoute.
+   1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app. 
 
       ```yaml
       kubectl apply -f- <<EOF
