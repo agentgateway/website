@@ -1,70 +1,98 @@
-Apply a CSRF filter to the gateway to help prevent cross-site request forgery attacks.
+Protect your web apps from Cross-Site Request Forgery (CSRF) attacks by configuring origin validation.
 
-## About CSRF
+## About CSRF protection
 
 According to [OWASP](https://owasp.org/www-community/attacks/csrf), CSRF is defined as follows:
 
 > Cross-Site Request Forgery (CSRF) is an attack that forces an end user to execute unwanted actions on a web application in which they're currently authenticated. With a little help of social engineering (such as sending a link via email or chat), an attacker may trick the users of a web application into executing actions of the attacker's choosing. If the victim is a normal user, a successful CSRF attack can force the user to perform state changing requests like transferring funds, changing their email address, and so forth. If the victim is an administrative account, CSRF can compromise the entire web application.
 
-To help prevent CSRF attacks, you can enable the CSRF filter on your gateway or a specific route. For each route that you apply the CSRF policy to, the filter checks to make sure that a request's origin matches its destination. If the origin and destination do not match, a 403 Forbidden error code is returned. 
+To help prevent CSRF attacks, you can enable CSRF protection for your gateway or a specific route. For each route that you apply the CSRF policy to, the filter checks to make sure that a request's origin matches its destination. If the origin and destination do not match, a 403 Forbidden error code is returned. 
+
+Review the following diagram to see an example CSRF request flow:
+```mermaid
+sequenceDiagram
+    participant Attacker as Malicious Site<br/>(attacker.com)
+    participant User as User's Browser
+    participant AGW as AgentGateway Proxy
+    participant Backend as Backend Service
+
+    Note over Attacker,Backend: CSRF Attack Attempt
+
+    Attacker->>User: Trick user into visiting<br/>malicious page with hidden form
+    User->>AGW: POST /api/action<br/>Origin: malicioussite.com<br/>Cookie: session=abc123
+
+    AGW->>AGW: CSRF validation:<br/>Origin (malicioussite.com)<br/>vs Destination (api.example.com)
+
+    alt Origin does NOT match destination<br/>and NOT in additionalOrigins
+        AGW-->>User: 403 Forbidden<br/>"CSRF validation failed"
+        Note over User,AGW: Attack blocked
+    end
+
+    Note over User,Backend: Legitimate Request
+
+    User->>AGW: POST /api/action<br/>Origin: allowThisOne.example.com<br/>Cookie: session=abc123
+
+    AGW->>AGW: CSRF validation:<br/>Origin in additionalOrigins list
+    AGW->>Backend: Forward request
+    Backend-->>AGW: 200 OK
+    AGW-->>User: 200 OK
+```
 
 {{< callout type="info" >}}
 Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
 {{< /callout >}}
 
-{{< callout type="info" >}}
-To learn more about CSRF, you can try out the [CSRF sandbox](https://www.envoyproxy.io/docs/envoy/latest/start/sandboxes/csrf) in Envoy. 
-{{< /callout >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Before you begin
+## Set up CSRF protection
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enable CSRF protection for your Gateway. This policy validates the `Origin` header of incoming requests and blocks requests from untrusted origins.
 
-## Set up CSRF 
-
-Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your CSRF rules. 
-
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your CSRF rules. The following example allows request from only the `allowThisOne.example.com` origin.
-   
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your CSRF configuration.
    ```yaml
-   kubectl apply -f- <<EOF
+   kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: csrf
-     namespace: httpbin
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
+     # Target the Gateway to apply CSRF protection to all routes
      targetRefs:
      - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbin
-     csrf:
-       percentageEnabled: 100
-       additionalOrigins:
-       - exact: allowThisOne.example.com
-         ignoreCase: false
+       kind: Gateway
+       name: agentgateway-proxy
+     traffic:
+       csrf:
+         # Additional origins that are allowed to make requests
+         # These are origins beyond the request's own origin that you trust
+         additionalOrigins:
+         - example.org
+         - allowThisOne.example.com
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#csrfpolicy">}}).
-
-   | Field | Description |
+   | Field | Description | 
    |-------|-------------|
-   | `targetRefs` | The policy targets the `httpbin` HTTPRoute resource that you created before you began. |
-   | `percentageEnabled` | The percentage of requests for which the CSRF policy is enabled. A value of `100` means that all requests are enforced by the CSRF rules. |
-   | `additionalOrigins` | Additional origins that the CSRF policy allows, besides the destination origin. Possible values include `exact`, `prefix`, `suffix`, `contains`, `safeRegex`, and an `ignoreCase` boolean. At least one of `exact`, `prefix`, `suffix`, `contains`, or `safeRegex` must be set. The example allows requests from the `allowThisOne.example.com` exact origin. |
-   
-2. Send a request to the httpbin app on the `www.example.com` domain. Verify that you get back a 403 HTTP response code because no origin is set in your request. 
+   | `csrf` | Enables CSRF protection for the targeted Gateway or routes. When configured, all cross-origin requests are validated. | 
+   | `additionalOrigins` | List of additional origins that are allowed to make requests to your app beyond the same-origin requests. This is useful for trusted partners, subdomains, or CDNs. Origins cannot include wildcards. | 
+
+
+2. Send a request to the httpbin app on the `www.example.com` domain. Include the `malicioussite.com` origin that is not allowed in your policy. Verify that the request is denied and that you get back a 403 HTTP response code.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post -H "host: www.example.com:80"
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post \
+    -H "host: www.example.com:8080" \
+    -H "origin: malicioussite.com"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi -X POST localhost:8080/post -H "host: www.example.com"
+   curl -vi -X POST localhost:8080/post \
+    -H "host: www.example.com" \
+    -H "origin: malicioussite.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -72,22 +100,29 @@ Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define you
    Example output: 
    
    ```console
+   * Request completely sent off
+   < HTTP/1.1 403 Forbidden
    HTTP/1.1 403 Forbidden
    ...
-   Invalid origin
+   < 
+   CSRF validation failed%
    ```
 
-3. Send another request to the httpbin app. This time, you include the `allowThisOne.example.com` origin header. Verify that you get back a 200 HTTP response code, because the origin matches the origin that you specified in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
+3. Send another request to the httpbin app. This time, you include the `allowThisOne.example.com` origin header that is allowed in your policy. Verify that you get back a 200 HTTP response code, because the origin matches the origin that you specified in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post -H "host: www.example.com:80" -H "origin: allowThisOne.example.com"
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post \
+   -H "host: www.example.com" \
+   -H "origin: allowThisOne.example.com"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi -X POST localhost:8080/post -H "host: www.example.com" -H "origin: allowThisOne.example.com"
+   curl -vi -X POST localhost:8080/post \
+   -H "host: www.example.com" \
+   -H "origin: allowThisOne.example.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}   
@@ -102,65 +137,23 @@ Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define you
        "Accept": [
          "*/*"
        ],
-       "Content-Length": [
-         "0"
-       ],
        "Host": [
-         "csrf.example:8080"
+         "www.example.com"
        ],
        "Origin": [
          "allowThisOne.example.com"
        ],
        "User-Agent": [
-         "curl/7.77.0"
-       ],
-       "X-Envoy-Expected-Rq-Timeout-Ms": [
-         "15000"
-       ],
-       "X-Forwarded-Proto": [
-         "http"
-      ],
-       "X-Request-Id": [
-         "b1b53950-f7b3-47e6-8b7b-45a44196f1c4"
+         "curl/8.7.1"
        ]
-     },
-     "origin": "10.X.X.XX:33896",
-     "url": "http://csrf.example:8080/post",
-     "data": "",
-     "files": null,
-     "form": null,
-     "json": null
-   }
-   ```
-
-## Monitor CSRF metrics
-
-1. Port-forward the gateway proxy. 
-   ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/http 19000
-   ```
-
-2. Open the [`/stats`](http://localhost:19000/stats) endpoint. 
-
-3. Find the statistics for `csrf`.
-   
-   Example output:
-
-   ```console
-   http.http.csrf.missing_source_origin: 1
-   http.http.csrf.request_invalid: 0
-   http.http.csrf.request_valid: 1
+     }
    ...
    ```
 
-   * `missing_source_origin`: The number of requests that were sent without an origin. The number is `1` because you sent the first request without an origin.
-   * `request_invalid`: The number of requests that were sent with an origin that did not match the destination origin. The number is `0` because you did not send an invalid request.
-   * `request_valid`: The number of requests that were sent with an origin that matched the destination origin. The number is `1` because you sent a valid request in your second request.
-
-## Cleanup
+## Clean up
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} csrf -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} csrf -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
