@@ -243,7 +243,7 @@ Specify timeouts for specific routes.
    protocol=http duration=0ms
    ```
 
-6. Send a request to the `/delay` path in the sample app with a time that is longer than the timeout set. Verify that the request times out.
+6. Send a request along the `/delay` path. This path allows you to define a delay in seconds for the httpbin app to respond. This delay simulates an app that is slow to respond. Use a delay that is longer than the timeout that you set. Verify that the request times out.
  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
