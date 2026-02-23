@@ -1,14 +1,17 @@
-### MCP vs JWT authentication
+### MCP auth vs JWT auth
 
-When exposing MCP servers, use MCP authentication. MCP authentication extends basic JWT authentication and facilitates the flow for the MCP server. Following [MCP auth](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization), the MCP authentication feature fills in the gaps of IdP providers that are not compliant with the MCP spec for OAuth. It is especially useful for dynamic clients that need to register themselves with the IdP to get a Client ID, such as tools like MCP Inspector, VS Code, or Claude Code.
+You can configure both MCP and JWT auth with {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. For most MCP cases, choose MCP auth.
 
-However, JWT authentication makes sense for cases where you do not want the MCP auth spec. For example, you might have service-to-service for an agent or a set of static users that you can use basic JWT authentication for. For more complex scenarios, you can authorize access to specific tools based on custom claims within the JWT. For example, you might allow "Alice" but deny "Bob" based on a `sub`or `team` claim.
+* **MCP auth**: Use MCP auth for dynamic MCP clients, such as MCP Inspector, VS Code, or Claude Code that need to discover the auth server and register with your IdP to get a client ID. MCP auth implements the [MCP OAuth spec](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization) and fills gaps for IdPs that do not expose MCP-style discovery and client registration. The client gets a 401, discovers `/.well-known/oauth-protected-resource`, registers, and completes the OAuth flow to obtain a token.
 
-Review the following table to help you decide which authentication method to use.
+* **JWT auth**: Use basic JWT auth when you have static clients or service-to-service traffic. Clients already have a JWT from your IdP or a static token. You only need the gateway to validate the token and optionally enforce RBAC by claims, such as allow by `sub` or `team`. No discovery or client registration is involved.
+
+Review the following table for a quick comparison of MCP auth and JWT auth.
 
 | **Feature** | **MCP Auth** | **JWT Auth** |
 | :---- | :---- | :---- |
-| Goal | Facilitate MCP Authentication | Validate existing tokens on requests |
-| Discovery | Supports `/.well-known/oauth-protected-resource` | None |
-| Registration | Handles dynamic client registration with IdP | None |
-| Target Ref | Usually `AgentgatewayBackend` | Usually `Gateway` or `HTTPRoute` |
+| Goal | Full MCP OAuth flow (discovery, registration, token) | Validate tokens and optional claim-based RBAC |
+| Policy section | `spec.backend.mcp.authentication` | `spec.traffic.jwtAuthentication` |
+| Target ref | `AgentgatewayBackend` | `Gateway` or `HTTPRoute` |
+| Discovery | `/.well-known/oauth-protected-resource` | None |
+| Client registration | Dynamic registration with IdP | None (client has token) |
