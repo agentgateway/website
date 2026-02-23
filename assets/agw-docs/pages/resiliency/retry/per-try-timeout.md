@@ -318,7 +318,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       ```
 
       Example output:
-      ```json {linenos=table,hl_lines=[21,22,23,24,25,26,27,48,49,50],filename="http://localhost:15000/config_dump"}
+      ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,47,48,49],filename="http://localhost:15000/config_dump"}
       ...
       {
         "retry": {
