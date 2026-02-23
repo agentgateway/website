@@ -6,7 +6,7 @@ Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/tr
    
 Specify timeouts for specific routes. 
 
-1. Configure a timeout for specific routes by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using {{< reuse "agw-docs/snippets/kgateway.md" >}}'s {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. In the following example, you set a timeout of 2 seconds for httpbin's `/delay` path, which is short for testing purposes. You might choose to use 20-30 seconds as a more realistic timeout. However, no timeout is set along the `/headers` path. 
+1. Configure a timeout for specific routes by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. In the following example, you configure two routes to the httpbin app. The first route matches requests along the `/delay` path and sets a request timeout of 2 seconds. You use the `/delay` path later to test the request timeout. The other route matches requests along the `/headers` path. This route does not set a request timeout. 
    {{< tabs tabTotal="2" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: AgentgatewayPolicy" >}}
    {{% tab tabName="Option 1: HTTPRoute (Kubernetes GW API)" %}}
 
