@@ -37,7 +37,6 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
        - kind: Service
          name: httpbin
          port: 8000
-       name: timeout
    EOF
    ```
 
@@ -45,16 +44,16 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: idle-time
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-       - kind: Gateway
-         name: agentgateway-proxy
-         group: gateway.networking.k8s.io
+     - kind: Gateway
+       name: agentgateway-proxy
+       group: gateway.networking.k8s.io
      frontend:
        http:
          http1IdleTimeout: 1s
@@ -65,7 +64,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
    1. Port-forward the gateway proxy on port 15000.
 
       ```sh
-      kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+      kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
       ```
 
    2. Get the config dump and verify that the idle timeout policy is set as you configured it.
