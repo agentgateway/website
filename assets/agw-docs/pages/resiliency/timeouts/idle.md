@@ -107,7 +107,41 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
       }
 
       ```
+3. To verify, send a request along the `/headers` path of the httpbin. 
+ 
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers --http1.1 -H "host: idle.example:80"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/headers --http1.1 -H "host: idle.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
+   Example output:
+
+   ```
+   ...
+   < HTTP/1.1 200 OK
+   ...
+   {
+    "headers": {
+      "Accept": [
+        "*/*"
+      ],
+      "Host": [
+        "idle.example"
+      ],
+      "User-Agent": [
+        "curl/8.7.1"
+      ]
+    }
+   }
+   ```
       
 ## Cleanup
 
