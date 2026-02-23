@@ -4,51 +4,25 @@ weight: 5
 description: Connect VS Code with GitHub Copilot to agentgateway
 ---
 
-Configure Visual Studio Code with GitHub Copilot's MCP extension to use agentgateway.
+Configure Visual Studio Code to use **agentgateway** via GitHub Copilot's native MCP support.
 
 ## Before you begin
 
-- VS Code with GitHub Copilot extension installed
-- GitHub Copilot Chat enabled
-- MCP support enabled in Copilot settings
+* Install **VS Code (1.92+)** with the **GitHub Copilot** extension.
+* Enable **GitHub Copilot Chat**.
+* In the GitHub Copilot Chat, make sure that **Agent Mode** is active (MCP tools are primarily utilized when Copilot is in "Agent" mode).
+* Set up an **MCP server in agentgateway**. For example, check out the [MCP connection guides]({{< link-hextra path="/mcp/connect/http/" >}}).
 
-## Configuration
+## Server configuration
 
-Add agentgateway to your VS Code settings. Open settings (`Cmd/Ctrl + ,`) and add to `settings.json`:
-
-```json
-{
-  "github.copilot.chat.mcp.servers": {
-    "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse"
-    }
-  }
-}
-```
-
-## Workspace Configuration
-
-For workspace-specific configuration, add to `.vscode/settings.json`:
+Configure your MCP server in the `mcp.json` file in the root directory of your project. For more locations, refer to the [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers) docs. If your MCP server is running on a different host and port, update the URL accordingly.
 
 ```json
 {
-  "github.copilot.chat.mcp.servers": {
+  "servers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse"
-    }
-  }
-}
-```
-
-## Using Streamable HTTP
-
-For improved performance, use the streamable HTTP transport:
-
-```json
-{
-  "github.copilot.chat.mcp.servers": {
-    "agentgateway": {
-      "url": "http://localhost:15000/mcp/http"
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
     }
   }
 }
@@ -56,13 +30,33 @@ For improved performance, use the streamable HTTP transport:
 
 ## Authentication
 
-Include authentication headers if required:
+You have two ways to handle security, depending on your setup: native MCP authentication flow or manual bearer token.
+
+### Option 1: Native MCP authentication flow
+
+If your agentgateway proxy is configured to use an OIDC/OAuth provider (like Okta or Entra ID), VS Code automatically detects the challenge and prompts you to "Sign In" via a browser pop-up.
 
 ```json
 {
-  "github.copilot.chat.mcp.servers": {
+  "servers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse",
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
+```
+
+### Option 2: Manual bearer token
+
+If you prefer to explicitly pass a token, such as for local development or simple API key setups, use the `headers` object.
+
+```json
+{
+  "servers": {
+    "agentgateway": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }
@@ -71,10 +65,14 @@ Include authentication headers if required:
 }
 ```
 
-## Verifying the Connection
+## Verify the connection
 
-After configuration:
+In agentgateway, run a configuration that includes the URL that you configured in the `mcp.json` file. 
 
-1. Reload VS Code (`Cmd/Ctrl + Shift + P` → "Developer: Reload Window")
-2. Open GitHub Copilot Chat
-3. Type `@agentgateway` to see available tools from agentgateway
+In VS Code:
+
+1. **Reload Window:** Run `Cmd/Ctrl + Shift + P`, then search for and select **"Developer: Reload Window"**.
+2. **Open Chat:** Open the GitHub Copilot Chat panel.
+3. **Switch to Agent Mode:** Ensure the dropdown at the bottom of the chat is set to **Agent**.
+4. **Check Tools:** Click the **Tools** icon in the chat box menu. In the tools dropdown, filter for `agentgateway` and expand to view the MCP server's available tools.
+5. **Test:** In the chat box, type `#` followed by a tool name, such as `#get_k8s_logs` to see it in action.

@@ -9,6 +9,7 @@ Route to Model Context Protocol (MCP) servers through  {{< reuse "agw-docs/snipp
   {{< card link="about" title="About" >}}
   {{< card link="static-mcp" title="Static MCP" >}}
   {{< card link="dynamic-mcp" title="Dynamic MCP" >}}
+  {{< card link="dynamic-mcp" title="Virtual MCP" >}}
   {{< card link="https" title="Connect via HTTPS" >}}
   {{< card link="auth" title="MCP auth" >}}
   {{< card link="mcp-access" title="JWT auth for services" >}}

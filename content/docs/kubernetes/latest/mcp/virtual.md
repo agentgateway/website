@@ -1,5 +1,5 @@
 ---
-title: Multiplex MCP
+title: Virtual MCP
 weight: 30
 ---
 

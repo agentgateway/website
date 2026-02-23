@@ -1,6 +1,10 @@
-Control access or route traffic based on verified claims in a JSON web token (JWT). 
+Control access or route traffic based on verified claims in a JSON web token (JWT).
 
-## About MCP auth
+{{< callout type="info" >}}
+This guide shows how to enforce a standard JWT authentication policy on MCP servers. This policy is not specific to MCP, but can be used for basic service-to-service scenarios involving MCPs. However, for most MCP-specific authentication scenarios, see the MCP-native [MCP authentication guide]({{< link-hextra path="/mcp/mcp-auth/" >}}).
+{{< /callout >}}
+
+## About JWT auth
 
 In this guide, you learn how to configure your agentgateway proxy to validate JWT tokens that are provided in an `Authorization` header. You then authorize access to specific MCP tools based on specific claims in the JWT.
 
@@ -19,6 +23,10 @@ sequenceDiagram
 2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. This policy is applied to the agentgateway proxy. 
 3. If the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, the agentgateway proxy validates these claims and either grants or denies access. 
 4. If successfully validated and authorized, the agentgateway proxy forwards the request to the MCP backend. 
+
+{{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
+
+For more information, see the [MCP auth docs]({{< link-hextra path="/mcp/auth/">}}).
 
 ## Before you begin
 

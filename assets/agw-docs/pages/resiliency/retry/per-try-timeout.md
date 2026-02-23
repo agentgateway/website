@@ -72,7 +72,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       
       Example `jq` command:
       ```sh
-      curl -s http://localhost:15000/config_dump | jq '[.binds[].listeners | to_entries[] | .value.routes | to_entries[] | select(.value.name == "retry") | .value] | .[0] | { retry: (.inlinePolicies[]? | select(has("retry"))? | .retry), timeout: (.inlinePolicies[]? | select(has("timeout"))? | .timeout) }'
+      curl -s http://localhost:15000/config_dump | jq '[.binds[].listeners | to_entries[] | select(.value.routes | to_entries | any(.value.name == "retry")) | { key: .key, value: (.value | .routes = ((.routes | to_entries | map(select(.value.name == "retry")) | from_entries))) } ] | .[0] | .key as $k | .value as $v | {($k): $v}'
       ```
 
       Example output:
@@ -197,8 +197,8 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       Example output:
       ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,47,48,49],filename="http://localhost:15000/config_dump"}
       ...
-      "policies": [
-        {
+      {
+        "retry": {
           "key": "traffic/httpbin/retry:retry:httpbin/retry/timeout",
           "name": {
             "kind": "AgentgatewayPolicy",
@@ -225,7 +225,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
             }
           }
         },
-        {
+        "timeout": {
           "key": "traffic/httpbin/retry:timeout:httpbin/retry/timeout",
           "name": {
             "kind": "AgentgatewayPolicy",
@@ -248,7 +248,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
             }
           }
         }
-      ],
+      }
       ...
       ```
    
@@ -318,10 +318,9 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       ```
 
       Example output:
-      ```json {linenos=table,hl_lines=[21,22,23,24,25,26,27,48,49,50],filename="http://localhost:15000/config_dump"}
+      ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,47,48,49],filename="http://localhost:15000/config_dump"}
       ...
-      "policies": [
-        {
+      {
         "retry": {
           "key": "traffic/httpbin/retry:retry:httpbin/agentgateway-proxy/http",
           "name": {
@@ -373,7 +372,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           }
         }
       }
-      ]
       ...
       ```
    {{% /tab %}}
@@ -389,8 +387,8 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
    
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
 kubectl delete httproute retry -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
 ```
 
 

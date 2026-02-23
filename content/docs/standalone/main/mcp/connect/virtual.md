@@ -1,5 +1,5 @@
 ---
-title: MCP multiplexing
+title: Virtual MCP
 weight: 20
 description:
 ---

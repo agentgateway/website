@@ -20,7 +20,7 @@ Don't see your provider? You might still be able to use it with agentgateway! Ma
 
 ## Using the API
 
-Requests to agentgateway always use the [OpenAI Chat Completions](https://developers.openai.com/api/reference/resources/chat/create) API.
+By default, requests to agentgateway use the [OpenAI Chat Completions](https://developers.openai.com/api/reference/chat-completions/overview) API.
 These requests are translated to the upstream provider's API.
 
 Using the Chat Completions API works exactly the same as consuming OpenAI, with a change to the base URL.
