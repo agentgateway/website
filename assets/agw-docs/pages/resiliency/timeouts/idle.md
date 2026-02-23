@@ -107,7 +107,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
       }
 
       ```
-3. To verify, send a request along the `/headers` path of the httpbin. 
+3. Send a request along the `/headers` path of the httpbin and verify that it was successful. 
  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
