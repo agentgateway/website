@@ -119,7 +119,7 @@ Choose your LLM provider and set your API key:
 
 {{% tab tabName="OpenAI" %}}
 ```bash
-export API_KEY=<insert your OpenAI API key>
+export OPENAI_API_KEY=<insert your OpenAI API key>
 
 kubectl apply -f- <<EOF
 apiVersion: v1
@@ -129,7 +129,7 @@ metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 type: Opaque
 stringData:
-  Authorization: $API_KEY
+  Authorization: $OPENAI_API_KEY
 ---
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -171,7 +171,7 @@ EOF
 
 {{% tab tabName="Anthropic" %}}
 ```bash
-export API_KEY=<insert your Anthropic API key>
+export ANTHROPIC_API_KEY=<insert your Anthropic API key>
 
 kubectl apply -f- <<EOF
 apiVersion: v1
@@ -181,7 +181,7 @@ metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 type: Opaque
 stringData:
-  Authorization: $API_KEY
+  Authorization: $ANTHROPIC_API_KEY
 ---
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
