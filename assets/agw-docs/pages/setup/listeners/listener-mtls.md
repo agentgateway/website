@@ -360,7 +360,7 @@ Create the default client certificate validation configuration for all Gateway l
 In this example, you override the default certificate validation configuration for port 8444. 
 
 1. Update your Gateway to add in port-specific validation configuration for port 8444. In the following example, you override the default certificate validation for port 8444. This configuration allows requests, even if an invalid certificate was presented during the TLS handshake. Port 8443 continues to only allow connections if a valid certificate is presented. 
-   ```yaml {hl_lines=[18,19,20,21,22,23,24,25,26]}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
