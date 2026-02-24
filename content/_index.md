@@ -211,7 +211,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
         <p class="text-secondary-text text-sm">Get started with binary, Docker, or Kubernetes deployment options.</p>
       </a>
       <!-- Tutorials -->
-      <a href="/docs/tutorials/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
+      <a href="/tutorials/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
         <div class="w-10 h-10 bg-primary-bg rounded-lg flex items-center justify-center mb-4">
           <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path>
@@ -558,32 +558,118 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 }
 </script>
 
-<!-- Use Cases Section -->
-<section class="py-16 bg-primary-bg" id="use-cases">
+<!-- Tutorials Section -->
+<section class="py-16 bg-primary-bg" id="tutorials">
 <div class="max-w-7xl mx-auto px-6">
-<div class="flex justify-between items-center mb-8">
-<h2 class="text-primary-text text-2xl lg:text-3xl font-bold">Use Cases</h2>
-<a href="/docs/tutorials/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1">View all tutorials <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+<div class="flex justify-between items-center mb-4">
+<h2 class="text-primary-text text-2xl lg:text-3xl font-bold">Tutorials</h2>
+<a href="/tutorials/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1">View all tutorials <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
 </div>
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-<a href="/docs/tutorials/mcp-federation/" class="bg-secondary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text/50 transition-colors">
-<span class="text-secondary-text text-xs">5 tutorials</span>
-<h3 class="text-primary-text font-bold text-lg mt-4 mb-3">MCP Federation</h3>
-<p class="text-secondary-text text-sm mb-4">Expose a single MCP endpoint that federates tools from multiple backend MCP servers with unified security.</p>
-<span class="inline-block bg-tertiary-text/20 text-tertiary-text text-xs font-medium px-3 py-1 rounded-full">MCP</span>
+<p class="text-secondary-text text-lg mb-8">Hands-on guides to get you up and running with agentgateway in minutes.</p>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+<!-- Standalone Tutorials -->
+<div>
+<div class="flex items-center gap-2 mb-4">
+<svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2"></path></svg>
+<h3 class="text-primary-text text-lg font-bold">Standalone</h3>
+</div>
+<div class="space-y-3">
+<a href="/docs/standalone/latest/tutorials/llm-gateway/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">LLM Gateway</h4>
+<p class="text-secondary-text text-xs mt-1">Route requests to OpenAI, Anthropic, and Gemini</p>
+</div>
+<span class="inline-block bg-tertiary-text/20 text-tertiary-text text-xs font-medium px-2 py-0.5 rounded-full">LLM</span>
+</div>
 </a>
-<a href="/docs/tutorials/llm-gateway/" class="bg-secondary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text/50 transition-colors">
-<span class="text-secondary-text text-xs">4 tutorials</span>
-<h3 class="text-primary-text font-bold text-lg mt-4 mb-3">LLM Gateway</h3>
-<p class="text-secondary-text text-sm mb-4">Route requests to OpenAI, Anthropic, Azure with built-in rate limiting and cost tracking.</p>
-<span class="inline-block bg-tertiary-text/20 text-tertiary-text text-xs font-medium px-3 py-1 rounded-full">LLM</span>
+<a href="/docs/standalone/latest/tutorials/basic/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">Basic MCP Server</h4>
+<p class="text-secondary-text text-xs mt-1">Connect to your first MCP tool server</p>
+</div>
+<span class="inline-block bg-violet-400/20 text-violet-400 text-xs font-medium px-2 py-0.5 rounded-full">MCP</span>
+</div>
 </a>
-<a href="/docs/tutorials/a2a/" class="bg-secondary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text/50 transition-colors">
-<span class="text-secondary-text text-xs">3 tutorials</span>
-<h3 class="text-primary-text font-bold text-lg mt-4 mb-3">Agent-to-Agent</h3>
-<p class="text-secondary-text text-sm mb-4">Enable secure communication between agents using the A2A protocol across different frameworks.</p>
-<span class="inline-block bg-tertiary-text/20 text-tertiary-text text-xs font-medium px-3 py-1 rounded-full">A2A</span>
+<a href="/docs/standalone/latest/tutorials/mcp-federation/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">MCP Federation</h4>
+<p class="text-secondary-text text-xs mt-1">Federate multiple MCP servers behind one endpoint</p>
+</div>
+<span class="inline-block bg-violet-400/20 text-violet-400 text-xs font-medium px-2 py-0.5 rounded-full">MCP</span>
+</div>
 </a>
+<a href="/docs/standalone/latest/tutorials/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1 mt-3 ml-1">View all standalone tutorials <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+</div>
+</div>
+
+<!-- Kubernetes Tutorials -->
+<div>
+<div class="flex items-center gap-2 mb-4">
+<svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+<h3 class="text-primary-text text-lg font-bold">Kubernetes</h3>
+</div>
+<div class="space-y-3">
+<a href="/docs/kubernetes/latest/tutorials/llm-gateway/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">LLM Gateway</h4>
+<p class="text-secondary-text text-xs mt-1">Route to LLM providers on Kubernetes with Gateway API</p>
+</div>
+<span class="inline-block bg-tertiary-text/20 text-tertiary-text text-xs font-medium px-2 py-0.5 rounded-full">LLM</span>
+</div>
+</a>
+<a href="/docs/kubernetes/latest/tutorials/basic/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">Basic MCP Server</h4>
+<p class="text-secondary-text text-xs mt-1">Deploy and route to an MCP server on K8s</p>
+</div>
+<span class="inline-block bg-violet-400/20 text-violet-400 text-xs font-medium px-2 py-0.5 rounded-full">MCP</span>
+</div>
+</a>
+<a href="/docs/kubernetes/latest/tutorials/azure-ai-foundry/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">Azure AI Foundry</h4>
+<p class="text-secondary-text text-xs mt-1">Route to Azure OpenAI through agentgateway</p>
+</div>
+<span class="inline-block bg-blue-400/20 text-blue-400 text-xs font-medium px-2 py-0.5 rounded-full">Azure</span>
+</div>
+</a>
+<a href="/docs/kubernetes/latest/tutorials/jwt-authorization/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">JWT Authorization</h4>
+<p class="text-secondary-text text-xs mt-1">Secure your gateway with JWT authentication</p>
+</div>
+<span class="inline-block bg-amber-400/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full">Security</span>
+</div>
+</a>
+<a href="/docs/kubernetes/latest/tutorials/ai-prompt-guard/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">AI Prompt Guard</h4>
+<p class="text-secondary-text text-xs mt-1">Block sensitive data in LLM requests</p>
+</div>
+<span class="inline-block bg-amber-400/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full">Security</span>
+</div>
+</a>
+<a href="/docs/kubernetes/latest/tutorials/telemetry/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">Telemetry & Observability</h4>
+<p class="text-secondary-text text-xs mt-1">Distributed tracing with OpenTelemetry and Jaeger</p>
+</div>
+<span class="inline-block bg-cyan-400/20 text-cyan-400 text-xs font-medium px-2 py-0.5 rounded-full">Ops</span>
+</div>
+</a>
+<a href="/docs/kubernetes/latest/tutorials/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1 mt-3 ml-1">View all Kubernetes tutorials <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+</div>
+</div>
 </div>
 </div>
 </section>
