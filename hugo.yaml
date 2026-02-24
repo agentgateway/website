@@ -56,7 +56,7 @@ menu:
       url: /docs
       weight: 2
     - name: Tutorials
-      url: /docs/standalone/latest/tutorials
+      url: /tutorials
       weight: 3
     - name: Integrations
       url: /docs/standalone/latest/integrations
