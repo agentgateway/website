@@ -125,7 +125,7 @@ EOF
 
 | Field | Value | Description |
 |-------|-------|-------------|
-| `ai.provider.host` | `httpbun.default.svc.cluster.local` | Points to the in-cluster httpbun Service. Because `host` is an in-cluster DNS name (not a public HTTPS endpoint), no TLS configuration is required.|
+| `ai.provider.host` | `httpbun.default.svc.cluster.local` | Points to the in-cluster httpbun Service. Because the `host` is an in-cluster DNS name (not a public HTTPS endpoint), no TLS configuration is required.|
 | `ai.provider.port` | `3090` | Matches the httpbun container port. |
 | `ai.provider.path` | `/llm/chat/completions` | httpbun's LLM endpoint (not the default `/v1/chat/completions`). |
 
