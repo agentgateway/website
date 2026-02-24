@@ -4,7 +4,7 @@ Follow the instructions in this guide to learn how to use these different method
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Manage API keys
 

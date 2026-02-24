@@ -49,7 +49,7 @@ curl 'http://0.0.0.0:3000/' \
 
 {{< callout type="info" >}}
 The `api_key` parameter is required in the OpenAI library.
-Depending on your agentgateway configuration, it may or may not be required, and can be set to a dummy value.
+Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
 {{< /callout >}}
 
 ```python

@@ -4,7 +4,7 @@
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
    
-2. Check the HTTPRoutes for the status of the route and any attached policies.
+2. Check the HTTPRoutes for the status of the route and any attached policies. For more information about how routes work, review the [Gateway API docs](https://gateway-api.sigs.k8s.io/api-types/httproute/).
    
    ```sh
    kubectl get httproutes -A
@@ -12,6 +12,13 @@
    ```sh
    kubectl get httproute <name> -n <namespace> -o yaml
    ```
+
+   Some common issues to check for:
+
+   * The wrong backend is selected.
+   * The wrong gateway is selected.
+   * Several HTTPRoutes conflict by having the same matchers or by having none (and thus default to match on everything `/`).
+
 
 3. Access the debugging interface of your gateway proxy on your localhost. Configuration might be missing on the gateway or might be applied to the wrong route. For example, if you apply multiple policies to the same route by using the `targetRefs` section, only the oldest policy is applied. The newer policy configuration might be ignored and not applied to the gateway.
    {{< conditional-text include-if="envoy" >}}

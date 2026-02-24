@@ -1,0 +1,1 @@
+{{< reuse "agw-docs/pages/install/sample-app.md" >}}
