@@ -97,7 +97,7 @@ httpbun-7d9f6b8c4-v8w2p   1/1     Running   0          20s
 
 ## Step 2: Create the backend
 
-The {{< reuse "agw-docs/snippets/backend.md" >}} tells agentgateway how to treat this service as an LLM provider. You configure the `openai` provider type, because httpbun implements the OpenAI-compatible API. Then, override the host, port, and path to point at httpbun's `/llm/chat/completions` endpoint.
+Create an {{< reuse "agw-docs/snippets/backend.md" >}} to configure httpbun as an LLM provider. You set the `openai` provider type, because httpbun implements the OpenAI-compatible API. Then, override the host, port, and path to point at httpbun's `/llm/chat/completions` endpoint.
 
 {{< callout type="info" >}}
 **No API key needed**: httpbun accepts requests without authentication, so there is no `policies.auth` block in the following example. This also means that you don't need to manage a Kubernetes Secret: one less prerequisite to set up!
