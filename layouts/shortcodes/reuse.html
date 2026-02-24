@@ -11,7 +11,7 @@
 {{- /* Remove leading slash if present, as resources.Get expects paths relative to assets without leading slash */}}
 {{- $asset = $asset | strings.TrimPrefix "/" }}
 
-{{- /* Get resource (validates path exists). */}}
+{{- /* Get resource. */}}
 {{- $r := "" }}
 {{- with resources.Get $asset }}
   {{- $r = . }}
@@ -19,14 +19,7 @@
   {{- errorf "The %q shortcode was unable to find %q. See %s" .Name $asset .Position}}
 {{- end }}
 
-{{- /* Read content via readFile to avoid slice bounds issues with large assets in RenderString. */}}
-{{- $assetPath := path.Join "assets" $asset }}
-{{- $content := readFile $assetPath }}
-{{- if eq $content "" }}
-  {{- errorf "The %q shortcode read empty content from %q. See %s" .Name $assetPath .Position}}
-{{- end }}
-
-{{- /* Render content. */}}
-{{- $content | .Page.RenderString | chomp }}
+{{- /* Render resource content. */}}
+{{- $r.Content | .Page.RenderString | chomp }}
 
 {{- /* Chomp trailing newlines. */ -}}
