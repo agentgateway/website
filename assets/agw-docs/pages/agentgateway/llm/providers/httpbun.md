@@ -275,7 +275,7 @@ curl -N http://localhost:8080/v1/chat/completions \
 {{% /tab %}}
 {{< /tabs >}}
 
-Notice the stream of `data:` chunks in server-sent event format, followed by `data: [DONE]`. This output matches the format an OpenAI streaming response.
+Notice the stream of `data:` chunks in server-sent event format, followed by `data: [DONE]`. This output matches the format of an OpenAI streaming response.
 
 ```
 ...
