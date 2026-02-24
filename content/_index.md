@@ -658,6 +658,24 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 <span class="inline-block bg-amber-400/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full">Security</span>
 </div>
 </a>
+<a href="/docs/kubernetes/latest/tutorials/prompt-enrichment/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">Prompt Enrichment</h4>
+<p class="text-secondary-text text-xs mt-1">Inject context at the gateway layer for better LLM output</p>
+</div>
+<span class="inline-block bg-tertiary-text/20 text-tertiary-text text-xs font-medium px-2 py-0.5 rounded-full">LLM</span>
+</div>
+</a>
+<a href="/docs/kubernetes/latest/tutorials/claude-code-proxy/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<div class="flex items-center justify-between">
+<div>
+<h4 class="text-primary-text font-semibold text-sm">Claude Code CLI Proxy</h4>
+<p class="text-secondary-text text-xs mt-1">Proxy and secure agentic CLI traffic</p>
+</div>
+<span class="inline-block bg-amber-400/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full">Security</span>
+</div>
+</a>
 <a href="/docs/kubernetes/latest/tutorials/telemetry/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
 <div class="flex items-center justify-between">
 <div>
