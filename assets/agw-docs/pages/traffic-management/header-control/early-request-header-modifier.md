@@ -2,7 +2,7 @@ Early request header modification allows you to add, set, or remove HTTP request
 
 This capability is especially useful for security and sanitization use cases, where you want to ensure that sensitive headers cannot be faked by downstream clients and are only set by trusted components such as external authentication services.
 
-Early request header modification is configured on a `ListenerPolicy` using the `earlyRequestHeaderModifier` field. This policy is attached directly to a Gateway and applies header mutations before route selection.
+Early request header modification is configured on a `ListenerPolicy` using the `earlyRequestHeaderModifier` field. This policy is attached directly to a proxy and applies header mutations before route selection.
 
 The configuration uses the standard Gateway API `HTTPHeaderFilter` format and supports the following operations:
 
@@ -10,9 +10,7 @@ The configuration uses the standard Gateway API `HTTPHeaderFilter` format and su
 - `set`
 - `remove`
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Remove a reserved header {#remove}
 
@@ -35,7 +33,7 @@ Remove a header that is reserved for use by another service, such as an external
 
    Example output: Note that the `X-User-Id` header is present in the request.
 
-   ```json {linenos=table,hl_lines=[27,28,29],linenostart=1}
+   ```json {linenos=table,hl_lines=[12,13,14],linenostart=1}
    {
      "headers": {
        "Accept": [
@@ -46,21 +44,6 @@ Remove a header that is reserved for use by another service, such as an external
        ],
        "User-Agent": [
          "curl/8.7.1"
-       ],
-       "X-Envoy-Expected-Rq-Timeout-Ms": [
-         "15000"
-       ],
-       "X-Envoy-External-Address": [
-         "127.0.0.1"
-       ],
-       "X-Forwarded-For": [
-         "10.244.0.7"
-       ],
-       "X-Forwarded-Proto": [
-         "http"
-       ],
-       "X-Request-Id": [
-         "d2076b1d-2e3e-49fb-a24f-703dbcd80665"
        ],
        "X-User-Id": [
          "reserved-user"
@@ -82,7 +65,7 @@ Remove a header that is reserved for use by another service, such as an external
      targetRefs:
        - group: gateway.networking.k8s.io
          kind: Gateway
-         name: http
+         name: agentgateway-proxy
      default:
        httpSettings:
          earlyRequestHeaderModifier:
