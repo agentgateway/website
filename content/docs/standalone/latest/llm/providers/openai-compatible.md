@@ -137,6 +137,176 @@ binds:
               model: llama-3.3-70b-versatile
 ```
 
+## DeepSeek
+
+[DeepSeek](https://www.deepseek.com/) provides access to their reasoning and chat models via OpenAI-compatible API.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: api.deepseek.com
+        backendTLS: {}
+        backendAuth:
+          key: $DEEPSEEK_API_KEY
+      backends:
+      - ai:
+          name: deepseek
+          hostOverride: api.deepseek.com:443
+          provider:
+            openAI:
+              model: deepseek-chat
+```
+
+## Mistral
+
+[Mistral La Plateforme](https://mistral.ai/) provides access to Mistral models via OpenAI-compatible endpoints.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: api.mistral.ai
+        backendTLS: {}
+        backendAuth:
+          key: $MISTRAL_API_KEY
+      backends:
+      - ai:
+          name: mistral
+          hostOverride: api.mistral.ai:443
+          provider:
+            openAI:
+              model: mistral-large-latest
+```
+
+## Perplexity
+
+[Perplexity](https://www.perplexity.ai/) provides OpenAI-compatible chat completion endpoints.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: api.perplexity.ai
+        backendTLS: {}
+        backendAuth:
+          key: $PERPLEXITY_API_KEY
+      backends:
+      - ai:
+          name: perplexity
+          hostOverride: api.perplexity.ai:443
+          provider:
+            openAI:
+              model: llama-3.1-sonar-large-128k-online
+```
+
+## Fireworks AI
+
+[Fireworks AI](https://fireworks.ai/) offers fast inference for open-source models via OpenAI-compatible API.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: api.fireworks.ai
+          path:
+            full: "/inference/v1/chat/completions"
+        backendTLS: {}
+        backendAuth:
+          key: $FIREWORKS_API_KEY
+      backends:
+      - ai:
+          name: fireworks
+          hostOverride: api.fireworks.ai:443
+          provider:
+            openAI:
+              model: accounts/fireworks/models/llama-v3p1-70b-instruct
+```
+
+## Self-Hosted Solutions
+
+### vLLM
+
+[vLLM](https://github.com/vllm-project/vllm) is a high-performance LLM serving engine for self-hosted deployments.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: vllm-server.example.com:8000  # Your vLLM server
+        backendTLS: {}  # Include if vLLM uses HTTPS
+      backends:
+      - ai:
+          name: vllm
+          hostOverride: vllm-server.example.com:8000
+          provider:
+            openAI:
+              model: meta-llama/Llama-3.1-8B-Instruct  # Model loaded in vLLM
+```
+
+{{< callout type="info" >}}
+For local vLLM instances without TLS, use `http://localhost:8000` and omit the `backendTLS` policy.
+{{< /callout >}}
+
+**Starting vLLM server**:
+```bash
+vllm serve meta-llama/Llama-3.1-8B-Instruct \
+  --host 0.0.0.0 \
+  --port 8000
+```
+
+### LM Studio
+
+[LM Studio](https://lmstudio.ai/) provides a desktop UI for running models locally with OpenAI-compatible API.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        urlRewrite:
+          authority:
+            full: localhost:1234  # LM Studio default port
+      backends:
+      - ai:
+          name: lmstudio
+          hostOverride: localhost:1234
+          provider:
+            openAI:
+              model: llama-3.2-3b-instruct  # Model loaded in LM Studio
+```
+
+{{< callout type="note" >}}
+Enable the local server in LM Studio: **Settings → Local Server → Start Server**.
+{{< /callout >}}
+
 ## Generic configuration
 
 For any OpenAI-compatible provider, use this template:

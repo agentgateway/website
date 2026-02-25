@@ -14,8 +14,12 @@ Note that when you specify a custom `host` override, agentgateway requires expli
 
 Review the following examples for common OpenAI-compatible provider endpoints:
 
-- [Mistral AI](#mistral)
-- [DeepSeek](#deepseek)  
+- [Mistral AI](#mistral).
+- [DeepSeek](#deepseek).
+- [Groq](#groq).
+- [Together AI](#together-ai).
+- [Perplexity](#perplexity).
+- [Fireworks AI](#fireworks-ai).  
 
 ### Mistral AI example {#mistral}
 
@@ -314,5 +318,435 @@ Set up OpenAI-compatible provider access to [DeepSeek](https://www.deepseek.com/
      }
    }
    ```
+
+### Groq example {#groq}
+
+Set up OpenAI-compatible provider access to [Groq](https://groq.com/) for fast inference.
+
+1. Get a [Groq API key](https://console.groq.com/).
+
+2. Save the API key in an environment variable.
+
+   ```sh
+   export GROQ_API_KEY=<insert your API key>
+   ```
+
+3. Create a Kubernetes secret to store your Groq API key.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: groq-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: $GROQ_API_KEY
+   EOF
+   ```
+
+4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure your LLM provider.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: groq
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: llama-3.3-70b-versatile
+         host: api.groq.com
+         port: 443
+         path: "/openai/v1/chat/completions"
+     policies:
+       auth:
+         secretRef:
+           name: groq-secret
+       tls:
+         sni: api.groq.com
+   EOF
+   ```
+
+5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: groq
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /groq
+       backendRefs:
+       - name: groq
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+
+6. Send a request to verify the setup.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/groq" -H content-type:application/json  -d '{
+      "model": "llama-3.3-70b-versatile",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain quantum computing in one sentence."
+        }
+      ]
+    }' | jq
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/groq" -H content-type:application/json  -d '{
+      "model": "llama-3.3-70b-versatile",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain quantum computing in one sentence."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+### Together AI example {#together-ai}
+
+Set up OpenAI-compatible provider access to [Together AI](https://together.ai/) for open-source models.
+
+1. Get a [Together AI API key](https://api.together.ai/settings/api-keys).
+
+2. Save the API key in an environment variable.
+
+   ```sh
+   export TOGETHER_API_KEY=<insert your API key>
+   ```
+
+3. Create a Kubernetes secret to store your Together AI API key.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: together-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: $TOGETHER_API_KEY
+   EOF
+   ```
+
+4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure your LLM provider.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: together
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+         host: api.together.xyz
+         port: 443
+     policies:
+       auth:
+         secretRef:
+           name: together-secret
+       tls:
+         sni: api.together.xyz
+   EOF
+   ```
+
+5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: together
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /together
+       backendRefs:
+       - name: together
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+
+6. Send a request to verify the setup.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/together" -H content-type:application/json  -d '{
+      "model": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What are the benefits of open-source AI models?"
+        }
+      ]
+    }' | jq
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/together" -H content-type:application/json  -d '{
+      "model": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What are the benefits of open-source AI models?"
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+### Perplexity example {#perplexity}
+
+Set up OpenAI-compatible provider access to [Perplexity](https://www.perplexity.ai/) for online search-augmented responses.
+
+1. Get a [Perplexity API key](https://www.perplexity.ai/settings/api).
+
+2. Save the API key in an environment variable.
+
+   ```sh
+   export PERPLEXITY_API_KEY=<insert your API key>
+   ```
+
+3. Create a Kubernetes secret to store your Perplexity API key.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: perplexity-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: $PERPLEXITY_API_KEY
+   EOF
+   ```
+
+4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure your LLM provider.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: perplexity
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: llama-3.1-sonar-large-128k-online
+         host: api.perplexity.ai
+         port: 443
+     policies:
+       auth:
+         secretRef:
+           name: perplexity-secret
+       tls:
+         sni: api.perplexity.ai
+   EOF
+   ```
+
+5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: perplexity
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /perplexity
+       backendRefs:
+       - name: perplexity
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+
+6. Send a request to verify the setup.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/perplexity" -H content-type:application/json  -d '{
+      "model": "llama-3.1-sonar-large-128k-online",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What are the latest developments in AI?"
+        }
+      ]
+    }' | jq
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/perplexity" -H content-type:application/json  -d '{
+      "model": "llama-3.1-sonar-large-128k-online",
+      "messages": [
+        {
+          "role": "user",
+          "content": "What are the latest developments in AI?"
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+### Fireworks AI example {#fireworks-ai}
+
+Set up OpenAI-compatible provider access to [Fireworks AI](https://fireworks.ai/) for fast inference on open-source models.
+
+1. Get a [Fireworks AI API key](https://fireworks.ai/api-keys).
+
+2. Save the API key in an environment variable.
+
+   ```sh
+   export FIREWORKS_API_KEY=<insert your API key>
+   ```
+
+3. Create a Kubernetes secret to store your Fireworks AI API key.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: fireworks-secret
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   type: Opaque
+   stringData:
+     Authorization: $FIREWORKS_API_KEY
+   EOF
+   ```
+
+4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure your LLM provider.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: fireworks
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: accounts/fireworks/models/llama-v3p1-70b-instruct
+         host: api.fireworks.ai
+         port: 443
+         path: "/inference/v1/chat/completions"
+     policies:
+       auth:
+         secretRef:
+           name: fireworks-secret
+       tls:
+         sni: api.fireworks.ai
+   EOF
+   ```
+
+5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: fireworks
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /fireworks
+       backendRefs:
+       - name: fireworks
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+
+6. Send a request to verify the setup.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/fireworks" -H content-type:application/json  -d '{
+      "model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain the advantages of running LLMs on optimized inference engines."
+        }
+      ]
+    }' | jq
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/fireworks" -H content-type:application/json  -d '{
+      "model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain the advantages of running LLMs on optimized inference engines."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
