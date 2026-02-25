@@ -70,12 +70,9 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    content-type: application/json; encoding=utf-8
    < content-length: 3
    content-length: 3
-   < x-envoy-upstream-service-time: 0
-   x-envoy-upstream-service-time: 0
    < my-response: hello
    my-response: hello
-   < server: envoy
-   server: envoy
+
    ```
 
 1. Optional: Remove the resources that you created. 
@@ -124,16 +121,16 @@ Setting headers is similar to adding headers. If the response does not include t
 
 2. Send a request to the httpbin app on the `headers.example` domain. Verify that you get back a 200 HTTP response code and that the `my-response: custom` header was set. 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider Loadbalancer" %}}
-```sh
-curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -vi localhost:8080/response-headers -H "host: headers.example"
-```
-{{% /tab %}}
+   {{% tab tabName="Cloud Provider Loadbalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers -H "host: headers.example"
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
@@ -149,8 +146,6 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    ...
    < my-response: custom
    my-response: custom
-   < server: envoy
-   server: envoy
    ```
 
 1. Optional: Remove the resources that you created. 
@@ -163,23 +158,49 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
 
 You can remove HTTP headers from a response before the response is sent back to the client. 
 
-1. Send a request to the httpbin app and find the `content-length` header. 
+1. Set up a header modifier that adds a `my-response: hello` response header. 
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: httpbin-headers
+     namespace: httpbin
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     hostnames:
+       - headers.example
+     rules:
+       - filters:
+           - type: ResponseHeaderModifier
+             responseHeaderModifier:
+               add: 
+               - name: my-response
+                 value: hello
+         backendRefs:
+           - name: httpbin
+             port: 8000
+   EOF
+   ```
+
+3. Send a request to the httpbin app on the `headers.example` domain. Verify that the `my-response` response header is added. 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider Loadbalancer" %}}
-```sh
-curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: www.example.com:80"
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -vi localhost:8080/response-headers -H "host: www.example.com"
-```
-{{% /tab %}}
+   {{% tab tabName="Cloud Provider Loadbalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers -H "host: headers.example"
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
-   ```yaml {linenos=table,hl_lines=[11,12],linenostart=1}
-   ...
+   ```yaml {linenos=table,hl_lines=[14,15],linenostart=1}
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
@@ -189,15 +210,15 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
    access-control-allow-origin: *
    < content-type: application/json; encoding=utf-8
    content-type: application/json; encoding=utf-8
+   < date: Wed, 25 Feb 2026 13:21:40 GMT
+   date: Wed, 25 Feb 2026 13:21:40 GMT
    < content-length: 3
    content-length: 3
-   < x-envoy-upstream-service-time: 0
-   x-envoy-upstream-service-time: 0
-   < server: envoy
-   server: envoy
+   < my-response: hello
+   my-response: hello
    ```
-   
-2. Set up a header modifier that removes the `content-length` header from the response. 
+
+2. Set up a header modifier that removes the `my-response` header from the response. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -216,7 +237,7 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
            - type: ResponseHeaderModifier
              responseHeaderModifier:
                remove: 
-               - content-length
+                - my-response
          backendRefs:
            - name: httpbin
              port: 8000
@@ -233,20 +254,20 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
 
 3. Send a request to the httpbin app on the `headers.example` domain . Verify that the `content-length` response header is removed. 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider Loadbalancer" %}}
-```sh
-curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -vi localhost:8080/response-headers -H "host: headers.example"
-```
-{{% /tab %}}
+   {{% tab tabName="Cloud Provider Loadbalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers -H "host: headers.example"
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
-   ```
+   ```yaml {linenos=table,hl_lines=[14,15],linenostart=1}
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
@@ -256,12 +277,11 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    access-control-allow-origin: *
    < content-type: application/json; encoding=utf-8
    content-type: application/json; encoding=utf-8
-   < x-envoy-upstream-service-time: 0
-   x-envoy-upstream-service-time: 0
-   < server: envoy
-   server: envoy
-   < transfer-encoding: chunked
-   transfer-encoding: chunked
+   < date: Wed, 25 Feb 2026 13:23:42 GMT
+   date: Wed, 25 Feb 2026 13:23:42 GMT
+   < content-length: 3
+   content-length: 3
+   < 
    ```
 
 1. Optional: Remove the resources that you created. 
