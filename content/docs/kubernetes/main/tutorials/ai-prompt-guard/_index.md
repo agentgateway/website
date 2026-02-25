@@ -1,10 +1,10 @@
 ---
 title: AI Prompt Guard
 weight: 7
-description: Protect LLM requests from prompt injection and sensitive data exposure on Kubernetes
+description: Content safety and PII detection—block prompt injection and sensitive data on Kubernetes
 ---
 
-Configure agentgateway to inspect and filter LLM requests, blocking sensitive data like PII before it reaches AI models.
+Configure agentgateway to inspect and filter LLM requests, blocking sensitive data like PII before it reaches AI models (content safety, PII detection).
 
 ## What you'll build
 

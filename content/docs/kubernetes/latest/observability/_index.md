@@ -1,12 +1,12 @@
 ---
 title: Observability
 weight: 700
-description: Gain insight into the health and performance of your gateways.
+description: Tracing, prompt logging, cost tracking, and metrics for your gateways.
 next: /docs/operations
 prev: /docs/integrations
 ---
 
-Gain insight into the health and performance of your gateway environment.
+Gain insight into the health and performance of your gateway environment, including LLM prompt logging, cost tracking, and full audit trail via OpenTelemetry.
 
 ## Guides
 

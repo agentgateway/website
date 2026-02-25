@@ -342,7 +342,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
 </div>
 <div class="flex-1">
 <h3 class="text-primary-text font-semibold">LLM Gateway</h3>
-<p class="text-secondary-text text-sm">Route traffic to major LLM providers through a unified OpenAI-compatible API</p>
+<p class="text-secondary-text text-sm">Route traffic to major LLM providers with budget and spend controls through a unified OpenAI-compatible API</p>
 </div>
 <svg id="chevron-llm" class="w-5 h-5 text-secondary-text transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
 </button>

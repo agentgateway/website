@@ -10,7 +10,7 @@ Consume services from LLM providers.
   {{< card link="about" title="About" >}}
   {{< card link="providers" title="Providers" >}}
   {{< card link="api-keys" title="Manage API keys" >}}
-  {{< card link="failover" title="Model failover" >}}
+  {{< card link="failover" title="Model failover" subtitle="Failover, A/B testing, canary, traffic splitting" >}}
   {{< card link="prompt-guards" title="Set up prompt guards" >}}
   {{< card link="prompt-enrichment" title="Enrich prompts" >}}
   {{< card link="functions" title="Call functions" >}}
