@@ -11,9 +11,9 @@ This guide shows how to connect agentgateway to an Ollama instance running outsi
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 **Additional requirements:**
-- Ollama installed and running on an accessible machine
-- Network connectivity between your Kubernetes cluster and the Ollama instance
-- Ollama configured to accept external connections
+- Ollama installed and running on an accessible machine.
+- Network connectivity between your Kubernetes cluster and the Ollama instance.
+- Ollama configured to accept external connections.
 
 ## Set up Ollama
 
@@ -343,9 +343,16 @@ EOF
 
 ### Connection refused errors
 
-**Symptom**: Requests fail with connection refused errors.
+**What's happening:**
 
-**Solutions**:
+Requests fail with connection refused errors.
+
+**Why it's happening:**
+
+The Kubernetes cluster cannot reach the Ollama instance, possibly due to network configuration, firewall rules, or incorrect Endpoints.
+
+**How to fix it:**
+
 1. Verify Ollama is running and bound to the correct interface:
    ```sh
    curl http://<ollama-ip>:11434/v1/models
@@ -366,32 +373,42 @@ EOF
 
 ### Model not found
 
-**Symptom**: Error message indicating the model is not available.
+**What's happening:**
 
-**Solution**: Verify the model is pulled in Ollama:
+Error message indicating the model is not available.
 
-```sh
-ollama list
-```
+**Why it's happening:**
 
-If not listed, pull it:
+The requested model has not been pulled in Ollama.
 
-```sh
-ollama pull llama3.2
-```
+**How to fix it:**
+
+1. Verify the model is pulled in Ollama:
+
+   ```sh
+   ollama list
+   ```
+
+2. If not listed, pull it:
+
+   ```sh
+   ollama pull llama3.2
+   ```
 
 ### Slow response times
 
-**Symptom**: Requests take longer than expected to complete.
+**What's happening:**
 
-**Possible causes**:
-- Network latency between cluster and Ollama instance
-- Ollama machine has insufficient resources (CPU/RAM)
-- Large model requires more VRAM/RAM than available
+Requests take longer than expected to complete.
 
-**Solutions**:
-- Use a model variant with smaller memory requirements (e.g., `llama3.2:7b` instead of `llama3.2:70b`)
-- Increase resources on the Ollama machine
-- Consider running Ollama on a machine closer to the cluster (same datacenter/VPC)
+**Why it's happening:**
+
+Network latency, insufficient resources on the Ollama machine, or the model size exceeds available memory.
+
+**How to fix it:**
+
+1. Use a model variant with smaller memory requirements (e.g., `llama3.2:7b` instead of `llama3.2:70b`).
+2. Increase resources on the Ollama machine.
+3. Consider running Ollama on a machine closer to the cluster (same datacenter/VPC).
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

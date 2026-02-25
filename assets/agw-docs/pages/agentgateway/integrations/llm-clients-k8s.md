@@ -58,11 +58,11 @@ Where `<ROUTE_PATH>` is the path you configured in your HTTPRoute resource (e.g.
 
 ### Cursor
 
-1. Open Cursor Settings → Models
+1. Open Cursor Settings → Models.
 2. Add custom model:
-   - **API Base URL**: `http://$INGRESS_GW_ADDRESS/openai` (replace with your route path)
-   - **API Key**: Gateway API key if auth is configured, or `anything`
-   - **Model Name**: Model from your AIBackend (e.g., `gpt-4o-mini`)
+   - **API Base URL**: `http://$INGRESS_GW_ADDRESS/openai` (replace with your route path).
+   - **API Key**: Gateway API key if auth is configured, or `anything`.
+   - **Model Name**: Model from your AIBackend (e.g., `gpt-4o-mini`).
 
 Or via settings JSON:
 
@@ -261,7 +261,16 @@ spec:
 
 ### Cannot connect to gateway
 
-**Solutions**:
+**What's happening:**
+
+Client applications cannot reach the agentgateway endpoint.
+
+**Why it's happening:**
+
+The gateway service may not be running, the LoadBalancer IP may not be assigned, or there are network connectivity issues.
+
+**How to fix it:**
+
 1. Verify the gateway service is running:
    ```sh
    kubectl get svc -n agentgateway agentgateway-proxy
@@ -279,34 +288,50 @@ spec:
 
 ### 404 Not Found
 
-**Cause**: Route path doesn't match HTTPRoute configuration.
+**What's happening:**
 
-**Solution**: Verify your HTTPRoute paths:
+Requests return a 404 Not Found error.
 
-```sh
-kubectl get httproute -n agentgateway -o yaml | grep -A 5 "path:"
-```
+**Why it's happening:**
 
-Ensure client URL matches the route path (e.g., `/openai`, not `/v1/chat/completions`).
+Route path doesn't match HTTPRoute configuration.
+
+**How to fix it:**
+
+1. Verify your HTTPRoute paths:
+
+   ```sh
+   kubectl get httproute -n agentgateway -o yaml | grep -A 5 "path:"
+   ```
+
+2. Ensure client URL matches the route path (e.g., `/openai`, not `/v1/chat/completions`).
 
 ### Connection timeout
 
-**Possible causes**:
-- Gateway pods not ready
-- Network policies blocking traffic
-- Cloud provider firewall rules
+**What's happening:**
 
-**Solutions**:
-```sh
-# Check pod status
-kubectl get pods -n agentgateway
+Requests time out without receiving a response.
 
-# Check pod logs
-kubectl logs -n agentgateway -l app=agentgateway --tail=100
+**Why it's happening:**
 
-# Describe service for events
-kubectl describe svc -n agentgateway agentgateway-proxy
-```
+Gateway pods may not be ready, network policies may be blocking traffic, or cloud provider firewall rules may be preventing access.
+
+**How to fix it:**
+
+1. Check pod status:
+   ```sh
+   kubectl get pods -n agentgateway
+   ```
+
+2. Check pod logs:
+   ```sh
+   kubectl logs -n agentgateway -l app=agentgateway --tail=100
+   ```
+
+3. Describe service for events:
+   ```sh
+   kubectl describe svc -n agentgateway agentgateway-proxy
+   ```
 
 ## Example: Complete setup
 
@@ -384,6 +409,6 @@ response = client.chat.completions.create(
 
 ## Related documentation
 
-- [Gateway API HTTPRoute](https://gateway-api.sigs.k8s.io/api-types/httproute/)
-- [Kubernetes Services](https://kubernetes.io/docs/concepts/services-networking/service/)
-- [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/)
+- [Gateway API HTTPRoute](https://gateway-api.sigs.k8s.io/api-types/httproute/).
+- [Kubernetes Services](https://kubernetes.io/docs/concepts/services-networking/service/).
+- [Kubernetes Ingress](https://kubernetes.io/docs/concepts/services-networking/ingress/).

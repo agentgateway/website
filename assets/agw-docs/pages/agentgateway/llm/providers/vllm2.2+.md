@@ -158,11 +158,11 @@ Use this option if vLLM is already deployed on dedicated GPU infrastructure outs
 
 Use this option to deploy vLLM directly in your Kubernetes cluster alongside agentgateway.
 
-### Prerequisites
+### Before you begin
 
-- Kubernetes cluster with GPU nodes (NVIDIA GPUs with CUDA support)
-- NVIDIA GPU Operator or device plugin installed
-- Sufficient GPU memory for your chosen model
+- Kubernetes cluster with GPU nodes (NVIDIA GPUs with CUDA support).
+- NVIDIA GPU Operator or device plugin installed.
+- Sufficient GPU memory for your chosen model.
 
 ### Deploy vLLM in the cluster
 
@@ -396,56 +396,79 @@ spec:
 ```
 
 Key metrics to monitor:
-- `vllm_request_duration_seconds` - Request latency
-- `vllm_num_requests_running` - Active requests
-- `vllm_gpu_cache_usage_perc` - GPU memory utilization
+- `vllm_request_duration_seconds` - Request latency.
+- `vllm_num_requests_running` - Active requests.
+- `vllm_gpu_cache_usage_perc` - GPU memory utilization.
 
 ## Troubleshooting
 
 ### Pod stuck in Pending state
 
-**Symptom**: vLLM pod doesn't start, shows `Pending` status.
+**What's happening:**
 
-**Cause**: No GPU nodes available or insufficient GPU memory.
+vLLM pod doesn't start, shows `Pending` status.
 
-**Solution**:
-```sh
-# Check GPU availability
-kubectl describe nodes | grep -A 5 "nvidia.com/gpu"
+**Why it's happening:**
 
-# Check pod events
-kubectl describe pod -l app=vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-```
+No GPU nodes available or insufficient GPU memory.
+
+**How to fix it:**
+
+1. Check GPU availability:
+   ```sh
+   kubectl describe nodes | grep -A 5 "nvidia.com/gpu"
+   ```
+
+2. Check pod events:
+   ```sh
+   kubectl describe pod -l app=vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
 
 ### Out of memory errors
 
-**Symptom**: vLLM crashes with CUDA out-of-memory errors.
+**What's happening:**
 
-**Solutions**:
-1. Use a smaller model or quantized variant
-2. Reduce `--max-model-len`
-3. Lower `--gpu-memory-utilization` (try `0.8` or `0.7`)
-4. Enable tensor parallelism across more GPUs
+vLLM crashes with CUDA out-of-memory errors.
+
+**Why it's happening:**
+
+The model requires more GPU memory than is available.
+
+**How to fix it:**
+
+1. Use a smaller model or quantized variant.
+2. Reduce `--max-model-len`.
+3. Lower `--gpu-memory-utilization` (try `0.8` or `0.7`).
+4. Enable tensor parallelism across more GPUs.
 
 ### Slow inference
 
-**Symptom**: High latency on requests.
+**What's happening:**
 
-**Possible causes**:
-- Model too large for available GPU memory (swapping to CPU)
-- Insufficient `--max-num-seqs` for concurrent requests
-- CPU bottleneck in preprocessing
+High latency on requests.
 
-**Solutions**:
-- Increase GPU memory or use smaller model
-- Tune `--max-num-seqs` and `--max-model-len`
-- Use faster CPUs or increase CPU requests
+**Why it's happening:**
+
+Model too large for available GPU memory (swapping to CPU), insufficient `--max-num-seqs` for concurrent requests, or CPU bottleneck in preprocessing.
+
+**How to fix it:**
+
+1. Increase GPU memory or use smaller model.
+2. Tune `--max-num-seqs` and `--max-model-len`.
+3. Use faster CPUs or increase CPU requests.
 
 ### Connection refused from agentgateway
 
-**Symptom**: agentgateway cannot reach vLLM service.
+**What's happening:**
 
-**Solutions**:
+agentgateway cannot reach vLLM service.
+
+**Why it's happening:**
+
+The vLLM Service may not exist, have no endpoints, or network policies are blocking traffic.
+
+**How to fix it:**
+
 1. Verify vLLM Service exists and has endpoints:
    ```sh
    kubectl get svc vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
