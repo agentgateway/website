@@ -61,6 +61,10 @@ Do not use other variations, such as:
   ❌ "ztunnel does L4 stuff"
   ```
 
+### SEO-friendly terminology
+
+When writing short descriptions, intros, or metadata, include similar terms so that users can find equivalent features. Use our term first, then add "also known as" or parenthetical phrasing (such as "budget limits", "spend limits", "prompt logging", "cost tracking", "content safety", "PII detection"). See [TERMINOLOGY.md](TERMINOLOGY.md) for the full mapping and examples.
+
 ## Formatting with shortcodes
 
 ### Hextra Hugo theme shortcodes to style, format, and add content
