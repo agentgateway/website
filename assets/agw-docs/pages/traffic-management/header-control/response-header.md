@@ -1,7 +1,3 @@
----
-title: Response headers
-weight: 30
----
 
 Use the `ResponseHeaderModifier` filter to add, append, overwrite, or remove headers from a response before it is sent back to the client. 
 

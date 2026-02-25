@@ -1,7 +1,3 @@
----
-title: Request headers
-weight: 25
----
 
 Use the `RequestHeaderModifier` filter to add, append, overwrite, or remove request headers for a specific route. 
 
@@ -406,26 +402,20 @@ You can return dynamic information about the request in the request header. For 
    {{< /tabs >}}
 
    Example output: 
-   ```sh {linenos=table,hl_lines=[9,10,11],linenostart=1}
+   ```sh {linenos=table,hl_lines=[12,13,14],linenostart=1}
    {
      "headers": {
        "Accept": [
          "*/*"
        ],
        "Host": [
-         "headers.example:8080"
+         "headers.example"
+       ],
+       "User-Agent": [
+         "curl/8.7.1"
        ],
        "X-Client-Ip": [
          "127.0.0.1"
-       ],
-       "X-Envoy-Expected-Rq-Timeout-Ms": [
-         "15000"
-       ],
-       "X-Forwarded-Proto": [
-         "http"
-       ],
-       "X-Request-Id": [
-         "f83bb750-67f7-47dc-8c79-4a582892034c"
        ]
      }
    }
