@@ -1,4 +1,8 @@
-Review LLM-specific metrics and logs. 
+Review LLM-specific metrics and logs.
+
+{{< callout type="info" >}}
+To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
+{{< /callout >}}
 
 ## Before you begin
 

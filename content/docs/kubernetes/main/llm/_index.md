@@ -15,6 +15,7 @@ Consume services from LLM providers.
   {{< card link="prompt-enrichment" title="Enrich prompts" >}}
   {{< card link="functions" title="Call functions" >}}
   {{< card link="guardrail-api" title="Guardrail Webhook API" >}}
+  {{< card link="cost-tracking" title="Track LLM costs" subtitle="Cost tracking, spend monitoring, usage tracking" >}}
   {{< card link="observability" title="View metrics and logs" >}}
   {{< card link="tracing" title="View traces" >}}
 {{< /cards >}}
