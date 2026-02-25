@@ -19,8 +19,25 @@ jobs:
         with:
           python-version: '3.x'
 
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
       - name: Install Python dependencies
         run: pip install pyyaml
+
+      - name: Install cloud-provider-kind
+        run: go install sigs.k8s.io/cloud-provider-kind@latest
+
+      - name: Install yamltest
+        run: npm install -g yamltest@latest
 
       - name: Generate test scripts
         run: python3 scripts/doc_test_run.py --repo-root . --generate-only
