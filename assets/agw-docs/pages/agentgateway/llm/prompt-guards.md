@@ -1,8 +1,8 @@
-Secure access to the LLM and the data that is returned with Web Application Filter and Data Loss Prevention (DLP) policies, which are important for content safety or PII detection.
+Use content safety and PII detection: secure access to the LLM and the data that is returned with Web Application Filter and Data Loss Prevention (DLP) policies.
 
 ## About prompt guards {#about}
 
-Prompt guards (also content safety or PII detection) are mechanisms that ensure that prompt-based interactions with a language model are secure, appropriate, and aligned with the intended use. These mechanisms help to filter, block, monitor, and control LLM inputs and outputs to filter offensive content, prevent misuse, and ensure ethical and responsible AI usage.
+Prompt guards provide content safety and PII detection: they ensure that prompt-based interactions with a language model are secure, appropriate, and aligned with the intended use. These mechanisms help to filter, block, monitor, and control LLM inputs and outputs to filter offensive content, prevent misuse, and ensure ethical and responsible AI usage.
 
 You can set up prompt guards to block unwanted requests to the LLM provider and mask sensitive data. In this tutorial, you learn how to block any request with a `credit card` string in the request body and mask credit card numbers that are returned by the LLM.
 

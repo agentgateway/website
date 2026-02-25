@@ -1,6 +1,6 @@
 # Terminology
 
-Use this reference when writing or editing docs so that users coming from other environments can find equivalent features. Use our term first, then add "also known as" or similar phrasing in short descriptions, intros, and metadata where it helps discoverability.
+Use this reference when writing or editing docs so that users coming from other environments can find equivalent features. Lead with the familiar or competitor term (the language people search for); then use our more declarative terms in the rest of the sentence. Incorporate the language into the sentence instead of adding all terms in brackets.
 
 ---
 
@@ -12,8 +12,9 @@ Use this reference when writing or editing docs so that users coming from other 
 | Token-based rate limit (per user/key) | Virtual keys (when combined with auth), per-API-key budgets | Virtual key pattern, API keys, rate limit intros |
 | Control spend / token limits | Budget enforcement, token budget, cost control | Spending guide, LLM about |
 
-Example phrasing:  
-"Rate limiting (also known as budget limits or spend limits when applied per user or API key) lets you cap token usage per time window."
+Example:  
+"Control cost with token budgets and spend limits to prevent unexpected bills and LLM misuse."  
+"Enforce budget and spend limits per key by controlling request and token usage."
 
 ---
 
@@ -28,8 +29,8 @@ Example phrasing:
 
 Note: Other AI gateways often offer a single “virtual keys” feature that bundles API key auth, per-key budgets, and usage analytics. In agentgateway, you get the same capability by composing API key authentication, token-based rate limiting (keyed by user/header), and OTel metrics/traces.
 
-Example phrasing:  
-"Issue API keys and attach per-key token budgets (also known as virtual keys or virtual key management)."
+Example:  
+"Manage virtual keys—issue API keys and attach per-key token budgets."
 
 ---
 
@@ -41,8 +42,9 @@ Example phrasing:
 | Observe traffic / LLM metrics | Cost tracking, token usage tracking, prompt analytics | Observe traffic page, integrations |
 | Export traces to Langfuse/LangSmith | LLM logging, prompt logging, audit trail | Export guides, observability overview |
 
-Example phrasing:  
-"Review LLM-specific metrics, logs, and traces (prompt logging, cost tracking, audit trail)."
+Example:  
+"Get prompt logging, cost tracking, and an audit trail for LLM traffic."  
+Only mention specific platforms (e.g. Langfuse, LangSmith) on pages that actually document them.
 
 ---
 
@@ -53,8 +55,8 @@ Example phrasing:
 | Prompt guard / AI Prompt Guard | Content safety, PII detection, DLP (data loss prevention), NER-based PII | Prompt guard docs, guardrails, security |
 | Block sensitive data / PII | PII detection, content safety, data loss prevention | AI Prompt Guard description, guardrails intro |
 
-Example phrasing:  
-"Protect LLM requests from prompt injection and sensitive data exposure (content safety, PII detection)."
+Example:  
+"Use content safety and PII detection: configure agentgateway to inspect and filter LLM requests and block sensitive data like PII before it reaches AI models."
 
 ---
 
@@ -69,16 +71,16 @@ Example phrasing:
 
 Note: Agentgateway uses the Power of Two Choices (P2C) algorithm for load balancing. Use “P2C” and “Power of Two Choices” in intros and descriptions so users comparing to other gateways recognize the approach. Traffic splitting (such as 80% to one model, 20% to another) can be framed as A/B testing or canary deployments for LLM providers.
 
-Example phrasing:  
-"Load balance across LLM providers using the Power of Two Choices (P2C) algorithm, with failover and optional traffic splitting (A/B testing, canary)."
+Example:  
+"Set up traffic splitting, A/B testing, or canary deployments with weight-based routing."  
+"Use failover (automatic fallback) to keep services running by switching to a backup when the main system fails."
 
 ---
 
 ## Where to add alternative terms
 
-- Page `description` (front matter): One short phrase, such as "Rate limiting and budget control (spend limits per key)."
-- First paragraph or intro: One sentence with "also known as" or parenthetical, such as "(sometimes called prompt logging or cost tracking)."
-- Card subtitles on index pages: such as "Budget and spend limits" under Rate limiting.
-- H1 or first heading: Prefer our term; optional parenthetical for one well-known alternative.
+- Page `description` (front matter): Lead with the familiar term, then the action or outcome. Example: "Control cost with token budgets and spend limits to prevent unexpected bills and LLM misuse."
+- First paragraph or intro: Weave the discoverable term into the sentence. Example: "Get prompt logging, cost tracking, and an audit trail: review LLM-specific metrics, logs, and traces via OpenTelemetry."
+- Card subtitles: Use the familiar language. Example: "Budget and spend limits" under Rate limiting.
 
-Do not over-stuff. One extra phrase per page or card is enough for SEO and discoverability.
+Do not list every alternative in brackets. Do not mention specific products (e.g. Langfuse, LangSmith) in a description unless that page documents them.

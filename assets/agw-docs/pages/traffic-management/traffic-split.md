@@ -1,4 +1,4 @@
-Set up weight-based routing between multiple apps (also known as traffic splitting, A/B testing, or canary deployments).
+Set up traffic splitting, A/B testing, or canary deployments with weight-based routing between multiple apps.
 
 ## Before you begin
 

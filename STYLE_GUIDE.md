@@ -63,7 +63,7 @@ Do not use other variations, such as:
 
 ### SEO-friendly terminology
 
-When writing short descriptions, intros, or metadata, include similar terms so that users can find equivalent features. Use our term first, then add "also known as" or parenthetical phrasing (such as "budget limits", "spend limits", "prompt logging", "cost tracking", "content safety", "PII detection"). See [TERMINOLOGY.md](TERMINOLOGY.md) for the full mapping and examples.
+When writing short descriptions, intros, or metadata, lead with the familiar or competitor term (the language people search for), then use our more declarative terms in the sentence. Incorporate the language into the sentence instead of listing alternatives in brackets. See [TERMINOLOGY.md](TERMINOLOGY.md) for the full mapping and examples.
 
 ## Formatting with shortcodes
 

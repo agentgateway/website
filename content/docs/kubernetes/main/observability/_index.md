@@ -6,7 +6,7 @@ next: /docs/operations
 prev: /docs/integrations
 ---
 
-Gain insight into the health and performance of your gateway environment, including LLM prompt logging, cost tracking, and full audit trail via OpenTelemetry.
+Gain insight into the health and performance of your gateway environment. Get prompt logging, cost tracking, and an audit trail for LLM traffic via OpenTelemetry.
 
 ## Guides
 

@@ -2,7 +2,7 @@ Use the Guardrail Webhook API to set up your own custom guardrail controls for {
 
 ## About guardrails {#about}
 
-Guardrails (also called content safety or PII detection) are control mechanisms that help ensure safe, consistent, and compliant interactions with large language models (LLMs) by validating both input and output content.
+Guardrails provide content safety and PII detection. They are control mechanisms that help ensure safe, consistent, and compliant interactions with large language models (LLMs) by validating both input and output content.
 
 ### Benefits of guardrails {#about-benefits}
 

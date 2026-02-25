@@ -1,13 +1,13 @@
 ---
 title: Rate limiting
 weight: 10
-description: Control request and token usage with rate limits (also known as budget limits or spend limits per key).
+description: Enforce budget and spend limits per key by controlling request and token usage.
 ---
 
 Attach to:
 {{< badge content="Route" link="/docs/configuration/routes/">}}
 
-Agentgateway rate limiting policies let you control the rate of requests and token usage on a route. Token-based limits act as budget or spend limits (terms used by other AI gateways): you can cap usage per user, per API key, or per time window. When combined with API key authentication and optional observability, this pattern is often called virtual keys or virtual key management.
+Use rate limiting to enforce budget and spend limits per key: control the rate of requests and token usage on a route. Token-based limits let you cap usage per user, per API key, or per time window. Combined with API key authentication and observability, this gives you virtual key management.
 
 ## Rate limit types
 

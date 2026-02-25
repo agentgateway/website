@@ -4,7 +4,7 @@ weight: 6
 description: Enable tracing, prompt logging, cost tracking, and metrics for agentgateway on Kubernetes
 ---
 
-Enable distributed tracing and metrics collection for agentgateway on Kubernetes using OpenTelemetry and Jaeger. Traces include LLM request/response data for prompt logging and cost tracking (token usage), giving you an audit trail for each request.
+Enable distributed tracing and metrics collection for agentgateway on Kubernetes using OpenTelemetry and Jaeger. Get prompt logging, cost tracking, and an audit trail: traces include LLM request/response data and token usage for each request.
 
 ## What you'll build
 
