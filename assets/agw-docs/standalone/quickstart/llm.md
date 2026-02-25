@@ -99,7 +99,7 @@ Example output (abbreviated):
 Check out more guides related to LLM consumption with agentgateway.
 
 {{< cards >}}
-  {{< card link="../../llm/providers/openai" title="OpenAI provider reference" subtitle="Optional model override, multiple routes, passthrough, and Codex connection." >}}
-  {{< card link="../../llm/api-keys" title="Manage API keys for LLM providers" subtitle="Other ways to supply API keys, such as a Kubernetes Secret." >}}
-  {{< card link="../../llm/providers/multiple-llms" title="Multiple LLM providers" subtitle="Route to several LLMs from one agentgateway." >}}
+  {{< card link="../../llm/spending/" title="Control spending" subtitle="Control spending by setting rate limits for your LLM requests." >}}
+  {{< card link="../../llm/providers/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
+  {{< card link="../../llm/providers/openai/" title="OpenAI provider reference" subtitle="Optional model override, multiple routes, passthrough, and Codex connection." >}}
 {{< /cards >}}
