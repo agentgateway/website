@@ -31,7 +31,7 @@ Steps to set up the sample gRPC service:
 1. Deploy the gRPC echo server and client.
 
    ```yaml
-   kubectl apply -f - <<EOF
+   kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
    metadata:
@@ -47,7 +47,7 @@ Steps to set up the sample gRPC service:
      template:
        metadata:
          labels:
-           app.kubernetes.io/name: grpc-echo
+          app.kubernetes.io/name: grpc-echo
        spec:
          containers:
            - name: grpc-echo
@@ -94,7 +94,7 @@ Steps to set up the sample gRPC service:
      labels:
        app.kubernetes.io/name: grpcurl-client
    spec:
-     containers:
+    containers:
        - name: grpcurl
          image: docker.io/fullstorydev/grpcurl:v1.8.7-alpine
          command:
@@ -107,6 +107,29 @@ Steps to set up the sample gRPC service:
 ## Create a GRPCRoute {#create-grpcroute}
 
 1. Create the GRPCRoute, HTTPRoute, and AgentgatewayPolicy. The GRPCRoute includes a match for `grpc.reflection.v1alpha.ServerReflection` to enable dynamic API exploration and a match for the `Ping` method. The AgentgatewayPolicy adds the `x-grpc-response: from-grpc` response header for gRPC traffic. For detailed information about GRPCRoute fields and configuration options, see the [Gateway API GRPCRoute documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GRPCRoute).
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: GRPCRoute
+metadata:
+  name: example-route # same name and namespace as HTTPRoute
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+  hostnames:
+    - "grpc.com"
+  rules:
+    - matches:
+        - method:
+            method: Echo
+            service: proto.EchoTestService
+      backendRefs:
+        - name: echo-grpc-svc
+          port: 7070
+EOF
+```
 
    ```yaml
    kubectl apply -f - <<EOF
