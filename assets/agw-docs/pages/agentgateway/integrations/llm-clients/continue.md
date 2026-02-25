@@ -6,21 +6,21 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 Continue is a VS Code extension that provides AI-powered code completion, chat, and refactoring. It supports custom OpenAI-compatible endpoints via its configuration file.
 
-## Prerequisites
+## Before you begin
 
-- agentgateway running and accessible (e.g., `http://localhost:3000`)
-- A configured LLM backend in agentgateway
-- VS Code with Continue extension installed
+- agentgateway running and accessible (e.g., `http://localhost:3000`).
+- A configured LLM backend in agentgateway.
+- VS Code with Continue extension installed.
 
 ## Installation
 
-1. Install Continue from the VS Code marketplace:
-   - Open VS Code
-   - Go to Extensions (`Cmd + Shift + X` on macOS, `Ctrl + Shift + X` on Windows/Linux)
-   - Search for "Continue"
-   - Click **Install**
+1. Install Continue from the VS Code marketplace.
+   - Open VS Code.
+   - Go to Extensions (`Cmd + Shift + X` on macOS, `Ctrl + Shift + X` on Windows/Linux).
+   - Search for "Continue".
+   - Click **Install**.
 
-2. Continue will create a configuration file at `~/.continue/config.json`
+2. Continue will create a configuration file at `~/.continue/config.json`.
 
 ## Configuration
 
@@ -97,9 +97,9 @@ Switch between models using the Continue sidebar model selector.
 
 ### Chat
 
-1. Open Continue sidebar (`Cmd + M` on macOS, `Ctrl + M` on Windows/Linux)
-2. Type your question in the chat input
-3. Continue sends requests to agentgateway
+1. Open Continue sidebar (`Cmd + M` on macOS, `Ctrl + M` on Windows/Linux).
+2. Type your question in the chat input.
+3. Continue sends requests to agentgateway.
 
 ### Code completion
 
@@ -108,10 +108,10 @@ Continue sends code context to your configured `tabAutocompleteModel` for inline
 ### Slash commands
 
 Use Continue's slash commands with your agentgateway backend:
-- `/edit` - Refactor selected code
-- `/comment` - Add documentation comments
-- `/test` - Generate unit tests
-- `/fix` - Fix code issues
+- `/edit` - Refactor selected code.
+- `/comment` - Add documentation comments.
+- `/test` - Generate unit tests.
+- `/fix` - Fix code issues.
 
 ## Example agentgateway configuration
 
@@ -159,10 +159,10 @@ code .
 
 ## Verification
 
-1. Open Continue sidebar in VS Code
-2. Select your agentgateway model from the model dropdown
-3. Send a test message: "Hello, are you working?"
-4. Continue should respond via agentgateway
+1. Open Continue sidebar in VS Code.
+2. Select your agentgateway model from the model dropdown.
+3. Send a test message: "Hello, are you working?".
+4. Continue should respond via agentgateway.
 
 Check agentgateway logs to confirm requests are being received.
 
@@ -170,19 +170,19 @@ Check agentgateway logs to confirm requests are being received.
 
 ### Connection refused
 
-- Verify agentgateway is running: `curl http://localhost:3000/v1/models`
-- Check firewall settings
-- Ensure `apiBase` includes `/v1` path
+- Verify agentgateway is running: `curl http://localhost:3000/v1/models`.
+- Check firewall settings.
+- Ensure `apiBase` includes `/v1` path.
 
 ### "Model not found" error
 
-- Ensure the `model` field matches your agentgateway backend configuration
-- Check agentgateway logs for backend errors
+- Ensure the `model` field matches your agentgateway backend configuration.
+- Check agentgateway logs for backend errors.
 
 ### Slow completions
 
-- Check agentgateway latency in observability metrics
-- Consider using a faster model for `tabAutocompleteModel`
+- Check agentgateway latency in observability metrics.
+- Consider using a faster model for `tabAutocompleteModel`.
 - Adjust Continue's `requestDelay` setting in `config.json`:
   ```json
   {
@@ -192,9 +192,9 @@ Check agentgateway logs to confirm requests are being received.
 
 ### API key errors
 
-- If agentgateway has no authentication, use any placeholder: `"anything"`
-- If using `backendAuth`, ensure gateway has valid provider API keys
-- Check agentgateway logs for auth errors
+- If agentgateway has no authentication, use any placeholder: `"anything"`.
+- If using `backendAuth`, ensure gateway has valid provider API keys.
+- Check agentgateway logs for auth errors.
 
 ## Advanced configuration
 

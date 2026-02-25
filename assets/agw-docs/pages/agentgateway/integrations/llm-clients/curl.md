@@ -5,15 +5,15 @@ Test and interact with agentgateway using curl, the command-line HTTP client.
 ## Overview
 
 Using curl is the simplest way to test agentgateway's OpenAI-compatible API. This is useful for:
-- Verifying gateway configuration
-- Testing backend connectivity
-- Debugging request/response payloads
-- Scripting and automation
+- Verifying gateway configuration.
+- Testing backend connectivity.
+- Debugging request/response payloads.
+- Scripting and automation.
 
-## Prerequisites
+## Before you begin
 
-- agentgateway running (e.g., `http://localhost:3000`)
-- curl installed (pre-installed on macOS/Linux, [download for Windows](https://curl.se/download.html))
+- agentgateway running (e.g., `http://localhost:3000`).
+- curl installed (pre-installed on macOS/Linux, [download for Windows](https://curl.se/download.html)).
 
 ## Basic chat completion
 
@@ -405,9 +405,9 @@ docker logs -f agentgateway
 ```
 
 **Solution:**
-- If gateway has no auth, omit the `Authorization` header
-- If using `backendAuth`, ensure gateway has valid provider credentials
-- Check agentgateway configuration and logs
+- If gateway has no auth, omit the `Authorization` header.
+- If using `backendAuth`, ensure gateway has valid provider credentials.
+- Check agentgateway configuration and logs.
 
 ### Timeout
 
@@ -416,9 +416,9 @@ curl: (28) Operation timed out after 30000 milliseconds
 ```
 
 **Solution:**
-- Increase curl timeout: `curl --max-time 60 ...`
-- Check backend provider latency in agentgateway logs
-- Verify backend provider credentials and quota
+- Increase curl timeout: `curl --max-time 60 ...`.
+- Check backend provider latency in agentgateway logs.
+- Verify backend provider credentials and quota.
 
 ## Scripting examples
 

@@ -377,20 +377,20 @@ node -e "import('openai').then(({default: OpenAI}) => {const c = new OpenAI({bas
 
 ### Connection errors
 
-- Verify agentgateway is running: `curl http://localhost:3000/v1/models`
-- Check base URL includes `/v1` path
-- Ensure firewall allows connections
+- Verify agentgateway is running: `curl http://localhost:3000/v1/models`.
+- Check base URL includes `/v1` path.
+- Ensure firewall allows connections.
 
 ### Authentication errors
 
-- If gateway has no auth, use placeholder: `"anything"`
-- If using `backendAuth`, ensure gateway has valid provider credentials
-- Check agentgateway logs for auth errors
+- If gateway has no auth, use placeholder: `"anything"`.
+- If using `backendAuth`, ensure gateway has valid provider credentials.
+- Check agentgateway logs for auth errors.
 
 ### Model not found
 
-- Verify model name matches agentgateway backend configuration
-- Check agentgateway logs for backend connection errors
+- Verify model name matches agentgateway backend configuration.
+- Check agentgateway logs for backend connection errors.
 
 ### Rate limiting
 

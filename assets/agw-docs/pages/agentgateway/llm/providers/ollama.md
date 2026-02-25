@@ -8,20 +8,20 @@ description: Configure Agentgateway to route LLM traffic to Ollama for local mod
 
 ## Use cases
 
-- **Local development**: Test and develop without cloud API costs
-- **Privacy**: Keep sensitive data on your machine
-- **Offline usage**: Run models without internet connectivity
-- **Cost optimization**: Avoid per-token charges during development
-- **Custom models**: Use fine-tuned or specialized local models
+- **Local development**: Test and develop without cloud API costs.
+- **Privacy**: Keep sensitive data on your machine.
+- **Offline usage**: Run models without internet connectivity.
+- **Cost optimization**: Avoid per-token charges during development.
+- **Custom models**: Use fine-tuned or specialized local models.
 
 ## Before you begin
 
-1. **Install Ollama**: Download and install from [ollama.ai](https://ollama.ai/download)
-2. **Pull a model**: Download at least one model
+1. **Install Ollama**: Download and install from [ollama.ai](https://ollama.ai/download).
+2. **Pull a model**: Download at least one model.
    ```bash
    ollama pull llama3.2
    ```
-3. **Verify Ollama is running**: Check that Ollama is serving on port 11434
+3. **Verify Ollama is running**: Check that Ollama is serving on port 11434.
    ```bash
    curl http://localhost:11434/api/version
    ```
@@ -283,52 +283,73 @@ ollama ps  # Shows active model and memory usage
 ### When NOT to use Ollama
 
 Ollama is great for development but may not be ideal for:
-- **Production at scale**: Cloud providers offer better reliability and scaling
-- **Low-resource environments**: Large models require significant RAM/GPU
-- **Latest models**: Cloud providers often have newer/larger models
-- **High availability**: Ollama runs on a single machine without built-in redundancy
+- **Production at scale**: Cloud providers offer better reliability and scaling.
+- **Low-resource environments**: Large models require significant RAM/GPU.
+- **Latest models**: Cloud providers often have newer/larger models.
+- **High availability**: Ollama runs on a single machine without built-in redundancy.
 
 ## Troubleshooting
 
 ### Connection refused
 
-**Problem**: `curl: (7) Failed to connect to localhost port 11434: Connection refused`
+**What's happening:**
 
-**Solutions**:
-1. Check Ollama is running:
+`curl: (7) Failed to connect to localhost port 11434: Connection refused`
+
+**Why it's happening:**
+
+Ollama is not running or is not bound to port 11434.
+
+**How to fix it:**
+
+1. Check Ollama is running.
    ```bash
    ps aux | grep ollama
    ```
-2. Start Ollama if not running:
+2. Start Ollama if not running.
    ```bash
    ollama serve
    ```
-3. Check port binding:
+3. Check port binding.
    ```bash
    lsof -i :11434
    ```
 
 ### Model not found
 
-**Problem**: `{"error":"model 'llama3.2' not found"}`
+**What's happening:**
 
-**Solutions**:
-1. List pulled models:
+`{"error":"model 'llama3.2' not found"}`
+
+**Why it's happening:**
+
+The requested model has not been pulled to your local Ollama instance.
+
+**How to fix it:**
+
+1. List pulled models.
    ```bash
    ollama list
    ```
-2. Pull the model:
+2. Pull the model.
    ```bash
    ollama pull llama3.2
    ```
-3. Use exact model name from `ollama list` output
+3. Use exact model name from `ollama list` output.
 
 ### Slow performance
 
-**Problem**: Responses are very slow
+**What's happening:**
 
-**Solutions**:
-1. **Use smaller models**: Try `llama3.2:3b` instead of `llama3.2:70b`
+Responses are very slow.
+
+**Why it's happening:**
+
+The model may be too large for your hardware, running on CPU instead of GPU, or other models are consuming resources.
+
+**How to fix it:**
+
+1. **Use smaller models**: Try `llama3.2:3b` instead of `llama3.2:70b`.
 2. **Check GPU usage**:
    ```bash
    ollama ps  # Should show GPU if available
@@ -345,14 +366,21 @@ Ollama is great for development but may not be ideal for:
 
 ### Out of memory
 
-**Problem**: Ollama crashes or fails to load model
+**What's happening:**
 
-**Solutions**:
-1. Use a smaller model variant:
+Ollama crashes or fails to load model.
+
+**Why it's happening:**
+
+Your system does not have enough RAM or VRAM to load the model.
+
+**How to fix it:**
+
+1. Use a smaller model variant.
    ```bash
    ollama pull llama3.2:3b  # Instead of 70b
    ```
-2. Check available memory:
+2. Check available memory.
    ```bash
    # macOS
    vm_stat
@@ -360,8 +388,8 @@ Ollama is great for development but may not be ideal for:
    # Linux
    free -h
    ```
-3. Close other applications to free memory
-4. Use model quantization (Ollama automatically uses Q4 quantization)
+3. Close other applications to free memory.
+4. Use model quantization (Ollama automatically uses Q4 quantization).
 
 ## Next steps
 
