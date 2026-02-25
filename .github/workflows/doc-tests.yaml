@@ -1,0 +1,39 @@
+name: Doc tests
+
+on:
+  schedule:
+    # Every day at 09:00 UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+
+jobs:
+  doc-tests:
+    name: Generate and run doc tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Generate test scripts
+        run: python3 scripts/doc_test_run.py --repo-root . --generate-only
+
+      - name: Run doc tests
+        run: python3 scripts/doc_test_run.py --repo-root .
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Upload generated test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc-test-results
+          path: out/tests/generated/
+          retention-days: 14
