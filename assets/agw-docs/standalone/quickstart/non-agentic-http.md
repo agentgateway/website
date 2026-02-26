@@ -46,7 +46,7 @@ docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform lin
 Verify that httpbin responds.
 
 ```sh,paths="httpbin"
-curl -s http://localhost:8000/headers | head -20
+curl -s http://localhost:8000/headers | head -20 || true
 ```
 
 Example output:
@@ -113,7 +113,8 @@ curl -i http://localhost:3000/headers
 YAMLTest -f - <<'EOF'
 - name: request through agentgateway to httpbin returns 200
   http:
-    url: "http://localhost:3000/headers"
+    url: "http://localhost:3000"
+    path: /headers
     method: GET
   source:
     type: local
