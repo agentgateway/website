@@ -34,6 +34,7 @@ To use experimental Gateway API features, you must enable the experimental featu
 To enable these features, set the environment variable in your kgateway controller deployment in your Helm values file.
 
 ```yaml
+
 controller:
   extraEnv:
     KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES: "true"
