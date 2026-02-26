@@ -60,7 +60,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
        group: gateway.networking.k8s.io
      frontend:
        http:
-         http1IdleTimeout: 1s
+         http1IdleTimeout: 30s
    EOF
    ```
 
