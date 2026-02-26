@@ -167,7 +167,7 @@ Remove a header that is reserved for use by another service, such as an external
 
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
 
 ```sh
 kubectl delete httproute httpbin-route -n httpbin
