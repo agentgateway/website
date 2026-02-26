@@ -19,6 +19,15 @@ Integrate agentgateway with your existing infrastructure and tools.
   {{< card link="/docs/llm/providers/openai-compatible" title="OpenAI-Compatible" subtitle="Cohere, Ollama, and other compatible APIs" >}}
 {{< /cards >}}
 
+## LLM Clients
+
+{{< cards >}}
+  {{< card link="llm-clients/cursor" title="Cursor" subtitle="AI code editor" >}}
+  {{< card link="llm-clients/continue" title="VS Code Continue" subtitle="AI code assistant extension" >}}
+  {{< card link="llm-clients/openai-sdk" title="OpenAI SDK" subtitle="Python and Node.js SDKs" >}}
+  {{< card link="llm-clients/curl" title="curl" subtitle="Command-line testing" >}}
+{{< /cards >}}
+
 ## Observability
 
 {{< cards >}}
