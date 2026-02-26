@@ -147,14 +147,14 @@ Remove a header that is reserved for use by another service, such as an external
    {{< /tabs >}}
    Example output: Note that the `X-User-Id` header is present in the request.
 
-   ```json {linenos=table,hl_lines=[12,13,14],linenostart=1}
+   ```json {linenos=table,hl_lines=[12,13],linenostart=1}
    {
      "headers": {
        "Accept": [
          "*/*"
        ],
        "Host": [
-         "www.example.com"
+         "transformation.example"
        ],
        "User-Agent": [
          "curl/8.7.1"
@@ -167,7 +167,7 @@ Remove a header that is reserved for use by another service, such as an external
 
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
 
 ```sh
 kubectl delete httproute httpbin-route -n httpbin
