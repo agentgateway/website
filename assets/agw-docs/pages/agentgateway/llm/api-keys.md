@@ -1,4 +1,6 @@
-Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense. 
+Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
+
+Manage virtual keys by issuing API keys and attaching per-key token budgets via [rate limiting]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) or [control spend]({{< link-hextra path="/llm/spending/" >}}). Agentgateway delivers this by composing API key authentication, token-based rate limits keyed by user or header, and optional observability.
 
 Follow the instructions in this guide to learn how to use these different methods. 
 
