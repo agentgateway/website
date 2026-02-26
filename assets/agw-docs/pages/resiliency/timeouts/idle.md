@@ -1,4 +1,4 @@
-You can customize an idle timeout for a connection to a downstream or upstream service if there are no active streams.
+Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstream or upstream service if there are no active streams. 
 
 ## About idle timeouts
 
