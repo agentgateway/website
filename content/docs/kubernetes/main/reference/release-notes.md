@@ -5,31 +5,24 @@ weight: 20
 
 Review the release notes for agentgateway.
 
-
-## 🔥 Breaking changes {#v22-breaking-changes}
+## 🔥 Breaking changes {#v10-breaking-changes}
 
 {{< callout type="info">}}
-For more details, review the [GitHub release notes in the kgateway repository](https://github.com/kgateway-dev/kgateway/releases/tag/v2.2.0).
+For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases)
 {{< /callout >}}
 
+### New release version pattern
 
-## 🌟 New features {#v22-new-features}
+The previous release version pattern was changed to align with the version number pattern that is used for the agentgateway standalone binary. Going forward, both the agentgateway on Kubernetes and agentgateway standalone binary projects use the same release version number. If you have existing CI/CD workflows that depend on the old pattern, update them. 
 
-The following features were introduced in 2.3.0.
+
+## 🌟 New features {#v10-new-features}
+
+The following features were introduced in 1.0.0.
 
 ### Autoscaling policies for agentgateway controller
 
 You can now configure Horizontal Pod Autoscaler or Vertical Pod Autoscaler policies for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. To set up these policies, you use the `horizontalPodAutoscaler` or `verticalPodAutoscaler` fields in the Helm chart.  
-
-Vertical Pod Autoscaler (VPA) is a Kubernetes component that automatically adjusts the CPU and memory reservations of your pods to match their actual usage. Horizontal Pod Autoscaler (HPA) on the other hand adds more instances of the pod to your environment when certain memory or CPU thresholds are reached. 
-
-{{< callout type="info" >}}
-Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} uses leader election if multiple replicas are present. The elected leader's workload is typically larger than the workload of non-leader replicas and therefore drives the overall infrastructure cost. Because of that, Vertical Pod Autoscaling can be a reasonable solution to ensure that the elected leader has the resources it needs to perform its work successfully. In cases where the leader has a large workload, Horizontal Pod Autoscaling might not be as effective as it adds more replicas that do not reduce the workload of the elected leader. 
-{{< /callout >}}
-
-{{< callout type="warning" >}}
-If you plan to set up both VPA and HPA policies, make sure to closely monitor performance and cost during scale up events. Using both policies can lead to conflict or even destructive loops that impact the performance of your control plane. 
-{{< /callout >}}
 
 Review the following Helm configuration examples. For more information, see [Advanced install settings]({{< link-hextra path="/install/advanced/" >}}). 
 
@@ -146,6 +139,6 @@ spec:
           from: Same
 ```
 
-## 🗑️ Deprecated or removed features {#v22-removed-features}
+## 🗑️ Deprecated or removed features {#v10-removed-features}
 
 

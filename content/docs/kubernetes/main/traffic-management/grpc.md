@@ -126,8 +126,8 @@ spec:
             method: Echo
             service: proto.EchoTestService
       backendRefs:
-        - name: echo-grpc-svc
-          port: 7070
+        - name: grpc-echo-svc
+          port: 3000
 EOF
 ```
 
