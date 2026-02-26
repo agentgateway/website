@@ -2,7 +2,11 @@ Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstre
 
 ## About idle timeouts
 
-The idle timeout applies when there is no activity on the connection, no bytes sent or received. It does not limit how long a single request or response can take. For example, calling httpbin’s `/delay` keeps a request active, so the connection is not idle and you get a successful 200 response after the time specified. To limit how long a request can run, use a [request timeout]({{< ref "request.md" >}}) for this scenario instead.
+An idle timeout configures the time a connection between a downstream client and an upstream service can stay open without sending any data or bytes. 
+
+In HTTP/1.1, connections are usually kept alive so you can reuse them for multiple requests. For example, a request to your upstream service might include a database to retrieve data. If an idle timeout is set too low, the gateway proxy might terminate the connection to the downstream client if the database is slow to respond. This can lead to multiple issues on the client side, including silent connection closures, protocol errors, or increased latency, because the client must establish a new connection in order to proceed. Long idle timeouts however can cause resource exhaustion on the gateway proxy and increased latency for clients, because they need to wait for a new connection to open up on the gateway proxy. 
+
+Note that idle timeouts do not configure how long an upstream service can take to respond to your request. Use [request timeouts]({{< ref "request.md" >}}) for this scenario instead.
 
 {{< callout type="info" >}}
 The idle timeout is configured for entire HTTP/1 connections from a downstream service to the gateway proxy, and to the upstream service. 
