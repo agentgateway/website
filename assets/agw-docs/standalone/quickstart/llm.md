@@ -4,7 +4,7 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
    
-   ```sh
+   ```sh,paths="llm"
    curl -sL https://agentgateway.dev/install | bash
    ```
 
@@ -20,15 +20,15 @@ Route to an OpenAI backend through agentgateway.
 
 Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
 
-```sh
-export OPENAI_API_KEY=<your-api-key>
+```sh,paths="llm"
+export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
 ```
 
 ### Step 2: Create the configuration
 
 Create a `config.yaml` that defines an HTTP listener and an AI backend for OpenAI. This configuration listens on port 3000, routes traffic to the OpenAI backend, and attaches your API key to outgoing requests via the `backendAuth` policy.
 
-```yaml
+```yaml,paths="llm"
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -56,6 +56,13 @@ Run agentgateway with the config file.
 agentgateway -f config.yaml
 ```
 
+{{< doc-test paths="llm" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
 Example output:
 
 ```
@@ -68,7 +75,7 @@ info  proxy::gateway started bind  bind="bind/3000"
 
 From another terminal, send a request to the chat completions endpoint.
 
-```sh
+```sh,paths="llm"
 curl -s http://localhost:3000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
@@ -99,7 +106,7 @@ Example output (abbreviated):
 Check out more guides related to LLM consumption with agentgateway.
 
 {{< cards >}}
-  {{< card link="../../llm/providers/openai" title="OpenAI provider reference" subtitle="Optional model override, multiple routes, passthrough, and Codex connection." >}}
-  {{< card link="../../llm/api-keys" title="Manage API keys for LLM providers" subtitle="Other ways to supply API keys, such as a Kubernetes Secret." >}}
-  {{< card link="../../llm/providers/multiple-llms" title="Multiple LLM providers" subtitle="Route to several LLMs from one agentgateway." >}}
+  {{< card link="../../llm/spending/" title="Control spending" subtitle="Control spending by setting rate limits for your LLM requests." >}}
+  {{< card link="../../llm/providers/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
+  {{< card link="../../llm/providers/openai/" title="OpenAI provider reference" subtitle="Optional model override, multiple routes, passthrough, and Codex connection." >}}
 {{< /cards >}}

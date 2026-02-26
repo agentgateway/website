@@ -44,7 +44,7 @@ Target-level policies override backend-level policies for the same policy type.
 
 ## Before you begin
 
-[Set up MCP multiplexed backends]({{< link-hextra path="/mcp/connect/multiplex/" >}}).
+[Set up MCP multiplexed backends]({{< link-hextra path="/tutorials/multiplex/" >}}).
 
 ## Configuration examples
 

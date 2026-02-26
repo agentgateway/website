@@ -1,0 +1,87 @@
+name: Doc tests
+
+on:
+  schedule:
+    # Every day at 09:00 UTC
+    - cron: '0 9 * * *'
+  workflow_dispatch:
+    inputs:
+      slack_notification:
+        description: 'Send Slack notification'
+        type: boolean
+        default: false
+      slack_channel:
+        description: 'Slack channel to notify'
+        type: string
+        default: 'product-excellence-test-notifications'
+
+jobs:
+  doc-tests:
+    name: Generate and run doc tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+          cache: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Install cloud-provider-kind
+        run: go install sigs.k8s.io/cloud-provider-kind@latest
+
+      - name: Install yamltest
+        run: npm install -g yamltest@latest
+
+      - name: Run doc tests
+        run: python3 scripts/doc_test_run.py --repo-root .
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+
+      - name: Generate job summary
+        id: summary
+        if: always()
+        run: |
+          RESULTS_FILE=out/tests/generated/test-results.yaml
+
+          # GitHub Step Summary (Markdown)
+          python3 scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
+
+          # Slack Block Kit payload
+          RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
+          SLACK_PAYLOAD=$(python3 scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
+          echo "slack_blocks<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$SLACK_PAYLOAD" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+      - name: Notify Slack
+        if: always() && (github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.slack_notification))
+        uses: ./.github/actions/notify-slack
+        with:
+          message: "Doc Test Results"
+          blocks: ${{ steps.summary.outputs.slack_blocks }}
+          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications' }}
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Upload generated test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: doc-test-results
+          path: out/tests/generated/
+          retention-days: 14
