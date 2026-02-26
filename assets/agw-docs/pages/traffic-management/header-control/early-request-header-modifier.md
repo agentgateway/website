@@ -67,7 +67,7 @@ Remove a header that is reserved for use by another service, such as an external
          "*/*"
        ],
        "Host": [
-         "www.example.com"
+         "transformation.example"
        ],
        "User-Agent": [
          "curl/8.7.1"
