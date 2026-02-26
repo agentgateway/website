@@ -16,7 +16,7 @@ The configuration uses the standard Gateway API and supports the following opera
 
 Remove a header that is reserved for use by another service, such as an external authentication service.
 
-1. Create an HTTPRoute.
+1. Create an HTTPRoute resource that routes requests to the httpbin app through the Gateway that you created before you began.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -30,7 +30,7 @@ Remove a header that is reserved for use by another service, such as an external
      - transformation.example
      parentRefs:
      - name: agentgateway-proxy
-       namespace: agentgateway-system
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches: 
        - path:
@@ -79,15 +79,15 @@ Remove a header that is reserved for use by another service, such as an external
    }
    ```
 
-3. Create a transformation to remove the `x-user-id` header. You can choose to apply the removal on the  HTTPRoute or Gateway with an AgentgatewayPolicy. 
+3. Create an AgentgatewayPolicy with a transformation to remove the `x-user-id` header. You can choose to apply the removal on the HTTPRoute or the Gateway with an AgentgatewayPolicy. 
 
    {{< tabs tabTotal="2" items="Route-level,Gateway-level" >}}
    {{% tab tabName="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: remove-reserved-header
      namespace: httpbin
@@ -109,11 +109,11 @@ Remove a header that is reserved for use by another service, such as an external
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: remove-reserved-header
-     namespace: agentgateway-system
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
        - group: gateway.networking.k8s.io
