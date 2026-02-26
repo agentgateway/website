@@ -44,7 +44,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
    EOF
    ```
 
-1. Create an AgentgatewayPolicy with the idle timeout configuration. In this example, you apply an idle timeout of 1 second, which is short for testing purposes. You might choose to use 20-30 seconds as a more realistic timeout.
+1. Create an AgentgatewayPolicy with the idle timeout configuration. In this example, you apply an idle timeout of 30 seconds. 
 
    ```yaml
    kubectl apply -f- <<EOF
