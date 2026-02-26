@@ -1011,6 +1011,21 @@ function switchEpTab(tab) {
         buttons[1].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
         buttons[1].classList.remove('border-transparent', 'text-gray-500');
     }
+
+    // Update test command port based on active tab
+    updateEndpointTestPort();
+}
+
+function updateEndpointTestPort() {
+    const testEl = document.getElementById('endpoint-test-code');
+    if (!testEl) return;
+    const model = currentProvider ? (endpointModels[currentEndpoint] || currentProvider.dataset.model || 'model-name') : 'model-name';
+    const testTemplate = endpointTests[currentEndpoint] || '';
+    let testCmd = testTemplate.replace(/\{model\}/g, model);
+    if (currentEpTab === 'kubernetes') {
+        testCmd = testCmd.replace(/localhost:3000/g, 'localhost:8080');
+    }
+    testEl.textContent = testCmd;
 }
 
 function selectEndpointProvider(card) {
@@ -1036,10 +1051,8 @@ function selectEndpointProvider(card) {
     // Update header
     document.getElementById('endpoint-config-path').textContent = (meta.path || '') + ' — ' + (card.dataset.name || '');
 
-    // Update test command
-    const testTemplate = endpointTests[currentEndpoint] || '';
-    const testCmd = testTemplate.replace(/\{model\}/g, model);
-    document.getElementById('endpoint-test-code').textContent = testCmd;
+    // Update test command (respects active tab)
+    updateEndpointTestPort();
 
     // Scroll config into view
     document.getElementById('endpoint-config-example').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -1124,8 +1137,7 @@ function initEndpoint(endpoint) {
         document.getElementById('endpoint-config-code').textContent = generateConfig(firstVisible, currentEndpoint);
         document.getElementById('endpoint-k8s-code').textContent = generateK8sConfig(firstVisible, currentEndpoint);
         document.getElementById('endpoint-config-path').textContent = (meta.path || '') + ' — ' + (firstVisible.dataset.name || '');
-        const testTemplate = endpointTests[currentEndpoint] || '';
-        document.getElementById('endpoint-test-code').textContent = testTemplate.replace(/\{model\}/g, model);
+        updateEndpointTestPort();
     } else {
         document.getElementById('endpoint-config-code').textContent = '# No providers available for this endpoint';
         document.getElementById('endpoint-k8s-code').textContent = '# No providers available for this endpoint';
