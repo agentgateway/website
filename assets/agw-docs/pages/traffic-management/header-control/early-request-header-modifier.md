@@ -2,9 +2,9 @@ Early request header modification allows you to add, set, or remove HTTP request
 
 This capability is especially useful for security and sanitization use cases, where you want to ensure that sensitive headers cannot be faked by downstream clients and are only set by trusted components such as external authentication services.
 
-Early request header modification is configured on a `ListenerPolicy` using the `earlyRequestHeaderModifier` field. This policy is attached directly to a proxy and applies header mutations before route selection.
+Early request header modification is configured on a `AgentgatewayPolicy` using the `transformation` field. This policy is attached directly to a proxy and applies header mutations before route selection.
 
-The configuration uses the standard Gateway API `HTTPHeaderFilter` format and supports the following operations:
+The configuration uses the standard Gateway API and supports the following operations:
 
 - `add`
 - `set`
