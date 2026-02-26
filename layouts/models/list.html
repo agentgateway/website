@@ -9,7 +9,7 @@
             {{ partial "nav.html" . }}
 
             <!-- Hero Section -->
-            <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pb-16 lg:pb-24 px-4 lg:px-12 xl:px-25 pt-[9.875rem] lg:pt-40">
+            <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pb-10 lg:pb-14 px-4 lg:px-12 xl:px-25 pt-[9.875rem] lg:pt-40">
                 <div class="mx-auto max-w-[1200px] text-center">
                     <h1 class="text-4xl lg:text-6xl font-bold leading-tight pb-6 tracking-tight">
                         Agentgateway Model and Provider Cookbook
@@ -64,35 +64,28 @@
                             Search by Endpoints
                         </a>
                     </div>
-                </div>
-            </section>
-
-            <!-- How It Works -->
-            <section class="bg-gray-50 border-b border-gray-200 px-4 lg:px-12 py-12">
-                <div class="mx-auto max-w-[1200px]">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">How It Works</h2>
-                    <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 text-center">
-                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold text-lg flex items-center justify-center mx-auto mb-3">1</div>
-                            <h3 class="font-semibold text-gray-900 mb-1">Secret</h3>
-                            <p class="text-sm text-gray-600">Store your API credentials</p>
+                    <!-- How It Works (compact) -->
+                    <div class="flex justify-center gap-8 mt-8 text-sm">
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 font-bold text-xs flex items-center justify-center">1</span>
+                            <span>Secret</span>
                         </div>
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 text-center">
-                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold text-lg flex items-center justify-center mx-auto mb-3">2</div>
-                            <h3 class="font-semibold text-gray-900 mb-1">Backend</h3>
-                            <p class="text-sm text-gray-600">Configure the provider</p>
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 font-bold text-xs flex items-center justify-center">2</span>
+                            <span>Backend</span>
                         </div>
-                        <div class="bg-white rounded-xl p-6 border border-gray-200 text-center">
-                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold text-lg flex items-center justify-center mx-auto mb-3">3</div>
-                            <h3 class="font-semibold text-gray-900 mb-1">Route</h3>
-                            <p class="text-sm text-gray-600">Set up traffic routing</p>
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 font-bold text-xs flex items-center justify-center">3</span>
+                            <span>Route</span>
                         </div>
                     </div>
                 </div>
             </section>
 
             <!-- Provider Cards -->
-            <section class="px-4 lg:px-12 py-16 bg-white">
+            <section class="px-4 lg:px-12 py-10 bg-white">
                 <div class="mx-auto max-w-[1200px]">
 
                     {{ range .Site.Data.models.categories }}
