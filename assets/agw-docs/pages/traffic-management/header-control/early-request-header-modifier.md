@@ -16,17 +16,44 @@ The configuration uses the standard Gateway API `HTTPHeaderFilter` format and su
 
 Remove a header that is reserved for use by another service, such as an external authentication service.
 
-1. Send a test request to the sample httpbin app with a reserved header, such as `x-user-id`.
+1. Create an HTTPRoute.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: httpbin-route
+     namespace: httpbin
+   spec:
+     hostnames:
+     - transformation.example
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: agentgateway-system
+     rules:
+     - matches: 
+       - path:
+           type: PathPrefix
+           value: /
+       backendRefs:
+       - name: httpbin
+         namespace: httpbin
+         port: 8000
+       name: http
+   EOF
+   ```
+2. Send a test request to the sample httpbin app with a reserved header, such as `x-user-id`.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}  
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080" -H "x-user-id: reserved-user"
+   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"%}}
    ```sh
-   curl -i localhost:8080/headers -H "host: www.example.com" -H "x-user-id: reserved-user"
+   curl -i localhost:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -52,53 +79,75 @@ Remove a header that is reserved for use by another service, such as an external
    }
    ```
 
-2. Create a ListenerPolicy to remove the `x-user-id` header.
+3. Create a transformation to remove the `x-user-id` header. You can choose to apply the removal on an  HTTPRoute with an AgentgatewayPolicy or Gateway listener. 
+
+   {{< tabs tabTotal="2" items="HTTPRoute and rule (AgentgatewayPolicy),Gateway listener" >}}
+   {{% tab tabName="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: ListenerPolicy
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayPolicy
    metadata:
-     name: remove-header
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     name: remove-reserved-header
+     namespace: httpbin
    spec:
      targetRefs:
        - group: gateway.networking.k8s.io
-         kind: Gateway
-         name: agentgateway-proxy
-     default:
-       httpSettings:
-         earlyRequestHeaderModifier:
+         kind: HTTPRoute
+         name: httpbin-route
+     traffic:
+       transformation:
+         request:
            remove:
              - x-user-id
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information about the available fields, see the [API reference]({{< link-hextra path="/reference/api/#httplistenerpolicyspec" >}}).
-
-   | Setting                    | Description                                              |
-   |----------------------------|----------------------------------------------------------|
-   | targetRefs                 | References the Gateway resources this policy applies to. |
-   | earlyRequestHeaderModifier | Header mutations applied before route selection.         |
-
-3. Repeat the test request to the sample httpbin app. The `x-user-id` header is no longer present in the response.
-
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}  
-   ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080" -H "x-user-id: reserved-user"
-   ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
-   ```sh
-   curl -i localhost:8080/headers -H "host: www.example.com" -H "x-user-id: reserved-user"
+   {{% tab tabName="Gateway listener" %}}
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayPolicy
+   metadata:
+     name: remove-reserved-header
+     namespace: agentgateway-system
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: Gateway
+         name: agentgateway-proxy
+         sectionName: http
+     traffic:
+       phase: PreRouting
+       transformation:
+         request:
+           remove:
+             - x-user-id
+   EOF
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
-   Example output: Note that the `x-user-id` header is now removed.
+4. Repeat the test request to the sample httpbin app. The `x-user-id` header is no longer present in the response.
 
-   ```json {linenos=table,linenostart=1}
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}  
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing"%}}
+   ```sh
+   curl -i localhost:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+   Example output: Note that the `X-User-Id` header is present in the request.
+
+   ```json {linenos=table,hl_lines=[12,13,14],linenostart=1}
    {
      "headers": {
        "Accept": [
@@ -109,30 +158,19 @@ Remove a header that is reserved for use by another service, such as an external
        ],
        "User-Agent": [
          "curl/8.7.1"
-       ],
-       "X-Envoy-Expected-Rq-Timeout-Ms": [
-         "15000"
-       ],
-       "X-Envoy-External-Address": [
-         "127.0.0.1"
-       ],
-       "X-Forwarded-For": [
-         "10.244.0.7"
-       ],
-       "X-Forwarded-Proto": [
-         "http"
-       ],
-       "X-Request-Id": [
-         "f4dcc321-d682-4874-b02f-b700854e2f6b"
        ]
      }
    }
    ```
+
+
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete listenerpolicy remove-header -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete httproute httpbin-route -n httpbin
+kubectl delete AgentgatewayPolicy remove-reserved-header -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete AgentgatewayPolicy remove-reserved-header -n httpbin
 ```
