@@ -30,10 +30,10 @@
                             <div class="text-sm text-gray-400 mt-1 uppercase tracking-wider">LLM Gateway Providers</div>
                         </div>
                         <div class="w-px bg-white/20 hidden sm:block"></div>
-                        <a href="#browse-by-endpoint" class="group">
-                            <div class="text-4xl lg:text-5xl font-bold text-white group-hover:text-purple-400 transition-colors">20</div>
-                            <div class="text-sm text-gray-400 mt-1 uppercase tracking-wider group-hover:text-purple-300 transition-colors">API Endpoints</div>
-                        </a>
+                        <div>
+                            <div class="text-4xl lg:text-5xl font-bold text-white">20</div>
+                            <div class="text-sm text-gray-400 mt-1 uppercase tracking-wider">API Endpoints</div>
+                        </div>
                     </div>
 
                     <!-- Search Bar -->
@@ -403,12 +403,6 @@
                                         <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $realtimeCount }}</span>
                                     </button>
                                     {{ end }}
-                                    {{ if gt $modelsCount 0 }}
-                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="models" onclick="filterByEndpoint('models')">
-                                        <span class="font-mono text-xs">/models</span>
-                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $modelsCount }}</span>
-                                    </button>
-                                    {{ end }}
                                 </nav>
                             </div>
                         </div>
@@ -471,7 +465,31 @@
                                         Copy
                                     </button>
                                 </div>
-                                <pre class="bg-gray-900 text-gray-100 p-5 overflow-x-auto text-sm leading-relaxed"><code id="endpoint-config-code"></code></pre>
+                                <!-- Tab Buttons -->
+                                <div class="flex border-b border-purple-200 bg-purple-50/50">
+                                    <button class="ep-tab-btn active px-5 py-2.5 text-sm font-semibold border-b-2 border-purple-600 text-purple-700 bg-white -mb-px"
+                                            onclick="switchEpTab('standalone')">
+                                        Standalone
+                                    </button>
+                                    <button class="ep-tab-btn px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 -mb-px"
+                                            onclick="switchEpTab('kubernetes')">
+                                        Kubernetes
+                                    </button>
+                                </div>
+                                <!-- Standalone Config -->
+                                <div id="ep-tab-standalone">
+                                    <div class="px-5 py-2 bg-gray-800 border-b border-gray-700">
+                                        <p class="text-xs text-gray-400">Save as <code class="text-purple-400">config.yaml</code> and run with <code class="text-purple-400">agentgateway -f config.yaml</code></p>
+                                    </div>
+                                    <pre class="bg-gray-900 text-gray-100 p-5 overflow-x-auto text-sm leading-relaxed"><code id="endpoint-config-code"></code></pre>
+                                </div>
+                                <!-- Kubernetes Config -->
+                                <div id="ep-tab-kubernetes" class="hidden">
+                                    <div class="px-5 py-2 bg-gray-800 border-b border-gray-700">
+                                        <p class="text-xs text-gray-400">Run these <code class="text-purple-400">kubectl apply</code> commands in order</p>
+                                    </div>
+                                    <pre class="bg-gray-900 text-gray-100 p-5 overflow-x-auto text-sm leading-relaxed"><code id="endpoint-k8s-code"></code></pre>
+                                </div>
                             </div>
 
                             <!-- Endpoint Test Command -->
@@ -797,14 +815,15 @@ const endpointModels = {
 let currentEndpoint = 'chat';
 let currentProvider = null;
 
+// Generate standalone config
 function generateConfig(provider, endpoint) {
     const name = provider.dataset.name || 'Provider';
     const slug = provider.dataset.slug || 'provider';
     const type = provider.dataset.type || 'openai-compatible';
     const providerType = provider.dataset.providerType || slug;
-    const host = provider.dataset.host || 'api.example.com';
     const model = endpointModels[endpoint] || provider.dataset.model || 'model-name';
     const env = provider.dataset.env || 'API_KEY';
+    const host = provider.dataset.host || 'api.example.com';
     const meta = endpointMeta[endpoint] || {};
     const epPath = meta.path || '/v1/' + endpoint;
 
@@ -844,6 +863,109 @@ binds:
     }
 }
 
+// Generate Kubernetes config
+function generateK8sConfig(provider, endpoint) {
+    const name = provider.dataset.name || 'Provider';
+    const slug = provider.dataset.slug || 'provider';
+    const type = provider.dataset.type || 'openai-compatible';
+    const providerType = provider.dataset.providerType || slug;
+    const model = endpointModels[endpoint] || provider.dataset.model || 'model-name';
+    const env = provider.dataset.env || 'API_KEY';
+    const host = provider.dataset.host || 'api.example.com';
+    const meta = endpointMeta[endpoint] || {};
+    const epPath = meta.path || '/v1/' + endpoint;
+    const secretName = slug + '-secret';
+    const backendName = slug + '-backend';
+
+    let providerBlock;
+    if (type === 'native') {
+        providerBlock = `            ${providerType}:
+              model: ${model}`;
+    } else {
+        providerBlock = `            openAICompatible:
+              model: ${model}
+              url: https://${host}${provider.dataset.path || '/v1'}`;
+    }
+
+    return `# ${name} — ${meta.label || endpoint} (Kubernetes)
+# Endpoint: ${epPath}
+
+# Step 1: Create the Secret
+export ${env}=<your-key>
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${secretName}
+  namespace: agentgateway-system
+type: Opaque
+stringData:
+  api-key: \${${env}}
+EOF
+
+# Step 2: Create the AgentgatewayBackend
+kubectl apply -f- <<EOF
+apiVersion: agentgateway.solo.io/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: ${backendName}
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+${providerBlock}
+    backendAuth:
+      apiKey:
+        secretRef:
+          name: ${secretName}
+          key: api-key
+EOF
+
+# Step 3: Create the HTTPRoute
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ${slug}-route
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+  - name: agentgateway
+    namespace: agentgateway-system
+  rules:
+  - backendRefs:
+    - name: ${backendName}
+      kind: AgentgatewayBackend
+      group: agentgateway.solo.io
+EOF`;
+}
+
+// Switch between Standalone and Kubernetes tabs
+let currentEpTab = 'standalone';
+function switchEpTab(tab) {
+    currentEpTab = tab;
+    const standaloneEl = document.getElementById('ep-tab-standalone');
+    const kubernetesEl = document.getElementById('ep-tab-kubernetes');
+    const buttons = document.querySelectorAll('.ep-tab-btn');
+
+    buttons.forEach(btn => {
+        btn.classList.remove('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    if (tab === 'standalone') {
+        standaloneEl.classList.remove('hidden');
+        kubernetesEl.classList.add('hidden');
+        buttons[0].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[0].classList.remove('border-transparent', 'text-gray-500');
+    } else {
+        standaloneEl.classList.add('hidden');
+        kubernetesEl.classList.remove('hidden');
+        buttons[1].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[1].classList.remove('border-transparent', 'text-gray-500');
+    }
+}
+
 function selectEndpointProvider(card) {
     // Remove selection from all cards
     document.querySelectorAll('.endpoint-provider-card').forEach(c => {
@@ -856,9 +978,15 @@ function selectEndpointProvider(card) {
     const meta = endpointMeta[currentEndpoint] || {};
     const model = endpointModels[currentEndpoint] || card.dataset.model || 'model-name';
 
-    // Update config
+    // Update standalone config
     const config = generateConfig(card, currentEndpoint);
     document.getElementById('endpoint-config-code').textContent = config;
+
+    // Update Kubernetes config
+    const k8sConfig = generateK8sConfig(card, currentEndpoint);
+    document.getElementById('endpoint-k8s-code').textContent = k8sConfig;
+
+    // Update header
     document.getElementById('endpoint-config-path').textContent = (meta.path || '') + ' — ' + (card.dataset.name || '');
 
     // Update test command
@@ -871,7 +999,8 @@ function selectEndpointProvider(card) {
 }
 
 function copyEndpointConfig() {
-    const code = document.getElementById('endpoint-config-code').textContent;
+    const codeId = currentEpTab === 'kubernetes' ? 'endpoint-k8s-code' : 'endpoint-config-code';
+    const code = document.getElementById(codeId).textContent;
     navigator.clipboard.writeText(code).then(() => {
         const btn = document.getElementById('ep-config-copy-btn');
         const orig = btn.innerHTML;
@@ -892,7 +1021,7 @@ function copyEndpointTest() {
     });
 }
 
-function filterByEndpoint(endpoint) {
+function initEndpoint(endpoint) {
     currentEndpoint = endpoint;
     currentProvider = null;
     const meta = endpointMeta[endpoint] || { label: endpoint, path: '/' + endpoint, desc: '' };
@@ -936,21 +1065,36 @@ function filterByEndpoint(endpoint) {
 
     document.getElementById('endpoint-count').textContent = visibleCount;
 
-    // Auto-select first provider and generate config
+    // Auto-select first provider and generate config (without scrolling)
     if (firstVisible) {
-        selectEndpointProvider(firstVisible);
+        // Inline selection without scroll
+        document.querySelectorAll('.endpoint-provider-card').forEach(c => {
+            c.classList.remove('border-purple-500', 'ring-2', 'ring-purple-200');
+        });
+        firstVisible.classList.add('border-purple-500', 'ring-2', 'ring-purple-200');
+        currentProvider = firstVisible;
+        const model = endpointModels[currentEndpoint] || firstVisible.dataset.model || 'model-name';
+        document.getElementById('endpoint-config-code').textContent = generateConfig(firstVisible, currentEndpoint);
+        document.getElementById('endpoint-k8s-code').textContent = generateK8sConfig(firstVisible, currentEndpoint);
+        document.getElementById('endpoint-config-path').textContent = (meta.path || '') + ' — ' + (firstVisible.dataset.name || '');
+        const testTemplate = endpointTests[currentEndpoint] || '';
+        document.getElementById('endpoint-test-code').textContent = testTemplate.replace(/\{model\}/g, model);
     } else {
         document.getElementById('endpoint-config-code').textContent = '# No providers available for this endpoint';
+        document.getElementById('endpoint-k8s-code').textContent = '# No providers available for this endpoint';
         document.getElementById('endpoint-test-code').textContent = '# No test available';
     }
+}
 
+function filterByEndpoint(endpoint) {
+    initEndpoint(endpoint);
     // Scroll to the endpoint section
     document.getElementById('browse-by-endpoint').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Initialize endpoint section on load
+// Initialize on load (no scroll)
 document.addEventListener('DOMContentLoaded', function() {
-    filterByEndpoint('chat');
+    initEndpoint('chat');
 });
 
 // Category filter
