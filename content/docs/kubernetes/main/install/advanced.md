@@ -26,6 +26,7 @@ Vertical Pod Autoscaler (VPA) is a Kubernetes component that automatically adjus
 The following Helm configuration ensures that the control plane pod is always assigned a minimum of 0.1 CPU cores (100millicores) and 128Mi of memory. 
 
 ```yaml
+
 verticalPodAutoscaler:
   updatePolicy:
     updateMode: Auto
@@ -43,6 +44,7 @@ Horizontal Pod Autoscaler (HPA) adds more instances of the pod to your environme
 
 In the following example, you want to have 1 control plane replica running at any given time. If the CPU utilization averages 80%, you want to gradually scale up your replicas. You can have a maximum of 5 replicas at any given time. 
 ```yaml
+
 horizontalPodAutoscaler:
   minReplicas: 1
   maxReplicas: 5

@@ -76,6 +76,7 @@ The following example selects namespaces for discovery that meet either of the f
 * The namespace has the label `version=v3`
 
 ```yaml
+
 discoveryNamespaceSelectors:
 - matchExpressions:
   - key: environment
