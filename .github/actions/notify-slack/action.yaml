@@ -1,0 +1,46 @@
+name: notify-slack
+description: 'Notify Slack'
+inputs:
+  message:
+    description: 'Fallback plain-text message (used in notifications). Required.'
+    required: true
+  blocks:
+    description: 'Optional Slack Block Kit JSON string (the full payload including "text" and "blocks" keys). When provided, the message is sent with rich formatting.'
+    required: false
+  channel:
+    description: 'Slack channel'
+    required: true
+  token:
+    description: 'Slack bot token'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - name: Notify on workflow result
+      env:
+        SLACK_TOKEN: ${{ inputs.token }}
+        SLACK_MESSAGE: ${{ inputs.message }}
+        SLACK_BLOCKS: ${{ inputs.blocks }}
+        SLACK_CHANNEL: ${{ inputs.channel || 'product-excellence-test-notifications' }}
+      run : |
+        echo "Sending notification to slack channel: ${SLACK_CHANNEL}"
+
+        if [ -n "${SLACK_BLOCKS}" ]; then
+          # Build payload from the Block Kit JSON, injecting the channel
+          PAYLOAD=$(echo "${SLACK_BLOCKS}" | jq --arg channel "${SLACK_CHANNEL}" '. + {channel: $channel}')
+        else
+          # Plain text fallback
+          PAYLOAD=$(jq -n --arg channel "${SLACK_CHANNEL}" --arg text "${SLACK_MESSAGE}" '{channel: $channel, text: $text}')
+        fi
+
+        RESP=$(curl -sS \
+          -X POST https://slack.com/api/chat.postMessage \
+          -H "Authorization: Bearer ${SLACK_TOKEN}" \
+          -H "Content-Type: application/json; charset=utf-8" \
+          -d "${PAYLOAD}")
+
+        if echo "$RESP" | jq -e '.ok == false' > /dev/null; then
+            echo "Request failed with response: $RESP"
+            exit 1
+        fi
+      shell: bash
