@@ -9,6 +9,60 @@ categories:
         envVar: "OPENAI_API_KEY"
         type: "native"
         providerType: "openai"
+        host: "api.openai.com"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "responses"
+          - "embeddings"
+          - "images"
+          - "images_edits"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "moderations"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "realtime"
+          - "models"
+        models:
+          - "gpt-4o"
+          - "gpt-4o-mini"
+          - "gpt-4-turbo"
+          - "gpt-4"
+          - "gpt-4.5-preview"
+          - "gpt-4.1"
+          - "gpt-4.1-mini"
+          - "gpt-4.1-nano"
+          - "gpt-5"
+          - "gpt-5-mini"
+          - "gpt-5-nano"
+          - "gpt-5.1"
+          - "gpt-5.1-mini"
+          - "gpt-5.1-codex"
+          - "gpt-5.2"
+          - "gpt-5.2-pro"
+          - "gpt-3.5-turbo"
+          - "o1"
+          - "o1-mini"
+          - "o1-preview"
+          - "o3"
+          - "o3-mini"
+          - "o3-pro"
+          - "o4-mini"
+          - "codex-mini-latest"
+          - "gpt-4o-realtime"
+          - "chatgpt-4o-latest"
+          - "gpt-image-1"
+          - "dall-e-3"
+          - "text-embedding-3-small"
+          - "text-embedding-3-large"
+          - "whisper-1"
+          - "tts-1"
+          - "tts-1-hd"
+          - "gpt-4o-mini-tts"
         standalone: |
           binds:
           - port: 3000
@@ -89,6 +143,28 @@ categories:
         envVar: "ANTHROPIC_API_KEY"
         type: "native"
         providerType: "anthropic"
+        host: "api.anthropic.com"
+        path: "/v1/messages"
+        endpoints:
+          - "chat"
+          - "messages"
+          - "batches"
+          - "models"
+        models:
+          - "claude-opus-4-6"
+          - "claude-sonnet-4-6"
+          - "claude-opus-4-5"
+          - "claude-sonnet-4-5"
+          - "claude-opus-4-1"
+          - "claude-opus-4-20250514"
+          - "claude-sonnet-4-20250514"
+          - "claude-haiku-4-5"
+          - "claude-3.7-sonnet"
+          - "claude-3.5-sonnet"
+          - "claude-3.5-haiku"
+          - "claude-3-opus"
+          - "claude-3-sonnet"
+          - "claude-3-haiku"
         standalone: |
           binds:
           - port: 3000
@@ -169,6 +245,63 @@ categories:
         envVar: "AWS_ACCESS_KEY_ID"
         type: "native"
         providerType: "bedrock"
+        host: "bedrock-runtime.{region}.amazonaws.com"
+        path: "/model/{model-id}/invoke"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "fine_tuning"
+          - "batches"
+          - "models"
+        models:
+          - "anthropic.claude-sonnet-4.6"
+          - "anthropic.claude-opus-4.6"
+          - "anthropic.claude-sonnet-4.5"
+          - "anthropic.claude-opus-4.5"
+          - "anthropic.claude-opus-4.1"
+          - "anthropic.claude-sonnet-4"
+          - "anthropic.claude-opus-4"
+          - "anthropic.claude-haiku-4-5"
+          - "anthropic.claude-3.7-sonnet"
+          - "anthropic.claude-3.5-sonnet"
+          - "anthropic.claude-3.5-haiku"
+          - "anthropic.claude-3-haiku"
+          - "amazon.nova-premier"
+          - "amazon.nova-pro"
+          - "amazon.nova-lite"
+          - "amazon.nova-micro"
+          - "amazon.nova-sonic"
+          - "amazon.nova-2-pro"
+          - "amazon.nova-2-lite"
+          - "amazon.titan-text-premier"
+          - "amazon.titan-text-express"
+          - "amazon.titan-embed-text-v2"
+          - "meta.llama4-maverick-17b"
+          - "meta.llama4-scout-17b"
+          - "meta.llama3-3-70b-instruct"
+          - "meta.llama3-1-405b-instruct"
+          - "meta.llama3-1-70b-instruct"
+          - "meta.llama3-1-8b-instruct"
+          - "meta.llama3-2-90b-instruct"
+          - "meta.llama3-2-11b-instruct"
+          - "mistral.mistral-large-3"
+          - "mistral.mistral-large"
+          - "mistral.mixtral-8x7b"
+          - "mistral.pixtral-large"
+          - "cohere.command-r-plus"
+          - "cohere.command-r"
+          - "deepseek.v3.2"
+          - "deepseek.v3.1"
+          - "deepseek.r1"
+          - "ai21.jamba-1-5-large"
+          - "ai21.jamba-1-5-mini"
+          - "minimax.minimax-m2.1"
+          - "qwen.qwen3-235b-a22b"
+          - "qwen.qwen3-32b"
+          - "stability.sd3-5-large"
+          - "google.gemma-3-27b-it"
+          - "google.gemma-3-12b-it"
         standalone: |
           binds:
           - port: 3000
@@ -248,6 +381,44 @@ categories:
         envVar: "GOOGLE_KEY"
         type: "native"
         providerType: "gemini"
+        host: "generativelanguage.googleapis.com"
+        path: "/v1beta/models/{model}:generateContent"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "video"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "gemini-2.5-pro"
+          - "gemini-2.5-flash"
+          - "gemini-2.5-flash-lite"
+          - "gemini-2.5-flash-image"
+          - "gemini-2.5-computer-use-preview"
+          - "gemini-2.5-flash-preview-tts"
+          - "gemini-2.5-pro-preview-tts"
+          - "gemini-2.0-flash"
+          - "gemini-2.0-flash-lite"
+          - "gemini-1.5-pro"
+          - "gemini-1.5-flash"
+          - "gemini-1.5-flash-8b"
+          - "gemini-3-flash-preview"
+          - "gemini-3-pro-preview"
+          - "gemini-3-pro-image-preview"
+          - "gemini-3.1-pro-preview"
+          - "gemini-3.1-flash-image-preview"
+          - "gemini-embedding-001"
+          - "imagen-4.0-generate-001"
+          - "gemma-3-27b-it"
+          - "gemma-3-12b-it"
+          - "gemma-3-4b-it"
+          - "gemma-3-1b-it"
+          - "gemma-2-27b-it"
+          - "gemma-2-9b-it"
+          - "learnlm-1.5-pro"
         standalone: |
           binds:
           - port: 3000
@@ -328,6 +499,49 @@ categories:
         envVar: "VERTEX_AI_API_KEY"
         type: "native"
         providerType: "vertexai"
+        host: "{region}-aiplatform.googleapis.com"
+        path: "/v1/projects/{project}/locations/{region}/publishers/google/models/{model}:generateContent"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "video"
+          - "fine_tuning"
+          - "batches"
+          - "models"
+        models:
+          - "gemini-2.5-pro"
+          - "gemini-2.5-flash"
+          - "gemini-2.5-flash-lite"
+          - "gemini-2.0-flash"
+          - "gemini-2.0-flash-lite"
+          - "gemini-1.5-pro"
+          - "gemini-1.5-flash"
+          - "gemini-pro"
+          - "gemini-3-flash"
+          - "gemini-3-pro"
+          - "gemini-embedding-001"
+          - "text-embedding-005"
+          - "imagen-4.0-generate"
+          - "claude-opus-4.6"
+          - "claude-sonnet-4.6"
+          - "claude-opus-4.5"
+          - "claude-sonnet-4.5"
+          - "claude-opus-4.1"
+          - "claude-opus-4"
+          - "claude-sonnet-4"
+          - "claude-haiku-4-5"
+          - "claude-3-opus"
+          - "claude-3.7-sonnet"
+          - "claude-3.5-sonnet-v2"
+          - "claude-3.5-haiku"
+          - "gemma-3"
+          - "llama-4-scout"
+          - "llama-4-maverick"
+          - "llama-3.3-70b"
+          - "llama-3.1-405b"
+          - "mistral-large"
+          - "jamba-1.5-large"
         standalone: |
           binds:
           - port: 3000
@@ -412,6 +626,51 @@ categories:
         envVar: "AZURE_API_KEY"
         type: "native"
         providerType: "openai (Azure)"
+        host: "{resource}.openai.azure.com"
+        path: "/openai/deployments/{deployment}/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "models"
+        models:
+          - "gpt-4o"
+          - "gpt-4o-mini"
+          - "gpt-4-turbo"
+          - "gpt-4"
+          - "gpt-4.5-preview"
+          - "gpt-4.1"
+          - "gpt-4.1-mini"
+          - "gpt-4.1-nano"
+          - "gpt-5"
+          - "gpt-5-mini"
+          - "gpt-5-nano"
+          - "gpt-5.1"
+          - "gpt-5.2"
+          - "gpt-3.5-turbo"
+          - "o1"
+          - "o1-mini"
+          - "o3"
+          - "o3-mini"
+          - "o3-pro"
+          - "o4-mini"
+          - "gpt-image-1"
+          - "dall-e-3"
+          - "text-embedding-3-large"
+          - "text-embedding-3-small"
+          - "gpt-oss-120b"
+          - "gpt-oss-20b"
+          - "deepseek-r1"
+          - "llama-3.3-70b-instruct"
+          - "whisper"
+          - "tts-1"
         standalone: |
           binds:
           - port: 3000
@@ -506,8 +765,47 @@ categories:
         envVar: "MISTRAL_API_KEY"
         type: "openai-compatible"
         host: "api.mistral.ai"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "fim"
+          - "moderations"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "mistral-large-latest"
+          - "mistral-large-2512"
+          - "mistral-medium-latest"
+          - "mistral-medium-2508"
+          - "mistral-small-latest"
+          - "mistral-small-2506"
+          - "magistral-medium-latest"
+          - "magistral-small-latest"
+          - "ministral-14b-2512"
+          - "ministral-8b-2512"
+          - "ministral-3b-2512"
+          - "codestral-latest"
+          - "codestral-2508"
+          - "codestral-embed"
+          - "codestral-mamba-latest"
+          - "devstral-latest"
+          - "devstral-medium-latest"
+          - "devstral-small-latest"
+          - "devstral-2512"
+          - "voxtral-small-2507"
+          - "voxtral-mini-2507"
+          - "pixtral-large-latest"
+          - "pixtral-12b"
+          - "mistral-nemo"
+          - "mistral-embed"
+          - "mistral-ocr-latest"
+          - "open-mistral-7b"
+          - "open-mixtral-8x7b"
+          - "open-mixtral-8x22b"
         standalone: |
           binds:
           - port: 3000
@@ -602,8 +900,20 @@ categories:
         envVar: "DEEPSEEK_API_KEY"
         type: "openai-compatible"
         host: "api.deepseek.com"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "models"
+        models:
+          - "deepseek-chat"
+          - "deepseek-reasoner"
+          - "deepseek-v3"
+          - "deepseek-v3.1"
+          - "deepseek-v3.2"
+          - "deepseek-r1"
+          - "deepseek-coder"
         standalone: |
           binds:
           - port: 3000
@@ -694,8 +1004,29 @@ categories:
         envVar: "XAI_API_KEY"
         type: "openai-compatible"
         host: "api.x.ai"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "models"
+        models:
+          - "grok-4"
+          - "grok-4-fast-reasoning"
+          - "grok-4-fast-non-reasoning"
+          - "grok-4-1-fast-reasoning"
+          - "grok-3"
+          - "grok-3-fast-latest"
+          - "grok-3-mini"
+          - "grok-3-mini-fast"
+          - "grok-2-latest"
+          - "grok-2-vision-latest"
+          - "grok-code-fast"
+          - "grok-imagine-image"
+          - "grok-beta"
+          - "grok-vision-beta"
         standalone: |
           binds:
           - port: 3000
@@ -790,8 +1121,30 @@ categories:
         envVar: "GROQ_API_KEY"
         type: "openai-compatible"
         host: "api.groq.com"
-        port: 443
         path: "/openai/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "models"
+        models:
+          - "llama-3.3-70b-versatile"
+          - "llama-3.1-8b-instant"
+          - "llama-4-maverick-17b-128e-instruct"
+          - "llama-4-scout-17b-16e-instruct"
+          - "llama-guard-4-12b"
+          - "gemma-7b-it"
+          - "qwen3-32b"
+          - "gpt-oss-120b"
+          - "gpt-oss-20b"
+          - "kimi-k2-instruct"
+          - "deepseek-r1-distill-llama-70b"
+          - "groq/compound"
+          - "groq/compound-mini"
+          - "whisper-large-v3"
+          - "whisper-large-v3-turbo"
         standalone: |
           binds:
           - port: 3000
@@ -885,9 +1238,31 @@ categories:
         model: "command-r-plus"
         envVar: "COHERE_API_KEY"
         type: "openai-compatible"
-        host: "api.cohere.ai"
+        host: "api.cohere.com"
+        path: "/v2/chat"
         port: 443
-        path: "/compatibility/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "rerank"
+          - "classify"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "command-r-plus"
+          - "command-r"
+          - "command-a-03-2025"
+          - "command-a-vision-07-2025"
+          - "command-r7b-12-2024"
+          - "command-light"
+          - "embed-v4.0"
+          - "embed-v3-english"
+          - "embed-v3-multilingual"
+          - "rerank-v3.5"
+          - "rerank-v4.0-pro"
+          - "rerank-v4.0-fast"
+          - "c4ai-aya-expanse-32b"
+          - "c4ai-aya-vision-32b"
         standalone: |
           binds:
           - port: 3000
@@ -982,8 +1357,41 @@ categories:
         envVar: "TOGETHER_API_KEY"
         type: "openai-compatible"
         host: "api.together.xyz"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "rerank"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+          - "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+          - "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo"
+          - "meta-llama/Llama-3.1-405B-Instruct-Turbo"
+          - "meta-llama/Llama-3.1-70B-Instruct-Turbo"
+          - "meta-llama/Llama-3.1-8B-Instruct-Turbo"
+          - "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+          - "meta-llama/Llama-Guard-4-12B"
+          - "Qwen/Qwen3.5-397B-A17B"
+          - "Qwen/Qwen3-235B-A22B"
+          - "Qwen/Qwen3-235B-A22B-Instruct-2507"
+          - "Qwen/Qwen3-Coder-480B-A35B-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct-Turbo"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3"
+          - "deepseek-ai/DeepSeek-V3.1"
+          - "openai/gpt-oss-120b"
+          - "openai/gpt-oss-20b"
+          - "moonshotai/Kimi-K2-Instruct-0905"
+          - "google/gemma-2-27b-it"
+          - "google/gemma-3n-E4B-it"
+          - "mistralai/Mixtral-8x22B-Instruct-v0.1"
+          - "mistralai/Mistral-Small-24B-Instruct-2501"
         standalone: |
           binds:
           - port: 3000
@@ -1078,8 +1486,46 @@ categories:
         envVar: "FIREWORKS_API_KEY"
         type: "openai-compatible"
         host: "api.fireworks.ai"
-        port: 443
         path: "/inference/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "llama-v3p3-70b-instruct"
+          - "llama-v3p1-405b-instruct"
+          - "llama-v3p1-70b-instruct"
+          - "llama-v3p1-8b-instruct"
+          - "llama-v3p2-90b-vision-instruct"
+          - "llama4-maverick-instruct-basic"
+          - "llama4-scout-instruct-basic"
+          - "qwen3-235b-a22b"
+          - "qwen3-coder-480b-a35b-instruct"
+          - "qwen3-32b"
+          - "qwen3-8b"
+          - "qwen2p5-72b-instruct"
+          - "deepseek-r1"
+          - "deepseek-v3"
+          - "deepseek-v3p1"
+          - "deepseek-v3p2"
+          - "deepseek-r1-0528"
+          - "gpt-oss-120b"
+          - "gpt-oss-20b"
+          - "kimi-k2-instruct-0905"
+          - "glm-5"
+          - "glm-4p7"
+          - "mixtral-8x22b-instruct"
+          - "gemma2-9b-it"
+          - "gemma-3-27b-instruct"
+          - "gemma-3-12b-instruct"
+          - "mistral-large-3-675b-instruct-2512"
+          - "yi-large"
+          - "phi-3-vision-128k-instruct"
         standalone: |
           binds:
           - port: 3000
@@ -1174,8 +1620,20 @@ categories:
         envVar: "PERPLEXITY_API_KEY"
         type: "openai-compatible"
         host: "api.perplexity.ai"
-        port: 443
         path: "/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+        models:
+          - "sonar-pro"
+          - "sonar"
+          - "sonar-deep-research"
+          - "sonar-reasoning-pro"
+          - "sonar-reasoning"
+          - "pplx-embed-v1-4b"
+          - "r1-1776"
+          - "llama-3.1-sonar-large-128k-online"
+          - "llama-3.1-sonar-huge-128k-online"
         standalone: |
           binds:
           - port: 3000
@@ -1270,8 +1728,58 @@ categories:
         envVar: "OPENROUTER_API_KEY"
         type: "openai-compatible"
         host: "openrouter.ai"
-        port: 443
         path: "/api/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "models"
+        models:
+          - "openai/gpt-4o"
+          - "openai/gpt-5"
+          - "openai/gpt-5-mini"
+          - "openai/gpt-5-nano"
+          - "openai/gpt-5.1"
+          - "openai/gpt-5.2"
+          - "openai/gpt-5.2-pro"
+          - "openai/gpt-4.1"
+          - "openai/gpt-4.1-mini"
+          - "openai/o3"
+          - "openai/o3-mini"
+          - "openai/o3-pro"
+          - "openai/o4-mini"
+          - "openai/gpt-oss-120b"
+          - "anthropic/claude-sonnet-4"
+          - "anthropic/claude-opus-4"
+          - "anthropic/claude-haiku-4.5"
+          - "anthropic/claude-sonnet-4.5"
+          - "anthropic/claude-sonnet-4.6"
+          - "anthropic/claude-opus-4.1"
+          - "anthropic/claude-opus-4.5"
+          - "anthropic/claude-opus-4.6"
+          - "google/gemini-2.5-pro"
+          - "google/gemini-2.5-flash"
+          - "google/gemini-2.5-flash-lite"
+          - "google/gemini-3-pro-preview"
+          - "google/gemini-3-flash-preview"
+          - "deepseek/deepseek-r1"
+          - "deepseek/deepseek-chat-v3.1"
+          - "deepseek/deepseek-v3.2"
+          - "deepseek/deepseek-r1-0528"
+          - "meta-llama/llama-3.3-70b-instruct"
+          - "meta-llama/llama-4-scout"
+          - "meta-llama/llama-4-maverick"
+          - "x-ai/grok-3"
+          - "x-ai/grok-4"
+          - "x-ai/grok-4-1-fast"
+          - "qwen/qwen3-235b-a22b"
+          - "qwen/qwen3-max"
+          - "qwen/qwen3-coder"
+          - "mistralai/mistral-large"
+          - "mistralai/mistral-large-2512"
+          - "mistralai/mistral-medium-3"
+          - "moonshotai/kimi-k2.5"
+          - "cohere/command-r-plus"
+          - "nousresearch/hermes-3-llama-3.1-405b"
         standalone: |
           binds:
           - port: 3000
@@ -1366,8 +1874,21 @@ categories:
         envVar: "CEREBRAS_API_KEY"
         type: "openai-compatible"
         host: "api.cerebras.ai"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "models"
+        models:
+          - "llama-3.3-70b"
+          - "llama3.1-70b"
+          - "llama3.1-8b"
+          - "qwen-3-32b"
+          - "qwen-3-235b-a22b-instruct-2507"
+          - "gpt-oss-120b"
+          - "zai-glm-4.6"
+          - "zai-glm-4.7"
         standalone: |
           binds:
           - port: 3000
@@ -1462,8 +1983,28 @@ categories:
         envVar: "SAMBANOVA_API_KEY"
         type: "openai-compatible"
         host: "api.sambanova.ai"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "models"
+        models:
+          - "Meta-Llama-3.1-405B-Instruct"
+          - "Meta-Llama-3.1-70B-Instruct"
+          - "Meta-Llama-3.1-8B-Instruct"
+          - "Meta-Llama-3.3-70B-Instruct"
+          - "Llama-4-Maverick-17B-128E-Instruct"
+          - "Llama-4-Scout-17B-16E-Instruct"
+          - "DeepSeek-R1"
+          - "DeepSeek-R1-0528"
+          - "DeepSeek-V3-0324"
+          - "DeepSeek-V3.1"
+          - "QwQ-32B"
+          - "Qwen3-32B"
+          - "Qwen3-235B-A22B-Instruct-2507"
+          - "gpt-oss-120b"
         standalone: |
           binds:
           - port: 3000
@@ -1558,8 +2099,40 @@ categories:
         envVar: "DEEPINFRA_API_KEY"
         type: "openai-compatible"
         host: "api.deepinfra.com"
-        port: 443
         path: "/v1/openai/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "audio_speech"
+          - "models"
+        models:
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+          - "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+          - "meta-llama/Meta-Llama-3.1-405B-Instruct"
+          - "meta-llama/Meta-Llama-3.1-70B-Instruct"
+          - "meta-llama/Meta-Llama-3.1-8B-Instruct"
+          - "Qwen/Qwen3-235B-A22B"
+          - "Qwen/Qwen3-235B-A22B-Instruct-2507"
+          - "Qwen/Qwen3-Coder-480B-A35B-Instruct"
+          - "Qwen/Qwen3-32B"
+          - "Qwen/Qwen3-Next-80B-A3B-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/QwQ-32B"
+          - "deepseek-ai/DeepSeek-R1-0528"
+          - "deepseek-ai/DeepSeek-V3.1"
+          - "deepseek-ai/DeepSeek-V3.2"
+          - "NousResearch/Hermes-3-Llama-3.1-405B"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-3-12b-it"
+          - "google/gemma-2-27b-it"
+          - "nvidia/Nemotron-3-Nano-30B-A3B"
+          - "mistralai/Mixtral-8x22B-Instruct-v0.1"
+          - "microsoft/WizardLM-2-8x22B"
         standalone: |
           binds:
           - port: 3000
@@ -1654,8 +2227,36 @@ categories:
         envVar: "HF_API_KEY"
         type: "openai-compatible"
         host: "api-inference.huggingface.co"
+        path: "/models/{model}"
         port: 443
-        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct"
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3.1"
+          - "deepseek-ai/DeepSeek-V3.2"
+          - "Qwen/Qwen3-32B"
+          - "Qwen/Qwen3-235B-A22B"
+          - "Qwen/Qwen3-Coder-480B-A35B-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/QwQ-32B"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-2-27b-it"
+          - "openai/gpt-oss-120b"
+          - "mistralai/Mixtral-8x7B-Instruct-v0.1"
+          - "microsoft/Phi-3-medium-128k-instruct"
+          - "bigscience/bloom"
+          - "tiiuae/falcon-180B-chat"
         standalone: |
           binds:
           - port: 3000
@@ -1750,8 +2351,34 @@ categories:
         envVar: "NVIDIA_API_KEY"
         type: "openai-compatible"
         host: "integrate.api.nvidia.com"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "rerank"
+          - "models"
+        models:
+          - "meta/llama-4-maverick-17b-128e-instruct"
+          - "meta/llama-4-scout-17b-16e-instruct"
+          - "meta/llama-3.1-405b-instruct"
+          - "meta/llama-3.1-70b-instruct"
+          - "meta/llama-3.1-8b-instruct"
+          - "meta/llama-3.3-70b-instruct"
+          - "deepseek-ai/deepseek-v3.1"
+          - "deepseek-ai/deepseek-v3.2"
+          - "mistralai/mixtral-8x22b-instruct-v0.1"
+          - "mistralai/mistral-large-3-675b-instruct-2512"
+          - "mistralai/mistral-small-24b-instruct"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-3-12b-it"
+          - "google/gemma-2-27b-it"
+          - "qwen/qwen3-235b-a22b"
+          - "qwen/qwen3-coder-480b-a35b-instruct"
+          - "microsoft/phi-3-medium-128k-instruct"
+          - "nvidia/nemotron-4-340b-instruct"
+          - "nvidia/nemotron-3-nano-30b-a3b"
         standalone: |
           binds:
           - port: 3000
@@ -1846,8 +2473,28 @@ categories:
         envVar: "REPLICATE_API_KEY"
         type: "openai-compatible"
         host: "api.replicate.com"
+        path: "/v1/predictions"
         port: 443
-        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "meta/llama-4-scout-17b-16e-instruct"
+          - "meta/llama-4-maverick-17b-128e-instruct"
+          - "meta/llama-3.1-405b-instruct"
+          - "meta/llama-3.3-70b-instruct"
+          - "meta/llama-3.2-90b-vision-instruct"
+          - "anthropic/claude-3.5-sonnet"
+          - "anthropic/claude-4-sonnet"
+          - "deepseek-ai/deepseek-r1"
+          - "deepseek-ai/deepseek-v3"
+          - "deepseek-ai/deepseek-v3.1"
+          - "google/gemini-2.5-flash"
+          - "mistralai/mixtral-8x7b-instruct-v0.1"
         standalone: |
           binds:
           - port: 3000
@@ -1936,6 +2583,590 @@ categories:
             "messages": [{"role": "user", "content": "Hello from Replicate!"}]
           }' | jq
 
+      - name: "AI21"
+        slug: "ai21"
+        model: "jamba-1.5-large"
+        envVar: "AI21_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.ai21.com"
+        path: "/studio/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "jamba-1.5-large"
+          - "jamba-1.5-mini"
+          - "jamba-instruct"
+          - "jamba-1-5-large"
+          - "jamba-1-5-mini"
+          - "j2-ultra"
+          - "j2-mid"
+          - "j2-light"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: ai21
+                    provider:
+                      openai:
+                        model: jamba-1.5-large
+                policies:
+                  backendAuth:
+                    key: "$AI21_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export AI21_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: ai21-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $AI21_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: ai21
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "jamba-1.5-large"
+            policies:
+              auth:
+                secretRef:
+                  name: ai21-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: ai21
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /ai21
+              backendRefs:
+              - name: ai21
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/ai21" -H content-type:application/json -d '{
+            "model": "jamba-1.5-large",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Cloudflare Workers AI"
+        slug: "cloudflare"
+        model: "@cf/meta/llama-3.1-8b-instruct"
+        envVar: "CF_API_TOKEN"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.cloudflare.com"
+        path: "/client/v4/accounts/{account_id}/ai/run/{model}"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "@cf/meta/llama-3.1-8b-instruct"
+          - "@cf/meta/llama-3.1-70b-instruct"
+          - "@cf/meta/llama-3.2-3b-instruct"
+          - "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+          - "@cf/mistral/mistral-7b-instruct-v0.2"
+          - "@cf/google/gemma-7b-it"
+          - "@cf/qwen/qwen1.5-14b-chat-awq"
+          - "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b"
+          - "@hf/thebloke/deepseek-coder-6.7b-instruct-awq"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: cloudflare
+                    provider:
+                      openai:
+                        model: @cf/meta/llama-3.1-8b-instruct
+                policies:
+                  backendAuth:
+                    key: "$CF_API_TOKEN"
+        kubernetes: |
+          # Step 1: Secret
+          export CF_API_TOKEN=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: cloudflare-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $CF_API_TOKEN
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: cloudflare
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "@cf/meta/llama-3.1-8b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: cloudflare-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: cloudflare
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /cloudflare
+              backendRefs:
+              - name: cloudflare
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/cloudflare" -H content-type:application/json -d '{
+            "model": "@cf/meta/llama-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Lambda AI"
+        slug: "lambda"
+        model: "llama-3.3-70b-instruct"
+        envVar: "LAMBDA_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.lambdalabs.com"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "models"
+        models:
+          - "hermes-3-llama-3.1-405b-fp8"
+          - "hermes-3-llama-3.1-70b-fp8"
+          - "llama-3.1-405b-instruct"
+          - "llama-3.1-70b-instruct"
+          - "llama-3.3-70b-instruct"
+          - "deepseek-llm-67b-chat"
+          - "qwen2.5-72b-instruct"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: lambda
+                    provider:
+                      openai:
+                        model: llama-3.3-70b-instruct
+                policies:
+                  backendAuth:
+                    key: "$LAMBDA_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export LAMBDA_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: lambda-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $LAMBDA_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: lambda
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "llama-3.3-70b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: lambda-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: lambda
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /lambda
+              backendRefs:
+              - name: lambda
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/lambda" -H content-type:application/json -d '{
+            "model": "llama-3.3-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Nebius AI Studio"
+        slug: "nebius"
+        model: "meta-llama/Llama-3.3-70B-Instruct"
+        envVar: "NEBIUS_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.studio.nebius.ai"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "models"
+        models:
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.1-405B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/Qwen3-235B-A22B"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3-0324"
+          - "mistralai/Mistral-Large-2411"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: nebius
+                    provider:
+                      openai:
+                        model: meta-llama/Llama-3.3-70B-Instruct
+                policies:
+                  backendAuth:
+                    key: "$NEBIUS_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export NEBIUS_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: nebius-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $NEBIUS_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: nebius
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/Llama-3.3-70B-Instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: nebius-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: nebius
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /nebius
+              backendRefs:
+              - name: nebius
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/nebius" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.3-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Novita AI"
+        slug: "novita"
+        model: "meta-llama/llama-3.3-70b-instruct"
+        envVar: "NOVITA_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.novita.ai"
+        path: "/v3/openai/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "video"
+          - "models"
+        models:
+          - "meta-llama/llama-3.1-70b-instruct"
+          - "meta-llama/llama-3.1-405b-instruct"
+          - "meta-llama/llama-3.3-70b-instruct"
+          - "deepseek/deepseek-r1"
+          - "deepseek/deepseek-v3-0324"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "mistralai/mistral-large-2411"
+          - "microsoft/phi-4"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: novita
+                    provider:
+                      openai:
+                        model: meta-llama/llama-3.3-70b-instruct
+                policies:
+                  backendAuth:
+                    key: "$NOVITA_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export NOVITA_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: novita-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $NOVITA_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: novita
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/llama-3.3-70b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: novita-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: novita
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /novita
+              backendRefs:
+              - name: novita
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/novita" -H content-type:application/json -d '{
+            "model": "meta-llama/llama-3.3-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Hyperbolic"
+        slug: "hyperbolic"
+        model: "meta-llama/Llama-3.3-70B-Instruct"
+        envVar: "HYPERBOLIC_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.hyperbolic.xyz"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.1-405B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/QwQ-32B"
+          - "mistralai/Mistral-Small-24B-Instruct-2501"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: hyperbolic
+                    provider:
+                      openai:
+                        model: meta-llama/Llama-3.3-70B-Instruct
+                policies:
+                  backendAuth:
+                    key: "$HYPERBOLIC_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export HYPERBOLIC_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: hyperbolic-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $HYPERBOLIC_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: hyperbolic
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/Llama-3.3-70B-Instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: hyperbolic-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: hyperbolic
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /hyperbolic
+              backendRefs:
+              - name: hyperbolic
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/hyperbolic" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.3-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
   - name: "Enterprise & Regional Providers"
     description: "Enterprise cloud platforms and regional AI providers with OpenAI-compatible APIs."
     id: "enterprise"
@@ -1945,9 +3176,39 @@ categories:
         model: "databricks-meta-llama-3-1-70b-instruct"
         envVar: "DATABRICKS_TOKEN"
         type: "openai-compatible"
-        host: "<your-workspace>.cloud.databricks.com"
+        host: "{workspace}.databricks.com"
+        path: "/serving-endpoints/{endpoint}/invocations"
         port: 443
-        path: "/serving-endpoints/.../invocations"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "models"
+        models:
+          - "databricks-meta-llama-3-1-70b-instruct"
+          - "databricks-meta-llama-3-3-70b-instruct"
+          - "databricks-meta-llama-3-1-405b-instruct"
+          - "databricks-llama-4-maverick"
+          - "databricks-llama-4-scout"
+          - "databricks-claude-sonnet-4"
+          - "databricks-claude-opus-4"
+          - "databricks-claude-haiku-4-5"
+          - "databricks-claude-opus-4-1"
+          - "databricks-claude-opus-4-5"
+          - "databricks-claude-sonnet-4-5"
+          - "databricks-claude-sonnet-4-6"
+          - "databricks-gpt-5"
+          - "databricks-gpt-5-mini"
+          - "databricks-gpt-5-nano"
+          - "databricks-gpt-5-1"
+          - "databricks-gpt-5-2"
+          - "databricks-gpt-oss-120b"
+          - "databricks-gpt-oss-20b"
+          - "databricks-gemini-2-5-flash"
+          - "databricks-gemini-2-5-pro"
+          - "databricks-gemini-3-flash"
+          - "databricks-gemini-3-pro"
+          - "databricks-qwen3-235b"
         standalone: |
           binds:
           - port: 3000
@@ -2042,8 +3303,41 @@ categories:
         envVar: "GITHUB_TOKEN"
         type: "openai-compatible"
         host: "models.inference.ai.azure.com"
-        port: 443
         path: "/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "gpt-4o"
+          - "gpt-4o-mini"
+          - "gpt-5"
+          - "gpt-5-mini"
+          - "gpt-5-nano"
+          - "gpt-4.1"
+          - "gpt-4.1-mini"
+          - "o1"
+          - "o3"
+          - "o3-mini"
+          - "o4-mini"
+          - "Phi-4"
+          - "Phi-4-mini-instruct"
+          - "Llama-4-Scout-17B-16E-Instruct"
+          - "Llama-4-Maverick-17B-128E-Instruct-FP8"
+          - "Llama-3.3-70B-Instruct"
+          - "Llama-3.1-405B-Instruct"
+          - "DeepSeek-R1"
+          - "DeepSeek-V3-0324"
+          - "Mistral-Large"
+          - "Mistral-Medium-3"
+          - "Mistral-Small-3.1"
+          - "Grok-3"
+          - "Grok-3-Mini"
+          - "Cohere-command-r-plus"
+          - "Cohere-Command-A"
+          - "Phi-3-medium-128k-instruct"
+          - "AI21-Jamba-1.5-Large"
         standalone: |
           binds:
           - port: 3000
@@ -2138,8 +3432,21 @@ categories:
         envVar: "SCALEWAY_API_KEY"
         type: "openai-compatible"
         host: "api.scaleway.ai"
-        port: 443
         path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "llama-3.1-70b-instruct"
+          - "llama-3.3-70b-instruct"
+          - "mistral-nemo-instruct"
+          - "mixtral-8x7b-instruct"
+          - "qwen2.5-72b-instruct"
+          - "qwen3-32b-instruct"
+          - "deepseek-r1-distill-llama-70b"
+          - "deepseek-r1-distill-qwen-32b"
         standalone: |
           binds:
           - port: 3000
@@ -2228,6 +3535,905 @@ categories:
             "messages": [{"role": "user", "content": "Hello from Scaleway!"}]
           }' | jq
 
+      - name: "Dashscope (Qwen / Alibaba)"
+        slug: "dashscope"
+        model: "qwen-max"
+        envVar: "DASHSCOPE_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "dashscope.aliyuncs.com"
+        path: "/compatible-mode/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "rerank"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "qwen-turbo"
+          - "qwen-plus"
+          - "qwen-max"
+          - "qwen-long"
+          - "qwen-flash"
+          - "qwen3-max"
+          - "qwen3.5-plus"
+          - "qwen3.5-flash"
+          - "qwen3-coder-plus"
+          - "qwen3-coder-flash"
+          - "qwen3-vl-plus"
+          - "qwen3-vl-flash"
+          - "qwq-plus"
+          - "qwen-deep-research"
+          - "qwen2.5-72b-instruct"
+          - "qwen2.5-32b-instruct"
+          - "qwen2.5-14b-instruct"
+          - "qwen2.5-7b-instruct"
+          - "qwen3-235b-a22b"
+          - "qwen3-30b-a3b"
+          - "qwen-vl-max"
+          - "qwen-vl-plus"
+          - "qwen-coder-turbo"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: dashscope
+                    provider:
+                      openai:
+                        model: qwen-max
+                policies:
+                  backendAuth:
+                    key: "$DASHSCOPE_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export DASHSCOPE_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: dashscope-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $DASHSCOPE_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: dashscope
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "qwen-max"
+            policies:
+              auth:
+                secretRef:
+                  name: dashscope-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: dashscope
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /dashscope
+              backendRefs:
+              - name: dashscope
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/dashscope" -H content-type:application/json -d '{
+            "model": "qwen-max",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Moonshot AI"
+        slug: "moonshot"
+        model: "kimi-latest"
+        envVar: "MOONSHOT_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.moonshot.cn"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "files"
+          - "models"
+        models:
+          - "moonshot-v1-8k"
+          - "moonshot-v1-32k"
+          - "moonshot-v1-128k"
+          - "moonshot-v1-auto"
+          - "kimi-latest"
+          - "kimi-k2"
+          - "kimi-k2.5"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: moonshot
+                    provider:
+                      openai:
+                        model: kimi-latest
+                policies:
+                  backendAuth:
+                    key: "$MOONSHOT_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export MOONSHOT_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: moonshot-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $MOONSHOT_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: moonshot
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "kimi-latest"
+            policies:
+              auth:
+                secretRef:
+                  name: moonshot-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: moonshot
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /moonshot
+              backendRefs:
+              - name: moonshot
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/moonshot" -H content-type:application/json -d '{
+            "model": "kimi-latest",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Zhipu AI (Z.AI)"
+        slug: "zhipu"
+        model: "glm-4-plus"
+        envVar: "ZHIPU_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "open.bigmodel.cn"
+        path: "/api/paas/v4/chat/completions"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "video"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "models"
+        models:
+          - "glm-5"
+          - "glm-4.7"
+          - "glm-4"
+          - "glm-4-plus"
+          - "glm-4-air"
+          - "glm-4-airx"
+          - "glm-4-flash"
+          - "glm-4-flashx"
+          - "glm-4-long"
+          - "glm-4v"
+          - "glm-4v-plus"
+          - "codegeex-4"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: zhipu
+                    provider:
+                      openai:
+                        model: glm-4-plus
+                policies:
+                  backendAuth:
+                    key: "$ZHIPU_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export ZHIPU_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: zhipu-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $ZHIPU_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: zhipu
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "glm-4-plus"
+            policies:
+              auth:
+                secretRef:
+                  name: zhipu-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: zhipu
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /zhipu
+              backendRefs:
+              - name: zhipu
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/zhipu" -H content-type:application/json -d '{
+            "model": "glm-4-plus",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Volcano Engine (ByteDance)"
+        slug: "volcengine"
+        model: "doubao-pro-32k"
+        envVar: "VOLC_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "maas-api.ml-platform-cn.volces.com"
+        path: "/api/v3/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "models"
+        models:
+          - "doubao-pro-32k"
+          - "doubao-pro-128k"
+          - "doubao-pro-256k"
+          - "doubao-lite-32k"
+          - "doubao-lite-128k"
+          - "doubao-character-pro-32k"
+          - "doubao-vision-pro-32k"
+          - "doubao-embedding"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: volcengine
+                    provider:
+                      openai:
+                        model: doubao-pro-32k
+                policies:
+                  backendAuth:
+                    key: "$VOLC_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export VOLC_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: volcengine-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $VOLC_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: volcengine
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "doubao-pro-32k"
+            policies:
+              auth:
+                secretRef:
+                  name: volcengine-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: volcengine
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /volcengine
+              backendRefs:
+              - name: volcengine
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/volcengine" -H content-type:application/json -d '{
+            "model": "doubao-pro-32k",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "IBM watsonx"
+        slug: "watsonx"
+        model: "ibm/granite-3.1-8b-instruct"
+        envVar: "WATSONX_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "{region}.ml.cloud.ibm.com"
+        path: "/ml/v1/text/generation"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "rerank"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "ibm/granite-3-8b-instruct"
+          - "ibm/granite-3-2b-instruct"
+          - "ibm/granite-3.1-8b-instruct"
+          - "ibm/granite-3.1-2b-instruct"
+          - "ibm/granite-3-3-8b-instruct"
+          - "ibm/granite-3-2-8b-instruct"
+          - "ibm/granite-guardian-3-8b"
+          - "ibm/granite-vision-3.1-8b"
+          - "ibm/granite-vision-3-2-2b"
+          - "ibm/granite-20b-multilingual"
+          - "ibm/granite-embedding-125m-english"
+          - "ibm/granite-embedding-278m-multilingual"
+          - "meta-llama/llama-3-1-70b-instruct"
+          - "meta-llama/llama-3-1-8b-instruct"
+          - "meta-llama/llama-3-3-70b-instruct"
+          - "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+          - "meta-llama/llama-3-2-90b-vision-instruct"
+          - "mistralai/mistral-large"
+          - "openai/gpt-oss-120b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: watsonx
+                    provider:
+                      openai:
+                        model: ibm/granite-3.1-8b-instruct
+                policies:
+                  backendAuth:
+                    key: "$WATSONX_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export WATSONX_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: watsonx-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $WATSONX_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: watsonx
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "ibm/granite-3.1-8b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: watsonx-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: watsonx
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /watsonx
+              backendRefs:
+              - name: watsonx
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/watsonx" -H content-type:application/json -d '{
+            "model": "ibm/granite-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Snowflake Cortex"
+        slug: "snowflake"
+        model: "llama3.3-70b"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "{account}.snowflakecomputing.com"
+        path: "/api/v2/cortex/inference:complete"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "claude-3-5-sonnet"
+          - "claude-4-sonnet"
+          - "claude-sonnet-4-5"
+          - "claude-sonnet-4-6"
+          - "claude-haiku-4-5"
+          - "llama3.1-70b"
+          - "llama3.1-405b"
+          - "llama3.1-8b"
+          - "llama3.3-70b"
+          - "snowflake-llama-3.3-70b"
+          - "llama4-maverick"
+          - "llama4-scout"
+          - "mistral-large2"
+          - "mixtral-8x7b"
+          - "deepseek-r1"
+          - "openai-gpt-5"
+          - "openai-gpt-4.1"
+          - "reka-core"
+          - "reka-flash"
+          - "jamba-1.5-large"
+          - "snowflake-arctic"
+          - "gemma-7b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: snowflake
+                    provider:
+                      openai:
+                        model: llama3.3-70b
+        kubernetes: |
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: snowflake
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "llama3.3-70b"
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: snowflake
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /snowflake
+              backendRefs:
+              - name: snowflake
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/snowflake" -H content-type:application/json -d '{
+            "model": "llama3.3-70b",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "OVHcloud AI"
+        slug: "ovhcloud"
+        model: "Llama-3.3-70B-Instruct"
+        envVar: "OVH_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "llama-3-3-70b-instruct.endpoints.kepler.ai.cloud.ovh.net"
+        path: "/api/openai_compat/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "DeepSeek-R1-Distill-Llama-70B"
+          - "Llama-3.3-70B-Instruct"
+          - "Llama-3.1-70B-Instruct"
+          - "Mistral-Large-Instruct-2411"
+          - "Mixtral-8x22B-Instruct-v0.1"
+          - "Mixtral-8x7B-Instruct-v0.1"
+          - "Qwen2.5-72B-Instruct"
+          - "Phi-3-mini-4k-instruct"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: ovhcloud
+                    provider:
+                      openai:
+                        model: Llama-3.3-70B-Instruct
+                policies:
+                  backendAuth:
+                    key: "$OVH_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export OVH_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: ovhcloud-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $OVH_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: ovhcloud
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "Llama-3.3-70B-Instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: ovhcloud-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: ovhcloud
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /ovhcloud
+              backendRefs:
+              - name: ovhcloud
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/ovhcloud" -H content-type:application/json -d '{
+            "model": "Llama-3.3-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Oracle Cloud OCI"
+        slug: "oci"
+        model: "meta.llama-3.3-70b-instruct"
+        envVar: "OCI_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "inference.generativeai.{region}.oci.oraclecloud.com"
+        path: "/20231130/actions/chat"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "meta.llama-3.1-405b-instruct"
+          - "meta.llama-3.1-70b-instruct"
+          - "meta.llama-3.3-70b-instruct"
+          - "cohere.command-r-plus"
+          - "cohere.command-r"
+          - "meta.llama-3.2-90b-vision-instruct"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: oci
+                    provider:
+                      openai:
+                        model: meta.llama-3.3-70b-instruct
+                policies:
+                  backendAuth:
+                    key: "$OCI_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export OCI_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: oci-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $OCI_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: oci
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta.llama-3.3-70b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: oci-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: oci
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /oci
+              backendRefs:
+              - name: oci
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/oci" -H content-type:application/json -d '{
+            "model": "meta.llama-3.3-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Anyscale"
+        slug: "anyscale"
+        model: "meta-llama/Llama-3-70b-chat-hf"
+        envVar: "ANYSCALE_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.endpoints.anyscale.com"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "models"
+        models:
+          - "meta-llama/Llama-3-70b-chat-hf"
+          - "meta-llama/Llama-3-8b-chat-hf"
+          - "mistralai/Mixtral-8x22B-Instruct-v0.1"
+          - "mistralai/Mixtral-8x7B-Instruct-v0.1"
+          - "mistralai/Mistral-7B-Instruct-v0.1"
+          - "google/gemma-7b-it"
+          - "codellama/CodeLlama-70b-Instruct-hf"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: anyscale
+                    provider:
+                      openai:
+                        model: meta-llama/Llama-3-70b-chat-hf
+                policies:
+                  backendAuth:
+                    key: "$ANYSCALE_API_KEY"
+        kubernetes: |
+          # Step 1: Secret
+          export ANYSCALE_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: anyscale-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $ANYSCALE_API_KEY
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: anyscale
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/Llama-3-70b-chat-hf"
+            policies:
+              auth:
+                secretRef:
+                  name: anyscale-secret
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: anyscale
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /anyscale
+              backendRefs:
+              - name: anyscale
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+        test: |
+          curl "localhost:8080/anyscale" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3-70b-chat-hf",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
   - name: "Local & Self-Hosted"
     description: "Run models locally or in-cluster. No TLS or external API keys required."
     id: "local"
@@ -2238,8 +4444,51 @@ categories:
         envVar: ""
         type: "local"
         host: "localhost / in-cluster"
-        port: 11434
         path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "images_edits"
+          - "responses"
+          - "messages"
+          - "models"
+        port: 11434
+        models:
+          - "llama3.2"
+          - "llama3.1"
+          - "llama3.1:70b"
+          - "llama3.3"
+          - "llama4"
+          - "llama3.2-vision"
+          - "mistral"
+          - "mixtral"
+          - "mistral-small"
+          - "gemma2"
+          - "gemma3"
+          - "gemma3n"
+          - "qwen2.5"
+          - "qwen2.5-coder"
+          - "qwen3"
+          - "qwen3-coder"
+          - "phi3"
+          - "phi4"
+          - "phi4-reasoning"
+          - "deepseek-r1"
+          - "deepseek-v3"
+          - "deepseek-v3.1"
+          - "codellama"
+          - "codegemma"
+          - "llava"
+          - "nomic-embed-text"
+          - "gpt-oss:120b"
+          - "gpt-oss:20b"
+          - "command-r"
+          - "qwq"
+          - "magistral"
+          - "devstral"
+          - "cogito"
         standalone: |
           binds:
           - port: 3000
@@ -2342,8 +4591,33 @@ categories:
         envVar: ""
         type: "local"
         host: "localhost / in-cluster"
-        port: 8000
         path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "responses"
+          - "messages"
+          - "rerank"
+          - "realtime"
+          - "models"
+        port: 8000
+        models:
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-3.1-8B-Instruct"
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "Qwen/Qwen3-32B"
+          - "deepseek-ai/DeepSeek-V3"
+          - "mistralai/Mistral-7B-Instruct-v0.3"
+          - "mistralai/Mixtral-8x7B-Instruct-v0.1"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-2-27b-it"
+          - "microsoft/Phi-4"
+          - "Any HuggingFace model"
         standalone: |
           binds:
           - port: 3000
@@ -2450,8 +4724,27 @@ categories:
         envVar: ""
         type: "local"
         host: "localhost / in-cluster"
-        port: 8080
         path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "fim"
+          - "rerank"
+          - "responses"
+          - "messages"
+          - "models"
+        port: 8080
+        models:
+          - "Any GGUF model"
+          - "Llama 3.x"
+          - "Llama 4.x"
+          - "Mistral / Mixtral"
+          - "Qwen 2.5 / 3"
+          - "Phi-3 / Phi-4"
+          - "Gemma 2 / 3"
+          - "DeepSeek R1 distills"
+          - "CodeLlama"
         standalone: |
           binds:
           - port: 3000
@@ -2515,8 +4808,16 @@ categories:
         envVar: ""
         type: "local"
         host: "localhost / in-cluster"
-        port: 8000
         path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "models"
+        port: 8000
+        models:
+          - "Any TensorRT-LLM model"
+          - "Any vLLM backend model"
+          - "Any Python backend model"
+          - "Custom ONNX models"
         standalone: |
           binds:
           - port: 3000
@@ -2573,3 +4874,4 @@ categories:
           curl "localhost:8080/triton" -H content-type:application/json -d '{
             "messages": [{"role": "user", "content": "Hello from Triton!"}]
           }' | jq
+
