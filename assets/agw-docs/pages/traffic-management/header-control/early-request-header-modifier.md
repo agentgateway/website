@@ -81,7 +81,7 @@ Remove a header that is reserved for use by another service, such as an external
 
 3. Create a transformation to remove the `x-user-id` header. You can choose to apply the removal on an  HTTPRoute with an AgentgatewayPolicy or Gateway listener. 
 
-   {{< tabs tabTotal="2" items="HTTPRoute and rule (AgentgatewayPolicy),Gateway listener" >}}
+   {{< tabs tabTotal="2" items="HTTPRoute and transformation (AgentgatewayPolicy),Gateway listener" >}}
    {{% tab tabName="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
 
    ```yaml
