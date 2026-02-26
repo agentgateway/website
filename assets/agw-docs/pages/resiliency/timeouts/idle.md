@@ -17,32 +17,6 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
 
 ## Set up idle timeouts
 
-1. Create an HTTPRoute for the `/headers` route.
-
-   ```yaml
-   kubectl apply -n httpbin -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: idle-timeout
-     namespace: httpbin
-   spec:
-     hostnames:
-     - idle.example
-     parentRefs:
-     - name: agentgateway-proxy
-       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches: 
-       - path:
-           type: PathPrefix
-           value: /headers
-       backendRefs:
-       - kind: Service
-         name: httpbin
-         port: 8000
-   EOF
-   ```
 
 1. Create an AgentgatewayPolicy with the idle timeout configuration. In this example, you apply an idle timeout of 30 seconds. 
 
@@ -99,7 +73,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
             "hTTP": {
               "maxBufferSize": 2097152,
               "http1MaxHeaders": null,
-              "http1IdleTimeout": "1s",
+              "http1IdleTimeout": "30s",
               "http2WindowSize": null,
               "http2ConnectionWindowSize": null,
               "http2FrameSize": null,
@@ -118,7 +92,6 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
    
 ```sh
-kubectl delete httproute idle-timeout -n httpbin
 kubectl delete AgentgatewayPolicy idle-time -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```
 
