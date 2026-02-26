@@ -1,0 +1,341 @@
+{{ define "main" }}
+<script>
+    document.querySelector('html').classList.remove('dark');
+</script>
+<div class='mx-auto flex bg-white text-gray-900'>
+    {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
+    <article class="w-full break-words flex justify-center">
+        <main class="w-full relative overflow-hidden">
+            {{ partial "nav.html" . }}
+
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pb-16 lg:pb-24 px-4 lg:px-12 xl:px-25 pt-[9.875rem] lg:pt-40">
+                <div class="mx-auto max-w-[1200px] text-center">
+                    <h1 class="text-4xl lg:text-6xl font-bold leading-tight pb-6 tracking-tight">
+                        LLM Provider Cookbook
+                    </h1>
+                    <p class="text-lg lg:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-10">
+                        Copy-paste configurations for <strong class="text-white">{{ $totalCount := 0 }}{{ range .Site.Data.models.categories }}{{ $totalCount = add $totalCount (len .providers) }}{{ end }}{{ $totalCount }}+ LLM providers</strong>.
+                        Each provider includes standalone (binary/Docker) and Kubernetes deployment configs.
+                    </p>
+
+                    <!-- Search Bar -->
+                    <div class="max-w-xl mx-auto relative">
+                        <input
+                            type="text"
+                            id="model-search"
+                            placeholder="Search providers... (e.g., OpenAI, Anthropic, Ollama)"
+                            class="w-full px-6 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 text-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        />
+                        <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+
+                    <!-- Category Filter Pills -->
+                    <div class="flex flex-wrap justify-center gap-3 mt-8">
+                        <button class="category-filter active px-5 py-2 rounded-full text-sm font-medium transition-all bg-purple-600 text-white" data-category="all">
+                            All Providers
+                        </button>
+                        {{ range .Site.Data.models.categories }}
+                        <button class="category-filter px-5 py-2 rounded-full text-sm font-medium transition-all bg-white/10 text-gray-300 hover:bg-white/20" data-category="{{ .id }}">
+                            {{ .name }}
+                        </button>
+                        {{ end }}
+                    </div>
+                </div>
+            </section>
+
+            <!-- How It Works -->
+            <section class="bg-gray-50 border-b border-gray-200 px-4 lg:px-12 py-12">
+                <div class="mx-auto max-w-[1200px]">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">How It Works</h2>
+                    <div class="grid md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                        <div class="bg-white rounded-xl p-6 border border-gray-200 text-center">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold text-lg flex items-center justify-center mx-auto mb-3">1</div>
+                            <h3 class="font-semibold text-gray-900 mb-1">Secret</h3>
+                            <p class="text-sm text-gray-600">Store your API credentials</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 border border-gray-200 text-center">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold text-lg flex items-center justify-center mx-auto mb-3">2</div>
+                            <h3 class="font-semibold text-gray-900 mb-1">Backend</h3>
+                            <p class="text-sm text-gray-600">Configure the provider</p>
+                        </div>
+                        <div class="bg-white rounded-xl p-6 border border-gray-200 text-center">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 text-purple-700 font-bold text-lg flex items-center justify-center mx-auto mb-3">3</div>
+                            <h3 class="font-semibold text-gray-900 mb-1">Route</h3>
+                            <p class="text-sm text-gray-600">Set up traffic routing</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Provider Cards -->
+            <section class="px-4 lg:px-12 py-16 bg-white">
+                <div class="mx-auto max-w-[1200px]">
+
+                    {{ range .Site.Data.models.categories }}
+                    <div class="category-section mb-16" data-category="{{ .id }}">
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ .name }}</h2>
+                            <p class="text-gray-600 text-lg">{{ .description }}</p>
+                        </div>
+
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {{ range .providers }}
+                            <div class="provider-card bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-purple-400 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                 data-name="{{ .name | lower }}"
+                                 data-slug="{{ .slug }}"
+                                 onclick="toggleProvider('{{ .slug }}')">
+
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <h3 class="text-xl font-bold text-gray-900">{{ .name }}</h3>
+                                        {{ if eq .type "native" }}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 whitespace-nowrap">Native</span>
+                                        {{ else if eq .type "local" }}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">Local</span>
+                                        {{ else }}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 whitespace-nowrap">OpenAI-compat</span>
+                                        {{ end }}
+                                    </div>
+                                    <p class="text-sm text-gray-500 mb-1">
+                                        <span class="font-medium text-gray-700">Model:</span>
+                                        <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ .model }}</code>
+                                    </p>
+                                    {{ if .envVar }}
+                                    <p class="text-sm text-gray-500">
+                                        <span class="font-medium text-gray-700">Auth:</span>
+                                        <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">${{ .envVar }}</code>
+                                    </p>
+                                    {{ else }}
+                                    <p class="text-sm text-gray-500">
+                                        <span class="font-medium text-gray-700">Auth:</span>
+                                        <span class="text-green-600 text-xs font-medium">No API key needed</span>
+                                    </p>
+                                    {{ end }}
+                                    <div class="mt-4 flex items-center text-purple-600 text-sm font-medium">
+                                        <span class="provider-toggle-text" id="toggle-text-{{ .slug }}">View configuration</span>
+                                        <svg class="w-4 h-4 ml-1 transform transition-transform provider-arrow" id="arrow-{{ .slug }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Expanded Config Panel (hidden by default) -->
+                            <div class="provider-detail hidden col-span-full" id="detail-{{ .slug }}">
+                                <div class="bg-gray-50 border-2 border-purple-300 rounded-xl p-6 mb-5">
+                                    <div class="flex items-center justify-between mb-5">
+                                        <h3 class="text-xl font-bold text-gray-900">{{ .name }} Configuration</h3>
+                                        <button onclick="event.stopPropagation(); toggleProvider('{{ .slug }}')" class="text-gray-400 hover:text-gray-600 p-1">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Tab Buttons -->
+                                    <div class="flex border-b border-gray-300 mb-5">
+                                        <button class="tab-btn active px-5 py-3 text-sm font-semibold border-b-2 border-purple-600 text-purple-700 bg-white rounded-t-lg -mb-px"
+                                                onclick="event.stopPropagation(); switchTab('{{ .slug }}', 'standalone')">
+                                            Standalone
+                                        </button>
+                                        <button class="tab-btn px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 -mb-px"
+                                                onclick="event.stopPropagation(); switchTab('{{ .slug }}', 'kubernetes')">
+                                            Kubernetes
+                                        </button>
+                                    </div>
+
+                                    <!-- Standalone Config -->
+                                    <div class="tab-content" id="tab-{{ .slug }}-standalone">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="text-sm text-gray-600">Save this as <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">config.yaml</code> and run with <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">agentgateway -f config.yaml</code></p>
+                                            <button onclick="event.stopPropagation(); copyCode('code-{{ .slug }}-standalone')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-standalone">{{ .standalone | htmlEscape | safeHTML }}</code></pre>
+                                    </div>
+
+                                    <!-- Kubernetes Config -->
+                                    <div class="tab-content hidden" id="tab-{{ .slug }}-kubernetes">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="text-sm text-gray-600">Run these <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">kubectl apply</code> commands in order</p>
+                                            <button onclick="event.stopPropagation(); copyCode('code-{{ .slug }}-kubernetes')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-kubernetes">{{ .kubernetes | htmlEscape | safeHTML }}</code></pre>
+                                    </div>
+
+                                    <!-- Test Command -->
+                                    {{ if .test }}
+                                    <div class="mt-5 pt-5 border-t border-gray-300">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="text-sm font-semibold text-gray-700">Test it</p>
+                                            <button onclick="event.stopPropagation(); copyCode('code-{{ .slug }}-test')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm"><code id="code-{{ .slug }}-test">{{ .test | htmlEscape | safeHTML }}</code></pre>
+                                    </div>
+                                    {{ end }}
+                                </div>
+                            </div>
+                            {{ end }}
+                        </div>
+                    </div>
+                    {{ end }}
+
+                    <!-- No results message -->
+                    <div id="no-results" class="hidden text-center py-20">
+                        <p class="text-2xl text-gray-400 font-medium">No providers found</p>
+                        <p class="text-gray-400 mt-2">Try a different search term</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </article>
+</div>
+
+<script>
+// Toggle provider detail panel
+function toggleProvider(slug) {
+    const detail = document.getElementById('detail-' + slug);
+    const arrow = document.getElementById('arrow-' + slug);
+    const toggleText = document.getElementById('toggle-text-' + slug);
+
+    if (detail.classList.contains('hidden')) {
+        // Close all other open panels first
+        document.querySelectorAll('.provider-detail:not(.hidden)').forEach(el => {
+            el.classList.add('hidden');
+            const otherSlug = el.id.replace('detail-', '');
+            const otherArrow = document.getElementById('arrow-' + otherSlug);
+            const otherText = document.getElementById('toggle-text-' + otherSlug);
+            if (otherArrow) otherArrow.classList.remove('rotate-180');
+            if (otherText) otherText.textContent = 'View configuration';
+        });
+
+        detail.classList.remove('hidden');
+        arrow.classList.add('rotate-180');
+        toggleText.textContent = 'Hide configuration';
+
+        // Scroll to the detail panel
+        setTimeout(() => {
+            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    } else {
+        detail.classList.add('hidden');
+        arrow.classList.remove('rotate-180');
+        toggleText.textContent = 'View configuration';
+    }
+}
+
+// Switch between standalone and kubernetes tabs
+function switchTab(slug, tab) {
+    const standaloneTab = document.getElementById('tab-' + slug + '-standalone');
+    const kubernetesTab = document.getElementById('tab-' + slug + '-kubernetes');
+    const detail = document.getElementById('detail-' + slug);
+    const buttons = detail.querySelectorAll('.tab-btn');
+
+    buttons.forEach(btn => {
+        btn.classList.remove('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    if (tab === 'standalone') {
+        standaloneTab.classList.remove('hidden');
+        kubernetesTab.classList.add('hidden');
+        buttons[0].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[0].classList.remove('border-transparent', 'text-gray-500');
+    } else {
+        standaloneTab.classList.add('hidden');
+        kubernetesTab.classList.remove('hidden');
+        buttons[1].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[1].classList.remove('border-transparent', 'text-gray-500');
+    }
+}
+
+// Copy code to clipboard
+function copyCode(id) {
+    const code = document.getElementById(id);
+    navigator.clipboard.writeText(code.textContent).then(() => {
+        const btn = code.closest('.tab-content, .border-t').querySelector('button[onclick*="copyCode"]');
+        if (!btn) return;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+        btn.classList.add('text-green-600', 'border-green-300');
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('text-green-600', 'border-green-300');
+        }, 2000);
+    });
+}
+
+// Search functionality
+document.getElementById('model-search').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.provider-card');
+    const sections = document.querySelectorAll('.category-section');
+    let anyVisible = false;
+
+    cards.forEach(card => {
+        const name = card.dataset.name;
+        const slug = card.dataset.slug;
+        const matches = !query || name.includes(query) || slug.includes(query);
+        card.style.display = matches ? '' : 'none';
+
+        // Also hide the detail panel if the card is hidden
+        const detail = document.getElementById('detail-' + slug);
+        if (!matches && detail) {
+            detail.classList.add('hidden');
+        }
+
+        if (matches) anyVisible = true;
+    });
+
+    // Hide empty category sections
+    sections.forEach(section => {
+        const visibleCards = section.querySelectorAll('.provider-card:not([style*="display: none"])');
+        section.style.display = visibleCards.length > 0 ? '' : 'none';
+    });
+
+    document.getElementById('no-results').classList.toggle('hidden', anyVisible);
+});
+
+// Category filter
+document.querySelectorAll('.category-filter').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const category = this.dataset.category;
+
+        // Update active state
+        document.querySelectorAll('.category-filter').forEach(b => {
+            b.classList.remove('active', 'bg-purple-600', 'text-white');
+            b.classList.add('bg-white/10', 'text-gray-300');
+        });
+        this.classList.add('active', 'bg-purple-600', 'text-white');
+        this.classList.remove('bg-white/10', 'text-gray-300');
+
+        // Filter sections
+        const sections = document.querySelectorAll('.category-section');
+        sections.forEach(section => {
+            if (category === 'all' || section.dataset.category === category) {
+                section.style.display = '';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+
+        // Clear search
+        document.getElementById('model-search').value = '';
+        document.querySelectorAll('.provider-card').forEach(card => card.style.display = '');
+        document.getElementById('no-results').classList.add('hidden');
+    });
+});
+</script>
+{{ end }}
