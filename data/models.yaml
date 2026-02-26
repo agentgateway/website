@@ -78,7 +78,26 @@ categories:
                   backendAuth:
                     key: "$OPENAI_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export OPENAI_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -91,7 +110,7 @@ categories:
             Authorization: $OPENAI_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -109,7 +128,7 @@ categories:
                   name: openai-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -131,8 +150,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/openai" -H content-type:application/json -d '{
+          curl "localhost:3000/openai" -H content-type:application/json -d '{
             "model": "gpt-4o",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -176,11 +198,35 @@ categories:
                     provider:
                       anthropic:
                         model: claude-sonnet-4-20250514
+                    routes:
+                      /v1/messages: messages
+                      /v1/chat/completions: completions
+                      /v1/models: passthrough
+                      "*": passthrough
                 policies:
                   backendAuth:
                     key: "$ANTHROPIC_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export ANTHROPIC_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -193,7 +239,7 @@ categories:
             Authorization: $ANTHROPIC_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -211,7 +257,7 @@ categories:
                   name: anthropic-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -233,8 +279,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/anthropic" -H content-type:application/json -d '{
+          curl "localhost:3000/anthropic" -H content-type:application/json -d '{
             "model": "claude-sonnet-4-20250514",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -315,7 +364,26 @@ categories:
                         model: us.anthropic.claude-sonnet-4-20250514-v1:0
                         region: us-east-1
         kubernetes: |
-          # Step 1: Secret (IAM credentials)
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret (IAM credentials)
           export AWS_ACCESS_KEY_ID="<your-access-key>"
           export AWS_SECRET_ACCESS_KEY="<your-secret-key>"
           export AWS_SESSION_TOKEN="<your-session-token>"
@@ -328,7 +396,7 @@ categories:
             --type=Opaque \
             --dry-run=client -o yaml | kubectl apply -f -
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -347,7 +415,7 @@ categories:
                   name: bedrock-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -369,8 +437,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/bedrock" -H content-type:application/json -d '{
+          curl "localhost:3000/bedrock" -H content-type:application/json -d '{
             "model": "",
             "messages": [{"role": "user", "content": "Hello from Bedrock!"}]
           }' | jq
@@ -434,7 +505,26 @@ categories:
                   backendAuth:
                     key: "$GOOGLE_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export GOOGLE_KEY=<your-gemini-api-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -447,7 +537,7 @@ categories:
             Authorization: $GOOGLE_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -465,7 +555,7 @@ categories:
                   name: google-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -487,8 +577,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/gemini" -H content-type:application/json -d '{
+          curl "localhost:3000/gemini" -H content-type:application/json -d '{
             "model": "gemini-2.5-flash",
             "messages": [{"role": "user", "content": "Hello from Gemini!"}]
           }' | jq
@@ -559,7 +652,26 @@ categories:
                   backendAuth:
                     key: "$VERTEX_AI_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export VERTEX_AI_API_KEY=<your-vertex-api-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -572,7 +684,7 @@ categories:
             Authorization: $VERTEX_AI_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -592,7 +704,7 @@ categories:
                   name: vertex-ai-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -614,8 +726,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/vertex" -H content-type:application/json -d '{
+          curl "localhost:3000/vertex" -H content-type:application/json -d '{
             "model": "gemini-pro",
             "messages": [{"role": "user", "content": "Hello from Vertex AI!"}]
           }' | jq
@@ -691,7 +806,26 @@ categories:
                   tls:
                     sni: your-resource.openai.azure.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export AZURE_API_KEY=<your-azure-api-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -704,7 +838,7 @@ categories:
             Authorization: $AZURE_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -727,7 +861,7 @@ categories:
                 sni: your-resource.openai.azure.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -749,8 +883,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/azure" -H content-type:application/json -d '{
+          curl "localhost:3000/azure" -H content-type:application/json -d '{
             "model": "gpt-4o",
             "messages": [{"role": "user", "content": "Hello from Azure!"}]
           }' | jq
@@ -826,7 +963,26 @@ categories:
                   tls:
                     sni: api.mistral.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export MISTRAL_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -839,7 +995,7 @@ categories:
             Authorization: $MISTRAL_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -862,7 +1018,7 @@ categories:
                 sni: api.mistral.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -888,8 +1044,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/mistral" -H content-type:application/json -d '{
+          curl "localhost:3000/mistral" -H content-type:application/json -d '{
             "model": "mistral-medium-2505",
             "messages": [{"role": "user", "content": "Hello from Mistral!"}]
           }' | jq
@@ -934,7 +1093,26 @@ categories:
                   tls:
                     sni: api.deepseek.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export DEEPSEEK_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -947,7 +1125,7 @@ categories:
             Authorization: $DEEPSEEK_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -970,7 +1148,7 @@ categories:
                 sni: api.deepseek.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -992,8 +1170,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/deepseek" -H content-type:application/json -d '{
+          curl "localhost:3000/deepseek" -H content-type:application/json -d '{
             "model": "deepseek-chat",
             "messages": [{"role": "user", "content": "Hello from DeepSeek!"}]
           }' | jq
@@ -1047,7 +1228,26 @@ categories:
                   tls:
                     sni: api.x.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export XAI_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1060,7 +1260,7 @@ categories:
             Authorization: $XAI_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1083,7 +1283,7 @@ categories:
                 sni: api.x.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1109,8 +1309,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/xai" -H content-type:application/json -d '{
+          curl "localhost:3000/xai" -H content-type:application/json -d '{
             "model": "grok-2-latest",
             "messages": [{"role": "user", "content": "Hello from Grok!"}]
           }' | jq
@@ -1165,7 +1368,26 @@ categories:
                   tls:
                     sni: api.groq.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export GROQ_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1178,7 +1400,7 @@ categories:
             Authorization: $GROQ_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1201,7 +1423,7 @@ categories:
                 sni: api.groq.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1227,8 +1449,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/groq" -H content-type:application/json -d '{
+          curl "localhost:3000/groq" -H content-type:application/json -d '{
             "model": "llama-3.3-70b-versatile",
             "messages": [{"role": "user", "content": "Hello from Groq!"}]
           }' | jq
@@ -1283,7 +1508,26 @@ categories:
                   tls:
                     sni: api.cohere.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export COHERE_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1296,7 +1540,7 @@ categories:
             Authorization: $COHERE_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1319,7 +1563,7 @@ categories:
                 sni: api.cohere.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1345,8 +1589,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/cohere" -H content-type:application/json -d '{
+          curl "localhost:3000/cohere" -H content-type:application/json -d '{
             "model": "command-r-plus",
             "messages": [{"role": "user", "content": "Hello from Cohere!"}]
           }' | jq
@@ -1412,7 +1659,26 @@ categories:
                   tls:
                     sni: api.together.xyz
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export TOGETHER_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1425,7 +1691,7 @@ categories:
             Authorization: $TOGETHER_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1448,7 +1714,7 @@ categories:
                 sni: api.together.xyz
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1474,8 +1740,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/together" -H content-type:application/json -d '{
+          curl "localhost:3000/together" -H content-type:application/json -d '{
             "model": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
             "messages": [{"role": "user", "content": "Hello from Together AI!"}]
           }' | jq
@@ -1546,7 +1815,26 @@ categories:
                   tls:
                     sni: api.fireworks.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export FIREWORKS_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1559,7 +1847,7 @@ categories:
             Authorization: $FIREWORKS_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1582,7 +1870,7 @@ categories:
                 sni: api.fireworks.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1608,8 +1896,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/fireworks" -H content-type:application/json -d '{
+          curl "localhost:3000/fireworks" -H content-type:application/json -d '{
             "model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
             "messages": [{"role": "user", "content": "Hello from Fireworks!"}]
           }' | jq
@@ -1654,7 +1945,26 @@ categories:
                   tls:
                     sni: api.perplexity.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export PERPLEXITY_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1667,7 +1977,7 @@ categories:
             Authorization: $PERPLEXITY_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1690,7 +2000,7 @@ categories:
                 sni: api.perplexity.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1716,8 +2026,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/perplexity" -H content-type:application/json -d '{
+          curl "localhost:3000/perplexity" -H content-type:application/json -d '{
             "model": "sonar-pro",
             "messages": [{"role": "user", "content": "Hello from Perplexity!"}]
           }' | jq
@@ -1800,7 +2113,26 @@ categories:
                   tls:
                     sni: openrouter.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export OPENROUTER_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1813,7 +2145,7 @@ categories:
             Authorization: $OPENROUTER_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1836,7 +2168,7 @@ categories:
                 sni: openrouter.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1862,8 +2194,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/openrouter" -H content-type:application/json -d '{
+          curl "localhost:3000/openrouter" -H content-type:application/json -d '{
             "model": "anthropic/claude-sonnet-4-20250514",
             "messages": [{"role": "user", "content": "Hello from OpenRouter!"}]
           }' | jq
@@ -1909,7 +2244,26 @@ categories:
                   tls:
                     sni: api.cerebras.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export CEREBRAS_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -1922,7 +2276,7 @@ categories:
             Authorization: $CEREBRAS_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -1945,7 +2299,7 @@ categories:
                 sni: api.cerebras.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -1971,8 +2325,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/cerebras" -H content-type:application/json -d '{
+          curl "localhost:3000/cerebras" -H content-type:application/json -d '{
             "model": "llama-3.3-70b",
             "messages": [{"role": "user", "content": "Hello from Cerebras!"}]
           }' | jq
@@ -2025,7 +2382,26 @@ categories:
                   tls:
                     sni: api.sambanova.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export SAMBANOVA_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2038,7 +2414,7 @@ categories:
             Authorization: $SAMBANOVA_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2061,7 +2437,7 @@ categories:
                 sni: api.sambanova.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2087,8 +2463,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/sambanova" -H content-type:application/json -d '{
+          curl "localhost:3000/sambanova" -H content-type:application/json -d '{
             "model": "Meta-Llama-3.1-70B-Instruct",
             "messages": [{"role": "user", "content": "Hello from SambaNova!"}]
           }' | jq
@@ -2153,7 +2532,26 @@ categories:
                   tls:
                     sni: api.deepinfra.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export DEEPINFRA_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2166,7 +2564,7 @@ categories:
             Authorization: $DEEPINFRA_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2189,7 +2587,7 @@ categories:
                 sni: api.deepinfra.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2215,8 +2613,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/deepinfra" -H content-type:application/json -d '{
+          curl "localhost:3000/deepinfra" -H content-type:application/json -d '{
             "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
             "messages": [{"role": "user", "content": "Hello from DeepInfra!"}]
           }' | jq
@@ -2277,7 +2678,26 @@ categories:
                   tls:
                     sni: api-inference.huggingface.co
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export HF_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2290,7 +2710,7 @@ categories:
             Authorization: $HF_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2313,7 +2733,7 @@ categories:
                 sni: api-inference.huggingface.co
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2339,8 +2759,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/huggingface" -H content-type:application/json -d '{
+          curl "localhost:3000/huggingface" -H content-type:application/json -d '{
             "model": "meta-llama/Llama-3.1-70B-Instruct",
             "messages": [{"role": "user", "content": "Hello from HuggingFace!"}]
           }' | jq
@@ -2399,7 +2822,26 @@ categories:
                   tls:
                     sni: integrate.api.nvidia.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export NVIDIA_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2412,7 +2854,7 @@ categories:
             Authorization: $NVIDIA_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2435,7 +2877,7 @@ categories:
                 sni: integrate.api.nvidia.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2461,8 +2903,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/nvidia" -H content-type:application/json -d '{
+          curl "localhost:3000/nvidia" -H content-type:application/json -d '{
             "model": "meta/llama-3.1-70b-instruct",
             "messages": [{"role": "user", "content": "Hello from Nvidia NIM!"}]
           }' | jq
@@ -2515,7 +2960,26 @@ categories:
                   tls:
                     sni: api.replicate.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export REPLICATE_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2528,7 +2992,7 @@ categories:
             Authorization: $REPLICATE_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2551,7 +3015,7 @@ categories:
                 sni: api.replicate.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2577,8 +3041,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/replicate" -H content-type:application/json -d '{
+          curl "localhost:3000/replicate" -H content-type:application/json -d '{
             "model": "meta/llama-3.1-405b-instruct",
             "messages": [{"role": "user", "content": "Hello from Replicate!"}]
           }' | jq
@@ -2619,7 +3086,26 @@ categories:
                   backendAuth:
                     key: "$AI21_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export AI21_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2632,7 +3118,7 @@ categories:
             Authorization: $AI21_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2650,7 +3136,7 @@ categories:
                   name: ai21-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2672,8 +3158,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/ai21" -H content-type:application/json -d '{
+          curl "localhost:3000/ai21" -H content-type:application/json -d '{
             "model": "jamba-1.5-large",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -2717,7 +3206,26 @@ categories:
                   backendAuth:
                     key: "$CF_API_TOKEN"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export CF_API_TOKEN=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2730,7 +3238,7 @@ categories:
             Authorization: $CF_API_TOKEN
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2748,7 +3256,7 @@ categories:
                   name: cloudflare-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2770,8 +3278,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/cloudflare" -H content-type:application/json -d '{
+          curl "localhost:3000/cloudflare" -H content-type:application/json -d '{
             "model": "@cf/meta/llama-3.1-8b-instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -2811,7 +3322,26 @@ categories:
                   backendAuth:
                     key: "$LAMBDA_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export LAMBDA_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2824,7 +3354,7 @@ categories:
             Authorization: $LAMBDA_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2842,7 +3372,7 @@ categories:
                   name: lambda-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2864,8 +3394,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/lambda" -H content-type:application/json -d '{
+          curl "localhost:3000/lambda" -H content-type:application/json -d '{
             "model": "llama-3.3-70b-instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -2910,7 +3443,26 @@ categories:
                   backendAuth:
                     key: "$NEBIUS_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export NEBIUS_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -2923,7 +3475,7 @@ categories:
             Authorization: $NEBIUS_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -2941,7 +3493,7 @@ categories:
                   name: nebius-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -2963,8 +3515,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/nebius" -H content-type:application/json -d '{
+          curl "localhost:3000/nebius" -H content-type:application/json -d '{
             "model": "meta-llama/Llama-3.3-70B-Instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -3010,7 +3565,26 @@ categories:
                   backendAuth:
                     key: "$NOVITA_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export NOVITA_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3023,7 +3597,7 @@ categories:
             Authorization: $NOVITA_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3041,7 +3615,7 @@ categories:
                   name: novita-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3063,8 +3637,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/novita" -H content-type:application/json -d '{
+          curl "localhost:3000/novita" -H content-type:application/json -d '{
             "model": "meta-llama/llama-3.3-70b-instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -3108,7 +3685,26 @@ categories:
                   backendAuth:
                     key: "$HYPERBOLIC_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export HYPERBOLIC_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3121,7 +3717,7 @@ categories:
             Authorization: $HYPERBOLIC_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3139,7 +3735,7 @@ categories:
                   name: hyperbolic-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3161,8 +3757,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/hyperbolic" -H content-type:application/json -d '{
+          curl "localhost:3000/hyperbolic" -H content-type:application/json -d '{
             "model": "meta-llama/Llama-3.3-70B-Instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -3229,7 +3828,26 @@ categories:
                   tls:
                     sni: <your-workspace>.cloud.databricks.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export DATABRICKS_TOKEN=<your-token>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3242,7 +3860,7 @@ categories:
             Authorization: $DATABRICKS_TOKEN
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3265,7 +3883,7 @@ categories:
                 sni: <your-workspace>.cloud.databricks.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3291,8 +3909,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/databricks" -H content-type:application/json -d '{
+          curl "localhost:3000/databricks" -H content-type:application/json -d '{
             "model": "databricks-meta-llama-3-1-70b-instruct",
             "messages": [{"role": "user", "content": "Hello from Databricks!"}]
           }' | jq
@@ -3358,7 +3979,26 @@ categories:
                   tls:
                     sni: models.inference.ai.azure.com
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export GITHUB_TOKEN=<your-github-pat>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3371,7 +4011,7 @@ categories:
             Authorization: $GITHUB_TOKEN
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3394,7 +4034,7 @@ categories:
                 sni: models.inference.ai.azure.com
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3420,8 +4060,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/github-models" -H content-type:application/json -d '{
+          curl "localhost:3000/github-models" -H content-type:application/json -d '{
             "model": "gpt-4o",
             "messages": [{"role": "user", "content": "Hello from GitHub Models!"}]
           }' | jq
@@ -3467,7 +4110,26 @@ categories:
                   tls:
                     sni: api.scaleway.ai
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export SCALEWAY_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3480,7 +4142,7 @@ categories:
             Authorization: $SCALEWAY_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3503,7 +4165,7 @@ categories:
                 sni: api.scaleway.ai
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3529,8 +4191,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/scaleway" -H content-type:application/json -d '{
+          curl "localhost:3000/scaleway" -H content-type:application/json -d '{
             "model": "llama-3.1-70b-instruct",
             "messages": [{"role": "user", "content": "Hello from Scaleway!"}]
           }' | jq
@@ -3593,7 +4258,26 @@ categories:
                   backendAuth:
                     key: "$DASHSCOPE_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export DASHSCOPE_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3606,7 +4290,7 @@ categories:
             Authorization: $DASHSCOPE_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3624,7 +4308,7 @@ categories:
                   name: dashscope-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3646,8 +4330,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/dashscope" -H content-type:application/json -d '{
+          curl "localhost:3000/dashscope" -H content-type:application/json -d '{
             "model": "qwen-max",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -3687,7 +4374,26 @@ categories:
                   backendAuth:
                     key: "$MOONSHOT_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export MOONSHOT_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3700,7 +4406,7 @@ categories:
             Authorization: $MOONSHOT_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3718,7 +4424,7 @@ categories:
                   name: moonshot-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3740,8 +4446,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/moonshot" -H content-type:application/json -d '{
+          curl "localhost:3000/moonshot" -H content-type:application/json -d '{
             "model": "kimi-latest",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -3791,7 +4500,26 @@ categories:
                   backendAuth:
                     key: "$ZHIPU_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export ZHIPU_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3804,7 +4532,7 @@ categories:
             Authorization: $ZHIPU_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3822,7 +4550,7 @@ categories:
                   name: zhipu-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3844,8 +4572,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/zhipu" -H content-type:application/json -d '{
+          curl "localhost:3000/zhipu" -H content-type:application/json -d '{
             "model": "glm-4-plus",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -3893,7 +4624,26 @@ categories:
                   backendAuth:
                     key: "$VOLC_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export VOLC_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -3906,7 +4656,7 @@ categories:
             Authorization: $VOLC_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -3924,7 +4674,7 @@ categories:
                   name: volcengine-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -3946,8 +4696,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/volcengine" -H content-type:application/json -d '{
+          curl "localhost:3000/volcengine" -H content-type:application/json -d '{
             "model": "doubao-pro-32k",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -4001,7 +4754,26 @@ categories:
                   backendAuth:
                     key: "$WATSONX_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export WATSONX_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -4014,7 +4786,7 @@ categories:
             Authorization: $WATSONX_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4032,7 +4804,7 @@ categories:
                   name: watsonx-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4054,8 +4826,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/watsonx" -H content-type:application/json -d '{
+          curl "localhost:3000/watsonx" -H content-type:application/json -d '{
             "model": "ibm/granite-3.1-8b-instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -4106,6 +4881,24 @@ categories:
                       openai:
                         model: llama3.3-70b
         kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
           # Step 2: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
@@ -4142,8 +4935,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 4: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/snowflake" -H content-type:application/json -d '{
+          curl "localhost:3000/snowflake" -H content-type:application/json -d '{
             "model": "llama3.3-70b",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -4187,7 +4983,26 @@ categories:
                   backendAuth:
                     key: "$OVH_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export OVH_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -4200,7 +5015,7 @@ categories:
             Authorization: $OVH_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4218,7 +5033,7 @@ categories:
                   name: ovhcloud-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4240,8 +5055,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/ovhcloud" -H content-type:application/json -d '{
+          curl "localhost:3000/ovhcloud" -H content-type:application/json -d '{
             "model": "Llama-3.3-70B-Instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -4280,7 +5098,26 @@ categories:
                   backendAuth:
                     key: "$OCI_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export OCI_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -4293,7 +5130,7 @@ categories:
             Authorization: $OCI_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4311,7 +5148,7 @@ categories:
                   name: oci-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4333,8 +5170,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/oci" -H content-type:application/json -d '{
+          curl "localhost:3000/oci" -H content-type:application/json -d '{
             "model": "meta.llama-3.3-70b-instruct",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -4375,7 +5215,26 @@ categories:
                   backendAuth:
                     key: "$ANYSCALE_API_KEY"
         kubernetes: |
-          # Step 1: Secret
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
           export ANYSCALE_API_KEY=<your-key>
           kubectl apply -f- <<EOF
           apiVersion: v1
@@ -4388,7 +5247,7 @@ categories:
             Authorization: $ANYSCALE_API_KEY
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4406,7 +5265,7 @@ categories:
                   name: anyscale-secret
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4428,8 +5287,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/anyscale" -H content-type:application/json -d '{
+          curl "localhost:3000/anyscale" -H content-type:application/json -d '{
             "model": "meta-llama/Llama-3-70b-chat-hf",
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
@@ -4504,7 +5366,26 @@ categories:
                         port: 11434
                         path: "/v1/chat/completions"
         kubernetes: |
-          # Step 1: Deploy Ollama
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Deploy Ollama
           kubectl apply -f- <<EOF
           apiVersion: apps/v1
           kind: Deployment
@@ -4540,7 +5421,7 @@ categories:
               targetPort: 11434
           EOF
 
-          # Step 2: Backend (no TLS, no auth)
+          # Step 3: Backend (no TLS, no auth)
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4557,7 +5438,7 @@ categories:
                   path: "/v1/chat/completions"
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4579,8 +5460,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/ollama" -H content-type:application/json -d '{
+          curl "localhost:3000/ollama" -H content-type:application/json -d '{
             "model": "llama3.2",
             "messages": [{"role": "user", "content": "Hello from Ollama!"}]
           }' | jq
@@ -4633,7 +5517,26 @@ categories:
                         port: 8000
                         path: "/v1/chat/completions"
         kubernetes: |
-          # Step 1: Deploy vLLM
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Deploy vLLM
           kubectl apply -f- <<EOF
           apiVersion: apps/v1
           kind: Deployment
@@ -4673,7 +5576,7 @@ categories:
               targetPort: 8000
           EOF
 
-          # Step 2: Backend
+          # Step 3: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4690,7 +5593,7 @@ categories:
                   path: "/v1/chat/completions"
           EOF
 
-          # Step 3: Route
+          # Step 4: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4712,8 +5615,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/vllm" -H content-type:application/json -d '{
+          curl "localhost:3000/vllm" -H content-type:application/json -d '{
             "model": "meta-llama/Llama-3.1-8B-Instruct",
             "messages": [{"role": "user", "content": "Hello from vLLM!"}]
           }' | jq
@@ -4759,7 +5665,25 @@ categories:
                         port: 8080
                         path: "/v1/chat/completions"
         kubernetes: |
-          # Backend
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+          # Step 2: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4775,7 +5699,7 @@ categories:
                   path: "/v1/chat/completions"
           EOF
 
-          # Route
+          # Step 3: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4797,8 +5721,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 4: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/llamacpp" -H content-type:application/json -d '{
+          curl "localhost:3000/llamacpp" -H content-type:application/json -d '{
             "messages": [{"role": "user", "content": "Hello from llama.cpp!"}]
           }' | jq
 
@@ -4832,7 +5759,25 @@ categories:
                         port: 8000
                         path: "/v1/chat/completions"
         kubernetes: |
-          # Backend
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+          # Step 2: Backend
           kubectl apply -f- <<EOF
           apiVersion: agentgateway.dev/v1alpha1
           kind: AgentgatewayBackend
@@ -4848,7 +5793,7 @@ categories:
                   path: "/v1/chat/completions"
           EOF
 
-          # Route
+          # Step 3: Route
           kubectl apply -f- <<EOF
           apiVersion: gateway.networking.k8s.io/v1
           kind: HTTPRoute
@@ -4870,8 +5815,11 @@ categories:
                 group: agentgateway.dev
                 kind: AgentgatewayBackend
           EOF
+
+          # Step 4: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
         test: |
-          curl "localhost:8080/triton" -H content-type:application/json -d '{
+          curl "localhost:3000/triton" -H content-type:application/json -d '{
             "messages": [{"role": "user", "content": "Hello from Triton!"}]
           }' | jq
 

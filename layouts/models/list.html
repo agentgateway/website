@@ -2,6 +2,19 @@
 <script>
     document.querySelector('html').classList.remove('dark');
 </script>
+<style>
+    /* Models page: always white navbar */
+    .navbar {
+        background-color: white !important;
+        border-color: transparent !important;
+    }
+    .navbar .link {
+        color: rgb(55, 65, 81) !important;
+    }
+    .navbar a.link svg {
+        fill: rgb(55, 65, 81) !important;
+    }
+</style>
 <div class='mx-auto flex bg-white text-gray-900'>
     {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
     <article class="w-full break-words flex justify-center">
@@ -228,9 +241,10 @@
                                                 Copy
                                             </button>
                                         </div>
-                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm"><code id="code-{{ .slug }}-test">{{ .test | htmlEscape | safeHTML }}</code></pre>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm"><code id="code-{{ .slug }}-test" data-standalone-test="{{ .test | htmlEscape | safeHTML }}">{{ .test | htmlEscape | safeHTML }}</code></pre>
                                     </div>
                                     {{ end }}
+
                                 </div>
                             </div>
                             {{ end }}
@@ -564,6 +578,17 @@ function switchTab(slug, tab) {
         buttons[1].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
         buttons[1].classList.remove('border-transparent', 'text-gray-500');
     }
+
+    // Update test command port based on active tab
+    const testCode = document.getElementById('code-' + slug + '-test');
+    if (testCode) {
+        const standaloneTest = testCode.getAttribute('data-standalone-test');
+        if (tab === 'kubernetes') {
+            testCode.textContent = standaloneTest.replace(/localhost:3000/g, 'localhost:8080');
+        } else {
+            testCode.textContent = standaloneTest;
+        }
+    }
 }
 
 // Copy code to clipboard
@@ -847,9 +872,11 @@ binds:
       - ai:
           name: ${slug}
           provider:
-            openAICompatible:
+            openAI:
               model: ${model}
-              url: https://${host}${provider.dataset.path || '/v1'}
+              host: ${host}
+              port: 443
+              path: "${provider.dataset.path || '/v1/chat/completions'}"
       policies:
         backendAuth:
           key: "$${env}"`;
@@ -868,22 +895,42 @@ function generateK8sConfig(provider, endpoint) {
     const meta = endpointMeta[endpoint] || {};
     const epPath = meta.path || '/v1/' + endpoint;
     const secretName = slug + '-secret';
-    const backendName = slug + '-backend';
+    const backendName = slug;
 
     let providerBlock;
     if (type === 'native') {
         providerBlock = `            ${providerType}:
               model: ${model}`;
     } else {
-        providerBlock = `            openAICompatible:
+        providerBlock = `            openai:
               model: ${model}
-              url: https://${host}${provider.dataset.path || '/v1'}`;
+              host: ${host}
+              port: 443
+              path: "${provider.dataset.path || '/v1/chat/completions'}"`;
     }
 
     return `# ${name} — ${meta.label || endpoint} (Kubernetes)
 # Endpoint: ${epPath}
 
-# Step 1: Create the Secret
+# Step 1: Gateway
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway-proxy
+  namespace: agentgateway-system
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+  - protocol: HTTP
+    port: 8080
+    name: http
+    allowedRoutes:
+      namespaces:
+        from: All
+EOF
+
+# Step 2: Secret
 export ${env}=<your-key>
 kubectl apply -f- <<EOF
 apiVersion: v1
@@ -893,12 +940,12 @@ metadata:
   namespace: agentgateway-system
 type: Opaque
 stringData:
-  api-key: \${${env}}
+  Authorization: \${${env}}
 EOF
 
-# Step 2: Create the AgentgatewayBackend
+# Step 3: Backend
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.solo.io/v1alpha1
+apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
 metadata:
   name: ${backendName}
@@ -907,30 +954,37 @@ spec:
   ai:
     provider:
 ${providerBlock}
-    backendAuth:
-      apiKey:
+    policies:
+      auth:
         secretRef:
           name: ${secretName}
-          key: api-key
 EOF
 
-# Step 3: Create the HTTPRoute
+# Step 4: Route
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: ${slug}-route
+  name: ${slug}
   namespace: agentgateway-system
 spec:
   parentRefs:
-  - name: agentgateway
+  - name: agentgateway-proxy
     namespace: agentgateway-system
   rules:
-  - backendRefs:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /${slug}
+    backendRefs:
     - name: ${backendName}
+      namespace: agentgateway-system
+      group: agentgateway.dev
       kind: AgentgatewayBackend
-      group: agentgateway.solo.io
-EOF`;
+EOF
+
+# Step 5: Port-forward to test
+kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &`;
 }
 
 // Switch between Standalone and Kubernetes tabs

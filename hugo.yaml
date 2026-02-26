@@ -58,9 +58,6 @@ menu:
     - name: Tutorials
       url: /tutorials
       weight: 3
-    - name: Integrations
-      url: /docs/standalone/latest/integrations
-      weight: 4
     - name: Models
       weight: 5
       url: /models
