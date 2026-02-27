@@ -10,6 +10,7 @@ init-git-hooks:  ## Use the tracked version of Git hooks from this repo
 deps:  ## Install Python dependencies
 	pip3 install pyyaml
 
+
 #----------------------------------------------------------------------------------
 # Doc tests
 #----------------------------------------------------------------------------------
