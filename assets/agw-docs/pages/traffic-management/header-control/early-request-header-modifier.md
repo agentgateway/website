@@ -4,7 +4,7 @@ This capability is especially useful for security and sanitization use cases, wh
 
 Early request header modification is configured on an `AgentgatewayPolicy` using the `transformation` field. This policy is attached directly to a proxy and applies header mutations before route selection.
 
-The configuration uses the standard Gateway API and supports the following operations:
+The configuration uses the AgentgatewayPolicy and supports the following operations:
 
 - `add`
 - `set`
