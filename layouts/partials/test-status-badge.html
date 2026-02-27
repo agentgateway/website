@@ -1,0 +1,10 @@
+{{/* Test Status Badge - displays a "verified" badge if all tests passed */}}
+{{- $testStatus := .Params.test_status -}}
+{{- if eq $testStatus "passed" -}}
+<span class="test-status-badge test-status-passed" title="Code examples on this page have been automatically tested and verified.">
+  <svg class="test-status-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512" aria-hidden="true">
+    <path d="M447.9 142.5l-23.2 22L181 395.3l-22 20.8-22-20.8L23.2 287.6 0 265.6l44-46.5 23.2 22L159 328 380.7 118l23.2-22 44 46.5z"/>
+  </svg>
+  <span class="test-status-text">Verified</span>
+</span>
+{{- end -}}

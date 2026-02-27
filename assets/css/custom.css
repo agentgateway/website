@@ -10,3 +10,40 @@ h6 {
 .nav-container {
     font-family: 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
+
+/* Test Status Badge */
+.test-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1;
+    margin-bottom: 1rem;
+    letter-spacing: 0.025em;
+}
+
+.test-status-passed {
+    background-color: rgba(16, 185, 129, 0.15);
+    color: #059669;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.dark .test-status-passed {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border-color: rgba(52, 211, 153, 0.4);
+}
+
+.test-status-icon {
+    width: 0.75rem;
+    height: 0.75rem;
+    fill: currentColor;
+    flex-shrink: 0;
+}
+
+.test-status-text {
+    white-space: nowrap;
+}

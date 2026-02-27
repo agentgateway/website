@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import 'chatbot.css';
+@import 'custom.css';
 
 .nav-container a img {
   height: 25px;
