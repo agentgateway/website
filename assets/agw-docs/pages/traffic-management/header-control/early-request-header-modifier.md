@@ -105,7 +105,7 @@ Remove a header that is reserved for use by another service, such as an external
    ```
 
    {{% /tab %}}
-   {{% tab tabName="Gateway listener" %}}
+   {{% tab tabName="Gateway-level" %}}
 
    ```yaml
    kubectl apply -f- <<EOF
