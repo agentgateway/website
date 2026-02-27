@@ -147,7 +147,7 @@ Remove a header that is reserved for use by another service, such as an external
    {{< /tabs >}}
    Example output: Note that the `X-User-Id` header is present in the request.
 
-   ```json {linenos=table,hl_lines=[12,13],linenostart=1}
+   ```json
    {
      "headers": {
        "Accept": [
