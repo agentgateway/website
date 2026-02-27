@@ -357,17 +357,52 @@ Doc pages with passing tests display a "Verified" badge below the page title.
    - `test_status: failed` — one or more tests failed (no badge displayed)
 3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
 
+### Makefile targets
+
+The Makefile provides convenient targets for working with test status:
+
+| Target | Description |
+|---|---|
+| `make deps` | Install Python dependencies (PyYAML) |
+| `make test-generate` | Generate doc test scripts without running them |
+| `make test-run` | Run all doc tests |
+| `make test-artifacts-fetch` | Fetch test artifacts from the latest main branch workflow run |
+| `make test-status` | Inject test status into markdown files |
+| `make fetch-test-artifacts-build` | Fetch artifacts, inject status, and build Hugo site |
+| `make fetch-test-artifacts-serve` | Fetch artifacts, inject status, and serve Hugo site locally |
+| `make test-run-build` | Run tests, inject status, and build Hugo site |
+| `make test-run-serve` | Run tests, inject status, and serve Hugo site locally |
+
 ### Running locally
 
-After running tests, inject the status into your local docs:
+To preview the "Verified" badges locally:
 
 ```sh
-python3 scripts/idoc_test_inject_status.py
+# Option 1: Fetch results from CI and serve
+make fetch-test-artifacts-serve
+
+# Option 2: Run tests locally and serve
+make test-run-serve
 ```
 
-This updates the markdown files in `content/docs/` with the test status. The badge will appear when you run `hugo server`.
+To manually inject test status after running tests:
 
-### CLI options
+```sh
+make test-status
+```
+
+This updates the markdown files in `content/docs/` with the test status. The badge will appear when you run Hugo.
+
+### Fetching test artifacts
+
+The `test-artifacts-fetch` target downloads test results from the most recent completed workflow run on the `main` branch. This requires a `GITHUB_TOKEN` environment variable with `actions:read` scope:
+
+```sh
+export GITHUB_TOKEN=<your-token>
+make test-artifacts-fetch
+```
+
+### CLI options for inject script
 
 | Flag | Default | Description |
 |---|---|---|
@@ -375,15 +410,6 @@ This updates the markdown files in `content/docs/` with the test status. The bad
 | `--results-file` | `out/tests/generated/test-results.yaml` | Path to test results file |
 | `--dry-run` | false | Preview changes without modifying files |
 | `--quiet` | false | Suppress verbose output |
-
-### Production builds
-
-During production builds (Vercel), the `build-with-test-status.sh` script automatically:
-1. Downloads the latest test results artifact from the doc-tests workflow
-2. Runs `inject_test_status.py` to update front matter
-3. Builds the Hugo site
-
-This requires a `GITHUB_TOKEN` environment variable with `actions:read` scope.
 
 ---
 
