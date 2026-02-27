@@ -20,6 +20,7 @@
         {{ partial "breadcrumb.html" . }}
         <div class="content">
           {{ if .Title }}<h1>{{ .Title }}</h1>{{ end }}
+          {{ partial "test-status-badge.html" . }}
           {{ .Content }}
         </div>
         {{ partial "components/last-updated.html" . }}

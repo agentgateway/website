@@ -345,6 +345,74 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 
 ---
 
+## Displaying test status on doc pages
+
+Doc pages with passing tests display a "Verified" badge below the page title.
+
+### How it works
+
+1. **Test results** are written to `out/tests/generated/test-results.yaml` after tests run.
+2. **`doc_test_inject_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
+   - `test_status: passed` — all tests for the page passed
+   - `test_status: failed` — one or more tests failed (no badge displayed)
+3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
+
+### Makefile targets
+
+The Makefile provides convenient targets for working with test status:
+
+| Target | Description |
+|---|---|
+| `make deps` | Install Python dependencies (PyYAML) |
+| `make test-generate` | Generate doc test scripts without running them |
+| `make test-run` | Run all doc tests |
+| `make test-artifacts-fetch` | Fetch test artifacts from the latest main branch workflow run |
+| `make test-status` | Inject test status into markdown files |
+| `make fetch-test-artifacts-build` | Fetch artifacts, inject status, and build Hugo site |
+| `make fetch-test-artifacts-serve` | Fetch artifacts, inject status, and serve Hugo site locally |
+| `make test-run-build` | Run tests, inject status, and build Hugo site |
+| `make test-run-serve` | Run tests, inject status, and serve Hugo site locally |
+
+### Running locally
+
+To preview the "Verified" badges locally:
+
+```sh
+# Option 1: Fetch results from CI and serve
+make fetch-test-artifacts-serve
+
+# Option 2: Run tests locally and serve
+make test-run-serve
+```
+
+To manually inject test status after running tests:
+
+```sh
+make test-status
+```
+
+This updates the markdown files in `content/docs/` with the test status. The badge will appear when you run Hugo.
+
+### Fetching test artifacts
+
+The `test-artifacts-fetch` target downloads test results from the most recent completed workflow run on the `main` branch. This requires a `GITHUB_TOKEN` environment variable with `actions:read` scope:
+
+```sh
+export GITHUB_TOKEN=<your-token>
+make test-artifacts-fetch
+```
+
+### CLI options for inject script
+
+| Flag | Default | Description |
+|---|---|---|
+| `--repo-root` | `.` | Repository root directory |
+| `--results-file` | `out/tests/generated/test-results.yaml` | Path to test results file |
+| `--dry-run` | false | Preview changes without modifying files |
+| `--quiet` | false | Suppress verbose output |
+
+---
+
 ## Troubleshooting
 
 If you run into issues with installing yamltest, include the `--force` flag.
