@@ -97,7 +97,7 @@ def update_front_matter(content: str, test_status: Optional[str]) -> str:
     else:
         parsed_fm["test_status"] = test_status
     
-    new_fm = yaml.safe_dump(parsed_fm, sort_keys=False, default_flow_style=False, allow_unicode=True)
+    new_fm = yaml.safe_dump(parsed_fm, sort_keys=False, default_flow_style=False, allow_unicode=True, width=1000)
     new_fm = new_fm.rstrip("\n")
     
     return f"---\n{new_fm}\n---\n{body}"
