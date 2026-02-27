@@ -190,7 +190,7 @@ You can remove HTTP headers from a response before the response is sent back to 
    ```
    
 2. Set up a header modifier that removes the `content-type` header from the response. Choose between the HTTPRoute for a Gateway API-native way, or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} for more [flexible attachment options](../../../about/policies/trafficpolicy/) such as a gateway-level policy. 
-   {{< tabs items="HTTPRoute,TrafficPolicy" tabTotal="2" >}}
+   {{< tabs items="HTTPRoute,AgentgatewayPolicy" tabTotal="2" >}}
    {{% tab tabName="HTTPRoute" %}}
    ```yaml
    kubectl apply -f- <<EOF
