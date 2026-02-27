@@ -82,7 +82,8 @@ Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enable CSRF p
 YAMLTest -f - <<'EOF'
 - name: CSRF allows POST with no origin header
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/post"
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /post
     method: POST
     headers:
       host: www.example.com
@@ -92,7 +93,8 @@ YAMLTest -f - <<'EOF'
     statusCode: 200
 - name: CSRF allows POST from trusted additional origin
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/post"
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /post
     method: POST
     headers:
       host: www.example.com
@@ -103,7 +105,8 @@ YAMLTest -f - <<'EOF'
     statusCode: 200
 - name: CSRF blocks POST from untrusted origin
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/post"
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /post
     method: POST
     headers:
       host: www.example.com
