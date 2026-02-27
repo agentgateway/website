@@ -15,7 +15,9 @@ This approach increases the resiliency of your network environment by ensuring t
 
 ## Fail over to other models {#model-failover}
 
-You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority. Models within the same priority group are load balanced (round-robin), not prioritized. This pattern—load balancing within a tier with failover across tiers—aligns with what other gateways often describe as Power of Two Choices (P2C)–style load balancing and traffic splitting for A/B testing or canary rollouts.
+You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority.
+
+Models within the same priority group are [load balanced]({{< link-hextra path="/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies. You can also use weighted backends for traffic splitting to support A/B testing or canary rollouts.
 
 1. Create or update the {{< reuse "agw-docs/snippets/backend.md" >}} for your LLM providers.
 
@@ -254,6 +256,7 @@ kubectl delete httproute model-failover -n {{< reuse "agw-docs/snippets/namespac
 
 Explore other agentgateway features.
 
+* Learn more about [load balancing strategies]({{< link-hextra path="/llm/load-balancing/" >}}) and the P2C algorithm.
 * Pass in [functions]({{< link-hextra path="/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
 * Set up [prompt guards]({{< link-hextra path="/llm/prompt-guards/">}}) to block unwanted requests and mask sensitive data.
 * [Enrich your prompts]({{< link-hextra path="/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.
