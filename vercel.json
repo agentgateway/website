@@ -4,6 +4,6 @@
       "HUGO_VERSION": "0.147.2"
     }
   },
-  "buildCommand": "bash scripts/build-with-test-status.sh",
-  "installCommand": "yum install -y golang; pip3 install pyyaml; npm i"
+  "buildCommand": "hugo --gc --minify",
+  "installCommand": "yum install -y golang; npm i"
 }
