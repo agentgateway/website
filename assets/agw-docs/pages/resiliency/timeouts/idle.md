@@ -1,96 +1,98 @@
-Customize the default idle timeout of 1 hour (3600s). 
+Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstream or upstream service if there are no active streams. 
 
 ## About idle timeouts
 
-By default, Envoy terminates the connection to a downstream or upstream service after one hour if there are no active streams. You can customize this idle timeout with an HTTPListenerPolicy. The policy updates the [`common_http_protocol_options` setting in Envoy](https://www.envoyproxy.io/docs/envoy/latest/api-v3/extensions/upstreams/http/v3/http_protocol_options.proto).
+An idle timeout configures the time a connection between a downstream client and an upstream service can stay open without sending any data or bytes. 
 
-Note that the idle timeout configures the timeout for the entire connection from a downstream service to the gateway proxy, and to the upstream service. If you want to set a timeout for a single stream, configure the [idle stream timeout]({{< link-hextra path="/resiliency/timeouts/idle-stream/" >}}) instead. 
+In HTTP/1.1, connections are usually kept alive so you can reuse them for multiple requests. For example, a request to your upstream service might include a database to retrieve data. If an idle timeout is set too low, the gateway proxy might terminate the connection to the downstream client if the database is slow to respond. This can lead to multiple issues on the client side, including silent connection closures, protocol errors, or increased latency, because the client must establish a new connection in order to proceed. Long idle timeouts however can cause resource exhaustion on the gateway proxy and increased latency for clients, because they need to wait for a new connection to open up on the gateway proxy. 
 
-## Before you begin
+Note that idle timeouts do not configure how long an upstream service can take to respond to your request. Use [request timeouts]({{< ref "request.md" >}}) for this scenario instead.
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< callout type="info" >}}
+The idle timeout is configured for entire HTTP/1 connections from a downstream service to the gateway proxy, and to the upstream service. 
+{{< /callout >}}
+
+
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up idle timeouts
 
-1. Create an HTTPListenerPolicy with your idle timeout configuration. In this example, you apply an idle timeout of 30 seconds.
+
+1. Create an AgentgatewayPolicy with the idle timeout configuration. In this example, you apply an idle timeout of 30 seconds. 
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: HTTPListenerPolicy
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: idle-time
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: http
-     idleTimeout: "30s"
+     - kind: Gateway
+       name: agentgateway-proxy
+       group: gateway.networking.k8s.io
+     frontend:
+       http:
+         http1IdleTimeout: 30s
    EOF
    ```
 
 2. Verify that the gateway proxy is configured with the idle timeout.
-   1. Port-forward the gateway proxy on port 19000.
+   1. Port-forward the gateway proxy on port 15000.
 
       ```sh
-      kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 19000
+      kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
       ```
 
-   2. Get the configuration of your gateway proxy as a config dump.
-
-      ```sh
-      curl -X POST 127.0.0.1:19000/config_dump\?include_eds > gateway-config.json
-      ```
-
-   3. Open the config dump and find the `http_connection_manager` configuration. Verify that the timeout policy is set as you configured it.
+   2. Get the config dump and verify that the idle timeout policy is set as you configured it.
       
       Example `jq` command:
       ```sh
-      jq '.configs[] 
-      | select(."@type" == "type.googleapis.com/envoy.admin.v3.ListenersConfigDump") 
-      | .dynamic_listeners[].active_state.listener.filter_chains[].filters[] 
-      | select(.name == "envoy.filters.network.http_connection_manager")' gateway-config.json
+      curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.frontend != null and .policy.frontend.hTTP != null and .policy.frontend.hTTP.http1IdleTimeout != null)] | .[0]'
       ```
       
       Example output: 
-      ```console{hl_lines=[25]}
+      ```json {linenos=table,hl_lines=[20],filename="http://localhost:15000/config_dump"}
       {
-        "name": "envoy.filters.network.http_connection_manager",
-        "typed_config": {
-            "@type": "type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager",
-            "stat_prefix": "http",
-            "rds": {
-            "config_source": {
-                "ads": {},
-                "resource_api_version": "V3"
-            },
-            "route_config_name": "listener~8080"
-            },
-            "http_filters": [
-            {
-                "name": "envoy.filters.http.router",
-                "typed_config": {
-                "@type": "type.googleapis.com/envoy.extensions.filters.http.router.v3.Router"
-                }
+        "key": "frontend/agentgateway-system/idle-time:frontend-http:agentgateway-system/agentgateway-proxy",
+        "name": {
+          "kind": "AgentgatewayPolicy",
+          "name": "idle-time",
+          "namespace": "agentgateway-system"
+        },
+        "target": {
+          "gateway": {
+            "gatewayName": "agentgateway-proxy",
+            "gatewayNamespace": "agentgateway-system",
+            "listenerName": null
+          }
+        },
+        "policy": {
+          "frontend": {
+            "hTTP": {
+              "maxBufferSize": 2097152,
+              "http1MaxHeaders": null,
+              "http1IdleTimeout": "30s",
+              "http2WindowSize": null,
+              "http2ConnectionWindowSize": null,
+              "http2FrameSize": null,
+              "http2KeepaliveInterval": null,
+              "http2KeepaliveTimeout": null
             }
-            ],
-            "use_remote_address": true,
-            "normalize_path": true,
-            "merge_slashes": true,
-            "common_http_protocol_options": {
-            "idle_timeout": "30s"
-            }
+          }
         }
       }
+
       ```
+
       
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
    
 ```sh
-kubectl delete httplistenerpolicy idle-time -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+kubectl delete AgentgatewayPolicy idle-time -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```
 
 

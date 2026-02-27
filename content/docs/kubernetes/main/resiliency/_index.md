@@ -7,4 +7,5 @@ icon: import_contacts
 
 {{< cards >}}
   {{< card link="retry" title="Retries" >}}
+  {{< card link="timeouts" title="Timeouts" >}}
 {{< /cards >}}
