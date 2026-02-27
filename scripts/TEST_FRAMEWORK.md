@@ -345,6 +345,48 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 
 ---
 
+## Displaying test status on doc pages
+
+Doc pages with passing tests display a "Verified" badge below the page title. This badge is automatically added during the site build process.
+
+### How it works
+
+1. **Test results** are written to `out/tests/generated/test-results.yaml` after tests run.
+2. **`inject_test_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
+   - `test_status: passed` — all tests for the page passed
+   - `test_status: failed` — one or more tests failed (no badge displayed)
+3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
+
+### Running locally
+
+After running tests, inject the status into your local docs:
+
+```sh
+python3 scripts/inject_test_status.py
+```
+
+This updates the markdown files in `content/docs/` with the test status. The badge will appear when you run `hugo server`.
+
+### CLI options
+
+| Flag | Default | Description |
+|---|---|---|
+| `--repo-root` | `.` | Repository root directory |
+| `--results-file` | `out/tests/generated/test-results.yaml` | Path to test results file |
+| `--dry-run` | false | Preview changes without modifying files |
+| `--quiet` | false | Suppress verbose output |
+
+### Production builds
+
+During production builds (Vercel), the `build-with-test-status.sh` script automatically:
+1. Downloads the latest test results artifact from the doc-tests workflow
+2. Runs `inject_test_status.py` to update front matter
+3. Builds the Hugo site
+
+This requires a `GITHUB_TOKEN` environment variable with `actions:read` scope.
+
+---
+
 ## Troubleshooting
 
 If you run into issues with installing yamltest, include the `--force` flag.
