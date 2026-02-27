@@ -224,7 +224,7 @@ You can remove HTTP headers from a response before the response is sent back to 
    |`spec.rules.filters.responseHeaderModifier.remove`|The name of the response header that you want to remove. |
    |`spec.rules.backendRefs`|The backend destination you want to forward traffic to. In this example, all traffic is forwarded to the httpbin app that you set up as part of the get started guide. |
    {{% /tab %}}
-   {{% tab tabName="EnterpriseKgatewayTrafficPolicy" %}}
+   {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
    1. Create an HTTPRoute resource for the route that you want to modify. Note that the example selects the http Gateway that you created before you began.
       ```yaml
       kubectl apply -f- <<EOF
