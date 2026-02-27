@@ -347,7 +347,7 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 
 ## Displaying test status on doc pages
 
-Doc pages with passing tests display a "Verified" badge below the page title. This badge is automatically added during the site build process.
+Doc pages with passing tests display a "Verified" badge below the page title.
 
 ### How it works
 
