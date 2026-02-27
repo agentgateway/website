@@ -1,0 +1,5825 @@
+categories:
+  - name: "Native Providers"
+    description: "First-class support with full API translation in agentgateway."
+    id: "native"
+    providers:
+      - name: "OpenAI"
+        slug: "openai"
+        model: "gpt-4o"
+        envVar: "OPENAI_API_KEY"
+        type: "native"
+        providerType: "openai"
+        host: "api.openai.com"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "responses"
+          - "embeddings"
+          - "images"
+          - "images_edits"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "moderations"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "realtime"
+          - "models"
+        models:
+          - "gpt-4o"
+          - "gpt-4o-mini"
+          - "gpt-4-turbo"
+          - "gpt-4"
+          - "gpt-4.5-preview"
+          - "gpt-4.1"
+          - "gpt-4.1-mini"
+          - "gpt-4.1-nano"
+          - "gpt-5"
+          - "gpt-5-mini"
+          - "gpt-5-nano"
+          - "gpt-5.1"
+          - "gpt-5.1-mini"
+          - "gpt-5.1-codex"
+          - "gpt-5.2"
+          - "gpt-5.2-pro"
+          - "gpt-3.5-turbo"
+          - "o1"
+          - "o1-mini"
+          - "o1-preview"
+          - "o3"
+          - "o3-mini"
+          - "o3-pro"
+          - "o4-mini"
+          - "codex-mini-latest"
+          - "gpt-4o-realtime"
+          - "chatgpt-4o-latest"
+          - "gpt-image-1"
+          - "dall-e-3"
+          - "text-embedding-3-small"
+          - "text-embedding-3-large"
+          - "whisper-1"
+          - "tts-1"
+          - "tts-1-hd"
+          - "gpt-4o-mini-tts"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: openai
+                    provider:
+                      openAI:
+                        model: gpt-4o
+                policies:
+                  backendAuth:
+                    key: "$OPENAI_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export OPENAI_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: openai-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $OPENAI_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: openai
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: gpt-4o
+            policies:
+              auth:
+                secretRef:
+                  name: openai-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: openai
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /openai
+              backendRefs:
+              - name: openai
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/openai" -H content-type:application/json -d '{
+            "model": "gpt-4o",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Anthropic"
+        slug: "anthropic"
+        model: "claude-sonnet-4-20250514"
+        envVar: "ANTHROPIC_API_KEY"
+        type: "native"
+        providerType: "anthropic"
+        host: "api.anthropic.com"
+        path: "/v1/messages"
+        endpoints:
+          - "chat"
+          - "messages"
+          - "batches"
+          - "models"
+        models:
+          - "claude-opus-4-6"
+          - "claude-sonnet-4-6"
+          - "claude-opus-4-5"
+          - "claude-sonnet-4-5"
+          - "claude-opus-4-1"
+          - "claude-opus-4-20250514"
+          - "claude-sonnet-4-20250514"
+          - "claude-haiku-4-5"
+          - "claude-3.7-sonnet"
+          - "claude-3.5-sonnet"
+          - "claude-3.5-haiku"
+          - "claude-3-opus"
+          - "claude-3-sonnet"
+          - "claude-3-haiku"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: anthropic
+                    provider:
+                      anthropic:
+                        model: claude-sonnet-4-20250514
+                    routes:
+                      /v1/messages: messages
+                      /v1/chat/completions: completions
+                      /v1/models: passthrough
+                      "*": passthrough
+                policies:
+                  backendAuth:
+                    key: "$ANTHROPIC_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export ANTHROPIC_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: anthropic-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $ANTHROPIC_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: anthropic
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                anthropic:
+                  model: "claude-sonnet-4-20250514"
+            policies:
+              auth:
+                secretRef:
+                  name: anthropic-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: anthropic
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /anthropic
+              backendRefs:
+              - name: anthropic
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/anthropic" -H content-type:application/json -d '{
+            "model": "claude-sonnet-4-20250514",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Amazon Bedrock"
+        slug: "bedrock"
+        model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+        envVar: "AWS_ACCESS_KEY_ID"
+        type: "native"
+        providerType: "bedrock"
+        host: "bedrock-runtime.{region}.amazonaws.com"
+        path: "/model/{model-id}/invoke"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "fine_tuning"
+          - "batches"
+          - "models"
+        models:
+          - "anthropic.claude-sonnet-4.6"
+          - "anthropic.claude-opus-4.6"
+          - "anthropic.claude-sonnet-4.5"
+          - "anthropic.claude-opus-4.5"
+          - "anthropic.claude-opus-4.1"
+          - "anthropic.claude-sonnet-4"
+          - "anthropic.claude-opus-4"
+          - "anthropic.claude-haiku-4-5"
+          - "anthropic.claude-3.7-sonnet"
+          - "anthropic.claude-3.5-sonnet"
+          - "anthropic.claude-3.5-haiku"
+          - "anthropic.claude-3-haiku"
+          - "amazon.nova-premier"
+          - "amazon.nova-pro"
+          - "amazon.nova-lite"
+          - "amazon.nova-micro"
+          - "amazon.nova-sonic"
+          - "amazon.nova-2-pro"
+          - "amazon.nova-2-lite"
+          - "amazon.titan-text-premier"
+          - "amazon.titan-text-express"
+          - "amazon.titan-embed-text-v2"
+          - "meta.llama4-maverick-17b"
+          - "meta.llama4-scout-17b"
+          - "meta.llama3-3-70b-instruct"
+          - "meta.llama3-1-405b-instruct"
+          - "meta.llama3-1-70b-instruct"
+          - "meta.llama3-1-8b-instruct"
+          - "meta.llama3-2-90b-instruct"
+          - "meta.llama3-2-11b-instruct"
+          - "mistral.mistral-large-3"
+          - "mistral.mistral-large"
+          - "mistral.mixtral-8x7b"
+          - "mistral.pixtral-large"
+          - "cohere.command-r-plus"
+          - "cohere.command-r"
+          - "deepseek.v3.2"
+          - "deepseek.v3.1"
+          - "deepseek.r1"
+          - "ai21.jamba-1-5-large"
+          - "ai21.jamba-1-5-mini"
+          - "minimax.minimax-m2.1"
+          - "qwen.qwen3-235b-a22b"
+          - "qwen.qwen3-32b"
+          - "stability.sd3-5-large"
+          - "google.gemma-3-27b-it"
+          - "google.gemma-3-12b-it"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: bedrock
+                    provider:
+                      bedrock:
+                        model: us.anthropic.claude-sonnet-4-20250514-v1:0
+                        region: us-east-1
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret (IAM credentials)
+          export AWS_ACCESS_KEY_ID="<your-access-key>"
+          export AWS_SECRET_ACCESS_KEY="<your-secret-key>"
+          export AWS_SESSION_TOKEN="<your-session-token>"
+
+          kubectl create secret generic bedrock-secret \
+            -n agentgateway-system \
+            --from-literal=accessKey="$AWS_ACCESS_KEY_ID" \
+            --from-literal=secretKey="$AWS_SECRET_ACCESS_KEY" \
+            --from-literal=sessionToken="$AWS_SESSION_TOKEN" \
+            --type=Opaque \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: bedrock
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                bedrock:
+                  model: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+                  region: "us-east-1"
+            policies:
+              auth:
+                secretRef:
+                  name: bedrock-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: bedrock
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /bedrock
+              backendRefs:
+              - name: bedrock
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/bedrock" -H content-type:application/json -d '{
+            "model": "",
+            "messages": [{"role": "user", "content": "Hello from Bedrock!"}]
+          }' | jq
+
+      - name: "Google Gemini"
+        slug: "gemini"
+        model: "gemini-2.5-flash"
+        envVar: "GOOGLE_KEY"
+        type: "native"
+        providerType: "gemini"
+        host: "generativelanguage.googleapis.com"
+        path: "/v1beta/models/{model}:generateContent"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "video"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "gemini-2.5-pro"
+          - "gemini-2.5-flash"
+          - "gemini-2.5-flash-lite"
+          - "gemini-2.5-flash-image"
+          - "gemini-2.5-computer-use-preview"
+          - "gemini-2.5-flash-preview-tts"
+          - "gemini-2.5-pro-preview-tts"
+          - "gemini-2.0-flash"
+          - "gemini-2.0-flash-lite"
+          - "gemini-1.5-pro"
+          - "gemini-1.5-flash"
+          - "gemini-1.5-flash-8b"
+          - "gemini-3-flash-preview"
+          - "gemini-3-pro-preview"
+          - "gemini-3-pro-image-preview"
+          - "gemini-3.1-pro-preview"
+          - "gemini-3.1-flash-image-preview"
+          - "gemini-embedding-001"
+          - "imagen-4.0-generate-001"
+          - "gemma-3-27b-it"
+          - "gemma-3-12b-it"
+          - "gemma-3-4b-it"
+          - "gemma-3-1b-it"
+          - "gemma-2-27b-it"
+          - "gemma-2-9b-it"
+          - "learnlm-1.5-pro"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: gemini
+                    provider:
+                      gemini:
+                        model: gemini-2.5-flash
+                policies:
+                  backendAuth:
+                    key: "$GOOGLE_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export GOOGLE_KEY=<your-gemini-api-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: google-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $GOOGLE_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: gemini
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                gemini:
+                  model: gemini-2.5-flash
+            policies:
+              auth:
+                secretRef:
+                  name: google-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: gemini
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /gemini
+              backendRefs:
+              - name: gemini
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/gemini" -H content-type:application/json -d '{
+            "model": "gemini-2.5-flash",
+            "messages": [{"role": "user", "content": "Hello from Gemini!"}]
+          }' | jq
+
+      - name: "Google Vertex AI"
+        slug: "vertex-ai"
+        model: "gemini-pro"
+        envVar: "VERTEX_AI_API_KEY"
+        type: "native"
+        providerType: "vertexai"
+        host: "{region}-aiplatform.googleapis.com"
+        path: "/v1/projects/{project}/locations/{region}/publishers/google/models/{model}:generateContent"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "video"
+          - "fine_tuning"
+          - "batches"
+          - "models"
+        models:
+          - "gemini-2.5-pro"
+          - "gemini-2.5-flash"
+          - "gemini-2.5-flash-lite"
+          - "gemini-2.0-flash"
+          - "gemini-2.0-flash-lite"
+          - "gemini-1.5-pro"
+          - "gemini-1.5-flash"
+          - "gemini-pro"
+          - "gemini-3-flash"
+          - "gemini-3-pro"
+          - "gemini-embedding-001"
+          - "text-embedding-005"
+          - "imagen-4.0-generate"
+          - "claude-opus-4.6"
+          - "claude-sonnet-4.6"
+          - "claude-opus-4.5"
+          - "claude-sonnet-4.5"
+          - "claude-opus-4.1"
+          - "claude-opus-4"
+          - "claude-sonnet-4"
+          - "claude-haiku-4-5"
+          - "claude-3-opus"
+          - "claude-3.7-sonnet"
+          - "claude-3.5-sonnet-v2"
+          - "claude-3.5-haiku"
+          - "gemma-3"
+          - "llama-4-scout"
+          - "llama-4-maverick"
+          - "llama-3.3-70b"
+          - "llama-3.1-405b"
+          - "mistral-large"
+          - "jamba-1.5-large"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: vertex-ai
+                    provider:
+                      vertexAI:
+                        model: gemini-pro
+                        projectId: "my-gcp-project"
+                        region: "us-central1"
+                policies:
+                  backendAuth:
+                    key: "$VERTEX_AI_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export VERTEX_AI_API_KEY=<your-vertex-api-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: vertex-ai-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $VERTEX_AI_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: vertex-ai
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                vertexai:
+                  model: gemini-pro
+                  projectId: "my-gcp-project"
+                  region: "us-central1"
+            policies:
+              auth:
+                secretRef:
+                  name: vertex-ai-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: vertex-ai
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /vertex
+              backendRefs:
+              - name: vertex-ai
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/vertex" -H content-type:application/json -d '{
+            "model": "gemini-pro",
+            "messages": [{"role": "user", "content": "Hello from Vertex AI!"}]
+          }' | jq
+
+      - name: "Azure OpenAI"
+        slug: "azure-openai"
+        model: "gpt-4o"
+        envVar: "AZURE_API_KEY"
+        type: "native"
+        providerType: "openai (Azure)"
+        host: "{resource}.openai.azure.com"
+        path: "/openai/deployments/{deployment}/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "models"
+        models:
+          - "gpt-4o"
+          - "gpt-4o-mini"
+          - "gpt-4-turbo"
+          - "gpt-4"
+          - "gpt-4.5-preview"
+          - "gpt-4.1"
+          - "gpt-4.1-mini"
+          - "gpt-4.1-nano"
+          - "gpt-5"
+          - "gpt-5-mini"
+          - "gpt-5-nano"
+          - "gpt-5.1"
+          - "gpt-5.2"
+          - "gpt-3.5-turbo"
+          - "o1"
+          - "o1-mini"
+          - "o3"
+          - "o3-mini"
+          - "o3-pro"
+          - "o4-mini"
+          - "gpt-image-1"
+          - "dall-e-3"
+          - "text-embedding-3-large"
+          - "text-embedding-3-small"
+          - "gpt-oss-120b"
+          - "gpt-oss-20b"
+          - "deepseek-r1"
+          - "llama-3.3-70b-instruct"
+          - "whisper"
+          - "tts-1"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: azure-openai
+                    provider:
+                      openAI:
+                        model: gpt-4o
+                        host: your-resource.openai.azure.com
+                        port: 443
+                        path: "/openai/deployments/gpt-4o/chat/completions?api-version=2024-10-21"
+                policies:
+                  backendAuth:
+                    key: "$AZURE_API_KEY"
+                  tls:
+                    sni: your-resource.openai.azure.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export AZURE_API_KEY=<your-azure-api-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: azure-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $AZURE_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: azure-openai
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: gpt-4o
+                  host: your-resource.openai.azure.com
+                  port: 443
+                  path: "/openai/deployments/gpt-4o/chat/completions?api-version=2024-10-21"
+            policies:
+              auth:
+                secretRef:
+                  name: azure-secret
+              tls:
+                sni: your-resource.openai.azure.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: azure-openai
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /azure
+              backendRefs:
+              - name: azure-openai
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/azure" -H content-type:application/json -d '{
+            "model": "gpt-4o",
+            "messages": [{"role": "user", "content": "Hello from Azure!"}]
+          }' | jq
+
+  - name: "OpenAI-Compatible Providers"
+    description: "These providers expose an OpenAI-compatible API. Agentgateway routes to them using the openai provider type with custom host, port, and path overrides."
+    id: "openai-compatible"
+    providers:
+      - name: "Mistral AI"
+        slug: "mistral"
+        model: "mistral-medium-2505"
+        envVar: "MISTRAL_API_KEY"
+        type: "openai-compatible"
+        host: "api.mistral.ai"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "fim"
+          - "moderations"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "mistral-large-latest"
+          - "mistral-large-2512"
+          - "mistral-medium-latest"
+          - "mistral-medium-2508"
+          - "mistral-small-latest"
+          - "mistral-small-2506"
+          - "magistral-medium-latest"
+          - "magistral-small-latest"
+          - "ministral-14b-2512"
+          - "ministral-8b-2512"
+          - "ministral-3b-2512"
+          - "codestral-latest"
+          - "codestral-2508"
+          - "codestral-embed"
+          - "codestral-mamba-latest"
+          - "devstral-latest"
+          - "devstral-medium-latest"
+          - "devstral-small-latest"
+          - "devstral-2512"
+          - "voxtral-small-2507"
+          - "voxtral-mini-2507"
+          - "pixtral-large-latest"
+          - "pixtral-12b"
+          - "mistral-nemo"
+          - "mistral-embed"
+          - "mistral-ocr-latest"
+          - "open-mistral-7b"
+          - "open-mixtral-8x7b"
+          - "open-mixtral-8x22b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: mistral
+                    provider:
+                      openAI:
+                        model: mistral-medium-2505
+                        host: api.mistral.ai
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$MISTRAL_API_KEY"
+                  tls:
+                    sni: api.mistral.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export MISTRAL_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: mistral-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $MISTRAL_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: mistral
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: mistral-medium-2505
+                  host: api.mistral.ai
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: mistral-secret
+              tls:
+                sni: api.mistral.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: mistral
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /mistral
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.mistral.ai
+              backendRefs:
+              - name: mistral
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/mistral" -H content-type:application/json -d '{
+            "model": "mistral-medium-2505",
+            "messages": [{"role": "user", "content": "Hello from Mistral!"}]
+          }' | jq
+
+      - name: "DeepSeek"
+        slug: "deepseek"
+        model: "deepseek-chat"
+        envVar: "DEEPSEEK_API_KEY"
+        type: "openai-compatible"
+        host: "api.deepseek.com"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "models"
+        models:
+          - "deepseek-chat"
+          - "deepseek-reasoner"
+          - "deepseek-v3"
+          - "deepseek-v3.1"
+          - "deepseek-v3.2"
+          - "deepseek-r1"
+          - "deepseek-coder"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: deepseek
+                    provider:
+                      openAI:
+                        model: deepseek-chat
+                        host: api.deepseek.com
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$DEEPSEEK_API_KEY"
+                  tls:
+                    sni: api.deepseek.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export DEEPSEEK_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: deepseek-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $DEEPSEEK_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: deepseek
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: deepseek-chat
+                  host: api.deepseek.com
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: deepseek-secret
+              tls:
+                sni: api.deepseek.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: deepseek
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /deepseek
+              backendRefs:
+              - name: deepseek
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/deepseek" -H content-type:application/json -d '{
+            "model": "deepseek-chat",
+            "messages": [{"role": "user", "content": "Hello from DeepSeek!"}]
+          }' | jq
+
+      - name: "xAI (Grok)"
+        slug: "xai"
+        model: "grok-2-latest"
+        envVar: "XAI_API_KEY"
+        type: "openai-compatible"
+        host: "api.x.ai"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "models"
+        models:
+          - "grok-4"
+          - "grok-4-fast-reasoning"
+          - "grok-4-fast-non-reasoning"
+          - "grok-4-1-fast-reasoning"
+          - "grok-3"
+          - "grok-3-fast-latest"
+          - "grok-3-mini"
+          - "grok-3-mini-fast"
+          - "grok-2-latest"
+          - "grok-2-vision-latest"
+          - "grok-code-fast"
+          - "grok-imagine-image"
+          - "grok-beta"
+          - "grok-vision-beta"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: xai
+                    provider:
+                      openAI:
+                        model: grok-2-latest
+                        host: api.x.ai
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$XAI_API_KEY"
+                  tls:
+                    sni: api.x.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export XAI_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: xai-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $XAI_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: xai
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: grok-2-latest
+                  host: api.x.ai
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: xai-secret
+              tls:
+                sni: api.x.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: xai
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /xai
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.x.ai
+              backendRefs:
+              - name: xai
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/xai" -H content-type:application/json -d '{
+            "model": "grok-2-latest",
+            "messages": [{"role": "user", "content": "Hello from Grok!"}]
+          }' | jq
+
+      - name: "Groq"
+        slug: "groq"
+        model: "llama-3.3-70b-versatile"
+        envVar: "GROQ_API_KEY"
+        type: "openai-compatible"
+        host: "api.groq.com"
+        path: "/openai/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "models"
+        models:
+          - "llama-3.3-70b-versatile"
+          - "llama-3.1-8b-instant"
+          - "llama-4-maverick-17b-128e-instruct"
+          - "llama-4-scout-17b-16e-instruct"
+          - "llama-guard-4-12b"
+          - "gemma-7b-it"
+          - "qwen3-32b"
+          - "gpt-oss-120b"
+          - "gpt-oss-20b"
+          - "kimi-k2-instruct"
+          - "deepseek-r1-distill-llama-70b"
+          - "groq/compound"
+          - "groq/compound-mini"
+          - "whisper-large-v3"
+          - "whisper-large-v3-turbo"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: groq
+                    provider:
+                      openAI:
+                        model: llama-3.3-70b-versatile
+                        host: api.groq.com
+                        port: 443
+                        path: "/openai/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$GROQ_API_KEY"
+                  tls:
+                    sni: api.groq.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export GROQ_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: groq-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $GROQ_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: groq
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: llama-3.3-70b-versatile
+                  host: api.groq.com
+                  port: 443
+                  path: "/openai/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: groq-secret
+              tls:
+                sni: api.groq.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: groq
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /groq
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.groq.com
+              backendRefs:
+              - name: groq
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/groq" -H content-type:application/json -d '{
+            "model": "llama-3.3-70b-versatile",
+            "messages": [{"role": "user", "content": "Hello from Groq!"}]
+          }' | jq
+
+      - name: "Cohere"
+        slug: "cohere"
+        model: "command-r-plus"
+        envVar: "COHERE_API_KEY"
+        type: "openai-compatible"
+        host: "api.cohere.com"
+        path: "/v2/chat"
+        port: 443
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "rerank"
+          - "classify"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "command-r-plus"
+          - "command-r"
+          - "command-a-03-2025"
+          - "command-a-vision-07-2025"
+          - "command-r7b-12-2024"
+          - "command-light"
+          - "embed-v4.0"
+          - "embed-v3-english"
+          - "embed-v3-multilingual"
+          - "rerank-v3.5"
+          - "rerank-v4.0-pro"
+          - "rerank-v4.0-fast"
+          - "c4ai-aya-expanse-32b"
+          - "c4ai-aya-vision-32b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: cohere
+                    provider:
+                      openAI:
+                        model: command-r-plus
+                        host: api.cohere.ai
+                        port: 443
+                        path: "/compatibility/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$COHERE_API_KEY"
+                  tls:
+                    sni: api.cohere.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export COHERE_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: cohere-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $COHERE_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: cohere
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: command-r-plus
+                  host: api.cohere.ai
+                  port: 443
+                  path: "/compatibility/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: cohere-secret
+              tls:
+                sni: api.cohere.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: cohere
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /cohere
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.cohere.ai
+              backendRefs:
+              - name: cohere
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/cohere" -H content-type:application/json -d '{
+            "model": "command-r-plus",
+            "messages": [{"role": "user", "content": "Hello from Cohere!"}]
+          }' | jq
+
+      - name: "Together AI"
+        slug: "together"
+        model: "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo"
+        envVar: "TOGETHER_API_KEY"
+        type: "openai-compatible"
+        host: "api.together.xyz"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "rerank"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+          - "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+          - "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo"
+          - "meta-llama/Llama-3.1-405B-Instruct-Turbo"
+          - "meta-llama/Llama-3.1-70B-Instruct-Turbo"
+          - "meta-llama/Llama-3.1-8B-Instruct-Turbo"
+          - "meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo"
+          - "meta-llama/Llama-Guard-4-12B"
+          - "Qwen/Qwen3.5-397B-A17B"
+          - "Qwen/Qwen3-235B-A22B"
+          - "Qwen/Qwen3-235B-A22B-Instruct-2507"
+          - "Qwen/Qwen3-Coder-480B-A35B-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct-Turbo"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3"
+          - "deepseek-ai/DeepSeek-V3.1"
+          - "openai/gpt-oss-120b"
+          - "openai/gpt-oss-20b"
+          - "moonshotai/Kimi-K2-Instruct-0905"
+          - "google/gemma-2-27b-it"
+          - "google/gemma-3n-E4B-it"
+          - "mistralai/Mixtral-8x22B-Instruct-v0.1"
+          - "mistralai/Mistral-Small-24B-Instruct-2501"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: together
+                    provider:
+                      openAI:
+                        model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+                        host: api.together.xyz
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$TOGETHER_API_KEY"
+                  tls:
+                    sni: api.together.xyz
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export TOGETHER_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: together-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $TOGETHER_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: together
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+                  host: api.together.xyz
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: together-secret
+              tls:
+                sni: api.together.xyz
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: together
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /together
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.together.xyz
+              backendRefs:
+              - name: together
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/together" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo",
+            "messages": [{"role": "user", "content": "Hello from Together AI!"}]
+          }' | jq
+
+      - name: "Fireworks AI"
+        slug: "fireworks"
+        model: "accounts/fireworks/models/llama-v3p1-70b-instruct"
+        envVar: "FIREWORKS_API_KEY"
+        type: "openai-compatible"
+        host: "api.fireworks.ai"
+        path: "/inference/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "llama-v3p3-70b-instruct"
+          - "llama-v3p1-405b-instruct"
+          - "llama-v3p1-70b-instruct"
+          - "llama-v3p1-8b-instruct"
+          - "llama-v3p2-90b-vision-instruct"
+          - "llama4-maverick-instruct-basic"
+          - "llama4-scout-instruct-basic"
+          - "qwen3-235b-a22b"
+          - "qwen3-coder-480b-a35b-instruct"
+          - "qwen3-32b"
+          - "qwen3-8b"
+          - "qwen2p5-72b-instruct"
+          - "deepseek-r1"
+          - "deepseek-v3"
+          - "deepseek-v3p1"
+          - "deepseek-v3p2"
+          - "deepseek-r1-0528"
+          - "gpt-oss-120b"
+          - "gpt-oss-20b"
+          - "kimi-k2-instruct-0905"
+          - "glm-5"
+          - "glm-4p7"
+          - "mixtral-8x22b-instruct"
+          - "gemma2-9b-it"
+          - "gemma-3-27b-instruct"
+          - "gemma-3-12b-instruct"
+          - "mistral-large-3-675b-instruct-2512"
+          - "yi-large"
+          - "phi-3-vision-128k-instruct"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: fireworks
+                    provider:
+                      openAI:
+                        model: accounts/fireworks/models/llama-v3p1-70b-instruct
+                        host: api.fireworks.ai
+                        port: 443
+                        path: "/inference/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$FIREWORKS_API_KEY"
+                  tls:
+                    sni: api.fireworks.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export FIREWORKS_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: fireworks-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $FIREWORKS_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: fireworks
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: accounts/fireworks/models/llama-v3p1-70b-instruct
+                  host: api.fireworks.ai
+                  port: 443
+                  path: "/inference/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: fireworks-secret
+              tls:
+                sni: api.fireworks.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: fireworks
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /fireworks
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.fireworks.ai
+              backendRefs:
+              - name: fireworks
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/fireworks" -H content-type:application/json -d '{
+            "model": "accounts/fireworks/models/llama-v3p1-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello from Fireworks!"}]
+          }' | jq
+
+      - name: "Perplexity AI"
+        slug: "perplexity"
+        model: "sonar-pro"
+        envVar: "PERPLEXITY_API_KEY"
+        type: "openai-compatible"
+        host: "api.perplexity.ai"
+        path: "/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+        models:
+          - "sonar-pro"
+          - "sonar"
+          - "sonar-deep-research"
+          - "sonar-reasoning-pro"
+          - "sonar-reasoning"
+          - "pplx-embed-v1-4b"
+          - "r1-1776"
+          - "llama-3.1-sonar-large-128k-online"
+          - "llama-3.1-sonar-huge-128k-online"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: perplexity
+                    provider:
+                      openAI:
+                        model: sonar-pro
+                        host: api.perplexity.ai
+                        port: 443
+                        path: "/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$PERPLEXITY_API_KEY"
+                  tls:
+                    sni: api.perplexity.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export PERPLEXITY_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: perplexity-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $PERPLEXITY_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: perplexity
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: sonar-pro
+                  host: api.perplexity.ai
+                  port: 443
+                  path: "/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: perplexity-secret
+              tls:
+                sni: api.perplexity.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: perplexity
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /perplexity
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.perplexity.ai
+              backendRefs:
+              - name: perplexity
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/perplexity" -H content-type:application/json -d '{
+            "model": "sonar-pro",
+            "messages": [{"role": "user", "content": "Hello from Perplexity!"}]
+          }' | jq
+
+      - name: "OpenRouter"
+        slug: "openrouter"
+        model: "anthropic/claude-sonnet-4-20250514"
+        envVar: "OPENROUTER_API_KEY"
+        type: "openai-compatible"
+        host: "openrouter.ai"
+        path: "/api/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "models"
+        models:
+          - "openai/gpt-4o"
+          - "openai/gpt-5"
+          - "openai/gpt-5-mini"
+          - "openai/gpt-5-nano"
+          - "openai/gpt-5.1"
+          - "openai/gpt-5.2"
+          - "openai/gpt-5.2-pro"
+          - "openai/gpt-4.1"
+          - "openai/gpt-4.1-mini"
+          - "openai/o3"
+          - "openai/o3-mini"
+          - "openai/o3-pro"
+          - "openai/o4-mini"
+          - "openai/gpt-oss-120b"
+          - "anthropic/claude-sonnet-4"
+          - "anthropic/claude-opus-4"
+          - "anthropic/claude-haiku-4.5"
+          - "anthropic/claude-sonnet-4.5"
+          - "anthropic/claude-sonnet-4.6"
+          - "anthropic/claude-opus-4.1"
+          - "anthropic/claude-opus-4.5"
+          - "anthropic/claude-opus-4.6"
+          - "google/gemini-2.5-pro"
+          - "google/gemini-2.5-flash"
+          - "google/gemini-2.5-flash-lite"
+          - "google/gemini-3-pro-preview"
+          - "google/gemini-3-flash-preview"
+          - "deepseek/deepseek-r1"
+          - "deepseek/deepseek-chat-v3.1"
+          - "deepseek/deepseek-v3.2"
+          - "deepseek/deepseek-r1-0528"
+          - "meta-llama/llama-3.3-70b-instruct"
+          - "meta-llama/llama-4-scout"
+          - "meta-llama/llama-4-maverick"
+          - "x-ai/grok-3"
+          - "x-ai/grok-4"
+          - "x-ai/grok-4-1-fast"
+          - "qwen/qwen3-235b-a22b"
+          - "qwen/qwen3-max"
+          - "qwen/qwen3-coder"
+          - "mistralai/mistral-large"
+          - "mistralai/mistral-large-2512"
+          - "mistralai/mistral-medium-3"
+          - "moonshotai/kimi-k2.5"
+          - "cohere/command-r-plus"
+          - "nousresearch/hermes-3-llama-3.1-405b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: openrouter
+                    provider:
+                      openAI:
+                        model: anthropic/claude-sonnet-4-20250514
+                        host: openrouter.ai
+                        port: 443
+                        path: "/api/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$OPENROUTER_API_KEY"
+                  tls:
+                    sni: openrouter.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export OPENROUTER_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: openrouter-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $OPENROUTER_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: openrouter
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: anthropic/claude-sonnet-4-20250514
+                  host: openrouter.ai
+                  port: 443
+                  path: "/api/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: openrouter-secret
+              tls:
+                sni: openrouter.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: openrouter
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /openrouter
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: openrouter.ai
+              backendRefs:
+              - name: openrouter
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/openrouter" -H content-type:application/json -d '{
+            "model": "anthropic/claude-sonnet-4-20250514",
+            "messages": [{"role": "user", "content": "Hello from OpenRouter!"}]
+          }' | jq
+
+      - name: "Cerebras"
+        slug: "cerebras"
+        model: "llama-3.3-70b"
+        envVar: "CEREBRAS_API_KEY"
+        type: "openai-compatible"
+        host: "api.cerebras.ai"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "models"
+        models:
+          - "llama-3.3-70b"
+          - "llama3.1-70b"
+          - "llama3.1-8b"
+          - "qwen-3-32b"
+          - "qwen-3-235b-a22b-instruct-2507"
+          - "gpt-oss-120b"
+          - "zai-glm-4.6"
+          - "zai-glm-4.7"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: cerebras
+                    provider:
+                      openAI:
+                        model: llama-3.3-70b
+                        host: api.cerebras.ai
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$CEREBRAS_API_KEY"
+                  tls:
+                    sni: api.cerebras.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export CEREBRAS_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: cerebras-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $CEREBRAS_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: cerebras
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: llama-3.3-70b
+                  host: api.cerebras.ai
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: cerebras-secret
+              tls:
+                sni: api.cerebras.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: cerebras
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /cerebras
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.cerebras.ai
+              backendRefs:
+              - name: cerebras
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/cerebras" -H content-type:application/json -d '{
+            "model": "llama-3.3-70b",
+            "messages": [{"role": "user", "content": "Hello from Cerebras!"}]
+          }' | jq
+
+      - name: "SambaNova"
+        slug: "sambanova"
+        model: "Meta-Llama-3.1-70B-Instruct"
+        envVar: "SAMBANOVA_API_KEY"
+        type: "openai-compatible"
+        host: "api.sambanova.ai"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "models"
+        models:
+          - "Meta-Llama-3.1-405B-Instruct"
+          - "Meta-Llama-3.1-70B-Instruct"
+          - "Meta-Llama-3.1-8B-Instruct"
+          - "Meta-Llama-3.3-70B-Instruct"
+          - "Llama-4-Maverick-17B-128E-Instruct"
+          - "Llama-4-Scout-17B-16E-Instruct"
+          - "DeepSeek-R1"
+          - "DeepSeek-R1-0528"
+          - "DeepSeek-V3-0324"
+          - "DeepSeek-V3.1"
+          - "QwQ-32B"
+          - "Qwen3-32B"
+          - "Qwen3-235B-A22B-Instruct-2507"
+          - "gpt-oss-120b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: sambanova
+                    provider:
+                      openAI:
+                        model: Meta-Llama-3.1-70B-Instruct
+                        host: api.sambanova.ai
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$SAMBANOVA_API_KEY"
+                  tls:
+                    sni: api.sambanova.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export SAMBANOVA_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: sambanova-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $SAMBANOVA_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: sambanova
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: Meta-Llama-3.1-70B-Instruct
+                  host: api.sambanova.ai
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: sambanova-secret
+              tls:
+                sni: api.sambanova.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: sambanova
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /sambanova
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.sambanova.ai
+              backendRefs:
+              - name: sambanova
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/sambanova" -H content-type:application/json -d '{
+            "model": "Meta-Llama-3.1-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello from SambaNova!"}]
+          }' | jq
+
+      - name: "DeepInfra"
+        slug: "deepinfra"
+        model: "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+        envVar: "DEEPINFRA_API_KEY"
+        type: "openai-compatible"
+        host: "api.deepinfra.com"
+        path: "/v1/openai/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "audio_speech"
+          - "models"
+        models:
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8"
+          - "meta-llama/Llama-3.3-70B-Instruct-Turbo"
+          - "meta-llama/Meta-Llama-3.1-405B-Instruct"
+          - "meta-llama/Meta-Llama-3.1-70B-Instruct"
+          - "meta-llama/Meta-Llama-3.1-8B-Instruct"
+          - "Qwen/Qwen3-235B-A22B"
+          - "Qwen/Qwen3-235B-A22B-Instruct-2507"
+          - "Qwen/Qwen3-Coder-480B-A35B-Instruct"
+          - "Qwen/Qwen3-32B"
+          - "Qwen/Qwen3-Next-80B-A3B-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/QwQ-32B"
+          - "deepseek-ai/DeepSeek-R1-0528"
+          - "deepseek-ai/DeepSeek-V3.1"
+          - "deepseek-ai/DeepSeek-V3.2"
+          - "NousResearch/Hermes-3-Llama-3.1-405B"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-3-12b-it"
+          - "google/gemma-2-27b-it"
+          - "nvidia/Nemotron-3-Nano-30B-A3B"
+          - "mistralai/Mixtral-8x22B-Instruct-v0.1"
+          - "microsoft/WizardLM-2-8x22B"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: deepinfra
+                    provider:
+                      openAI:
+                        model: meta-llama/Llama-3.3-70B-Instruct-Turbo
+                        host: api.deepinfra.com
+                        port: 443
+                        path: "/v1/openai/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$DEEPINFRA_API_KEY"
+                  tls:
+                    sni: api.deepinfra.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export DEEPINFRA_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: deepinfra-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $DEEPINFRA_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: deepinfra
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: meta-llama/Llama-3.3-70B-Instruct-Turbo
+                  host: api.deepinfra.com
+                  port: 443
+                  path: "/v1/openai/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: deepinfra-secret
+              tls:
+                sni: api.deepinfra.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: deepinfra
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /deepinfra
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.deepinfra.com
+              backendRefs:
+              - name: deepinfra
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/deepinfra" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.3-70B-Instruct-Turbo",
+            "messages": [{"role": "user", "content": "Hello from DeepInfra!"}]
+          }' | jq
+
+      - name: "HuggingFace"
+        slug: "huggingface"
+        model: "meta-llama/Llama-3.1-70B-Instruct"
+        envVar: "HF_API_KEY"
+        type: "openai-compatible"
+        host: "api-inference.huggingface.co"
+        path: "/models/{model}"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct"
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3.1"
+          - "deepseek-ai/DeepSeek-V3.2"
+          - "Qwen/Qwen3-32B"
+          - "Qwen/Qwen3-235B-A22B"
+          - "Qwen/Qwen3-Coder-480B-A35B-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/QwQ-32B"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-2-27b-it"
+          - "openai/gpt-oss-120b"
+          - "mistralai/Mixtral-8x7B-Instruct-v0.1"
+          - "microsoft/Phi-3-medium-128k-instruct"
+          - "bigscience/bloom"
+          - "tiiuae/falcon-180B-chat"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: huggingface
+                    provider:
+                      openAI:
+                        model: meta-llama/Llama-3.1-70B-Instruct
+                        host: api-inference.huggingface.co
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$HF_API_KEY"
+                  tls:
+                    sni: api-inference.huggingface.co
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export HF_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: huggingface-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $HF_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: huggingface
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: meta-llama/Llama-3.1-70B-Instruct
+                  host: api-inference.huggingface.co
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: huggingface-secret
+              tls:
+                sni: api-inference.huggingface.co
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: huggingface
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /huggingface
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api-inference.huggingface.co
+              backendRefs:
+              - name: huggingface
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/huggingface" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.1-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello from HuggingFace!"}]
+          }' | jq
+
+      - name: "Nvidia NIM"
+        slug: "nvidia-nim"
+        model: "meta/llama-3.1-70b-instruct"
+        envVar: "NVIDIA_API_KEY"
+        type: "openai-compatible"
+        host: "integrate.api.nvidia.com"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "rerank"
+          - "models"
+        models:
+          - "meta/llama-4-maverick-17b-128e-instruct"
+          - "meta/llama-4-scout-17b-16e-instruct"
+          - "meta/llama-3.1-405b-instruct"
+          - "meta/llama-3.1-70b-instruct"
+          - "meta/llama-3.1-8b-instruct"
+          - "meta/llama-3.3-70b-instruct"
+          - "deepseek-ai/deepseek-v3.1"
+          - "deepseek-ai/deepseek-v3.2"
+          - "mistralai/mixtral-8x22b-instruct-v0.1"
+          - "mistralai/mistral-large-3-675b-instruct-2512"
+          - "mistralai/mistral-small-24b-instruct"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-3-12b-it"
+          - "google/gemma-2-27b-it"
+          - "qwen/qwen3-235b-a22b"
+          - "qwen/qwen3-coder-480b-a35b-instruct"
+          - "microsoft/phi-3-medium-128k-instruct"
+          - "nvidia/nemotron-4-340b-instruct"
+          - "nvidia/nemotron-3-nano-30b-a3b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: nvidia-nim
+                    provider:
+                      openAI:
+                        model: meta/llama-3.1-70b-instruct
+                        host: integrate.api.nvidia.com
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$NVIDIA_API_KEY"
+                  tls:
+                    sni: integrate.api.nvidia.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export NVIDIA_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: nvidia-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $NVIDIA_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: nvidia-nim
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: meta/llama-3.1-70b-instruct
+                  host: integrate.api.nvidia.com
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: nvidia-secret
+              tls:
+                sni: integrate.api.nvidia.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: nvidia-nim
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /nvidia
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: integrate.api.nvidia.com
+              backendRefs:
+              - name: nvidia-nim
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/nvidia" -H content-type:application/json -d '{
+            "model": "meta/llama-3.1-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello from Nvidia NIM!"}]
+          }' | jq
+
+      - name: "Replicate"
+        slug: "replicate"
+        model: "meta/llama-3.1-405b-instruct"
+        envVar: "REPLICATE_API_KEY"
+        type: "openai-compatible"
+        host: "api.replicate.com"
+        path: "/v1/predictions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "meta/llama-4-scout-17b-16e-instruct"
+          - "meta/llama-4-maverick-17b-128e-instruct"
+          - "meta/llama-3.1-405b-instruct"
+          - "meta/llama-3.3-70b-instruct"
+          - "meta/llama-3.2-90b-vision-instruct"
+          - "anthropic/claude-3.5-sonnet"
+          - "anthropic/claude-4-sonnet"
+          - "deepseek-ai/deepseek-r1"
+          - "deepseek-ai/deepseek-v3"
+          - "deepseek-ai/deepseek-v3.1"
+          - "google/gemini-2.5-flash"
+          - "mistralai/mixtral-8x7b-instruct-v0.1"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: replicate
+                    provider:
+                      openAI:
+                        model: meta/llama-3.1-405b-instruct
+                        host: api.replicate.com
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$REPLICATE_API_KEY"
+                  tls:
+                    sni: api.replicate.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export REPLICATE_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: replicate-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $REPLICATE_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: replicate
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: meta/llama-3.1-405b-instruct
+                  host: api.replicate.com
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: replicate-secret
+              tls:
+                sni: api.replicate.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: replicate
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /replicate
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.replicate.com
+              backendRefs:
+              - name: replicate
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/replicate" -H content-type:application/json -d '{
+            "model": "meta/llama-3.1-405b-instruct",
+            "messages": [{"role": "user", "content": "Hello from Replicate!"}]
+          }' | jq
+
+      - name: "AI21"
+        slug: "ai21"
+        model: "jamba-1.5-large"
+        envVar: "AI21_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.ai21.com"
+        path: "/studio/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "jamba-1.5-large"
+          - "jamba-1.5-mini"
+          - "jamba-instruct"
+          - "jamba-1-5-large"
+          - "jamba-1-5-mini"
+          - "j2-ultra"
+          - "j2-mid"
+          - "j2-light"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: ai21
+                    provider:
+                      openai:
+                        model: jamba-1.5-large
+                policies:
+                  backendAuth:
+                    key: "$AI21_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export AI21_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: ai21-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $AI21_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: ai21
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "jamba-1.5-large"
+            policies:
+              auth:
+                secretRef:
+                  name: ai21-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: ai21
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /ai21
+              backendRefs:
+              - name: ai21
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/ai21" -H content-type:application/json -d '{
+            "model": "jamba-1.5-large",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Cloudflare Workers AI"
+        slug: "cloudflare"
+        model: "@cf/meta/llama-3.1-8b-instruct"
+        envVar: "CF_API_TOKEN"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.cloudflare.com"
+        path: "/client/v4/accounts/{account_id}/ai/run/{model}"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "@cf/meta/llama-3.1-8b-instruct"
+          - "@cf/meta/llama-3.1-70b-instruct"
+          - "@cf/meta/llama-3.2-3b-instruct"
+          - "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+          - "@cf/mistral/mistral-7b-instruct-v0.2"
+          - "@cf/google/gemma-7b-it"
+          - "@cf/qwen/qwen1.5-14b-chat-awq"
+          - "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b"
+          - "@hf/thebloke/deepseek-coder-6.7b-instruct-awq"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: cloudflare
+                    provider:
+                      openai:
+                        model: @cf/meta/llama-3.1-8b-instruct
+                policies:
+                  backendAuth:
+                    key: "$CF_API_TOKEN"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export CF_API_TOKEN=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: cloudflare-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $CF_API_TOKEN
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: cloudflare
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "@cf/meta/llama-3.1-8b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: cloudflare-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: cloudflare
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /cloudflare
+              backendRefs:
+              - name: cloudflare
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/cloudflare" -H content-type:application/json -d '{
+            "model": "@cf/meta/llama-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Lambda AI"
+        slug: "lambda"
+        model: "llama-3.3-70b-instruct"
+        envVar: "LAMBDA_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.lambdalabs.com"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "models"
+        models:
+          - "hermes-3-llama-3.1-405b-fp8"
+          - "hermes-3-llama-3.1-70b-fp8"
+          - "llama-3.1-405b-instruct"
+          - "llama-3.1-70b-instruct"
+          - "llama-3.3-70b-instruct"
+          - "deepseek-llm-67b-chat"
+          - "qwen2.5-72b-instruct"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: lambda
+                    provider:
+                      openai:
+                        model: llama-3.3-70b-instruct
+                policies:
+                  backendAuth:
+                    key: "$LAMBDA_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export LAMBDA_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: lambda-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $LAMBDA_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: lambda
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "llama-3.3-70b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: lambda-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: lambda
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /lambda
+              backendRefs:
+              - name: lambda
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/lambda" -H content-type:application/json -d '{
+            "model": "llama-3.3-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Nebius AI Studio"
+        slug: "nebius"
+        model: "meta-llama/Llama-3.3-70B-Instruct"
+        envVar: "NEBIUS_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.studio.nebius.ai"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "models"
+        models:
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.1-405B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-4-Maverick-17B-128E-Instruct"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/Qwen3-235B-A22B"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3-0324"
+          - "mistralai/Mistral-Large-2411"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: nebius
+                    provider:
+                      openai:
+                        model: meta-llama/Llama-3.3-70B-Instruct
+                policies:
+                  backendAuth:
+                    key: "$NEBIUS_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export NEBIUS_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: nebius-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $NEBIUS_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: nebius
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/Llama-3.3-70B-Instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: nebius-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: nebius
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /nebius
+              backendRefs:
+              - name: nebius
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/nebius" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.3-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Novita AI"
+        slug: "novita"
+        model: "meta-llama/llama-3.3-70b-instruct"
+        envVar: "NOVITA_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.novita.ai"
+        path: "/v3/openai/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "video"
+          - "models"
+        models:
+          - "meta-llama/llama-3.1-70b-instruct"
+          - "meta-llama/llama-3.1-405b-instruct"
+          - "meta-llama/llama-3.3-70b-instruct"
+          - "deepseek/deepseek-r1"
+          - "deepseek/deepseek-v3-0324"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "mistralai/mistral-large-2411"
+          - "microsoft/phi-4"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: novita
+                    provider:
+                      openai:
+                        model: meta-llama/llama-3.3-70b-instruct
+                policies:
+                  backendAuth:
+                    key: "$NOVITA_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export NOVITA_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: novita-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $NOVITA_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: novita
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/llama-3.3-70b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: novita-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: novita
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /novita
+              backendRefs:
+              - name: novita
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/novita" -H content-type:application/json -d '{
+            "model": "meta-llama/llama-3.3-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Hyperbolic"
+        slug: "hyperbolic"
+        model: "meta-llama/Llama-3.3-70B-Instruct"
+        envVar: "HYPERBOLIC_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.hyperbolic.xyz"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.1-405B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "deepseek-ai/DeepSeek-R1"
+          - "deepseek-ai/DeepSeek-V3"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "Qwen/QwQ-32B"
+          - "mistralai/Mistral-Small-24B-Instruct-2501"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: hyperbolic
+                    provider:
+                      openai:
+                        model: meta-llama/Llama-3.3-70B-Instruct
+                policies:
+                  backendAuth:
+                    key: "$HYPERBOLIC_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export HYPERBOLIC_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: hyperbolic-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $HYPERBOLIC_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: hyperbolic
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/Llama-3.3-70B-Instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: hyperbolic-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: hyperbolic
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /hyperbolic
+              backendRefs:
+              - name: hyperbolic
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/hyperbolic" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.3-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+  - name: "Enterprise & Regional Providers"
+    description: "Enterprise cloud platforms and regional AI providers with OpenAI-compatible APIs."
+    id: "enterprise"
+    providers:
+      - name: "Databricks"
+        slug: "databricks"
+        model: "databricks-meta-llama-3-1-70b-instruct"
+        envVar: "DATABRICKS_TOKEN"
+        type: "openai-compatible"
+        host: "{workspace}.databricks.com"
+        path: "/serving-endpoints/{endpoint}/invocations"
+        port: 443
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "models"
+        models:
+          - "databricks-meta-llama-3-1-70b-instruct"
+          - "databricks-meta-llama-3-3-70b-instruct"
+          - "databricks-meta-llama-3-1-405b-instruct"
+          - "databricks-llama-4-maverick"
+          - "databricks-llama-4-scout"
+          - "databricks-claude-sonnet-4"
+          - "databricks-claude-opus-4"
+          - "databricks-claude-haiku-4-5"
+          - "databricks-claude-opus-4-1"
+          - "databricks-claude-opus-4-5"
+          - "databricks-claude-sonnet-4-5"
+          - "databricks-claude-sonnet-4-6"
+          - "databricks-gpt-5"
+          - "databricks-gpt-5-mini"
+          - "databricks-gpt-5-nano"
+          - "databricks-gpt-5-1"
+          - "databricks-gpt-5-2"
+          - "databricks-gpt-oss-120b"
+          - "databricks-gpt-oss-20b"
+          - "databricks-gemini-2-5-flash"
+          - "databricks-gemini-2-5-pro"
+          - "databricks-gemini-3-flash"
+          - "databricks-gemini-3-pro"
+          - "databricks-qwen3-235b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: databricks
+                    provider:
+                      openAI:
+                        model: databricks-meta-llama-3-1-70b-instruct
+                        host: <your-workspace>.cloud.databricks.com
+                        port: 443
+                        path: "/serving-endpoints/databricks-meta-llama-3-1-70b-instruct/invocations"
+                policies:
+                  backendAuth:
+                    key: "$DATABRICKS_TOKEN"
+                  tls:
+                    sni: <your-workspace>.cloud.databricks.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export DATABRICKS_TOKEN=<your-token>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: databricks-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $DATABRICKS_TOKEN
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: databricks
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: databricks-meta-llama-3-1-70b-instruct
+                  host: <your-workspace>.cloud.databricks.com
+                  port: 443
+                  path: "/serving-endpoints/databricks-meta-llama-3-1-70b-instruct/invocations"
+            policies:
+              auth:
+                secretRef:
+                  name: databricks-secret
+              tls:
+                sni: <your-workspace>.cloud.databricks.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: databricks
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /databricks
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: <your-workspace>.cloud.databricks.com
+              backendRefs:
+              - name: databricks
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/databricks" -H content-type:application/json -d '{
+            "model": "databricks-meta-llama-3-1-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello from Databricks!"}]
+          }' | jq
+
+      - name: "GitHub Models"
+        slug: "github-models"
+        model: "gpt-4o"
+        envVar: "GITHUB_TOKEN"
+        type: "openai-compatible"
+        host: "models.inference.ai.azure.com"
+        path: "/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "gpt-4o"
+          - "gpt-4o-mini"
+          - "gpt-5"
+          - "gpt-5-mini"
+          - "gpt-5-nano"
+          - "gpt-4.1"
+          - "gpt-4.1-mini"
+          - "o1"
+          - "o3"
+          - "o3-mini"
+          - "o4-mini"
+          - "Phi-4"
+          - "Phi-4-mini-instruct"
+          - "Llama-4-Scout-17B-16E-Instruct"
+          - "Llama-4-Maverick-17B-128E-Instruct-FP8"
+          - "Llama-3.3-70B-Instruct"
+          - "Llama-3.1-405B-Instruct"
+          - "DeepSeek-R1"
+          - "DeepSeek-V3-0324"
+          - "Mistral-Large"
+          - "Mistral-Medium-3"
+          - "Mistral-Small-3.1"
+          - "Grok-3"
+          - "Grok-3-Mini"
+          - "Cohere-command-r-plus"
+          - "Cohere-Command-A"
+          - "Phi-3-medium-128k-instruct"
+          - "AI21-Jamba-1.5-Large"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: github-models
+                    provider:
+                      openAI:
+                        model: gpt-4o
+                        host: models.inference.ai.azure.com
+                        port: 443
+                        path: "/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$GITHUB_TOKEN"
+                  tls:
+                    sni: models.inference.ai.azure.com
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export GITHUB_TOKEN=<your-github-pat>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: github-models-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $GITHUB_TOKEN
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: github-models
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: gpt-4o
+                  host: models.inference.ai.azure.com
+                  port: 443
+                  path: "/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: github-models-secret
+              tls:
+                sni: models.inference.ai.azure.com
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: github-models
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /github-models
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: models.inference.ai.azure.com
+              backendRefs:
+              - name: github-models
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/github-models" -H content-type:application/json -d '{
+            "model": "gpt-4o",
+            "messages": [{"role": "user", "content": "Hello from GitHub Models!"}]
+          }' | jq
+
+      - name: "Scaleway"
+        slug: "scaleway"
+        model: "llama-3.1-70b-instruct"
+        envVar: "SCALEWAY_API_KEY"
+        type: "openai-compatible"
+        host: "api.scaleway.ai"
+        path: "/v1/chat/completions"
+        port: 443
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "llama-3.1-70b-instruct"
+          - "llama-3.3-70b-instruct"
+          - "mistral-nemo-instruct"
+          - "mixtral-8x7b-instruct"
+          - "qwen2.5-72b-instruct"
+          - "qwen3-32b-instruct"
+          - "deepseek-r1-distill-llama-70b"
+          - "deepseek-r1-distill-qwen-32b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: scaleway
+                    provider:
+                      openAI:
+                        model: llama-3.1-70b-instruct
+                        host: api.scaleway.ai
+                        port: 443
+                        path: "/v1/chat/completions"
+                policies:
+                  backendAuth:
+                    key: "$SCALEWAY_API_KEY"
+                  tls:
+                    sni: api.scaleway.ai
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export SCALEWAY_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: scaleway-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $SCALEWAY_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: scaleway
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: llama-3.1-70b-instruct
+                  host: api.scaleway.ai
+                  port: 443
+                  path: "/v1/chat/completions"
+            policies:
+              auth:
+                secretRef:
+                  name: scaleway-secret
+              tls:
+                sni: api.scaleway.ai
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: scaleway
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /scaleway
+              filters:
+              - type: URLRewrite
+                urlRewrite:
+                  hostname: api.scaleway.ai
+              backendRefs:
+              - name: scaleway
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/scaleway" -H content-type:application/json -d '{
+            "model": "llama-3.1-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello from Scaleway!"}]
+          }' | jq
+
+      - name: "Dashscope (Qwen / Alibaba)"
+        slug: "dashscope"
+        model: "qwen-max"
+        envVar: "DASHSCOPE_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "dashscope.aliyuncs.com"
+        path: "/compatible-mode/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "rerank"
+          - "fine_tuning"
+          - "files"
+          - "models"
+        models:
+          - "qwen-turbo"
+          - "qwen-plus"
+          - "qwen-max"
+          - "qwen-long"
+          - "qwen-flash"
+          - "qwen3-max"
+          - "qwen3.5-plus"
+          - "qwen3.5-flash"
+          - "qwen3-coder-plus"
+          - "qwen3-coder-flash"
+          - "qwen3-vl-plus"
+          - "qwen3-vl-flash"
+          - "qwq-plus"
+          - "qwen-deep-research"
+          - "qwen2.5-72b-instruct"
+          - "qwen2.5-32b-instruct"
+          - "qwen2.5-14b-instruct"
+          - "qwen2.5-7b-instruct"
+          - "qwen3-235b-a22b"
+          - "qwen3-30b-a3b"
+          - "qwen-vl-max"
+          - "qwen-vl-plus"
+          - "qwen-coder-turbo"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: dashscope
+                    provider:
+                      openai:
+                        model: qwen-max
+                policies:
+                  backendAuth:
+                    key: "$DASHSCOPE_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export DASHSCOPE_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: dashscope-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $DASHSCOPE_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: dashscope
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "qwen-max"
+            policies:
+              auth:
+                secretRef:
+                  name: dashscope-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: dashscope
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /dashscope
+              backendRefs:
+              - name: dashscope
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/dashscope" -H content-type:application/json -d '{
+            "model": "qwen-max",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Moonshot AI"
+        slug: "moonshot"
+        model: "kimi-latest"
+        envVar: "MOONSHOT_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.moonshot.cn"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "files"
+          - "models"
+        models:
+          - "moonshot-v1-8k"
+          - "moonshot-v1-32k"
+          - "moonshot-v1-128k"
+          - "moonshot-v1-auto"
+          - "kimi-latest"
+          - "kimi-k2"
+          - "kimi-k2.5"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: moonshot
+                    provider:
+                      openai:
+                        model: kimi-latest
+                policies:
+                  backendAuth:
+                    key: "$MOONSHOT_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export MOONSHOT_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: moonshot-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $MOONSHOT_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: moonshot
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "kimi-latest"
+            policies:
+              auth:
+                secretRef:
+                  name: moonshot-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: moonshot
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /moonshot
+              backendRefs:
+              - name: moonshot
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/moonshot" -H content-type:application/json -d '{
+            "model": "kimi-latest",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Zhipu AI (Z.AI)"
+        slug: "zhipu"
+        model: "glm-4-plus"
+        envVar: "ZHIPU_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "open.bigmodel.cn"
+        path: "/api/paas/v4/chat/completions"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "images"
+          - "video"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "models"
+        models:
+          - "glm-5"
+          - "glm-4.7"
+          - "glm-4"
+          - "glm-4-plus"
+          - "glm-4-air"
+          - "glm-4-airx"
+          - "glm-4-flash"
+          - "glm-4-flashx"
+          - "glm-4-long"
+          - "glm-4v"
+          - "glm-4v-plus"
+          - "codegeex-4"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: zhipu
+                    provider:
+                      openai:
+                        model: glm-4-plus
+                policies:
+                  backendAuth:
+                    key: "$ZHIPU_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export ZHIPU_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: zhipu-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $ZHIPU_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: zhipu
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "glm-4-plus"
+            policies:
+              auth:
+                secretRef:
+                  name: zhipu-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: zhipu
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /zhipu
+              backendRefs:
+              - name: zhipu
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/zhipu" -H content-type:application/json -d '{
+            "model": "glm-4-plus",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Volcano Engine (ByteDance)"
+        slug: "volcengine"
+        model: "doubao-pro-32k"
+        envVar: "VOLC_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "maas-api.ml-platform-cn.volces.com"
+        path: "/api/v3/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_speech"
+          - "audio_transcriptions"
+          - "fine_tuning"
+          - "files"
+          - "batches"
+          - "models"
+        models:
+          - "doubao-pro-32k"
+          - "doubao-pro-128k"
+          - "doubao-pro-256k"
+          - "doubao-lite-32k"
+          - "doubao-lite-128k"
+          - "doubao-character-pro-32k"
+          - "doubao-vision-pro-32k"
+          - "doubao-embedding"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: volcengine
+                    provider:
+                      openai:
+                        model: doubao-pro-32k
+                policies:
+                  backendAuth:
+                    key: "$VOLC_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export VOLC_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: volcengine-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $VOLC_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: volcengine
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "doubao-pro-32k"
+            policies:
+              auth:
+                secretRef:
+                  name: volcengine-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: volcengine
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /volcengine
+              backendRefs:
+              - name: volcengine
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/volcengine" -H content-type:application/json -d '{
+            "model": "doubao-pro-32k",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "IBM watsonx"
+        slug: "watsonx"
+        model: "ibm/granite-3.1-8b-instruct"
+        envVar: "WATSONX_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "{region}.ml.cloud.ibm.com"
+        path: "/ml/v1/text/generation"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "rerank"
+          - "fine_tuning"
+          - "models"
+        models:
+          - "ibm/granite-3-8b-instruct"
+          - "ibm/granite-3-2b-instruct"
+          - "ibm/granite-3.1-8b-instruct"
+          - "ibm/granite-3.1-2b-instruct"
+          - "ibm/granite-3-3-8b-instruct"
+          - "ibm/granite-3-2-8b-instruct"
+          - "ibm/granite-guardian-3-8b"
+          - "ibm/granite-vision-3.1-8b"
+          - "ibm/granite-vision-3-2-2b"
+          - "ibm/granite-20b-multilingual"
+          - "ibm/granite-embedding-125m-english"
+          - "ibm/granite-embedding-278m-multilingual"
+          - "meta-llama/llama-3-1-70b-instruct"
+          - "meta-llama/llama-3-1-8b-instruct"
+          - "meta-llama/llama-3-3-70b-instruct"
+          - "meta-llama/llama-4-maverick-17b-128e-instruct-fp8"
+          - "meta-llama/llama-3-2-90b-vision-instruct"
+          - "mistralai/mistral-large"
+          - "openai/gpt-oss-120b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: watsonx
+                    provider:
+                      openai:
+                        model: ibm/granite-3.1-8b-instruct
+                policies:
+                  backendAuth:
+                    key: "$WATSONX_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export WATSONX_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: watsonx-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $WATSONX_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: watsonx
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "ibm/granite-3.1-8b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: watsonx-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: watsonx
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /watsonx
+              backendRefs:
+              - name: watsonx
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/watsonx" -H content-type:application/json -d '{
+            "model": "ibm/granite-3.1-8b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Snowflake Cortex"
+        slug: "snowflake"
+        model: "llama3.3-70b"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "{account}.snowflakecomputing.com"
+        path: "/api/v2/cortex/inference:complete"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "claude-3-5-sonnet"
+          - "claude-4-sonnet"
+          - "claude-sonnet-4-5"
+          - "claude-sonnet-4-6"
+          - "claude-haiku-4-5"
+          - "llama3.1-70b"
+          - "llama3.1-405b"
+          - "llama3.1-8b"
+          - "llama3.3-70b"
+          - "snowflake-llama-3.3-70b"
+          - "llama4-maverick"
+          - "llama4-scout"
+          - "mistral-large2"
+          - "mixtral-8x7b"
+          - "deepseek-r1"
+          - "openai-gpt-5"
+          - "openai-gpt-4.1"
+          - "reka-core"
+          - "reka-flash"
+          - "jamba-1.5-large"
+          - "snowflake-arctic"
+          - "gemma-7b"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: snowflake
+                    provider:
+                      openai:
+                        model: llama3.3-70b
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: snowflake
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "llama3.3-70b"
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: snowflake
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /snowflake
+              backendRefs:
+              - name: snowflake
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 4: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/snowflake" -H content-type:application/json -d '{
+            "model": "llama3.3-70b",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "OVHcloud AI"
+        slug: "ovhcloud"
+        model: "Llama-3.3-70B-Instruct"
+        envVar: "OVH_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "llama-3-3-70b-instruct.endpoints.kepler.ai.cloud.ovh.net"
+        path: "/api/openai_compat/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "audio_transcriptions"
+          - "models"
+        models:
+          - "DeepSeek-R1-Distill-Llama-70B"
+          - "Llama-3.3-70B-Instruct"
+          - "Llama-3.1-70B-Instruct"
+          - "Mistral-Large-Instruct-2411"
+          - "Mixtral-8x22B-Instruct-v0.1"
+          - "Mixtral-8x7B-Instruct-v0.1"
+          - "Qwen2.5-72B-Instruct"
+          - "Phi-3-mini-4k-instruct"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: ovhcloud
+                    provider:
+                      openai:
+                        model: Llama-3.3-70B-Instruct
+                policies:
+                  backendAuth:
+                    key: "$OVH_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export OVH_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: ovhcloud-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $OVH_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: ovhcloud
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "Llama-3.3-70B-Instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: ovhcloud-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: ovhcloud
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /ovhcloud
+              backendRefs:
+              - name: ovhcloud
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/ovhcloud" -H content-type:application/json -d '{
+            "model": "Llama-3.3-70B-Instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Oracle Cloud OCI"
+        slug: "oci"
+        model: "meta.llama-3.3-70b-instruct"
+        envVar: "OCI_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "inference.generativeai.{region}.oci.oraclecloud.com"
+        path: "/20231130/actions/chat"
+        endpoints:
+          - "chat"
+          - "embeddings"
+          - "models"
+        models:
+          - "meta.llama-3.1-405b-instruct"
+          - "meta.llama-3.1-70b-instruct"
+          - "meta.llama-3.3-70b-instruct"
+          - "cohere.command-r-plus"
+          - "cohere.command-r"
+          - "meta.llama-3.2-90b-vision-instruct"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: oci
+                    provider:
+                      openai:
+                        model: meta.llama-3.3-70b-instruct
+                policies:
+                  backendAuth:
+                    key: "$OCI_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export OCI_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: oci-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $OCI_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: oci
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta.llama-3.3-70b-instruct"
+            policies:
+              auth:
+                secretRef:
+                  name: oci-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: oci
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /oci
+              backendRefs:
+              - name: oci
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/oci" -H content-type:application/json -d '{
+            "model": "meta.llama-3.3-70b-instruct",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+      - name: "Anyscale"
+        slug: "anyscale"
+        model: "meta-llama/Llama-3-70b-chat-hf"
+        envVar: "ANYSCALE_API_KEY"
+        type: "openai-compat"
+        providerType: "openai"
+        host: "api.endpoints.anyscale.com"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "models"
+        models:
+          - "meta-llama/Llama-3-70b-chat-hf"
+          - "meta-llama/Llama-3-8b-chat-hf"
+          - "mistralai/Mixtral-8x22B-Instruct-v0.1"
+          - "mistralai/Mixtral-8x7B-Instruct-v0.1"
+          - "mistralai/Mistral-7B-Instruct-v0.1"
+          - "google/gemma-7b-it"
+          - "codellama/CodeLlama-70b-Instruct-hf"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: anyscale
+                    provider:
+                      openai:
+                        model: meta-llama/Llama-3-70b-chat-hf
+                policies:
+                  backendAuth:
+                    key: "$ANYSCALE_API_KEY"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export ANYSCALE_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: anyscale-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $ANYSCALE_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: anyscale
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: "meta-llama/Llama-3-70b-chat-hf"
+            policies:
+              auth:
+                secretRef:
+                  name: anyscale-secret
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: anyscale
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /anyscale
+              backendRefs:
+              - name: anyscale
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/anyscale" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3-70b-chat-hf",
+            "messages": [{"role": "user", "content": "Hello!"}]
+          }' | jq
+
+  - name: "Local & Self-Hosted"
+    description: "Run models locally or in-cluster. No TLS or external API keys required."
+    id: "local"
+    providers:
+      - name: "Ollama"
+        slug: "ollama"
+        model: "llama3.2"
+        envVar: ""
+        type: "local"
+        host: "localhost / in-cluster"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "images"
+          - "images_edits"
+          - "responses"
+          - "messages"
+          - "models"
+        port: 11434
+        models:
+          - "llama3.2"
+          - "llama3.1"
+          - "llama3.1:70b"
+          - "llama3.3"
+          - "llama4"
+          - "llama3.2-vision"
+          - "mistral"
+          - "mixtral"
+          - "mistral-small"
+          - "gemma2"
+          - "gemma3"
+          - "gemma3n"
+          - "qwen2.5"
+          - "qwen2.5-coder"
+          - "qwen3"
+          - "qwen3-coder"
+          - "phi3"
+          - "phi4"
+          - "phi4-reasoning"
+          - "deepseek-r1"
+          - "deepseek-v3"
+          - "deepseek-v3.1"
+          - "codellama"
+          - "codegemma"
+          - "llava"
+          - "nomic-embed-text"
+          - "gpt-oss:120b"
+          - "gpt-oss:20b"
+          - "command-r"
+          - "qwq"
+          - "magistral"
+          - "devstral"
+          - "cogito"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: ollama
+                    provider:
+                      openAI:
+                        model: llama3.2
+                        host: localhost
+                        port: 11434
+                        path: "/v1/chat/completions"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Deploy Ollama
+          kubectl apply -f- <<EOF
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: ollama
+            namespace: agentgateway-system
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: ollama
+            template:
+              metadata:
+                labels:
+                  app: ollama
+              spec:
+                containers:
+                - name: ollama
+                  image: ollama/ollama:latest
+                  ports:
+                  - containerPort: 11434
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: ollama
+            namespace: agentgateway-system
+          spec:
+            selector:
+              app: ollama
+            ports:
+            - port: 11434
+              targetPort: 11434
+          EOF
+
+          # Step 3: Backend (no TLS, no auth)
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: ollama
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: llama3.2
+                  host: ollama.agentgateway-system.svc.cluster.local
+                  port: 11434
+                  path: "/v1/chat/completions"
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: ollama
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /ollama
+              backendRefs:
+              - name: ollama
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/ollama" -H content-type:application/json -d '{
+            "model": "llama3.2",
+            "messages": [{"role": "user", "content": "Hello from Ollama!"}]
+          }' | jq
+
+      - name: "vLLM"
+        slug: "vllm"
+        model: "meta-llama/Llama-3.1-8B-Instruct"
+        envVar: ""
+        type: "local"
+        host: "localhost / in-cluster"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "audio_transcriptions"
+          - "audio_translations"
+          - "responses"
+          - "messages"
+          - "rerank"
+          - "realtime"
+          - "models"
+        port: 8000
+        models:
+          - "meta-llama/Llama-4-Scout-17B-16E-Instruct"
+          - "meta-llama/Llama-3.1-8B-Instruct"
+          - "meta-llama/Llama-3.1-70B-Instruct"
+          - "meta-llama/Llama-3.3-70B-Instruct"
+          - "Qwen/Qwen3-32B"
+          - "deepseek-ai/DeepSeek-V3"
+          - "mistralai/Mistral-7B-Instruct-v0.3"
+          - "mistralai/Mixtral-8x7B-Instruct-v0.1"
+          - "Qwen/Qwen2.5-72B-Instruct"
+          - "google/gemma-3-27b-it"
+          - "google/gemma-2-27b-it"
+          - "microsoft/Phi-4"
+          - "Any HuggingFace model"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: vllm
+                    provider:
+                      openAI:
+                        model: meta-llama/Llama-3.1-8B-Instruct
+                        host: localhost
+                        port: 8000
+                        path: "/v1/chat/completions"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Deploy vLLM
+          kubectl apply -f- <<EOF
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: vllm
+            namespace: agentgateway-system
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: vllm
+            template:
+              metadata:
+                labels:
+                  app: vllm
+              spec:
+                containers:
+                - name: vllm
+                  image: vllm/vllm-openai:latest
+                  args: ["--model", "meta-llama/Llama-3.1-8B-Instruct"]
+                  ports:
+                  - containerPort: 8000
+                  resources:
+                    limits:
+                      nvidia.com/gpu: 1
+          ---
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: vllm
+            namespace: agentgateway-system
+          spec:
+            selector:
+              app: vllm
+            ports:
+            - port: 8000
+              targetPort: 8000
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: vllm
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  model: meta-llama/Llama-3.1-8B-Instruct
+                  host: vllm.agentgateway-system.svc.cluster.local
+                  port: 8000
+                  path: "/v1/chat/completions"
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: vllm
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /vllm
+              backendRefs:
+              - name: vllm
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/vllm" -H content-type:application/json -d '{
+            "model": "meta-llama/Llama-3.1-8B-Instruct",
+            "messages": [{"role": "user", "content": "Hello from vLLM!"}]
+          }' | jq
+
+      - name: "llama.cpp"
+        slug: "llamacpp"
+        model: "(your loaded model)"
+        envVar: ""
+        type: "local"
+        host: "localhost / in-cluster"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "fim"
+          - "rerank"
+          - "responses"
+          - "messages"
+          - "models"
+        port: 8080
+        models:
+          - "Any GGUF model"
+          - "Llama 3.x"
+          - "Llama 4.x"
+          - "Mistral / Mixtral"
+          - "Qwen 2.5 / 3"
+          - "Phi-3 / Phi-4"
+          - "Gemma 2 / 3"
+          - "DeepSeek R1 distills"
+          - "CodeLlama"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: llamacpp
+                    provider:
+                      openAI:
+                        host: localhost
+                        port: 8080
+                        path: "/v1/chat/completions"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: llamacpp
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  host: llamacpp.agentgateway-system.svc.cluster.local
+                  port: 8080
+                  path: "/v1/chat/completions"
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: llamacpp
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /llamacpp
+              backendRefs:
+              - name: llamacpp
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 4: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/llamacpp" -H content-type:application/json -d '{
+            "messages": [{"role": "user", "content": "Hello from llama.cpp!"}]
+          }' | jq
+
+      - name: "Triton Inference Server"
+        slug: "triton"
+        model: "(your loaded model)"
+        envVar: ""
+        type: "local"
+        host: "localhost / in-cluster"
+        path: "/v1/chat/completions"
+        endpoints:
+          - "chat"
+          - "models"
+        port: 8000
+        models:
+          - "Any TensorRT-LLM model"
+          - "Any vLLM backend model"
+          - "Any Python backend model"
+          - "Custom ONNX models"
+        standalone: |
+          binds:
+          - port: 3000
+            listeners:
+            - routes:
+              - backends:
+                - ai:
+                    name: triton
+                    provider:
+                      openAI:
+                        host: localhost
+                        port: 8000
+                        path: "/v1/chat/completions"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+          # Step 2: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: triton
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                openai:
+                  host: triton.agentgateway-system.svc.cluster.local
+                  port: 8000
+                  path: "/v1/chat/completions"
+          EOF
+
+          # Step 3: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: triton
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /triton
+              backendRefs:
+              - name: triton
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 4: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/triton" -H content-type:application/json -d '{
+            "messages": [{"role": "user", "content": "Hello from Triton!"}]
+          }' | jq
+
