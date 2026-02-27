@@ -9,6 +9,12 @@ ARTIFACT_NAME="doc-test-results"
 RESULTS_DIR="out/tests/generated"
 RESULTS_FILE="$RESULTS_DIR/test-results.yaml"
 
+# Check if results directory already exists with results file
+if [ -f "$RESULTS_FILE" ]; then
+    echo "=== Test results already exist at $RESULTS_FILE, skipping fetch ==="
+    exit 0
+fi
+
 echo "=== Fetching latest doc test results ==="
 
 # Create output directory
@@ -68,13 +74,3 @@ else
     echo "Warning: GITHUB_TOKEN not set, skipping artifact download"
 fi
 
-# Inject test status if results file exists
-if [ -f "$RESULTS_FILE" ]; then
-    echo "=== Injecting test status into docs ==="
-    python3 scripts/inject_test_status.py --repo-root .
-else
-    echo "Warning: $RESULTS_FILE not found, skipping test status injection"
-fi
-
-echo "=== Building Hugo site ==="
-hugo --gc --minify

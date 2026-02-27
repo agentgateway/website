@@ -352,7 +352,7 @@ Doc pages with passing tests display a "Verified" badge below the page title.
 ### How it works
 
 1. **Test results** are written to `out/tests/generated/test-results.yaml` after tests run.
-2. **`inject_test_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
+2. **`doc_test_inject_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
    - `test_status: passed` — all tests for the page passed
    - `test_status: failed` — one or more tests failed (no badge displayed)
 3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
@@ -362,7 +362,7 @@ Doc pages with passing tests display a "Verified" badge below the page title.
 After running tests, inject the status into your local docs:
 
 ```sh
-python3 scripts/inject_test_status.py
+python3 scripts/idoc_test_inject_status.py
 ```
 
 This updates the markdown files in `content/docs/` with the test status. The badge will appear when you run `hugo server`.
