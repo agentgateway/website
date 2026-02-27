@@ -79,7 +79,7 @@ Remove a header that is reserved for use by another service, such as an external
    }
    ```
 
-3. Create an AgentgatewayPolicy with a transformation to remove the `x-user-id` header. You can choose to apply the removal on the HTTPRoute or the Gateway with an AgentgatewayPolicy. 
+3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a transformation to remove the `x-user-id` header. You can choose to apply the removal on the HTTPRoute or the Gateway. 
 
    {{< tabs tabTotal="2" items="Route-level,Gateway-level" >}}
    {{% tab tabName="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
