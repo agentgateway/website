@@ -58,7 +58,7 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    {{< /tabs >}}
 
    Example output: 
-   ```yaml {linenos=table,hl_lines=[14,15],linenostart=1}
+   ```yaml {linenos=table,hl_lines=[12,13],linenostart=1}
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
@@ -283,7 +283,7 @@ You can remove HTTP headers from a response before the response is sent back to 
    {{< /tabs >}}
 
    Example output: 
-   ```
+   ```yaml 
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
