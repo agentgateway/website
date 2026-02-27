@@ -24,16 +24,16 @@ mkdir -p "$RESULTS_DIR"
 if [ -n "$GITHUB_TOKEN" ]; then
     echo "Fetching artifact list from GitHub API..."
     
-    # Get the latest successful workflow run on main branch
+    # Get the latest completed workflow run on main branch
     RUN_INFO=$(curl -s -H "Authorization: token $GITHUB_TOKEN" \
-        "https://api.github.com/repos/$REPO/actions/workflows/doc-tests.yaml/runs?branch=main&status=success&per_page=1")
+        "https://api.github.com/repos/$REPO/actions/workflows/doc-tests.yaml/runs?branch=main&status=completed&per_page=1")
     
-    # Find the most recent successful run on main
+    # Find the most recent completed run on main
     RUN_ID=$(echo "$RUN_INFO" | python3 -c "
 import sys, json
 data = json.load(sys.stdin)
 for run in data.get('workflow_runs', []):
-    if run.get('conclusion') == 'success' and run.get('head_branch') == 'main':
+    if run.get('head_branch') == 'main':
         print(run['id'])
         break
 " 2>/dev/null || echo "")
