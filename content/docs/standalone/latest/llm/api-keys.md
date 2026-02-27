@@ -1,11 +1,13 @@
 ---
 title: Manage API keys
 weight: 40
-description: Configure authentication when connecting to your LLM. 
+description: Configure API keys and per-key token budgets (also known as virtual keys or virtual key management).
 prev: /docs/llm/providers
 ---
 
-Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense. 
+Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
+
+When you issue API keys to users or teams and attach per-key token budgets (via [rate limiting](/docs/standalone/latest/configuration/resiliency/rate-limits/) and [control spend](/docs/standalone/latest/llm/spending/)), you get the same capability that other AI gateways often call virtual keys or virtual key management.
 
 You can choose between the following options to provide an API key to agentgateway: 
 * Inline

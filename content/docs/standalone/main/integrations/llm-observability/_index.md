@@ -1,10 +1,10 @@
 ---
 title: LLM Observability
 weight: 25
-description: Monitor and analyze LLM usage with specialized observability platforms
+description: Prompt logging, cost tracking, and audit trail via Langfuse, LangSmith, and more
 ---
 
-Agentgateway can send LLM telemetry to specialized observability platforms for prompt analytics, cost tracking, and performance monitoring.
+Agentgateway can send LLM telemetry to specialized observability platforms for prompt logging, cost tracking, audit trail, and performance monitoring (prompt analytics).
 
 {{< cards >}}
   {{< card link="langfuse" title="Langfuse" subtitle="Open-source LLM analytics" >}}
