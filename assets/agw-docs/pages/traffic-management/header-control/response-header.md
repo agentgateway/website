@@ -189,9 +189,8 @@ You can remove HTTP headers from a response before the response is sent back to 
    content-length: 3
    ```
    
-2. Set up a header modifier that removes the `content-type` header from the response. Choose between the HTTPRoute for a Gateway API-native way, or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} for more [flexible attachment options](../../../about/policies/trafficpolicy/) such as a gateway-level policy. 
-   {{< tabs items="HTTPRoute,AgentgatewayPolicy" tabTotal="2" >}}
-   {{% tab tabName="HTTPRoute" %}}
+2. Set up a header modifier that removes the `content-type` header from the response. 
+
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -223,50 +222,7 @@ You can remove HTTP headers from a response before the response is sent back to 
    |`spec.rules.filters.type`| The type of filter that you want to apply. In this example, the `ResponseHeaderModifier` filter is used.|
    |`spec.rules.filters.responseHeaderModifier.remove`|The name of the response header that you want to remove. |
    |`spec.rules.backendRefs`|The backend destination you want to forward traffic to. In this example, all traffic is forwarded to the httpbin app that you set up as part of the get started guide. |
-   {{% /tab %}}
-   {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
-   1. Create an HTTPRoute resource for the route that you want to modify. Note that the example selects the http Gateway that you created before you began.
-      ```yaml
-      kubectl apply -f- <<EOF
-      apiVersion: gateway.networking.k8s.io/v1
-      kind: HTTPRoute
-      metadata:
-        name: httpbin-headers
-        namespace: httpbin
-      spec:
-        parentRefs:
-        - name: agentgateway-proxy
-          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        hostnames:
-          - headers.example
-        rules:
-          - backendRefs:
-              - name: httpbin
-                port: 8000
-      EOF
-      ```
    
-   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that removes the `content-length` header from a response. The following example attaches the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to the Gateway. 
-      ```yaml
-      kubectl apply -f- <<EOF
-      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-      metadata:
-        name: httpbin-headers
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-      spec:
-        targetRefs:
-        - group: gateway.networking.k8s.io
-          kind: Gateway
-          name: agentgateway-proxy
-        headerModifiers:
-          response:
-            remove:
-            - content-length
-      EOF
-      ```
-   {{% /tab %}}
-   {{< /tabs >}}
 
 3. Send a request to the httpbin app on the `headers.example` domain . Verify that the `content-type` response header is removed. 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
@@ -295,17 +251,8 @@ You can remove HTTP headers from a response before the response is sent back to 
    content-length: 3
    ```
 
-1. Optional: Remove the resources that you created. 
-   {{< tabs items="HTTPRoute,TrafficPolicy" tabTotal="2" >}}
-   {{% tab tabName="HTTPRoute" %}}
+1. Optional: Remove the resource that you created. 
+
    ```sh
    kubectl delete httproute httpbin-headers -n httpbin
    ```
-   {{% /tab %}}
-   {{% tab tabName="EnterpriseKgatewayTrafficPolicy" %}}
-   ```sh
-   kubectl delete httproute httpbin-headers -n httpbin
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
