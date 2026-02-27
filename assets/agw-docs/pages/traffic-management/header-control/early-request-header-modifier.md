@@ -79,7 +79,7 @@ Remove a header that is reserved for use by another service, such as an external
    }
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a transformation to remove the `x-user-id` header. You can choose to apply the removal on the HTTPRoute or the Gateway. 
+3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a transformation to remove the `x-user-id` header. You can choose to apply the removal on either the HTTPRoute or the Gateway, but on the Gateway, you can also apply the removal on the `PreRouting` phase. 
 
    {{< tabs tabTotal="2" items="Route-level,Gateway-level" >}}
    {{% tab tabName="Route-level" %}}
@@ -145,7 +145,7 @@ Remove a header that is reserved for use by another service, such as an external
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   Example output: Note that the `X-User-Id` header is present in the request.
+   Example output: Note that the `X-User-Id` header is not present in the request.
 
    ```json
    {
