@@ -6,16 +6,20 @@
 init-git-hooks:  ## Use the tracked version of Git hooks from this repo
 	git config core.hooksPath .githooks
 
+.PHONY: deps
+deps:  ## Install Python dependencies
+	pip3 install pyyaml
+
 #----------------------------------------------------------------------------------
 # Doc tests
 #----------------------------------------------------------------------------------
 
 .PHONY: test-generate
-test-generate:  ## Generate doc test scripts (no cluster)
+test-generate: deps  ## Generate doc test scripts (no cluster)
 	python3 scripts/doc_test_run.py --generate-only
 
 .PHONY: test-run
-test-run:  ## Run all doc tests
+test-run: deps  ## Run all doc tests
 	python3 scripts/doc_test_run.py
 
 .PHONY: test-artifacts-fetch
@@ -23,7 +27,7 @@ test-artifacts-fetch:  ## Fetch doc test artifacts
 	bash scripts/doc_test_fetch_artifacts.sh
 
 .PHONY: test-status
-test-status:  ## Inject test status into markdown files
+test-status: deps  ## Inject test status into markdown files
 	python3 scripts/doc_test_inject_status.py
 
 
