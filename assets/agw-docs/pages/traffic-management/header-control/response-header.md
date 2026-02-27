@@ -246,7 +246,7 @@ You can remove HTTP headers from a response before the response is sent back to 
       EOF
       ```
    
-   2. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that removes the `content-length` header from a response. The following example attaches the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to the Gateway. 
+   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that removes the `content-length` header from a response. The following example attaches the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to the Gateway. 
       ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
