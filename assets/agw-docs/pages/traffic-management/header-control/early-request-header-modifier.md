@@ -171,6 +171,6 @@ Remove a header that is reserved for use by another service, such as an external
 
 ```sh
 kubectl delete httproute httpbin-route -n httpbin
-kubectl delete AgentgatewayPolicy remove-reserved-header -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} remove-reserved-header -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete AgentgatewayPolicy remove-reserved-header -n httpbin
 ```
