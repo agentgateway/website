@@ -354,7 +354,7 @@ spec:
   ai:
     provider:
       anthropic:
-        model: claude-haiku-4-5-20251001
+        model: claude-sonnet-4-20250514
   policies:
     auth:
       secretRef:
@@ -483,10 +483,11 @@ curl "localhost:8080/v1/chat/completions" \
 
 {{< tab >}}
 ```bash
-curl "localhost:8080/v1/chat/completions" \
+curl "localhost:8080/v1/messages" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "claude-haiku-4-5-20251001",
+    "model": "claude-sonnet-4-20250514",
+    "max_tokens": 1024,
     "messages": [{"role": "user", "content": "Hello! What is Kubernetes in one sentence?"}]
   }' | jq
 ```

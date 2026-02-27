@@ -54,7 +54,8 @@ Then you can add the new `mcpAuthentication` configuration to implement this beh
 ```yaml
         mcpAuthentication:
           issuer: http://localhost:7080/realms/mcp
-          jwksUrl: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
+          jwks:
+            url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
           audience: mcp_proxy
           provider:
             keycloak: {}
