@@ -11,39 +11,101 @@ h6 {
     font-family: 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
-/* Test Status Badge */
+/* Test Status Badge - Modern gradient style */
 .test-status-badge {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.6rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 500;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
     line-height: 1;
     margin-bottom: 1rem;
-    letter-spacing: 0.025em;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    transition: all 0.2s ease;
+    cursor: default;
 }
 
 .test-status-passed {
-    background-color: rgba(16, 185, 129, 0.15);
-    color: #059669;
-    border: 1px solid rgba(16, 185, 129, 0.3);
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: #ffffff;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3), 0 1px 2px rgba(0, 0, 0, 0.06);
+}
+
+.test-status-passed:hover {
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.35), 0 2px 4px rgba(0, 0, 0, 0.08);
+    transform: translateY(-1px);
 }
 
 .dark .test-status-passed {
-    background-color: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border-color: rgba(52, 211, 153, 0.4);
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
+    color: #ecfdf5;
+    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.25), 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.dark .test-status-passed:hover {
+    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
 .test-status-icon {
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.7rem;
+    height: 0.7rem;
     fill: currentColor;
     flex-shrink: 0;
 }
 
 .test-status-text {
     white-space: nowrap;
+}
+
+/* Modern tooltip */
+.test-status-tooltip {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translateX(-50%) translateY(8px);
+    padding: 0.5rem 0.75rem;
+    background: #1f2937;
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: normal;
+    text-transform: none;
+    white-space: nowrap;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), 0 2px 4px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.test-status-tooltip::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 100%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-bottom-color: #1f2937;
+}
+
+.test-status-badge:hover .test-status-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(6px);
+}
+
+.dark .test-status-tooltip {
+    background: #374151;
+    color: #f3f4f6;
+}
+
+.dark .test-status-tooltip::before {
+    border-bottom-color: #374151;
 }
