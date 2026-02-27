@@ -15,6 +15,7 @@ For more details, review the [GitHub release notes in the agentgateway repositor
 
 The previous release version pattern was changed to align with the version number pattern that is used for the agentgateway standalone binary. Going forward, both the agentgateway on Kubernetes and agentgateway standalone binary projects use the same release version number. If you have existing CI/CD workflows that depend on the old pattern, update them. 
 
+Note that version 2.2 of the documentation is removed. Use the latest 1.0.0 version instead. 
 
 ## 🌟 New features {#v10-new-features}
 
