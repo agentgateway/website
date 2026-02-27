@@ -186,6 +186,11 @@ def main() -> int:
     repo_root = Path(args.repo_root).resolve()
     results_path = repo_root / args.results_file
     
+    if not results_path.exists():
+        print(f"Results file not found: {results_path}")
+        print("Skipping test status injection.")
+        return 0
+    
     if args.dry_run:
         print("=== DRY RUN MODE ===\n")
     
