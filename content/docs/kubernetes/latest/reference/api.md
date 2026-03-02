@@ -3,8 +3,7 @@ title: API reference
 weight: 10
 ---
 
-{{< reuse "/agw-docs/snippets/api-ref-docs-intro.md" >}}
+test
 
-## Packages
-
-{{< reuse "/agw-docs/pages/reference/api/api-22x.md" >}}
+{{< readfile file="content/test.html" >}}
+test
