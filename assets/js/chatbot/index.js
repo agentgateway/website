@@ -16,7 +16,7 @@ const INPUT_STORAGE_KEY = 'chatbot-input';
 const MAX_CONTEXT_PAGES = 3;
 const INPUT_SAVE_DEBOUNCE_MS = 300;
 const HISTORY_LIMIT_NOTE_AT = 6;   // show history-limit note after this many user messages
-const NEW_CHAT_TOOLTIP_AT = 12;    // show new-chat note after this many user messages
+const NEW_CHAT_TOOLTIP_AT = 10;    // show new-chat note after this many user messages
 
 /**
  * A URL is only eligible as a context page if it is same-origin AND
@@ -63,9 +63,7 @@ document.addEventListener('alpine:init', () => {
     showModelMenu: false,
     historyLimitNoteShown: false,
     historyLimitNoteIndex: -1,
-    showNewConvSuggestion: false,
-    _newConvSuggestionFired: false,
-    pendingQuery: '',
+    showNewConvBanner: false,
 
     // Feedback
     showFeedbackModal: false,
@@ -330,7 +328,6 @@ document.addEventListener('alpine:init', () => {
     newChat() {
       this.stopActiveStream();
       this.messages = [];
-      this.userInput = '';
       this.isExpanded = false;
       this.isProcessing = false;
       this.showThinking = false;
@@ -343,55 +340,15 @@ document.addEventListener('alpine:init', () => {
       this.closeMentionMenu();
       this.historyLimitNoteShown = false;
       this.historyLimitNoteIndex = -1;
-      this.showNewConvSuggestion = false;
-      this._newConvSuggestionFired = false;
-      this.pendingQuery = '';
+      this.showNewConvBanner = false;
       this.sessionId = this.generateSessionId();
       this.thinkingAnimator.stop();
       this.markdownRenderer.reset();
-      this.clearSavedInput();
       this.saveState();
       this.$nextTick(() => {
         this.autoResizeInput();
         this.$refs.input?.focus();
         if (this.$refs.messagesSpacer) this.$refs.messagesSpacer.style.minHeight = '0';
-      });
-    },
-
-    /**
-     * Reset and immediately send: used by the + button when there is
-     * a pending interception query OR text already in the textarea.
-     *
-     * Unlike newChat(), this does NOT zero the spacer or collapse
-     * isExpanded — sendQuery() will set isExpanded back to true and
-     * scrollUserMessageToTop() needs the spacer intact to work.
-     */
-    newChatAndSend(query) {
-      if (!query) { this.newChat(); return; }
-      this.stopActiveStream();
-      this.messages = [];
-      this.isProcessing = false;
-      this.showThinking = false;
-      this.contextPages = [];
-      this.showContextMenu = false;
-      this.showModelMenu = false;
-      this.showFeedbackModal = false;
-      this.feedbackModalIndex = -1;
-      this.feedbackComment = '';
-      this.closeMentionMenu();
-      this.historyLimitNoteShown = false;
-      this.historyLimitNoteIndex = -1;
-      this.showNewConvSuggestion = false;
-      this._newConvSuggestionFired = false;
-      this.pendingQuery = '';
-      this.sessionId = this.generateSessionId();
-      this.thinkingAnimator.stop();
-      this.markdownRenderer.reset();
-      this.clearSavedInput();
-      this.userInput = query;
-      this.$nextTick(() => {
-        this.autoResizeInput();
-        this.sendQuery();
       });
     },
 
@@ -914,18 +871,6 @@ document.addEventListener('alpine:init', () => {
       const query = this.userInput.trim();
       if (!query || this.isProcessing) return;
 
-      if (this.messages.length > NEW_CHAT_TOOLTIP_AT && !this._newConvSuggestionFired) {
-        this._newConvSuggestionFired = true;
-        this.showNewConvSuggestion = true;
-        this.pendingQuery = query;
-        return;
-      }
-
-      // User chose to continue — dismiss the strip
-      if (this.showNewConvSuggestion) {
-        this.showNewConvSuggestion = false;
-      }
-
       if (!this.sessionId) {
         this.sessionId = this.generateSessionId();
       }
@@ -952,6 +897,9 @@ document.addEventListener('alpine:init', () => {
       if (userMsgCount === HISTORY_LIMIT_NOTE_AT) {
         this.historyLimitNoteShown = true;
         this.historyLimitNoteIndex = this.messages.length - 1;
+      }
+      if (userMsgCount === NEW_CHAT_TOOLTIP_AT) {
+        this.showNewConvBanner = true;
       }
 
       // Clear input and context

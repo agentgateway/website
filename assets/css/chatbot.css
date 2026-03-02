@@ -46,17 +46,6 @@
   51%, 100% { opacity: 0; }
 }
 
-@keyframes wiggle {
-  0%, 100% { transform: rotate(0deg) scale(1); }
-  20%       { transform: rotate(-5deg) scale(1.1); }
-  40%       { transform: rotate(5deg) scale(1.1); }
-  60%       { transform: rotate(-3deg) scale(1.05); }
-  80%       { transform: rotate(2deg) scale(1.05); }
-}
-
-.chatbot-wiggle {
-  animation: wiggle 0.5s ease-in-out 0.2s 3;
-}
 
 @keyframes codeLine {
   from {
