@@ -95,7 +95,7 @@ If you have Prometheus set up, you can query aggregate costs using PromQL. This 
 
 ## Track costs per user
 
-To track costs per user, combine token metrics with user identification from API keys or JWT claims.
+To track costs per user, combine token metrics with user identification from API keys or JWT claims. For a complete example that integrates API keys, token budgets, and cost tracking, see the [virtual key management guide]({{< link-hextra path="/llm/virtual-keys/" >}}).
 
 1. Set up API key authentication to identify users. See the [API key management guide]({{< link-hextra path="/llm/api-keys/" >}}) for details.
 

@@ -9,7 +9,7 @@ Budget limits (also known as spend limits or quota management) help you control 
 - **Token-based rate limiting**: Enforce token consumption limits per user or key
 - **Token usage metrics**: Track actual spending for visibility and chargeback
 
-Other AI gateways often call this feature "virtual keys" or "virtual key management." {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} achieves the same outcome through composable policies rather than a single abstraction, giving you more flexibility in how you apply limits.
+Other AI gateways often call this feature "virtual keys" or "virtual key management." {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} achieves the same outcome through composable policies rather than a single abstraction, giving you more flexibility in how you apply limits. For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}).
 
 ## Before you begin
 

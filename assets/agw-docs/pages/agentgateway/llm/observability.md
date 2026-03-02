@@ -27,6 +27,20 @@ You can access the {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics end
 
 For more information, see the [Semantic conventions for generative AI metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) in the OpenTelemetry docs.
 
+## Track per-user metrics
+
+When you set up API key authentication with per-user rate limiting, you can filter token usage metrics by user ID to track spending and usage patterns for each virtual key.
+
+For a complete virtual key setup guide, see [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}).
+
+Example PromQL query for per-user token usage:
+```promql
+# Total tokens consumed by each user
+sum by (user_id) (
+  agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"} +
+  agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}
+)
+```
 
 ## View logs
 
