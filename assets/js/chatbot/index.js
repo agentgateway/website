@@ -15,7 +15,7 @@ const STORAGE_KEY = 'chatbot-state';
 const INPUT_STORAGE_KEY = 'chatbot-input';
 const MAX_CONTEXT_PAGES = 3;
 const INPUT_SAVE_DEBOUNCE_MS = 300;
-const HISTORY_LIMIT_NOTE_AT = 6;   // show history-limit note after this many user messages
+const HISTORY_LIMIT_NOTE_AT = 3;   // show history-limit note after this many user messages
 const NEW_CHAT_TOOLTIP_AT = 10;    // show new-chat note after this many user messages
 
 /**
