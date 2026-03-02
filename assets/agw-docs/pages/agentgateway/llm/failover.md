@@ -4,7 +4,9 @@ Prioritize the failover of requests across different models from an LLM provider
 
 Failover is a way to keep services running smoothly by automatically switching to a backup system when the main one fails or becomes unavailable (also known as fallback or automatic failover).
 
-For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover for the models of the LLM providers that you want to prioritize. If the main model from one provider goes down, slows, or has any issue, the system quickly switches to a backup model from that same provider. This keeps the service running without interruptions. When you split traffic by weight between models or providers instead of strict priority, the same mechanism supports A/B testing and canary deployments (traffic splitting).
+For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover for the models of the LLM providers that you want to prioritize. If the main model from one provider goes down, slows, or has any issue, the system quickly switches to a backup model from that same provider. This keeps the service running without interruptions.
+
+**Failover vs. traffic splitting:** Failover uses **priority groups** to automatically switch between backends when failures occur. For **weight-based traffic distribution** (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
@@ -17,7 +19,9 @@ This approach increases the resiliency of your network environment by ensuring t
 
 You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority.
 
-Models within the same priority group are [load balanced]({{< link-hextra path="/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies. You can also use weighted backends for traffic splitting to support A/B testing or canary rollouts.
+Models within the same priority group are [load balanced]({{< link-hextra path="/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies.
+
+For weight-based traffic distribution within a priority group (such as 80/20 splits for A/B testing or canary rollouts), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
 
 1. Create or update the {{< reuse "agw-docs/snippets/backend.md" >}} for your LLM providers.
 
