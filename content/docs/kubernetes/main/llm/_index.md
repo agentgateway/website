@@ -13,6 +13,7 @@ Consume services from LLM providers.
   {{< card link="failover" title="Model failover" subtitle="Failover, A/B testing, canary, traffic splitting" >}}
   {{< card link="prompt-guards" title="Set up prompt guards" >}}
   {{< card link="prompt-enrichment" title="Enrich prompts" >}}
+  {{< card link="prompt-templates" title="Use prompt templates" subtitle="Static and dynamic templating, variable injection" >}}
   {{< card link="functions" title="Call functions" >}}
   {{< card link="guardrail-api" title="Guardrail Webhook API" >}}
   {{< card link="cost-tracking" title="Track LLM costs" subtitle="Cost tracking, spend monitoring, usage tracking" >}}
