@@ -7,8 +7,6 @@ prev: /docs/llm/providers
 
 Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
 
-This guide shows how to issue and configure API keys (inline, environment variable, file, or Kubernetes secret/passthrough).
-
 You can choose between the following options to provide an API key to agentgateway: 
 * Inline
 * Environment variable
