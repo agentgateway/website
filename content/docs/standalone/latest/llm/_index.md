@@ -12,6 +12,7 @@ Consume LLM services by setting up AI backends for your LLM providers.
   {{< card link="about" title="About" >}}
   {{< card link="providers" title="Providers" >}}
   {{< card link="api-keys" title="Manage API keys" >}}
+  {{< card link="content-safety" title="Content safety and PII protection" subtitle="Content safety, PII detection, DLP" >}}
   {{< card link="prompt-templates" title="Use prompt templates" subtitle="Static and dynamic templating, variable injection" >}}
   {{< card link="observability" title="Observe traffic" >}}
   {{< card link="spending" title="Control spend" >}}
