@@ -79,6 +79,10 @@ document.addEventListener('alpine:init', () => {
     markdownRenderer: null,
     currentEventSource: null,
     _saveInputTimer: null,
+    _pendingStreamTokens: '',
+    _streamRenderScheduled: false,
+    _streamRenderRafId: null,
+    _streamRenderTimer: null,
 
     // ─── Lifecycle ───────────────────────────────────────────
 
@@ -271,9 +275,11 @@ document.addEventListener('alpine:init', () => {
         this.currentEventSource.close();
         this.currentEventSource = null;
       }
+      this.clearStreamRenderScheduler();
       const lastMsg = this.messages[this.messages.length - 1];
       if (lastMsg?.isStreaming) {
         try {
+          this.flushPendingStreamTokens();
           const html = this.markdownRenderer.flush();
           if (html) lastMsg.content = html;
           lastMsg.markdown = this.markdownRenderer.getContent();
@@ -385,6 +391,7 @@ document.addEventListener('alpine:init', () => {
         this.currentEventSource.close();
         this.currentEventSource = null;
       }
+      this.clearStreamRenderScheduler();
       const lastMsg = this.messages[this.messages.length - 1];
       if (lastMsg?.isStreaming) {
         lastMsg.isStreaming = false;
@@ -793,6 +800,59 @@ document.addEventListener('alpine:init', () => {
 
     // ─── Query ───────────────────────────────────────────────
 
+    clearStreamRenderScheduler() {
+      if (this._streamRenderRafId !== null) {
+        window.cancelAnimationFrame(this._streamRenderRafId);
+        this._streamRenderRafId = null;
+      }
+      if (this._streamRenderTimer !== null) {
+        clearTimeout(this._streamRenderTimer);
+        this._streamRenderTimer = null;
+      }
+      this._streamRenderScheduled = false;
+    },
+
+    scheduleStreamRender() {
+      if (this._streamRenderScheduled) return;
+      this._streamRenderScheduled = true;
+
+      const run = () => {
+        this._streamRenderScheduled = false;
+        this._streamRenderRafId = null;
+        this._streamRenderTimer = null;
+        this.flushPendingStreamTokens();
+      };
+
+      if (typeof window.requestAnimationFrame === 'function') {
+        this._streamRenderRafId = window.requestAnimationFrame(run);
+      } else {
+        this._streamRenderTimer = setTimeout(run, 16);
+      }
+    },
+
+    flushPendingStreamTokens() {
+      if (!this._pendingStreamTokens) return;
+
+      const idx = this.messages.length - 1;
+      const msg = this.messages[idx];
+      if (!msg || msg.role !== 'assistant' || !msg.isStreaming) {
+        this._pendingStreamTokens = '';
+        return;
+      }
+
+      this.markdownRenderer.addToken(this._pendingStreamTokens);
+      this._pendingStreamTokens = '';
+
+      const html = this.markdownRenderer.render();
+      msg.content = html;
+
+      if (this.markdownRenderer.getContent().length > 0 && this.showThinking) {
+        this.showThinking = false;
+        this.thinkingAnimator.stop();
+        msg.isLoading = false;
+      }
+    },
+
     async sendQuery() {
       const query = this.userInput.trim();
       if (!query || this.isProcessing) return;
@@ -838,6 +898,8 @@ document.addEventListener('alpine:init', () => {
       });
 
       this.markdownRenderer.reset();
+      this.clearStreamRenderScheduler();
+      this._pendingStreamTokens = '';
       this.showThinking = true;
 
       await this.$nextTick();
@@ -852,25 +914,22 @@ document.addEventListener('alpine:init', () => {
           pages,
 
           onToken: (token) => {
-            this.markdownRenderer.addToken(token);
-            const html = this.markdownRenderer.render();
-            const idx = this.messages.length - 1;
-            this.messages[idx].content = html;
-
-            if (this.markdownRenderer.getContent().length > 0 && this.showThinking) {
-              this.showThinking = false;
-              this.thinkingAnimator.stop();
-              this.messages[idx].isLoading = false;
-            }
+            this._pendingStreamTokens += token;
+            this.scheduleStreamRender();
           },
 
           onDone: () => {
+            this.clearStreamRenderScheduler();
+            this.flushPendingStreamTokens();
             const html = this.markdownRenderer.flush();
             const idx = this.messages.length - 1;
-            this.messages[idx].content = html;
-            this.messages[idx].markdown = this.markdownRenderer.getContent();
-            this.messages[idx].isStreaming = false;
-            this.messages[idx].isLoading = false;
+            const msg = this.messages[idx];
+            if (msg?.role === 'assistant') {
+              msg.content = html;
+              msg.markdown = this.markdownRenderer.getContent();
+              msg.isStreaming = false;
+              msg.isLoading = false;
+            }
             this.showThinking = false;
             this.thinkingAnimator.stop();
             this.isProcessing = false;
@@ -881,6 +940,8 @@ document.addEventListener('alpine:init', () => {
 
           onError: (errorMessage, errorType) => {
             console.error('Stream error:', errorMessage, errorType);
+            this.clearStreamRenderScheduler();
+            this._pendingStreamTokens = '';
             this.showThinking = false;
             this.thinkingAnimator.stop();
             const idx = this.messages.length - 1;
@@ -896,6 +957,8 @@ document.addEventListener('alpine:init', () => {
         });
       } catch (error) {
         console.error('Chat error:', error);
+        this.clearStreamRenderScheduler();
+        this._pendingStreamTokens = '';
         this.showThinking = false;
         this.thinkingAnimator.stop();
         const idx = this.messages.length - 1;

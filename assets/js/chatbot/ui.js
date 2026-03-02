@@ -83,6 +83,11 @@ export class MarkdownRenderer {
    * Render buffered content with line-by-line code block reveal
    */
   render() {
+    if (this.renderTimeout) {
+      clearTimeout(this.renderTimeout);
+      this.renderTimeout = null;
+    }
+
     if (this.tokenBuffer.length === 0) {
       // Return cached HTML if buffer is empty
       return this.lastRenderedHTML;

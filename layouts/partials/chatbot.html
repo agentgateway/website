@@ -486,6 +486,9 @@
             </svg>
           </button>
         </div>
+        <p class="m-0 mb-2 text-[12px] text-gray-600 dark:text-gray-300 leading-relaxed">
+          Your feedback helps us improve assistant answers and identify docs gaps we should fix.
+        </p>
         <textarea
           x-ref="feedbackInput"
           x-model="feedbackComment"
@@ -494,6 +497,27 @@
           rows="3"
           placeholder="Tell us what went wrong (optional)..."
         ></textarea>
+        <div class="mt-3 rounded-lg border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10 px-3 py-2 text-[12px] leading-relaxed text-violet-800 dark:text-violet-200">
+          <p class="m-0">
+            Need more help? Join our Discord:
+            <a
+              href="https://discord.gg/y9efgEmppm"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-violet-700 dark:text-violet-300 underline hover:text-violet-600 dark:hover:text-violet-200"
+            >https://discord.gg/y9efgEmppm</a>
+            where one of our engineers will help.
+          </p>
+          <p class="m-0 mt-2">
+            You can also connect your own agents to the search.solo.io MCP server so they can test ideas locally and fill gaps by querying our docs. Setup options are documented on the landing page:
+            <a
+              href="https://search.solo.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-violet-700 dark:text-violet-300 underline hover:text-violet-600 dark:hover:text-violet-200"
+            >https://search.solo.io/</a>.
+          </p>
+        </div>
         <div class="flex items-center justify-end gap-2 mt-3">
           <button
             @click="closeFeedbackModal()"
