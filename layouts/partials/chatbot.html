@@ -43,18 +43,6 @@
         <span>Agentgateway assistant</span>
       </div>
       <div class="flex items-center gap-1">
-        <!-- New Chat Button -->
-        <button
-          @click="newChat()"
-          class="flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg text-gray-500 cursor-pointer transition-all duration-150 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-50"
-          aria-label="New Chat"
-          title="New conversation"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
-        </button>
         <!-- Export Button -->
         <button
           @click="exportChat()"
@@ -96,6 +84,7 @@
 
       <!-- Messages -->
       <template x-for="(msg, index) in messages" :key="index">
+        <div>
         <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
           <!-- User Message -->
           <div
@@ -226,11 +215,53 @@
             </div>
           </div>
         </div>
+        <!-- History Limit Note (Feature 1: inline after 4th user message) -->
+        <div
+          x-show="historyLimitNoteShown && index === historyLimitNoteIndex"
+          x-transition:enter="transition ease-out duration-200"
+          x-transition:enter-start="opacity-0 translate-y-1"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          class="mt-2 flex items-start gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-[11px] text-blue-600 dark:text-blue-400"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>The assistant keeps a rolling history of 6 messages — older ones are dropped automatically. Use the <strong>+</strong> button below to start a fresh conversation for better performance.</span>
+        </div>
+        </div><!-- end x-for wrapper -->
       </template>
+
+      <!-- Spacer: grows so the latest message can be scrolled to the top -->
+      <div x-ref="messagesSpacer" style="flex-shrink: 0"></div>
+
     </div>
 
     <!-- Input Container -->
     <div class="chatbot-input-container px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
+
+      <!-- New conversation suggestion strip -->
+      <div
+        x-show="showNewConvSuggestion"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 translate-y-0"
+        x-transition:leave-end="opacity-0 translate-y-1"
+        class="flex items-start gap-2.5 mb-2 px-3 py-2.5 bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 rounded-lg text-[11px] text-violet-700 dark:text-violet-300"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span class="leading-relaxed">
+          Long conversations reduce accuracy. Press <strong class="font-semibold">+</strong> to start fresh and keep your message — or send again to continue here.
+        </span>
+      </div>
+
       <!-- Unified input card -->
       <div class="chatbot-input-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors duration-150 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500/20">
 
@@ -430,6 +461,20 @@
                 </button>
               </div>
             </div>
+
+            <!-- New Chat Button -->
+            <button
+              @click="showNewConvSuggestion ? newChatAndSend(pendingQuery) : (userInput.trim() ? newChatAndSend(userInput.trim()) : newChat())"
+              :class="showNewConvSuggestion ? 'bg-green-500 hover:bg-green-400 text-white shadow-sm chatbot-wiggle' : 'bg-transparent text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700'"
+              class="flex items-center justify-center w-8 h-8 border-none rounded-lg cursor-pointer"
+              aria-label="New Chat"
+              title="New conversation"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
 
             <!-- Send button -->
             <button

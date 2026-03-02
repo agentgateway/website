@@ -15,6 +15,8 @@ const STORAGE_KEY = 'chatbot-state';
 const INPUT_STORAGE_KEY = 'chatbot-input';
 const MAX_CONTEXT_PAGES = 3;
 const INPUT_SAVE_DEBOUNCE_MS = 300;
+const HISTORY_LIMIT_NOTE_AT = 6;   // show history-limit note after this many user messages
+const NEW_CHAT_TOOLTIP_AT = 12;    // show new-chat note after this many user messages
 
 /**
  * A URL is only eligible as a context page if it is same-origin AND
@@ -59,6 +61,11 @@ document.addEventListener('alpine:init', () => {
     sessionId: '',
     showContextMenu: false,
     showModelMenu: false,
+    historyLimitNoteShown: false,
+    historyLimitNoteIndex: -1,
+    showNewConvSuggestion: false,
+    _newConvSuggestionFired: false,
+    pendingQuery: '',
 
     // Feedback
     showFeedbackModal: false,
@@ -93,6 +100,13 @@ document.addEventListener('alpine:init', () => {
 
       // Hugo-generated page index for @ mentions
       this.pageIndex = loadPageIndex();
+
+      // Clear persisted state on hard refresh (F5 / Ctrl+R / refresh button)
+      const navEntry = performance.getEntriesByType('navigation')[0];
+      const isReload = navEntry?.type === 'reload';
+      if (isReload) {
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+      }
 
       // Restore persisted conversation (runs BEFORE watchers are set up,
       // so setting isOpen / messages here does NOT fire the watchers).
@@ -327,6 +341,11 @@ document.addEventListener('alpine:init', () => {
       this.feedbackModalIndex = -1;
       this.feedbackComment = '';
       this.closeMentionMenu();
+      this.historyLimitNoteShown = false;
+      this.historyLimitNoteIndex = -1;
+      this.showNewConvSuggestion = false;
+      this._newConvSuggestionFired = false;
+      this.pendingQuery = '';
       this.sessionId = this.generateSessionId();
       this.thinkingAnimator.stop();
       this.markdownRenderer.reset();
@@ -335,6 +354,44 @@ document.addEventListener('alpine:init', () => {
       this.$nextTick(() => {
         this.autoResizeInput();
         this.$refs.input?.focus();
+        if (this.$refs.messagesSpacer) this.$refs.messagesSpacer.style.minHeight = '0';
+      });
+    },
+
+    /**
+     * Reset and immediately send: used by the + button when there is
+     * a pending interception query OR text already in the textarea.
+     *
+     * Unlike newChat(), this does NOT zero the spacer or collapse
+     * isExpanded — sendQuery() will set isExpanded back to true and
+     * scrollUserMessageToTop() needs the spacer intact to work.
+     */
+    newChatAndSend(query) {
+      if (!query) { this.newChat(); return; }
+      this.stopActiveStream();
+      this.messages = [];
+      this.isProcessing = false;
+      this.showThinking = false;
+      this.contextPages = [];
+      this.showContextMenu = false;
+      this.showModelMenu = false;
+      this.showFeedbackModal = false;
+      this.feedbackModalIndex = -1;
+      this.feedbackComment = '';
+      this.closeMentionMenu();
+      this.historyLimitNoteShown = false;
+      this.historyLimitNoteIndex = -1;
+      this.showNewConvSuggestion = false;
+      this._newConvSuggestionFired = false;
+      this.pendingQuery = '';
+      this.sessionId = this.generateSessionId();
+      this.thinkingAnimator.stop();
+      this.markdownRenderer.reset();
+      this.clearSavedInput();
+      this.userInput = query;
+      this.$nextTick(() => {
+        this.autoResizeInput();
+        this.sendQuery();
       });
     },
 
@@ -857,6 +914,18 @@ document.addEventListener('alpine:init', () => {
       const query = this.userInput.trim();
       if (!query || this.isProcessing) return;
 
+      if (this.messages.length > NEW_CHAT_TOOLTIP_AT && !this._newConvSuggestionFired) {
+        this._newConvSuggestionFired = true;
+        this.showNewConvSuggestion = true;
+        this.pendingQuery = query;
+        return;
+      }
+
+      // User chose to continue — dismiss the strip
+      if (this.showNewConvSuggestion) {
+        this.showNewConvSuggestion = false;
+      }
+
       if (!this.sessionId) {
         this.sessionId = this.generateSessionId();
       }
@@ -878,6 +947,12 @@ document.addEventListener('alpine:init', () => {
       });
 
       if (this.messages.length === 1) this.isExpanded = true;
+
+      const userMsgCount = this.messages.filter(m => m.role === 'user').length;
+      if (userMsgCount === HISTORY_LIMIT_NOTE_AT) {
+        this.historyLimitNoteShown = true;
+        this.historyLimitNoteIndex = this.messages.length - 1;
+      }
 
       // Clear input and context
       this.userInput = '';
@@ -906,6 +981,7 @@ document.addEventListener('alpine:init', () => {
       if (this.$refs.thinkingDots) {
         this.thinkingAnimator.start(this.$refs.thinkingDots);
       }
+      this.scrollUserMessageToTop();
 
       try {
         this.currentEventSource = await this.streamer.stream(query, {
@@ -1063,9 +1139,35 @@ document.addEventListener('alpine:init', () => {
       return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
     },
 
-    scrollToBottom() {
-      const c = this.$refs.messagesContainer;
-      if (c) c.scrollTop = c.scrollHeight;
+    scrollUserMessageToTop() {
+      // Wait for the browser to complete layout after Alpine's DOM update
+      // before computing scroll position.  A double-rAF is used so the
+      // measurement happens after any pending CSS height transitions
+      // (e.g. the expanded-class change) have been picked up by layout.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const c = this.$refs.messagesContainer;
+          const spacer = this.$refs.messagesSpacer;
+          if (!c) return;
+
+          // The spacer sits after all messages. Grow it so there is enough
+          // scrollable height to push the latest user message to the very top.
+          if (spacer) spacer.style.minHeight = c.clientHeight + 'px';
+
+          // children: [welcome div, ...message wrappers (one per message), spacer]
+          // after sendQuery pushes user msg + assistant placeholder, the user
+          // message is the third-to-last child (before assistant + spacer).
+          const children = c.children;
+          // Find the user message element: skip spacer (last) and assistant placeholder (second-to-last)
+          const userMsgEl = children[children.length - 3];
+          if (!userMsgEl) return;
+
+          c.scrollTo({
+            top: c.scrollTop + (userMsgEl.getBoundingClientRect().top - c.getBoundingClientRect().top - 8),
+            behavior: 'smooth'
+          });
+        });
+      });
     },
 
     isLastMessage(index) {
