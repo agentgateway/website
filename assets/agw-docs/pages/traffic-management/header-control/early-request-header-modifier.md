@@ -4,7 +4,6 @@ This capability is especially useful for security and sanitization use cases, wh
 
 Early request header modification is configured on an `{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}` using the `transformation` field. This policy is attached directly to a proxy and applies header mutations before route selection. You can choose between the following header operations: 
 
-The configuration uses the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} and supports the following operations:
 
 - `add`
 - `set`
