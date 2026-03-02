@@ -47,7 +47,7 @@ Remove a header that is reserved for use by another service, such as an external
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}  
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: transformation.example" -H "x-user-id: reserved-user"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"%}}
