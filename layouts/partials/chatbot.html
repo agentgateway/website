@@ -92,7 +92,7 @@
       <div x-show="messages.length === 0" class="chatbot-welcome text-center py-4 px-5 text-gray-800 dark:text-gray-400 text-sm">
         <p>Ask me anything about agentgateway configuration, features, or usage.</p>
         <p>Note: AI-generated content might contain errors; please verify and test all returned information.</p>
-        <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Tip: one topic per conversation gives the best results. Use the <strong class="font-medium">+</strong> in the dialog top bar to start new conversations.</p>
+        <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Tip: one topic per conversation gives the best results. Use the <strong class="font-medium">+</strong> button in the chat header to start a new conversation.</p>
       </div>
 
       <!-- Messages -->
@@ -241,7 +241,7 @@
             <line x1="12" y1="8" x2="12" y2="12"></line>
             <line x1="12" y1="16" x2="12.01" y2="16"></line>
           </svg>
-          <span>The assistant keeps a rolling history of 6 messages — older ones are dropped automatically. Use the <strong>+</strong> in the header to start a fresh conversation for better performance.</span>
+          <span>The assistant keeps a rolling history of 3 exchanges. Any older messages are no longer included in the context.</span>
         </div>
         </div><!-- end x-for wrapper -->
       </template>
