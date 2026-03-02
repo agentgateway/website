@@ -78,33 +78,7 @@ Remove a header that is reserved for use by another service, such as an external
    }
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a transformation to remove the `x-user-id` header. You can choose to apply the removal on either the HTTPRoute or the Gateway, but on the Gateway, you can also apply the removal on the `PreRouting` phase. 
-
-   {{< tabs tabTotal="2" items="Route-level,Gateway-level" >}}
-   {{% tab tabName="Route-level" %}}
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: remove-reserved-header
-     namespace: httpbin
-   spec:
-     targetRefs:
-       - group: gateway.networking.k8s.io
-         kind: HTTPRoute
-         name: httpbin-route
-     traffic:
-       transformation:
-         request:
-           remove:
-             - x-user-id
-   EOF
-   ```
-
-   {{% /tab %}}
-   {{% tab tabName="Gateway-level" %}}
+3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a transformation to remove the `x-user-id` header. You can apply the removal on the Gateway on the `PreRouting` phase. 
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -127,8 +101,6 @@ Remove a header that is reserved for use by another service, such as an external
              - x-user-id
    EOF
    ```
-   {{% /tab %}}
-   {{< /tabs >}}
 
 4. Repeat the test request to the sample httpbin app. The `x-user-id` header is no longer present in the response.
 
@@ -171,5 +143,4 @@ Remove a header that is reserved for use by another service, such as an external
 ```sh
 kubectl delete httproute httpbin-route -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} remove-reserved-header -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} remove-reserved-header -n httpbin
 ```
