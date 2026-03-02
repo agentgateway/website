@@ -1,7 +1,7 @@
 ---
 title: Model failover
 weight: 35
-description: Failover and load balancing across LLM providers (fallback, A/B testing, canary, traffic splitting).
+description: Configure failover (automatic fallback) across LLM models and providers.
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/failover.md" >}}

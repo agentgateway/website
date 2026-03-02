@@ -1,13 +1,13 @@
 ---
 title: Manage API keys
 weight: 40
-description: Manage virtual keys—issue API keys and attach per-key token budgets.
+description: Manage API keys for LLM provider authentication.
 prev: /docs/llm/providers
 ---
 
 Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
 
-Manage virtual keys by issuing API keys and attaching per-key token budgets via [rate limiting](/docs/standalone/main/configuration/resiliency/rate-limits/) and [control spend](/docs/standalone/main/llm/spending/). Agentgateway delivers this by composing API key authentication, token-based rate limits keyed by user or header, and optional observability.
+This guide shows how to issue and configure API keys (inline, environment variable, file, or Kubernetes secret/passthrough).
 
 You can choose between the following options to provide an API key to agentgateway: 
 * Inline
