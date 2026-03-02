@@ -1,4 +1,4 @@
-Set up weight-based routing between multiple apps. 
+Split traffic with weight-based routing across multiple apps.
 
 ## Before you begin
 

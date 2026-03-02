@@ -1,10 +1,10 @@
 ---
 title: Control spend
 weight: 50
-description: Limit the number of tokens that can be used to prevent unexpected bills and LLM misuse. 
+description: Control cost with token budgets and spend limits to prevent unexpected bills and LLM misuse.
 ---
 
-Limit the number of tokens that can be used to prevent unexpected bills and LLM misuse. 
+Control cost by limiting the number of tokens that can be used and preventing LLM misuse. Use token budgets and spend limits per key (virtual keys) to cap usage per user, team, or API key. 
 
 ## About LLM spending
 
