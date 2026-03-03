@@ -287,7 +287,7 @@ Prompt caching is supported for Bedrock Claude 3+ and Nova models.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: bedrock-caching-policy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
