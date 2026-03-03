@@ -418,6 +418,9 @@ class Extractor:
 
     def select_blocks(self) -> List[CodeBlock]:
         selected: List[CodeBlock] = []
+        # Preserve source order (helm -> gateway -> sample-app -> feature) so that
+        # e.g. the Gateway is created before the HTTPRoute that references it.
+        source_order = {p.resolve(): i for i, p in enumerate(self.path_selectors_by_file.keys())}
         for source_file, selectors in self.path_selectors_by_file.items():
             result = self.file_cache.get(source_file.resolve())
             if not result:
@@ -429,9 +432,13 @@ class Extractor:
                     continue
                 if selectors and set(block.paths).intersection(selectors):
                     selected.append(block)
-        # Emit blocks in document order (by file, then line) so hidden blocks
-        # (e.g. start server in background) appear before dependent visible blocks.
-        selected.sort(key=lambda b: (b.file_path, b.start_line))
+        # Emit blocks in source order (prereqs first), then by line within each file,
+        # so hidden blocks (e.g. start server in background) appear before dependent blocks.
+        def sort_key(b: CodeBlock) -> Tuple[int, int]:
+            idx = source_order.get(b.file_path.resolve(), 999)
+            return (idx, b.start_line)
+
+        selected.sort(key=sort_key)
         return selected
 
     def select_test_includes(self) -> List[TestInclude]:
