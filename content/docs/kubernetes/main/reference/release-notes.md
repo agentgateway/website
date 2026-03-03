@@ -96,9 +96,7 @@ https://github.com/solo-io/gloo-gateway/pull/1454
 
 https://github.com/solo-io/gloo-gateway/pull/1462
 
-### GRPCRoute support
 
-https://github.com/kgateway-dev/kgateway/pull/13293/changes#diff-781a8d153c4872696262e6b28d80b1523d7e76641c0817b1139b076346cbd24f
 
 --> 
 
@@ -139,6 +137,10 @@ spec:
         namespaces:
           from: Same
 ```
+
+### GRPCRoute support
+
+You can now attach GRPCRoutes to your agentgateway proxy to route traffic to gRPC endpoints. For more information, see [gRPC routing]({{< link-hextra path="/traffic-management/grpc/" >}}). 
 
 ## 🗑️ Deprecated or removed features {#v10-removed-features}
 
