@@ -1,11 +1,11 @@
 ---
 title: Manage API keys
 weight: 40
-description: Configure authentication when connecting to your LLM. 
+description: Manage API keys for LLM provider authentication.
 prev: /docs/llm/providers
 ---
 
-Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense. 
+Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
 
 You can choose between the following options to provide an API key to agentgateway: 
 * Inline
