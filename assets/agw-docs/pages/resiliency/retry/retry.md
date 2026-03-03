@@ -28,7 +28,7 @@ Set up retries to the sample app.
    {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute and rule (AgentgatewayPolicy),Gateway listener" >}}
    {{% tab tabName="HTTPRoute (Kubernetes GW API)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
-      ```yaml,paths="retry-in-httproute"
+      ```yaml {paths="retry-in-httproute"}
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
