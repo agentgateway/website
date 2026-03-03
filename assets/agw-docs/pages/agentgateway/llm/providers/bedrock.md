@@ -286,7 +286,7 @@ Prompt caching is supported for Bedrock Claude 3+ and Nova models.
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your prompt cache settings. The following example enables caching for system prompts and conversation messages, but disables it for tool definitions. Bedrock requires you to set the minimum token count after which caching is enabled. By default, a minimum of 1024 tokens are required by Bedrock for caching to be effective. This is also referred to as a caching checkpoint. For more information, see the [API reference]({{< link-hextra path="/reference/api/#promptcachingconfig" >}}). 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: bedrock-caching-policy
