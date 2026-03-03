@@ -12,7 +12,7 @@
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"  %}}
    ```sh
-   kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:8080
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
    {{% /tab %}}
    {{< /tabs >}}
