@@ -33,7 +33,7 @@ spec:
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   namespace: default
   name: mcp-static-no-protocol
