@@ -65,7 +65,7 @@ Example output:
 
 Create a `config.yaml` that listens on port 3000 and routes traffic to the httpbin host. Use a static `host` backend with the address and port where httpbin is reachable, such as `127.0.0.1:8000`.
 
-```yaml,paths="httpbin"
+```yaml {paths="httpbin"}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

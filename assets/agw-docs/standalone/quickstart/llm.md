@@ -28,7 +28,7 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
 
 Create a `config.yaml` that defines an HTTP listener and an AI backend for OpenAI. This configuration listens on port 3000, routes traffic to the OpenAI backend, and attaches your API key to outgoing requests via the `backendAuth` policy.
 
-```yaml,paths="llm"
+```yaml {paths="llm"}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
