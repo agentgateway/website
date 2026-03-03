@@ -19,7 +19,7 @@ Use this skill when adding tests to documentation guides in the `website` repo s
 
 ## Core concepts
 
-1. **Test metadata** lives on the **content** page (e.g. `content/docs/standalone/main/quickstart/llm.md` or `content/docs/standalone/latest/quickstart/llm.md`) in YAML front matter under `test:`.
+1. **Test metadata** lives on the **content** page (e.g. [`content/docs/standalone/main/quickstart/llm.md`](https://github.com/agentgateway/website/blob/main/content/docs/standalone/main/quickstart/llm.md?plain=1)) in YAML front matter under `test:`.
 2. **Path tags and hidden blocks** live in the **content that gets inlined**. If the content page only has `{{< reuse "agw-docs/..." >}}`, the real body is in **assets** — add `paths="..."` and `{{< doc-test >}}` in the **asset** file, not the content wrapper.
 3. **Extractor** resolves `{{< reuse "..." >}}` from `assets/`, so the script is built from the expanded content. Reference the **content file** in `test:` sources; the extractor will follow reuse.
 4. **Block order**: Selected blocks are emitted in document order (by file and `start_line`). Hidden blocks (e.g. “start server in background”) must appear *before* any visible block that depends on them (e.g. curl). The extractor sorts selected blocks by `(file_path, start_line)` so hidden blocks are not deferred to the end.
