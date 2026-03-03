@@ -1,5 +1,4 @@
-Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service.<!--
-You might commonly use retries alongside [Timeouts]({{< link-hextra path="/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable. -->
+Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service. You might commonly use retries alongside [Timeouts]({{< link-hextra path="/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable.
 
 {{< callout type="warning" >}} 
 {{< reuse "agw-docs/versions/warn-experimental.md" >}}
@@ -29,7 +28,7 @@ Set up retries to the sample app.
    {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute and rule (AgentgatewayPolicy),Gateway listener" >}}
    {{% tab tabName="HTTPRoute (Kubernetes GW API)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
-      ```yaml
+      ```yaml,paths="retry-in-httproute"
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -58,6 +57,25 @@ Set up retries to the sample app.
             - 503
       EOF
       ```
+
+      {{< doc-test paths="retry-in-httproute" >}}
+      YAMLTest -f - <<'EOF'
+      - name: wait for retry HTTPRoute to be accepted
+        wait:
+          target:
+            kind: HTTPRoute
+            metadata:
+              namespace: httpbin
+              name: retry
+          jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+          jsonPathExpectation:
+            comparator: equals
+            value: "True"
+          polling:
+            timeoutSeconds: 300
+            intervalSeconds: 5
+      EOF
+      {{< /doc-test >}}
 
       {{< reuse "agw-docs/snippets/review-table.md" >}}
 
@@ -366,6 +384,21 @@ Set up retries to the sample app.
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+   {{< doc-test paths="retry-in-httproute" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify request to retry route succeeds
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/headers"
+       method: GET
+       headers:
+         host: retry.example
+     source:
+       type: local
+     expect:
+       statusCode: 200
+   EOF
+   {{< /doc-test >}}
 
    Example output:
 

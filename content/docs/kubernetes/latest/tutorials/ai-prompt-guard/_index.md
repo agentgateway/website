@@ -4,7 +4,7 @@ weight: 7
 description: Content safety and PII detection—block prompt injection and sensitive data on Kubernetes
 ---
 
-Configure agentgateway to inspect and filter LLM requests, blocking sensitive data like PII before it reaches AI models (content safety, PII detection).
+Use content safety and PII detection: configure agentgateway to inspect and filter LLM requests and block sensitive data like PII before it reaches AI models.
 
 ## What you'll build
 

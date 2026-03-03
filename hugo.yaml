@@ -58,17 +58,17 @@ menu:
     - name: Tutorials
       url: /tutorials
       weight: 3
-    - name: Integrations
-      url: /docs/standalone/latest/integrations
-      weight: 4
-    - name: Blog
+    - name: Models
       weight: 5
+      url: /models
+    - name: Blog
+      weight: 6
       url: /blog
     - name: Enterprise
-      weight: 6
+      weight: 7
       url: /enterprise
     - name: Search
-      weight: 7
+      weight: 8
       params:
         type: search
     - name: GitHub

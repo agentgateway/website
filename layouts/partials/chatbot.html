@@ -46,11 +46,11 @@
         <!-- New Chat Button -->
         <button
           @click="newChat()"
-          class="flex items-center justify-center w-8 h-8 bg-transparent border-none rounded-lg text-gray-500 cursor-pointer transition-all duration-150 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-700 dark:hover:text-gray-50"
+          class="flex items-center justify-center w-8 h-8 border-none rounded-lg cursor-pointer transition-all duration-150 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700"
           aria-label="New Chat"
           title="New conversation"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="5" x2="12" y2="19"></line>
             <line x1="5" y1="12" x2="19" y2="12"></line>
           </svg>
@@ -92,10 +92,12 @@
       <div x-show="messages.length === 0" class="chatbot-welcome text-center py-4 px-5 text-gray-800 dark:text-gray-400 text-sm">
         <p>Ask me anything about agentgateway configuration, features, or usage.</p>
         <p>Note: AI-generated content might contain errors; please verify and test all returned information.</p>
+        <p class="mt-2 text-xs text-gray-400 dark:text-gray-500">Tip: one topic per conversation gives the best results. Use the <strong class="font-medium">+</strong> button in the chat header to start a new conversation.</p>
       </div>
 
       <!-- Messages -->
       <template x-for="(msg, index) in messages" :key="index">
+        <div>
         <div :class="msg.role === 'user' ? 'flex justify-end' : 'flex justify-start'">
           <!-- User Message -->
           <div
@@ -226,11 +228,47 @@
             </div>
           </div>
         </div>
+        <!-- History Limit Note (Feature 1: inline after 4th user message) -->
+        <div
+          x-show="historyLimitNoteShown && index === historyLimitNoteIndex"
+          x-transition:enter="transition ease-out duration-200"
+          x-transition:enter-start="opacity-0 translate-y-1"
+          x-transition:enter-end="opacity-100 translate-y-0"
+          class="mt-2 flex items-start gap-2 px-3 py-2 bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-lg text-[11px] text-blue-600 dark:text-blue-400"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 mt-0.5">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>The assistant keeps a rolling history of 3 exchanges. Any older messages are no longer included in the context.</span>
+        </div>
+        </div><!-- end x-for wrapper -->
       </template>
+
+      <!-- Spacer: grows so the latest message can be scrolled to the top -->
+      <div x-ref="messagesSpacer" style="flex-shrink: 0"></div>
+
     </div>
 
     <!-- Input Container -->
     <div class="chatbot-input-container px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 shrink-0">
+
+      <!-- New conversation banner (shown after a few exchanges) -->
+      <div
+        x-show="showNewConvBanner"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 translate-y-1"
+        x-transition:enter-end="opacity-100 translate-y-0"
+        class="flex items-center justify-between gap-2 mb-2 px-3 py-2 bg-gray-100 dark:bg-gray-700/60 rounded-lg text-[11px] text-gray-500 dark:text-gray-400"
+      >
+        <span>Switching topics? Starting a new conversation improves accuracy.</span>
+        <button
+          @click="newChat()"
+          class="shrink-0 text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 font-medium bg-transparent border-none cursor-pointer p-0 transition-colors"
+        >Start new conversation</button>
+      </div>
+
       <!-- Unified input card -->
       <div class="chatbot-input-card bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl transition-colors duration-150 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-500/20">
 
@@ -318,7 +356,7 @@
         <!-- Bottom toolbar -->
         <div class="flex items-center justify-between px-1.5 pb-1.5">
 
-          <!-- Left: + context menu -->
+          <!-- Left: context menu -->
           <div class="relative">
             <button
               @click="showContextMenu = !showContextMenu"
@@ -327,9 +365,9 @@
               aria-label="Add context"
               title="Add context"
             >
+              <!-- Paper clip icon (active) -->
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
               </svg>
             </button>
 
@@ -370,7 +408,6 @@
                   <path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.92 7.94"></path>
                 </svg>
                 <span class="flex-1">Mention a page</span>
-                <span class="text-[11px] text-gray-400 dark:text-gray-500 font-mono">@</span>
               </button>
             </div>
           </div>
@@ -486,6 +523,9 @@
             </svg>
           </button>
         </div>
+        <p class="m-0 mb-2 text-[12px] text-gray-600 dark:text-gray-300 leading-relaxed">
+          Your feedback helps us improve assistant answers and identify docs gaps we should fix.
+        </p>
         <textarea
           x-ref="feedbackInput"
           x-model="feedbackComment"
@@ -494,6 +534,26 @@
           rows="3"
           placeholder="Tell us what went wrong (optional)..."
         ></textarea>
+        <div class="mt-3 rounded-lg border border-violet-200 dark:border-violet-500/30 bg-violet-50 dark:bg-violet-500/10 px-3 py-2 text-[12px] leading-relaxed text-violet-800 dark:text-violet-200">
+          <p class="m-0">
+            Need more help? Join us on Discord:
+            <a
+              href="https://discord.gg/y9efgEmppm"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-violet-700 dark:text-violet-300 underline hover:text-violet-600 dark:hover:text-violet-200"
+            >https://discord.gg/y9efgEmppm</a>
+          </p>
+          <p class="m-0 mt-2">
+            Want to use your own agent? Add the Solo MCP server to query our docs directly. Get started here:
+            <a
+              href="https://search.solo.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="font-medium text-violet-700 dark:text-violet-300 underline hover:text-violet-600 dark:hover:text-violet-200"
+            >https://search.solo.io/</a>.
+          </p>
+        </div>
         <div class="flex items-center justify-end gap-2 mt-3">
           <button
             @click="closeFeedbackModal()"

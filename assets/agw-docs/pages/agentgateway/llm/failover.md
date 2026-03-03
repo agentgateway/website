@@ -2,7 +2,7 @@ Prioritize the failover of requests across different models from an LLM provider
 
 ## About failover {#about}
 
-Failover is a way to keep services running smoothly by automatically switching to a backup system when the main one fails or becomes unavailable (also known as fallback or automatic failover).
+Use failover (automatic fallback) to keep services running by switching to a backup when the main system fails or becomes unavailable.
 
 For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover for the models of the LLM providers that you want to prioritize. If the main model from one provider goes down, slows, or has any issue, the system quickly switches to a backup model from that same provider. This keeps the service running without interruptions.
 

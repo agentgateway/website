@@ -25,7 +25,8 @@ In this mode, agentgateway:
 ```yaml
 mcpAuthentication:
   issuer: http://localhost:7080/realms/mcp
-  jwksUrl: http://localhost:7080/protocol/openid-connect/certs
+  jwks:
+    url: http://localhost:7080/protocol/openid-connect/certs
   provider:
     keycloak: {}
   resourceMetadata:
@@ -47,7 +48,8 @@ Agentgateway acts solely as a resource server, validating tokens issued by an ex
 ```yaml
 mcpAuthentication:
   issuer: http://localhost:9000
-  jwksUrl: http://localhost:9000/.well-known/jwks.json
+  jwks:
+    url: http://localhost:9000/.well-known/jwks.json
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:

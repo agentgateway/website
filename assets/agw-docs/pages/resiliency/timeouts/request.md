@@ -1,100 +1,129 @@
-Change the default route-level timeout of 15 seconds with an HTTPRoute or {{< reuse "agw-docs/snippets/kgateway.md" >}} {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. To ensure that your apps are available even if they are temporarily unavailable, you can use timeouts alongside [Retries]({{< link-hextra path="/resiliency/retry/" >}}).
+Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. To ensure that your apps are available even if they are temporarily unavailable, you can use timeouts alongside [Retries]({{< link-hextra path="/resiliency/retry/" >}}).
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up timeouts {#timeouts}
    
-Specify timeouts for a specific route. 
+Specify timeouts for a specific route.
 
-1. Configure a timeout for a specific route by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using {{< reuse "agw-docs/snippets/kgateway.md" >}}'s {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. In the following example, you set a timeout of 20 seconds for httpbin's `/headers` path. However, no timeout is set along the `/anything` path. 
-   {{< tabs tabTotal="2" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: TrafficPolicy" >}}
+1. Configure a timeout for specific routes by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. 
+   {{< tabs tabTotal="3" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: AgentgatewayPolicy,Option 3: Gateway listener" >}}
    {{% tab tabName="Option 1: HTTPRoute (Kubernetes GW API)" %}}
-   ```yaml
-   kubectl apply -n httpbin -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: httpbin-timeout
-   spec:
-     hostnames:
-     - timeout.example
-     parentRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: http
-       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches: 
-       - path:
-           type: PathPrefix
-           value: /headers
-       backendRefs:
-       - group: ""
-         kind: Service
-         name: httpbin
-         port: 8000
-       timeouts:
-         request: "20s"
-     - matches: 
-       - path:
-           type: PathPrefix
-           value: /anything
-       backendRefs:
-       - group: ""
-         kind: Service
-         name: httpbin
-         port: 8000
-   EOF
-   ```
+
+   1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app. 
+
+      ```yaml
+      kubectl apply -f- <<EOF
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: httpbin-timeout
+        namespace: httpbin
+      spec:
+        hostnames:
+        - timeout.example
+        parentRefs:
+        - name: agentgateway-proxy
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        rules:
+        - matches: 
+          - path:
+              type: PathPrefix
+              value: /delay
+          backendRefs:
+          - name: httpbin
+            port: 8000
+            namespace: httpbin
+          timeouts:
+            request: 2s
+      EOF
+      ```
+
+   2. Verify that the gateway proxy is configured to apply the timeout to a request.
+
+      1. Port-forward the gateway proxy on port 15000.
+
+         ```sh
+         kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+         ```
+
+      2. Find the route configuration for the cluster in the config dump. Verify that the timeout policy is set as you configured it. In the output for the following `jq` command, the `delay` prefix is included because it has a timeout set.
+        
+         Example `jq` command:
+        
+         ```sh
+         curl -s http://localhost:15000/config_dump | jq '[.binds[].listeners | to_entries[] | .value.routes | to_entries[] | select(.value.inlinePolicies[]? | has("timeout")) | .value] | .[0]'
+         ```
+
+         Example output:
+         ```json {linenos=table,hl_lines=[10,11,12,25,26,27,28,29,30],filename="http://localhost:15000/config_dump"}
+         {
+            "key": "httpbin/httpbin-timeout.0.0.http",
+            "name": "httpbin-timeout",
+            "namespace": "httpbin",
+            "hostnames": [
+              "timeout.example"
+            ],
+            "matches": [
+              {
+                "path": {
+                  "pathPrefix": "/delay"
+                }
+              }
+            ],
+            "backends": [
+              {
+                "weight": 1,
+                "service": {
+                  "name": "httpbin/httpbin.httpbin.svc.cluster.local",
+                  "port": 8000
+                }
+              }
+            ],
+            "inlinePolicies": [
+              {
+                "timeout": {
+                  "requestTimeout": "2s"
+                }
+              }
+            ]
+         }
+
+         ```
+
    {{% /tab %}}
    {{% tab tabName="Option 2: EnterpriseKgatewayTrafficPolicy"  %}}
-   1.  Install the experimental channel of the Kubernetes Gateway API to use this feature.
-       ```sh
-       kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.3.0/experimental-install.yaml
-       ```
    
-   2. Create the HTTPRoute with two routes, `/headers` and `/anything`, and add an HTTPRoute rule name to each path. You use the rule name later to apply the timeout to a particular route. 
+   1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app and add an HTTPRoute rule name to the path. You use the rule name later to apply the timeout to a particular route. 
       ```yaml
       kubectl apply -n httpbin -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
       metadata:
         name: httpbin-timeout
+        namespace: httpbin
       spec:
         hostnames:
         - timeout.example
         parentRefs:
-        - group: gateway.networking.k8s.io
-          kind: Gateway
-          name: http
+        - name: agentgateway-proxy
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         rules:
         - matches: 
           - path:
               type: PathPrefix
-              value: /headers
+              value: /delay
           backendRefs:
-          - group: ""
-            kind: Service
+          - kind: Service
             name: httpbin
             port: 8000
           name: timeout
-        - matches: 
-          - path:
-              type: PathPrefix
-              value: /anything
-          backendRefs:
-          - group: ""
-            kind: Service
-            name: httpbin
-            port: 8000
-          name: no-timeout
       EOF
       ```
    
-   3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a specific HTTPRoute rule. In this example, you apply the policy to the `timeout` rule that points to the `/headers` path in your HTTPRoute resource.
+
+   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a specific HTTPRoute rule. In this example, you apply the policy to the `timeout` rule that points to the `/delay` path in your HTTPRoute resource.
+
       ```yaml
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -108,104 +137,249 @@ Specify timeouts for a specific route.
           group: gateway.networking.k8s.io
           name: httpbin-timeout
           sectionName: timeout
-        timeouts:
-          request: 20s
+        traffic:
+          timeouts:
+            request: 2s
       EOF
+      ```
+
+   3. Find the route configuration for the cluster in the config dump. Verify that the timeout policy is set as you configured it. 
+        
+      Example `jq` command:
+        
+      ```sh
+      curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.traffic.timeout?)] | .[0]'
+      ```
+
+      Example output:
+      ```json {linenos=table,hl_lines=[16,17,18,19,20,21],filename="http://localhost:15000/config_dump"}
+      {
+         "key": "traffic/httpbin/timeout:timeout:httpbin/httpbin-timeout/timeout",
+         "name": {
+           "kind": "AgentgatewayPolicy",
+           "name": "timeout",
+           "namespace": "httpbin"
+         },
+         "target": {
+           "route": {
+             "name": "httpbin-timeout",
+             "namespace": "httpbin",
+             "ruleName": "timeout"
+           }
+         },
+         "policy": {
+           "traffic": {
+             "phase": "route",
+             "timeout": {
+               "requestTimeout": "2s"
+             }
+           }
+         }
+      }
+      ```
+   
+   {{% /tab %}}
+
+   {{% tab tabName="Option 3: Gateway listener"  %}}
+   
+   1. Create an HTTPRoute that configures a route to the `/delay` path of the httpbin app. 
+      ```yaml
+      kubectl apply -n httpbin -f- <<EOF
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: httpbin-timeout
+        namespace: httpbin
+      spec:
+        hostnames:
+        - timeout.example
+        parentRefs:
+        - name: agentgateway-proxy
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        rules:
+        - matches: 
+          - path:
+              type: PathPrefix
+              value: /delay
+          backendRefs:
+          - kind: Service
+            name: httpbin
+            port: 8000
+      EOF
+      ```
+   
+
+   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your timeout settings and use the `targetRefs.sectionName` to apply the timeout to a Gateway listener. 
+
+      ```yaml
+      kubectl apply -f- <<EOF
+      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      metadata:
+        name: timeout
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+      spec:
+        targetRefs:
+        - kind: Gateway
+          group: gateway.networking.k8s.io
+          name: agentgateway-proxy
+          sectionName: http
+        traffic:
+          timeouts:
+            request: 2s
+      EOF
+      ```
+
+   3. Find the route configuration for the cluster in the config dump. Verify that the timeout policy is set as you configured it. 
+        
+      Example `jq` command:
+        
+      ```sh
+      curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.traffic.timeout?)] | .[0]'
+      ```
+
+      Example output:
+      ```json {linenos=table,hl_lines=[16,17,18,19,20],filename="http://localhost:15000/config_dump"}
+      {
+        "key": "traffic/agentgateway-system/timeout:timeout:agentgateway-system/agentgateway-proxy/http",
+        "name": {
+          "kind": "AgentgatewayPolicy",
+          "name": "timeout",
+          "namespace": "agentgateway-system"
+        },
+        "target": {
+          "gateway": {
+            "gatewayName": "agentgateway-proxy",
+            "gatewayNamespace": "agentgateway-system",
+            "listenerName": "http"
+          }
+        },
+        "policy": {
+          "traffic": {
+            "phase": "route",
+            "timeout": {
+              "requestTimeout": "2s"
+            }
+          }
+        }
+      }
       ```
    
    {{% /tab %}}
    {{< /tabs >}}
 
-2. Send a request to the httpbin app along the `/headers` path that you configured a custom timeout for. Verify that the request succeeds and that you see a `X-Envoy-Expected-Rq-Timeout-Ms` header with the custom timeout of 20 seconds (20000).
+4. Send a request along the `/delay` path of the httpbin. This path delays requests for the number of seconds that you specify. In this example, you delay the request by 1 second. Because the delay is shorter than the timeout that you configured, the request succeeds and a 200 HTTP response code is returned.  
+ 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: timeout.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/delay/1 -H "host: timeout.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/headers -H "host: timeout.example"
+   curl -vi localhost:8080/delay/1 -H "host: timeout.example"
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
-   Example output for a successful response: 
-   ```console {hl_lines=[12,13]}
+   Example output:
+
+   ```
+   ...
+   < HTTP/1.1 200 OK
+   ...
    {
-    "headers": {
-      "Accept": [
-        "*/*"
-      ],
-      "Host": [
-        "www.example.com:8080"
-      ],
-      "User-Agent": [
-        "curl/7.77.0"
-      ],
-      "X-Envoy-Expected-Rq-Timeout-Ms": [
-        "20000"
-      ],
-      "X-Forwarded-Proto": [
-        "http"
-      ],
-      "X-Request-Id": [
-        "0ae53bc3-2644-44f2-8603-158d2ccf9f78"
-      ]
-    }
+      "args": {},
+      "headers": {
+        "Accept": [
+          "*/*"
+        ],
+        "Host": [
+          "timeout.example"
+        ],
+        "User-Agent": [
+          "curl/8.7.1"
+        ]
+      },
+      "origin": "10.244.0.2:37150",
+      "url": "http://timeout.example/delay/1",
+      "data": "",
+      "files": null,
+      "form": null,
+      "json": null
    }
+   ```
+
+5. Review the logs of the httpbin app and verify that you can see the successful request.
+
+   ```sh
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy \
+   --tail=1 | grep -E 'timeout.example' 
    ```
   
-3. Send a request to the httpbin app along the `anything` path that does not have a custom timeout. Verify that the request succeeds and that you see a `X-Envoy-Expected-Rq-Timeout-Ms` header with the default timeout of 15 seconds (15000). 
+   Example output:
+
+   ```txt
+   info	request gateway=agentgateway-system/agentgateway-proxy
+   listener=http route=httpbin/timeout endpoint=10.244.0.13:8080
+   src.addr=127.0.0.1:34300 http.method=GET http.host=timeout.example
+   http.path=/delay/1 http.version=HTTP/1.1 http.status=200
+   protocol=http duration=0ms
+   ```
+
+6. Repeat the request along the `/delay` path. This time, you use a delay that is longer than the request timeout that you previously specified and therefore simulates an app that is slow to respond. Verify that the request times out and that you get back a 504 HTTP response code. 
+ 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: timeout.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/delay/5 -H "host: timeout.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/anything -H "host: timeout.example"
+   curl -vi localhost:8080/delay/5 -H "host: timeout.example"
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
-   Example output for a successful response: 
-   ```console {hl_lines=[12,13]}
-   {
-    "headers": {
-      "Accept": [
-        "*/*"
-      ],
-      "Host": [
-        "www.example.com:8080"
-      ],
-      "User-Agent": [
-        "curl/7.77.0"
-      ],
-      "X-Envoy-Expected-Rq-Timeout-Ms": [
-        "15000"
-      ],
-      "X-Forwarded-Proto": [
-        "http"
-      ],
-      "X-Request-Id": [
-        "0ae53bc3-2644-44f2-8603-158d2ccf9f78"
-      ]
-    }
-   }
+   Example output:
+
+   ```
+   ...
+   < HTTP/1.1 504 Gateway Timeout
+   ...
+   request timeout%    
+   ```
+
+7. In the httpbin logs, verify that the request took longer than 2 seconds, which triggered the request timeout. 
+
+   ```sh
+   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy \
+   --tail=1 | grep -E 'timeout.example' 
+   ```
+  
+   Example output:
+
+   ```txt
+   info	request gateway=agentgateway-system/agentgateway-proxy listener=http
+   route=httpbin/httpbin-timeout endpoint=10.244.0.21:8080 src.addr=127.0.0.1:43640
+   http.method=GET http.host=timeout.example http.path=/delay/5 http.version=HTTP/1.1
+   http.status=504 protocol=http error="upstream call timeout" duration=2001ms
    ```
 
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
-   
-```sh
-kubectl delete httproute httpbin-timeout -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n httpbin
-```
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
 
-
-
-
-
+1. Delete the HTTPRoute resource. 
+  ```sh
+  kubectl delete httproute httpbin-timeout -n httpbin
+  ```
+2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it from the namespace you created it in.
+  ```sh
+  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n httpbin
+  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  ```

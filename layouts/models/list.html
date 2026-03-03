@@ -1,0 +1,1189 @@
+{{ define "main" }}
+<script>
+    document.querySelector('html').classList.remove('dark');
+</script>
+<style>
+    /* Models page: always white navbar */
+    .navbar {
+        background-color: white !important;
+        border-color: transparent !important;
+    }
+    .navbar .link {
+        color: rgb(55, 65, 81) !important;
+    }
+    .navbar a.link svg {
+        fill: rgb(55, 65, 81) !important;
+    }
+</style>
+<div class='mx-auto flex bg-white text-gray-900'>
+    {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
+    <article class="w-full break-words flex justify-center">
+        <main class="w-full relative overflow-hidden">
+            {{ partial "nav.html" . }}
+
+            <!-- Hero Section -->
+            <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white pb-10 lg:pb-14 px-4 lg:px-12 xl:px-25 pt-[9.875rem] lg:pt-40">
+                <div class="mx-auto max-w-[1200px] text-center">
+                    <h1 class="text-4xl lg:text-6xl font-bold leading-tight pb-6 tracking-tight">
+                        Agentgateway Model and Provider Cookbook
+                    </h1>
+                    <p class="text-lg lg:text-xl text-gray-300 max-w-3xl mx-auto leading-relaxed mb-8">
+                        Route to any LLM through a single gateway. Agentgateway supports any provider with an OpenAI-compatible API.
+                    </p>
+
+                    <!-- Stats -->
+                    <div class="flex flex-wrap justify-center gap-6 sm:gap-10 mb-10">
+                        <div>
+                            <div class="text-4xl lg:text-5xl font-bold text-white">{{ $totalModels := 0 }}{{ range .Site.Data.models.categories }}{{ range .providers }}{{ with .models }}{{ $totalModels = add $totalModels (len .) }}{{ end }}{{ end }}{{ end }}{{ $totalModels }}+</div>
+                            <div class="text-sm text-gray-400 mt-1 uppercase tracking-wider">Models</div>
+                        </div>
+                        <div class="w-px bg-white/20 hidden sm:block"></div>
+                        <div>
+                            <div class="text-4xl lg:text-5xl font-bold text-white">{{ $totalProviders := 0 }}{{ range .Site.Data.models.categories }}{{ $totalProviders = add $totalProviders (len .providers) }}{{ end }}{{ $totalProviders }}+</div>
+                            <div class="text-sm text-gray-400 mt-1 uppercase tracking-wider">LLM Gateway Providers</div>
+                        </div>
+                        <div class="w-px bg-white/20 hidden sm:block"></div>
+                        <div>
+                            <div class="text-4xl lg:text-5xl font-bold text-white">20</div>
+                            <div class="text-sm text-gray-400 mt-1 uppercase tracking-wider">API Endpoints</div>
+                        </div>
+                    </div>
+
+                    <!-- Search Bar -->
+                    <div class="max-w-xl mx-auto relative">
+                        <input
+                            type="text"
+                            id="model-search"
+                            placeholder="Search models or providers... (e.g., gpt-4o, llama, Anthropic)"
+                            class="w-full px-6 py-4 rounded-xl bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 text-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                        />
+                        <svg class="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+
+                    <!-- Category Filter Pills -->
+                    <div class="flex flex-wrap justify-center gap-3 mt-8">
+                        <button class="category-filter active px-5 py-2 rounded-full text-sm font-medium transition-all bg-purple-600 text-white" data-category="all">
+                            All Providers
+                        </button>
+                        {{ range .Site.Data.models.categories }}
+                        <button class="category-filter px-5 py-2 rounded-full text-sm font-medium transition-all bg-white/10 text-gray-300 hover:bg-white/20" data-category="{{ .id }}">
+                            {{ .name }}
+                        </button>
+                        {{ end }}
+                        <a href="#browse-by-endpoint" class="px-5 py-2 rounded-full text-sm font-medium transition-all bg-white/10 text-gray-300 hover:bg-purple-600 hover:text-white border border-white/20 hover:border-purple-600 inline-flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            Search by Endpoints
+                        </a>
+                    </div>
+                    <!-- How It Works (compact) -->
+                    <div class="flex justify-center gap-8 mt-8 text-sm">
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 font-bold text-xs flex items-center justify-center">1</span>
+                            <span>Secret</span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 font-bold text-xs flex items-center justify-center">2</span>
+                            <span>Backend</span>
+                        </div>
+                        <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                        <div class="flex items-center gap-2 text-gray-400">
+                            <span class="w-6 h-6 rounded-full bg-purple-600/30 text-purple-300 font-bold text-xs flex items-center justify-center">3</span>
+                            <span>Route</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Provider Cards -->
+            <section class="px-4 lg:px-12 py-10 bg-white">
+                <div class="mx-auto max-w-[1200px]">
+
+                    {{ range .Site.Data.models.categories }}
+                    <div class="category-section mb-16" data-category="{{ .id }}">
+                        <div class="mb-8">
+                            <h2 class="text-3xl font-bold text-gray-900 mb-2">{{ .name }}</h2>
+                            <p class="text-gray-600 text-lg">{{ .description }}</p>
+                        </div>
+
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                            {{ range .providers }}
+                            <div class="provider-card bg-white border-2 border-gray-200 rounded-xl overflow-hidden hover:border-purple-400 hover:shadow-lg transition-all duration-200 cursor-pointer"
+                                 data-name="{{ .name | lower }}"
+                                 data-slug="{{ .slug }}"
+                                 data-models="{{ with .models }}{{ delimit . " " | lower }}{{ end }}"
+                                 data-endpoint="{{ .host }}{{ .path }}"
+                                 onclick="toggleProvider('{{ .slug }}')">
+
+                                <div class="p-6">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <h3 class="text-xl font-bold text-gray-900">{{ .name }}</h3>
+                                        {{ if eq .type "native" }}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800 whitespace-nowrap">Native</span>
+                                        {{ else if eq .type "local" }}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">Local</span>
+                                        {{ else }}
+                                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-700 whitespace-nowrap">OpenAI-compat</span>
+                                        {{ end }}
+                                    </div>
+                                    {{ with .models }}
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <span class="text-2xl font-bold text-purple-700">{{ len . }}</span>
+                                        <span class="text-sm text-gray-500">models</span>
+                                    </div>
+                                    <div class="flex flex-wrap gap-1 mb-3">
+                                        {{ range first 3 . }}
+                                        <code class="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{{ . }}</code>
+                                        {{ end }}
+                                        {{ if gt (len .) 3 }}
+                                        <span class="text-xs text-gray-400">+{{ sub (len .) 3 }} more</span>
+                                        {{ end }}
+                                    </div>
+                                    {{ end }}
+                                    {{ if .host }}
+                                    <div class="flex items-center gap-1.5 mb-2">
+                                        <svg class="w-3.5 h-3.5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/>
+                                        </svg>
+                                        <code class="text-xs text-purple-600 font-mono truncate" title="{{ .host }}{{ .path }}">{{ .host }}</code>
+                                    </div>
+                                    {{ end }}
+                                    {{ if .envVar }}
+                                    <p class="text-sm text-gray-500">
+                                        <span class="font-medium text-gray-700">Auth:</span>
+                                        <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">${{ .envVar }}</code>
+                                    </p>
+                                    {{ else }}
+                                    <p class="text-sm text-gray-500">
+                                        <span class="font-medium text-gray-700">Auth:</span>
+                                        <span class="text-green-600 text-xs font-medium">No API key needed</span>
+                                    </p>
+                                    {{ end }}
+                                    <div class="mt-4 flex items-center text-purple-600 text-sm font-medium">
+                                        <span class="provider-toggle-text" id="toggle-text-{{ .slug }}">View configuration</span>
+                                        <svg class="w-4 h-4 ml-1 transform transition-transform provider-arrow" id="arrow-{{ .slug }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                        </svg>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Expanded Config Panel (hidden by default) -->
+                            <div class="provider-detail hidden col-span-full" id="detail-{{ .slug }}">
+                                <div class="bg-gray-50 border-2 border-purple-300 rounded-xl p-6 mb-5">
+                                    <div class="flex items-center justify-between mb-5">
+                                        <h3 class="text-xl font-bold text-gray-900">{{ .name }} Configuration</h3>
+                                        <button onclick="event.stopPropagation(); toggleProvider('{{ .slug }}')" class="text-gray-400 hover:text-gray-600 p-1">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+
+                                    <!-- Supported Models -->
+                                    {{ with .models }}
+                                    <div class="mb-5">
+                                        <p class="text-sm font-semibold text-gray-700 mb-2">Supported Models ({{ len . }})</p>
+                                        <div class="flex flex-wrap gap-1.5">
+                                            {{ range . }}
+                                            <code class="text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded">{{ . }}</code>
+                                            {{ end }}
+                                        </div>
+                                        <p class="text-xs text-gray-400 mt-2">Any model the provider offers works -- just change the <code class="bg-gray-200 px-1 rounded">model</code> field in the config below.</p>
+                                    </div>
+                                    {{ end }}
+
+                                    <!-- Tab Buttons -->
+                                    <div class="flex border-b border-gray-300 mb-5">
+                                        <button class="tab-btn active px-5 py-3 text-sm font-semibold border-b-2 border-purple-600 text-purple-700 bg-white rounded-t-lg -mb-px"
+                                                onclick="event.stopPropagation(); switchTab('{{ .slug }}', 'standalone')">
+                                            Standalone
+                                        </button>
+                                        <button class="tab-btn px-5 py-3 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 -mb-px"
+                                                onclick="event.stopPropagation(); switchTab('{{ .slug }}', 'kubernetes')">
+                                            Kubernetes
+                                        </button>
+                                    </div>
+
+                                    <!-- Standalone Config -->
+                                    <div class="tab-content" id="tab-{{ .slug }}-standalone">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="text-sm text-gray-600">Save this as <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">config.yaml</code> and run with <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">agentgateway -f config.yaml</code></p>
+                                            <button onclick="event.stopPropagation(); copyCode('code-{{ .slug }}-standalone')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-standalone">{{ .standalone | htmlEscape | safeHTML }}</code></pre>
+                                    </div>
+
+                                    <!-- Kubernetes Config -->
+                                    <div class="tab-content hidden" id="tab-{{ .slug }}-kubernetes">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="text-sm text-gray-600">Run these <code class="bg-gray-200 px-1.5 py-0.5 rounded text-xs">kubectl apply</code> commands in order</p>
+                                            <button onclick="event.stopPropagation(); copyCode('code-{{ .slug }}-kubernetes')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-kubernetes">{{ .kubernetes | htmlEscape | safeHTML }}</code></pre>
+                                    </div>
+
+                                    <!-- Test Command -->
+                                    {{ if .test }}
+                                    <div class="mt-5 pt-5 border-t border-gray-300">
+                                        <div class="flex items-center justify-between mb-3">
+                                            <p class="text-sm font-semibold text-gray-700">Test it</p>
+                                            <button onclick="event.stopPropagation(); copyCode('code-{{ .slug }}-test')" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                                Copy
+                                            </button>
+                                        </div>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-4 overflow-x-auto text-sm"><code id="code-{{ .slug }}-test" data-standalone-test="{{ .test | htmlEscape | safeHTML }}">{{ .test | htmlEscape | safeHTML }}</code></pre>
+                                    </div>
+                                    {{ end }}
+
+                                </div>
+                            </div>
+                            {{ end }}
+                        </div>
+                    </div>
+                    {{ end }}
+
+                    <!-- No results message -->
+                    <div id="no-results" class="hidden text-center py-20">
+                        <p class="text-2xl text-gray-400 font-medium">No providers found</p>
+                        <p class="text-gray-400 mt-2">Try a different search term</p>
+                    </div>
+
+                    <!-- Browse by Endpoint Button -->
+                    <div class="text-center mt-12 pt-8 border-t border-gray-200">
+                        <a href="#browse-by-endpoint" class="inline-flex items-center gap-2 px-8 py-4 bg-purple-600 text-white font-semibold rounded-xl hover:bg-purple-700 transition-all shadow-lg hover:shadow-xl text-lg">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            Browse by Endpoint
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+                        </a>
+                        <p class="text-gray-500 text-sm mt-3">See which providers support each API endpoint type</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Browse by Endpoint -->
+            <section id="browse-by-endpoint" class="bg-gray-50 border-t border-gray-200 px-4 lg:px-12 py-16">
+                <div class="mx-auto max-w-[1200px]">
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2 text-center">Browse by Endpoint</h2>
+                    <p class="text-gray-600 text-lg mb-10 text-center">Click any endpoint to see which providers support it and get ready-to-use configurations</p>
+
+                    <div class="flex flex-col lg:flex-row gap-8">
+                        <!-- Endpoint Sidebar -->
+                        <div class="lg:w-72 flex-shrink-0">
+                            <div class="lg:sticky lg:top-32">
+                                {{/* Count providers per endpoint */}}
+                                {{ $chatCount := 0 }}{{ $compCount := 0 }}{{ $embedCount := 0 }}{{ $imgCount := 0 }}{{ $imgEditCount := 0 }}{{ $audioSpeechCount := 0 }}{{ $audioTranscCount := 0 }}{{ $audioTranslCount := 0 }}{{ $videoCount := 0 }}{{ $rerankCount := 0 }}{{ $fimCount := 0 }}{{ $msgCount := 0 }}{{ $respCount := 0 }}{{ $modCount := 0 }}{{ $ftCount := 0 }}{{ $filesCount := 0 }}{{ $batchCount := 0 }}{{ $realtimeCount := 0 }}{{ $modelsCount := 0 }}{{ $classifyCount := 0 }}
+                                {{ range .Site.Data.models.categories }}{{ range .providers }}{{ range .endpoints }}{{ if eq . "chat" }}{{ $chatCount = add $chatCount 1 }}{{ end }}{{ if eq . "completions" }}{{ $compCount = add $compCount 1 }}{{ end }}{{ if eq . "embeddings" }}{{ $embedCount = add $embedCount 1 }}{{ end }}{{ if eq . "images" }}{{ $imgCount = add $imgCount 1 }}{{ end }}{{ if eq . "images_edits" }}{{ $imgEditCount = add $imgEditCount 1 }}{{ end }}{{ if eq . "audio_speech" }}{{ $audioSpeechCount = add $audioSpeechCount 1 }}{{ end }}{{ if eq . "audio_transcriptions" }}{{ $audioTranscCount = add $audioTranscCount 1 }}{{ end }}{{ if eq . "audio_translations" }}{{ $audioTranslCount = add $audioTranslCount 1 }}{{ end }}{{ if eq . "video" }}{{ $videoCount = add $videoCount 1 }}{{ end }}{{ if eq . "rerank" }}{{ $rerankCount = add $rerankCount 1 }}{{ end }}{{ if eq . "fim" }}{{ $fimCount = add $fimCount 1 }}{{ end }}{{ if eq . "messages" }}{{ $msgCount = add $msgCount 1 }}{{ end }}{{ if eq . "responses" }}{{ $respCount = add $respCount 1 }}{{ end }}{{ if eq . "moderations" }}{{ $modCount = add $modCount 1 }}{{ end }}{{ if eq . "fine_tuning" }}{{ $ftCount = add $ftCount 1 }}{{ end }}{{ if eq . "files" }}{{ $filesCount = add $filesCount 1 }}{{ end }}{{ if eq . "batches" }}{{ $batchCount = add $batchCount 1 }}{{ end }}{{ if eq . "realtime" }}{{ $realtimeCount = add $realtimeCount 1 }}{{ end }}{{ if eq . "models" }}{{ $modelsCount = add $modelsCount 1 }}{{ end }}{{ if eq . "classify" }}{{ $classifyCount = add $classifyCount 1 }}{{ end }}{{ end }}{{ end }}{{ end }}
+
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">Inference</p>
+                                <nav class="space-y-1 mb-4" id="endpoint-nav">
+                                    <button class="endpoint-btn active w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all bg-purple-50 border-l-4 border-purple-600 text-purple-700" data-endpoint="chat" onclick="filterByEndpoint('chat')">
+                                        <span class="font-mono text-xs">/chat/completions</span>
+                                        <span class="bg-purple-100 text-purple-700 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $chatCount }}</span>
+                                    </button>
+                                    {{ if gt $compCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="completions" onclick="filterByEndpoint('completions')">
+                                        <span class="font-mono text-xs">/completions</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $compCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $embedCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="embeddings" onclick="filterByEndpoint('embeddings')">
+                                        <span class="font-mono text-xs">/embeddings</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $embedCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $respCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="responses" onclick="filterByEndpoint('responses')">
+                                        <span class="font-mono text-xs">/responses</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $respCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $msgCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="messages" onclick="filterByEndpoint('messages')">
+                                        <span class="font-mono text-xs">/messages</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $msgCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                </nav>
+
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">Media</p>
+                                <nav class="space-y-1 mb-4">
+                                    {{ if gt $imgCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="images" onclick="filterByEndpoint('images')">
+                                        <span class="font-mono text-xs">/images/generations</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $imgCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $imgEditCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="images_edits" onclick="filterByEndpoint('images_edits')">
+                                        <span class="font-mono text-xs">/images/edits</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $imgEditCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $audioSpeechCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="audio_speech" onclick="filterByEndpoint('audio_speech')">
+                                        <span class="font-mono text-xs">/audio/speech</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $audioSpeechCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $audioTranscCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="audio_transcriptions" onclick="filterByEndpoint('audio_transcriptions')">
+                                        <span class="font-mono text-xs">/audio/transcriptions</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $audioTranscCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $audioTranslCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="audio_translations" onclick="filterByEndpoint('audio_translations')">
+                                        <span class="font-mono text-xs">/audio/translations</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $audioTranslCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $videoCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="video" onclick="filterByEndpoint('video')">
+                                        <span class="font-mono text-xs">/video/generations</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $videoCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                </nav>
+
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">Specialized</p>
+                                <nav class="space-y-1 mb-4">
+                                    {{ if gt $rerankCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="rerank" onclick="filterByEndpoint('rerank')">
+                                        <span class="font-mono text-xs">/rerank</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $rerankCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $fimCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="fim" onclick="filterByEndpoint('fim')">
+                                        <span class="font-mono text-xs">/fim/completions</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $fimCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $modCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="moderations" onclick="filterByEndpoint('moderations')">
+                                        <span class="font-mono text-xs">/moderations</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $modCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $classifyCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="classify" onclick="filterByEndpoint('classify')">
+                                        <span class="font-mono text-xs">/classify</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $classifyCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                </nav>
+
+                                <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-3">Platform</p>
+                                <nav class="space-y-1">
+                                    {{ if gt $ftCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="fine_tuning" onclick="filterByEndpoint('fine_tuning')">
+                                        <span class="font-mono text-xs">/fine-tuning/jobs</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $ftCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $filesCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="files" onclick="filterByEndpoint('files')">
+                                        <span class="font-mono text-xs">/files</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $filesCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $batchCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="batches" onclick="filterByEndpoint('batches')">
+                                        <span class="font-mono text-xs">/batches</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $batchCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                    {{ if gt $realtimeCount 0 }}
+                                    <button class="endpoint-btn w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all text-gray-600 hover:bg-gray-50 border-l-4 border-transparent" data-endpoint="realtime" onclick="filterByEndpoint('realtime')">
+                                        <span class="font-mono text-xs">/realtime</span>
+                                        <span class="bg-gray-100 text-gray-600 text-xs font-bold px-2 py-0.5 rounded-full ml-1">{{ $realtimeCount }}</span>
+                                    </button>
+                                    {{ end }}
+                                </nav>
+                            </div>
+                        </div>
+
+                        <!-- Endpoint Provider Grid -->
+                        <div class="flex-1">
+                            <div id="endpoint-header" class="mb-4">
+                                <h3 class="text-2xl font-bold text-gray-900" id="endpoint-title">Chat Completions API</h3>
+                                <p class="text-gray-500 mt-1"><span id="endpoint-count">{{ $chatCount }}</span> providers support <code class="bg-gray-100 px-1.5 py-0.5 rounded text-sm text-purple-700" id="endpoint-path">/chat/completions</code></p>
+                                <p class="text-gray-400 text-sm mt-2" id="endpoint-description">Send messages and receive AI-generated responses. The most common LLM endpoint.</p>
+                            </div>
+
+                            <!-- Provider Cards Grid (above config) -->
+                            <p class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-4">Supported Providers <span class="text-gray-400 font-normal normal-case">— click a provider to generate its config</span></p>
+                            <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8" id="endpoint-providers">
+                                {{ range .Site.Data.models.categories }}
+                                {{ range .providers }}
+                                <div class="endpoint-provider-card bg-white border border-gray-200 rounded-xl p-5 hover:border-purple-300 hover:shadow-md transition-all cursor-pointer"
+                                     data-slug="{{ .slug }}"
+                                     data-name="{{ .name }}"
+                                     data-type="{{ .type }}"
+                                     data-provider-type="{{ .providerType }}"
+                                     data-host="{{ .host }}"
+                                     data-path="{{ .path }}"
+                                     data-model="{{ .model }}"
+                                     data-env="{{ .envVar }}"
+                                     data-endpoints="{{ with .endpoints }}{{ delimit . " " }}{{ end }}"
+                                     onclick="selectEndpointProvider(this)">
+                                    <div class="flex items-start justify-between mb-2">
+                                        <h4 class="font-bold text-gray-900">{{ .name }}</h4>
+                                        {{ if eq .type "native" }}
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-100 text-green-800 whitespace-nowrap">Native</span>
+                                        {{ else if eq .type "local" }}
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 whitespace-nowrap">Local</span>
+                                        {{ else }}
+                                        <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-100 text-gray-600 whitespace-nowrap">OpenAI-compat</span>
+                                        {{ end }}
+                                    </div>
+                                    {{ if .host }}<code class="text-xs text-gray-400 font-mono truncate block mb-2">{{ .host }}</code>{{ end }}
+                                    <div class="flex flex-wrap gap-1">
+                                        {{ with .endpoints }}{{ range . }}
+                                        <span class="endpoint-tag text-xs bg-purple-50 text-purple-700 px-2 py-0.5 rounded-full font-medium">{{ . }}</span>
+                                        {{ end }}{{ end }}
+                                    </div>
+                                </div>
+                                {{ end }}
+                                {{ end }}
+                            </div>
+
+                            <!-- Endpoint Config Example (below providers) -->
+                            <div id="endpoint-config-example" class="mb-6 bg-white border-2 border-purple-200 rounded-xl overflow-hidden">
+                                <div class="flex items-center justify-between px-5 py-3 bg-purple-50 border-b border-purple-200">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+                                        <span class="text-sm font-semibold text-purple-800">Agentgateway Config</span>
+                                        <span class="text-xs text-purple-500 font-mono" id="endpoint-config-path">/chat/completions</span>
+                                    </div>
+                                    <button onclick="copyEndpointConfig()" class="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-purple-600 bg-white border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors" id="ep-config-copy-btn">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                        Copy
+                                    </button>
+                                </div>
+                                <!-- Tab Buttons -->
+                                <div class="flex border-b border-purple-200 bg-purple-50/50">
+                                    <button class="ep-tab-btn active px-5 py-2.5 text-sm font-semibold border-b-2 border-purple-600 text-purple-700 bg-white -mb-px"
+                                            onclick="switchEpTab('standalone')">
+                                        Standalone
+                                    </button>
+                                    <button class="ep-tab-btn px-5 py-2.5 text-sm font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700 -mb-px"
+                                            onclick="switchEpTab('kubernetes')">
+                                        Kubernetes
+                                    </button>
+                                </div>
+                                <!-- Standalone Config -->
+                                <div id="ep-tab-standalone">
+                                    <div class="px-5 py-2 bg-gray-800 border-b border-gray-700">
+                                        <p class="text-xs text-gray-400">Save as <code class="text-purple-400">config.yaml</code> and run with <code class="text-purple-400">agentgateway -f config.yaml</code></p>
+                                    </div>
+                                    <pre class="bg-gray-900 text-gray-100 p-5 overflow-x-auto text-sm leading-relaxed"><code id="endpoint-config-code"></code></pre>
+                                </div>
+                                <!-- Kubernetes Config -->
+                                <div id="ep-tab-kubernetes" class="hidden">
+                                    <div class="px-5 py-2 bg-gray-800 border-b border-gray-700">
+                                        <p class="text-xs text-gray-400">Run these <code class="text-purple-400">kubectl apply</code> commands in order</p>
+                                    </div>
+                                    <pre class="bg-gray-900 text-gray-100 p-5 overflow-x-auto text-sm leading-relaxed"><code id="endpoint-k8s-code"></code></pre>
+                                </div>
+                            </div>
+
+                            <!-- Endpoint Test Command -->
+                            <div id="endpoint-test-section" class="mb-6 bg-white border border-gray-200 rounded-xl overflow-hidden">
+                                <div class="flex items-center justify-between px-5 py-3 bg-gray-50 border-b border-gray-200">
+                                    <div class="flex items-center gap-2">
+                                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                                        <span class="text-sm font-semibold text-gray-700">Test it</span>
+                                    </div>
+                                    <button onclick="copyEndpointTest()" class="flex items-center gap-1 px-2.5 py-1 text-xs font-medium text-gray-500 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors" id="ep-test-copy-btn">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                        Copy
+                                    </button>
+                                </div>
+                                <pre class="bg-gray-900 text-gray-100 p-5 overflow-x-auto text-sm leading-relaxed"><code id="endpoint-test-code"></code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </article>
+</div>
+
+<script>
+// Toggle provider detail panel
+function toggleProvider(slug) {
+    const detail = document.getElementById('detail-' + slug);
+    const arrow = document.getElementById('arrow-' + slug);
+    const toggleText = document.getElementById('toggle-text-' + slug);
+
+    if (detail.classList.contains('hidden')) {
+        // Close all other open panels first
+        document.querySelectorAll('.provider-detail:not(.hidden)').forEach(el => {
+            el.classList.add('hidden');
+            const otherSlug = el.id.replace('detail-', '');
+            const otherArrow = document.getElementById('arrow-' + otherSlug);
+            const otherText = document.getElementById('toggle-text-' + otherSlug);
+            if (otherArrow) otherArrow.classList.remove('rotate-180');
+            if (otherText) otherText.textContent = 'View configuration';
+        });
+
+        detail.classList.remove('hidden');
+        arrow.classList.add('rotate-180');
+        toggleText.textContent = 'Hide configuration';
+
+        // Scroll to the detail panel
+        setTimeout(() => {
+            detail.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    } else {
+        detail.classList.add('hidden');
+        arrow.classList.remove('rotate-180');
+        toggleText.textContent = 'View configuration';
+    }
+}
+
+// Switch between standalone and kubernetes tabs
+function switchTab(slug, tab) {
+    const standaloneTab = document.getElementById('tab-' + slug + '-standalone');
+    const kubernetesTab = document.getElementById('tab-' + slug + '-kubernetes');
+    const detail = document.getElementById('detail-' + slug);
+    const buttons = detail.querySelectorAll('.tab-btn');
+
+    buttons.forEach(btn => {
+        btn.classList.remove('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    if (tab === 'standalone') {
+        standaloneTab.classList.remove('hidden');
+        kubernetesTab.classList.add('hidden');
+        buttons[0].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[0].classList.remove('border-transparent', 'text-gray-500');
+    } else {
+        standaloneTab.classList.add('hidden');
+        kubernetesTab.classList.remove('hidden');
+        buttons[1].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[1].classList.remove('border-transparent', 'text-gray-500');
+    }
+
+    // Update test command port based on active tab
+    const testCode = document.getElementById('code-' + slug + '-test');
+    if (testCode) {
+        const standaloneTest = testCode.getAttribute('data-standalone-test');
+        if (tab === 'kubernetes') {
+            testCode.textContent = standaloneTest.replace(/localhost:3000/g, 'localhost:8080');
+        } else {
+            testCode.textContent = standaloneTest;
+        }
+    }
+}
+
+// Copy code to clipboard
+function copyCode(id) {
+    const code = document.getElementById(id);
+    navigator.clipboard.writeText(code.textContent).then(() => {
+        const btn = code.closest('.tab-content, .border-t').querySelector('button[onclick*="copyCode"]');
+        if (!btn) return;
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+        btn.classList.add('text-green-600', 'border-green-300');
+        setTimeout(() => {
+            btn.innerHTML = originalHTML;
+            btn.classList.remove('text-green-600', 'border-green-300');
+        }, 2000);
+    });
+}
+
+// Copy endpoint to clipboard
+function copyEndpoint(endpoint) {
+    navigator.clipboard.writeText(endpoint).then(() => {
+        // Brief visual feedback handled by the button itself
+    });
+}
+
+// Search functionality
+document.getElementById('model-search').addEventListener('input', function(e) {
+    const query = e.target.value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.provider-card');
+    const sections = document.querySelectorAll('.category-section');
+    let anyVisible = false;
+
+    cards.forEach(card => {
+        const name = card.dataset.name;
+        const slug = card.dataset.slug;
+        const modelList = card.dataset.models || '';
+        const endpoint = (card.dataset.endpoint || '').toLowerCase();
+        const matches = !query || name.includes(query) || slug.includes(query) || modelList.includes(query) || endpoint.includes(query);
+        card.style.display = matches ? '' : 'none';
+
+        // Also hide the detail panel if the card is hidden
+        const detail = document.getElementById('detail-' + slug);
+        if (!matches && detail) {
+            detail.classList.add('hidden');
+        }
+
+        if (matches) anyVisible = true;
+    });
+
+    // Hide empty category sections
+    sections.forEach(section => {
+        const visibleCards = section.querySelectorAll('.provider-card:not([style*="display: none"])');
+        section.style.display = visibleCards.length > 0 ? '' : 'none';
+    });
+
+    document.getElementById('no-results').classList.toggle('hidden', anyVisible);
+});
+
+// Endpoint metadata
+const endpointMeta = {
+    chat:                 { label: 'Chat Completions API',   path: '/v1/chat/completions',    desc: 'Send messages and receive AI-generated responses. The most common LLM endpoint.' },
+    completions:          { label: 'Text Completions API',   path: '/v1/completions',          desc: 'Legacy text completion. Send a prompt, get a continuation. Useful for code and fill-in tasks.' },
+    embeddings:           { label: 'Embeddings API',         path: '/v1/embeddings',           desc: 'Convert text into vector representations for semantic search, clustering, and RAG.' },
+    images:               { label: 'Image Generation API',   path: '/v1/images/generations',   desc: 'Generate images from text prompts using models like DALL-E, Stable Diffusion, and more.' },
+    images_edits:         { label: 'Image Edits API',        path: '/v1/images/edits',         desc: 'Edit existing images using text instructions. Supports masking and inpainting.' },
+    audio_speech:         { label: 'Text-to-Speech API',     path: '/v1/audio/speech',         desc: 'Convert text into natural-sounding speech audio. Supports multiple voices and formats.' },
+    audio_transcriptions: { label: 'Speech-to-Text API',     path: '/v1/audio/transcriptions', desc: 'Transcribe audio files into text. Powered by Whisper and similar ASR models.' },
+    audio_translations:   { label: 'Audio Translation API',  path: '/v1/audio/translations',   desc: 'Translate non-English audio into English text in a single step.' },
+    video:                { label: 'Video Generation API',   path: '/v1/video/generations',    desc: 'Generate video content from text prompts or images.' },
+    rerank:               { label: 'Rerank API',             path: '/v1/rerank',               desc: 'Re-score and reorder search results for better relevance. Essential for RAG pipelines.' },
+    fim:                  { label: 'Fill-in-the-Middle API', path: '/v1/fim/completions',      desc: 'Code infill — provide prefix and suffix, get the middle filled in. For code completion.' },
+    messages:             { label: 'Messages API',           path: '/v1/messages',             desc: 'Anthropic-style message API. Native format for Claude models.' },
+    responses:            { label: 'Responses API',          path: '/v1/responses',            desc: 'OpenAI Responses API. Newer stateful API with built-in tool use and conversation management.' },
+    moderations:          { label: 'Moderations API',        path: '/v1/moderations',          desc: 'Check if text content violates usage policies. Content safety classification.' },
+    classify:             { label: 'Classification API',     path: '/v1/classify',             desc: 'Classify text into predefined categories. Zero-shot and few-shot classification.' },
+    fine_tuning:          { label: 'Fine-Tuning API',        path: '/v1/fine-tuning/jobs',     desc: 'Create and manage fine-tuning jobs to customize models on your own data.' },
+    files:                { label: 'Files API',              path: '/v1/files',                desc: 'Upload, list, and manage files used for fine-tuning, assistants, and batch processing.' },
+    batches:              { label: 'Batch API',              path: '/v1/batches',              desc: 'Submit large sets of requests as a batch for asynchronous processing at lower cost.' },
+    realtime:             { label: 'Realtime API',           path: '/v1/realtime',             desc: 'WebSocket-based real-time streaming API for voice and low-latency interactions.' },
+    models:               { label: 'Models API',             path: '/v1/models',               desc: 'List available models and their capabilities. Discover what each provider offers.' }
+};
+
+// Endpoint-specific curl test commands
+const endpointTests = {
+    chat: `curl http://localhost:3000/v1/chat/completions \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'`,
+    completions: `curl http://localhost:3000/v1/completions \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "prompt": "Once upon a time",
+    "max_tokens": 100
+  }'`,
+    embeddings: `curl http://localhost:3000/v1/embeddings \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "input": "The quick brown fox jumps over the lazy dog"
+  }'`,
+    images: `curl http://localhost:3000/v1/images/generations \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "prompt": "A serene mountain landscape at sunset",
+    "n": 1, "size": "1024x1024"
+  }'`,
+    images_edits: `curl http://localhost:3000/v1/images/edits \\
+  -F image=@image.png \\
+  -F mask=@mask.png \\
+  -F prompt="Add a red hat" \\
+  -F model="{model}"`,
+    audio_speech: `curl http://localhost:3000/v1/audio/speech \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "input": "Hello, welcome to agentgateway!",
+    "voice": "alloy"
+  }' --output speech.mp3`,
+    audio_transcriptions: `curl http://localhost:3000/v1/audio/transcriptions \\
+  -F file=@audio.mp3 \\
+  -F model="{model}"`,
+    audio_translations: `curl http://localhost:3000/v1/audio/translations \\
+  -F file=@foreign_audio.mp3 \\
+  -F model="{model}"`,
+    video: `curl http://localhost:3000/v1/video/generations \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "prompt": "A cat playing with a ball of yarn"
+  }'`,
+    rerank: `curl http://localhost:3000/v1/rerank \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "query": "What is machine learning?",
+    "documents": ["ML is a subset of AI", "Cooking recipes", "Neural networks learn patterns"]
+  }'`,
+    fim: `curl http://localhost:3000/v1/fim/completions \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "prompt": "def fibonacci(n):\\n    ",
+    "suffix": "\\n    return result"
+  }'`,
+    messages: `curl http://localhost:3000/v1/messages \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "max_tokens": 1024,
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'`,
+    responses: `curl http://localhost:3000/v1/responses \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "input": "Tell me a joke"
+  }'`,
+    moderations: `curl http://localhost:3000/v1/moderations \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "input": "This is a test message"
+  }'`,
+    classify: `curl http://localhost:3000/v1/classify \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "model": "{model}",
+    "inputs": ["This movie was great!", "Terrible experience"],
+    "examples": [
+      {"text": "I love it", "label": "positive"},
+      {"text": "I hate it", "label": "negative"}
+    ]
+  }'`,
+    fine_tuning: `# Create a fine-tuning job
+curl http://localhost:3000/v1/fine-tuning/jobs \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "training_file": "file-abc123",
+    "model": "{model}"
+  }'
+
+# List fine-tuning jobs
+curl http://localhost:3000/v1/fine-tuning/jobs`,
+    files: `# Upload a file
+curl http://localhost:3000/v1/files \\
+  -F purpose="fine-tune" \\
+  -F file=@training_data.jsonl
+
+# List files
+curl http://localhost:3000/v1/files`,
+    batches: `# Create a batch
+curl http://localhost:3000/v1/batches \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "input_file_id": "file-abc123",
+    "endpoint": "/v1/chat/completions",
+    "completion_window": "24h"
+  }'
+
+# List batches
+curl http://localhost:3000/v1/batches`,
+    realtime: `# WebSocket connection (use wscat or similar)
+wscat -c ws://localhost:3000/v1/realtime?model={model}
+
+# Then send:
+{"type": "session.update", "session": {"modalities": ["text", "audio"]}}`,
+    models: `# List all available models
+curl http://localhost:3000/v1/models
+
+# Get a specific model
+curl http://localhost:3000/v1/models/{model}`
+};
+
+// Model defaults per endpoint type
+const endpointModels = {
+    chat: null, // use provider default
+    completions: null,
+    embeddings: 'text-embedding-3-small',
+    images: 'dall-e-3',
+    images_edits: 'dall-e-2',
+    audio_speech: 'tts-1',
+    audio_transcriptions: 'whisper-1',
+    audio_translations: 'whisper-1',
+    video: null,
+    rerank: null,
+    fim: null,
+    messages: null,
+    responses: null,
+    moderations: 'text-moderation-latest',
+    classify: null,
+    fine_tuning: null,
+    files: null,
+    batches: null,
+    realtime: null,
+    models: null
+};
+
+let currentEndpoint = 'chat';
+let currentProvider = null;
+
+// Generate standalone config
+function generateConfig(provider, endpoint) {
+    const name = provider.dataset.name || 'Provider';
+    const slug = provider.dataset.slug || 'provider';
+    const type = provider.dataset.type || 'openai-compatible';
+    const providerType = provider.dataset.providerType || slug;
+    const model = endpointModels[endpoint] || provider.dataset.model || 'model-name';
+    const env = provider.dataset.env || 'API_KEY';
+    const host = provider.dataset.host || 'api.example.com';
+    const meta = endpointMeta[endpoint] || {};
+    const epPath = meta.path || '/v1/' + endpoint;
+
+    if (type === 'native') {
+        return `# ${name} — ${meta.label || endpoint}
+# Endpoint: ${epPath}
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: ${slug}
+          provider:
+            ${providerType}:
+              model: ${model}
+      policies:
+        backendAuth:
+          key: "$${env}"`;
+    } else {
+        return `# ${name} — ${meta.label || endpoint}
+# Endpoint: ${epPath}
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: ${slug}
+          provider:
+            openAI:
+              model: ${model}
+              host: ${host}
+              port: 443
+              path: "${provider.dataset.path || '/v1/chat/completions'}"
+      policies:
+        backendAuth:
+          key: "$${env}"`;
+    }
+}
+
+// Generate Kubernetes config
+function generateK8sConfig(provider, endpoint) {
+    const name = provider.dataset.name || 'Provider';
+    const slug = provider.dataset.slug || 'provider';
+    const type = provider.dataset.type || 'openai-compatible';
+    const providerType = provider.dataset.providerType || slug;
+    const model = endpointModels[endpoint] || provider.dataset.model || 'model-name';
+    const env = provider.dataset.env || 'API_KEY';
+    const host = provider.dataset.host || 'api.example.com';
+    const meta = endpointMeta[endpoint] || {};
+    const epPath = meta.path || '/v1/' + endpoint;
+    const secretName = slug + '-secret';
+    const backendName = slug;
+
+    let providerBlock;
+    if (type === 'native') {
+        providerBlock = `            ${providerType}:
+              model: ${model}`;
+    } else {
+        providerBlock = `            openai:
+              model: ${model}
+              host: ${host}
+              port: 443
+              path: "${provider.dataset.path || '/v1/chat/completions'}"`;
+    }
+
+    return `# ${name} — ${meta.label || endpoint} (Kubernetes)
+# Endpoint: ${epPath}
+
+# Step 1: Gateway
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway-proxy
+  namespace: agentgateway-system
+spec:
+  gatewayClassName: agentgateway
+  listeners:
+  - protocol: HTTP
+    port: 8080
+    name: http
+    allowedRoutes:
+      namespaces:
+        from: All
+EOF
+
+# Step 2: Secret
+export ${env}=<your-key>
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${secretName}
+  namespace: agentgateway-system
+type: Opaque
+stringData:
+  Authorization: \${${env}}
+EOF
+
+# Step 3: Backend
+kubectl apply -f- <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: ${backendName}
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+${providerBlock}
+    policies:
+      auth:
+        secretRef:
+          name: ${secretName}
+EOF
+
+# Step 4: Route
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ${slug}
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    namespace: agentgateway-system
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /${slug}
+    backendRefs:
+    - name: ${backendName}
+      namespace: agentgateway-system
+      group: agentgateway.dev
+      kind: AgentgatewayBackend
+EOF
+
+# Step 5: Port-forward to test
+kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &`;
+}
+
+// Switch between Standalone and Kubernetes tabs
+let currentEpTab = 'standalone';
+function switchEpTab(tab) {
+    currentEpTab = tab;
+    const standaloneEl = document.getElementById('ep-tab-standalone');
+    const kubernetesEl = document.getElementById('ep-tab-kubernetes');
+    const buttons = document.querySelectorAll('.ep-tab-btn');
+
+    buttons.forEach(btn => {
+        btn.classList.remove('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        btn.classList.add('border-transparent', 'text-gray-500');
+    });
+
+    if (tab === 'standalone') {
+        standaloneEl.classList.remove('hidden');
+        kubernetesEl.classList.add('hidden');
+        buttons[0].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[0].classList.remove('border-transparent', 'text-gray-500');
+    } else {
+        standaloneEl.classList.add('hidden');
+        kubernetesEl.classList.remove('hidden');
+        buttons[1].classList.add('active', 'border-purple-600', 'text-purple-700', 'bg-white');
+        buttons[1].classList.remove('border-transparent', 'text-gray-500');
+    }
+
+    // Update test command port based on active tab
+    updateEndpointTestPort();
+}
+
+function updateEndpointTestPort() {
+    const testEl = document.getElementById('endpoint-test-code');
+    if (!testEl) return;
+    const model = currentProvider ? (endpointModels[currentEndpoint] || currentProvider.dataset.model || 'model-name') : 'model-name';
+    const testTemplate = endpointTests[currentEndpoint] || '';
+    let testCmd = testTemplate.replace(/\{model\}/g, model);
+    if (currentEpTab === 'kubernetes') {
+        testCmd = testCmd.replace(/localhost:3000/g, 'localhost:8080');
+    }
+    testEl.textContent = testCmd;
+}
+
+function selectEndpointProvider(card) {
+    // Remove selection from all cards
+    document.querySelectorAll('.endpoint-provider-card').forEach(c => {
+        c.classList.remove('border-purple-500', 'ring-2', 'ring-purple-200');
+    });
+    // Select this card
+    card.classList.add('border-purple-500', 'ring-2', 'ring-purple-200');
+    currentProvider = card;
+
+    const meta = endpointMeta[currentEndpoint] || {};
+    const model = endpointModels[currentEndpoint] || card.dataset.model || 'model-name';
+
+    // Update standalone config
+    const config = generateConfig(card, currentEndpoint);
+    document.getElementById('endpoint-config-code').textContent = config;
+
+    // Update Kubernetes config
+    const k8sConfig = generateK8sConfig(card, currentEndpoint);
+    document.getElementById('endpoint-k8s-code').textContent = k8sConfig;
+
+    // Update header
+    document.getElementById('endpoint-config-path').textContent = (meta.path || '') + ' — ' + (card.dataset.name || '');
+
+    // Update test command (respects active tab)
+    updateEndpointTestPort();
+
+    // Scroll config into view
+    document.getElementById('endpoint-config-example').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function copyEndpointConfig() {
+    const codeId = currentEpTab === 'kubernetes' ? 'endpoint-k8s-code' : 'endpoint-config-code';
+    const code = document.getElementById(codeId).textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('ep-config-copy-btn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+        btn.classList.add('text-green-600', 'border-green-300');
+        setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('text-green-600', 'border-green-300'); }, 2000);
+    });
+}
+
+function copyEndpointTest() {
+    const code = document.getElementById('endpoint-test-code').textContent;
+    navigator.clipboard.writeText(code).then(() => {
+        const btn = document.getElementById('ep-test-copy-btn');
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Copied!';
+        btn.classList.add('text-green-600', 'border-green-300');
+        setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('text-green-600', 'border-green-300'); }, 2000);
+    });
+}
+
+function initEndpoint(endpoint) {
+    currentEndpoint = endpoint;
+    currentProvider = null;
+    const meta = endpointMeta[endpoint] || { label: endpoint, path: '/' + endpoint, desc: '' };
+
+    // Update sidebar active state
+    document.querySelectorAll('.endpoint-btn').forEach(btn => {
+        if (btn.dataset.endpoint === endpoint) {
+            btn.classList.add('active', 'bg-purple-50', 'border-purple-600', 'text-purple-700');
+            btn.classList.remove('text-gray-600', 'border-transparent');
+            btn.querySelector('span:last-child').classList.add('bg-purple-100', 'text-purple-700');
+            btn.querySelector('span:last-child').classList.remove('bg-gray-100', 'text-gray-600');
+        } else {
+            btn.classList.remove('active', 'bg-purple-50', 'border-purple-600', 'text-purple-700');
+            btn.classList.add('text-gray-600', 'border-transparent');
+            btn.querySelector('span:last-child').classList.remove('bg-purple-100', 'text-purple-700');
+            btn.querySelector('span:last-child').classList.add('bg-gray-100', 'text-gray-600');
+        }
+    });
+
+    // Update header
+    document.getElementById('endpoint-title').textContent = meta.label;
+    document.getElementById('endpoint-path').textContent = meta.path;
+    document.getElementById('endpoint-description').textContent = meta.desc;
+    document.getElementById('endpoint-config-path').textContent = meta.path;
+
+    // Filter provider cards and find first visible
+    const cards = document.querySelectorAll('.endpoint-provider-card');
+    let visibleCount = 0;
+    let firstVisible = null;
+    cards.forEach(card => {
+        card.classList.remove('border-purple-500', 'ring-2', 'ring-purple-200');
+        const endpoints = (card.dataset.endpoints || '').split(' ');
+        if (endpoints.includes(endpoint)) {
+            card.style.display = '';
+            visibleCount++;
+            if (!firstVisible) firstVisible = card;
+        } else {
+            card.style.display = 'none';
+        }
+    });
+
+    document.getElementById('endpoint-count').textContent = visibleCount;
+
+    // Auto-select first provider and generate config (without scrolling)
+    if (firstVisible) {
+        // Inline selection without scroll
+        document.querySelectorAll('.endpoint-provider-card').forEach(c => {
+            c.classList.remove('border-purple-500', 'ring-2', 'ring-purple-200');
+        });
+        firstVisible.classList.add('border-purple-500', 'ring-2', 'ring-purple-200');
+        currentProvider = firstVisible;
+        const model = endpointModels[currentEndpoint] || firstVisible.dataset.model || 'model-name';
+        document.getElementById('endpoint-config-code').textContent = generateConfig(firstVisible, currentEndpoint);
+        document.getElementById('endpoint-k8s-code').textContent = generateK8sConfig(firstVisible, currentEndpoint);
+        document.getElementById('endpoint-config-path').textContent = (meta.path || '') + ' — ' + (firstVisible.dataset.name || '');
+        updateEndpointTestPort();
+    } else {
+        document.getElementById('endpoint-config-code').textContent = '# No providers available for this endpoint';
+        document.getElementById('endpoint-k8s-code').textContent = '# No providers available for this endpoint';
+        document.getElementById('endpoint-test-code').textContent = '# No test available';
+    }
+}
+
+function filterByEndpoint(endpoint) {
+    initEndpoint(endpoint);
+    // Scroll to the endpoint section
+    document.getElementById('browse-by-endpoint').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Initialize on load (no scroll)
+document.addEventListener('DOMContentLoaded', function() {
+    initEndpoint('chat');
+});
+
+// Category filter
+document.querySelectorAll('.category-filter').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const category = this.dataset.category;
+
+        // Update active state
+        document.querySelectorAll('.category-filter').forEach(b => {
+            b.classList.remove('active', 'bg-purple-600', 'text-white');
+            b.classList.add('bg-white/10', 'text-gray-300');
+        });
+        this.classList.add('active', 'bg-purple-600', 'text-white');
+        this.classList.remove('bg-white/10', 'text-gray-300');
+
+        // Filter sections
+        const sections = document.querySelectorAll('.category-section');
+        sections.forEach(section => {
+            if (category === 'all' || section.dataset.category === category) {
+                section.style.display = '';
+            } else {
+                section.style.display = 'none';
+            }
+        });
+
+        // Clear search
+        document.getElementById('model-search').value = '';
+        document.querySelectorAll('.provider-card').forEach(card => card.style.display = '');
+        document.getElementById('no-results').classList.add('hidden');
+    });
+});
+</script>
+{{ end }}

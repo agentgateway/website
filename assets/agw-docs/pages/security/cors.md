@@ -94,32 +94,6 @@ You can configure the CORS policy at two levels:
    EOF
    ```
 
-  {{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
-  YAMLTest -f - <<'EOF'
-  - name: CORS preflight returns expected headers
-    http:
-      url: "http://${INGRESS_GW_ADDRESS}:80/get"
-      method: OPTIONS
-      headers:
-        host: www.example.com
-        Origin: https://example.com
-    source:
-      type: local
-    expect:
-      statusCode: 200
-      headers:
-        - name: access-control-allow-origin
-          comparator: equals
-          value: https://example.com
-        - name: access-control-allow-methods
-          comparator: contains
-          value: GET
-        - name: access-control-max-age
-          comparator: equals
-          value: "86400"
-  EOF
-  {{< /doc-test >}}
-
    {{% /tab %}}
    {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
 
@@ -155,6 +129,31 @@ You can configure the CORS policy at two levels:
    EOF
    ```
    {{% /tab %}}
+  {{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
+  YAMLTest -f - <<'EOF'
+  - name: CORS preflight returns expected headers
+    http:
+      url: "http://${INGRESS_GW_ADDRESS}:80/get"
+      method: OPTIONS
+      headers:
+        host: www.example.com
+        Origin: https://example.com
+    source:
+      type: local
+    expect:
+      statusCode: 200
+      headers:
+        - name: access-control-allow-origin
+          comparator: equals
+          value: https://example.com
+        - name: access-control-allow-methods
+          comparator: contains
+          value: GET
+        - name: access-control-max-age
+          comparator: equals
+          value: "86400"
+  EOF
+  {{< /doc-test >}}
    {{< /tabs >}}
 
 2. Send a request to the httpbin app and use `https://example.com` as the origin. Verify that your request succeeds and that you get back the configured CORS headers.

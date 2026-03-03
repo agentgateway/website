@@ -1,3 +1,7 @@
 ## Next steps
-- Want to use other endpoints than chat completions, such as embeddings or models? Check out the [multiple endpoints]({{< link-hextra path="/llm/providers/multiple-endpoints/" >}}) guide.
-- Explore [other guides for LLM consumption]({{< link-hextra path="/llm/" >}}), such as function calling, model failover, and prompt guards.
+
+{{< cards >}}
+  {{< card link="/docs/kubernetes/latest/llm/providers/multiple-endpoints/" title="Multiple endpoints" subtitle="Set up other API endpoints such as embeddings or models." >}}
+  {{< card link="/docs/kubernetes/latest/llm/prompt-guards/" title="Prompt guards" subtitle="Set up prompt guards for your LLM traffic." >}}
+  {{< card link="/docs/kubernetes/latest/llm/providers/observability/" title="LLM observability" subtitle="View metrics and logs for LLM traffic." >}}
+{{< /cards >}}

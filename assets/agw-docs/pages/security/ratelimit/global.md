@@ -3,7 +3,7 @@ Configure global rate limiting rules across all of your Gateways to protect the 
 
 ## About {#about}
 
-Global rate limiting in {{< reuse "agw-docs/snippets/kgateway.md" >}} is powered by [Envoy's rate limiting service protocol](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter). When used with token-based limits keyed by user or API key, this provides the same capability often called budget limits or spend limits per key. With global rate limiting, you can apply distributed, consistent rate limits across multiple Gateways. Unlike local rate limiting, which operates per Gateway instance, global rate limiting uses a central service to coordinate rate limits. Therefore, to use global rate limiting, you must bring your own rate limit service that implements the Envoy protocol.
+Global rate limiting in {{< reuse "agw-docs/snippets/kgateway.md" >}} is powered by [Envoy's rate limiting service protocol](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter). When used with token-based limits keyed by user or API key, use it to enforce budget limits or spend limits per key. With global rate limiting, you can apply distributed, consistent rate limits across multiple Gateways. Unlike local rate limiting, which operates per Gateway instance, global rate limiting uses a central service to coordinate rate limits. Therefore, to use global rate limiting, you must bring your own rate limit service that implements the Envoy protocol.
 
 With your own rate limit service in place, you get benefits such as:
 
@@ -71,7 +71,7 @@ When rate limiting is enabled, {{< reuse "agw-docs/snippets/kgateway.md" >}} add
 
 You can bring your own rate limit service that implements the Envoy Rate Limit gRPC protocol. 
 
-To get started, you can try out a demo rate limit service from the kgateway project. For more information, see the [GitHub repo](https://github.com/kgateway-dev/kgateway/tree/main/test/kubernetes/e2e/features/rate_limit/testdata).
+To get started, you can try out a demo rate limit service from the kgateway project. For more information, see the [GitHub repo](https://github.com/kgateway-dev/kgateway/tree/main/test/e2e/features/rate_limit/global/testdata).
 
 1. Create the `kgateway-test-extensions` namespace.
 

@@ -429,6 +429,9 @@ class Extractor:
                     continue
                 if selectors and set(block.paths).intersection(selectors):
                     selected.append(block)
+        # Emit blocks in document order (by file, then line) so hidden blocks
+        # (e.g. start server in background) appear before dependent visible blocks.
+        selected.sort(key=lambda b: (b.file_path, b.start_line))
         return selected
 
     def select_test_includes(self) -> List[TestInclude]:

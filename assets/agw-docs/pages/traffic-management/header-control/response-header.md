@@ -1,7 +1,3 @@
----
-title: Response headers
-weight: 30
----
 
 Use the `ResponseHeaderModifier` filter to add, append, overwrite, or remove headers from a response before it is sent back to the client. 
 
@@ -62,7 +58,7 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    {{< /tabs >}}
 
    Example output: 
-   ```yaml {linenos=table,hl_lines=[14,15],linenostart=1}
+   ```yaml {linenos=table,hl_lines=[12,13],linenostart=1}
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
@@ -74,12 +70,9 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    content-type: application/json; encoding=utf-8
    < content-length: 3
    content-length: 3
-   < x-envoy-upstream-service-time: 0
-   x-envoy-upstream-service-time: 0
    < my-response: hello
    my-response: hello
-   < server: envoy
-   server: envoy
+
    ```
 
 1. Optional: Remove the resources that you created. 
@@ -128,16 +121,16 @@ Setting headers is similar to adding headers. If the response does not include t
 
 2. Send a request to the httpbin app on the `headers.example` domain. Verify that you get back a 200 HTTP response code and that the `my-response: custom` header was set. 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider Loadbalancer" %}}
-```sh
-curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -vi localhost:8080/response-headers -H "host: headers.example"
-```
-{{% /tab %}}
+   {{% tab tabName="Cloud Provider Loadbalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers -H "host: headers.example"
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
@@ -153,8 +146,6 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    ...
    < my-response: custom
    my-response: custom
-   < server: envoy
-   server: envoy
    ```
 
 1. Optional: Remove the resources that you created. 
@@ -167,22 +158,23 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
 
 You can remove HTTP headers from a response before the response is sent back to the client. 
 
-1. Send a request to the httpbin app and find the `content-length` header. 
+
+1. Send a request to the httpbin app and find the `content-type` header. 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider Loadbalancer" %}}
-```sh
-curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: www.example.com:80"
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -vi localhost:8080/response-headers -H "host: www.example.com"
-```
-{{% /tab %}}
+   {{% tab tabName="Cloud Provider Loadbalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers -H "host: www.example.com:8080"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers -H "host: www.example.com"
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
-   ```yaml {linenos=table,hl_lines=[11,12],linenostart=1}
+   ```yaml {linenos=table,hl_lines=[9,10],linenostart=1}
    ...
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
@@ -195,13 +187,10 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
    content-type: application/json; encoding=utf-8
    < content-length: 3
    content-length: 3
-   < x-envoy-upstream-service-time: 0
-   x-envoy-upstream-service-time: 0
-   < server: envoy
-   server: envoy
    ```
    
-2. Set up a header modifier that removes the `content-length` header from the response. 
+2. Set up a header modifier that removes the `content-type` header from the response. 
+
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -220,7 +209,7 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
            - type: ResponseHeaderModifier
              responseHeaderModifier:
                remove: 
-               - content-length
+               - content-type
          backendRefs:
            - name: httpbin
              port: 8000
@@ -233,24 +222,24 @@ curl -vi localhost:8080/response-headers -H "host: www.example.com"
    |`spec.rules.filters.type`| The type of filter that you want to apply. In this example, the `ResponseHeaderModifier` filter is used.|
    |`spec.rules.filters.responseHeaderModifier.remove`|The name of the response header that you want to remove. |
    |`spec.rules.backendRefs`|The backend destination you want to forward traffic to. In this example, all traffic is forwarded to the httpbin app that you set up as part of the get started guide. |
+   
 
-
-3. Send a request to the httpbin app on the `headers.example` domain . Verify that the `content-length` response header is removed. 
+3. Send a request to the httpbin app on the `headers.example` domain . Verify that the `content-type` response header is removed. 
    {{< tabs items="Cloud Provider Loadbalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider Loadbalancer" %}}
-```sh
-curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -vi localhost:8080/response-headers -H "host: headers.example"
-```
-{{% /tab %}}
+   {{% tab tabName="Cloud Provider Loadbalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:8080/response-headers -H "host: headers.example:8080"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers -H "host: headers.example"
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
-   ```
+   ```yaml 
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
@@ -258,97 +247,12 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
    access-control-allow-credentials: true
    < access-control-allow-origin: *
    access-control-allow-origin: *
-   < content-type: application/json; encoding=utf-8
-   content-type: application/json; encoding=utf-8
-   < x-envoy-upstream-service-time: 0
-   x-envoy-upstream-service-time: 0
-   < server: envoy
-   server: envoy
-   < transfer-encoding: chunked
-   transfer-encoding: chunked
+   < content-length: 3
+   content-length: 3
    ```
 
-1. Optional: Remove the resources that you created. 
+1. Optional: Remove the resource that you created. 
 
    ```sh
    kubectl delete httproute httpbin-headers -n httpbin
    ```
-
-## Dynamic response headers {#dynamic-response-header}
-
-You can return dynamic information about the response in the response header. For more information, see the Envoy docs for [Custom request/response headers](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers.html#custom-request-response-headers).
-
-{{< reuse "agw-docs/snippets/dynamic-req-resp-headers.md" >}}
-
-{{< callout >}}
-{{< reuse "agw-docs/snippets/proxy-agentgateway.md" >}}
-{{< /callout >}} 
-
-1. Set up a header modifier that sets the `X-Response-Code` header with the value of the HTTP response code. 
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: httpbin-headers
-     namespace: httpbin
-   spec:
-     parentRefs:
-     - name: agentgateway-proxy
-       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     hostnames:
-       - headers.example
-     rules:
-       - filters:
-           - type: ResponseHeaderModifier
-             responseHeaderModifier:
-               set: 
-                 - name: x-response-code
-                   value: "%RESPONSE_CODE%"
-         backendRefs:
-           - name: httpbin
-             port: 8000
-   EOF
-   ```
-   
-   |Setting|Description|
-   |--|--|
-   |`spec.parentRefs`| The name and namespace of the gateway that serves this HTTPRoute. In this example, you use the `agentgateway-proxy` Gateway that was created as part of the get started guide. |
-   |`spec.rules.filters.type`| The type of filter that you want to apply to responses. In this example, the `ResponseHeaderModifier` filter is used.|
-   |`spec.rules.filters.responseHeaderModifier.set`|The response header that you want to set. In this example, the `x-response-code` header is set to the HTTP response code. For more potential values, see [Command operators in the Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage.html#command-operators). |
-   |`spec.rules.backendRefs`|The backend destination you want to forward traffic to. In this example, all traffic is forwarded to the httpbin app that you set up as part of the get started guide. |
-   
-
-2. Send a request to the httpbin app on the `headers.example` domain. Verify that the `x-response-code` response header is set to the HTTP response code. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
-```sh
-curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers -H "host: headers.example:80"
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -vi localhost:8080/response-headers -H "host: headers.example"
-```
-{{% /tab %}}
-   {{< /tabs >}}
-
-   Example output: 
-   ```sh
-   HTTP/1.1 200 OK
-   access-control-allow-credentials: true
-   access-control-allow-origin: *
-   content-type: application/json; encoding=utf-8
-   date: Tue, 23 Sep 2025 20:05:29 GMT
-   content-length: 479
-   x-envoy-upstream-service-time: 0
-   x-response-code: 200
-   server: envoy
-   ```
-
-1. Optional: Clean up the resources that you created.  
-   
-   ```sh
-   kubectl delete httproute httpbin-headers -n httpbin
-   ```
-

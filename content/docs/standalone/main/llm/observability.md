@@ -1,10 +1,10 @@
 ---
 title: Observe traffic
 weight: 50
-description: Review LLM metrics, prompt logging, cost tracking, and traces (audit trail).
+description: Get prompt logging, cost tracking, and an audit trail for LLM traffic.
 ---
 
-Review LLM-specific metrics, logs, and traces—including prompt logging (request/response capture), cost tracking (token usage), and full audit trail via OpenTelemetry. 
+Get prompt logging, cost tracking, and a full audit trail: review LLM-specific metrics, logs, and traces (request/response capture and token usage) via OpenTelemetry. 
 
 ## Before you begin
 
