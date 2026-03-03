@@ -4,6 +4,18 @@ Review LLM-specific metrics and logs.
 To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
 {{< /callout >}}
 
+{{< conditional-text kubernetes >}}
+{{< callout type="info" >}}
+For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+{{< /callout >}}
+{{< /conditional-text >}}
+
+{{< conditional-text standalone >}}
+{{< callout type="info" >}}
+For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
+{{< /callout >}}
+{{< /conditional-text >}}
+
 ## Before you begin
 
 Complete an LLM guide, such as an [LLM provider-specific guide]({{< link-hextra path="/llm/providers/" >}}). This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics and logs.  
