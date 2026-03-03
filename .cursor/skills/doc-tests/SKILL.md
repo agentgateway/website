@@ -30,7 +30,7 @@ Use this skill when adding tests to documentation guides in the `website` repo s
 
 ### 1. Identify content and asset files
 
-- **Content file**: The doc page that will have `test:` in front matter (e.g. `content/docs/standalone/main/quickstart/llm.md` or `content/docs/standalone/latest/quickstart/llm.md`).
+- **Content file**: The doc page that will have `test:` in front matter (e.g. [`content/docs/standalone/main/quickstart/llm.md`](https://github.com/agentgateway/website/blob/main/content/docs/standalone/main/quickstart/llm.md?plain=1)).
 - **Asset file(s)**: Where the guide body lives. If the content page is only `{{< reuse "agw-docs/standalone/quickstart/llm.md" >}}`, the asset is `assets/agw-docs/standalone/quickstart/llm.md`. Add path tags and doc-test blocks in the asset.
 
 > **Note**: The `main` directory contains docs for the development version, while `latest` contains the current stable release. Tests can be added to either or both, depending on which version the feature is available in.
