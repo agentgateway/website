@@ -11,6 +11,7 @@ To ensure that subsequent requests are routed to the same agentgateway proxy ins
 
 ## Stateless
 
+The following configuration disables stateful session routing for a streamable HTTP endpoint. You typically use this configuration if you have stateless agents that connect to your MCP server or where the state is handled in the client directly. The MCP server treats every request as a new request and therefore requires the entire context to be sent as part of the request.
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1
@@ -30,6 +31,8 @@ spec:
 ```
 
 ## Stateful (default)
+
+The following configuration enables stateful session routing for a streamable HTTP endpoint. During the client-server handshake, the agentgateway proxy instance that handles the request sends back the `mcp-session-id` header with the session ID that was assigned. The client includes this header in subsequent requests to keep the session alive. 
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1
