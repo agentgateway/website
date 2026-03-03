@@ -15,6 +15,12 @@ This composable approach gives you more flexibility in how you configure and app
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
+<!--TODO rate limit: Add link to rate limit server setup guide when available. Tests will require rate limit server deployment. -->
+
+{{< callout type="warning" >}}
+This guide requires a rate limit server deployment. See the [global rate limiting guide]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for setup instructions.
+{{< /callout >}}
+
 ## How virtual keys work
 
 Virtual keys combine authentication, rate limiting, and observability to create isolated token budgets for each API key:
@@ -51,7 +57,7 @@ This example creates two virtual keys (for Alice and Bob) with independent 100,0
 
 Create API key secrets for each user. Each secret includes a label that references the key group for authentication.
 
-```yaml
+```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
 apiVersion: v1
 kind: Secret
@@ -89,7 +95,7 @@ EOF
 
 Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. The policy extracts the user ID from the `X-User-ID` header for use in rate limiting.
 
-```yaml
+```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -126,7 +132,7 @@ EOF
 
 Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces a daily token budget of 100,000 tokens per user.
 
-```yaml
+```yaml,paths="virtual-keys-with-ratelimit"
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -167,11 +173,13 @@ EOF
 
 Deploy a rate limit server and configure it with your budget limits.
 
+<!--TODO rate limit: Step 1 requires rate limit server deployment guide -->
+
 1. Deploy the rate limit server. For setup instructions, see the [global rate limiting guide]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
 
 2. Create a ConfigMap with your budget configuration.
 
-   ```yaml
+   ```yaml,paths="virtual-keys-with-ratelimit"
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -202,7 +210,7 @@ Deploy a rate limit server and configure it with your budget limits.
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} that connects to your LLM provider.
 
-```yaml
+```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -227,7 +235,7 @@ For detailed instructions on creating backends and storing provider API keys, se
 
 Create an HTTPRoute that routes requests to your LLM backend.
 
-```yaml
+```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -252,6 +260,90 @@ EOF
 ```
 
 ### Test the virtual keys
+
+<!--TODO rate limit: The following test steps require a rate limit server. Once the rate limit guide is available, add full end-to-end tests including budget enforcement. -->
+
+{{< doc-test paths="virtual-keys" >}}
+# Test virtual key authentication and routing
+YAMLTest -f - <<'EOF'
+- name: wait for HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+
+- name: verify request with Alice's virtual key succeeds
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer sk-alice-abc123def456"
+      X-User-ID: alice
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+
+- name: verify request with Bob's virtual key succeeds independently
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer sk-bob-xyz789uvw012"
+      X-User-ID: bob
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+
+- name: verify request without valid API key is rejected
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer invalid-key"
+      X-User-ID: charlie
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 401
+EOF
+{{< /doc-test >}}
 
 1. Send a request with Alice's API key. Verify that the request succeeds.
 

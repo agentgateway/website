@@ -141,7 +141,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
    This example routes 80% of traffic to the cheaper `gpt-4o-mini` model and 20% to the more capable `gpt-4o` model. This pattern lets you optimize costs while still testing the premium model's performance.
 
-   ```yaml
+   ```yaml,paths="traffic-split-llm"
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -177,7 +177,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
 2. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   ```yaml
+   ```yaml,paths="traffic-split-llm"
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -239,6 +239,32 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
    gpt-4o-mini-2024-07-18
    gpt-4o-mini-2024-07-18
    ```
+
+{{< doc-test paths="traffic-split-llm" >}}
+# Test that traffic is being split between models
+# Send multiple requests and verify we get valid responses with model names
+YAMLTest -f - <<'EOF'
+- name: verify traffic split returns valid responses
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/ab-test"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.model"
+        comparator: exists
+      - path: "$.choices[0].message.content"
+        comparator: exists
+EOF
+{{< /doc-test >}}
 
 ## Cleanup
 

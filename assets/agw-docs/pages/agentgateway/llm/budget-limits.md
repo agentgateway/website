@@ -15,6 +15,12 @@ Other AI gateways often call this feature "virtual keys" or "virtual key managem
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
+<!--TODO rate limit: Add link to rate limit server setup guide when available. Tests will require rate limit server deployment. -->
+
+{{< callout type="warning" >}}
+This guide requires a rate limit server deployment. See the [global rate limiting guide]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for setup instructions.
+{{< /callout >}}
+
 ## How budget limits work
 
 Budget limits enforce token consumption quotas using token bucket rate limiting. Each user or API key gets a virtual "budget" measured in tokens rather than requests.
@@ -53,7 +59,7 @@ This example shows how to set up a daily token budget of 100,000 tokens per API 
 
 1. Create API key secrets for each user. Each secret includes a label that you can use to reference the keys in the authentication policy.
 
-   ```yaml
+   ```yaml,paths="budget-limits"
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -80,7 +86,7 @@ This example shows how to set up a daily token budget of 100,000 tokens per API 
    ```
 
 2. Verify that the secrets are created.
-   ```sh
+   ```sh,paths="budget-limits"
    kubectl get secrets -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l api-key-group=llm-users
    ```
 
@@ -88,7 +94,7 @@ This example shows how to set up a daily token budget of 100,000 tokens per API 
 
 Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway.
 
-```yaml
+```yaml,paths="budget-limits"
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -121,11 +127,30 @@ EOF
 | `secretSelector` | Use label selectors to reference all API key secrets with the `api-key-group: llm-users` label. |
 | `extractFrom.headers` | Extract the user ID from the `X-User-ID` header. This header value is used for rate limiting. |
 
+{{< doc-test paths="budget-limits" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for api-key-auth traffic policy to be accepted
+  wait:
+    target:
+      kind: TrafficPolicy
+      metadata:
+        namespace: agentgateway-system
+        name: api-key-auth
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 ### Configure token-based budget limits
 
 Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces a daily token budget of 100,000 tokens per user.
 
-```yaml
+```yaml,paths="budget-limits"
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -166,11 +191,13 @@ EOF
 
 Deploy a rate limit server and configure it with your budget limits.
 
+<!--TODO rate limit: Step 1 requires rate limit server deployment guide -->
+
 1. Deploy the rate limit server. For setup instructions, see the [global rate limiting guide]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
 
 2. Create a ConfigMap with your budget configuration.
 
-   ```yaml
+   ```yaml,paths="budget-limits-with-ratelimit"
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -198,6 +225,56 @@ Deploy a rate limit server and configure it with your budget limits.
    | `rate_limit.requests_per_unit` | The token budget. Set to 100,000 tokens per day. Since `type: tokens` is set, this counts tokens rather than requests. |
 
 ### Test the budget limits
+
+<!--TODO rate limit: The following test steps require a rate limit server. Once the rate limit guide is available, add full end-to-end tests. -->
+
+{{< doc-test paths="budget-limits" >}}
+# Test API key authentication (without rate limiting since rate limit server is a TODO)
+# Test 1: Request without API key should be rejected
+YAMLTest -f - <<'EOF'
+- name: verify request without API key is rejected
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    method: POST
+    headers:
+      content-type: application/json
+      X-User-ID: alice
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "test"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 401
+EOF
+
+# Test 2: Request with valid API key should succeed (auth passes, routing to backend should work)
+YAMLTest -f - <<'EOF'
+- name: verify request with valid API key succeeds
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer sk-alice-abc123def456"
+      X-User-ID: alice
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+EOF
+{{< /doc-test >}}
 
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
