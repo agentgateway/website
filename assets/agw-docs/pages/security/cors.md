@@ -60,7 +60,8 @@ You can configure the CORS policy at two levels:
 
    {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy"  >}}
    {{% tab tabName="HTTPRoute" %}}
-   ```sh,paths="cors-in-httproute"
+
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -84,6 +85,7 @@ You can configure the CORS policy at two levels:
                  - OPTIONS
                allowOrigins:
                  - "https://example.com"
+                 - "https://*.ai"
                exposeHeaders:
                - Origin
                - X-HTTPRoute-Header
