@@ -375,7 +375,7 @@ Set up retries to the sample app.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: retry.example:80"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: retry.example"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
