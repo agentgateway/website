@@ -522,12 +522,12 @@ In this example, you override the default certificate validation configuration f
    {{% /tab %}}
    {{< /tabs >}}
 
-<!--
+
 ## Additional TLS settings
 
-You can configure your mTLS listener to limit connections to clients that present a certificate with a specific certificate hash and Subject Alternative Names. Alternatively, you can configure your listeners to enforce other TLS settings, such as a minimum or maximum TLS version, specific cipher suites, or CSDH curves. For more information, see [Additional TLS settings]({{< link-hextra path="/setup/listeners/tls-settings/" >}}). 
+You can configure your listeners to enforce other TLS settings, such as a minimum or maximum TLS version, or specific cipher suites. For more information, see [Additional TLS settings]({{< link-hextra path="/setup/listeners/tls-settings/" >}}). 
 
-
+<!--
 1. Get the certificate hash of the client certificate. 
    ```sh
    openssl x509 -in client-cert.pem -noout -fingerprint -sha256

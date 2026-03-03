@@ -271,4 +271,84 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    }
    ```
 
+## Prompt caching
+
+Prompt Caching is a performance, cost-optimization, and cost-reduction feature that allows the model to "remember" frequently used parts of your prompt, including long system instructions, reference documents, or tool definitions. This way, the model does not need to reprocess these parts every time you send a new prompt. 
+
+For example, let's assume you have a 50-page manual and you want to ask your model different questions about the manual. Instead of re-reading the manual for each question, the model can read it once and save it in its internal cache. Then, the model can answer subsequent questions more quickly and more cost efficient. 
+
+Prompt caching is configured by using the `backend.ai.promptCaching` fields in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. 
+
+{{< callout type="info" >}}
+Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
+{{< /callout >}}
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your prompt cache settings. The following example enables caching for system prompts and conversation messages, but disables it for tool definitions. Bedrock requires you to set the minimum token count after which caching is enabled. By default, a minimum of 1024 tokens are required by Bedrock for caching to be effective. This is also referred to as a caching checkpoint. For more information, see the [API reference]({{< link-hextra path="/reference/api/#promptcachingconfig" >}}). 
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayPolicy
+   metadata:
+     name: bedrock-caching-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: HTTPRoute
+         name: bedrock
+     backend:
+       ai:
+         promptCaching:
+           cacheSystem: true
+           cacheMessages: true
+           cacheTools: false
+           minTokens: 1024
+   EOF
+   ```
+
+2. Port-forward the agentgateway proxy on port 15000. 
+   ```sh
+   kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+   ```
+
+3. Get the caching configuration and verify that you see the cache settings. 
+   ```sh
+   curl -s http://localhost:15000/config_dump | jq '.policies[] |                                    
+    select(.name.name == "bedrock-caching-policy" and 
+         .policy.backend.aI.promptCaching != null)'
+   ```
+
+   Example output: 
+   ```console {hl_lines=[20,21,22,23,24]}
+   {
+      "key": "backend/agentgateway-system/bedrock-caching-policy:ai:agentgateway-system/bedrock",
+      "name": {
+        "kind": "AgentgatewayPolicy",
+        "name": "bedrock-caching-policy",
+        "namespace": "agentgateway-system"
+      },
+      "target": {
+        "route": {
+          "name": "bedrock",
+          "namespace": "agentgateway-system",
+          "kind": "HTTPRoute"
+        }
+      },
+      "policy": {
+        "backend": {
+          "aI": {
+            "defaults": {},
+            "overrides": {},
+            "promptCaching": {
+              "cacheSystem": true,
+              "cacheMessages": true,
+              "cacheTools": false,
+              "minTokens": 1024
+            }
+          }
+        }
+      }
+   }
+   ```
+
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

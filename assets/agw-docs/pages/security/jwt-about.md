@@ -89,3 +89,11 @@ Using a remote JWKS endpoint is the recommended approach when using JWT authenti
 - **Automatic key rotation**: When the identity provider rotates keys, the agentgateway proxy automatically fetches the new keys
 - **No manual key management**: You don't need to update policies when keys change
 - **Multiple keys**: The JWKS endpoint can return multiple keys, supporting gradual key rotation
+
+#### Remote JWKS with HTTPS {#remote-jwks-https}
+
+When using remote JWKS endpoints from identity providers like Keycloak, Auth0, or Okta, you typically fetch the JWKS keys over HTTPS. The agentgateway proxy needs explicit TLS configuration to establish secure connections to HTTPS backends. Without it, the proxy attempts an HTTP connection to your JWKS endpoint on port 443. This connection silently fails and the agentgateway proxy cannot retrieve the JWKS keys. You see misleading errors, such as `token uses the unknown key`. However, the actual TLS error is captured in the agentgateway control plane logs only.
+
+To configure the agentgateway proxy to connect to your JWKS endpoint via HTTPS, you must create a Backend resource that points to your JWKS endpoint. Then, you create an `EnterpriseAgentgatewayPolicy` to enable TLS for the backend.
+
+For a complete example, see [Remote JWKS with HTTPS backends](#remote-jwks-https) in the setup guide.
