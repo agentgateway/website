@@ -56,7 +56,7 @@ You can configure the CORS policy at two levels:
 
 ## Set up CORS policies
 
-1. Create a CORS policy for the httpbin app in an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The following example sets up custom HTTP methods and max age for requests for the `https://example.com/` origin.
+1. Create a CORS policy for the httpbin app in an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The following example sets up custom HTTP methods and max age for requests for the `https://example.com/` and `https://*.ai` origins.
 
    {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy"  >}}
    {{% tab tabName="HTTPRoute" %}}
