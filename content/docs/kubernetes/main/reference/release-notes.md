@@ -151,6 +151,7 @@ spec:
 
 You can now attach GRPCRoutes to your agentgateway proxy to route traffic to gRPC endpoints. For more information, see [gRPC routing]({{< link-hextra path="/traffic-management/grpc/" >}}). 
 
+
 ## 🗑️ Deprecated or removed features {#v10-removed-features}
 
 
