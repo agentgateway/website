@@ -1,13 +1,13 @@
 1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}.
    {{< tabs items="Standard, Experimental" tabTotal="2" >}}
    {{% tab tabName="Standard" %}}
-   ```sh,paths="standard"
+   ```sh {paths="standard"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab tabName="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
-   ```sh,paths="experimental"
+   ```sh {paths="experimental"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```
    {{% /tab %}}
@@ -30,7 +30,7 @@
       ```
 
    2. Deploy the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs by using Helm. This command creates the {{< reuse "agw-docs/snippets/namespace.md" >}} namespace and creates the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs in the cluster.
-      ```sh,paths="standard,experimental"
+      ```sh {paths="standard,experimental"}
       helm upgrade -i --create-namespace \
         --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
         --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
@@ -56,7 +56,7 @@
 
 
 
-```sh,paths="standard"
+```sh {paths="standard"}
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} \
 --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
@@ -82,7 +82,7 @@ When using the development build {{< reuse "agw-docs/versions/helm-version-flag-
 
 
 
-```sh,paths="experimental"
+```sh {paths="experimental"}
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} \
 --version {{< reuse "agw-docs/versions/helm-version-flag-n1.md" >}} \
 --set controller.image.pullPolicy=Always \

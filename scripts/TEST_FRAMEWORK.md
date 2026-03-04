@@ -29,10 +29,10 @@ A **path** is a string label attached to a fenced code block or hidden command b
 
 ### Tagging visible code blocks
 
-Add `,paths="<name>"` to the fenced code language line:
+Add `,{paths="<name>}"` to the fenced code language line:
 
 ````md
-```sh,paths="install-httpbin"
+```sh,{paths="install-httpbin"}
 kubectl apply -f https://raw.githubusercontent.com/.../httpbin.yaml
 ```
 ````
@@ -40,7 +40,7 @@ kubectl apply -f https://raw.githubusercontent.com/.../httpbin.yaml
 A block may belong to multiple paths:
 
 ````md
-```sh,paths="standard,experimental"
+```sh,{paths="standard,experimental"}
 helm upgrade -i --create-namespace ...
 ```
 ````
@@ -133,7 +133,7 @@ The extractor follows `{{< reuse "..." >}}` and internal links automatically, so
 If a block you need has no path, add one:
 
 ````md
-```sh,paths="install-httpbin"
+```sh {paths="install-httpbin"}
 kubectl apply -f ...
 ```
 ````
@@ -141,7 +141,7 @@ kubectl apply -f ...
 If the same block already belongs to another path and you need to add yours:
 
 ````md
-```sh,paths="standard,my-new-path"
+```sh {paths="standard,my-new-path"}
 ...
 ```
 ````
