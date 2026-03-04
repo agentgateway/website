@@ -31,64 +31,59 @@ export OPENAI_API_KEY=your-api-key-here
 
 ## Step 2: Create the configuration
 
-Create a `config.yaml` file with prompt guard policies.
+Create a `config.yaml` file with prompt guard policies using the simplified LLM configuration format.
 
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4o-mini
-      policies:
-        ai:
-          promptGuard:
-            request:
-            # Block Social Security Numbers
-            - regex:
-                action: reject
-                rules:
-                - pattern: SSN
-                - pattern: Social Security
-              rejection:
-                status: 400
-                headers:
-                  set:
-                    content-type: "application/json"
-                body: |
-                  {
-                    "error": {
-                      "message": "Request rejected: Content contains sensitive information",
-                      "type": "invalid_request_error",
-                      "code": "content_policy_violation"
-                    }
-                  }
-            # Block email addresses
-            - regex:
-                action: reject
-                rules:
-                - builtin: email
-              rejection:
-                status: 400
-                headers:
-                  set:
-                    content-type: "application/json"
-                body: |
-                  {
-                    "error": {
-                      "message": "Request blocked: Contains email address",
-                      "type": "invalid_request_error",
-                      "code": "pii_detected"
-                    }
-                  }
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+
+llm:
+  policies:
+    promptGuard:
+      request:
+      # Block Social Security Numbers
+      - regex:
+          action: reject
+          rules:
+          - pattern: SSN
+          - pattern: Social Security
+        rejection:
+          status: 400
+          headers:
+            set:
+              content-type: "application/json"
+          body: |
+            {
+              "error": {
+                "message": "Request rejected: Content contains sensitive information",
+                "type": "invalid_request_error",
+                "code": "content_policy_violation"
+              }
+            }
+      # Block email addresses
+      - regex:
+          action: reject
+          rules:
+          - builtin: email
+        rejection:
+          status: 400
+          headers:
+            set:
+              content-type: "application/json"
+          body: |
+            {
+              "error": {
+                "message": "Request blocked: Contains email address",
+                "type": "invalid_request_error",
+                "code": "pii_detected"
+              }
+            }
+  models:
+  - name: gpt-4o-mini
+    provider: openai
+    params:
+      model: gpt-4o-mini
+      apiKey: "$OPENAI_API_KEY"
 EOF
 ```
 
@@ -96,13 +91,14 @@ EOF
 
 | Setting | Description |
 |---------|-------------|
-| `policies.ai.promptGuard` | The prompt guard policy that inspects LLM requests |
+| `llm.policies.promptGuard` | The prompt guard policy that inspects LLM requests for all models |
 | `request` | Rules applied to incoming requests before they reach the LLM |
 | `regex.action: reject` | Block requests that match the patterns |
 | `regex.rules` | List of patterns to match against |
 | `pattern` | Custom regex pattern to match |
 | `builtin` | Use a built-in pattern (like `email`) |
 | `rejection` | Custom response returned when a request is blocked |
+| `llm.models` | List of LLM models to configure |
 
 ## Step 3: Start agentgateway
 

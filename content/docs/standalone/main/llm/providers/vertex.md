@@ -20,27 +20,23 @@ Before you can use Vertex AI as an LLM provider, you must authenticate by using 
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: vertex
-          provider:
-            vertex:
-              projectId: my-project-id
-               # Optional: defaults to 'global'
-              region: us-west2
-              # Optional; overrides the model in requests
-              model: google/gemini-2.5-flash-lite-preview-06-17
+
+llm:
+  models:
+  - name: gemini-2.5-flash
+    provider: vertex
+    params:
+      model: google/gemini-2.5-flash-lite-preview-06-17
+      vertexProject: my-project-id
+      vertexRegion: us-west2
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `ai.name` | The name of the LLM provider for this AI backend. |
-| `vertex.projectId` | The Google Cloud project ID. |
-| `vertex.region` | The Google Cloud region. Defaults to `global`. |
-| `vertex.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
+| `name` | The name identifier for this model configuration. |
+| `provider` | The LLM provider, set to `vertex` for Google Cloud Vertex AI. |
+| `params.model` | The specific Vertex AI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.vertexProject` | The Google Cloud project ID. |
+| `params.vertexRegion` | The Google Cloud region. Defaults to `global` if not specified. |

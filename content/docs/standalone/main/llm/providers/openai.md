@@ -12,94 +12,45 @@ Configure OpenAI as an LLM provider in agentgateway.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              # Optional; overrides the model in requests
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+
+llm:
+  models:
+  - name: gpt-3.5-turbo
+    provider: openai
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `ai.name` | The name of the LLM provider for this AI backend. |
-| `ai.provider.openAI.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
-| `backendAuth` | OpenAI uses API keys for authentication. You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must pass in a valid API key. |
+| `name` | The name identifier for this model configuration. |
+| `provider` | The LLM provider, set to `openai` for OpenAI models. |
+| `params.model` | The specific OpenAI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.apiKey` | The OpenAI API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
-### Multiple endpoints
-
-Optionally, to support multiple LLM endpoints, you can set the `routes` field inside the `ai` configuration (not to be confused with the `routes` field under `listeners`).
-
-The `ai.routes` field maps URL paths to one of the following route types:
-
-* `completions`: Transforms to the LLM provider format and processes the request with the LLM provider. This route type supports full LLM features such as tokenization, rate limiting, transformations, and other policies like prompt guards.
-* `passthrough`: Forwards the request to the LLM provider as-is. This route type does not support LLM features like route processing and policies. You might use this route type for non-chat endpoints such as health checks, `GET` requests like listing models, or custom endpoints that you want to pass through to.
-
-The keys are URL suffix matches, like `/v1/models`. The wildcard character `*` can be used to match anything.
-
-If no route is set, the route defaults to the `completions` endpoint.
-
-In the following example, the `/v1/chat/completions` route is fully processed by the LLM provider. The `/v1/models` route and any other route (`*`) are passed through to the LLM provider as-is.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              # Optional; overrides the model in requests
-              model: gpt-3.5-turbo
-          routes:
-            /v1/chat/completions: completions
-            /v1/models: passthrough
-            "*": passthrough
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
-```
+{{< callout type="info" >}}
+For advanced routing scenarios that require path-based routing or custom endpoints, use the traditional `binds/listeners/routes` configuration format. See the [Configuration modes guide](../configuration-modes/) for more information.
+{{< /callout >}}
 
 ## Connect to Codex
 
 Use agentgateway as a proxy to your OpenAI provider from the [Codex](https://chatgpt.com/codex) client.
 
-1. Update your agentgateway configuration to include passthrough routes to the [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses). Leave the OpenAI provider `model` unset so the Codex client's model choice is used.
-   
+1. Create an agentgateway configuration without specifying a model, so the Codex client's model choice is used.
+
    ```yaml
    cat > config.yaml << 'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - protocol: HTTP
-       routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI: {}
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           ai:
-             routes:
-               /v1/chat/completions: completions
-               /v1/responses: passthrough
-               /sse: passthrough
+
+   llm:
+     models:
+     - name: openai
+       provider: openai
+       params:
+         apiKey: "$OPENAI_API_KEY"
    EOF
    ```
 

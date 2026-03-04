@@ -16,27 +16,24 @@ Before you can use Bedrock as an LLM provider, you must authenticate by using th
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: bedrock
-          provider:
-            bedrock:
-              region: us-west-2
-              # Optional; overrides the model in requests
-              model: amazon.titan-text-express-v1
+
+llm:
+  models:
+  - name: amazon.titan-text-express-v1
+    provider: bedrock
+    params:
+      model: amazon.titan-text-express-v1
+      region: us-west-2
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `ai.name` | The name of the LLM provider for this AI backend. |
-| `bedrock.region` | The AWS region. |
-| `bedrock.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
+| `name` | The name identifier for this model configuration. |
+| `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
+| `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.region` | The AWS region where the Bedrock model is hosted. |
 
 ## Token counting
 

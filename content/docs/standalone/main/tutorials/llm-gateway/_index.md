@@ -37,22 +37,14 @@ export OPENAI_API_KEY=your-api-key
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4.1-nano
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+
+llm:
+  models:
+  - name: gpt-4.1-nano
+    provider: openai
+    params:
+      model: gpt-4.1-nano
+      apiKey: "$OPENAI_API_KEY"
 EOF
 ```
 
@@ -82,27 +74,14 @@ export ANTHROPIC_API_KEY=your-api-key
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: anthropic
-          provider:
-            anthropic:
-              model: claude-sonnet-4-20250514
-          routes:
-            /v1/messages: messages
-            /v1/chat/completions: completions
-            /v1/models: passthrough
-            "*": passthrough
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-        backendAuth:
-          key: "$ANTHROPIC_API_KEY"
+
+llm:
+  models:
+  - name: claude-sonnet-4-20250514
+    provider: anthropic
+    params:
+      model: claude-sonnet-4-20250514
+      apiKey: "$ANTHROPIC_API_KEY"
 EOF
 ```
 
@@ -132,22 +111,14 @@ export GEMINI_API_KEY=your-api-key
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: gemini
-          provider:
-            gemini:
-              model: gemini-2.0-flash
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-        backendAuth:
-          key: "$GEMINI_API_KEY"
+
+llm:
+  models:
+  - name: gemini-2.0-flash
+    provider: gemini
+    params:
+      model: gemini-2.0-flash
+      apiKey: "$GEMINI_API_KEY"
 EOF
 ```
 
@@ -177,27 +148,15 @@ export XAI_API_KEY=your-api-key
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: xai
-          hostOverride: api.x.ai:443
-          provider:
-            openAI:
-              model: grok-4-latest
-          routes:
-            /v1/chat/completions: completions
-            /v1/models: models
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-        backendTLS: {}
-        backendAuth:
-          key: "$XAI_API_KEY"
+
+llm:
+  models:
+  - name: grok-4-latest
+    provider: openai
+    params:
+      model: grok-4-latest
+      apiKey: "$XAI_API_KEY"
+      baseUrl: "https://api.x.ai"
 EOF
 ```
 
@@ -227,21 +186,14 @@ aws configure
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: bedrock
-          provider:
-            bedrock:
-              region: us-west-2
-              model: amazon.nova-lite-v1:0
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
+
+llm:
+  models:
+  - name: amazon.nova-lite-v1:0
+    provider: bedrock
+    params:
+      model: amazon.nova-lite-v1:0
+      region: us-west-2
 EOF
 ```
 
@@ -271,28 +223,17 @@ export AZURE_CLIENT_SECRET=your-client-secret
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: azure
-          hostOverride: "your-resource.openai.azure.com:443"
-          provider:
-            openAI:
-              model: gpt-4
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-        backendAuth:
-          azure:
-            explicitConfig:
-              clientSecret:
-                tenantId: "your-tenant-id"
-                clientId: "your-client-id"
-                clientSecret: "$AZURE_CLIENT_SECRET"
+
+llm:
+  models:
+  - name: gpt-4
+    provider: azure
+    params:
+      model: gpt-4
+      azureEndpoint: "https://your-resource.openai.azure.com"
+      azureTenantId: "your-tenant-id"
+      azureClientId: "your-client-id"
+      azureClientSecret: "$AZURE_CLIENT_SECRET"
 EOF
 ```
 
@@ -322,21 +263,14 @@ ollama serve
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-      backends:
-      - ai:
-          name: ollama
-          hostOverride: localhost:11434
-          provider:
-            openAI:
-              model: llama3
+
+llm:
+  models:
+  - name: llama3
+    provider: openai
+    params:
+      model: llama3
+      baseUrl: "http://localhost:11434"
 EOF
 ```
 
@@ -378,6 +312,10 @@ Example output:
 ## Multiple Providers
 
 Route to different LLM providers based on a header. This lets you switch providers without changing your application code.
+
+{{< callout type="info" >}}
+This example uses the traditional `binds/listeners/routes` configuration format because it demonstrates header-based HTTP routing. For simpler use cases, see the simplified `llm:` format in the examples above or learn more in the [Configuration modes guide](../../llm/configuration-modes/).
+{{< /callout >}}
 
 ### Step 1: Set your API keys
 
@@ -513,7 +451,7 @@ curl http://localhost:3000/v1/chat/completions \
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/llm/" title="LLM Overview" subtitle="Understanding LLM gateway features" >}}
-  {{< card link="/docs/llm/spending" title="Cost Tracking" subtitle="Monitor LLM spending" >}}
-  {{< card link="/docs/configuration/resiliency/rate-limits" title="Rate Limiting" subtitle="Configure rate limits" >}}
+  {{< card link="../../llm/configuration-modes/" title="Configuration modes" subtitle="Learn about simplified LLM vs traditional HTTP routing configuration" >}}
+  {{< card link="../../llm/spending/" title="Cost Tracking" subtitle="Monitor LLM spending" >}}
+  {{< card link="../../configuration/resiliency/rate-limits/" title="Rate Limiting" subtitle="Configure rate limits" >}}
 {{< /cards >}}

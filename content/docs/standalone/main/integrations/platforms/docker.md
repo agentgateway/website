@@ -21,19 +21,14 @@ export OPENAI_API_KEY=your-api-key
 # Create config for OpenAI
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4o-mini
-      policies:
-        backendAuth:
-          key: $OPENAI_API_KEY
+
+llm:
+  models:
+  - name: gpt-4o-mini
+    provider: openai
+    params:
+      model: gpt-4o-mini
+      apiKey: $OPENAI_API_KEY
 EOF
 
 # Run agentgateway
@@ -58,19 +53,14 @@ export ANTHROPIC_API_KEY=your-api-key
 # Create config for Anthropic
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: anthropic
-          provider:
-            anthropic:
-              model: claude-sonnet-4-20250514
-      policies:
-        backendAuth:
-          key: $ANTHROPIC_API_KEY
+
+llm:
+  models:
+  - name: claude-sonnet-4-20250514
+    provider: anthropic
+    params:
+      model: claude-sonnet-4-20250514
+      apiKey: $ANTHROPIC_API_KEY
 EOF
 
 # Run agentgateway
@@ -95,24 +85,15 @@ export XAI_API_KEY=your-api-key
 # Create config for xAI
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: api.x.ai
-        backendTLS: {}
-        backendAuth:
-          key: $XAI_API_KEY
-      backends:
-      - ai:
-          name: xai
-          hostOverride: api.x.ai:443
-          provider:
-            openAI:
-              model: grok-2-latest
+
+llm:
+  models:
+  - name: grok-2-latest
+    provider: openai
+    params:
+      model: grok-2-latest
+      apiKey: $XAI_API_KEY
+      baseUrl: "https://api.x.ai"
 EOF
 
 # Run agentgateway
@@ -140,21 +121,14 @@ ollama pull llama3.2
 # Create config for Ollama
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: host.docker.internal:11434
-      backends:
-      - ai:
-          name: ollama
-          hostOverride: host.docker.internal:11434
-          provider:
-            openAI:
-              model: llama3.2
+
+llm:
+  models:
+  - name: llama3.2
+    provider: openai
+    params:
+      model: llama3.2
+      baseUrl: "http://host.docker.internal:11434"
 EOF
 
 # Run agentgateway (use host.docker.internal to reach Ollama on the host)
@@ -181,26 +155,15 @@ export AZURE_ENDPOINT=your-resource.openai.azure.com
 # Create config for Azure OpenAI
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: $AZURE_ENDPOINT
-        backendTLS: {}
-        backendAuth:
-          apiKeyHeader:
-            name: api-key
-            key: $AZURE_OPENAI_API_KEY
-      backends:
-      - ai:
-          name: azure-openai
-          hostOverride: $AZURE_ENDPOINT:443
-          provider:
-            azureOpenAI:
-              deployment: $AZURE_DEPLOYMENT
+
+llm:
+  models:
+  - name: gpt-4o
+    provider: azure
+    params:
+      model: $AZURE_DEPLOYMENT
+      azureEndpoint: "https://$AZURE_ENDPOINT"
+      azureApiKey: $AZURE_OPENAI_API_KEY
 EOF
 
 # Run agentgateway
@@ -229,17 +192,14 @@ export AWS_REGION=us-east-1
 # Create config for Amazon Bedrock
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: bedrock
-          provider:
-            bedrock:
-              region: $AWS_REGION
-              model: anthropic.claude-3-5-sonnet-20241022-v2:0
+
+llm:
+  models:
+  - name: anthropic.claude-3-5-sonnet-20241022-v2:0
+    provider: bedrock
+    params:
+      model: anthropic.claude-3-5-sonnet-20241022-v2:0
+      region: $AWS_REGION
 EOF
 
 # Run agentgateway
@@ -266,19 +226,14 @@ export GEMINI_API_KEY=your-api-key
 # Create config for Google Gemini
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: gemini
-          provider:
-            gemini:
-              model: gemini-2.0-flash
-      policies:
-        backendAuth:
-          key: $GEMINI_API_KEY
+
+llm:
+  models:
+  - name: gemini-2.0-flash
+    provider: gemini
+    params:
+      model: gemini-2.0-flash
+      apiKey: $GEMINI_API_KEY
 EOF
 
 # Run agentgateway

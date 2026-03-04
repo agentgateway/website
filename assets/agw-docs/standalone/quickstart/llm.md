@@ -26,25 +26,19 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
 
 ### Step 2: Create the configuration
 
-Create a `config.yaml` that defines an HTTP listener and an AI backend for OpenAI. This configuration listens on port 3000, routes traffic to the OpenAI backend, and attaches your API key to outgoing requests via the `backendAuth` policy.
+Create a `config.yaml` that defines an LLM model for OpenAI. This configuration uses the simplified LLM format to route traffic to the OpenAI backend.
 
 ```yaml {paths="llm"}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+
+llm:
+  models:
+  - name: gpt-3.5-turbo
+    provider: openai
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
 EOF
 ```
 
@@ -106,7 +100,7 @@ Example output (abbreviated):
 Check out more guides related to LLM consumption with agentgateway.
 
 {{< cards >}}
+  {{< card link="../../llm/configuration-modes/" title="Configuration modes" subtitle="Learn about simplified LLM vs traditional HTTP routing configuration." >}}
   {{< card link="../../llm/spending/" title="Control spending" subtitle="Control spending by setting rate limits for your LLM requests." >}}
-  {{< card link="../../llm/providers/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
-  {{< card link="../../llm/providers/openai/" title="OpenAI provider reference" subtitle="Optional model override, multiple routes, passthrough, and Codex connection." >}}
+  {{< card link="../../llm/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
 {{< /cards >}}
