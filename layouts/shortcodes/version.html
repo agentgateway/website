@@ -37,31 +37,35 @@
 {{- if .Site.Params.sections -}}
 
 {{- /* 2. Loop through each section (e.g., 'standalone', 'kubernetes') */ -}}
-{{- range $sectionName, $sectionData := .Site.Params.sections -}}
+  {{- range $sectionName, $sectionData := .Site.Params.sections -}}
 
-{{- /* 3. Access the "versions" list inside the current section */ -}}
-{{- if $sectionData.versions -}}
-{{- range $sectionData.versions -}}
-{{- if in $condition .linkVersion -}}
-{{- $versionToml := .version -}}
-{{- $currentVersionToml = $versionToml -}}
+    {{- /* 3. Access the "versions" list inside the current section */ -}}
+    {{- if $sectionData.versions -}}
+      {{- range $sectionData.versions -}}
+      {{- if in $condition .linkVersion -}}
+        {{- $versionToml := .version -}}
+        {{- $currentVersionToml = $versionToml -}}
+  
+         {{- if and (in $include_if $versionToml ) (in $exclude_if $versionToml) -}}
+          <!-- condition appears in both parameters -->
+          {{- errorf "Build condition %q appears in both include-if and exclude-if parameters of version shortcode on page %s" $condition .Position -}}
+         {{- end -}}
 
-{{- if and (in $include_if $versionToml ) (in $exclude_if $versionToml) -}}
-<!-- condition appears in both parameters -->
-{{- errorf "Build condition %q appears in both include-if and exclude-if parameters of version shortcode on page %s"
-$condition .Position -}}
-{{- end -}}
-
-{{- if isset $.Params "include-if" -}}
-<!-- WARNING substring matches are matches as well! That means, if include-if="foobar", and buildcondition is "foo", you have a match!-->
-{{- if in $include_if $versionToml -}}
-{{- $shouldRender = true -}}
-{{- end -}}
-{{- else if isset $.Params "exclude-if" -}}
-<!-- WARNING substring matches are matches as well! That means, if exclude-if="foobar", and buildcondition is "foo", you have a match!-->
-{{- if not (in $exclude_if $versionToml) -}}
-{{- $shouldRender = true -}}
-{{- end -}}
+         {{- if isset $.Params "include-if" -}}
+          <!-- WARNING substring matches are matches as well! That means, if include-if="foobar", and buildcondition is "foo", you have a match!-->
+          {{- if in $include_if $versionToml -}}
+            {{- $shouldRender = true -}}
+          {{- end -}}
+         {{- else if isset $.Params "exclude-if" -}}
+          <!-- WARNING substring matches are matches as well! That means, if exclude-if="foobar", and buildcondition is "foo", you have a match!-->
+          {{- if not (in $exclude_if $versionToml) -}}
+            {{- $shouldRender = true -}}
+          {{- end -}}
+      {{- else -}}
+          {{- $shouldRender = true -}}
+      {{- end -}}
+   {{- end -}}
+  {{- end -}}
 {{- else -}}
 {{- $shouldRender = true -}}
 {{- end -}}
@@ -79,6 +83,8 @@ $condition .Position -}}
 {{- end -}}
 {{- else -}}
 {{- $shouldRender = true -}}
+{{- end -}}
+{{- end -}}
 {{- end -}}
 {{- end -}}
 {{- end -}}

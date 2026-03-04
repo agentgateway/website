@@ -43,7 +43,7 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
 
 3. Install the experimental channel of the Kubernetes Gateway API. This API is required to use the FrontendTLS configuration on a Gateway.   
    ```sh
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```
 
 4. Ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
@@ -522,12 +522,12 @@ In this example, you override the default certificate validation configuration f
    {{% /tab %}}
    {{< /tabs >}}
 
-<!--
+
 ## Additional TLS settings
 
-You can configure your mTLS listener to limit connections to clients that present a certificate with a specific certificate hash and Subject Alternative Names. Alternatively, you can configure your listeners to enforce other TLS settings, such as a minimum or maximum TLS version, specific cipher suites, or CSDH curves. For more information, see [Additional TLS settings]({{< link-hextra path="/setup/listeners/tls-settings/" >}}). 
+You can configure your listeners to enforce other TLS settings, such as a minimum or maximum TLS version, or specific cipher suites. For more information, see [Additional TLS settings]({{< link-hextra path="/setup/listeners/tls-settings/" >}}). 
 
-
+<!--
 1. Get the certificate hash of the client certificate. 
    ```sh
    openssl x509 -in client-cert.pem -noout -fingerprint -sha256

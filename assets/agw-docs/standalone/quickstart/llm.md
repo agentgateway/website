@@ -3,8 +3,8 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 ## Before you begin
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
-   
-   ```sh,paths="llm"
+
+   ```sh {paths="llm"}
    curl -sL https://agentgateway.dev/install | bash
    ```
 
@@ -20,7 +20,7 @@ Route to an OpenAI backend through agentgateway.
 
 Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
 
-```sh,paths="llm"
+```sh {paths="llm"}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
 ```
 
@@ -28,7 +28,7 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
 
 Create a `config.yaml` that defines an HTTP listener and an AI backend for OpenAI. This configuration listens on port 3000, routes traffic to the OpenAI backend, and attaches your API key to outgoing requests via the `backendAuth` policy.
 
-```yaml,paths="llm"
+```yaml {paths="llm"}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -75,7 +75,7 @@ info  proxy::gateway started bind  bind="bind/3000"
 
 From another terminal, send a request to the chat completions endpoint.
 
-```sh,paths="llm"
+```sh {paths="llm"}
 curl -s http://localhost:3000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{

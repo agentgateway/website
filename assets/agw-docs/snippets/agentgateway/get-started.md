@@ -3,7 +3,7 @@
    {{< tabs items="Standard, Experimental" tabTotal="2" >}}
    {{% tab tabName="Standard" %}}
    ```sh
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab tabName="Experimental" %}}

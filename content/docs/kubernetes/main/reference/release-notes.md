@@ -26,9 +26,23 @@ The agentgateway control plane is now independent from the kgateway open source 
 
 Make sure to update any CI/CD workflows and processes to use the new Helm chart locations.
 
+### XListenerSet API promoted to ListenerSet
+
+The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead. 
+
+
 ## 🌟 New features {#v10-new-features}
 
 The following features were introduced in 1.0.0.
+
+### Kubernetes Gatway API version 1.5.0
+
+The Kubernetes Gateway API dependency is updated to support version 1.5.0. This version introduces several changes, including: 
+* **XListenerSets promoted to ListenerSets**: The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead. 
+* **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs]({{< link-hextra path="/setup/listeners/mtls/" >}}). 
+* **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin.
+* **BackendTLS**: 
+* **ReferenceGrant**: 
 
 ### Autoscaling policies for agentgateway controller
 
