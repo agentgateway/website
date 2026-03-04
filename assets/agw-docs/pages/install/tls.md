@@ -107,7 +107,7 @@ Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the c
 2. Get the Helm values file for your current version.
       
    ```sh
-   helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
+   helm get values {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml > values.yaml
    open values.yaml
    ```
 
@@ -122,12 +122,12 @@ Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the c
 4. Upgrade your Helm installation.
 
    ```sh
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} \
+   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
      -f values.yaml \
      --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} 
    ```
 
-5. Confirm that the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane is up and running. 
+5. Confirm that the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane is up and running. 
    
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -140,7 +140,7 @@ Now that the control plane is up and running, verify the TLS connection.
 1. Port-forward the control plane service on port 9977.
 
    ```sh
-   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} 9978
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} 9978
    ```
 
 2. Send a request to the control plane in plaintext without TLS authentication. You get back an `authentication failed` error.

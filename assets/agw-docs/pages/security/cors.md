@@ -56,7 +56,7 @@ You can configure the CORS policy at two levels:
 
 ## Set up CORS policies
 
-1. Create a CORS policy for the httpbin app in an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The following example sets up custom HTTP methods and max age for requests for the `https://example.com/` origin.
+1. Create a CORS policy for the httpbin app in an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The following example sets up custom HTTP methods and max age for requests for the `https://example.com/` and `https://*.ai` origins.
 
    {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy"  >}}
    {{% tab tabName="HTTPRoute" %}}
@@ -84,6 +84,7 @@ You can configure the CORS policy at two levels:
                  - OPTIONS
                allowOrigins:
                  - "https://example.com"
+                 - "https://*.ai"
                exposeHeaders:
                - Origin
                - X-HTTPRoute-Header
@@ -122,6 +123,7 @@ You can configure the CORS policy at two levels:
            - "OPTIONS"
          allowOrigins:
            - "https://example.com"
+           - "https://*.ai"
          exposeHeaders:
          - "Origin"
          - "X-TrafficPolicy-Header"
@@ -188,7 +190,39 @@ You can configure the CORS policy at two levels:
    content-length: 0
    ```
 
-3. Send another request to the httpbin app. This time, you use `notallowed.com` as your origin. Although the request succeeds, you do not get back your configured CORS settings such as max age, allowed origin, or allowed methods, because `notallowed.com` is not configured as a supported origin.
+3. Send another request to the httpbin app and use `https://example.ai` as the origin. Verify that your request also succeeds and that you get back the configured CORS headers.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" \
+    -H "Origin: https://example.ai"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -I -X OPTIONS localhost:8080/headers -H "host: www.example.com" \
+    -H "Origin: https://example.ai"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output: Notice that the `access-control-*` values reflect your CORS policy and change depending on the resources that you created.
+   * If you created an HTTPRoute with a CORS filter, you see the `Origin` and `X-HTTPRoute-Header` headers.
+   * If you created a TrafficPolicy with a CORS filter, you see the `Origin` and `X-TrafficPolicy-Header` headers.
+
+   Example output:
+
+   ```console {hl_lines=[2,3,4,5]}
+   HTTP/1.1 200 OK
+   access-control-allow-origin: https://example.ai
+   access-control-allow-methods: GET,POST,OPTIONS
+   access-control-allow-headers: origin
+   access-control-max-age: 86400
+   content-length: 0
+   ```
+
+4. Send another request to the httpbin app. This time, you use `notallowed.com` as your origin. Although the request succeeds, you do not get back your configured CORS settings such as max age, allowed origin, or allowed methods, because `notallowed.com` is not configured as a supported origin.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}

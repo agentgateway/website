@@ -47,7 +47,7 @@
        chart: {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
        helm:
          skipCrds: false
-       repoURL: {{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts
+       repoURL: {{< reuse "agw-docs/snippets/helm-shortpath.md" >}}/charts
        targetRevision: {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
      syncPolicy:
        automated:
@@ -86,7 +86,7 @@
            value: "Always"
          - name: controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES
            value: "true"
-       repoURL: {{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts
+       repoURL: {{< reuse "/agw-docs/snippets/helm-shortpath.md" >}}/charts
        targetRevision: {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
      syncPolicy:
        automated:
