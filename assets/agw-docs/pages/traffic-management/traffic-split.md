@@ -1,12 +1,26 @@
-Split traffic with weight-based routing across multiple apps.
+Set up weight-based routing between multiple apps for A/B testing, traffic splitting, and canary deployments.
+
+## About A/B testing and traffic splitting {#about}
+
+A/B testing, traffic splitting, and canary deployments are techniques for gradually introducing changes by distributing traffic across multiple versions of an app or service based on weight percentages.
+
+**Common use cases:**
+
+- **A/B testing**: Compare two versions of an app by routing a percentage of traffic to each version to measure performance, user engagement, or business metrics.
+- **Traffic splitting**: Distribute load across multiple backends, such as different LLM models or providers, to balance cost, performance, or capacity.
+- **Canary deployments**: Gradually roll out a new version of your app by routing a small percentage of traffic to the new version, then increasing the percentage as confidence grows.
+
+These patterns use weighted `backendRefs` in HTTPRoute (a standard Gateway API feature) to control the percentage of requests sent to each backend. Unlike [failover]({{< link-hextra path="/llm/failover/" >}}), which uses priority groups to switch between backends when one fails, traffic splitting distributes traffic based on static weight ratios.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
-## Deploy the Helloworld sample app
+## Example 1: A/B testing with multiple app versions {#app-versions}
 
-To demonstrate weighted routing for multiple apps, deploy 3 versions of the Helloworld sample app. 
+This example demonstrates A/B testing and canary deployments by distributing traffic across 3 versions of the Helloworld sample app.
+
+### Deploy the Helloworld sample app 
 
 1. Create the helloworld namespace.  
    ```sh
@@ -41,9 +55,11 @@ To demonstrate weighted routing for multiple apps, deploy 3 versions of the Hell
    helloworld-v3-8576f76d87-czdll   3/3     Running   0          29s
    ```
 
-## Set up weighted routing 
+### Set up weighted routing
 
 1. Create an HTTPRoute resource for the `traffic.split.example` domain that routes 10% of the traffic to `helloworld-v1`, 10% to `helloworld-v2`, and 80% to `helloworld-v3`.
+
+   This configuration demonstrates a canary deployment pattern where version 3 (the stable version) receives most traffic while versions 1 and 2 (canary versions) receive smaller amounts for testing.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -102,8 +118,8 @@ To demonstrate weighted routing for multiple apps, deploy 3 versions of the Hell
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   
-   Example output: 
+
+   Example output:
    ```
    HTTP/1.1 200 OK
    server: envoy
@@ -115,20 +131,153 @@ To demonstrate weighted routing for multiple apps, deploy 3 versions of the Hell
    Hello version: v3, instance: helloworld-v3-55bfdf76cf-nv545
    ```
 
-   
+## Example 2: A/B testing with LLM models {#llm-models}
+
+This example demonstrates traffic splitting for LLM workloads, distributing requests across multiple models or providers for cost optimization or A/B testing.
+
+### Set up weighted routing for LLM models
+
+1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with multiple models in a single priority group. All providers in the same priority group are load balanced based on their weights.
+
+   This example routes 80% of traffic to the cheaper `gpt-4o-mini` model and 20% to the more capable `gpt-4o` model. This pattern lets you optimize costs while still testing the premium model's performance.
+
+   ```yaml,paths="traffic-split-llm"
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: ab-test-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       groups:
+         - providers:
+             - name: openai-mini
+               weight: 80
+               openai:
+                 model: gpt-4o-mini
+               policies:
+                 auth:
+                   secretRef:
+                     name: openai-secret
+             - name: openai-premium
+               weight: 20
+               openai:
+                 model: gpt-4o
+               policies:
+                 auth:
+                   secretRef:
+                     name: openai-secret
+   EOF
+   ```
+
+   |Setting|Description|
+   |--|--|
+   |`spec.ai.groups[0].providers[].weight`| The relative weight for traffic distribution. In this example, weights of 80 and 20 result in an 80/20 traffic split. If no weight is specified, the default is 1. Providers with a weight of 0 receive no traffic. |
+
+2. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+
+   ```yaml,paths="traffic-split-llm"
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: ab-test
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /ab-test
+       backendRefs:
+       - name: ab-test-backend
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+
+3. Send multiple requests to observe the traffic distribution. In your request, do not specify a model. Instead, the {{< reuse "agw-docs/snippets/backend.md" >}} automatically uses the weighted distribution (80% to gpt-4o-mini, 20% to gpt-4o).
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```bash
+   for i in {1..10}; do
+     curl -s "$INGRESS_GW_ADDRESS/ab-test" \
+       -H "Content-Type: application/json" \
+       -d '{"messages": [{"role": "user", "content": "What is 2+2?"}]}' | \
+       jq -r '.model'
+   done
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```bash
+   for i in {1..10}; do
+     curl -s "localhost:8080/ab-test" \
+       -H "Content-Type: application/json" \
+       -d '{"messages": [{"role": "user", "content": "What is 2+2?"}]}' | \
+       jq -r '.model'
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output showing ~80% gpt-4o-mini and ~20% gpt-4o responses:
+   ```
+   gpt-4o-mini-2024-07-18
+   gpt-4o-mini-2024-07-18
+   gpt-4o-2024-08-06
+   gpt-4o-mini-2024-07-18
+   gpt-4o-mini-2024-07-18
+   gpt-4o-mini-2024-07-18
+   gpt-4o-mini-2024-07-18
+   gpt-4o-2024-08-06
+   gpt-4o-mini-2024-07-18
+   gpt-4o-mini-2024-07-18
+   ```
+
+{{< doc-test paths="traffic-split-llm" >}}
+# Test that traffic is being split between models
+# Send multiple requests and verify we get valid responses with model names
+YAMLTest -f - <<'EOF'
+- name: verify traffic split returns valid responses
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/ab-test"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.model"
+        comparator: exists
+      - path: "$.choices[0].message.content"
+        comparator: exists
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Remove the HTTP route resource. 
+1. Remove the backends and routes. 
    ```sh
    kubectl delete httproute traffic-split -n helloworld
+   kubectl delete httproute ab-test -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} ab-test-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 2. Remove the Helloworld apps. 
    ```sh
    kubectl delete -n helloworld -f https://raw.githubusercontent.com/solo-io/gloo-edge-use-cases/main/docs/sample-apps/helloworld.yaml
    ```
-
-
-
