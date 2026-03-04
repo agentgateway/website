@@ -298,10 +298,28 @@ Each test scenario:
 4. Deletes the cluster.
 5. Writes results to `out/tests/generated/test-results.yaml`.
 
-### Run a specific scenario by generating and executing its script directly
+### Run a single test scenario
+
+Point directly to a file and (optionally) a named scenario. This generates the script, creates a `kind` cluster, starts `cloud-provider-kind`, runs the test, and cleans up — all in one command:
 
 ```sh
-python3 scripts/doc_test_run.py --generate-only
+# Run one specific scenario
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md \
+  --test cors-in-httproute
+
+# Run all scenarios defined in a single file
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md
+```
+
+To only generate the script without running (useful for inspection):
+
+```sh
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md \
+  --test cors-in-httproute \
+  --generate-only
 bash out/tests/generated/<script-name>.sh
 ```
 
@@ -309,7 +327,9 @@ bash out/tests/generated/<script-name>.sh
 
 | Flag | Default | Description |
 |---|---|---|
-| `--docs-glob` | `content/docs/**/*.md` | Glob to discover pages with `test:` metadata |
+| `--file` | — | Path to a single markdown file to generate/run tests for |
+| `--test` | — | Name of a specific test scenario within `--file` |
+| `--docs-glob` | `content/docs/**/*.md` | Glob to discover pages with `test:` metadata (ignored when `--file` is set) |
 | `--product` | `kubernetes` | Context product used for `conditional-text` resolution |
 | `--generated-dir` | `out/tests/generated` | Output directory for scripts and manifests |
 | `--generate-only` | false | Skip cluster creation and execution |
