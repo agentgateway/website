@@ -1,10 +1,10 @@
 ---
 title: Telemetry & Observability
 weight: 6
-description: Enable OpenTelemetry tracing and metrics for agentgateway on Kubernetes
+description: Enable tracing, prompt logging, cost tracking, and metrics for agentgateway on Kubernetes
 ---
 
-Enable distributed tracing and metrics collection for agentgateway on Kubernetes using OpenTelemetry and Jaeger.
+Enable distributed tracing and metrics collection for agentgateway on Kubernetes using OpenTelemetry and Jaeger. Get prompt logging, cost tracking, and an audit trail: traces include LLM request/response data and token usage for each request.
 
 ## What you'll build
 
@@ -40,7 +40,7 @@ kind create cluster --name agentgateway
 
 ```bash
 # Gateway API CRDs
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
 # agentgateway CRDs
 helm upgrade -i --create-namespace \

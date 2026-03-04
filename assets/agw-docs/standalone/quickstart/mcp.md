@@ -4,7 +4,7 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   ```sh,paths="mcp"
+   ```sh {paths="mcp"}
    curl -sL https://agentgateway.dev/install | bash
    ```
 
@@ -18,7 +18,7 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 Download the basic MCP example configuration.
 
-```sh,paths="mcp"
+```sh {paths="mcp"}
 curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
 ```
 
@@ -26,7 +26,7 @@ curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
 
 Inspect the file to see how the listener, route, and MCP backend are defined.
 
-```sh,paths="mcp"
+```sh {paths="mcp"}
 cat config.yaml
 ```
 

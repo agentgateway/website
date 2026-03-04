@@ -61,6 +61,21 @@ Do not use other variations, such as:
   ❌ "ztunnel does L4 stuff"
   ```
 
+### SEO-friendly terminology
+
+When writing short descriptions, intros, or metadata, lead with the familiar term and alternative keywords that reflect the language people search for. Then, use our more declarative terms in the sentence. Incorporate the language into the sentence instead of listing alternatives in brackets.
+
+Examples:
+* "Use failover (also called automatic fallback) to keep services running..."
+* "Set up cost controls, budgets, and spend limits..."
+
+Places to put the terms:
+- Page `description` (front matter): Lead with the familiar term, then the action or outcome. Example: "Control cost with token budgets and spend limits to prevent unexpected bills and LLM misuse."
+- First paragraph or intro: Weave the discoverable term into the sentence after each heading. Example: "Get prompt logging, cost tracking, and an audit trail: review LLM-specific metrics, logs, and traces via OpenTelemetry."
+- Card subtitles: Use the familiar language. Example: "Budget and spend limits" under Rate limiting.
+
+Do not list every alternative in brackets. Do not mention specific products (such as Langfuse, LangSmith) in a description unless that page documents them.
+
 ## Formatting with shortcodes
 
 ### Hextra Hugo theme shortcodes to style, format, and add content

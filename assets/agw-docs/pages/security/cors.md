@@ -10,7 +10,7 @@ Cross-Origin Resource Sharing (CORS) is a security feature that is implemented b
 
 When CORS is enabled in a web browser and a request for a different domain comes in, the web browser checks whether this request is allowed or not. To do that, it typically sends a preflight request (HTTP `OPTIONS` method) to the server or service that serves the requested resource. The service returns the methods that are permitted to send the actual cross-origin request, such as GET, POST, etc. If the request to the different domain is allowed, the response includes CORS-specific headers that instruct the web browser how to make the cross-origin request. For example, the CORS headers typically include the origin that is allowed to access the resource, and the credentials or headers that must be included in the cross-origin request.
 
-Review the following diagram to see an example CORS request flow: 
+Review the following diagram to see an example CORS request flow:
 ```mermaid
 sequenceDiagram
     participant B as Browser (JavaScript)
@@ -60,7 +60,7 @@ You can configure the CORS policy at two levels:
 
    {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy"  >}}
    {{% tab tabName="HTTPRoute" %}}
-   ```sh,paths="cors-in-httproute"
+   ```sh {paths="cors-in-httproute"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -97,7 +97,7 @@ You can configure the CORS policy at two levels:
    {{% /tab %}}
    {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
 
-   ```sh,paths="cors-in-agentgatewaypolicy"
+   ```sh {paths="cors-in-agentgatewaypolicy"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
