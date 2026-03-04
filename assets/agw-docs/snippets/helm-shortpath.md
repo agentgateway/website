@@ -1,0 +1,1 @@
+{{< version include-if="1.0.x" >}}cr.agentgateway.dev{{< /version >}}{{< version include-if="2.0.x" >}}hcr.io/kgateway-dev{{< /version >}}

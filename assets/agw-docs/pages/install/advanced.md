@@ -3,13 +3,13 @@ You can update several installation settings in your Helm values file. For examp
 * **Show all values**: 
       
   ```sh
-  helm show values oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
+  helm show values {{< reuse "/agw-docs/snippets/helm-path.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
   ```
 
 * **Get a file with all values**: You can get a `{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml` file for the upgrade version by pulling and inspecting the Helm chart locally.
       
   ```sh
-  helm pull oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
+  helm pull {{< reuse "/agw-docs/snippets/helm-path.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
   tar -xvf {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-{{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}.tgz
   open {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml
   ```
@@ -26,7 +26,6 @@ When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}},
 
 To use experimental Gateway API features, you must enable the experimental feature gate, `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES`. This setting defaults to `false` and must be explicitly enabled to use experimental features such as the following:
 
-- ListenerSets
 - CORS policies
 - Retries
 - Session persistence

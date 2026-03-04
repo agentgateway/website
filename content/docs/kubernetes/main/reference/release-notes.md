@@ -17,6 +17,15 @@ The previous release version pattern was changed to align with the version numbe
 
 Note that version 2.2 of the documentation is removed. Use the latest 1.0.0 version instead. 
 
+### New Helm charts
+
+The agentgateway control plane is now independent from the kgateway open source project. Because of that, the Helm paths changed as follows: 
+
+* CRDs: `oci://cr.agentgateway.dev/charts/agentgateway-crds`
+* Control plane: `oci://cr.agentgateway.dev/charts/agentgateway`
+
+Make sure to update any CI/CD workflows and processes to use the new Helm chart locations.
+
 ## 🌟 New features {#v10-new-features}
 
 The following features were introduced in 1.0.0.
