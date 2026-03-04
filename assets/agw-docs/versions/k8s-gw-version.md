@@ -1,1 +1,1 @@
-{{% version include-if="2.2.x" %}}1.4.0{{% /version %}}{{% version include-if="2.3.x" %}}1.5.0{{% /version %}}
+{{% version include-if="2.2.x" %}}1.4.0{{% /version %}}{{% version include-if="2.3.x" %}}1.5.0{{% /version %}}{{% version default="true" %}}1.4.1{{% /version %}}
