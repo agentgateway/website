@@ -14,4 +14,5 @@ Route to Model Context Protocol (MCP) servers through  {{< reuse "agw-docs/snipp
   {{< card link="auth" title="MCP auth" >}}
   {{< card link="mcp-access" title="JWT auth for services" >}}
   {{< card link="tool-access" title="Tool access" >}}
+  {{< card link="rate-limit" title="Rate limiting for MCP" subtitle="Tool call budgets" >}}
 {{< /cards >}}
