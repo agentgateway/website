@@ -1,7 +1,0 @@
-apiVersion: v2
-appVersion: v1.0.0-alpha.3
-description: A Helm chart for the agentgateway project
-icon: https://raw.githubusercontent.com/agentgateway/website/refs/heads/main/static/favicon.svg
-name: agentgateway
-type: application
-version: v1.0.0-alpha.3
