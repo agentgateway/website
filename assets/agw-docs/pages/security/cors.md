@@ -215,7 +215,7 @@ You can configure the CORS policy at two levels:
 
    ```console {hl_lines=[2,3,4,5]}
    HTTP/1.1 200 OK
-   access-control-allow-origin: https://example.com
+   access-control-allow-origin: https://example.ai
    access-control-allow-methods: GET,POST,OPTIONS
    access-control-allow-headers: origin
    access-control-max-age: 86400
