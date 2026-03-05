@@ -64,7 +64,7 @@ Traditionally an ingress primarily handles routing and aggregation, with Kuberne
 
 The {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} is a common, extensible standard for traffic management in Kubernetes. It is quickly becoming the standard interface for defining routing and policy for cloud native networking, addressing many shortcomings of its predecessor, the Ingress API, and unifying best practices that have evolved through real-world usage.
 
-[Learn about the history of the Gateway API](https://kgateway.dev/blog/introduction-to-kubernetes-gateway-api/), or [watch our in-depth video series]({{< link-hextra path="/resources/videos/">}}).
+[Learn about the history of the Gateway API](https://kgateway.dev/blog/introduction-to-kubernetes-gateway-api/), or [watch our in-depth video series](https://kgateway.dev/resources/videos/).
 
 Kgateway is fully conformant with the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} and extends its functionality with custom extension APIs, such as TrafficPolicies, ListenerPolicies, and Backends. These custom resources help to centrally configure advanced traffic management, security, and resiliency rules for an HTTPRoute or Gateway listener.
 
@@ -84,7 +84,7 @@ The Gateway API is an API which can be used to program an ingress or an API gate
   {{< card link="../../traffic-management/destination-types/backends/lambda" title="AWS Lambda" tag="Traffic" >}}
   {{< card link="../../traffic-management/route-delegation/" title="Delegation" tag="Traffic" >}}
   {{< card link="../../traffic-management/direct-response/" title="Direct responses" tag="Traffic" >}}
-  {{< card link="../../traffic-management/ext/" title="Direct responses" tag="Traffic" >}}
+  {{< card link="../../traffic-management/extproc/" title="Direct responses" tag="Traffic" >}}
   {{< card link="../../setup/customize/" title="Gateway customization" tag="Setup" >}}
   {{< card link="../../integrations/" title="Integrations" tag="Setup" >}}
   {{< card link="../../resiliency/mirroring/" title="Mirroring" tag="Resiliency" >}}
