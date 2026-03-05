@@ -4,7 +4,7 @@ weight: 10
 description: 
 ---
 
-Agentgateway uses the {{< gloss "CEL (Common Expression Language)" >}}CEL{{< /gloss >}} expression language throughout the project to enable flexibility.
+Agentgateway uses the {{< gloss "CEL (Common Expression Language)" >}}CEL (Common Expression Language){{< /gloss >}} throughout the project to enable flexibility.
 CEL allows writing simple expressions based on the request context that evaluate to some result.
 
 
