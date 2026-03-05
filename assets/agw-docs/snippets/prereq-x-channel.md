@@ -7,7 +7,7 @@
    
    Example command:
    ```sh
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway \
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}}  \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
      --set controller.image.pullPolicy=Always \

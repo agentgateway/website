@@ -4,6 +4,7 @@ Review the following information about supported release versions for the [agent
 
 | agentgateway`*` | Release date | Kubernetes | Gateway API`†` | Helm | Istio`‡` |
 |----------|--------------|------------|----------------|------|----------|
+| 1.0.x | tbd | tbd | 1.5.x | >= 3.12 | tbd |
 | 2.2.x | 09 Feb 2026 | 1.31 - 1.35 | 1.4.x | >= 3.12 | 1.23 - 1.27 |
 
 
