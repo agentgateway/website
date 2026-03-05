@@ -4,8 +4,6 @@ Capture an access log for all the requests that enter the proxy.
 
 Access logs, sometimes referred to as audit logs, represent all traffic requests that pass through the gateway proxy. The access log entries can be customized to include data from the request, the routing destination, and the response. 
 
-Access logs can be written to a file, the `stdout` stream of the gateway proxy container, or exported to a gRPC server for custom handling. The access logs capture information from requests that your gateway proxy handles.
-
 ### Data that can be logged
 
 The gateway proxy exposes a lot of data that can be used when customizing access logs. The following data properties are available for both TCP and HTTP access logging:
@@ -27,74 +25,73 @@ When the gateway is used as an HTTP proxy, additional HTTP information is availa
 
 ## Access logs to `stdout` {#access-log-stdout-filesink}
 
-You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout in the pod of the selected `http` gateway.
+You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout in the pod of the selected `agentgateway-proxy` gateway.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container by using a custom string format that is defined in the `jsonFormat` field. 
-   
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: access-logs
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-     - kind: Gateway
-       name: agentgateway-proxy
-       group: gateway.networking.k8s.io
-     frontend:
-       accessLog:
-         attributes:
-           add:
-           - name: headers-some-name
-             expression: "request.path"
-   EOF
-   ```
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails. It also adds a string field of the response code. Successful requests are not logged with this configuration.
 
-   ```yaml {linenos=table,hl_lines=[2,3,4,5]}
+   ```yaml {linenos=table}
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayPolicy
    metadata:
      name: access-logs
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     namespace: agentgateway-system
    spec:
      targetRefs:
-       - group: gateway.networking.k8s.io
-         kind: Gateway
-         name: agentgateway-proxy
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
      frontend:
        accessLog:
-         # Optional: only log when response is missing or status >= 300
-         filter: |
-           !has(response) || response.code > 299
+         filter: response.code == 404
          attributes:
            add:
-             - name: method
-               expression: request.method
-             - name: path
-               expression: request.path
-             - name: authority
-               expression: request.authority
-             - name: user_agent
-               expression: 'default(request.headers["user-agent"], "-")'
-             - name: client_address
-               expression: source.address
-             - name: request_id
-               expression: request.id
+           - name: http.statusString
+             expression: string(response.code)
    EOF
    ```
 
    | Setting | Description |
    | ------- | ----------- |
    | `targetRefs`| Select the Gateway to enable access logging for. The example selects the `agentgateway-proxy` gateway that you created from the sample app guide. |
-   | `accessLog` | Configure the details for access logging. You can use multiple `fileSink` configurations for multiple outputs. The example sets up a `fileSink` for standard logging (stdout) in JSON format at `/dev/stdout`. You can also send the access logs to a `grpcService` instead of `fileSink`. |
-   | `path` | The path in the gateway proxy to write access logs to, such as `/dev/stdout`. |
-   | `jsonFormat` | The structured JSON format to write logs in. For more information about the JSON format dictionaries and command operators you can use, see the [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#format-dictionaries). To format as a string, use the `stringFormat` setting instead. If you omit or leave this setting blank, the [Envoy default format string](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#default-format-string) is used. |
-   | `stringFormat` | The string format to write logs in. For more information about the string format and command operators you can use, see the [Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#config-access-log-format-strings). To format as JSON, use the `jsonFormat` setting instead. If you omit or leave this setting blank, the [Envoy default format string](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage#default-format-string) is used. |
+   | `accessLog` | Configure the details for access logging. |
+   | `filter` | A CEL expression to filter the logs that are included. |
+   | `attributes` | Add or remove attributes that are logged by using a CEL expression. |
 
-2. Send a request to the httpbin app on the `www.example.com` domain. Verify that your request succeeds and that you get back a 200 HTTP response code.  
+2. Send a request to the httpbin app on the `www.example.com` domain. Verify that your request results in a 404 HTTP response code.  
+   
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/status/404 -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -i localhost:8080/status/404 -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+   
+   Example output: 
+   ```
+   HTTP/1.1 404 Not Found
+   access-control-allow-credentials: true
+   access-control-allow-origin: *
+   ```
+   
+3. Get the logs for the gateway pod and verify that you see a stdout entry for each request that you sent to the httpbin app. 
+   
+   ```sh
+   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 
+   ```
+   
+   Example output: 
+   ```console
+   info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080 src.addr=127.0.0.1:46886 http.method=GET http.host=www.example.com http.path=/status/404 http.version=HTTP/1.1 http.status=404 protocol=http duration=0ms http.statusString="404"
+   ```
+
+4. Send a `200` request to the httpbin app on the `www.example.com` domain. 
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -115,36 +112,18 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    access-control-allow-credentials: true
    access-control-allow-origin: *
    ```
-   
-3. Get the logs for the gateway pod and verify that you see a stdout JSON entry for each request that you sent to the httpbin app. 
+
+3. Get the logs for the gateway pod again and verify that you do not see a stdout entry for the `200` request that you sent to the httpbin app. The last entry is still for the previous `404` request.
    
    ```sh
-   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 | jq
-   ```
-   
-   Example output: 
-   ```json
-   {
-     "authority": "www.example.com:8080",
-     "bytes_received": 0,
-     "bytes_sent": 0,
-     "method": "GET",
-     "path": "/status/200",
-     "protocol": "HTTP/1.1",
-     "req_x_forwarded_for": null,
-     "request_id": "a6758866-0f26-4c95-95d9-4032c365c498",
-     "resp_backend_service_time": "0",
-     "response_code": 200,
-     "response_flags": "-",
-     "start_time": "2024-08-19T20:57:57.511Z",
-     "total_duration": 1,
-     "backendCluster": "kube-svc:httpbin-httpbin-8000_httpbin",
-     "backendHost": "10.36.0.14:8080",
-     "user_agent": "curl/7.77.0"
-   }
+   kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 
    ```
 
-
+   Example:
+   ```console
+   info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080 src.addr=127.0.0.1:46886 http.method=GET http.host=www.example.com http.path=/status/404 http.version=HTTP/1.1 http.status=404 protocol=http duration=0ms http.statusString="404"
+   ```
+  
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
