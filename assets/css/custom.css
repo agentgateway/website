@@ -18,36 +18,46 @@ h6 {
     align-items: center;
     gap: 0.4rem;
     padding: 0.3rem 0.75rem;
+    border: 1px solid #d1d5db;
     border-radius: 6px;
     font-size: 0.7rem;
     font-weight: 600;
     line-height: 1;
+    margin-top: 0.5rem;
     margin-bottom: 1rem;
     letter-spacing: 0.03em;
-    text-transform: uppercase;
+    text-transform: none;
     transition: all 0.2s ease;
     cursor: default;
 }
 
 .test-status-passed {
-    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-    color: #ffffff;
-    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.3), 0 1px 2px rgba(0, 0, 0, 0.06);
+    background: none;
+    color: #111827;
+    box-shadow: none;
 }
 
 .test-status-passed:hover {
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.35), 0 2px 4px rgba(0, 0, 0, 0.08);
     transform: translateY(-1px);
 }
 
+.test-status-passed .test-status-icon {
+    fill: #059669;
+}
+
 .dark .test-status-passed {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    color: #ecfdf5;
-    box-shadow: 0 1px 3px rgba(16, 185, 129, 0.25), 0 1px 2px rgba(0, 0, 0, 0.1);
+    background: none;
+    color: #f9fafb;
+    box-shadow: none;
+    border-color: #9ca3af;
 }
 
 .dark .test-status-passed:hover {
-    box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3), 0 2px 4px rgba(0, 0, 0, 0.15);
+    box-shadow: none;
+}
+
+.dark .test-status-passed .test-status-icon {
+    fill: #34d399;
 }
 
 .test-status-icon {
