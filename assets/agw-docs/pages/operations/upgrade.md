@@ -82,7 +82,7 @@ During the upgrade, pods that run the new version of the control plane and proxi
    * Experimental channel: Note that some CRDs are prefixed with `X` to indicate that the entire CRD is experimental and subject to change.
      
      ```sh
-     kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+     kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
      ```   
 
    Example output: 

@@ -29,7 +29,7 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
 
 5. Install the experimental channel of the Kubernetes Gateway API. This API is required to use the FrontendTLS configuration on a Gateway.   
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
    ```
 
 

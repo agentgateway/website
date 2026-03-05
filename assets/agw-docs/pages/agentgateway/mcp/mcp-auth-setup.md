@@ -15,7 +15,7 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 3. Follow the steps to [set up Keycloak]({{< link-hextra path="/mcp/auth/keycloak/" >}}).
 4. Install the experimental channel Gateway API.
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
    ```
 
 ## Configure MCP auth
