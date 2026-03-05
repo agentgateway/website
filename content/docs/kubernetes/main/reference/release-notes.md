@@ -17,6 +17,15 @@ The previous release version pattern was changed to align with the version numbe
 
 Note that version 2.2 of the documentation is removed. Use the latest 1.0.0 version instead. 
 
+### New Helm charts
+
+The agentgateway control plane is now independent from the kgateway open source project. Because of that, the Helm paths changed as follows: 
+
+* CRDs: `oci://cr.agentgateway.dev/charts/agentgateway-crds`
+* Control plane: `oci://cr.agentgateway.dev/charts/agentgateway`
+
+Make sure to update any CI/CD workflows and processes to use the new Helm chart locations.
+
 ### XListenerSet API promoted to ListenerSet
 
 The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead. 
@@ -110,9 +119,7 @@ https://github.com/solo-io/gloo-gateway/pull/1454
 
 https://github.com/solo-io/gloo-gateway/pull/1462
 
-### GRPCRoute support
 
-https://github.com/kgateway-dev/kgateway/pull/13293/changes#diff-781a8d153c4872696262e6b28d80b1523d7e76641c0817b1139b076346cbd24f
 
 --> 
 
@@ -153,6 +160,11 @@ spec:
         namespaces:
           from: Same
 ```
+
+### GRPCRoute support
+
+You can now attach GRPCRoutes to your agentgateway proxy to route traffic to gRPC endpoints. For more information, see [gRPC routing]({{< link-hextra path="/traffic-management/grpc/" >}}). 
+
 
 ## 🗑️ Deprecated or removed features {#v10-removed-features}
 

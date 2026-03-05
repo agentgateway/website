@@ -140,6 +140,13 @@ def _truncate(text: str, limit: int = _SLACK_TEXT_LIMIT, suffix: str = "\n... (t
     return text[: limit - len(suffix)] + suffix
 
 
+def _truncate_tail(text: str, limit: int = _SLACK_TEXT_LIMIT // 2, prefix: str = "(truncated) ...\n") -> str:
+    """Keep the tail of text, truncating from the beginning."""
+    if len(text) <= limit:
+        return text
+    return prefix + text[-(limit - len(prefix)):]
+
+
 def _run_url_block(run_url: str) -> dict:
     """Build a context block with a link to the GitHub Actions run."""
     return {
@@ -236,7 +243,7 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
             detail_parts: list[str] = [f"*`{test_name}`*"]
             if checks:
                 detail_parts.append("*Checks:*  " + ", ".join(checks))
-            detail_parts.append(f"```{error}```")
+            detail_parts.append(f"```{_truncate_tail(error)}```")
 
             blocks.append(
                 {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}

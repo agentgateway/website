@@ -14,7 +14,7 @@ flowchart LR
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   ```sh,paths="httpbin"
+   ```sh {paths="httpbin"}
    curl -sL https://agentgateway.dev/install | bash
    ```
 
@@ -31,13 +31,13 @@ Run the httpbin image so it listens on port 80 inside the container. Map it to a
 {{< tabs items="Linux, macOS (Apple Silicon)" >}}
 {{% tab %}}
 
-```sh,paths="httpbin,httpbin-linux"
+```sh {paths="httpbin,httpbin-linux"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin
 ```
 {{% /tab %}}
 {{% tab %}}
 
-```sh,paths="httpbin-macos"
+```sh {paths="httpbin-macos"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform linux/amd64
 ```
 {{% /tab %}}
@@ -45,7 +45,7 @@ docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform lin
 
 Verify that httpbin responds.
 
-```sh,paths="httpbin"
+```sh {paths="httpbin"}
 curl -s http://localhost:8000/headers | head -20 || true
 ```
 
@@ -54,8 +54,8 @@ Example output:
 ```json
 {
   "headers": {
-    "Accept": "*/*", 
-    "Host": "localhost:8000", 
+    "Accept": "*/*",
+    "Host": "localhost:8000",
     "User-Agent": "curl/8.7.1"
   }
 }
@@ -65,7 +65,7 @@ Example output:
 
 Create a `config.yaml` that listens on port 3000 and routes traffic to the httpbin host. Use a static `host` backend with the address and port where httpbin is reachable, such as `127.0.0.1:8000`.
 
-```yaml,paths="httpbin"
+```yaml {paths="httpbin"}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -105,7 +105,7 @@ info  proxy::gateway started bind  bind="bind/3000"
 
 Send a request to agentgateway on port 3000. Agentgateway forwards it to httpbin; the response is returned to you.
 
-```sh,paths="httpbin"
+```sh {paths="httpbin"}
 curl -i http://localhost:3000/headers
 ```
 
@@ -136,8 +136,8 @@ Example JSON body:
 ```json
 {
   "headers": {
-    "Accept": "*/*", 
-    "Host": "localhost:3000", 
+    "Accept": "*/*",
+    "Host": "localhost:3000",
     "User-Agent": "curl/8.7.1"
   }
 }
@@ -145,7 +145,7 @@ Example JSON body:
 
 You can try other httpbin endpoints through agentgateway, such as the following.
 
-```sh,paths="httpbin"
+```sh {paths="httpbin"}
 curl -s http://localhost:3000/get
 curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -d '{"key":"value"}'
 ```
@@ -154,7 +154,7 @@ curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -
 
 When you are done, stop and remove the httpbin container.
 
-```sh,paths="httpbin"
+```sh {paths="httpbin"}
 docker stop httpbin
 ```
 

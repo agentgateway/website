@@ -49,7 +49,7 @@ Note that because CSRF attacks specifically target state-changing requests, the 
 Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to enable CSRF protection for your Gateway. This policy validates the `Origin` header of incoming requests and blocks requests from untrusted origins.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your CSRF configuration.
-   ```yaml,paths="csrf"
+   ```yaml {paths="csrf"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}

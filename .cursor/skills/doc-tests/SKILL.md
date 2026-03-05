@@ -42,9 +42,9 @@ Use this skill when adding tests to documentation guides in the `website` repo s
 
 ### 3. Tag runnable blocks with paths
 
-- Add `,paths="<name>"` to the **info string** of every fenced block that should run in the test (e.g. ` ```sh,paths="llm" `).
+- Add `{paths="<name>"}` to the **info string** of every fenced block that should run in the test (e.g. ` ```sh {paths="llm"} `).
 - Only `sh`/`bash`/`shell`/`yaml`/`yml` are extracted. Blocks without `paths=` are skipped when `skip_tabs_without_paths` is true.
-- **Tabbed content**: Use different paths per tab (e.g. `paths="httpbin,httpbin-linux"` and `paths="httpbin-macos"`) so the scenario can pick one.
+- **Tabbed content**: Use different paths per tab (e.g. `{paths="httpbin,httpbin-linux"}` and `{paths="httpbin-macos"}`) so the scenario can pick one.
 
 ### 4. Long-running processes (standalone binary)
 
