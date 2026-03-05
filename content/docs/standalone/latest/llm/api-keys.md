@@ -92,7 +92,7 @@ You can store your API key in a file and load the file into agentgateway during 
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
+   binds:
    - port: 3000
      listeners:
      - routes:
