@@ -141,13 +141,13 @@ For Istio upgrades, consult the docs based on the way that you installed Istio. 
    1. **Optional**: To check the CRDs locally, download the CRDs to a `helm` directory.
 
       ```sh
-      helm template --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} --output-dir ./helm
+      helm template --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}  --output-dir ./helm
       ```
 
    2. Upgrade the CRDs in your cluster:
 
       ```sh
-      helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+      helm upgrade -i --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
       ```
 
 3. Make any changes to your Helm values.
@@ -164,13 +164,13 @@ For Istio upgrades, consult the docs based on the way that you installed Istio. 
       * **Show all values**: 
       
         ```sh
-        helm show values oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
+        helm show values {{< reuse "/agw-docs/snippets/helm-path.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
         ```
 
       * **Get a file with all values**: You can get a `{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml` file for the upgrade version by pulling and inspecting the Helm chart locally.
       
         ```sh
-        helm pull oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
+        helm pull {{< reuse "/agw-docs/snippets/helm-path.md" >}} --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}
         tar -xvf {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-{{< reuse "agw-docs/versions/helm-version-upgrade.md" >}}.tgz
         open {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml
         ```
@@ -183,7 +183,7 @@ For Istio upgrades, consult the docs based on the way that you installed Istio. 
    * To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
    
    ```sh
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "/agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} \
+   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
      -f values.yaml \
      --version {{< reuse "agw-docs/versions/helm-version-upgrade.md" >}} 
    ```
