@@ -1,0 +1,805 @@
+<!-- kubespec widget: AgentgatewayParameters (agentgateway.dev/v1alpha1) -->
+<div class="ks-schema">
+<style>
+.ks-schema {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #111827;
+  max-width: 56rem;
+}
+.ks-header { margin-bottom: 1rem; }
+.ks-apiversion {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 0.25rem;
+}
+.ks-scope {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: #6b7280;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  padding: 0.125rem 0.5rem;
+  margin-bottom: 0.375rem;
+}
+.ks-kind {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 0.25rem 0 0;
+  line-height: 1.2;
+}
+.ks-resource-desc {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0.5rem 0 1rem;
+  white-space: pre-wrap;
+  max-width: 48rem;
+}
+.ks-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.8125rem;
+}
+.ks-tree.ks-nested {
+  margin-left: 1rem;
+  padding-left: 0.625rem;
+  border-left: 2px solid #e5e7eb;
+}
+.ks-row { font-weight: 600; }
+.ks-row + .ks-row { margin-top: 0.125rem; }
+.ks-summary {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+}
+.ks-summary::-webkit-details-marker { display: none; }
+.ks-summary::marker { display: none; }
+.ks-summary:hover { background: #f3f4f6; }
+.ks-leaf-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+}
+.ks-name { color: #111827; }
+.ks-required {
+  color: #dc2626;
+  font-size: 0.6875rem;
+  margin-right: 0.125rem;
+  font-family: system-ui, sans-serif;
+}
+.ks-type { font-weight: 400; }
+.ks-type-string  { color: #c2410c; }
+.ks-type-boolean { color: #1d4ed8; }
+.ks-type-integer { color: #0369a1; }
+.ks-type-object  { color: #7c3aed; }
+.ks-type-complex { color: #9d174d; }
+.ks-type-other   { color: #065f46; }
+.ks-desc {
+  margin: 0.25rem 0 0.5rem 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-family: system-ui, sans-serif;
+  white-space: pre-wrap;
+  max-width: 48rem;
+  color: #374151;
+}
+.ks-footer {
+  margin-top: 1rem;
+  padding-top: 0.625rem;
+  border-top: 1px solid #e5e7eb;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+.ks-footer a { color: #2563eb; text-decoration: none; }
+.ks-footer a:hover { text-decoration: underline; }
+</style>
+<div class="ks-header">
+  <div class="ks-apiversion">agentgateway.dev/v1alpha1</div>
+  <div class="ks-scope">Namespaced Resource</div>
+  <h2 class="ks-kind">AgentgatewayParameters</h2>
+  <pre class="ks-resource-desc">AgentgatewayParameters are configuration that is used to dynamically
+provision the agentgateway data plane. Labels and annotations that apply to
+all resources may be specified at a higher level; see
+https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure</pre>
+</div>
+<ul class="ks-tree">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">apiVersion</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">APIVersion defines the versioned schema of this representation of an object.
+Servers should convert recognized schemas to the latest internal value, and
+may reject unrecognized values.
+More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">kind</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Kind is a string value representing the REST resource this object represents.
+Servers may infer this from the endpoint the client submits requests to.
+Cannot be updated.
+In CamelCase.
+More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</pre></details></li>
+<li class="ks-row ks-leaf"><span class="ks-leaf-line"><span class="ks-name">metadata</span><span class="ks-type ks-type-object">object</span></span></li>
+<li class="ks-row"><details open><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">spec</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">spec defines the desired state of AgentgatewayParameters.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">deployment</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">deployment allows specifying overrides for the generated Deployment resource.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">metadata</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">metadata defines a subset of object metadata to be customized.
+Labels and annotations are merged with existing values. If both GatewayClass
+and Gateway parameters define the same label or annotation key, the Gateway
+value takes precedence (applied second).</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">annotations</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Annotations is an unstructured key value map stored with a resource that may be
+set by external tools to store and retrieve arbitrary metadata. They are not
+queryable and should be preserved when modifying objects.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">labels</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Map of string keys and values that can be used to organize and categorize
+(scope and select) objects. May match selectors of replication controllers
+and services.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">spec</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Spec provides an opaque mechanism to configure the resource Spec.
+This field accepts a complete or partial Kubernetes resource spec (e.g., PodSpec, ServiceSpec)
+and will be merged with the generated configuration using **Strategic Merge Patch** semantics.
+
+# Application Order
+
+Overlays are applied after all typed configuration fields from both levels.
+The full merge order is:
+
+ 1. GatewayClass typed configuration fields
+ 2. Gateway typed configuration fields
+ 3. GatewayClass overlays
+ 4. Gateway overlays (can override all previous values)
+
+# Strategic Merge Patch &amp; Deletion Guide
+
+This merge strategy allows you to override individual fields, merge lists, or delete items
+without needing to provide the entire resource definition.
+
+**1. Replacing Values (Scalars):**
+Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
+
+**2. Merging Lists (Append/Merge):**
+Lists with &quot;merge keys&quot; (like `containers` which merges on `name`, or `tolerations` which merges on `key`)
+will append your items to the generated list, or update existing items if keys match.
+
+**3. Deleting Fields or List Items ($patch: delete):**
+To remove a field or list item from the generated resource, use the
+`$patch: delete` directive. This works for both map fields and list items,
+and is the recommended approach because it works with both client-side
+and server-side apply.
+
+	spec:
+	  template:
+	    spec:
+	      # Delete pod-level securityContext
+	      securityContext:
+	        $patch: delete
+	      # Delete nodeSelector
+	      nodeSelector:
+	        $patch: delete
+	      containers:
+	        # Be sure to use the correct proxy name here or you will add a container instead of modifying a container:
+	        - name: proxy-name
+	          # Delete container-level securityContext
+	          securityContext:
+	            $patch: delete
+
+**4. Null Values (server-side apply only):**
+Setting a field to `null` can also remove it, but this ONLY works with
+`kubectl apply --server-side` or equivalent. With regular client-side
+`kubectl apply`, null values are stripped by kubectl before reaching
+the API server, so the deletion won't occur. Prefer `$patch: delete`
+for consistent behavior across both apply modes.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
+
+**5. Replacing Maps Entirely ($patch: replace):**
+To replace an entire map with your values (instead of merging), use `$patch: replace`.
+This removes all existing keys and replaces them with only your specified keys.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector:
+	        $patch: replace
+	        custom-key: custom-value
+
+**6. Replacing Lists Entirely ($patch: replace):**
+If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
+
+	service:
+	  spec:
+	    ports:
+	      - $patch: replace
+	      - name: http
+	        port: 80
+	        targetPort: 8080
+	        protocol: TCP
+	      - name: https
+	        port: 443
+	        targetPort: 8443
+	        protocol: TCP</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">env</span><span class="ks-type ks-type-complex">object[]</span></summary><pre class="ks-desc">The container environment variables. These override any existing
+values. If you want to delete an environment variable entirely, use
+`$patch: delete` with AgentgatewayParametersOverlays instead. Note that
+[variable
+expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)
+does apply, but is highly discouraged -- to set dependent environment
+variables, you can use $(VAR_NAME), but it's highly
+discouraged. `$$(VAR_NAME)` avoids expansion and results in a literal
+`$(VAR_NAME)`.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">name</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Name of the environment variable.
+May consist of any printable ASCII characters except '='.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">value</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Variable references $(VAR_NAME) are expanded
+using the previously defined environment variables in the container and
+any service environment variables. If a variable cannot be resolved,
+the reference in the input string will be unchanged. Double $$ are reduced
+to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
+&quot;$$(VAR_NAME)&quot; will produce the string literal &quot;$(VAR_NAME)&quot;.
+Escaped references will never be expanded, regardless of whether the variable
+exists or not.
+Defaults to &quot;&quot;.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">valueFrom</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">Source for the environment variable's value. Cannot be used if value is not empty.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">configMapKeyRef</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">Selects a key of a ConfigMap.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">key</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The key to select.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">name</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Name of the referent.
+This field is effectively required, but due to backwards compatibility is
+allowed to be empty. Instances of this type with an empty value here are
+almost certainly wrong.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">optional</span><span class="ks-type ks-type-boolean">boolean</span></summary><pre class="ks-desc">Specify whether the ConfigMap or its key must be defined</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">fieldRef</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
+spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">apiVersion</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Version of the schema the FieldPath is written in terms of, defaults to &quot;v1&quot;.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">fieldPath</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Path of the field to select in the specified API version.</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">fileKeyRef</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">FileKeyRef selects a key of the env file.
+Requires the EnvFiles feature gate to be enabled.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">key</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The key within the env file. An invalid key will prevent the pod from starting.
+The keys defined within a source may consist of any printable ASCII characters except '='.
+During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">optional</span><span class="ks-type ks-type-boolean">boolean</span></summary><pre class="ks-desc">Specify whether the file or its key must be defined. If the file or key
+does not exist, then the env var is not published.
+If optional is set to true and the specified key does not exist,
+the environment variable will not be set in the Pod's containers.
+
+If optional is set to false and the specified key does not exist,
+an error will be returned during Pod creation.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">path</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The path within the volume from which to select the file.
+Must be relative and may not contain the '..' path or start with '..'.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">volumeName</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The name of the volume mount containing the env file.</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">resourceFieldRef</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">Selects a resource of the container: only resources limits and requests
+(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">containerName</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Container name: required for volumes, optional for env vars</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">divisor</span><span class="ks-type ks-type-other"></span></summary><pre class="ks-desc">Specifies the output format of the exposed resources, defaults to &quot;1&quot;</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">resource</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Required: resource to select</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">secretKeyRef</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">Selects a key of a secret in the pod's namespace</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">key</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The key of the secret to select from.  Must be a valid secret key.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">name</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Name of the referent.
+This field is effectively required, but due to backwards compatibility is
+allowed to be empty. Instances of this type with an empty value here are
+almost certainly wrong.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">optional</span><span class="ks-type ks-type-boolean">boolean</span></summary><pre class="ks-desc">Specify whether the Secret or its key must be defined</pre></details></li>
+</ul></details></li>
+</ul></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">horizontalPodAutoscaler</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">horizontalPodAutoscaler allows creating a HorizontalPodAutoscaler for the agentgateway proxy.
+If absent, no HPA is created. If present, an HPA is created with its scaleTargetRef
+automatically configured to target the agentgateway proxy Deployment.
+The metadata and spec fields from this overlay are applied to the generated HPA.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">metadata</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">metadata defines a subset of object metadata to be customized.
+Labels and annotations are merged with existing values. If both GatewayClass
+and Gateway parameters define the same label or annotation key, the Gateway
+value takes precedence (applied second).</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">annotations</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Annotations is an unstructured key value map stored with a resource that may be
+set by external tools to store and retrieve arbitrary metadata. They are not
+queryable and should be preserved when modifying objects.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">labels</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Map of string keys and values that can be used to organize and categorize
+(scope and select) objects. May match selectors of replication controllers
+and services.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">spec</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Spec provides an opaque mechanism to configure the resource Spec.
+This field accepts a complete or partial Kubernetes resource spec (e.g., PodSpec, ServiceSpec)
+and will be merged with the generated configuration using **Strategic Merge Patch** semantics.
+
+# Application Order
+
+Overlays are applied after all typed configuration fields from both levels.
+The full merge order is:
+
+ 1. GatewayClass typed configuration fields
+ 2. Gateway typed configuration fields
+ 3. GatewayClass overlays
+ 4. Gateway overlays (can override all previous values)
+
+# Strategic Merge Patch &amp; Deletion Guide
+
+This merge strategy allows you to override individual fields, merge lists, or delete items
+without needing to provide the entire resource definition.
+
+**1. Replacing Values (Scalars):**
+Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
+
+**2. Merging Lists (Append/Merge):**
+Lists with &quot;merge keys&quot; (like `containers` which merges on `name`, or `tolerations` which merges on `key`)
+will append your items to the generated list, or update existing items if keys match.
+
+**3. Deleting Fields or List Items ($patch: delete):**
+To remove a field or list item from the generated resource, use the
+`$patch: delete` directive. This works for both map fields and list items,
+and is the recommended approach because it works with both client-side
+and server-side apply.
+
+	spec:
+	  template:
+	    spec:
+	      # Delete pod-level securityContext
+	      securityContext:
+	        $patch: delete
+	      # Delete nodeSelector
+	      nodeSelector:
+	        $patch: delete
+	      containers:
+	        # Be sure to use the correct proxy name here or you will add a container instead of modifying a container:
+	        - name: proxy-name
+	          # Delete container-level securityContext
+	          securityContext:
+	            $patch: delete
+
+**4. Null Values (server-side apply only):**
+Setting a field to `null` can also remove it, but this ONLY works with
+`kubectl apply --server-side` or equivalent. With regular client-side
+`kubectl apply`, null values are stripped by kubectl before reaching
+the API server, so the deletion won't occur. Prefer `$patch: delete`
+for consistent behavior across both apply modes.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
+
+**5. Replacing Maps Entirely ($patch: replace):**
+To replace an entire map with your values (instead of merging), use `$patch: replace`.
+This removes all existing keys and replaces them with only your specified keys.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector:
+	        $patch: replace
+	        custom-key: custom-value
+
+**6. Replacing Lists Entirely ($patch: replace):**
+If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
+
+	service:
+	  spec:
+	    ports:
+	      - $patch: replace
+	      - name: http
+	        port: 80
+	        targetPort: 8080
+	        protocol: TCP
+	      - name: https
+	        port: 443
+	        targetPort: 8443
+	        protocol: TCP</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">image</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">The agentgateway container image. See
+https://kubernetes.io/docs/concepts/containers/images
+for details.
+
+Default values, which may be overridden individually:
+
+	registry: cr.agentgateway.dev
+	repository: agentgateway
+	tag: &lt;agentgateway version&gt;
+	pullPolicy: &lt;omitted, relying on Kubernetes defaults which depend on the tag&gt;</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">digest</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The hash digest of the image, e.g. `sha256:12345...`</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">pullPolicy</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The image pull policy for the container. See
+https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+for details.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">registry</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The image registry.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">repository</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The image repository (name).</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">tag</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The image tag.</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">istio</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">Configure Istio integration. If enabled, Agentgateway can natively connect to Istio enabled pods with mTLS.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">caAddress</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The address of the Istio CA. If unset, defaults to `https://istiod.istio-system.svc:15012`.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">trustDomain</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The Istio trust domain. If not set, defaults to `cluster.local`.</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">logging</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">logging configuration for Agentgateway. By default, all logs are set to &quot;info&quot; level.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">format</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">The default logging format is text.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">level</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Logging level in standard RUST_LOG syntax, e.g. 'info', the default, or
+by module, comma-separated. E.g.,
+&quot;rmcp=warn,hickory_server::server::server_future=off,typespec_client_core::http::policies::logging=warn&quot;</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">podDisruptionBudget</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">podDisruptionBudget allows creating a PodDisruptionBudget for the agentgateway proxy.
+If absent, no PDB is created. If present, a PDB is created with its selector
+automatically configured to target the agentgateway proxy Deployment.
+The metadata and spec fields from this overlay are applied to the generated PDB.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">metadata</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">metadata defines a subset of object metadata to be customized.
+Labels and annotations are merged with existing values. If both GatewayClass
+and Gateway parameters define the same label or annotation key, the Gateway
+value takes precedence (applied second).</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">annotations</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Annotations is an unstructured key value map stored with a resource that may be
+set by external tools to store and retrieve arbitrary metadata. They are not
+queryable and should be preserved when modifying objects.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">labels</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Map of string keys and values that can be used to organize and categorize
+(scope and select) objects. May match selectors of replication controllers
+and services.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">spec</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Spec provides an opaque mechanism to configure the resource Spec.
+This field accepts a complete or partial Kubernetes resource spec (e.g., PodSpec, ServiceSpec)
+and will be merged with the generated configuration using **Strategic Merge Patch** semantics.
+
+# Application Order
+
+Overlays are applied after all typed configuration fields from both levels.
+The full merge order is:
+
+ 1. GatewayClass typed configuration fields
+ 2. Gateway typed configuration fields
+ 3. GatewayClass overlays
+ 4. Gateway overlays (can override all previous values)
+
+# Strategic Merge Patch &amp; Deletion Guide
+
+This merge strategy allows you to override individual fields, merge lists, or delete items
+without needing to provide the entire resource definition.
+
+**1. Replacing Values (Scalars):**
+Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
+
+**2. Merging Lists (Append/Merge):**
+Lists with &quot;merge keys&quot; (like `containers` which merges on `name`, or `tolerations` which merges on `key`)
+will append your items to the generated list, or update existing items if keys match.
+
+**3. Deleting Fields or List Items ($patch: delete):**
+To remove a field or list item from the generated resource, use the
+`$patch: delete` directive. This works for both map fields and list items,
+and is the recommended approach because it works with both client-side
+and server-side apply.
+
+	spec:
+	  template:
+	    spec:
+	      # Delete pod-level securityContext
+	      securityContext:
+	        $patch: delete
+	      # Delete nodeSelector
+	      nodeSelector:
+	        $patch: delete
+	      containers:
+	        # Be sure to use the correct proxy name here or you will add a container instead of modifying a container:
+	        - name: proxy-name
+	          # Delete container-level securityContext
+	          securityContext:
+	            $patch: delete
+
+**4. Null Values (server-side apply only):**
+Setting a field to `null` can also remove it, but this ONLY works with
+`kubectl apply --server-side` or equivalent. With regular client-side
+`kubectl apply`, null values are stripped by kubectl before reaching
+the API server, so the deletion won't occur. Prefer `$patch: delete`
+for consistent behavior across both apply modes.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
+
+**5. Replacing Maps Entirely ($patch: replace):**
+To replace an entire map with your values (instead of merging), use `$patch: replace`.
+This removes all existing keys and replaces them with only your specified keys.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector:
+	        $patch: replace
+	        custom-key: custom-value
+
+**6. Replacing Lists Entirely ($patch: replace):**
+If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
+
+	service:
+	  spec:
+	    ports:
+	      - $patch: replace
+	      - name: http
+	        port: 80
+	        targetPort: 8080
+	        protocol: TCP
+	      - name: https
+	        port: 443
+	        targetPort: 8443
+	        protocol: TCP</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">rawConfig</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">rawConfig provides an opaque mechanism to configure the agentgateway
+config file (the agentgateway binary has a '-f' option to specify a
+config file, and this is that file).  This will be merged with
+configuration derived from typed fields like
+AgentgatewayParametersLogging.Format, and those typed fields will take
+precedence.
+
+Example:
+
+	rawConfig:
+	  binds:
+	  - port: 3000
+	    listeners:
+	    - routes:
+	      - policies:
+	          cors:
+	            allowOrigins:
+	              - &quot;*&quot;
+	            allowHeaders:
+	              - mcp-protocol-version
+	              - content-type
+	              - cache-control
+	        backends:
+	        - mcp:
+	            targets:
+	            - name: everything
+	              stdio:
+	                cmd: npx
+	                args: [&quot;@modelcontextprotocol/server-everything&quot;]</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">resources</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">The compute resources required by this container. See
+https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
+for details.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">claims</span><span class="ks-type ks-type-complex">object[]</span></summary><pre class="ks-desc">Claims lists the names of resources, defined in spec.resourceClaims,
+that are used by this container.
+
+This field depends on the
+DynamicResourceAllocation feature gate.
+
+This field is immutable. It can only be set for containers.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">name</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Name must match the name of one entry in pod.spec.resourceClaims of
+the Pod where this field is used. It makes that resource available
+inside a container.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">request</span><span class="ks-type ks-type-string">string</span></summary><pre class="ks-desc">Request is the name chosen for a request in the referenced claim.
+If empty, everything from the claim is made available, otherwise
+only the result of this request.</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">limits</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Limits describes the maximum amount of compute resources allowed.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">requests</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Requests describes the minimum amount of compute resources required.
+If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
+otherwise to an implementation-defined value. Requests cannot exceed Limits.
+More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">service</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">service allows specifying overrides for the generated Service resource.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">metadata</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">metadata defines a subset of object metadata to be customized.
+Labels and annotations are merged with existing values. If both GatewayClass
+and Gateway parameters define the same label or annotation key, the Gateway
+value takes precedence (applied second).</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">annotations</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Annotations is an unstructured key value map stored with a resource that may be
+set by external tools to store and retrieve arbitrary metadata. They are not
+queryable and should be preserved when modifying objects.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">labels</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Map of string keys and values that can be used to organize and categorize
+(scope and select) objects. May match selectors of replication controllers
+and services.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">spec</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Spec provides an opaque mechanism to configure the resource Spec.
+This field accepts a complete or partial Kubernetes resource spec (e.g., PodSpec, ServiceSpec)
+and will be merged with the generated configuration using **Strategic Merge Patch** semantics.
+
+# Application Order
+
+Overlays are applied after all typed configuration fields from both levels.
+The full merge order is:
+
+ 1. GatewayClass typed configuration fields
+ 2. Gateway typed configuration fields
+ 3. GatewayClass overlays
+ 4. Gateway overlays (can override all previous values)
+
+# Strategic Merge Patch &amp; Deletion Guide
+
+This merge strategy allows you to override individual fields, merge lists, or delete items
+without needing to provide the entire resource definition.
+
+**1. Replacing Values (Scalars):**
+Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
+
+**2. Merging Lists (Append/Merge):**
+Lists with &quot;merge keys&quot; (like `containers` which merges on `name`, or `tolerations` which merges on `key`)
+will append your items to the generated list, or update existing items if keys match.
+
+**3. Deleting Fields or List Items ($patch: delete):**
+To remove a field or list item from the generated resource, use the
+`$patch: delete` directive. This works for both map fields and list items,
+and is the recommended approach because it works with both client-side
+and server-side apply.
+
+	spec:
+	  template:
+	    spec:
+	      # Delete pod-level securityContext
+	      securityContext:
+	        $patch: delete
+	      # Delete nodeSelector
+	      nodeSelector:
+	        $patch: delete
+	      containers:
+	        # Be sure to use the correct proxy name here or you will add a container instead of modifying a container:
+	        - name: proxy-name
+	          # Delete container-level securityContext
+	          securityContext:
+	            $patch: delete
+
+**4. Null Values (server-side apply only):**
+Setting a field to `null` can also remove it, but this ONLY works with
+`kubectl apply --server-side` or equivalent. With regular client-side
+`kubectl apply`, null values are stripped by kubectl before reaching
+the API server, so the deletion won't occur. Prefer `$patch: delete`
+for consistent behavior across both apply modes.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
+
+**5. Replacing Maps Entirely ($patch: replace):**
+To replace an entire map with your values (instead of merging), use `$patch: replace`.
+This removes all existing keys and replaces them with only your specified keys.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector:
+	        $patch: replace
+	        custom-key: custom-value
+
+**6. Replacing Lists Entirely ($patch: replace):**
+If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
+
+	service:
+	  spec:
+	    ports:
+	      - $patch: replace
+	      - name: http
+	        port: 80
+	        targetPort: 8080
+	        protocol: TCP
+	      - name: https
+	        port: 443
+	        targetPort: 8443
+	        protocol: TCP</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">serviceAccount</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">serviceAccount allows specifying overrides for the generated ServiceAccount resource.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">metadata</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">metadata defines a subset of object metadata to be customized.
+Labels and annotations are merged with existing values. If both GatewayClass
+and Gateway parameters define the same label or annotation key, the Gateway
+value takes precedence (applied second).</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">annotations</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Annotations is an unstructured key value map stored with a resource that may be
+set by external tools to store and retrieve arbitrary metadata. They are not
+queryable and should be preserved when modifying objects.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">labels</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Map of string keys and values that can be used to organize and categorize
+(scope and select) objects. May match selectors of replication controllers
+and services.
+More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">spec</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">Spec provides an opaque mechanism to configure the resource Spec.
+This field accepts a complete or partial Kubernetes resource spec (e.g., PodSpec, ServiceSpec)
+and will be merged with the generated configuration using **Strategic Merge Patch** semantics.
+
+# Application Order
+
+Overlays are applied after all typed configuration fields from both levels.
+The full merge order is:
+
+ 1. GatewayClass typed configuration fields
+ 2. Gateway typed configuration fields
+ 3. GatewayClass overlays
+ 4. Gateway overlays (can override all previous values)
+
+# Strategic Merge Patch &amp; Deletion Guide
+
+This merge strategy allows you to override individual fields, merge lists, or delete items
+without needing to provide the entire resource definition.
+
+**1. Replacing Values (Scalars):**
+Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
+
+**2. Merging Lists (Append/Merge):**
+Lists with &quot;merge keys&quot; (like `containers` which merges on `name`, or `tolerations` which merges on `key`)
+will append your items to the generated list, or update existing items if keys match.
+
+**3. Deleting Fields or List Items ($patch: delete):**
+To remove a field or list item from the generated resource, use the
+`$patch: delete` directive. This works for both map fields and list items,
+and is the recommended approach because it works with both client-side
+and server-side apply.
+
+	spec:
+	  template:
+	    spec:
+	      # Delete pod-level securityContext
+	      securityContext:
+	        $patch: delete
+	      # Delete nodeSelector
+	      nodeSelector:
+	        $patch: delete
+	      containers:
+	        # Be sure to use the correct proxy name here or you will add a container instead of modifying a container:
+	        - name: proxy-name
+	          # Delete container-level securityContext
+	          securityContext:
+	            $patch: delete
+
+**4. Null Values (server-side apply only):**
+Setting a field to `null` can also remove it, but this ONLY works with
+`kubectl apply --server-side` or equivalent. With regular client-side
+`kubectl apply`, null values are stripped by kubectl before reaching
+the API server, so the deletion won't occur. Prefer `$patch: delete`
+for consistent behavior across both apply modes.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
+
+**5. Replacing Maps Entirely ($patch: replace):**
+To replace an entire map with your values (instead of merging), use `$patch: replace`.
+This removes all existing keys and replaces them with only your specified keys.
+
+	spec:
+	  template:
+	    spec:
+	      nodeSelector:
+	        $patch: replace
+	        custom-key: custom-value
+
+**6. Replacing Lists Entirely ($patch: replace):**
+If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
+
+	service:
+	  spec:
+	    ports:
+	      - $patch: replace
+	      - name: http
+	        port: 80
+	        targetPort: 8080
+	        protocol: TCP
+	      - name: https
+	        port: 443
+	        targetPort: 8443
+	        protocol: TCP</pre></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">shutdown</span><span class="ks-type ks-type-complex">object</span></summary><pre class="ks-desc">Shutdown delay configuration.  How graceful planned or unplanned data
+plane changes happen is in tension with how quickly rollouts of the data
+plane complete. How long a data plane pod must wait for shutdown to be
+perfectly graceful depends on how you have configured your Gateways.</pre><ul class="ks-tree ks-nested">
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">max</span><span class="ks-type ks-type-integer">integer</span></summary><pre class="ks-desc">Maximum time (in seconds) to wait before allowing Agentgateway to
+terminate. Refer to the TERMINATION_GRACE_PERIOD_SECONDS environment
+variable for details.</pre></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-required" title="Required">*</span><span class="ks-name">min</span><span class="ks-type ks-type-integer">integer</span></summary><pre class="ks-desc">Minimum time (in seconds) to wait before allowing Agentgateway to
+terminate. Refer to the CONNECTION_MIN_TERMINATION_DEADLINE environment
+variable for details.</pre></details></li>
+</ul></details></li>
+</ul></details></li>
+<li class="ks-row"><details><summary class="ks-summary"><span class="ks-name">status</span><span class="ks-type ks-type-object">object</span></summary><pre class="ks-desc">status defines the current state of AgentgatewayParameters.</pre></details></li>
+</ul>
+<div class="ks-footer">
+  View full docs on <a href="https://kubespec.dev/agentgateway.dev/v1alpha1/AgentgatewayParameters" target="_blank" rel="noopener">kubespec.dev ↗</a>
+</div>
+</div>
