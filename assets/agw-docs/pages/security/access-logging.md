@@ -55,8 +55,8 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    | ------- | ----------- |
    | `targetRefs`| Select the Gateway to enable access logging for. The example selects the `agentgateway-proxy` gateway that you created from the sample app guide. |
    | `accessLog` | Configure the details for access logging. |
-   | `filter` | A CEL expression to filter the logs that are included. |
-   | `attributes` | Add or remove attributes that are logged by using a CEL expression. |
+   | `filter` | Filter the logs that are included by using a CEL expression. |
+   | `attributes` | Add or remove attributes that are logged in the requests by using a CEL expression. |
 
 2. Send a request to the httpbin app on the `www.example.com` domain. Verify that your request results in a 404 HTTP response code.  
    
