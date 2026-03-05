@@ -29,7 +29,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails. It also adds a string field of the response code. Successful requests are not logged with this configuration.
 
-   ```yaml {linenos=table}
+   ```yaml {linenos=table,paths="access-logging"}
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayPolicy
@@ -62,7 +62,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
+   ```sh {paths="access-logging"}
    curl -i http://$INGRESS_GW_ADDRESS:80/status/404 -H "host: www.example.com"
    ```
    {{% /tab %}}
@@ -82,7 +82,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    
 3. Get the logs for the gateway pod and verify that you see a stdout entry for each request that you sent to the httpbin app. 
    
-   ```sh
+   ```sh {paths="access-logging"}
    kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 
    ```
    
@@ -95,7 +95,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
+   ```sh {paths="access-logging"}
    curl -i http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com"
    ```
    {{% /tab %}}
@@ -115,7 +115,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
 
 3. Get the logs for the gateway pod again and verify that you do not see a stdout entry for the `200` request that you sent to the httpbin app. The last entry is still for the previous `404` request.
    
-   ```sh
+   ```sh {paths="access-logging"}
    kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 
    ```
 
@@ -128,7 +128,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
 
-```sh
+```sh {paths="access-logging"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
