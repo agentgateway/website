@@ -29,7 +29,7 @@ When the gateway is used as an HTTP proxy, additional HTTP information is availa
 
 You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout in the pod of the selected `http` gateway.
 
-1. Create an HTTPListenerPolicy resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container by using a custom string format that is defined in the `jsonFormat` field. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container by using a custom string format that is defined in the `jsonFormat` field. 
    
    ```yaml
    kubectl apply -f- <<EOF
@@ -47,8 +47,42 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
        accessLog:
          attributes:
            add:
-           - name: headers
-             expression: "flatten(request.headers)"
+           - name: headers-some-name
+             expression: "request.path"
+   EOF
+   ```
+
+   ```yaml {linenos=table,hl_lines=[2,3,4,5]}
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayPolicy
+   metadata:
+     name: access-logs
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: Gateway
+         name: agentgateway-proxy
+     frontend:
+       accessLog:
+         # Optional: only log when response is missing or status >= 300
+         filter: |
+           !has(response) || response.code > 299
+         attributes:
+           add:
+             - name: method
+               expression: request.method
+             - name: path
+               expression: request.path
+             - name: authority
+               expression: request.authority
+             - name: user_agent
+               expression: 'default(request.headers["user-agent"], "-")'
+             - name: client_address
+               expression: source.address
+             - name: request_id
+               expression: request.id
    EOF
    ```
 
@@ -113,10 +147,10 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
 
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
 
 ```sh
-kubectl delete HTTPListenerPolicy access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 
