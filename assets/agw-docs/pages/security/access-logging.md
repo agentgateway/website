@@ -6,12 +6,19 @@ Access logs, sometimes referred to as audit logs, represent all traffic requests
 
 ### Data that can be logged
 
-The gateway proxy exposes a lot of data that can be used when customizing access logs. The following data properties are available for both TCP and HTTP access logging:
+Access log content is controlled by [CEL (Common Expression Language)](https://agentgateway.dev/docs/kubernetes/main/reference/cel/) expressions. You can filter which requests are logged and define custom attributes from the request and response.
 
-* The downstream (client) address, connection information, TLS configuration, and timing
-* The backend (service) address, connection information, TLS configuration, timing, and routing information
-* Relevant configuration, such as rate of sampling (if used)
-* Filter-specific context that is published to the dynamic metadata during the filter chain
+For logging, CEL exposes these variable groups:
+
+* **request** — method, URI, host, path, headers, body, and timing
+* **response** — status code, headers, and body
+* **source** — client address, port, and TLS identity (e.g. SPIFFE, certificate details)
+* **backend** — backend name, type, and protocol
+* **Auth and metadata** — `jwt`, `apiKey`, or `basicAuth` (when enabled), plus `extauthz` and `extproc` metadata
+* **LLM** — when using an AI backend: model, provider, token counts, and optional prompt/completion
+* **MCP** — when applicable: tool, prompt, and resource name and target
+
+Use the `filter` field to include only certain requests (for example, errors or specific paths) and the `attributes.add` list to add fields with CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference](https://agentgateway.dev/docs/kubernetes/main/reference/cel/).
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
