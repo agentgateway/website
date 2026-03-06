@@ -169,7 +169,7 @@ def _extract_version(doc_path: str) -> str:
     path_parts = doc_path.replace("\\", "/").split("/")
     try:
         idx = path_parts.index("docs")
-        return path_parts[idx + 1]
+        return "/".join(path_parts[idx + 1 : idx + 3])
     except (ValueError, IndexError):
         return ""
 
