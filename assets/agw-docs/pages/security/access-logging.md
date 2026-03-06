@@ -8,15 +8,15 @@ Access logs, sometimes referred to as audit logs, represent all traffic requests
 
 Access log content is controlled by [CEL (Common Expression Language)](https://agentgateway.dev/docs/kubernetes/main/reference/cel/) expressions. You can filter which requests are logged and define custom attributes from the request and response.
 
-For logging, CEL exposes these variable groups:
+For logging, CEL exposes these variable groups when enabled or applicable:
 
-* **request** — method, URI, host, path, headers, body, and timing
-* **response** — status code, headers, and body
-* **source** — client address, port, and TLS identity (e.g. SPIFFE, certificate details)
-* **backend** — backend name, type, and protocol
-* **Auth and metadata** — `jwt`, `apiKey`, or `basicAuth` (when enabled), plus `extauthz` and `extproc` metadata
-* **LLM** — when using an AI backend: model, provider, token counts, and optional prompt/completion
-* **MCP** — when applicable: tool, prompt, and resource name and target
+* **request**: method, URI, host, path, headers, body, and timing
+* **response**: status code, headers, and body
+* **source**: client address, port, and TLS identity
+* **backend**: backend name, type, and protocol
+* **Auth and metadata**: `jwt`, `apiKey`, or `basicAuth`, plus `extauthz` and `extproc` metadata
+* **LLM**: model, provider, token counts, and optional prompt/completion
+* **MCP**: tool, prompt, and resource name and target
 
 Use the `filter` field to include only certain requests (for example, errors or specific paths) and the `attributes.add` list to add fields with CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference](https://agentgateway.dev/docs/kubernetes/main/reference/cel/).
 
