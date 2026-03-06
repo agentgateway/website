@@ -95,14 +95,17 @@ def generate_summary(report: dict) -> str:
 
         for key, result in failed_tests:
             parts = key.split("::", 1)
+            doc = parts[0] if len(parts) > 0 else key
             test_name = parts[1] if len(parts) > 1 else key
+            version = _extract_version(doc)
+            title = f"{test_name} ({version})" if version else test_name
             error = result.get("error", "No error output captured.")
 
             # Show individual checks if any passed before failure
             checks = result.get("checks", [])
 
             lines.append(f"<details>")
-            lines.append(f"<summary><strong>{_escape_md_table(test_name)}</strong></summary>")
+            lines.append(f"<summary><strong>{_escape_md_table(title)}</strong></summary>")
             lines.append("")
 
             if checks:
