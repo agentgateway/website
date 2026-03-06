@@ -13,13 +13,6 @@ The gateway proxy exposes a lot of data that can be used when customizing access
 * Relevant configuration, such as rate of sampling (if used)
 * Filter-specific context that is published to the dynamic metadata during the filter chain
 
-### Additional HTTP properties 
-
-When the gateway is used as an HTTP proxy, additional HTTP information is available for access logging, including:
-
-* Request data, including the method, path, scheme, port, user agent, headers, body, and more
-* Response data, including the response code, headers, body, and trailers, as well as a string representation of the response code
-* Protocol version
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -27,7 +20,7 @@ When the gateway is used as an HTTP proxy, additional HTTP information is availa
 
 You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout in the pod of the selected `agentgateway-proxy` gateway.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails with a 404 HTTP response code. It also adds the actual response code to the log entry. This policy does nto apply to requests that return a response code other than 404.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails with a 404 HTTP response code. It also adds the actual response code to the log entry. This policy does not apply to requests that return a response code other than 404.
 
    ```yaml {linenos=table,paths="access-logging"}
    kubectl apply -f- <<EOF
@@ -57,6 +50,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    | `accessLog` | Configure the details for access logging. |
    | `filter` | Filter the logs that are included by using a CEL expression. |
    | `attributes` | Add or remove attributes that are logged in the requests by using a CEL expression. |
+   
 
 2. Send a request to the httpbin app on the `www.example.com` domain. Verify that your request results in a 404 HTTP response code.  
    
