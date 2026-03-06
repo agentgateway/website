@@ -113,7 +113,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    access-control-allow-origin: *
    ```
 
-3. Get the logs for the gateway pod again and verify that you do not see a stdout entry for the `200` request that you sent to the httpbin app. The last entry is still for the previous `404` request.
+3. Get the logs for the gateway pod again and verify that you do not see an access log entry for the `200` request that you sent to the httpbin app. The last entry is still for the previous `404` request.
    
    ```sh {paths="access-logging"}
    kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 
