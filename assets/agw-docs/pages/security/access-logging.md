@@ -88,8 +88,12 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    ```
    
    Example output: 
-   ```console
-   info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080 src.addr=127.0.0.1:46886 http.method=GET http.host=www.example.com http.path=/status/404 http.version=HTTP/1.1 http.status=404 protocol=http duration=0ms http.statusString="404"
+   ```console {hl_lines=[5]} 
+   info	request gateway=agentgateway-system/agentgateway-proxy
+   listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080
+   src.addr=127.0.0.1:46886 http.method=GET http.host=www.example.com
+   http.path=/status/404 http.version=HTTP/1.1 http.status=404
+   protocol=http duration=0ms http.statusString="404"
    ```
 
 4. Send another request to the httpbin app. This time, you use the `/status/200` path to return a `200` HTTP response code. 
@@ -121,8 +125,12 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    ```
 
    Example:
-   ```console
-   info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080 src.addr=127.0.0.1:46886 http.method=GET http.host=www.example.com http.path=/status/404 http.version=HTTP/1.1 http.status=404 protocol=http duration=0ms http.statusString="404"
+   ```console {hl_lines=[4]}
+   info	request gateway=agentgateway-system/agentgateway-proxy
+   listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080
+   src.addr=127.0.0.1:46886 http.method=GET http.host=www.example.com
+   http.path=/status/404 http.version=HTTP/1.1 http.status=404
+   protocol=http duration=0ms http.statusString="404"
    ```
   
 ## Cleanup
