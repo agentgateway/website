@@ -27,7 +27,7 @@ When the gateway is used as an HTTP proxy, additional HTTP information is availa
 
 You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout in the pod of the selected `agentgateway-proxy` gateway.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails. It also adds a string field of the response code. Successful requests are not logged with this configuration.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails with a 404 HTTP response code. It also adds the actual response code to the log entry. This policy does nto apply to requests that return a response code other than 404.
 
    ```yaml {linenos=table,paths="access-logging"}
    kubectl apply -f- <<EOF
