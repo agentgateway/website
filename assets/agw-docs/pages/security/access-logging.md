@@ -91,7 +91,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    info	request gateway=agentgateway-system/agentgateway-proxy listener=http route=httpbin/httpbin endpoint=10.244.0.4:8080 src.addr=127.0.0.1:46886 http.method=GET http.host=www.example.com http.path=/status/404 http.version=HTTP/1.1 http.status=404 protocol=http duration=0ms http.statusString="404"
    ```
 
-4. Send a `200` request to the httpbin app on the `www.example.com` domain. 
+4. Send another request to the httpbin app. This time, you use the `/status/200` path to return a `200` HTTP response code. 
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
