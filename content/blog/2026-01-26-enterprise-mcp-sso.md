@@ -122,7 +122,7 @@ And if we go to VS Code, we can add our new server:
 
 {{< reuse-image src="img/blog/entra-sso/03-vs-code.png"  >}}
 
-#### Step 4. Agree to Peform SSO Login
+#### Step 4. Agree to Perform SSO Login
 
 
 {{< reuse-image src="img/blog/entra-sso/04-vs-code.png"  >}}

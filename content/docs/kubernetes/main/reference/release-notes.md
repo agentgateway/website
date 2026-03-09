@@ -90,7 +90,7 @@ For more information, see the [CEL expression]({{< link-hextra path="/reference/
 
 The following features were introduced in 1.0.0.
 
-### Kubernetes Gatway API version 1.5.0
+### Kubernetes Gateway API version 1.5.0
 
 The Kubernetes Gateway API dependency is updated to support version 1.5.0. This version introduces several changes, including: 
 * **XListenerSets promoted to ListenerSets**: The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead. 
