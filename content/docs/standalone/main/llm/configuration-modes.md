@@ -6,16 +6,45 @@ description: Understand when to use simplified LLM configuration vs traditional 
 
 Agentgateway offers two ways to configure LLM providers, each optimized for different use cases.
 
+- [LLM-based configuration](#simplified-llm-configuration)
+- [Routing-based configuration](#traditional-http-routing-configuration)
+
+## Choosing between the two
+
+Use this decision tree to choose the right configuration mode.
+
+{{< callout type="info" >}}
+You can use both configuration modes in the same file if needed, but typically one mode is sufficient for most use cases.
+{{< /callout >}}
+
+| Question | Answer | Recommendation |
+|----------|--------|----------------|
+| Are you only routing to LLM providers? | Yes | LLM-based configuration |
+| Do you need model-based routing with header matching? | Yes | LLM-based configuration |
+| Do you need custom, path-based routing (e.g., `/openai`, `/anthropic`)? | Yes | Routing-based configuration |
+| Do you need to route to non-LLM backends? | Yes | Routing-based configuration |
+| Do you need multiple listeners on different ports? | Yes | Routing-based configuration |
+| Do you need complex HTTP policies like CORS or rate limiting? | Yes | Routing-based configuration |
+
 ## Simplified LLM configuration
 
-The simplified `llm:` configuration is designed specifically for LLM use cases. Use this approach when your primary goal is to route traffic to LLM providers.
+The simplified `llm` configuration is designed specifically for LLM use cases. Use this approach when your primary goal is to route traffic to LLM providers.
 
-### When to use
+### About
+
+When to use the simplified LLM configuration:
 
 - You are building an LLM gateway or AI proxy.
 - You need to route requests to one or more LLM providers.
 - You want model-based routing with header matching.
 - You need LLM-specific policies like JWT authentication or authorization.
+
+The benefits of this approach are:
+
+- **Concise**: Less configuration needed for common LLM scenarios.
+- **Model-centric**: Focus on LLM models rather than HTTP routing.
+- **LLM policies**: Built-in support for JWT auth and authorization rules.
+- **Easy multi-provider**: Simple syntax for routing to multiple providers.
 
 ### Example
 
@@ -64,23 +93,24 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-### Benefits
-
-- **Concise**: Less configuration needed for common LLM scenarios.
-- **Model-centric**: Focus on LLM models rather than HTTP routing.
-- **LLM policies**: Built-in support for JWT auth and authorization rules.
-- **Easy multi-provider**: Simple syntax for routing to multiple providers.
-
 ## Traditional HTTP routing configuration
 
 The traditional `binds/listeners/routes` configuration provides full control over HTTP routing. Use this approach when you need advanced HTTP routing capabilities or non-LLM backends.
 
-### When to use
+### About
+
+When to use the traditional routing-based configuration:
 
 - You need complex HTTP routing based on paths, methods, or query parameters.
 - You are routing to non-LLM backends alongside LLM providers.
 - You need fine-grained control over listeners and ports.
 - You require advanced HTTP policies like CORS, rate limiting, or transformations.
+
+The benefits of this approach are:
+- **Flexible routing**: Full HTTP routing capabilities with path, method, query, and header matching.
+- **Mixed backends**: Route to both LLM and non-LLM backends in the same configuration.
+- **HTTP policies**: Access to all HTTP-level policies like CORS, rate limiting, and transformations.
+- **Multiple listeners**: Configure different ports and protocols.
 
 ### Example
 
@@ -150,30 +180,6 @@ binds:
       - http:
           host: api.example.com:443
 ```
-
-### Benefits
-
-- **Flexible routing**: Full HTTP routing capabilities with path, method, query, and header matching.
-- **Mixed backends**: Route to both LLM and non-LLM backends in the same configuration.
-- **HTTP policies**: Access to all HTTP-level policies like CORS, rate limiting, and transformations.
-- **Multiple listeners**: Configure different ports and protocols.
-
-## Choosing between the two
-
-Use this decision tree to choose the right configuration mode.
-
-| Question | Answer | Recommendation |
-|----------|--------|----------------|
-| Are you only routing to LLM providers? | Yes | Use simplified `llm:` configuration |
-| Do you need model-based routing with header matching? | Yes | Use simplified `llm:` configuration |
-| Do you need path-based routing (e.g., `/openai`, `/anthropic`)? | Yes | Use traditional `binds/listeners/routes` |
-| Do you need to route to non-LLM backends? | Yes | Use traditional `binds/listeners/routes` |
-| Do you need multiple listeners on different ports? | Yes | Use traditional `binds/listeners/routes` |
-| Do you need HTTP policies like CORS or rate limiting? | Yes | Use traditional `binds/listeners/routes` |
-
-{{< callout type="info" >}}
-You can use both configuration modes in the same file if needed, but typically one mode is sufficient for most use cases.
-{{< /callout >}}
 
 ## Next steps
 
