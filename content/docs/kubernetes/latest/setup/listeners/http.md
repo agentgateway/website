@@ -9,7 +9,7 @@ Create an HTTP listener on your gateway proxy. Your proxy listens for HTTP traff
 
 1. Deploy the [httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}).
 
-2. {{% reuse "agw-docs/snippets/prereq-listenerset.md" %}}
+2. {{< reuse "agw-docs/snippets/prereq-listenerset.md" >}}
 
    **ListenerSets**: To use ListenerSets, you must install the experimental channel of the Kubernetes Gateway API. 
    ```sh
