@@ -265,7 +265,3 @@ For detailed instructions on setting up global rate limiting with descriptors an
 ```sh,paths="local-rate-limit"
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-rate-limit -n httpbin
 ```
-
-```sh,paths="gateway-route"
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} gateway-rate-limit -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-```

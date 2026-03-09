@@ -82,7 +82,7 @@ Also, check out the rate limiting guides for other use cases:
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Deploy and route to an MCP server through agentgateway. For setup instructions, see [Route to a static MCP server]({{< link-hextra path="/mcp/static" >}}).
+2. Deploy and route to an MCP server through agentgateway. For setup instructions, see [Route to a static MCP server]({{< link-hextra path="/mcp/static-mcp/" >}}).
 
 ## Local rate limiting {#local}
 
@@ -129,7 +129,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
 3. Use an MCP client to call tools in a tight loop.
 
-   The following example assumes you have the MCP Inspector CLI installed.
+   The following example assumes you have the MCP Inspector CLI installed. If prompted, install the MCP Inspector packages.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}

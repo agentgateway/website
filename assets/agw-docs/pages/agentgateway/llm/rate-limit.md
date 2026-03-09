@@ -170,7 +170,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    {{% /tab %}}
    {{< /tabs >}}
 
-   You'll see the SSE chunks arrive in full:
+   Notice the SSE chunks arrive in full:
 
    ```
    data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"delta":{"content":"1"},...}]}
@@ -179,7 +179,13 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    data: [DONE]
    ```
 
-   After the stream ends, agentgateway reads the accumulated token count from the final chunk's `usage` field and updates the budget. The *next* request after this stream will be rejected if the budget is exhausted.
+   After the stream ends, agentgateway reads the accumulated token count from the final chunk's `usage` field and updates the budget. 
+   
+   Repeat the request a couple times. The request is rejected if the budget is exhausted.
+
+   ```
+   rate limit exceeded
+   ```
 
 ## Combining request and token limits {#combined}
 
