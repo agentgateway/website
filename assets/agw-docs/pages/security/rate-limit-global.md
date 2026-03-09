@@ -38,7 +38,7 @@ sequenceDiagram
 
 1. The Client sends a request to an App protected by the Gateway.
 2. The Gateway receives the request.
-3. The Gateway evaluates the CEL expressions in the policy's descriptors to extract rate limit dimensions (e.g., client IP, user ID, path) and sends them to the Rate Limit Service via gRPC.
+3. The Gateway evaluates the CEL expressions in the policy's descriptors to extract rate limit dimensions (such as client IP, user ID, path) and sends them to the Rate Limit Service via gRPC.
 4. The Rate Limit Service checks its configuration for matching descriptors, applies the configured limits, and returns a decision.
 5. If allowed, the Gateway forwards the request to the App.
 6. If the rate limit is exceeded, the Gateway denies the request with a 429 response and rate limit headers.
@@ -62,6 +62,22 @@ Unlike kgateway, agentgateway does **not** require a separate GatewayExtension r
 ### Response headers
 
 {{< reuse "agw-docs/snippets/ratelimit-headers.md" >}}
+
+### Common CEL expressions {#cel-expressions}
+
+Review the following common CEL expressions that you might find useful when creating your rate limit policies.
+
+| Descriptor | CEL Expression | Description |
+|-----------|----------------|-------------|
+| Client IP | `source.address` | Source IP address of the client. |
+| Request path | `request.path` | The request path (such as `/api/v1/users`). |
+| Request method | `request.method` | HTTP method (GET, POST, etc.). |
+| Header value | `request.headers["header-name"]` | Extract a specific header. Case-insensitive header name. |
+| Query parameter | `request.url_path.query_params["param"]` | Extract a query parameter value. |
+| JWT claim | `claims["sub"]` | Extract a claim from a validated JWT (requires JWT auth policy). |
+| Static value | `"constant"` | Use a constant string for categorization (such as service tier). |
+| Host header | `request.headers["host"]` | The host header value. |
+| User agent | `request.headers["user-agent"]` | Client user agent string. |
 
 ## Before you begin
 
@@ -266,6 +282,25 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global` configured. The policy defines **which** request attributes to extract (via CEL expressions) and send to the rate limit service. The rate limit service decides **how many** requests to allow based on its configuration.
 
+The table summarizes the examples in the following sections.
+
+| What you want | How to configure it |
+|--------------|---------------------|
+| Rate limit by client IP | Descriptor entry with `expression: "source.address"` |
+| Rate limit by user ID | Descriptor entry with `expression: 'request.headers["x-user-id"]'` |
+| Rate limit by path | Descriptor entry with `expression: "request.path"` |
+| Apply same limit to all traffic | Descriptor entry with `expression: '"static-value"'` |
+| Different limits per user per path | Two entries in same descriptor: user ID + path (requires nested config in service) |
+| Combine local and global limits | Include both `local[]` and `global` in same policy |
+| Token-based rate limiting (LLMs) | Set `descriptors[].unit: Tokens` and configure token limits in service |
+
+Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/security/rate-limit-http#local" >}}).
+
+For AI-specific use cases:
+- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
+- [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
+
+
 ### Rate limit by client IP
 
 Limit requests based on the client's source IP address.
@@ -314,7 +349,7 @@ EOF
 
 **How it works:**
 
-1. The CEL expression `source.address` extracts the client IP (e.g., `"192.168.1.100"`)
+1. The CEL expression `source.address` extracts the client IP (such as `"192.168.1.100"`)
 2. The gateway sends `{ key: "remote_address", value: "192.168.1.100" }` to the rate limit service
 3. The service matches this against its configuration's `remote_address` descriptor
 4. If the client has made more than 10 requests in the last minute (per the config), the service returns `OVER_LIMIT`
@@ -598,35 +633,3 @@ kubectl delete service ratelimit redis -n ratelimit
 kubectl delete configmap ratelimit-config -n ratelimit
 kubectl delete namespace ratelimit
 ```
-
-## Common CEL expressions {#cel-expressions}
-
-| Descriptor | CEL Expression | Description |
-|-----------|----------------|-------------|
-| Client IP | `source.address` | Source IP address of the client |
-| Request path | `request.path` | The request path (e.g., `/api/v1/users`) |
-| Request method | `request.method` | HTTP method (GET, POST, etc.) |
-| Header value | `request.headers["header-name"]` | Extract a specific header. Case-insensitive header name. |
-| Query parameter | `request.url_path.query_params["param"]` | Extract a query parameter value |
-| JWT claim | `claims["sub"]` | Extract a claim from a validated JWT (requires JWT auth policy) |
-| Static value | `"constant"` | Use a constant string for categorization (e.g., service tier) |
-| Host header | `request.headers["host"]` | The Host header value |
-| User agent | `request.headers["user-agent"]` | Client user agent string |
-
-## Summary
-
-| What you want | How to configure it |
-|--------------|---------------------|
-| Rate limit by client IP | Descriptor entry with `expression: "source.address"` |
-| Rate limit by user ID | Descriptor entry with `expression: 'request.headers["x-user-id"]'` |
-| Rate limit by path | Descriptor entry with `expression: "request.path"` |
-| Apply same limit to all traffic | Descriptor entry with `expression: '"static-value"'` |
-| Different limits per user per path | Two entries in same descriptor: user ID + path (requires nested config in service) |
-| Combine local and global limits | Include both `local[]` and `global` in same policy |
-| Token-based rate limiting (LLMs) | Set `descriptors[].unit: Tokens` and configure token limits in service |
-
-Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/security/rate-limit-http#local" >}}).
-
-For AI-specific use cases:
-- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
-- [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})

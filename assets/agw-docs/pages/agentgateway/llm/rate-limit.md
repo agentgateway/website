@@ -43,147 +43,143 @@ Also, check out the rate limiting guides for other use cases:
 
 ## Local token rate limiting {#local-token}
 
-### Per-route token budget
+Local token rate limiting runs in-process on each agentgateway proxy replica. The following steps show how to apply a per-route token budget and test it with streaming and non-streaming requests.
 
-Apply a token budget to your LLM HTTPRoute.
+1. Apply a token budget to your LLM HTTPRoute.
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: llm-token-budget
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: openai
-  traffic:
-    rateLimit:
-      local:
-      - tokens: 100
-        unit: Minutes
-EOF
-```
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: llm-token-budget
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     traffic:
+       rateLimit:
+         local:
+         - tokens: 100
+           unit: Minutes
+   EOF
+   ```
 
-This limits total token consumption to 100 tokens per minute across all requests hitting this route.
+   This limits total token consumption to 100 tokens per minute across all requests hitting this route.
 
-{{< reuse "agw-docs/snippets/review-table.md" >}}
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `tokens` | Yes (or `requests`) | Number of tokens allowed per `unit` |
-| `unit` | Yes | `Seconds`, `Minutes`, or `Hours` |
+   | Field | Required | Description |
+   |-------|----------|-------------|
+   | `tokens` | Yes (or `requests`) | Number of tokens allowed per `unit` |
+   | `unit` | Yes | `Seconds`, `Minutes`, or `Hours` |
 
-Note: `burst` is not applicable to token limits — token counts are known only after each response completes, so there is no bucket to burst from.
+   Note: `burst` is not applicable to token limits — token counts are known only after each response completes, so there is no bucket to burst from.
 
-### Verify the policy attached
+2. Verify the policy attached.
 
-```sh
-kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  -o jsonpath='{.status.ancestors[0].conditions}' | jq .
-```
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     -o jsonpath='{.status.ancestors[0].conditions}' | jq .
+   ```
 
-Example output:
+   Example output:
 
-```json
-[
-  { "type": "Accepted", "status": "True", "message": "Policy accepted" },
-  { "type": "Attached", "status": "True", "message": "Attached to all targets" }
-]
-```
+   ```json
+   [
+     { "type": "Accepted", "status": "True", "message": "Policy accepted" },
+     { "type": "Attached", "status": "True", "message": "Attached to all targets" }
+   ]
+   ```
 
-### Test the token budget
+3. Send repeated requests and watch the budget drain.
 
-Send repeated requests and watch the budget drain.
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   for i in $(seq 1 10); do
+     RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+       http://$INGRESS_GW_ADDRESS/openai \
+       -H "Content-Type: application/json" \
+       -d '{
+         "model": "gpt-4",
+         "messages": [{"role": "user", "content": "Say hello in exactly 10 words."}]
+       }')
+     STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
+     TOKENS=$(echo "$RESPONSE" | jq -r '.usage.total_tokens // "blocked"' 2>/dev/null)
+     echo "Request $i: HTTP $STATUS — tokens: $TOKENS"
+   done
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   for i in $(seq 1 10); do
+     RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
+       localhost:8080/openai \
+       -H "Content-Type: application/json" \
+       -d '{
+         "model": "gpt-4",
+         "messages": [{"role": "user", "content": "Say hello in exactly 10 words."}]
+       }')
+     STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
+     TOKENS=$(echo "$RESPONSE" | jq -r '.usage.total_tokens // "blocked"' 2>/dev/null)
+     echo "Request $i: HTTP $STATUS — tokens: $TOKENS"
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
-{{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
-```sh
-for i in $(seq 1 10); do
-  RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-    http://$INGRESS_GW_ADDRESS/openai \
-    -H "Content-Type: application/json" \
-    -d '{
-      "model": "gpt-4",
-      "messages": [{"role": "user", "content": "Say hello in exactly 10 words."}]
-    }')
-  STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
-  TOKENS=$(echo "$RESPONSE" | jq -r '.usage.total_tokens // "blocked"' 2>/dev/null)
-  echo "Request $i: HTTP $STATUS — tokens: $TOKENS"
-done
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-for i in $(seq 1 10); do
-  RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-    localhost:8080/openai \
-    -H "Content-Type: application/json" \
-    -d '{
-      "model": "gpt-4",
-      "messages": [{"role": "user", "content": "Say hello in exactly 10 words."}]
-    }')
-  STATUS=$(echo "$RESPONSE" | grep "HTTP_STATUS" | cut -d: -f2)
-  TOKENS=$(echo "$RESPONSE" | jq -r '.usage.total_tokens // "blocked"' 2>/dev/null)
-  echo "Request $i: HTTP $STATUS — tokens: $TOKENS"
-done
-```
-{{% /tab %}}
-{{< /tabs >}}
+   Example output:
 
-Example output:
+   ```
+   Request 1:  HTTP 200 — tokens: 39
+   Request 2:  HTTP 200 — tokens: 39
+   Request 3:  HTTP 200 — tokens: 39
+   Request 4:  HTTP 429 — tokens: blocked
+   ...
+   ```
 
-```
-Request 1:  HTTP 200 — tokens: 39
-Request 2:  HTTP 200 — tokens: 39
-Request 3:  HTTP 200 — tokens: 39
-Request 4:  HTTP 429 — tokens: blocked
-...
-```
+   After the token budget is exhausted, subsequent requests return 429 until the minute window resets.
 
-After the token budget is exhausted, subsequent requests return 429 until the minute window resets.
+4. Test with streaming to verify that token limits work the same way with streaming responses.
 
-### Test with streaming
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -N http://$INGRESS_GW_ADDRESS/openai \
+     -H "Content-Type: application/json" \
+     -d '{
+       "model": "gpt-4",
+       "messages": [{"role": "user", "content": "Count from 1 to 20."}],
+       "stream": true
+     }'
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -N localhost:8080/openai \
+     -H "Content-Type: application/json" \
+     -d '{
+       "model": "gpt-4",
+       "messages": [{"role": "user", "content": "Count from 1 to 20."}],
+       "stream": true
+     }'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
-Token limits work the same way with streaming responses — the stream completes successfully, then the budget is updated.
+   You'll see the SSE chunks arrive in full:
 
-{{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
-```sh
-curl -N http://$INGRESS_GW_ADDRESS/openai \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "gpt-4",
-    "messages": [{"role": "user", "content": "Count from 1 to 20."}],
-    "stream": true
-  }'
-```
-{{% /tab %}}
-{{% tab tabName="Port-forward for local testing" %}}
-```sh
-curl -N localhost:8080/openai \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "gpt-4",
-    "messages": [{"role": "user", "content": "Count from 1 to 20."}],
-    "stream": true
-  }'
-```
-{{% /tab %}}
-{{< /tabs >}}
+   ```
+   data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"delta":{"content":"1"},...}]}
+   data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"delta":{"content":", 2"},...}]}
+   ...
+   data: [DONE]
+   ```
 
-You'll see the SSE chunks arrive in full:
-
-```
-data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"delta":{"content":"1"},...}]}
-data: {"id":"chatcmpl-...","object":"chat.completion.chunk","choices":[{"delta":{"content":", 2"},...}]}
-...
-data: [DONE]
-```
-
-After the stream ends, agentgateway reads the accumulated token count from the final chunk's `usage` field and updates the budget. The *next* request after this stream will be rejected if the budget is exhausted.
+   After the stream ends, agentgateway reads the accumulated token count from the final chunk's `usage` field and updates the budget. The *next* request after this stream will be rejected if the budget is exhausted.
 
 ## Combining request and token limits {#combined}
 
