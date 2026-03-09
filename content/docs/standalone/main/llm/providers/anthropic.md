@@ -35,7 +35,7 @@ llm:
 After running agentgateway with the configuration from the previous section, you can send a request to the `v1/messages` endpoint. Agentgateway automatically adds the `x-api-key` authorization and `anthropic-version` headers to the request. The request is forwarded to the Anthropic API and the response is returned to the client.
 
 ```json
-curl -X POST http://localhost:3000/v1/messages \
+curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-3-5-haiku-20241022",
@@ -79,7 +79,7 @@ Example response:
 Anthropic's `count_tokens` API is supported for estimating token usage before making a request. Agentgateway automatically handles the required `anthropic-version` header and formats the request correctly for Anthropic's API.
 
 ```bash
-curl -X POST http://localhost:3000/v1/messages/count_tokens \
+curl -X POST http://localhost:4000/v1/messages/count_tokens \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-haiku-4-5-20251001",
@@ -126,7 +126,7 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
 3. In another terminal, configure Claude Code to use the agentgateway instance that is running on your localhost.
 
    ```bash
-   export ANTHROPIC_BASE_URL="http://localhost:3000"
+   export ANTHROPIC_BASE_URL="http://localhost:4000"
    ```
 
 4. Start Claude Code with the new configuration.

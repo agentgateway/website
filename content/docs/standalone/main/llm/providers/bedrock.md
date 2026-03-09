@@ -40,7 +40,7 @@ llm:
 Bedrock supports token counting for Anthropic models via the `count_tokens` endpoint. Agentgateway automatically handles the required formatting for Bedrock's count-tokens endpoint, including adding the `max_tokens: 1` parameter and Base64 encoding the request body.
 
 ```bash
-curl -X POST http://localhost:3000/v1/messages/count_tokens \
+curl -X POST http://localhost:4000/v1/messages/count_tokens \
   -H "Content-Type: application/json" \
   -d '{
     "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",

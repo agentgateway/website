@@ -41,7 +41,7 @@ cat > config.yaml << 'EOF'
 llm:
   models:
   - name: gpt-4.1-nano
-    provider: openai
+    provider: openAI
     params:
       model: gpt-4.1-nano
       apiKey: "$OPENAI_API_KEY"
@@ -55,7 +55,7 @@ agentgateway -f config.yaml
 
 #### Test the API
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4.1-nano",
@@ -92,7 +92,7 @@ agentgateway -f config.yaml
 
 #### Test the API
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-sonnet-4-20250514",
@@ -129,7 +129,7 @@ agentgateway -f config.yaml
 
 #### Test the API
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gemini-2.0-flash",
@@ -152,7 +152,7 @@ cat > config.yaml << 'EOF'
 llm:
   models:
   - name: grok-4-latest
-    provider: openai
+    provider: openAI
     params:
       model: grok-4-latest
       apiKey: "$XAI_API_KEY"
@@ -167,7 +167,7 @@ agentgateway -f config.yaml
 
 #### Test the API
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "grok-4-latest",
@@ -204,7 +204,7 @@ agentgateway -f config.yaml
 
 #### Test the API
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "amazon.nova-lite-v1:0",
@@ -244,7 +244,7 @@ agentgateway -f config.yaml
 
 #### Test the API
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",
@@ -267,7 +267,7 @@ cat > config.yaml << 'EOF'
 llm:
   models:
   - name: llama3
-    provider: openai
+    provider: openAI
     params:
       model: llama3
       baseUrl: "http://localhost:11434"
@@ -281,7 +281,7 @@ agentgateway -f config.yaml
 
 #### Test the API
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "llama3",
@@ -423,7 +423,7 @@ The Backends page shows:
 Use Anthropic.
 
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-provider: anthropic" \
   -d '{"model": "claude-sonnet-4-20250514", "messages": [{"role": "user", "content": "Hello!"}]}'
@@ -432,7 +432,7 @@ curl http://localhost:3000/v1/chat/completions \
 Use Gemini.
 
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-provider: gemini" \
   -d '{"model": "gemini-2.0-flash", "messages": [{"role": "user", "content": "Hello!"}]}'
@@ -441,7 +441,7 @@ curl http://localhost:3000/v1/chat/completions \
 Use OpenAI (default, no header needed).
 
 ```bash
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{"model": "gpt-4.1-nano", "messages": [{"role": "user", "content": "Hello!"}]}'
 ```

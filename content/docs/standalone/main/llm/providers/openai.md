@@ -16,7 +16,7 @@ Configure OpenAI as an LLM provider in agentgateway.
 llm:
   models:
   - name: gpt-3.5-turbo
-    provider: openai
+    provider: openAI
     params:
       model: gpt-3.5-turbo
       apiKey: "$OPENAI_API_KEY"
@@ -48,7 +48,7 @@ Use agentgateway as a proxy to your OpenAI provider from the [Codex](https://cha
    llm:
      models:
      - name: openai
-       provider: openai
+       provider: openAI
        params:
          apiKey: "$OPENAI_API_KEY"
    EOF
@@ -62,7 +62,7 @@ Use agentgateway as a proxy to your OpenAI provider from the [Codex](https://cha
 Codex uses the [OPENAI_BASE_URL](https://developers.openai.com/codex/config-advanced) environment variable to override the default OpenAI endpoint. Use a base URL that includes `/v1` so requests go to `/v1/responses` and OpenAI does not return 404.
 
 ```sh
-export OPENAI_BASE_URL="http://localhost:3000/v1"
+export OPENAI_BASE_URL="http://localhost:4000/v1"
 codex
 ```
 
@@ -72,7 +72,7 @@ codex
 To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
 
 ```sh
-codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via agentgateway"' -c 'model_providers.proxy.base_url="http://localhost:3000/v1"'
+codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via agentgateway"' -c 'model_providers.proxy.base_url="http://localhost:4000/v1"'
 ```
 
 {{% /tab %}}
@@ -83,7 +83,7 @@ To configure the base URL permanently, add the following to your `~/.codex/confi
 ```toml
 [model_providers.proxy]
 name = "OpenAI via agentgateway"
-base_url = "http://localhost:3000/v1"
+base_url = "http://localhost:4000/v1"
 ```
 
 {{% /tab %}}

@@ -16,7 +16,7 @@ Configure any LLM provider that provides OpenAI-compatible endpoints with agentg
 llm:
   models:
   - name: grok-2-latest
-    provider: openai
+    provider: openAI
     params:
       model: grok-2-latest
       apiKey: "$XAI_API_KEY"
@@ -41,7 +41,7 @@ Cohere uses a custom API path. For providers with custom paths, use the traditio
 llm:
   models:
   - name: llama3.2
-    provider: openai
+    provider: openAI
     params:
       model: llama3.2
       baseUrl: "http://localhost:11434"
@@ -57,7 +57,7 @@ llm:
 llm:
   models:
   - name: llama-3.2-90b
-    provider: openai
+    provider: openAI
     params:
       model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
       apiKey: "$TOGETHER_API_KEY"
@@ -82,7 +82,7 @@ For any OpenAI-compatible provider that uses standard paths (`/v1/chat/completio
 llm:
   models:
   - name: <model-identifier>
-    provider: openai
+    provider: openAI
     params:
       model: <model-name>
       apiKey: "$PROVIDER_API_KEY"

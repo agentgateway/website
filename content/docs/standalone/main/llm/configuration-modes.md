@@ -25,7 +25,7 @@ The simplified `llm:` configuration is designed specifically for LLM use cases. 
 llm:
   models:
   - name: gpt-3.5-turbo
-    provider: openai
+    provider: openAI
     params:
       model: gpt-3.5-turbo
       apiKey: "$OPENAI_API_KEY"
@@ -58,7 +58,7 @@ llm:
         value:
           exact: engineering
   - name: gpt-4
-    provider: openai
+    provider: openAI
     params:
       model: gpt-4o
       apiKey: "$OPENAI_API_KEY"

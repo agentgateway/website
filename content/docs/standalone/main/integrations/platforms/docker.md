@@ -25,7 +25,7 @@ cat <<'EOF' > config.yaml
 llm:
   models:
   - name: gpt-4o-mini
-    provider: openai
+    provider: openAI
     params:
       model: gpt-4o-mini
       apiKey: $OPENAI_API_KEY
@@ -89,7 +89,7 @@ cat <<'EOF' > config.yaml
 llm:
   models:
   - name: grok-2-latest
-    provider: openai
+    provider: openAI
     params:
       model: grok-2-latest
       apiKey: $XAI_API_KEY
@@ -125,7 +125,7 @@ cat <<'EOF' > config.yaml
 llm:
   models:
   - name: llama3.2
-    provider: openai
+    provider: openAI
     params:
       model: llama3.2
       baseUrl: "http://host.docker.internal:11434"
