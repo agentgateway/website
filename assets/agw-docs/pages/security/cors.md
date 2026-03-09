@@ -10,7 +10,7 @@ Cross-Origin Resource Sharing (CORS) is a security feature that is implemented b
 
 When CORS is enabled in a web browser and a request for a different domain comes in, the web browser checks whether this request is allowed or not. To do that, it typically sends a preflight request (HTTP `OPTIONS` method) to the server or service that serves the requested resource. The service returns the methods that are permitted to send the actual cross-origin request, such as GET, POST, etc. If the request to the different domain is allowed, the response includes CORS-specific headers that instruct the web browser how to make the cross-origin request. For example, the CORS headers typically include the origin that is allowed to access the resource, and the credentials or headers that must be included in the cross-origin request.
 
-Review the following diagram to see an example CORS request flow: 
+Review the following diagram to see an example CORS request flow:
 ```mermaid
 sequenceDiagram
     participant B as Browser (JavaScript)
@@ -56,11 +56,11 @@ You can configure the CORS policy at two levels:
 
 ## Set up CORS policies
 
-1. Create a CORS policy for the httpbin app in an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The following example sets up custom HTTP methods and max age for requests for the `https://example.com/` origin.
+1. Create a CORS policy for the httpbin app in an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The following example sets up custom HTTP methods and max age for requests for the `https://example.com/` and `https://*.ai` origins.
 
    {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy"  >}}
    {{% tab tabName="HTTPRoute" %}}
-   ```sh,paths="cors-in-httproute"
+   ```sh {paths="cors-in-httproute"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -84,6 +84,7 @@ You can configure the CORS policy at two levels:
                  - OPTIONS
                allowOrigins:
                  - "https://example.com"
+                 - "https://*.ai"
                exposeHeaders:
                - Origin
                - X-HTTPRoute-Header
@@ -97,7 +98,7 @@ You can configure the CORS policy at two levels:
    {{% /tab %}}
    {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
 
-   ```sh,paths="cors-in-agentgatewaypolicy"
+   ```sh {paths="cors-in-agentgatewaypolicy"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -122,6 +123,7 @@ You can configure the CORS policy at two levels:
            - "OPTIONS"
          allowOrigins:
            - "https://example.com"
+           - "https://*.ai"
          exposeHeaders:
          - "Origin"
          - "X-TrafficPolicy-Header"
@@ -188,7 +190,39 @@ You can configure the CORS policy at two levels:
    content-length: 0
    ```
 
-3. Send another request to the httpbin app. This time, you use `notallowed.com` as your origin. Although the request succeeds, you do not get back your configured CORS settings such as max age, allowed origin, or allowed methods, because `notallowed.com` is not configured as a supported origin.
+3. Send another request to the httpbin app and use `https://example.ai` as the origin. Verify that your request also succeeds and that you get back the configured CORS headers.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" \
+    -H "Origin: https://example.ai"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -I -X OPTIONS localhost:8080/headers -H "host: www.example.com" \
+    -H "Origin: https://example.ai"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output: Notice that the `access-control-*` values reflect your CORS policy and change depending on the resources that you created.
+   * If you created an HTTPRoute with a CORS filter, you see the `Origin` and `X-HTTPRoute-Header` headers.
+   * If you created a TrafficPolicy with a CORS filter, you see the `Origin` and `X-TrafficPolicy-Header` headers.
+
+   Example output:
+
+   ```console {hl_lines=[2,3,4,5]}
+   HTTP/1.1 200 OK
+   access-control-allow-origin: https://example.ai
+   access-control-allow-methods: GET,POST,OPTIONS
+   access-control-allow-headers: origin
+   access-control-max-age: 86400
+   content-length: 0
+   ```
+
+4. Send another request to the httpbin app. This time, you use `notallowed.com` as your origin. Although the request succeeds, you do not get back your configured CORS settings such as max age, allowed origin, or allowed methods, because `notallowed.com` is not configured as a supported origin.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}

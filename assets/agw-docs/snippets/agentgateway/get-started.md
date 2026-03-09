@@ -3,7 +3,7 @@
    {{< tabs items="Standard, Experimental" tabTotal="2" >}}
    {{% tab tabName="Standard" %}}
    ```sh
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
    {{% /tab %}}
    {{% tab tabName="Experimental" %}}
@@ -16,7 +16,7 @@
 
 2. Deploy the CRDs for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane by using Helm.
    ```sh
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
    --set controller.image.pullPolicy=Always
@@ -24,7 +24,7 @@
 
 3. Install the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane by using Helm. To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
    ```sh
-   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://ghcr.io/kgateway-dev/charts/agentgateway \
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
      --set controller.image.pullPolicy=Always \

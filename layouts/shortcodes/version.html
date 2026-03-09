@@ -8,71 +8,80 @@
 
 {{- /* Extract version from path: /docs/kubernetes/latest/... or /docs/standalone/... or /docs/latest/... */ -}}
 {{- if and (ge (len $parts) 2) (eq (index $parts 0) "docs") -}}
-    {{- /* Check if we have a section (standalone/kubernetes) before the version */ -}}
-    {{- if and (ge (len $parts) 3) (or (eq (index $parts 1) "standalone") (eq (index $parts 1) "kubernetes")) -}}
-        {{- /* If there's a version segment after the section, use it */ -}}
-        {{- if ge (len $parts) 4 -}}
-            {{- $version = index $parts 2 -}}
-        {{- end -}}
-    {{- else -}}
-        {{- /* Legacy path format: /docs/{version}/... */ -}}
-        {{- $version = index $parts 1 -}}
+   {{- /* Check if we have a section (standalone/kubernetes) before the version */ -}}
+   {{- if and (ge (len $parts) 3) (or (eq (index $parts 1) "standalone") (eq (index $parts 1) "kubernetes")) -}}
+    {{- /* If there's a version segment after the section, use it */ -}}
+    {{- if ge (len $parts) 4 -}}
+      {{- $version = index $parts 2 -}}
     {{- end -}}
-{{- end -}}
+    {{- else -}}
+    {{- /* Legacy path format: /docs/{version}/... */ -}}
+      {{- $version = index $parts 1 -}}
+    {{- end -}}
+  {{- end -}}
 
 {{ $condition := $version }}
 
 {{- if ne $condition "" -}}
-    <!-- Get the parameters from the shortcode invocation and lowercase them.
+<!-- Get the parameters from the shortcode invocation and lowercase them.
     TODO: to enable multiple conditions, we could accept comma-separated lists and split them -->
-    {{- $include := .Get "include-if" | default "" -}}
-    {{- $include_if := split $include "," -}}
-    {{- $exclude := .Get "exclude-if" | default "" -}}
-    {{- $exclude_if := split $exclude "," -}}
+   {{- $include := .Get "include-if" | default "" -}}
+   {{- $include_if := split $include "," -}}
+   {{- $exclude := .Get "exclude-if" | default "" -}}
+   {{- $exclude_if := split $exclude "," -}}
 
-{{- $shouldRender := false -}}
-{{- $currentVersionToml := "" -}}
+   {{- $shouldRender := false -}}
+   {{- $currentVersionToml := "" -}}
 
-{{- /* First pass: determine if content should be rendered */ -}}
-{{- if .Site.Params.versions -}}
-  {{- range .Site.Params.versions -}} 
-   {{- if in $condition .linkVersion -}}
-     {{- $versionToml := .version -}}
-     {{- $currentVersionToml = $versionToml -}}
-  
-      {{- if and (in $include_if $versionToml ) (in $exclude_if $versionToml) -}}
-          <!-- condition appears in both parameters -->
-          {{- errorf "Build condition %q appears in both include-if and exclude-if parameters of version shortcode on page %s" $condition .Position -}}
-      {{- end -}}
+   {{- /* First pass: determine if content should be rendered */ -}}
+   {{- if .Site.Params.sections -}}
 
-      {{- if isset $.Params "include-if" -}}
-          <!-- WARNING substring matches are matches as well! That means, if include-if="foobar", and buildcondition is "foo", you have a match!-->
-          {{- if in $include_if $versionToml -}}
-            {{- $shouldRender = true -}}
-          {{- end -}}
-      {{- else if isset $.Params "exclude-if" -}}
-          <!-- WARNING substring matches are matches as well! That means, if exclude-if="foobar", and buildcondition is "foo", you have a match!-->
-          {{- if not (in $exclude_if $versionToml) -}}
-            {{- $shouldRender = true -}}
-          {{- end -}}
-      {{- else -}}
-          {{- $shouldRender = true -}}
-      {{- end -}}
+     {{- /* 2. Loop through each section (e.g., 'standalone', 'kubernetes') */ -}}
+    {{- range $sectionName, $sectionData := .Site.Params.sections -}}
+
+    {{- /* 3. Access the "versions" list inside the current section */ -}}
+    {{- if $sectionData.versions -}}
+      {{- range $sectionData.versions -}}
+        {{- if in $condition .linkVersion -}}
+           {{- $versionToml := .version -}}
+           {{- $currentVersionToml = $versionToml -}}
+
+    {{- if and (in $include_if $versionToml ) (in $exclude_if $versionToml) -}}
+<!-- condition appears in both parameters -->
+   {{- errorf "Build condition %q appears in both include-if and exclude-if parameters of version shortcode on page %s"
+$condition .Position -}}
    {{- end -}}
-  {{- end -}}
+
+{{- if isset $.Params "include-if" -}}
+<!-- WARNING substring matches are matches as well! That means, if include-if="foobar", and buildcondition is "foo", you have a match!-->
+{{- if in $include_if $versionToml -}}
+{{- $shouldRender = true -}}
+{{- end -}}
+{{- else if isset $.Params "exclude-if" -}}
+<!-- WARNING substring matches are matches as well! That means, if exclude-if="foobar", and buildcondition is "foo", you have a match!-->
+{{- if not (in $exclude_if $versionToml) -}}
+{{- $shouldRender = true -}}
+{{- end -}}
 {{- else -}}
-  {{- /* If no versions configured, render by default if condition matches include/exclude */ -}}
-  {{- if isset $.Params "include-if" -}}
-    {{- if in $include_if $condition -}}
-      {{- $shouldRender = true -}}
-    {{- end -}}
-  {{- else if isset $.Params "exclude-if" -}}
-    {{- if not (in $exclude_if $condition) -}}
-      {{- $shouldRender = true -}}
-    {{- end -}}
-  {{- else -}}
-    {{- $shouldRender = true -}}
-  {{- end -}}
+{{- $shouldRender = true -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
+{{- else -}}
+{{- /* If no versions configured, render by default if condition matches include/exclude */ -}}
+{{- if isset $.Params "include-if" -}}
+{{- if in $include_if $condition -}}
+{{- $shouldRender = true -}}
+{{- end -}}
+{{- else if isset $.Params "exclude-if" -}}
+{{- if not (in $exclude_if $condition) -}}
+{{- $shouldRender = true -}}
+{{- end -}}
+{{- else -}}
+{{- $shouldRender = true -}}
+{{- end -}}
+{{- end -}}
+{{- end -}}
 {{- end -}}
 
 {{- /* Second pass: render content only once if conditions are met */ -}}

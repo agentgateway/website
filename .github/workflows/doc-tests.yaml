@@ -2,8 +2,8 @@ name: Doc tests
 
 on:
   schedule:
-    # Every day at 09:00 UTC
-    - cron: '0 9 * * *'
+    # Every day at 06:00 UTC
+    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       slack_notification:

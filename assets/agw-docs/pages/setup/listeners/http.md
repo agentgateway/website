@@ -2,16 +2,7 @@ Create an HTTP listener on your gateway proxy. Your proxy listens for HTTP traff
 
 ## Before you begin
 
-1. Deploy the [httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}).
-
-2. {{% reuse "agw-docs/snippets/prereq-listenerset.md" %}}
-
-   **ListenerSets**: To use ListenerSets, you must install the experimental channel of the Kubernetes Gateway API. 
-   ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
-   ```
-
-   You must also ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+Deploy the [httpbin sample app]({{< link-hextra path="/install/sample-app/" >}}).
    
 ## Set up an HTTP listener {#setup-http}
 
@@ -19,7 +10,7 @@ Set up an HTTP listener on your Gateway.
 
 1. Create a Gateway resource with an HTTP listener. 
    
-   {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
@@ -48,7 +39,7 @@ Set up an HTTP listener on your Gateway.
    |`spec.listeners`|Configure the listeners for this Gateway. In this example, you configure an HTTP Gateway that listens for incoming traffic on port 80. The Gateway can serve HTTPRoutes from any namespace. |
 
    {{% /tab %}}
-   {{% tab tabName="ListenerSets (experimental)" %}}
+   {{% tab tabName="ListenerSets" %}}
 
    1. Create a Gateway that enables the attachment of ListenerSets.
 
@@ -86,8 +77,8 @@ Set up an HTTP listener on your Gateway.
 
       ```yaml
       kubectl apply -f- <<EOF
-      apiVersion: gateway.networking.x-k8s.io/v1alpha1
-      kind: XListenerSet
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: ListenerSet
       metadata:
         name: http-listenerset
         namespace: httpbin
@@ -124,7 +115,7 @@ Set up an HTTP listener on your Gateway.
 
 3. Create an HTTPRoute resource for the httpbin app that is served by the Gateway that you created.
    
-   {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
@@ -146,7 +137,7 @@ Set up an HTTP listener on your Gateway.
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="ListenerSets (experimental)" %}}
+   {{% tab tabName="ListenerSets" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -158,8 +149,8 @@ Set up an HTTP listener on your Gateway.
      parentRefs:
        - name: http-listenerset
          namespace: httpbin
-         kind: XListenerSet
-         group: gateway.networking.x-k8s.io
+         kind: ListenerSet
+         group: gateway.networking.k8s.io
      rules:
        - backendRefs:
            - name: httpbin
@@ -191,7 +182,7 @@ Set up an HTTP listener on your Gateway.
 
 5. Verify that the listener now has a route attached.
 
-   {{< tabs items="Gateway listeners,ListenerSet (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSet" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}   
 
    ```sh
@@ -206,10 +197,10 @@ Set up an HTTP listener on your Gateway.
    - attachedRoutes: 1
    ```
    {{% /tab %}}
-   {{% tab tabName="ListenerSets (experimental)" %}}
+   {{% tab tabName="ListenerSets" %}}
 
    ```sh
-   kubectl get xlistenerset -n httpbin http-listenerset -o yaml
+   kubectl get listenerset -n httpbin http-listenerset -o yaml
    ```
 
    Example output:
@@ -292,18 +283,18 @@ Set up an HTTP listener on your Gateway.
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-{{< tabs items="Gateway listeners,ListenerSet (experimental)" tabTotal="2" >}}
+{{< tabs items="Gateway listeners,ListenerSet" tabTotal="2" >}}
 {{% tab tabName="Gateway listeners" %}}
 ```sh
 kubectl delete gateway agentgateway-proxy-http -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute httpbin-route -n httpbin
 ```
 {{% /tab %}}
-{{% tab tabName="ListenerSet (experimental)" %}}
+{{% tab tabName="ListenerSet" %}}
 ```sh
 kubectl delete gateway agentgateway-proxy-http -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute httpbin-route -n httpbin
-kubectl delete xlistenersets http-listenerset -n httpbin
+kubectl delete listenersets http-listenerset -n httpbin
 ```
 {{% /tab %}}
 {{< /tabs >}}

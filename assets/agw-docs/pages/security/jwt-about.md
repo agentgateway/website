@@ -89,3 +89,4 @@ Using a remote JWKS endpoint is the recommended approach when using JWT authenti
 - **Automatic key rotation**: When the identity provider rotates keys, the agentgateway proxy automatically fetches the new keys
 - **No manual key management**: You don't need to update policies when keys change
 - **Multiple keys**: The JWKS endpoint can return multiple keys, supporting gradual key rotation
+

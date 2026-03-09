@@ -1,6 +1,6 @@
 [
   {
-    "version": "2.3.x",
+    "version": "1.0.x",
     "linkVersion": "main",
     "url": "main",
     "apiFile": "api-23x.md",

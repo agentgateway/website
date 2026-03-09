@@ -72,6 +72,66 @@ def infer_version_from_sources(sources: List[Dict[str, str]], fallback: str) -> 
     return fallback
 
 
+def build_test_cases_from_file(
+    repo_root: Path,
+    md_file: Path,
+    generated_dir: Path,
+    filter_test_name: Optional[str] = None,
+) -> Tuple[List[TestCase], List[str]]:
+    """Build test cases from a single markdown file, optionally filtered to one test name."""
+    test_cases: List[TestCase] = []
+    tested_documents: List[str] = []
+
+    if not md_file.is_file():
+        return test_cases, tested_documents
+
+    metadata = parse_front_matter(md_file)
+    tests = metadata.get("test")
+    if not isinstance(tests, dict) or not tests:
+        return test_cases, tested_documents
+
+    rel_doc = md_file.relative_to(repo_root).as_posix()
+    tested_documents.append(rel_doc)
+
+    doc_slug = sanitize_name(str(md_file.relative_to(repo_root).with_suffix("")))
+    for test_name, entries in tests.items():
+        if not isinstance(test_name, str) or not test_name:
+            continue
+        if filter_test_name and test_name != filter_test_name:
+            continue
+        if not isinstance(entries, list):
+            continue
+
+        sources: List[Dict[str, str]] = []
+        for entry in entries:
+            if not isinstance(entry, dict):
+                continue
+            source_file = entry.get("file")
+            source_path = entry.get("path")
+            if not source_file or not source_path:
+                continue
+            sources.append({"file": source_file, "path": source_path})
+
+        if not sources:
+            continue
+
+        test_slug = sanitize_name(test_name)
+        script_name = f"{doc_slug}-{test_slug}.sh"
+        manifest_name = f"{doc_slug}-{test_slug}.manifest.json"
+
+        test_cases.append(
+            TestCase(
+                document=md_file,
+                name=test_name,
+                sources=sources,
+                script_path=generated_dir / script_name,
+                manifest_path=generated_dir / manifest_name,
+            )
+        )
+
+    return test_cases, sorted(set(tested_documents))
+
+
 def build_test_cases(
     repo_root: Path,
     docs_glob: str,
@@ -81,50 +141,9 @@ def build_test_cases(
     tested_documents: List[str] = []
 
     for md_file in sorted(repo_root.glob(docs_glob)):
-        if not md_file.is_file():
-            continue
-
-        metadata = parse_front_matter(md_file)
-        tests = metadata.get("test")
-        if not isinstance(tests, dict) or not tests:
-            continue
-
-        rel_doc = md_file.relative_to(repo_root).as_posix()
-        tested_documents.append(rel_doc)
-
-        doc_slug = sanitize_name(str(md_file.relative_to(repo_root).with_suffix("")))
-        for test_name, entries in tests.items():
-            if not isinstance(test_name, str) or not test_name:
-                continue
-            if not isinstance(entries, list):
-                continue
-
-            sources: List[Dict[str, str]] = []
-            for entry in entries:
-                if not isinstance(entry, dict):
-                    continue
-                source_file = entry.get("file")
-                source_path = entry.get("path")
-                if not source_file or not source_path:
-                    continue
-                sources.append({"file": source_file, "path": source_path})
-
-            if not sources:
-                continue
-
-            test_slug = sanitize_name(test_name)
-            script_name = f"{doc_slug}-{test_slug}.sh"
-            manifest_name = f"{doc_slug}-{test_slug}.manifest.json"
-
-            test_cases.append(
-                TestCase(
-                    document=md_file,
-                    name=test_name,
-                    sources=sources,
-                    script_path=generated_dir / script_name,
-                    manifest_path=generated_dir / manifest_name,
-                )
-            )
+        cases, docs = build_test_cases_from_file(repo_root, md_file, generated_dir)
+        test_cases.extend(cases)
+        tested_documents.extend(docs)
 
     return test_cases, sorted(set(tested_documents))
 
@@ -263,13 +282,27 @@ def main() -> int:
         help="Stream all command output (default: enabled)",
     )
     parser.add_argument("--generate-only", action="store_true", help="Only generate scripts/manifests, do not run tests")
+    parser.add_argument("--file", default=None, help="Path to a single markdown file to test (relative to repo root or absolute)")
+    parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (requires --file)")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
     generated_dir = (repo_root / args.generated_dir).resolve()
     report_path = (repo_root / args.report_file).resolve()
 
-    test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
+    if args.file:
+        md_file = Path(args.file)
+        if not md_file.is_absolute():
+            md_file = repo_root / md_file
+        test_cases, tested_documents = build_test_cases_from_file(repo_root, md_file, generated_dir, filter_test_name=args.test)
+        if not test_cases:
+            if args.test:
+                print(f"No test named '{args.test}' found in {args.file}")
+            else:
+                print(f"No test metadata found in {args.file}")
+            return 1
+    else:
+        test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
     if not test_cases:
         print("No docs with test metadata found.")
         write_report(report_path, tested_documents, {})
