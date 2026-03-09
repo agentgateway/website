@@ -13,12 +13,11 @@ Other AI gateways often call this feature "virtual keys" or "virtual key managem
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
-
-<!--TODO rate limit: Add link to rate limit server setup guide when available. Tests will require rate limit server deployment. -->
+1. {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
+2. Understand rate limiting concepts and setup. See the [LLM rate limiting guide]({{< link-hextra path="/llm/rate-limit/" >}}) for an overview of local and global rate limiting.
 
 {{< callout type="warning" >}}
-This guide requires a rate limit server deployment. See the [global rate limiting guide]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for setup instructions.
+This guide uses global rate limiting to enforce token budgets across multiple gateway instances. You need to deploy a rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
 {{< /callout >}}
 
 ## How budget limits work
@@ -112,9 +111,6 @@ spec:
       secretSelector:
         matchLabels:
           api-key-group: llm-users
-      extractFrom:
-        headers:
-          - name: "X-User-ID"
 EOF
 ```
 
@@ -125,18 +121,17 @@ EOF
 | `targetRefs` | Apply the policy to the entire Gateway, so all routes require API keys. |
 | `apiKeyAuthentication.mode` | Set to `Strict` to require a valid API key for all requests. |
 | `secretSelector` | Use label selectors to reference all API key secrets with the `api-key-group: llm-users` label. |
-| `extractFrom.headers` | Extract the user ID from the `X-User-ID` header. This header value is used for rate limiting. |
 
 {{< doc-test paths="budget-limits" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for api-key-auth traffic policy to be accepted
   wait:
     target:
-      kind: TrafficPolicy
+      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
       metadata:
-        namespace: agentgateway-system
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         name: api-key-auth
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
@@ -166,14 +161,16 @@ spec:
     rateLimit:
       global:
         domain: token-budgets
-        rateLimitServerRef:
+        backendRef:
+          kind: Service
           name: rate-limit-server
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          port: 8081
         descriptors:
           - entries:
-              - key: user_id
-                header: "X-User-ID"
-            type: tokens
+              - name: user_id
+                expression: 'request.headers["x-user-id"]'
+            unit: Tokens
 EOF
 ```
 
@@ -183,17 +180,16 @@ EOF
 |-------------|-------------|
 | `rateLimit.global` | Use global rate limiting to enforce limits across all {{< reuse "agw-docs/snippets/agentgateway.md" >}} instances. |
 | `domain` | A namespace for rate limit configurations. Use `token-budgets` to organize your budget policies. |
-| `descriptors[].entries[].key` | The key to use for rate limiting. Set to `user_id` to rate limit per user. |
-| `descriptors[].entries[].header` | Extract the user ID from the `X-User-ID` header. |
-| `descriptors[].type` | Set to `tokens` to enforce token-based limits instead of request-based limits. |
+| `backendRef` | References the rate limit server Service. Must include `kind`, `name`, `namespace`, and `port`. |
+| `descriptors[].entries[].name` | The name of the descriptor entry. Set to `user_id` to rate limit per user. |
+| `descriptors[].entries[].expression` | CEL expression to extract the user ID from the `X-User-ID` request header. |
+| `descriptors[].unit` | Set to `Tokens` to enforce token-based limits instead of request-based limits. |
 
 ### Configure the rate limit server
 
 Deploy a rate limit server and configure it with your budget limits.
 
-<!--TODO rate limit: Step 1 requires rate limit server deployment guide -->
-
-1. Deploy the rate limit server. For setup instructions, see the [global rate limiting guide]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
+1. Deploy the rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
 
 2. Create a ConfigMap with your budget configuration.
 
@@ -226,10 +222,12 @@ Deploy a rate limit server and configure it with your budget limits.
 
 ### Test the budget limits
 
-<!--TODO rate limit: The following test steps require a rate limit server. Once the rate limit guide is available, add full end-to-end tests. -->
+{{< callout type="info" >}}
+The following tests verify API key authentication. For full end-to-end testing of token budget enforcement, deploy a rate limit server as described in the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}).
+{{< /callout >}}
 
 {{< doc-test paths="budget-limits" >}}
-# Test API key authentication (without rate limiting since rate limit server is a TODO)
+# Test API key authentication (rate limit server deployment required for full budget enforcement tests)
 # Test 1: Request without API key should be rejected
 YAMLTest -f - <<'EOF'
 - name: verify request without API key is rejected
@@ -385,16 +383,18 @@ Apply different budgets to different routes, such as higher limits for productio
        rateLimit:
          global:
            domain: token-budgets
-           rateLimitServerRef:
+           backendRef:
+             kind: Service
              name: rate-limit-server
              namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             port: 8081
            descriptors:
              - entries:
-                 - key: route
-                   value: "prod"
-                 - key: user_id
-                   header: "X-User-ID"
-               type: tokens
+                 - name: route
+                   expression: '"prod"'
+                 - name: user_id
+                   expression: 'request.headers["x-user-id"]'
+               unit: Tokens
    ```
 
 2. Configure the rate limit server with nested descriptors for route-specific budgets.
@@ -457,16 +457,18 @@ Provide different budget tiers for free, standard, and premium users.
      rateLimit:
        global:
          domain: token-budgets
-         rateLimitServerRef:
+         backendRef:
+           kind: Service
            name: rate-limit-server
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+           port: 8081
          descriptors:
            - entries:
-               - key: tier
-                 header: "X-User-Tier"
-               - key: user_id
-                 header: "X-User-ID"
-             type: tokens
+               - name: tier
+                 expression: 'request.headers["x-user-tier"]'
+               - name: user_id
+                 expression: 'request.headers["x-user-id"]'
+             unit: Tokens
    ```
 
 3. Configure the rate limit server with tier-based budgets.
@@ -601,6 +603,4 @@ kubectl delete configmap rate-limit-config -n {{< reuse "agw-docs/snippets/names
 - [Track costs per request]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor actual spending
 - [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for user authentication
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics
-<!--TODO rate limiting 
-[Configure rate limiting]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for advanced rate limit patterns
--->
+- [Configure rate limiting]({{< link-hextra path="/llm/rate-limit/" >}}) for advanced rate limit patterns
