@@ -28,7 +28,7 @@ llm:
 [Cohere](https://cohere.com/) provides an OpenAI-compatible endpoint for their models.
 
 {{< callout type="info" >}}
-Cohere uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the [Advanced configuration](#advanced-configuration) section below.
+Cohere uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
 {{< /callout >}}
 
 ## Ollama (Local)
@@ -69,7 +69,7 @@ llm:
 [Groq](https://groq.com/) provides fast inference via OpenAI-compatible endpoints.
 
 {{< callout type="info" >}}
-Groq uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the [Advanced configuration](#advanced-configuration) section below.
+Groq uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
 {{< /callout >}}
 
 ## Generic configuration

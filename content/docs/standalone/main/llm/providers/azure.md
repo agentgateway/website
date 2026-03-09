@@ -55,7 +55,7 @@ For advanced Azure authentication methods (managed identity, workload identity, 
 
 ## Advanced configuration
 
-For advanced Azure AI scenarios, use the traditional configuration format. The tabs below show examples for different authentication methods.
+For advanced Azure AI scenarios, use the traditional configuration format. The following tabs show examples for different authentication methods.
 
 {{< tabs items="Foundry,Client secret,System-assigned managed identity,User-assigned managed identity,Workload identity" >}}
 
