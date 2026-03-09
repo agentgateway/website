@@ -89,13 +89,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 1. Create a namespace for the rate limit infrastructure.
 
-   ```sh
+   ```sh,paths="global-rate-limit-by-ip"
    kubectl create namespace ratelimit
    ```
 
 2. Deploy Redis as the backing store.
 
-   ```yaml
+   ```yaml,paths="global-rate-limit-by-ip"
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -133,7 +133,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that will be enforced.
 
-   ```yaml
+   ```yaml,paths="global-rate-limit-by-ip"
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -203,7 +203,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 4. Deploy the rate limit service.
 
-   ```yaml
+   ```yaml,paths="global-rate-limit-by-ip"
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -264,6 +264,39 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
+   {{< doc-test paths="global-rate-limit-by-ip" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for redis deployment to be ready
+     wait:
+       target:
+         kind: Deployment
+         metadata:
+           namespace: ratelimit
+           name: redis
+       jsonPath: "$.status.availableReplicas"
+       jsonPathExpectation:
+         comparator: greaterThan
+         value: 0
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 5
+   - name: wait for ratelimit deployment to be ready
+     wait:
+       target:
+         kind: Deployment
+         metadata:
+           namespace: ratelimit
+           name: ratelimit
+       jsonPath: "$.status.availableReplicas"
+       jsonPathExpectation:
+         comparator: greaterThan
+         value: 0
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 5
+   EOF
+   {{< /doc-test >}}
+
 5. Verify the rate limit service is running.
 
    ```sh
@@ -305,7 +338,7 @@ For AI-specific use cases:
 
 Limit requests based on the client's source IP address.
 
-```yaml
+```yaml,paths="global-rate-limit-by-ip"
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -332,6 +365,26 @@ spec:
 EOF
 ```
 
+{{< doc-test paths="global-rate-limit-by-ip" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for ip-rate-limit policy to be accepted
+  wait:
+    target:
+      apiVersion: agentgateway.dev/v1alpha1
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: httpbin
+        name: ip-rate-limit
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Field | Required | Description |
@@ -354,6 +407,31 @@ EOF
 3. The service matches this against its configuration's `remote_address` descriptor
 4. If the client has made more than 10 requests in the last minute (per the config), the service returns `OVER_LIMIT`
 5. The gateway returns 429 to the client
+
+{{< doc-test paths="global-rate-limit-by-ip" >}}
+# Send 15 requests rapidly to exceed the 10 req/min limit
+for i in $(seq 1 15); do
+  curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/get -H "host: www.example.com" &
+done
+wait
+
+# Verify rate limit is active
+YAMLTest -f - <<'EOF'
+- name: Verify global rate limit by IP
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/get"
+    method: GET
+    headers:
+      host: www.example.com
+  source:
+    type: local
+  expect:
+    statusCode: 429
+  retries:
+    maxAttempts: 3
+    intervalSeconds: 0
+EOF
+{{< /doc-test >}}
 
 ### Rate limit by user ID
 
@@ -626,8 +704,8 @@ Both limits are evaluated. A request must pass both checks to succeed.
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit user-rate-limit path-rate-limit tier-rate-limit nested-rate-limit combined-rate-limit -n httpbin
+```sh,paths="global-rate-limit-by-ip"
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit -n httpbin
 kubectl delete deployment ratelimit redis -n ratelimit
 kubectl delete service ratelimit redis -n ratelimit
 kubectl delete configmap ratelimit-config -n ratelimit

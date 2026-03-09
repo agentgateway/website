@@ -47,7 +47,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 
 1. Apply a token budget to your LLM HTTPRoute.
 
-   ```yaml
+   ```yaml,paths="llm-token-rate-limit"
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -58,7 +58,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
      targetRefs:
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
-       name: openai
+       name: httpbun-llm
      traffic:
        rateLimit:
          local:
@@ -66,6 +66,26 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
            unit: Minutes
    EOF
    ```
+
+   {{< doc-test paths="llm-token-rate-limit" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for llm-token-budget policy to be accepted
+     wait:
+       target:
+         apiVersion: agentgateway.dev/v1alpha1
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: agentgateway-system
+           name: llm-token-budget
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
 
    This limits total token consumption to 100 tokens per minute across all requests hitting this route.
 
@@ -187,6 +207,39 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    rate limit exceeded
    ```
 
+{{< doc-test paths="llm-token-rate-limit" >}}
+# Send requests to consume the 100 token budget
+# httpbun returns ~32 tokens per request, so 4 requests = 128 tokens (exceeds 100 limit)
+for i in $(seq 1 4); do
+  curl -s http://${INGRESS_GW_ADDRESS}/v1/chat/completions \
+    -H "Content-Type: application/json" \
+    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Test"}]}' > /dev/null
+  sleep 0.1
+done
+
+# Verify the rate limit is now active (4 requests × ~32 tokens = ~128, exceeds 100 limit)
+YAMLTest -f - <<'EOF'
+- name: Verify token rate limit is enforced
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Test"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 429
+  retries:
+    maxAttempts: 5
+    intervalSeconds: 1
+EOF
+{{< /doc-test >}}
+
 ## Combining request and token limits {#combined}
 
 You can apply both request-based and token-based limits to the same route. Both limits are evaluated independently — a request must pass both checks to succeed.
@@ -256,8 +309,6 @@ For detailed instructions on setting up global rate limiting with descriptors an
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh,paths="llm-token-rate-limit"
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-combined-limit -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} gateway-token-limit -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

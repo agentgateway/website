@@ -90,7 +90,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
 1. Apply a rate limit directly to the MCP HTTPRoute. The following example allows 5 tool calls per second with a burst of up to 15 (5 base + 10 burst) before the 429 kicks in. The burst headroom is important for MCP clients: during session initialization, an agent typically fires `initialize` → `tools/list` → several `tools/call` requests back-to-back. Without burst capacity, the MCP server would hit the limit before doing any real work.
 
-   ```yaml
+   ```yaml,paths="mcp-local-rate-limit"
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -110,6 +110,26 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
            burst: 10
    EOF
    ```
+
+   {{< doc-test paths="mcp-local-rate-limit" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for mcp-rate-limit policy to be accepted
+     wait:
+       target:
+         apiVersion: agentgateway.dev/v1alpha1
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: default
+           name: mcp-rate-limit
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
 
 2. Verify that the policy is attached.
 
@@ -434,13 +454,6 @@ The following steps show how to set up global rate limiting infrastructure and c
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh,paths="mcp-local-rate-limit"
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-rate-limit -n default
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-tool-ratelimit -n default
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} gateway-ceiling -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-
-# Remove the rate limit infrastructure
-kubectl delete deployment ratelimit redis -n default
-kubectl delete service ratelimit redis -n default
-kubectl delete configmap ratelimit-config -n default
 ```
