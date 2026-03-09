@@ -210,9 +210,9 @@ Send a request to the httpbin app through the agentgateway proxy.
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your API gateway capabilities.
 
 {{< cards >}}
-  {{< card link="traffic-management" title="Traffic management" subtitle="Add routing capabilities to your httpbin route." >}}
-  {{< card link="resiliency" title="Resiliency" subtitle="Make your routes more resilient to failures and disruptions." >}}
-  {{< card link="security" title="Security" subtitle="Secure routes with external authentication and rate limiting policies." >}}
+  {{< card path="/traffic-management" title="Traffic management" subtitle="Add routing capabilities to your httpbin route." >}}
+  {{< card path="/resiliency" title="Resiliency" subtitle="Make your routes more resilient to failures and disruptions." >}}
+  {{< card path="/security" title="Security" subtitle="Secure routes with external authentication and rate limiting policies." >}}
 {{< /cards >}}
 
 ## Cleanup

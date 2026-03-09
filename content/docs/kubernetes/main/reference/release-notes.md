@@ -17,10 +17,74 @@ The previous release version pattern was changed to align with the version numbe
 
 Note that version 2.2 of the documentation is removed. Use the latest 1.0.0 version instead. 
 
+### New Helm charts
+
+The agentgateway control plane is now independent from the kgateway open source project. Because of that, the Helm paths changed as follows: 
+
+* CRDs: `oci://cr.agentgateway.dev/charts/agentgateway-crds`
+* Control plane: `oci://cr.agentgateway.dev/charts/agentgateway`
+
+Make sure to update any CI/CD workflows and processes to use the new Helm chart locations.
+
 ### XListenerSet API promoted to ListenerSet
 
-The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead. 
+The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update the CRD kind from `XListenerSet` to `ListenerSet` and api version from `gateway.networking.x-k8s.io/v1alpha1` to `gateway.networking.k8s.io/v1` as shown in the following examples. 
 
+**Old XListenerSet example**:
+```
+apiVersion: gateway.networking.x-k8s.io/v1alpha1
+kind: XListenerSet
+metadata:
+  name: http-listenerset
+  namespace: httpbin
+spec:
+  parentRef:
+    name: agentgateway-proxy-http
+    namespace: agentgateway-system
+    kind: Gateway
+    group: gateway.networking.k8s.io
+  listeners:
+  - protocol: HTTP
+    port: 80
+    name: http
+    allowedRoutes:
+      namespaces:
+        from: All
+```
+
+**Updated ListenerSet example**: 
+```
+apiVersion: gateway.networking.k8s.io/v1
+kind: ListenerSet
+metadata:
+  name: http-listenerset
+  namespace: httpbin
+spec:
+  parentRef:
+    name: agentgateway-proxy-http
+    namespace: agentgateway-system
+    kind: Gateway
+    group: gateway.networking.k8s.io
+  listeners:
+  - protocol: HTTP
+    port: 80
+    name: http
+    allowedRoutes:
+      namespaces:
+        from: All
+```
+
+### CEL 2.0 
+
+This release includes a major refactor to the CEL implementation in agentgateway to improve scalability and performance. The following user facing changes were introduced:
+
+* **Function name changes**: <!-- CEL expressions can now be applied directly to rate limiting, authorization, and observability policies. -->Due to dependency updates, function names were changed. Previously, function names followed a camel case pattern, such as `base64Encode`. Now, function names use dot notations, such as `base64.encode`. The old camel case names remain in place for backwards compatibility. 
+* **New string functions**: The following string manipulation functions were added to the CEL library: `startsWith`, `endsWith`, `stripPrefix`, and `stripSuffix`. These functions align with the Google [CEL-Go strings extension](https://pkg.go.dev/github.com/google/cel-go/ext#Strings). 
+* **Null values fail**: If a top-level variable returns a null value, the CEL expression now fails. Previously, null values always returned true. For example, the `has(jwt)` expression was previously successful if the JWT was missing or could not be found. Now, this expression fails. 
+
+Make sure to update and verify any existing CEL expressions that you use in your environment. 
+
+For more information, see the [CEL expression]({{< link-hextra path="/reference/cel/" >}}) reference. 
 
 ## 🌟 New features {#v10-new-features}
 
@@ -33,7 +97,6 @@ The Kubernetes Gateway API dependency is updated to support version 1.5.0. This 
 * **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs]({{< link-hextra path="/setup/listeners/mtls/" >}}). 
 * **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin.
 * **BackendTLS**: 
-* **ReferenceGrant**: 
 
 ### Autoscaling policies for agentgateway controller
 
@@ -110,9 +173,7 @@ https://github.com/solo-io/gloo-gateway/pull/1454
 
 https://github.com/solo-io/gloo-gateway/pull/1462
 
-### GRPCRoute support
 
-https://github.com/kgateway-dev/kgateway/pull/13293/changes#diff-781a8d153c4872696262e6b28d80b1523d7e76641c0817b1139b076346cbd24f
 
 --> 
 
@@ -153,6 +214,11 @@ spec:
         namespaces:
           from: Same
 ```
+
+### GRPCRoute support
+
+You can now attach GRPCRoutes to your agentgateway proxy to route traffic to gRPC endpoints. For more information, see [gRPC routing]({{< link-hextra path="/traffic-management/grpc/" >}}). 
+
 
 ## 🗑️ Deprecated or removed features {#v10-removed-features}
 

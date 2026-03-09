@@ -95,14 +95,17 @@ def generate_summary(report: dict) -> str:
 
         for key, result in failed_tests:
             parts = key.split("::", 1)
+            doc = parts[0] if len(parts) > 0 else key
             test_name = parts[1] if len(parts) > 1 else key
+            version = _extract_version(doc)
+            title = f"{test_name} ({version})" if version else test_name
             error = result.get("error", "No error output captured.")
 
             # Show individual checks if any passed before failure
             checks = result.get("checks", [])
 
             lines.append(f"<details>")
-            lines.append(f"<summary><strong>{_escape_md_table(test_name)}</strong></summary>")
+            lines.append(f"<summary><strong>{_escape_md_table(title)}</strong></summary>")
             lines.append("")
 
             if checks:
@@ -140,6 +143,13 @@ def _truncate(text: str, limit: int = _SLACK_TEXT_LIMIT, suffix: str = "\n... (t
     return text[: limit - len(suffix)] + suffix
 
 
+def _truncate_tail(text: str, limit: int = _SLACK_TEXT_LIMIT // 2, prefix: str = "(truncated) ...\n") -> str:
+    """Keep the tail of text, truncating from the beginning."""
+    if len(text) <= limit:
+        return text
+    return prefix + text[-(limit - len(prefix)):]
+
+
 def _run_url_block(run_url: str) -> dict:
     """Build a context block with a link to the GitHub Actions run."""
     return {
@@ -148,6 +158,20 @@ def _run_url_block(run_url: str) -> dict:
             {"type": "mrkdwn", "text": f"<{run_url}|View workflow run>"}
         ],
     }
+
+
+def _extract_version(doc_path: str) -> str:
+    """Extract the version segment from a doc path.
+
+    Expects paths like ``content/docs/kubernetes/main/...`` and returns
+    the segment immediately following ``docs/``, e.g. ``main``.
+    """
+    path_parts = doc_path.replace("\\", "/").split("/")
+    try:
+        idx = path_parts.index("docs")
+        return "/".join(path_parts[idx + 1 : idx + 3])
+    except (ValueError, IndexError):
+        return ""
 
 
 def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
@@ -229,14 +253,17 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
                 break
 
             parts = key.split("::", 1)
+            doc = parts[0] if len(parts) > 0 else key
             test_name = parts[1] if len(parts) > 1 else key
+            version = _extract_version(doc)
+            title = f"{test_name} ({version})" if version else test_name
             error = result.get("error", "No error output captured.")
             checks = result.get("checks", [])
 
-            detail_parts: list[str] = [f"*`{test_name}`*"]
+            detail_parts: list[str] = [f"*`{title}`*"]
             if checks:
                 detail_parts.append("*Checks:*  " + ", ".join(checks))
-            detail_parts.append(f"```{error}```")
+            detail_parts.append(f"```{_truncate_tail(error)}```")
 
             blocks.append(
                 {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}

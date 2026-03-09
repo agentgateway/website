@@ -10,17 +10,17 @@ You can download the Helm chart to review the Helm values that are supported.
 
 1. Download the Helm chart as an archive to your local machine. 
    ```sh
-   helm pull oci://cr.kgateway.dev/kgateway-dev/charts/kgateway --version v{{< reuse "agw-docs/versions/n-patch.md" >}}
+   helm pull {{< reuse "agw-docs/snippets/helm-path.md" >}} --version v{{< reuse "agw-docs/versions/n-patch.md" >}}
    ```
 
 2. Extract the files from the downloaded archive. 
    ```sh
-   tar -xvf kgateway-v{{< reuse "agw-docs/versions/n-patch.md" >}}.tgz
+   tar -xvf agentgateway-v{{< reuse "agw-docs/versions/n-patch.md" >}}.tgz
    ```
 
 3. Open the Helm values file. 
    ```sh
-   open kgateway/values.yaml
+   open agentgateway/values.yaml
    ```
 
 ## Helm charts
