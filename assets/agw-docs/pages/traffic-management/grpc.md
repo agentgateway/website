@@ -195,7 +195,7 @@ Verify that the gRPC route to the echo service is working. The steps vary whethe
 
 {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider LoadBalancer" %}}
-1. Send a request to the gRPC echo service by using the gRPC client app. Verify that you see the the `Pong` message in your response. 
+1. Send a request to the gRPC echo service by using the gRPC client app. Verify that you see the `Pong` message in your response. 
    ```sh
    kubectl exec -n agentgateway-system grpcurl-client -c grpcurl -- \
      grpcurl -plaintext -authority grpc.com -vv grpc:80 yages.Echo/Ping
@@ -237,7 +237,7 @@ Verify that the gRPC route to the echo service is working. The steps vary whethe
    kubectl port-forward svc/grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
 
-2. Send a request to the gRPC echo service. Verify that you see the the `Pong` message in your response. 
+2. Send a request to the gRPC echo service. Verify that you see the `Pong` message in your response. 
    ```sh
    grpcurl -plaintext -authority grpc.com -vv localhost:8080 yages.Echo/Ping
    ```
