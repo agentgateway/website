@@ -33,10 +33,11 @@ You can apply rate limits at different levels to implement layered protection. G
 
 When both a gateway-level policy and a route-level policy are defined, the route-level policy takes precedence for traffic matching that route.
 
-#### Gateway-level ceiling
+**Gateway-level ceiling**
 
-Add a gateway-level policy as a hard backstop across all traffic — HTTP, MCP, and LLM routes alike.
+Add a gateway-level policy as a hard backstop across all traffic: HTTP, MCP, and LLM routes alike.
 
+{{< details title="Example gateway-level policy" >}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -57,16 +58,17 @@ spec:
         burst: 5
 EOF
 ```
+{{< /details >}}
 
-#### Route-level, MCP-specific limits
+**Route-level, MCP-specific limits**
 
-With both the gateway-level and route-level policies in place, the MCP route is subject to its own tighter limit (5 req/s), while the gateway ceiling protects against any single client flooding a different route:
+With both the gateway-level and route-level policies in place, the MCP route is subject to its own tighter limit (5 req/s), while the gateway ceiling protects against any single client flooding a different route.
 
 ```
 Client → Gateway (10000 req/min) → MCP route (5 req/s) → mcp-server
 ```
 
-The more-specific policy always wins for the traffic it matches.
+The more specific policy wins for the traffic it matches.
 
 ### Use cases
 
@@ -215,11 +217,13 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
 Local rate limiting treats every POST to `/mcp` identically. But some tools are more expensive than others, and so they deserve tighter limits. Global rate limiting with CEL descriptors lets you look inside the MCP request body and apply different ceilings per tool name.
 
+{{< callout >}}
+Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}).
+{{< /callout >}}
+
 The following steps show how to set up global rate limiting infrastructure and configure per-tool rate limits using CEL expressions.
 
-1. Deploy the rate limit service.
-
-   Global rate limiting requires an external [Envoy Rate Limit service](https://github.com/envoyproxy/ratelimit) backed by Redis. For a complete guide on global rate limiting architecture and setup, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}). The following example shows an MCP-specific configuration that applies different limits to different tools.
+1. Deploy the rate limit service. The following example shows an MCP-specific configuration that applies different limits to different tools. The tool calls are identified by descriptors that are divided into two categories: expensive ones that are 3 calls per minute (`trigger-long-running-operation` and `sampleLLMCall`) and all other tool calls that are 10 calls per minute.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -344,7 +348,7 @@ The following steps show how to set up global rate limiting infrastructure and c
 
 2. Apply the global rate limiting policy with CEL descriptors. The following example configuration includes two CEL expressions that inspect the JSON-RPC body on every request. 
 
-   * **Identify `tools/call` traffic**. The `mcp_method` expression returns `"tools/call"` only when the JSON-RPC `method` field matches exactly. For every other MCP operation — `initialize`, `tools/list`, `notifications/initialized` — it returns `"other"`, which has no configured limit in the `ratelimit-config` ConfigMap. Because of that, these types of requests are never throttled.
+   * **Identify `tools/call` traffic**. The `mcp_method` expression returns `"tools/call"` only when the JSON-RPC `method` field matches exactly. For every other MCP operation, such as `initialize`, `tools/list`, `notifications/initialized`, it returns `"other"`, which has no configured limit in the `ratelimit-config` ConfigMap. Because of that, these types of requests are never throttled.
    * **Extract the tool name so each tool gets its own counter bucket**. The `tool_name` expression checks the `params.name` field to find the tool that is invoked. Combined with `mcp_method`, the rate limit service receives a two-key descriptor like `mcp_method=tools/call, tool_name=trigger-long-running-operation` and looks up the matching rule.
 
    ```yaml
@@ -393,7 +397,7 @@ The following steps show how to set up global rate limiting infrastructure and c
 
 4. Send multiple requests to different tools and verify that each tool has its own independent rate limit.
 
-   Each tool maintains an independent counter in Redis. Exhausting the budget for `trigger-long-running-operation` has no effect on `echo` because they have separate rate limit counters.
+   Each tool maintains an independent counter in Redis. Exhausting the budget for `trigger-long-running-operation` tool call (3 requests per minute) has no effect on the `echo` tool call (10 requests per minute) because they have separate rate limit counters.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}

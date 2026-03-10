@@ -4,25 +4,24 @@ Apply local and global rate limits to HTTP traffic to protect your backend servi
 
 Rate limiting in agentgateway protects your services from being overwhelmed by excessive traffic. A runaway automation script, a misconfigured retry loop, or a deliberate flood can exhaust your upstream's capacity in seconds. Rate limiting gives you precise control over how much traffic reaches any route or the entire gateway — without any changes to the backend.
 
-Rate limiting in agentgateway is expressed through {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources. A policy attaches to a Gateway or HTTPRoute target, and defines limits in the `spec.traffic.rateLimit` field.
+Rate limiting in agentgateway is expressed through {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources. A policy attaches to a Gateway or HTTPRoute target, and defines limits in the `spec.traffic.rateLimit` field. Gateway-level policies act as a hard ceiling on total traffic, while route-level policies provide finer-grained control.
 
-There are two modes: local or global. Gateway-level policies act as a hard ceiling on total traffic, while route-level policies provide finer-grained control.
-
-For AI-specific use cases, see:
-- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
-- [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
+Additionally, you can set up local or global rate limiting, depending on whether you want limits shared across Gateway instances.
 
 | Mode | Where limits run | Use case |
 |------|-----------------|----------|
 | Local | In-process, per proxy replica | Simple per-route or gateway-wide limits |
 | Global | External rate limit service | Shared limits across multiple proxy replicas |
 
+For AI-specific use cases, see:
+- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
+- [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
+
 ### Gateway-level global DoS protection
 
 Target your `Gateway` resource to apply a limit across all routes. This acts as a hard ceiling on total gateway throughput regardless of which route is hit.
 
-Example configuration:
-
+{{< details title="Example gateway policy" >}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -43,12 +42,13 @@ spec:
         burst: 1000
 EOF
 ```
+{{< /details >}}
 
 ### Route-level local control
 
 Route-level policies take precedence over gateway-level ones for their specific traffic.
 
-Example configuration:
+{{< details title="Example route policy" >}}
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -70,6 +70,7 @@ spec:
         burst: 3
 EOF
 ```
+{{< /details >}}
 
 ### Inheritance
 
