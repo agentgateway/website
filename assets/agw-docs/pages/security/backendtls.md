@@ -6,7 +6,7 @@ Originate a one-way TLS connection from the Gateway to a backend.
 
 ## About one-way TLS
 
-When you configure a TLS listener on your Gateway, the Gateway typically terminates incoming TLS traffic and forwards the unencrypted traffic to the backend service. However, you might have a service that only accepts TLS connections, or you want to forward traffic a secured backend service that is external to the cluster.
+When you configure a TLS listener on your Gateway, the Gateway typically terminates incoming TLS traffic and forwards the unencrypted traffic to the backend service. However, you might have a service that only accepts TLS connections, or you want to forward traffic to a secured backend service that is external to the cluster.
 
 You can use the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} BackendTLSPolicy](https://gateway-api.sigs.k8s.io/api-types/backendtlspolicy/) to configure TLS origination from the Gateway to a service in the cluster. This policy supports simple, one-way TLS use cases. 
 
@@ -26,8 +26,7 @@ Deploy an NGINX server in your cluster that is configured for TLS traffic. Then,
 
 ### Deploy the sample app
 
-The following example uses an NGINX server with a self-signed TLS certificate. For the configuration, see the [test directory in the kgateway GitHub repository](https://github.com/kgateway-dev/kgateway/tree/{{< reuse "agw-docs/versions/github-branch.md" >}}/test/e2e/features/backendtls/testdata).
-
+The following example uses an NGINX server with a self-signed TLS certificate.
 
 1. Deploy the NGINX server with a self-signed TLS certificate.
 
