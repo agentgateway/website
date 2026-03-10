@@ -5,6 +5,7 @@ icon: secure
 ---
 
 {{< cards >}}
+  {{< card link="backendtls" title="BackendTLS" >}}
   {{< card link="cors" title="CORS" >}}
   {{< card link="csrf" title="CSRF protection" >}}
   {{< card link="extauth" title="External authentication" >}}
