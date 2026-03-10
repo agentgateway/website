@@ -9,14 +9,10 @@ When you configure a direct response, the gateway proxy intercepts requests to s
 * **Redirects**: You might redirect users to new locations, such as when an endpoint is now available at a different address. 
 * **Test responses**: You can simulate responses from backend services without forwarding the request to the actual service. 
 
-### Limitations
+### Limitation
 
-Consider the following limitations before creating direct response resources in your cluster: 
-* You cannot configure multiple direct response resources on the same route. If you configure multiple direct responses, only the oldest is applied. 
-* You cannot combine a direct response with other route actions on the same route.<!--For example, you cannot configure a direct response and a `RequestRedirect` filter or `backendRefs` rule at the same time.--> If multiple route actions are defined, the route is replaced with a 500 HTTP response code and an error message is shown on the HTTPRoute. 
-<!--* DirectResponse resources can be referenced by using an `ExtensionRef` filter only. If specified in a `backendRef` filter, the DirectResponse configuration is ignored. 
-* No status information is currently populated to the DirectResponse resource.
-* The DirectResponse CRD currently does not show a description when you run `kubectl explain directresponse`. -->
+You cannot configure multiple direct response resources on the same route. If you configure multiple direct responses, only the oldest is applied.  
+
 
 ### Schema validation
 The following rules are applied during schema validation: 
