@@ -13,8 +13,7 @@ Other AI gateways often call this feature "virtual keys" or "virtual key managem
 
 ## Before you begin
 
-1. {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
-2. Understand rate limiting concepts and setup. See the [LLM rate limiting guide]({{< link-hextra path="/llm/rate-limit/" >}}) for an overview of local and global rate limiting.
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 {{< callout type="warning" >}}
 This guide uses global rate limiting to enforce token budgets across multiple gateway instances. You need to deploy a rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
