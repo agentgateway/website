@@ -11,7 +11,21 @@ Global rate limiting coordinates rate limits across multiple agentgateway proxy 
 
 Global rate limiting is essential when running multiple proxy replicas and you need to enforce a single quota across the entire fleet — for example, "100 requests per minute per user" should apply to the sum of requests across all replicas, not 100 per replica.
 
+Global rate limiting requires two components:
+
+1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies the rate limit service reference (`backendRef`), a domain identifier, and CEL-based descriptor rules.
+
+2. **Rate Limit Service**: An external service implementing the Envoy Rate Limit gRPC protocol. The service stores the actual rate limit values, maintains counters in a backend store (typically Redis), and returns allow/deny decisions based on descriptor matching.
+
 ### Request flow
+
+Global rate limiting works as follows:
+
+1. A CEL expression in the policy extracts request attributes (such as client IP, user ID, or path)
+2. The gateway sends these descriptor key-value pairs to the rate limit service via gRPC
+3. The rate limit service matches the descriptors against its configuration and checks the counter
+4. If the limit is exceeded, the service returns `OVER_LIMIT`; otherwise it returns `OK` and increments the counter
+5. If `OVER_LIMIT`, the gateway returns a 429 response to the client; if `OK`, the request proceeds to the backend
 
 Review the following sequence diagram to understand the request flow with global rate limiting.
 
@@ -42,22 +56,6 @@ sequenceDiagram
 4. The Rate Limit Service checks its configuration for matching descriptors, applies the configured limits, and returns a decision.
 5. If allowed, the Gateway forwards the request to the App.
 6. If the rate limit is exceeded, the Gateway denies the request with a 429 response and rate limit headers.
-
-### Architecture
-
-Global rate limiting requires two components:
-
-1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies:
-   - `backendRef`: Reference to the rate limit service (Service or Backend)
-   - `domain`: Arbitrary string identifying this application/team
-   - `descriptors`: Array of CEL-based rules for extracting rate limit dimensions
-
-2. **Rate Limit Service**: An external service implementing the Envoy Rate Limit gRPC protocol. The service:
-   - Stores the actual rate limit values (requests per time unit)
-   - Maintains counters in a backend store (typically Redis)
-   - Returns allow/deny decisions based on descriptor matching
-
-Unlike kgateway, agentgateway does **not** require a separate GatewayExtension resource — the policy directly references the rate limit service.
 
 ### Response headers
 
@@ -131,7 +129,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that will be enforced.
+3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
    ```yaml,paths="global-rate-limit-by-ip"
    kubectl apply -f- <<EOF
@@ -405,7 +403,7 @@ EOF
 1. The CEL expression `source.address` extracts the client IP (such as `"192.168.1.100"`)
 2. The gateway sends `{ key: "remote_address", value: "192.168.1.100" }` to the rate limit service
 3. The service matches this against its configuration's `remote_address` descriptor
-4. If the client has made more than 10 requests in the last minute (per the config), the service returns `OVER_LIMIT`
+4. If the client made more than 10 requests in the last minute (per the config), the service returns `OVER_LIMIT`
 5. The gateway returns 429 to the client
 
 {{< doc-test paths="global-rate-limit-by-ip" >}}
@@ -433,9 +431,9 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-### Rate limit by user ID
+### Rate limit by user ID {#rate-limit-by-user-id}
 
-Extract the user ID from a header and rate limit per user.
+Extract the user ID from a header and rate limit per user. See [Test the rate limits](#test) to verify this configuration.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -464,11 +462,11 @@ spec:
 EOF
 ```
 
-The CEL expression `request.headers["x-user-id"]` extracts the header value. Each unique user ID gets its own rate limit counter.
+The CEL expression `request.headers["x-user-id"]` extracts the `x-user-id` header value from the request. Each unique user ID gets its own rate limit counter.
 
 ### Rate limit by request path
 
-Apply different rate limits to different API paths.
+Apply different rate limits to different API paths. See [Test the rate limits](#test) to verify this configuration.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -501,7 +499,7 @@ The rate limit service configuration defines different limits for `/api/v1` (100
 
 ### Rate limit by service tier (static descriptor)
 
-Use a static value to categorize traffic — for example, by service tier.
+Use a static value to categorize traffic — for example, by service tier. See [Test the rate limits](#test) to verify this configuration.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -639,7 +637,7 @@ Both limits are evaluated. A request must pass both checks to succeed.
    {{% /tab %}}
    {{< /tabs >}}
 
-2. Send requests with a user ID header. These are rate limited according to the service configuration.
+2. Send requests with a user ID header. This test assumes you applied the [Rate limit by user ID](#rate-limit-by-user-id) policy. Requests are rate limited according to the service configuration (50 requests per minute for user "alice").
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -668,26 +666,7 @@ Both limits are evaluated. A request must pass both checks to succeed.
 
    With a limit of 50 requests per minute for user "alice", the first 50 requests succeed with 200, and subsequent requests return 429.
 
-3. Inspect a rate-limited response:
-
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:80/get \
-     -H "host: www.example.com" \
-     -H "x-user-id: alice"
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -i localhost:8080/get \
-     -H "host: www.example.com" \
-     -H "x-user-id: alice"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-   Example output:
+   Example rate-limited response:
 
    ```
    HTTP/1.1 429 Too Many Requests

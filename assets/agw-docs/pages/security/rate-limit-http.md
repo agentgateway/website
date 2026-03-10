@@ -4,9 +4,13 @@ Apply local and global rate limits to HTTP traffic to protect your backend servi
 
 Rate limiting in agentgateway protects your services from being overwhelmed by excessive traffic. A runaway automation script, a misconfigured retry loop, or a deliberate flood can exhaust your upstream's capacity in seconds. Rate limiting gives you precise control over how much traffic reaches any route or the entire gateway — without any changes to the backend.
 
-Rate limiting in agentgateway is expressed through {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources. A policy attaches to a Gateway or HTTPRoute target, and defines limits in the `spec.traffic.rateLimit` field. 
+Rate limiting in agentgateway is expressed through {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources. A policy attaches to a Gateway or HTTPRoute target, and defines limits in the `spec.traffic.rateLimit` field.
 
-There are two modes: local or global. Gateway-level policies act as a global hard ceiling on total traffic, while route-level policies provide local, finer-grained control.
+There are two modes: local or global. Gateway-level policies act as a hard ceiling on total traffic, while route-level policies provide finer-grained control.
+
+For AI-specific use cases, see:
+- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
+- [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
 
 | Mode | Where limits run | Use case |
 |------|-----------------|----------|
