@@ -175,7 +175,7 @@ def _run_url_block(run_url: str) -> dict:
 
 
 def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dict, dict | None]:
-    """Generate Slack Block Kit payloads from test results.
+    """Generate a Slack Block Kit payload from test results.
 
     Returns a tuple of ``(main_payload, thread_payload)`` where each payload
     has ``text`` and ``blocks`` keys ready for chat.postMessage.

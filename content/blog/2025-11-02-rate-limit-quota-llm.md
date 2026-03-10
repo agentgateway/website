@@ -100,7 +100,7 @@ In the rate limit server, we can configure something like this:
 
 What this config does is match on the set of descriptors (in this case, "route" and the value of "anthropic), specify the time window (minute) and the # of requests/tokens per time window. In this case, we'd get 5k tokens per minute for the `anthropic` route. But like I said, the time window is completely configurable. 
 
-This descriptor / matcher is very powerful. We can have hierarchy, match on specific users, IP addresses, organization roles, entitlements, environments, clouds, etc etc. Here's a more sophisticated configuration:
+This descriptor / matcher is very powerful. We can have hierarchy, match on specific users, IP addresses, organization roles, entitlements, environments, clouds, etc. Here's a more sophisticated configuration:
 
 ```yaml
 policies:
@@ -284,7 +284,7 @@ The combination of agentgateway’s flexible metrics model, Prometheus expositio
 
 Leaning into Grafana and Prometheus, two popular and prominent open-source monitoring and metrics tools, you can capture the agentgateway metrics within Prometheus and if you want a visual from a monitoring perspective, you can create a Grafana dashboard with those metrics.
 
-You can see the dasboard [here](https://github.com/AdminTurnedDevOps/agentic-demo-repo/blob/main/agentgateway-oss-k8s/observability/llm%2Bmcp_dashboard.json)
+You can see the dashboard [here](https://github.com/AdminTurnedDevOps/agentic-demo-repo/blob/main/agentgateway-oss-k8s/observability/llm%2Bmcp_dashboard.json)
 
 Here's an example of what the metrics look like from a visual perspective.
 
