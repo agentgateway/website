@@ -110,7 +110,7 @@ This example shows how to route requests to different backends based on the `mod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy targets the HTTPRoute and applies to all rules.
+3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -122,9 +122,10 @@ This example shows how to route requests to different backends based on the `mod
    spec:
      targetRefs:
      - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: content-routing
+       kind: Gateway
+       name: agentgateway-proxy
      traffic:
+       phase: PreRouting
        transformation:
          request:
            set:
@@ -288,7 +289,7 @@ This example shows routing based on a custom `priority` field in the request bod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `has()` macro to provide a default value if the field is not present.
+3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `has()` macro to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -300,9 +301,10 @@ This example shows routing based on a custom `priority` field in the request bod
    spec:
      targetRefs:
      - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: priority-routing
+       kind: Gateway
+       name: agentgateway-proxy
      traffic:
+       phase: PreRouting
        transformation:
          request:
            set:
@@ -342,7 +344,7 @@ This example shows routing based on a custom `priority` field in the request bod
 When implementing content-based routing, be aware of these limitations:
 
 {{< callout type="warning" >}}
-**Route-level transformations only**: Use transformations at the route level (via `filters`), not at the Gateway level. Gateway-scoped PreRouting transformations can break header-based routing.
+**PreRouting phase required**: Content-based routing requires `traffic.phase: PreRouting` and must target the Gateway (not HTTPRoute). This way, transformations run before route selection. Without PreRouting, the extracted header arrives too late for route matching.
 {{< /callout >}}
 
 - **Performance impact**: Extracting fields from the request body adds processing overhead. For high-throughput scenarios, consider using header-based routing when possible.

@@ -516,6 +516,7 @@ Use local rate limiting instead of global for simpler setups that don't require 
 
 {{< callout type="warning" >}}
 **Limitations of local rate limiting:**
+- The `tokens` field is request count, not LLM token count. With `tokens: 10000`, you get ~10,000 requests, regardless of how many LLM tokens each request consumes. For actual LLM-token-based budgets (e.g., limit users to 100K LLM tokens/day), use global rate limiting with `unit: Tokens` descriptors instead.
 - Limits apply per {{< reuse "agw-docs/snippets/agentgateway.md" >}} instance. If you have 3 instances and set a 100,000 token limit, each instance enforces 100,000 tokens, for a total of 300,000 tokens across all instances.
 - Local rate limiting only supports `Seconds`, `Minutes`, and `Hours` units. For daily budgets, use global rate limiting instead, which supports day-based limits.
 {{< /callout >}}
