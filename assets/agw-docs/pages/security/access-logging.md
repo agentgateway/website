@@ -31,7 +31,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
 
    ```yaml {linenos=table,paths="access-logging"}
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: AgentgatewayPolicy
    metadata:
      name: access-logs
