@@ -54,7 +54,7 @@ The following guide deploys a sample TCP echo app, sets up a TCP listener on the
 Create a TCP listener so that the Gateway can serve TCP traffic. In the following example, all TCP streams on port 8000 of the gateway are forwarded to port 1025 of the example TCP echo service.
 
 1. Create a Gateway with a TCP listener. 
-   {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
@@ -85,7 +85,7 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
    |`spec.listeners`|Configure the listeners for this Gateway. In this example, you configure a TCP Gateway that listens for incoming traffic on port 8000. The Gateway can serve TCPRoutes from any namespace. |
 
    {{% /tab %}}
-   {{% tab tabName="ListenerSets (experimental)" %}}
+   {{% tab tabName="ListenerSets" %}}
 
    1. Create a Gateway that enables the attachment of ListenerSets.
    
@@ -125,8 +125,8 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
    
       ```yaml
       kubectl apply -f- <<EOF
-      apiVersion: gateway.networking.x-k8s.io/v1alpha1
-      kind: XListenerSet
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: ListenerSet
       metadata:
         name: my-tcp-listenerset
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -207,7 +207,7 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
 ## Create a TCPRoute
 
 1. Create the TCPRoute resource. 
-   {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
@@ -231,7 +231,7 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="ListenerSets (experimental)" %}}
+   {{% tab tabName="ListenerSets" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1alpha2
@@ -245,8 +245,8 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
      parentRefs:
        - name: my-tcp-listenerset
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         kind: XListenerSet
-         group: gateway.networking.x-k8s.io
+         kind: ListenerSet
+         group: gateway.networking.k8s.io
          sectionName: tcp-listener-set
      rules:
        - backendRefs:

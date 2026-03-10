@@ -79,6 +79,6 @@ If you have a Kubernetes cluster, this Valentine’s Day, we invite you to:
 - Experiment with `AgentGatewayPolicy`.
 - Visit/refresh the match app from your browser following the [instruction](#how-the-extauth-match-game-works) to trigger a request to agentgateway. Swipe the cards left or right on your phone to approve or deny.
 - Learn something new. 
-- Share your love for Kubernetes Gateway API and agentgateway in the open. Tag @agentgateway when you share on LinkedIn — we’ll select one lucky winner on February 20th for the most fun post.
+- Share your love for Kubernetes Gateway API and agentgateway in the open. Tag @agentgateway when you share on LinkedIn — we’ll select one lucky winner on February 20 for the most fun post.
 
 Got questions? Join us on our [discord](https://discord.gg/y9efgEmppm). We'd love to help with your NGINX ingress migration or support you on your agentic AI journey.

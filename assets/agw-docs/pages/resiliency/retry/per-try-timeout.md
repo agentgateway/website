@@ -29,7 +29,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute (AgentgatewayPolicy),Gateway listener" >}}
    {{% tab tabName="HTTPRoute (Kubernetes GW API)" %}}
    Use the `timeouts.backendRequest` field to configure the per-try timeout. Note that you must set a retry policy also to configure a per-try timeout. 
-   ```yaml
+   ```yaml {paths="per-try-timeout-in-httproute"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -59,6 +59,25 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
          backendRequest: 5s 
    EOF
    ```
+
+   {{< doc-test paths="per-try-timeout-in-httproute" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for retry HTTPRoute to be accepted
+     wait:
+       target:
+         kind: HTTPRoute
+         metadata:
+           namespace: httpbin
+           name: retry
+       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 300
+         intervalSeconds: 5
+   EOF
+   {{< /doc-test >}}
 
 3. Verify that the gateway proxy is configured with the per-try timeout.
 

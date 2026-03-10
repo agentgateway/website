@@ -2,8 +2,8 @@ name: Doc tests
 
 on:
   schedule:
-    # Every day at 09:00 UTC
-    - cron: '0 9 * * *'
+    # Every day at 06:00 UTC
+    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       slack_notification:
@@ -66,7 +66,10 @@ jobs:
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
           SLACK_PAYLOAD=$(python3 scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
           echo "slack_blocks<<EOF" >> "$GITHUB_OUTPUT"
-          echo "$SLACK_PAYLOAD" >> "$GITHUB_OUTPUT"
+          echo "$SLACK_PAYLOAD" | jq '.main' >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+          echo "slack_thread_blocks<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$SLACK_PAYLOAD" | jq '.thread // empty' >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Notify Slack
@@ -75,6 +78,7 @@ jobs:
         with:
           message: "Doc Test Results"
           blocks: ${{ steps.summary.outputs.slack_blocks }}
+          thread_blocks: ${{ steps.summary.outputs.slack_thread_blocks }}
           channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
 

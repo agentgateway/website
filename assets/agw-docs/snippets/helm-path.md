@@ -1,1 +1,1 @@
-ghcr.io/kgateway-dev
+{{< version include-if="2.2.x" >}}oci://ghcr.io/kgateway-dev/charts/agentgateway{{< /version >}}{{< version include-if="1.0.x" >}}oci://cr.agentgateway.dev/charts/agentgateway{{< /version >}}
