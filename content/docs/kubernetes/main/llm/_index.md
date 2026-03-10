@@ -11,7 +11,11 @@ Consume services from LLM providers.
   {{< card link="providers" title="Providers" >}}
   {{< card link="api-keys" title="Manage API keys" >}}
   {{< card link="rate-limit" title="Rate limiting for LLMs" subtitle="Token and request budgets" >}}
-  {{< card link="failover" title="Model failover" subtitle="Failover, A/B testing, canary, traffic splitting" >}}
+  {{< card link="budget-limits" title="Budget and spend limits" subtitle="Advanced budget patterns: per-route, local, cost formulas" >}}
+  {{< card link="virtual-keys" title="Virtual key management" subtitle="Issue API keys with budgets and cost tracking" >}}
+  {{< card link="load-balancing" title="Load balancing" subtitle="P2C, intelligent routing, automatic failover" >}}
+  {{< card link="failover" title="Model failover" subtitle="Priority groups, automatic fallback" >}}
+  {{< card link="content-routing" title="Content-based routing" subtitle="Route by model name, custom fields, body-based routing" >}}
   {{< card link="content-safety" title="Content safety and PII protection" subtitle="Content safety, PII detection, DLP, data loss prevention" >}}
   {{< card link="prompt-guards" title="Set up prompt guards" >}}
   {{< card link="prompt-enrichment" title="Enrich prompts" >}}

@@ -184,7 +184,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
-     name: ab-test
+     name: test
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      parentRefs:
@@ -194,7 +194,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
      - matches:
        - path:
            type: PathPrefix
-           value: /ab-test
+           value: /test
        backendRefs:
        - name: openai-mini-backend
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -219,7 +219,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```bash
    for i in {1..10}; do
-     curl -s "$INGRESS_GW_ADDRESS/ab-test" \
+     curl -s "$INGRESS_GW_ADDRESS/test" \
        -H "Content-Type: application/json" \
        -d '{"messages": [{"role": "user", "content": "What is 2+2?"}]}' | \
        jq -r '.model'
@@ -229,7 +229,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
    {{% tab tabName="Port-forward for local testing" %}}
    ```bash
    for i in {1..10}; do
-     curl -s "localhost:8080/ab-test" \
+     curl -s "localhost:8080/test" \
        -H "Content-Type: application/json" \
        -d '{"messages": [{"role": "user", "content": "What is 2+2?"}]}' | \
        jq -r '.model'
@@ -258,7 +258,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 YAMLTest -f - <<'EOF'
 - name: verify traffic split returns valid responses
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/ab-test"
+    url: "http://${INGRESS_GW_ADDRESS}:80/test"
     method: POST
     headers:
       content-type: application/json
@@ -285,7 +285,7 @@ EOF
 1. Remove the backends and routes.
    ```sh
    kubectl delete httproute traffic-split -n helloworld
-   kubectl delete httproute ab-test -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete httproute test -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai-mini-backend openai-premium-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 

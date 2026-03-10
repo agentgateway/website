@@ -132,16 +132,18 @@ Create a backend with multiple providers in the same priority group to enable lo
 
 ## Traffic splitting for A/B testing {#traffic-splitting}
 
-You can use weighted priority groups to split traffic for A/B testing or canary deployments. This is useful for comparing model performance or gradually rolling out a new model.
+You can use weighted `backendRefs` in HTTPRoute to split traffic for A/B testing or canary deployments. This is useful for comparing model performance or gradually rolling out a new model.
 
-1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with weighted providers. This example routes 80% of traffic to a stable model and 20% to a new model.
+For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
+
+1. Create separate {{< reuse "agw-docs/snippets/backend.md" >}} resources for the stable and canary models.
 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
-     name: ab-test-backend
+     name: stable-backend
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      ai:
@@ -154,17 +156,34 @@ You can use weighted priority groups to split traffic for A/B testing or canary 
                  auth:
                    secretRef:
                      name: openai-secret
+   ---
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: canary-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       groups:
+         - providers:
+             - name: canary-model
+               openai:
+                 model: gpt-4o-mini
+               policies:
+                 auth:
+                   secretRef:
+                     name: openai-secret
    EOF
    ```
 
-2. Create an HTTPRoute with weighted backend references.
+2. Create an HTTPRoute with weighted backend references. This example routes 80% of traffic to the stable model and 20% to the canary model.
 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
-     name: ab-test-route
+     name: test-route
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      parentRefs:
@@ -174,7 +193,7 @@ You can use weighted priority groups to split traffic for A/B testing or canary 
      - matches:
        - path:
            type: PathPrefix
-           value: /ab-test
+           value: /test
        backendRefs:
        - name: stable-backend
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -189,7 +208,7 @@ You can use weighted priority groups to split traffic for A/B testing or canary 
    EOF
    ```
 
-   Where `stable-backend` and `canary-backend` are separate {{< reuse "agw-docs/snippets/backend.md" >}} resources, each potentially with multiple providers load balanced using P2C.
+   Each backend can contain multiple providers that are load balanced using P2C within that backend, while the HTTPRoute distributes traffic between backends based on the configured weights.
 
 ## Known limitations
 
