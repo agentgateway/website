@@ -17,6 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout shared link-checking scripts
+        uses: actions/checkout@v4
+        with:
+          repository: solo-io/docs-link-checking
+          path: docs-link-checking
+          token: ${{ secrets.DOCS_TOKEN }}
+
       - name: Set up Hugo
         uses: peaceiris/actions-hugo@v3
         with:
@@ -25,9 +32,8 @@ jobs:
 
       - name: Install Lychee
         run: |
-          curl -L https://github.com/lycheeverse/lychee/releases/latest/download/lychee-x86_64-unknown-linux-gnu.tar.gz | tar -xz
-          sudo mv lychee /usr/local/bin/
-          lychee --version
+          chmod +x docs-link-checking/install-lychee.sh
+          docs-link-checking/install-lychee.sh
 
       - name: Hugo build
         run: hugo --config hugo.yaml
@@ -60,8 +66,8 @@ jobs:
       - name: Generate markdown report from JSON
         if: steps.lychee.outputs.has_failures == 'true'
         run: |
-          chmod +x .github/actions/check-links/generate-link-report.sh
-          .github/actions/check-links/generate-link-report.sh \
+          chmod +x docs-link-checking/generate-link-report.sh
+          docs-link-checking/generate-link-report.sh \
             "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
             "${{ github.workspace }}/artifacts/agentgateway-oss-links.md" \
             "${{ github.workspace }}/public"
@@ -79,65 +85,39 @@ jobs:
 
       - name: Set issue URL for Slack
         id: issue-url
+        env:
+          ISSUE_NUMBER: ${{ steps.create-issue.outputs.issue-number }}
+          REPOSITORY: ${{ github.repository }}
         run: |
-          if [ -n "${{ steps.create-issue.outputs.issue-number }}" ]; then
-            echo "issue_line=Issue: <https://github.com/${{ github.repository }}/issues/${{ steps.create-issue.outputs.issue-number }}|View issue>" >> "$GITHUB_OUTPUT"
-          else
-            echo "issue_line=" >> "$GITHUB_OUTPUT"
-          fi
+          chmod +x docs-link-checking/set-issue-url.sh
+          docs-link-checking/set-issue-url.sh
 
       - name: Remove public directory
         run: rm -rf public
 
       - name: Read link checker results
         id: link-stats
+        env:
+          MD_FILE: artifacts/agentgateway-oss-links.md
+          JSON_FILE: artifacts/agentgateway-oss-links.json
         run: |
-          MD_FILE="artifacts/agentgateway-oss-links.md"
-          JSON_FILE="artifacts/agentgateway-oss-links.json"
-          ERRORS=""
-          REDIRECTS=""
-          if [ -f "$MD_FILE" ]; then
-            ERRORS=$(grep '| Errors |' "$MD_FILE" | grep -oE '[0-9]+' | head -1)
-            REDIRECTS=$(grep '| Redirects |' "$MD_FILE" | grep -oE '[0-9]+' | head -1)
-          fi
-          if [ -z "${ERRORS}" ] || [ -z "${REDIRECTS}" ]; then
-            if [ -f "$JSON_FILE" ]; then
-              ERRORS=$(jq -r '.errors // (.error_map | length) // (.fail_map | length) // 0' "$JSON_FILE")
-              REDIRECTS=$(jq -r '.redirects // (.redirect_map | length) // 0' "$JSON_FILE")
-            fi
-          fi
-          if [ "$ERRORS" = "null" ] || [ -z "$ERRORS" ]; then ERRORS=0; fi
-          if [ "$REDIRECTS" = "null" ] || [ -z "$REDIRECTS" ]; then REDIRECTS=0; fi
-          if [ "$ERRORS" -gt 5 ]; then
-            ICON=":red_circle:"
-          elif [ "$ERRORS" -eq 0 ] && [ "$REDIRECTS" -ge 10 ]; then
-            ICON=":large_yellow_circle:"
-          else
-            ICON=":large_green_circle:"
-          fi
-          echo "errors=$ERRORS" >> "$GITHUB_OUTPUT"
-          echo "redirects=$REDIRECTS" >> "$GITHUB_OUTPUT"
-          echo "icon=$ICON" >> "$GITHUB_OUTPUT"
+          chmod +x docs-link-checking/read-link-stats.sh
+          docs-link-checking/read-link-stats.sh
 
       - name: Post results to Slack
-        uses: ./.github/actions/notify-slack
-        with:
-          message: "Link check (agentgateway OSS): ${{ steps.link-stats.outputs.errors }} errors, ${{ steps.link-stats.outputs.redirects }} redirects"
-          blocks: |
-            {
-              "text": "Link check (agentgateway OSS): ${{ steps.link-stats.outputs.errors }} errors, ${{ steps.link-stats.outputs.redirects }} redirects",
-              "blocks": [
-                {
-                  "type": "section",
-                  "text": {
-                    "type": "mrkdwn",
-                    "text": "${{ steps.link-stats.outputs.icon }} <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|agentgateway OSS broken links> | Errors: ${{ steps.link-stats.outputs.errors }} | Redirects: ${{ steps.link-stats.outputs.redirects }}\n${{ steps.issue-url.outputs.issue_line }}"
-                  }
-                }
-              ]
-            }
-          channel: "#doctopus-tests"
-          token: ${{ secrets.SLACK_BOT_TOKEN }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL: "#doctopus-tests"
+          PRODUCT_NAME: agentgateway OSS
+          ERRORS: ${{ steps.link-stats.outputs.errors }}
+          REDIRECTS: ${{ steps.link-stats.outputs.redirects }}
+          ICON: ${{ steps.link-stats.outputs.icon }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          ISSUE_LINE: ${{ steps.issue-url.outputs.issue_line }}
+        run: |
+          chmod +x docs-link-checking/post-slack-results.sh
+          docs-link-checking/post-slack-results.sh
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
