@@ -25,7 +25,7 @@ Use the `filter` field to include only certain requests (for example, errors or 
 
 ## Access logs to `stdout` {#access-log-stdout-filesink}
 
-You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout in the pod of the selected `agentgateway-proxy` gateway.
+You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout stream in the `agentgateway-proxy` gateway.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails with a 404 HTTP response code. It also adds the actual response code to the log entry. This policy does not apply to requests that return a response code other than 404.
 
