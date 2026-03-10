@@ -62,6 +62,30 @@ mcpAuthentication:
     - query
 ```
 
+## Authentication mode
+
+You can control how agentgateway handles requests that lack valid credentials by setting the `mode` field. The following modes are supported:
+
+| Mode | Behavior |
+|------|----------|
+| `strict` (default) | A valid token issued by a configured issuer must be present. Requests without a valid token are rejected with `401 Unauthorized`. |
+| `optional` | If a token is present, it is validated. Requests without a token are allowed through. |
+| `permissive` | Requests are never rejected based on authentication. |
+
+The following example sets the mode to `permissive`:
+
+```yaml
+mcpAuthentication:
+  mode: permissive
+  issuer: http://localhost:9000
+  jwks:
+    url: http://localhost:9000/.well-known/jwks.json
+  resourceMetadata:
+    resource: http://localhost:3000/mcp
+    scopesSupported:
+    - read:all
+```
+
 ## Passthrough
 
 When the MCP server already implements OAuth authentication, no additional configuration is needed. Agentgateway will pass requests through without modification.
