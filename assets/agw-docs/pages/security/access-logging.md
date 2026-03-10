@@ -32,7 +32,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    ```yaml {linenos=table,paths="access-logging"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: AgentgatewayPolicy
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: access-logs
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
