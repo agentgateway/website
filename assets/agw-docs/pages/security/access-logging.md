@@ -35,7 +35,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    kind: AgentgatewayPolicy
    metadata:
      name: access-logs
-     namespace: agentgateway-system
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
      - group: gateway.networking.k8s.io
