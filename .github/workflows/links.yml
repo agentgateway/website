@@ -50,7 +50,7 @@ jobs:
           set +e
           lychee \
             --verbose \
-            --config lychee.toml \
+            --config docs-link-checking/lychee.toml \
             --root-dir "${{ github.workspace }}/public" \
             --index-files index.html \
             --remap "^https://agentgateway\.dev/ file:///${{ github.workspace }}/public/" \
