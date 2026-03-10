@@ -18,7 +18,7 @@ For logging, CEL exposes these variable groups when enabled or applicable:
 * **LLM**: model, provider, token counts, and optional prompt/completion
 * **MCP**: tool, prompt, and resource name and target
 
-Use the `filter` field to include only certain requests (for example, errors or specific paths) and the `attributes.add` list to add fields with CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference](https://agentgateway.dev/docs/kubernetes/main/reference/cel/).
+Use the `filter` field in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to define the requests that you want to apply your access log policy to. For example, you might want to apply the policy only to specific paths or response codes. Then, use the `attributes.add` list to add or remove fields from the access logs by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
