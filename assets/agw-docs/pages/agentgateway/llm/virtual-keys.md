@@ -20,6 +20,10 @@ This composable approach gives you more flexibility in how you configure and app
 This guide uses global rate limiting to enforce per-key token budgets across multiple gateway instances. You need to deploy a rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
 {{< /callout >}}
 
+{{< callout type="info" >}}
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
+{{< /callout >}}
+
 ## How virtual keys work
 
 Virtual keys combine authentication, rate limiting, and observability to create isolated token budgets for each API key:
@@ -451,14 +455,14 @@ Track token usage and spending for each virtual key using Prometheus metrics.
    ```promql
    # Total tokens consumed by user over the last 24 hours
    sum by (user_id) (
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h] +
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h]
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
    )
 
    # Percentage of daily budget used
    (sum by (user_id) (
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h] +
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h]
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
    ) / 100000) * 100
    ```
 

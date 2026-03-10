@@ -432,8 +432,8 @@ spec:
             - CreditCard
             - Email
             action: Reject
-            response:
-              message: "Request contains PII and cannot be processed"
+          response:
+            message: "Request contains PII and cannot be processed"
         # Layer 2: OpenAI moderation for harmful content
         - openAIModeration:
             policies:
@@ -494,6 +494,10 @@ To optimize performance:
 - Consider request size limits to avoid processing very large prompts
 
 For webhook-specific performance tuning, see the [Guardrail Webhook optimization guide]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}#optimize-performance).
+
+{{< callout type="info" >}}
+**Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
+{{< /callout >}}
 
 ## What's next
 

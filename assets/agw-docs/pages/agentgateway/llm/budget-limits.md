@@ -20,6 +20,10 @@ Other AI gateways often call this feature "virtual keys" or "virtual key managem
 This guide uses global rate limiting to enforce token budgets across multiple gateway instances. You need to deploy a rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
 {{< /callout >}}
 
+{{< callout type="info" >}}
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
+{{< /callout >}}
+
 ## How budget limits work
 
 Budget limits enforce token consumption quotas using token bucket rate limiting. Each user or API key gets a virtual "budget" measured in tokens rather than requests.
@@ -49,6 +53,10 @@ flowchart TD
 3. If the budget has tokens available, the request proceeds
 4. If the budget is exhausted, the request is rejected with a 429 status code
 5. The bucket refills at the configured interval
+
+{{< callout type="warning" >}}
+**Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
+{{< /callout >}}
 
 ## Set up daily budget limits per API key
 
@@ -450,6 +458,10 @@ Provide different budget tiers for free, standard, and premium users.
      api-key: sk-charlie-ghi345jkl678
    ```
 
+   {{< callout type="info" >}}
+   **Note**: This example shows the rate limiting configuration that expects an `x-user-tier` header. To automatically set this header based on the Secret label, you would need to configure external authentication with metadata injection or use a transformation policy to extract metadata from the authenticated API key. The implementation details depend on your authentication setup.
+   {{< /callout >}}
+
 2. Configure rate limiting to use the tier from a header that's set based on the API key.
 
    ```yaml
@@ -504,7 +516,9 @@ Provide different budget tiers for free, standard, and premium users.
 Use local rate limiting instead of global for simpler setups that don't require shared state across {{< reuse "agw-docs/snippets/agentgateway.md" >}} instances.
 
 {{< callout type="warning" >}}
-Local rate limiting applies limits per {{< reuse "agw-docs/snippets/agentgateway.md" >}} instance. If you have 3 instances and set a 100,000 token limit, each instance enforces 100,000 tokens, for a total of 300,000 tokens across all instances.
+**Limitations of local rate limiting:**
+- Limits apply per {{< reuse "agw-docs/snippets/agentgateway.md" >}} instance. If you have 3 instances and set a 100,000 token limit, each instance enforces 100,000 tokens, for a total of 300,000 tokens across all instances.
+- Local rate limiting only supports `Seconds`, `Minutes`, and `Hours` units. For daily budgets, use global rate limiting instead, which supports day-based limits.
 {{< /callout >}}
 
 ```yaml
@@ -521,10 +535,8 @@ spec:
   traffic:
     rateLimit:
       local:
-        tokenBucket:
-          maxTokens: 100000
-          tokensPerFill: 100000
-          fillInterval: 24h
+        - tokens: 10000
+          unit: Hours
 ```
 
 ## Monitor budget usage
@@ -540,14 +552,14 @@ Track how much of each user's budget has been consumed using Prometheus metrics.
    ```promql
    # Total tokens consumed by user over the last 24 hours
    sum by (user_id) (
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h] +
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h]
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
    )
 
    # Percentage of daily budget used
    (sum by (user_id) (
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h] +
-     agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h]
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
    ) / 100000) * 100
    ```
 

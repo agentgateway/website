@@ -247,6 +247,18 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{% /tab %}}
    {{< /tabs >}}
 
+## Known limitations
+
+{{< callout type="warning" >}}
+**429-only failover**: Failover to lower-priority groups currently only triggers on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Failover does NOT trigger on:
+- 503 Service Unavailable responses
+- Connection refused or timeout errors
+- DNS resolution failures
+- Other error codes (404, 500, etc.)
+
+Providers that return non-429 errors receive degraded health scores but remain in their priority group. Traffic continues to route to these providers (though at reduced rates due to lower health scores) rather than failing over to the next priority group.
+{{< /callout >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}

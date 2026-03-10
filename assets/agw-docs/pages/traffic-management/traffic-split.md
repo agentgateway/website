@@ -137,45 +137,47 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
 ### Set up weighted routing for LLM models
 
-1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with multiple models in a single priority group. All providers in the same priority group are load balanced based on their weights.
+1. Create separate {{< reuse "agw-docs/snippets/backend.md" >}} resources for each model you want to include in the traffic split.
 
-   This example routes 80% of traffic to the cheaper `gpt-4o-mini` model and 20% to the more capable `gpt-4o` model. This pattern lets you optimize costs while still testing the premium model's performance.
+   This example creates two backends: one for the cheaper `gpt-4o-mini` model and one for the more capable `gpt-4o` model.
 
    ```yaml,paths="traffic-split-llm"
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
-     name: ab-test-backend
+     name: openai-mini-backend
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      ai:
-       groups:
-         - providers:
-             - name: openai-mini
-               weight: 80
-               openai:
-                 model: gpt-4o-mini
-               policies:
-                 auth:
-                   secretRef:
-                     name: openai-secret
-             - name: openai-premium
-               weight: 20
-               openai:
-                 model: gpt-4o
-               policies:
-                 auth:
-                   secretRef:
-                     name: openai-secret
+       provider:
+         openai:
+           model: gpt-4o-mini
+     policies:
+       auth:
+         secretRef:
+           name: openai-secret
+   ---
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: openai-premium-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: gpt-4o
+     policies:
+       auth:
+         secretRef:
+           name: openai-secret
    EOF
    ```
 
-   |Setting|Description|
-   |--|--|
-   |`spec.ai.groups[0].providers[].weight`| The relative weight for traffic distribution. In this example, weights of 80 and 20 result in an 80/20 traffic split. If no weight is specified, the default is 1. Providers with a weight of 0 receive no traffic. |
+2. Create an HTTPRoute resource with weighted `backendRefs` to distribute traffic between the two backends.
 
-2. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+   This example routes 80% of traffic to the cheaper `gpt-4o-mini` model and 20% to the more capable `gpt-4o` model, allowing you to optimize costs while testing the premium model's performance.
 
    ```yaml,paths="traffic-split-llm"
    kubectl apply -f- <<EOF
@@ -194,14 +196,24 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
            type: PathPrefix
            value: /ab-test
        backendRefs:
-       - name: ab-test-backend
+       - name: openai-mini-backend
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          group: agentgateway.dev
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+         weight: 80
+       - name: openai-premium-backend
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+         weight: 20
    EOF
    ```
 
-3. Send multiple requests to observe the traffic distribution. In your request, do not specify a model. Instead, the {{< reuse "agw-docs/snippets/backend.md" >}} automatically uses the weighted distribution (80% to gpt-4o-mini, 20% to gpt-4o).
+   |Setting|Description|
+   |--|--|
+   |`spec.rules[].backendRefs[].weight`| The relative weight for traffic distribution. In this example, weights of 80 and 20 result in an 80/20 traffic split. The default weight is 1 if not specified. |
+
+3. Send multiple requests to observe the traffic distribution. In your request, do not specify a model. Instead, the HTTPRoute distributes traffic according to the backend weights (80% to gpt-4o-mini, 20% to gpt-4o).
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -270,11 +282,11 @@ EOF
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Remove the backends and routes. 
+1. Remove the backends and routes.
    ```sh
    kubectl delete httproute traffic-split -n helloworld
    kubectl delete httproute ab-test -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} ab-test-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai-mini-backend openai-premium-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 2. Remove the Helloworld apps. 

@@ -191,6 +191,18 @@ You can use weighted priority groups to split traffic for A/B testing or canary 
 
    Where `stable-backend` and `canary-backend` are separate {{< reuse "agw-docs/snippets/backend.md" >}} resources, each potentially with multiple providers load balanced using P2C.
 
+## Known limitations
+
+{{< callout type="warning" >}}
+**Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
+- 503 Service Unavailable responses
+- Connection refused or timeout errors
+- DNS resolution failures
+- Other error codes (404, 500, etc.)
+
+Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
+{{< /callout >}}
+
 ## Monitoring load balancing
 
 Use [observability features]({{< link-hextra path="/llm/observability/" >}}) to monitor load balancing behavior:

@@ -302,11 +302,12 @@ This example shows routing based on a custom `priority` field in the request bod
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: priority-routing
-     transformation:
-       request:
-         set:
-         - name: "x-priority"
-           value: 'has(json(request.body).priority) ? json(request.body).priority : "standard"'
+     traffic:
+       transformation:
+         request:
+           set:
+           - name: "x-priority"
+             value: 'has(json(request.body).priority) ? json(request.body).priority : "standard"'
    EOF
    ```
 
@@ -340,7 +341,10 @@ This example shows routing based on a custom `priority` field in the request bod
 
 When implementing content-based routing, be aware of these limitations:
 
-- **Route-level transformations only**: Use transformations at the route level (via `filters`), not at the Gateway level. Gateway-scoped PreRouting transformations can break header-based routing.
+{{< callout type="warning" >}}
+**Route-level transformations only**: Use transformations at the route level (via `filters`), not at the Gateway level. Gateway-scoped PreRouting transformations can break header-based routing.
+{{< /callout >}}
+
 - **Performance impact**: Extracting fields from the request body adds processing overhead. For high-throughput scenarios, consider using header-based routing when possible.
 - **JSON parsing**: The `json()` CEL function requires valid JSON. Malformed JSON in the request body will cause routing failures.
 
