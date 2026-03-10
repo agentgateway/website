@@ -1,0 +1,41 @@
+# EnvoyFilter: block gRPC requests with 404 (no Lua).
+# gRPC requests are identified by Content-Type: application/grpc.
+#
+# Inserts a route that matches the header and returns direct_response 404.
+# Apply where your ingress gateway runs (e.g. istio-system):
+#
+#   kubectl apply -f envoyfilter-block-grpc.yaml -n istio-system
+#
+# If the filter has no effect, discover the gateway's vhost and route names:
+#   istioctl proxy-config routes -n istio-system <ingress-gateway-pod> -o json
+# Then set spec.configPatches[0].match.routeConfiguration.vhost.name and
+# .route.name below to the first vhost and one of its route names (e.g. "http.80").
+#
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: block-grpc-404
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      app: istio-ingressgateway
+  configPatches:
+  - applyTo: HTTP_ROUTE
+    match:
+      context: GATEWAY
+      routeConfiguration:
+        vhost:
+          name: "*"
+          route:
+            name: "http.80"
+    patch:
+      operation: INSERT_BEFORE
+      value:
+        name: block-grpc
+        match:
+          headers:
+          - name: content-type
+            prefix_match: "application/grpc"
+        direct_response:
+          status: 404

@@ -1,0 +1,36 @@
+# Block gRPC requests with 404 using Istio fault injection.
+# gRPC requests are identified by Content-Type: application/grpc (or application/grpc+*).
+#
+# Fault injection is configured on a VirtualService. Apply in the same namespace
+# as your ingress gateway (e.g. istio-system):
+#
+#   kubectl apply -f block-grpc-fault-injection.yaml -n istio-system
+#
+# Adjust spec.gateways to your Gateway name (e.g. istio-ingressgateway).
+# Use "namespace/gateway-name" if the gateway is in another namespace.
+#
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: block-grpc-404
+  namespace: istio-system
+spec:
+  hosts:
+  - "*"
+  gateways:
+  - istio-system/istio-ingressgateway
+  http:
+  - match:
+    - headers:
+        content-type:
+          prefix: "application/grpc"
+    fault:
+      abort:
+        httpStatus: 404
+        percentage:
+          value: 100
+    route:
+    - destination:
+        host: istio-ingressgateway.istio-system.svc.cluster.local
+        port:
+          number: 80

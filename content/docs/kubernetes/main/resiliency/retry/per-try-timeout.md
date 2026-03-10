@@ -4,9 +4,9 @@ weight: 20
 description: Set up per-try timeouts.
 test:
   per-try-timeout-in-httproute:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/install/helm.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin

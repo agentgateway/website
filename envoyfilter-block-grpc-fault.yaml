@@ -1,0 +1,42 @@
+# Valid EnvoyFilter: block gRPC with 404 using the fault filter (no Lua).
+#
+# Fixes vs invalid version:
+# 1. Use "headers" (not "header_matches") - that's the HTTPFault field name.
+# 2. Each header matcher is config.route.v3.HeaderMatcher: use "name" + "contains_match"
+#    (string), not "string_match.contains".
+#
+# Apply: kubectl apply -f envoyfilter-block-grpc-fault.yaml -n istio-system
+#
+apiVersion: networking.istio.io/v1alpha3
+kind: EnvoyFilter
+metadata:
+  name: block-grpc-fault-injection
+  namespace: istio-system
+spec:
+  workloadSelector:
+    labels:
+      istio: ingressgateway
+  configPatches:
+    - applyTo: HTTP_FILTER
+      match:
+        context: GATEWAY
+        listener:
+          filterChain:
+            filter:
+              name: "envoy.filters.network.http_connection_manager"
+              subFilter:
+                name: "envoy.filters.http.router"
+      patch:
+        operation: INSERT_BEFORE
+        value:
+          name: envoy.filters.http.fault
+          typed_config:
+            "@type": "type.googleapis.com/envoy.extensions.filters.http.fault.v3.HTTPFault"
+            abort:
+              http_status: 404
+              percentage:
+                numerator: 100
+                denominator: HUNDRED
+            headers:
+              - name: "content-type"
+                contains_match: "application/grpc"
