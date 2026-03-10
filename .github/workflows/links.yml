@@ -1,0 +1,146 @@
+name: Links
+
+# Each Monday at 4am UTC
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "00 04 * * MON"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.147.0'
+          extended: true
+
+      - name: Install Lychee
+        run: |
+          curl -L https://github.com/lycheeverse/lychee/releases/latest/download/lychee-x86_64-unknown-linux-gnu.tar.gz | tar -xz
+          sudo mv lychee /usr/local/bin/
+          lychee --version
+
+      - name: Hugo build
+        run: hugo --config hugo.yaml
+
+      - name: Prepare workspace
+        run: mkdir -p artifacts
+
+      - name: Check Links with Lychee
+        id: lychee
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          shopt -s globstar
+          set +e
+          lychee \
+            --verbose \
+            --config lychee.toml \
+            --root-dir "${{ github.workspace }}/public" \
+            --index-files index.html \
+            --remap "^https://agentgateway\.dev/ file:///${{ github.workspace }}/public/" \
+            --format json \
+            --user-agent curl/8.4.0 \
+            --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            public/**/*.html > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
+          EXIT=$?
+          set -e
+          echo "has_failures=$([ "$EXIT" != "0" ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+
+      - name: Generate markdown report from JSON
+        if: steps.lychee.outputs.has_failures == 'true'
+        run: |
+          chmod +x .github/actions/check-links/generate-link-report.sh
+          .github/actions/check-links/generate-link-report.sh \
+            "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
+            "${{ github.workspace }}/artifacts/agentgateway-oss-links.md" \
+            "${{ github.workspace }}/public"
+
+      - name: Create issue from report
+        if: steps.lychee.outputs.has_failures == 'true'
+        id: create-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: peter-evans/create-issue-from-file@v6
+        with:
+          title: Link Checker Report - agentgateway OSS
+          content-filepath: ./artifacts/agentgateway-oss-links.md
+          labels: links,bug
+
+      - name: Set issue URL for Slack
+        id: issue-url
+        run: |
+          if [ -n "${{ steps.create-issue.outputs.issue-number }}" ]; then
+            echo "issue_line=Issue: <https://github.com/${{ github.repository }}/issues/${{ steps.create-issue.outputs.issue-number }}|View issue>" >> "$GITHUB_OUTPUT"
+          else
+            echo "issue_line=" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Remove public directory
+        run: rm -rf public
+
+      - name: Read link checker results
+        id: link-stats
+        run: |
+          MD_FILE="artifacts/agentgateway-oss-links.md"
+          JSON_FILE="artifacts/agentgateway-oss-links.json"
+          ERRORS=""
+          REDIRECTS=""
+          if [ -f "$MD_FILE" ]; then
+            ERRORS=$(grep '| Errors |' "$MD_FILE" | grep -oE '[0-9]+' | head -1)
+            REDIRECTS=$(grep '| Redirects |' "$MD_FILE" | grep -oE '[0-9]+' | head -1)
+          fi
+          if [ -z "${ERRORS}" ] || [ -z "${REDIRECTS}" ]; then
+            if [ -f "$JSON_FILE" ]; then
+              ERRORS=$(jq -r '.errors // (.error_map | length) // (.fail_map | length) // 0' "$JSON_FILE")
+              REDIRECTS=$(jq -r '.redirects // (.redirect_map | length) // 0' "$JSON_FILE")
+            fi
+          fi
+          if [ "$ERRORS" = "null" ] || [ -z "$ERRORS" ]; then ERRORS=0; fi
+          if [ "$REDIRECTS" = "null" ] || [ -z "$REDIRECTS" ]; then REDIRECTS=0; fi
+          if [ "$ERRORS" -gt 5 ]; then
+            ICON=":red_circle:"
+          elif [ "$ERRORS" -eq 0 ] && [ "$REDIRECTS" -ge 10 ]; then
+            ICON=":large_yellow_circle:"
+          else
+            ICON=":large_green_circle:"
+          fi
+          echo "errors=$ERRORS" >> "$GITHUB_OUTPUT"
+          echo "redirects=$REDIRECTS" >> "$GITHUB_OUTPUT"
+          echo "icon=$ICON" >> "$GITHUB_OUTPUT"
+
+      - name: Post results to Slack
+        uses: ./.github/actions/notify-slack
+        with:
+          message: "Link check (agentgateway OSS): ${{ steps.link-stats.outputs.errors }} errors, ${{ steps.link-stats.outputs.redirects }} redirects"
+          blocks: |
+            {
+              "text": "Link check (agentgateway OSS): ${{ steps.link-stats.outputs.errors }} errors, ${{ steps.link-stats.outputs.redirects }} redirects",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${{ steps.link-stats.outputs.icon }} <https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}|agentgateway OSS broken links> | Errors: ${{ steps.link-stats.outputs.errors }} | Redirects: ${{ steps.link-stats.outputs.redirects }}\n${{ steps.issue-url.outputs.issue_line }}"
+                  }
+                }
+              ]
+            }
+          channel: "#doctopus-tests"
+          token: ${{ secrets.SLACK_BOT_TOKEN }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-checker-assets
+          path: artifacts/*

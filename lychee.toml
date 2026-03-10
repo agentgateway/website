@@ -1,0 +1,34 @@
+# Lychee link checker config for agentgateway OSS website
+# https://lychee.cli.rs/guides/config/
+
+exclude = [
+  "#.*",
+  ".*apple-touch-icon.*",
+  ".*favicon.*",
+  ".*site\\.webmanifest.*",
+  ".*style\\.min\\..*",
+  # CI build paths (Hugo sometimes embeds workspace paths in asset URLs)
+  "https?://[^/]+/home/runner/",
+  # Example/placeholder URLs
+  "https?://localhost.*",
+  "https?://example\\.com.*",
+]
+
+exclude_path = [
+  ".*categories/index.html",
+  ".*tags/index.html",
+]
+
+# Exclude all private IPs (localhost, 127.0.0.1, etc.)
+exclude_all_private = true
+
+# Accepted HTTP status codes (3xx not included - redirects will be reported)
+accept = ["100..=103", "200..=299", "403"]
+
+include_fragments = true
+
+verbose = "debug"
+
+no_progress = true
+
+timeout = 30
