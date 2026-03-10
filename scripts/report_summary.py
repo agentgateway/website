@@ -95,14 +95,17 @@ def generate_summary(report: dict) -> str:
 
         for key, result in failed_tests:
             parts = key.split("::", 1)
+            doc = parts[0] if len(parts) > 0 else key
             test_name = parts[1] if len(parts) > 1 else key
+            version = _extract_version(doc)
+            title = f"{test_name} ({version})" if version else test_name
             error = result.get("error", "No error output captured.")
 
             # Show individual checks if any passed before failure
             checks = result.get("checks", [])
 
             lines.append(f"<details>")
-            lines.append(f"<summary><strong>{_escape_md_table(test_name)}</strong></summary>")
+            lines.append(f"<summary><strong>{_escape_md_table(title)}</strong></summary>")
             lines.append("")
 
             if checks:
@@ -147,6 +150,20 @@ def _truncate_tail(text: str, limit: int = _SLACK_TEXT_LIMIT // 2, prefix: str =
     return prefix + text[-(limit - len(prefix)):]
 
 
+def _extract_version(doc_path: str) -> str:
+    """Extract the version segment from a doc path.
+
+    Expects paths like ``content/docs/kubernetes/main/...`` and returns
+    the two segments immediately following ``docs/``, e.g. ``kubernetes/main``.
+    """
+    path_parts = doc_path.replace("\\", "/").split("/")
+    try:
+        idx = path_parts.index("docs")
+        return "/".join(path_parts[idx + 1 : idx + 3])
+    except (ValueError, IndexError):
+        return ""
+
+
 def _run_url_block(run_url: str) -> dict:
     """Build a context block with a link to the GitHub Actions run."""
     return {
@@ -157,11 +174,12 @@ def _run_url_block(run_url: str) -> dict:
     }
 
 
-def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
-    """Generate a Slack Block Kit payload from test results.
+def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dict, dict | None]:
+    """Generate Slack Block Kit payloads from test results.
 
-    Returns a dict with ``text`` (notification fallback) and ``blocks``
-    (Block Kit array) keys, ready to be merged into a chat.postMessage call.
+    Returns a tuple of ``(main_payload, thread_payload)`` where each payload
+    has ``text`` and ``blocks`` keys ready for chat.postMessage.
+    ``thread_payload`` is ``None`` when there are no failures.
     """
     tests: dict = report.get("tests", {})
     tested_documents: list = report.get("tested_documents", [])
@@ -180,7 +198,7 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
             )
         if run_url:
             blocks.append(_run_url_block(run_url))
-        return {"text": fallback, "blocks": blocks}
+        return {"text": fallback, "blocks": blocks}, None
 
     total = len(tests)
     passed = sum(1 for t in tests.values() if t.get("status") == "passed")
@@ -219,36 +237,6 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
     results_text = _truncate("\n".join(result_lines))
     blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": results_text}})
 
-    # --- failed test details ---
-    if failed_tests:
-        blocks.append({"type": "divider"})
-        blocks.append(
-            {"type": "section", "text": {"type": "mrkdwn", "text": f"*Failed Tests ({len(failed_tests)})*"}}
-        )
-
-        for key, result in failed_tests:
-            # Guard against exceeding the 50-block limit; leave room for
-            # the tested-documents section at the end.
-            if len(blocks) >= _SLACK_MAX_BLOCKS - 2:
-                blocks.append(
-                    {"type": "section", "text": {"type": "mrkdwn", "text": "_... additional failures omitted (block limit reached)_"}}
-                )
-                break
-
-            parts = key.split("::", 1)
-            test_name = parts[1] if len(parts) > 1 else key
-            error = result.get("error", "No error output captured.")
-            checks = result.get("checks", [])
-
-            detail_parts: list[str] = [f"*`{test_name}`*"]
-            if checks:
-                detail_parts.append("*Checks:*  " + ", ".join(checks))
-            detail_parts.append(f"```{_truncate_tail(error)}```")
-
-            blocks.append(
-                {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}
-            )
-
     # --- tested documents ---
     if tested_documents and len(blocks) < _SLACK_MAX_BLOCKS:
         blocks.append({"type": "divider"})
@@ -261,7 +249,44 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
     if run_url and len(blocks) < _SLACK_MAX_BLOCKS:
         blocks.append(_run_url_block(run_url))
 
-    return {"text": header_text, "blocks": blocks}
+    main_payload = {"text": header_text, "blocks": blocks}
+
+    # --- failed test details (thread reply) ---
+    if not failed_tests:
+        return main_payload, None
+
+    thread_blocks: list[dict] = [
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Failed Tests ({len(failed_tests)})*"}}
+    ]
+
+    for key, result in failed_tests:
+        # Guard against exceeding the 50-block limit
+        if len(thread_blocks) >= _SLACK_MAX_BLOCKS - 1:
+            thread_blocks.append(
+                {"type": "section", "text": {"type": "mrkdwn", "text": "_... additional failures omitted (block limit reached)_"}}
+            )
+            break
+
+        parts = key.split("::", 1)
+        doc = parts[0] if len(parts) > 0 else key
+        test_name = parts[1] if len(parts) > 1 else key
+        version = _extract_version(doc)
+        title = f"{test_name} ({version})" if version else test_name
+        error = result.get("error", "No error output captured.")
+        checks = result.get("checks", [])
+
+        detail_parts: list[str] = [f"*`{title}`*"]
+        if checks:
+            detail_parts.append("*Checks:*  " + ", ".join(checks))
+        detail_parts.append(f"```{_truncate_tail(error)}```")
+
+        thread_blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}
+        )
+
+    thread_payload = {"text": f"Failed Tests ({len(failed_tests)})", "blocks": thread_blocks}
+
+    return main_payload, thread_payload
 
 
 def main() -> int:
@@ -295,8 +320,8 @@ def main() -> int:
         report = yaml.safe_load(f) or {}
 
     if slack_mode:
-        payload = generate_slack_blocks(report, run_url=run_url)
-        print(json.dumps(payload))
+        main_payload, thread_payload = generate_slack_blocks(report, run_url=run_url)
+        print(json.dumps({"main": main_payload, "thread": thread_payload}))
     else:
         summary = generate_summary(report)
         print(summary)

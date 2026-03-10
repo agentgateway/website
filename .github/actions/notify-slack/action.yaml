@@ -7,6 +7,9 @@ inputs:
   blocks:
     description: 'Optional Slack Block Kit JSON string (the full payload including "text" and "blocks" keys). When provided, the message is sent with rich formatting.'
     required: false
+  thread_blocks:
+    description: 'Optional Slack Block Kit JSON string to post as a thread reply to the main message.'
+    required: false
   channel:
     description: 'Slack channel'
     required: true
@@ -21,6 +24,7 @@ runs:
         SLACK_TOKEN: ${{ inputs.token }}
         SLACK_MESSAGE: ${{ inputs.message }}
         SLACK_BLOCKS: ${{ inputs.blocks }}
+        SLACK_THREAD_BLOCKS: ${{ inputs.thread_blocks }}
         SLACK_CHANNEL: ${{ inputs.channel || 'product-excellence-test-notifications' }}
       run : |
         echo "Sending notification to slack channel: ${SLACK_CHANNEL}"
@@ -42,5 +46,23 @@ runs:
         if echo "$RESP" | jq -e '.ok == false' > /dev/null; then
             echo "Request failed with response: $RESP"
             exit 1
+        fi
+
+        # Post thread reply with failed test details if provided
+        if [ -n "${SLACK_THREAD_BLOCKS}" ]; then
+          TS=$(echo "$RESP" | jq -r '.ts')
+          THREAD_PAYLOAD=$(echo "${SLACK_THREAD_BLOCKS}" | jq \
+            --arg channel "${SLACK_CHANNEL}" \
+            --arg thread_ts "${TS}" \
+            '. + {channel: $channel, thread_ts: $thread_ts}')
+          THREAD_RESP=$(curl -sS \
+            -X POST https://slack.com/api/chat.postMessage \
+            -H "Authorization: Bearer ${SLACK_TOKEN}" \
+            -H "Content-Type: application/json; charset=utf-8" \
+            -d "${THREAD_PAYLOAD}")
+          if echo "$THREAD_RESP" | jq -e '.ok == false' > /dev/null; then
+            echo "Thread reply failed with response: $THREAD_RESP"
+            exit 1
+          fi
         fi
       shell: bash
