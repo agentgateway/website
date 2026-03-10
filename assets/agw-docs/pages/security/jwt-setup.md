@@ -218,9 +218,9 @@ traffic:
             port: 8080
 ```
 
-**Permissive** 
+**Permissive**
 
-Requests are never rejected, even if no or invalid JWTs are provided during the request. 
+Requests are never rejected, even if no or invalid JWTs are provided during the request.
 
 ```yaml
 traffic:
@@ -232,6 +232,29 @@ traffic:
       jwks:
         remote:
           jwksPath: "${KEYCLOAK_JWKS_PATH}"
+          backendRef:
+            name: keycloak
+            namespace: keycloak
+            kind: Service
+            port: 8080
+```
+
+### PreRouting phase
+
+By default, JWT authentication is enforced during routing. Use the `PreRouting` phase to validate JWTs before any routing decision is made. This is useful when you want to enforce authentication for all traffic at the gateway level, regardless of the route.
+
+```yaml
+traffic:
+  phase: PreRouting
+  jwtAuthentication:
+    mode: Strict
+    providers:
+    - issuer: "${KEYCLOAK_ISSUER}"
+      audiences: ["my-application"]
+      jwks:
+        remote:
+          jwksPath: "${KEYCLOAK_JWKS_PATH}"
+          cacheDuration: "5m"
           backendRef:
             name: keycloak
             namespace: keycloak
