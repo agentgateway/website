@@ -68,7 +68,7 @@ Or use the Helm flag: `--set controller.extraEnv.KGW_ENABLE_EXPERIMENTAL_GATEWAY
 
 ### ExtAuth fail closed {#extauth-fail-closed}
 
-Agentgateway ExtAuth policies now fail closed when the `backendRef` to the auth server is invalid. Previously, invalid backend references might have allowed requests through. Update your [ExtAuth policies]({{< link-hextra path="/security/byo-ext-auth-service/" >}}) to ensure backend references are valid before upgrading.
+Agentgateway ExtAuth policies now fail closed when the `backendRef` to the auth server is invalid. Previously, invalid backend references might have allowed requests through. Update your [ExtAuth policies]({{< link-hextra path="/security/extauth/byo-ext-auth-service/" >}}) to ensure backend references are valid before upgrading.
 
 ### AI prompt guard API alignment {#ai-prompt-guard}
 
