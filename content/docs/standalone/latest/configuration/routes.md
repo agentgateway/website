@@ -2,7 +2,7 @@
 title: Routes
 weight: 14
 description: Configure routes on listeners for agentgateway.
-next: /docs/configuration/traffic-management
+next: /configuration/traffic-management
 ---
 
 {{< gloss "Route" >}}Routes{{< /gloss >}} are the entry points for traffic to your agentgateway. They are configured on listeners and are used to route traffic to {{< gloss "Backend" >}}backends{{< /gloss >}}.
