@@ -28,6 +28,10 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
+{{< callout type="info" >}}
+Rate limiting requires the traditional `binds/listeners/routes` configuration format because `localRateLimit`, `cors`, and `tokenize` are HTTP-level policies. For more information, see the [Routing-based configuration guide](../configuration-modes/).
+{{< /callout >}}
+
 ## Configure the agentgateway
 
 1. Create a configuration file with your token-based local rate limiting settings. The following example uses the OpenAI provider, but you can adjust this example to use the provider of your choice. For an overview of supported providers, see [Providers](../providers).
