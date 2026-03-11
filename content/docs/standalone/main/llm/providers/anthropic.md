@@ -15,17 +15,16 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 
 llm:
   models:
-  - name: claude-haiku-4-5-20251001
+  - name: "*"
     provider: anthropic
     params:
-      model: claude-haiku-4-5-20251001
       apiKey: "$ANTHROPIC_API_KEY"
 ```
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name identifier for this model configuration. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `anthropic` for Claude models. |
 | `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Anthropic API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
@@ -113,10 +112,9 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
 
    llm:
      models:
-     - name: claude-haiku-4-5-20251001
+     - name: "*"
        provider: anthropic
        params:
-         model: claude-haiku-4-5-20251001
          apiKey: "$ANTHROPIC_API_KEY"
    EOF
 

@@ -15,10 +15,9 @@ Configure any LLM provider that provides OpenAI-compatible endpoints with agentg
 
 llm:
   models:
-  - name: grok-2-latest
+  - name: "*"
     provider: openAI
     params:
-      model: grok-2-latest
       apiKey: "$XAI_API_KEY"
       baseUrl: "https://api.x.ai"
 ```
@@ -40,10 +39,9 @@ Cohere uses a custom API path. For providers with custom paths, use the traditio
 
 llm:
   models:
-  - name: llama3.2
+  - name: "*"
     provider: openAI
     params:
-      model: llama3.2
       baseUrl: "http://localhost:11434"
 ```
 
@@ -81,19 +79,18 @@ For any OpenAI-compatible provider that uses standard paths (`/v1/chat/completio
 
 llm:
   models:
-  - name: <model-identifier>
+  - name: "*"
     provider: openAI
     params:
-      model: <model-name>
       apiKey: "$PROVIDER_API_KEY"
       baseUrl: "<provider-base-url>"
 ```
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name identifier for this model configuration. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | Set to `openai` for OpenAI-compatible providers. |
-| `params.model` | The model name as expected by the provider. |
+| `params.model` | The model name as expected by the provider. If set, this model is used for all requests. If not set, the model from the request is passed through. |
 | `params.apiKey` | The provider's API key. You can reference environment variables using the `$VAR_NAME` syntax. |
 | `params.baseUrl` | The provider's base URL (e.g., `https://api.provider.com`). |
 
@@ -153,4 +150,4 @@ binds:
               model: llama-3.3-70b-versatile
 ```
 
-For more information about choosing between configuration modes, see the [Configuration modes guide](../configuration-modes/).
+For more information about choosing between configuration modes, see the [Routing-based configuration guide](../configuration-modes/).

@@ -24,10 +24,9 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: gpt-4o-mini
+  - name: "*"
     provider: openAI
     params:
-      model: gpt-4o-mini
       apiKey: $OPENAI_API_KEY
 EOF
 
@@ -56,10 +55,9 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: claude-sonnet-4-20250514
+  - name: "*"
     provider: anthropic
     params:
-      model: claude-sonnet-4-20250514
       apiKey: $ANTHROPIC_API_KEY
 EOF
 
@@ -88,10 +86,9 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: grok-2-latest
+  - name: "*"
     provider: openAI
     params:
-      model: grok-2-latest
       apiKey: $XAI_API_KEY
       baseUrl: "https://api.x.ai"
 EOF
@@ -124,10 +121,9 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: llama3.2
+  - name: "*"
     provider: openAI
     params:
-      model: llama3.2
       baseUrl: "http://host.docker.internal:11434"
 EOF
 
@@ -158,7 +154,7 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: gpt-4o
+  - name: "*"
     provider: azure
     params:
       model: $AZURE_DEPLOYMENT
@@ -195,10 +191,9 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: anthropic.claude-3-5-sonnet-20241022-v2:0
+  - name: "*"
     provider: bedrock
     params:
-      model: anthropic.claude-3-5-sonnet-20241022-v2:0
       region: $AWS_REGION
 EOF
 
@@ -229,10 +224,9 @@ cat <<'EOF' > config.yaml
 
 llm:
   models:
-  - name: gemini-2.0-flash
+  - name: "*"
     provider: gemini
     params:
-      model: gemini-2.0-flash
       apiKey: $GEMINI_API_KEY
 EOF
 

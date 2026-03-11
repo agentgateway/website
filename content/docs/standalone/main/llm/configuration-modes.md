@@ -1,7 +1,7 @@
 ---
-title: Configuration modes
-weight: 2
-description: Understand when to use simplified LLM configuration vs traditional HTTP routing configuration
+title: Routing-based configuration for LLMs
+weight: 60
+description: Use traditional HTTP routing configuration for advanced use cases like path-based routing and non-LLM backends
 ---
 
 Agentgateway offers two ways to configure LLM providers, each optimized for different use cases.
@@ -24,11 +24,12 @@ You can use both configuration modes in the same file if needed, but typically o
 | Do you need custom, path-based routing (e.g., `/openai`, `/anthropic`)? | Yes | Routing-based configuration |
 | Do you need to route to non-LLM backends? | Yes | Routing-based configuration |
 | Do you need multiple listeners on different ports? | Yes | Routing-based configuration |
-| Do you need complex HTTP policies like CORS or rate limiting? | Yes | Routing-based configuration |
 
 ## Simplified LLM configuration
 
 The simplified `llm` configuration is designed specifically for LLM use cases. Use this approach when your primary goal is to route traffic to LLM providers.
+
+In general, the docs use the simplified LLM configuration.
 
 ### About
 
@@ -53,10 +54,9 @@ The benefits of this approach are:
 
 llm:
   models:
-  - name: gpt-3.5-turbo
+  - name: "*"
     provider: openAI
     params:
-      model: gpt-3.5-turbo
       apiKey: "$OPENAI_API_KEY"
 ```
 

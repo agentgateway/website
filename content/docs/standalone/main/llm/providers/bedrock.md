@@ -19,10 +19,9 @@ Before you can use Bedrock as an LLM provider, you must authenticate by using th
 
 llm:
   models:
-  - name: amazon.titan-text-express-v1
+  - name: "*"
     provider: bedrock
     params:
-      model: amazon.titan-text-express-v1
       region: us-west-2
 ```
 
@@ -30,7 +29,7 @@ llm:
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name identifier for this model configuration. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
 | `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.region` | The AWS region where the Bedrock model is hosted. |

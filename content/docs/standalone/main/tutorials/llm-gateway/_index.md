@@ -314,7 +314,7 @@ Example output:
 Route to different LLM providers based on a header. This lets you switch providers without changing your application code.
 
 {{< callout type="info" >}}
-This example uses the traditional `binds/listeners/routes` configuration format because it demonstrates header-based HTTP routing. For simpler use cases, see the simplified `llm:` format in the examples above or learn more in the [Configuration modes guide](../../llm/configuration-modes/).
+This example uses the traditional `binds/listeners/routes` configuration format because it demonstrates header-based HTTP routing. For simpler use cases, see the simplified `llm:` format in the examples above or learn more in the [Routing-based configuration guide](../../llm/configuration-modes/).
 {{< /callout >}}
 
 ### Step 1: Set your API keys
@@ -451,7 +451,7 @@ curl http://localhost:4000/v1/chat/completions \
 ## Next steps
 
 {{< cards >}}
-  {{< card link="../../llm/configuration-modes/" title="Configuration modes" subtitle="Learn about simplified LLM vs traditional HTTP routing configuration" >}}
+  {{< card link="../../llm/configuration-modes/" title="Routing-based configuration" subtitle="Use traditional HTTP routing for advanced use cases" >}}
   {{< card link="../../llm/spending/" title="Cost Tracking" subtitle="Monitor LLM spending" >}}
   {{< card link="../../configuration/resiliency/rate-limits/" title="Rate Limiting" subtitle="Configure rate limits" >}}
 {{< /cards >}}

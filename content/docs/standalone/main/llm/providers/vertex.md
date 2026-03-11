@@ -35,7 +35,7 @@ llm:
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name identifier for this model configuration. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `vertex` for Google Cloud Vertex AI. |
 | `params.model` | The specific Vertex AI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.vertexProject` | The Google Cloud project ID. |

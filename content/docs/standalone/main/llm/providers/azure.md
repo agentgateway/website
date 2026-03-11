@@ -27,10 +27,9 @@ The simplified LLM configuration supports basic Azure OpenAI authentication with
 
 llm:
   models:
-  - name: gpt-4
+  - name: "*"
     provider: azure
     params:
-      model: gpt-4
       azureEndpoint: "https://your-resource.openai.azure.com"
       azureTenantId: "your-tenant-id"
       azureClientId: "your-client-id"
@@ -41,7 +40,7 @@ llm:
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name identifier for this model configuration. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `azure` for Azure OpenAI. |
 | `params.model` | The specific Azure OpenAI model to use. |
 | `params.azureEndpoint` | The Azure OpenAI endpoint URL. |
@@ -50,7 +49,7 @@ llm:
 | `params.azureClientSecret` | The Azure client secret for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
 {{< callout type="info" >}}
-For advanced Azure authentication methods (managed identity, workload identity, or Azure AI Foundry), use the traditional `binds/listeners/routes` configuration format. See the [Configuration modes guide](../configuration-modes/) for more information.
+For advanced Azure authentication methods (managed identity, workload identity, or Azure AI Foundry), use the traditional `binds/listeners/routes` configuration format. See the [Routing-based configuration guide](../configuration-modes/) for more information.
 {{< /callout >}}
 
 ## Advanced configuration

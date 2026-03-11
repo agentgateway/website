@@ -15,10 +15,9 @@ Configure Google Gemini as an LLM provider in agentgateway.
 
 llm:
   models:
-  - name: gemini-1.5-flash
+  - name: "*"
     provider: gemini
     params:
-      model: gemini-1.5-flash
       apiKey: "$GEMINI_API_KEY"
 ```
 
@@ -26,7 +25,7 @@ llm:
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name identifier for this model configuration. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `gemini` for Google Gemini models. |
 | `params.model` | The specific Gemini model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Gemini API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |

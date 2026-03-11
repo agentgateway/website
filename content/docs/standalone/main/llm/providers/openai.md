@@ -15,10 +15,9 @@ Configure OpenAI as an LLM provider in agentgateway.
 
 llm:
   models:
-  - name: gpt-3.5-turbo
+  - name: "*"
     provider: openAI
     params:
-      model: gpt-3.5-turbo
       apiKey: "$OPENAI_API_KEY"
 ```
 
@@ -26,13 +25,13 @@ llm:
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name identifier for this model configuration. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `openai` for OpenAI models. |
 | `params.model` | The specific OpenAI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The OpenAI API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
 {{< callout type="info" >}}
-For advanced routing scenarios that require path-based routing or custom endpoints, use the traditional `binds/listeners/routes` configuration format. See the [Configuration modes guide](../configuration-modes/) for more information.
+For advanced routing scenarios that require path-based routing or custom endpoints, use the traditional `binds/listeners/routes` configuration format. See the [Routing-based configuration guide](../configuration-modes/) for more information.
 {{< /callout >}}
 
 ## Connect to Codex
