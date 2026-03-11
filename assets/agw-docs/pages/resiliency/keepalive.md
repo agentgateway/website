@@ -96,7 +96,7 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepal
 
 ### Set up HTTP keepalive
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP keepalive settings to the httpbin service. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP keepalive settings on the agentgateway proxy. 
    ```yaml 
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
