@@ -1,6 +1,6 @@
 ---
 title: Observe traffic
-weight: 50
+weight: 80
 description: Get prompt logging, cost tracking, and an audit trail for LLM traffic.
 ---
 

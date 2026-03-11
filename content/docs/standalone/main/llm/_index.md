@@ -14,4 +14,6 @@ Consume LLM services by setting up AI backends for your LLM providers.
   {{< card link="api-keys" title="Manage API keys" >}}
   {{< card link="observability" title="Observe traffic" >}}
   {{< card link="spending" title="Control spend" >}}
+  {{< card link="prompt-guards" title="Prompt guards" >}}
+  {{< card link="transformations" title="Transform LLM requests" >}}
 {{< /cards >}}

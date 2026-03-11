@@ -81,22 +81,107 @@ This release includes a major refactor to the CEL implementation in agentgateway
 * **Function name changes**: <!-- CEL expressions can now be applied directly to rate limiting, authorization, and observability policies. -->Due to dependency updates, function names were changed. Previously, function names followed a camel case pattern, such as `base64Encode`. Now, function names use dot notations, such as `base64.encode`. The old camel case names remain in place for backwards compatibility. 
 * **New string functions**: The following string manipulation functions were added to the CEL library: `startsWith`, `endsWith`, `stripPrefix`, and `stripSuffix`. These functions align with the Google [CEL-Go strings extension](https://pkg.go.dev/github.com/google/cel-go/ext#Strings). 
 * **Null values fail**: If a top-level variable returns a null value, the CEL expression now fails. Previously, null values always returned true. For example, the `has(jwt)` expression was previously successful if the JWT was missing or could not be found. Now, this expression fails. 
+* **Logical operators**:  Logical `||` and `&&` operators now handle evaluation errors gracefully instead of propagating them. For example, `a || b` returns `true` if `a` is true even if `b` errors. Previously, the CEL expression failed. 
 
 Make sure to update and verify any existing CEL expressions that you use in your environment. 
 
 For more information, see the [CEL expression]({{< link-hextra path="/reference/cel/" >}}) reference. 
 
+### External auth fail-closed
+
+External auth policies now fail closed when the `backendRef` to the auth server is invalid. This way, requests are rejected if the auth server cannot be reached or is misconfigured. You are affected if you have an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that specifies the `traffic.extAuth.backendRef` field as shown in the following example. 
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  name: gateway-ext-auth-policy
+  labels:
+    app: ext-authz
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+  traffic:
+    extAuth:
+      backendRef:
+        name: ext-authz
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        port: 4444
+      grpc: {}
+EOF
+```
+
+_Before_: If the `ext-authz` service was missing or misconfigured, the ext auth policy was effectively skipped and all requests passed through.
+
+_After_: Requests to routes protected by this policy are rejected with a failure response until the backend reference is corrected.
+
+### MCP deny-only authorization policies
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1058 -->
+
+A critical correctness bug was fixed in MCP authorization. You are affected if you have an MCP authorization policy that uses `action: Deny` without any corresponding allow rules. 
+
+For example, review the following {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. Previously, this policy denied all tool access, not just access to the `echo` tool. Starting in 1.0.0, only `echo` is denied and all other tools are allowed. 
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+spec:
+  targetRefs:
+  - group: agentgateway.dev
+    kind: AgentgatewayBackend
+    name: mcp-backend
+  backend:
+    mcp:
+      authorization:
+        action: Deny
+        policy:
+          matchExpressions:
+          - 'mcp.tool.name == "echo"'
+```
+
+### MCP authentication mode change
+
+The default MCP authentication mode now defaults to `Strict` mode instead of `Permissive`. Requests to MCP backends without valid credentials are rejected by default. To restore the `Permissive` behavior, see the following example:
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: permissive-mcp-auth
+spec:
+  targetRefs:
+  - group: agentgateway.dev
+    kind: AgentgatewayBackend
+    name: my-mcp-backend
+  backend:
+    mcp:
+      authentication:
+        mode: Permissive
+        jwks:
+          remote:
+            jwksPath: ".well-known/jwks.json"
+            backendRef:
+              name: idp-service
+        issuer: "https://my-idp.example.com"
+```
+
+
 ## 🌟 New features {#v10-new-features}
 
 The following features were introduced in 1.0.0.
 
-### Kubernetes Gatway API version 1.5.0
+### Kubernetes Gateway API version 1.5.0
 
 The Kubernetes Gateway API dependency is updated to support version 1.5.0. This version introduces several changes, including: 
 * **XListenerSets promoted to ListenerSets**: The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead. 
 * **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs]({{< link-hextra path="/setup/listeners/mtls/" >}}). 
-* **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin.
-* **BackendTLS**: 
+* **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin. For an example, see the [CORS]({{< link-hextra path="/security/cors/" >}}) guide. 
+* **BackendTLS**: You can now apply BackendTLSPolicy resources to your routes to originate a TLS connection to a backend. For an example, see the [BackendTLS]({{< link-hextra path="/security/backendtls/" >}}) guide. 
 
 ### Autoscaling policies for agentgateway controller
 
@@ -218,6 +303,84 @@ spec:
 ### GRPCRoute support
 
 You can now attach GRPCRoutes to your agentgateway proxy to route traffic to gRPC endpoints. For more information, see [gRPC routing]({{< link-hextra path="/traffic-management/grpc/" >}}). 
+
+### PreRouting phase support for auth policies
+
+You can now use the `phase: PreRouting` setting on JWT, basic auth, and API key authentication policies. This setting applies extauth policies before a routing decision is made. Note that the policy must target a Gateway rather than an HTTPRoute. 
+
+The following API key auth example sets the prerouting phase:
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: apikey-pre-routing
+spec:
+  targetRefs:
+  - kind: Gateway
+    name: my-gateway
+    group: gateway.networking.k8s.io
+  traffic:
+    phase: PreRouting
+    apiKeyAuthentication:
+      secretRefs:
+      - name: api-keys-secret
+```
+
+### LLM request transformations
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1041 -->
+
+You can now use CEL expressions to dynamically compute and set fields in LLM requests. This allows you to enforce policies, such as capping token usage, without changing client code.
+
+The following example caps `max_tokens` to 10 for all requests to the `openai` HTTPRoute:
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: cap-max-tokens
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  backend:
+    ai:
+      transformations:
+      - field: max_tokens
+        expression: "min(llmRequest.max_tokens, 10)"
+```
+
+For more information, see [Transform requests]({{< link-hextra path="/llm/transformations/" >}}).
+
+### Extended thinking and structured outputs for Claude providers
+
+Extended thinking and structured outputs are now supported for Anthropic and Amazon Bedrock Claude providers.
+
+**Extended thinking** lets Claude reason through complex problems before generating a response. Thinking is opt-in. You must provide specific attributes in your request to enable extended thinking. 
+
+**Structured outputs** constrain the model to respond with a specific JSON schema. You define the JSON schema as part of your request. 
+
+For more information, see the following resources:
+* [Anthropic extended thinking and structured outputs]({{< link-hextra path="/llm/providers/anthropic/" >}})
+* [Bedrock extended thinking and structured outputs]({{< link-hextra path="/llm/providers/bedrock/" >}})
+
+## 🪲 Bug fixes {#v10-bug-fixes}
+
+### MCP per-request policy evaluation
+
+MCP policies are now re-evaluated on each request rather than only at session start. If an operator updates an authorization policy, such as by revoking access to a tool or changing JWT claim requirements, the change takes effect immediately on the next request, without requiring the client to tear down and re-establish the MCP session.
+
+Note that this is a behavioral improvement. Existing MCP authorization configuration benefits automatically. 
+
+### CORS evaluation ordering
+
+CORS evaluation now runs *before* authentication and *before* rate limiting. Previously, CORS ran after auth and rate limiting, which caused two problems:
+  - Browser preflight OPTIONS requests were rejected by auth, making cross-origin requests impossible when auth was enabled
+  - Rate-limited 429 responses lacked CORS headers, so browsers saw an opaque CORS error instead of a retryable 
+
+Note that this is a behavioral improvement. Existing configurations that combine CORS policies with extauth and rate limiting policies now work correctly. 
 
 
 ## 🗑️ Deprecated or removed features {#v10-removed-features}

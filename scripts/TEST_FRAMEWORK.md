@@ -74,9 +74,9 @@ On the page being tested, add a `test:` key to the YAML front matter. Each child
 title: CORS
 test:
   cors-in-httproute:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/install/helm.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
@@ -84,9 +84,9 @@ test:
     path: cors-in-httproute
 
   cors-in-agentgatewaypolicy:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/install/helm.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
