@@ -10,7 +10,7 @@ With keepalive, the kernel sends probe packets with only an acknowledgement flag
 
 ### Set up TCP keepalive
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies TCP keepalive settings to the httpbin service. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies TCP keepalive settings to the httpbin service. 
    ```yaml 
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
