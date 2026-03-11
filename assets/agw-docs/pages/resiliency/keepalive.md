@@ -8,6 +8,8 @@ With keepalive, the kernel sends probe packets with only an acknowledgement flag
 
 ## TCP keepalive
 
+Keep the TCP connection alive by sending out probes after the connection has been idle for a specific amount of time.
+
 ### Set up TCP keepalive
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies TCP keepalive settings to the httpbin service. 
@@ -93,6 +95,7 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepal
 
 ## HTTP keepalive
 
+Keep the HTTP connection alive by sending out probes after the connection has been idle for a specific amount of time.
 
 ### Set up HTTP keepalive
 
