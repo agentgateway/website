@@ -7,18 +7,18 @@ description:
 Consume services from LLM providers.
 
 {{< cards >}}
-  {{< card link="about" title="About" >}}
-  {{< card link="providers" title="Providers" >}}
-  {{< card link="api-keys" title="Manage API keys" >}}
+  {{< card link="about" title="About" subtitle="Unified LLM interface, common challenges, supported providers" >}}
+  {{< card link="providers" title="Providers" subtitle="Configure backends for supported LLM providers" >}}
+  {{< card link="api-keys" title="Manage API keys" subtitle="Secure LLM provider authentication" >}}
   {{< card link="rate-limit" title="Rate limiting for LLMs" subtitle="Token and request budgets" >}}
   {{< card link="failover" title="Model failover" subtitle="Failover, A/B testing, canary, traffic splitting" >}}
   {{< card link="content-safety" title="Content safety and PII protection" subtitle="Content safety, PII detection, DLP, data loss prevention" >}}
-  {{< card link="prompt-guards" title="Set up prompt guards" >}}
-  {{< card link="prompt-enrichment" title="Enrich prompts" >}}
+  {{< card link="prompt-guards" title="Set up prompt guards" subtitle="Content safety, PII detection, request filtering" >}}
+  {{< card link="prompt-enrichment" title="Enrich prompts" subtitle="System prompts, user prompts, prompt management" >}}
   {{< card link="prompt-templates" title="Use prompt templates" subtitle="Static and dynamic templating, variable injection" >}}
-  {{< card link="functions" title="Call functions" >}}
-  {{< card link="guardrail-api" title="Guardrail Webhook API" >}}
+  {{< card link="functions" title="Call functions" subtitle="Extend LLMs with external APIs and tools" >}}
+  {{< card link="guardrail-api" title="Guardrail Webhook API" subtitle="Custom guardrail controls via webhooks" >}}
   {{< card link="cost-tracking" title="Track LLM costs" subtitle="Cost tracking, spend monitoring, usage tracking" >}}
-  {{< card link="observability" title="View metrics and logs" >}}
-  {{< card link="tracing" title="View traces" >}}
+  {{< card link="observability" title="View metrics and logs" subtitle="Token usage, prompt logging, LLM-specific metrics" >}}
+  {{< card link="tracing" title="View traces" subtitle="OpenTelemetry tracing configuration" >}}
 {{< /cards >}}
