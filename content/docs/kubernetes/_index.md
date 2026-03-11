@@ -10,8 +10,8 @@ description:
 Select the version for the agentgateway docs.
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/main/" title="Main" subtitle="In development docs subject to change" >}}
-  {{< card link="/docs/kubernetes/latest/" title="Latest" subtitle="Current stable release" >}}
+  {{< card path="/kubernetes/main/" title="Main" subtitle="In development docs subject to change" >}}
+  {{< card path="/kubernetes/latest/" title="Latest" subtitle="Current stable release" >}}
 {{< /cards >}}
 
 > [!TIP] 
