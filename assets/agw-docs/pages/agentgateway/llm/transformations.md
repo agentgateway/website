@@ -43,6 +43,8 @@ To learn more about CEL, see the following resources:
 
    {{< callout type="info" >}}
    You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
+
+   Thinking budget fields, such as `reasoning_effort` and `thinking_budget_tokens` can also be set or capped by using transformations. This way, operators can enforce reasoning limits centrally without requiring client changes. For example, use `"field": "reasoning_effort"` with the expression `"medium"` to cap all requests to medium reasoning efforts regardless of what the client sends.
    {{< /callout >}}
 
 2. Send a request with `max_tokens` set to a value greater than 10. The transformation caps it to 10 before the request reaches the LLM provider. Verify that the `completion_tokens` value in the response is 10 or fewer, the response is capped and the `finish_reason` is set to `length`. 

@@ -354,6 +354,18 @@ spec:
 
 For more information, see [Transform requests]({{< link-hextra path="/llm/transformations/" >}}).
 
+### Extended thinking and structured outputs for Claude providers
+
+Extended thinking and structured outputs are now supported for Anthropic and Amazon Bedrock Claude providers.
+
+**Extended thinking** lets Claude reason through complex problems before generating a response. Thinking is opt-in and only activates when you explicitly request it. Use the `thinking.type: adaptive` field in the Anthropic Messages API, the `reasoning_effort` field in the OpenAI-compatible completions API, or the `reasoning.effort` field in the Bedrock Responses API. You can also override the thinking budget directly with `vendor_extensions.thinking_budget_tokens` for Bedrock.
+
+**Structured outputs** constrain the model to respond with a specific JSON schema. Pass a `response_format` or `output_config.format` field with a `json_schema` type in your request. Agentgateway automatically translates these to the provider's native format.
+
+For more information, see the following resources:
+* [Anthropic extended thinking and structured outputs]({{< link-hextra path="/llm/providers/anthropic/" >}})
+* [Bedrock extended thinking and structured outputs]({{< link-hextra path="/llm/providers/bedrock/" >}})
+
 ## 🪲 Bug fixes {#v10-bug-fixes}
 
 ### MCP per-request policy evaluation
