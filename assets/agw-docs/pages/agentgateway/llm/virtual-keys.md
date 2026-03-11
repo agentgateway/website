@@ -11,19 +11,7 @@ Virtual key management is a common feature in AI gateway solutions that allows y
 
 This composable approach gives you more flexibility in how you configure and apply virtual key management policies, while maintaining compatibility with standard Kubernetes patterns.
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
-
-{{< callout type="warning" >}}
-This guide uses global rate limiting to enforce per-key token budgets across multiple gateway instances. You need to deploy a rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
-{{< /callout >}}
-
-{{< callout type="info" >}}
-**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
-{{< /callout >}}
-
-## How virtual keys work
+### How virtual keys work
 
 Virtual keys combine authentication, rate limiting, and observability to create isolated token budgets for each API key:
 
@@ -50,6 +38,16 @@ When a request arrives:
 5. Token usage is tracked and deducted from the user's budget
 6. If budget is exhausted, the request is rejected with a 429 status code
 7. Budgets refill at the configured interval (daily, hourly, etc.)
+
+### More considerations
+
+**Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
+
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
+
+## Before you begin
+
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 ## Set up virtual keys
 
@@ -172,7 +170,7 @@ EOF
 
 ### Configure the rate limit server
 
-Deploy a rate limit server and configure it with your budget limits.
+Deploy a rate limit server and configure it with your budget limits. This guide uses global rate limiting to enforce per-key token budgets across multiple gateway instances. For more information, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
 
 1. Deploy the rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
 

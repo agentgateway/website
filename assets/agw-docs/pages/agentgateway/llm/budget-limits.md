@@ -4,26 +4,9 @@ Advanced patterns for enforcing token budget limits per API key or user.
 
 Budget limits (also known as spend limits or quota management) help you control LLM costs by restricting how many tokens each user or API key can consume within a time window. This prevents runaway spending and ensures fair resource allocation across teams and applications.
 
+This guide focuses on advanced patterns that are not covered in the virtual keys guide, such as per-route budgets, local rate limiting, and cost calculations.
 
-This guide focuses on **advanced patterns** not covered in the virtual keys guide, such as per-route budgets, local rate limiting, and cost calculations.
-
-## Before you begin
-
-Complete the [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}) guide to:
-- Create API keys for users
-- Configure API key authentication
-- Set up token-based rate limiting
-- Configure the rate limit server
-
-{{< callout type="warning" >}}
-This guide uses global rate limiting to enforce token budgets across multiple gateway instances. You need to deploy a rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
-{{< /callout >}}
-
-{{< callout type="info" >}}
-**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
-{{< /callout >}}
-
-## How budget limits work
+### How budget limits work
 
 Budget limits enforce token consumption quotas using token bucket rate limiting. Each user or API key gets a virtual "budget" measured in tokens rather than requests.
 
@@ -53,10 +36,19 @@ flowchart TD
 4. If the budget is exhausted, the request is rejected with a 429 status code
 5. The bucket refills at the configured interval
 
-{{< callout type="warning" >}}
-**Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
-{{< /callout >}}
+### More considerations
 
+**Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
+
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
+
+## Before you begin
+
+Complete the [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}) guide to:
+- Create API keys for users
+- Configure API key authentication
+- Set up token-based rate limiting
+- Configure the rate limit server
 
 ## Per-route budget limits
 
