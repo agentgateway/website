@@ -171,8 +171,8 @@ Update the configuration file to remove the route.
 After you create routes, you might want to apply policies to them.
 
 {{< cards >}}
-  {{< card link="../traffic-management/matching/" title="Request matching" >}}
-  {{< card link="../traffic-management/" title="Traffic management" >}}
-  {{< card link="../resiliency/" title="Resiliency" >}}
-  {{< card link="../security/" title="Security" >}}
+  {{< card path="/traffic-management/matching/" title="Request matching" >}}
+  {{< card path="/traffic-management/" title="Traffic management" >}}
+  {{< card path="/resiliency/" title="Resiliency" >}}
+  {{< card path="/security/" title="Security" >}}
 {{< /cards >}}

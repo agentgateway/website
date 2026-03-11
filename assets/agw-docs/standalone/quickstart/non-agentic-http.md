@@ -163,7 +163,7 @@ docker stop httpbin
 ## Next steps
 
 {{< cards >}}
-  {{< card link="../../configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
-  {{< card link="../../configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to ensure gateway and app resilience." >}}
-  {{< card link="../../configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
+  {{< card path="/configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
+  {{< card path="/configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to ensure gateway and app resilience." >}}
+  {{< card path="/configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
 {{< /cards >}}
