@@ -47,11 +47,6 @@ def generate_summary(report: dict) -> str:
         lines.append("## Doc Test Results")
         lines.append("")
         lines.append("No test results found.")
-        if tested_documents:
-            lines.append("")
-            lines.append(f"Tested documents ({len(tested_documents)}):")
-            for doc in tested_documents:
-                lines.append(f"- `{doc}`")
         return "\n".join(lines)
 
     total = len(tests)
@@ -123,16 +118,6 @@ def generate_summary(report: dict) -> str:
             lines.append("</details>")
             lines.append("")
 
-    # Tested documents
-    if tested_documents:
-        lines.append("<details>")
-        lines.append(f"<summary><strong>Tested documents ({len(tested_documents)})</strong></summary>")
-        lines.append("")
-        for doc in tested_documents:
-            lines.append(f"- `{doc}`")
-        lines.append("")
-        lines.append("</details>")
-
     return "\n".join(lines)
 
 
@@ -191,11 +176,6 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
             {"type": "header", "text": {"type": "plain_text", "text": "Doc Test Results"}},
             {"type": "section", "text": {"type": "mrkdwn", "text": "No test results found."}},
         ]
-        if tested_documents:
-            doc_list = "\n".join(f"\u2022 `{d}`" for d in tested_documents)
-            blocks.append(
-                {"type": "section", "text": {"type": "mrkdwn", "text": _truncate(f"*Tested documents ({len(tested_documents)}):*\n{doc_list}")}}
-            )
         if run_url:
             blocks.append(_run_url_block(run_url))
         return {"text": fallback, "blocks": blocks}, None
@@ -236,14 +216,6 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
 
     results_text = _truncate("\n".join(result_lines))
     blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": results_text}})
-
-    # --- tested documents ---
-    if tested_documents and len(blocks) < _SLACK_MAX_BLOCKS:
-        blocks.append({"type": "divider"})
-        doc_list = "\n".join(f"\u2022 `{d}`" for d in tested_documents)
-        blocks.append(
-            {"type": "section", "text": {"type": "mrkdwn", "text": _truncate(f"*Tested documents ({len(tested_documents)}):*\n{doc_list}")}}
-        )
 
     # --- workflow run link ---
     if run_url and len(blocks) < _SLACK_MAX_BLOCKS:

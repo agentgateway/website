@@ -1,0 +1,126 @@
+name: Links
+
+# Each Monday at 4am UTC
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "00 04 * * MON"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linkChecker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Checkout shared link-checking scripts
+        uses: actions/checkout@v4
+        with:
+          repository: solo-io/docs-link-checking
+          path: docs-link-checking
+          token: ${{ secrets.DOCS_TOKEN }}
+
+      - name: Set up Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.147.0'
+          extended: true
+
+      - name: Install Lychee
+        run: |
+          chmod +x docs-link-checking/install-lychee.sh
+          docs-link-checking/install-lychee.sh
+
+      - name: Hugo build
+        run: hugo --config hugo.yaml
+
+      - name: Prepare workspace
+        run: mkdir -p artifacts
+
+      - name: Check Links with Lychee
+        id: lychee
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          shopt -s globstar
+          set +e
+          lychee \
+            --verbose \
+            --config docs-link-checking/lychee.toml \
+            --root-dir "${{ github.workspace }}/public" \
+            --index-files index.html \
+            --remap "^https://agentgateway\.dev/ file:///${{ github.workspace }}/public/" \
+            --format json \
+            --user-agent curl/8.4.0 \
+            --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
+            --github-token ${{ secrets.GITHUB_TOKEN }} \
+            public/**/*.html > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
+          EXIT=$?
+          set -e
+          echo "has_failures=$([ "$EXIT" != "0" ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
+
+      - name: Generate markdown report from JSON
+        if: steps.lychee.outputs.has_failures == 'true'
+        run: |
+          chmod +x docs-link-checking/generate-link-report.sh
+          docs-link-checking/generate-link-report.sh \
+            "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
+            "${{ github.workspace }}/artifacts/agentgateway-oss-links.md" \
+            "${{ github.workspace }}/public"
+
+      - name: Create issue from report
+        if: steps.lychee.outputs.has_failures == 'true'
+        id: create-issue
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: peter-evans/create-issue-from-file@v6
+        with:
+          title: Link Checker Report - agentgateway OSS
+          content-filepath: ./artifacts/agentgateway-oss-links.md
+          labels: links,bug
+
+      - name: Set issue URL for Slack
+        id: issue-url
+        env:
+          ISSUE_NUMBER: ${{ steps.create-issue.outputs.issue-number }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          chmod +x docs-link-checking/set-issue-url.sh
+          docs-link-checking/set-issue-url.sh
+
+      - name: Remove public directory
+        run: rm -rf public
+
+      - name: Read link checker results
+        id: link-stats
+        env:
+          MD_FILE: artifacts/agentgateway-oss-links.md
+          JSON_FILE: artifacts/agentgateway-oss-links.json
+        run: |
+          chmod +x docs-link-checking/read-link-stats.sh
+          docs-link-checking/read-link-stats.sh
+
+      - name: Post results to Slack
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_CHANNEL: "#doctopus-tests"
+          PRODUCT_NAME: agentgateway OSS
+          ERRORS: ${{ steps.link-stats.outputs.errors }}
+          REDIRECTS: ${{ steps.link-stats.outputs.redirects }}
+          ICON: ${{ steps.link-stats.outputs.icon }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          ISSUE_LINE: ${{ steps.issue-url.outputs.issue_line }}
+        run: |
+          chmod +x docs-link-checking/post-slack-results.sh
+          docs-link-checking/post-slack-results.sh
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-checker-assets
+          path: artifacts/*
