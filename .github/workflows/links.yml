@@ -55,7 +55,7 @@ jobs:
             --config docs-link-checking/lychee.toml \
             --root-dir "${{ github.workspace }}/public" \
             --index-files index.html \
-            --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/" \
+            --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/" \
             --format json \
             --user-agent curl/8.4.0 \
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
