@@ -16,7 +16,7 @@ Notice the following details about the Service:
 * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy uses the MCP protocol when connecting to the service.
 * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
-```yaml,paths="setup-mcp-server"
+```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -75,7 +75,7 @@ EOF
 
 Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse "agw-docs/snippets/agentgateway.md" >}} target details for the MCP server.
 
-```yaml,paths="setup-mcp-server"
+```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -97,7 +97,7 @@ EOF
 
 Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. Use a path match so that requests to `/mcp` go to the MCP backend and are not routed to an LLM or other backend.
 
-```yaml,paths="setup-mcp-server"
+```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

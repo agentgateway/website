@@ -4,6 +4,14 @@ Control LLM costs with token-based rate limiting and request-based limits.
 
 Rate limiting for LLM traffic helps you control costs and prevent runaway token consumption. Agentgateway supports both traditional request-based limits and LLM-specific token-based budgets. Token limits let you cap spending on expensive prompts and prevent unexpected bills from prompt injection or misconfigured applications.
 
+Agentgateway offers two modes of rate limiting:
+
+- **Local rate limiting**: Runs in-process on each agentgateway proxy replica. Each replica maintains its own independent rate limit counters. This is simpler to configure and requires no external services, but limits are per-replica rather than shared across the entire gateway fleet.
+
+- **Global rate limiting**: Uses an external rate limit service to coordinate limits across multiple proxy replicas. All replicas share the same counters, ensuring consistent enforcement regardless of which replica receives the request. This requires deploying and configuring an external rate limit service.
+
+Both local and global rate limiting support both request-based and token-based limits.
+
 ### How token counting works
 
 Agentgateway reads the `usage` field from every LLM response to accumulate token counts against the configured budget. Two behaviors are important to understand before applying limits:
@@ -12,15 +20,15 @@ Agentgateway reads the `usage` field from every LLM response to accumulate token
 
 **Counting happens after the fact:** This means token budgets are approximate. With a 1000-token-per-minute limit and a single request that returns 1200 tokens, that request succeeds, you're 200 tokens over budget, and subsequent requests are blocked until the window resets.
 
+Token budgets degrade gracefully: requests that exceed the budget fail fast with a 429 and are not forwarded to the backend. After the window resets, the token budget is restored and requests succeed again. No manual intervention is required.
+
 This behavior is intentional and matches how real LLM providers implement soft quotas.
 
 ### Response headers
 
 {{< reuse "agw-docs/snippets/ratelimit-headers.md" >}}
 
-### Summary
-
-Token budgets degrade gracefully: requests that exceed the budget fail fast with a 429, leaving the backend completely unaffected. After the window resets, the budget is restored and requests succeed again. No manual intervention is required.
+### Common use cases
 
 Review the following table for example use cases and configuration guidance.
 
@@ -45,9 +53,9 @@ Also, check out the rate limiting guides for other use cases:
 
 Local token rate limiting runs in-process on each agentgateway proxy replica. The following steps show how to apply a per-route token budget and test it with streaming and non-streaming requests.
 
-1. Apply a token budget to your LLM HTTPRoute.
+1. Apply a token budget to your LLM HTTPRoute. The following example limits total token consumption to 100 tokens per minute across all requests hitting this route.
 
-   ```yaml,paths="llm-token-rate-limit"
+   ```yaml {paths="llm-token-rate-limit"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -87,16 +95,12 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    EOF
    {{< /doc-test >}}
 
-   This limits total token consumption to 100 tokens per minute across all requests hitting this route.
-
    {{< reuse "agw-docs/snippets/review-table.md" >}}
 
    | Field | Required | Description |
    |-------|----------|-------------|
-   | `tokens` | Yes (or `requests`) | Number of tokens allowed per `unit` |
-   | `unit` | Yes | `Seconds`, `Minutes`, or `Hours` |
-
-   Note: `burst` is not applicable to token limits — token counts are known only after each response completes, so there is no bucket to burst from.
+   | `tokens` | Yes (or `requests`) | Number of tokens allowed per `unit`. |
+   | `unit` | Yes | `Seconds`, `Minutes`, or `Hours`. |
 
 2. Verify the policy attached.
 
@@ -161,7 +165,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    ...
    ```
 
-   After the token budget is exhausted, subsequent requests return 429 until the minute window resets.
+   After the token budget is exhausted, subsequent requests return a 429 HTTP response until the minute window resets.
 
 4. Test with streaming to verify that token limits work the same way with streaming responses.
 
@@ -240,9 +244,13 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-## Combining request and token limits {#combined}
+## Other configurations
 
-You can apply both request-based and token-based limits to the same route. Both limits are evaluated independently — a request must pass both checks to succeed.
+The following examples show additional configuration patterns for LLM rate limiting.
+
+### Combine request and token limits {#combined}
+
+You can apply both request-based and token-based limits to the same route. Both limits are evaluated independently. A request must pass both checks to succeed.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -297,7 +305,7 @@ spec:
 EOF
 ```
 
-This acts as a hard ceiling on total token consumption across the entire gateway, regardless of which route is hit.
+This policy acts as a hard ceiling on total token consumption across the entire gateway, regardless of which route is hit.
 
 ## Global rate limiting for LLMs {#global}
 
@@ -309,6 +317,6 @@ For detailed instructions on setting up global rate limiting with descriptors an
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh,paths="llm-token-rate-limit"
+```sh {paths="llm-token-rate-limit"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

@@ -11,15 +11,29 @@ Global rate limiting coordinates rate limits across multiple agentgateway proxy 
 
 Global rate limiting is essential when running multiple proxy replicas and you need to enforce a single quota across the entire fleet — for example, "100 requests per minute per user" should apply to the sum of requests across all replicas, not 100 per replica.
 
+Global rate limiting requires two components:
+
+1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies the rate limit service reference (`backendRef`), a domain identifier, and CEL-based descriptor rules.
+
+2. **Rate Limit Service**: An external service implementing the [Envoy Rate Limit protocol](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter). The service stores the actual rate limit values, maintains counters in a backend store (typically Redis), and returns allow/deny decisions based on descriptor matching.
+
 ### Request flow
 
-Review the following sequence diagram to understand the request flow with global rate limiting.
+Global rate limiting works as follows:
+
+1. A CEL expression in the policy extracts request attributes (such as client IP, user ID, or path)
+2. The gateway sends these descriptor key-value pairs to the rate limit service via gRPC
+3. The rate limit service matches the descriptors against its configuration and checks the counter
+4. If the limit is exceeded, the service returns `OVER_LIMIT`; otherwise it returns `OK` and increments the counter
+5. If `OVER_LIMIT` is detected, the gateway returns a 429 response to the client; if the service sends back an `OK`, the request proceeds to the backend
+
+The following sequence diagram shows the request flow with global rate limiting.
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant Gateway
-    participant RateLimiter
+    participant RateLimiter as Rate Limit Service
     participant App
 
     Client->>Gateway: 1. Send request to protected App
@@ -35,29 +49,6 @@ sequenceDiagram
         Gateway->>Client: 6. Deny request & return rate limit message
     end
 ```
-
-1. The Client sends a request to an App protected by the Gateway.
-2. The Gateway receives the request.
-3. The Gateway evaluates the CEL expressions in the policy's descriptors to extract rate limit dimensions (such as client IP, user ID, path) and sends them to the Rate Limit Service via gRPC.
-4. The Rate Limit Service checks its configuration for matching descriptors, applies the configured limits, and returns a decision.
-5. If allowed, the Gateway forwards the request to the App.
-6. If the rate limit is exceeded, the Gateway denies the request with a 429 response and rate limit headers.
-
-### Architecture
-
-Global rate limiting requires two components:
-
-1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies:
-   - `backendRef`: Reference to the rate limit service (Service or Backend)
-   - `domain`: Arbitrary string identifying this application/team
-   - `descriptors`: Array of CEL-based rules for extracting rate limit dimensions
-
-2. **Rate Limit Service**: An external service implementing the Envoy Rate Limit gRPC protocol. The service:
-   - Stores the actual rate limit values (requests per time unit)
-   - Maintains counters in a backend store (typically Redis)
-   - Returns allow/deny decisions based on descriptor matching
-
-Unlike kgateway, agentgateway does **not** require a separate GatewayExtension resource — the policy directly references the rate limit service.
 
 ### Response headers
 
@@ -79,6 +70,53 @@ Review the following common CEL expressions that you might find useful when crea
 | Host header | `request.headers["host"]` | The host header value. |
 | User agent | `request.headers["user-agent"]` | Client user agent string. |
 
+### Example policy configuration
+
+Review the following example policy, also used in the [Rate limit by client IP](#rate-limit-by-client-ip) section.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: ip-rate-limit
+  namespace: httpbin
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: httpbin
+  traffic:
+    rateLimit:
+      global:
+        backendRef:
+          name: ratelimit
+          namespace: ratelimit
+          port: 8081
+        domain: agentgateway
+        descriptors:
+          - entries:
+              - name: remote_address
+                expression: "source.address"
+            unit: Requests
+EOF
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}} For more information, refer to the [API docs]({{< link-hextra path="/reference/api/#globalratelimit" >}}).
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| `backendRef` | Yes | Reference to the rate limit service. Supports `Service` or `Backend` kind. |
+| `backendRef.name` | Yes | Name of the Service or Backend. |
+| `backendRef.namespace` | Yes | Namespace where the service lives. |
+| `backendRef.port` | Yes | gRPC port (typically 8081). |
+| `domain` | Yes | Must match the `domain` in the rate limit service configuration. |
+| `descriptors` | Yes | Array of descriptor rules (max 16). Each rule extracts request attributes. |
+| `descriptors[].entries` | Yes | Array of descriptor entries (max 16). Each entry uses a CEL expression to extract a value. |
+| `descriptors[].entries[].name` | Yes | Descriptor name. Must match a `key` in the rate limit service config. Case-sensitive. |
+| `descriptors[].entries[].expression` | Yes | CEL expression returning a string. Examples: `source.address`, `request.path`, `request.headers["x-user-id"]`. |
+| `descriptors[].unit` | No | Cost unit: `Requests` (default) or `Tokens`. Use `Tokens` for LLM token-based rate limiting. |
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-x-channel.md" >}}
@@ -89,13 +127,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 1. Create a namespace for the rate limit infrastructure.
 
-   ```sh,paths="global-rate-limit-by-ip"
+   ```sh {paths="global-rate-limit-by-ip"}
    kubectl create namespace ratelimit
    ```
 
 2. Deploy Redis as the backing store.
 
-   ```yaml,paths="global-rate-limit-by-ip"
+   ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -131,9 +169,9 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that will be enforced.
+3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
-   ```yaml,paths="global-rate-limit-by-ip"
+   ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -142,7 +180,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
      namespace: ratelimit
    data:
      config.yaml: |
-       domain: api-gateway
+       domain: agentgateway
        descriptors:
          # Rate limit by client IP: 10 requests per minute
          - key: remote_address
@@ -203,7 +241,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 4. Deploy the rate limit service.
 
-   ```yaml,paths="global-rate-limit-by-ip"
+   ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -333,298 +371,165 @@ For AI-specific use cases:
 - [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
 - [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
 
+### Rate limit by client IP {#rate-limit-by-client-ip}
 
-### Rate limit by client IP
+Limit requests based on the client's source IP address (10 requests per minute per IP, as configured in the rate limit service).
 
-Limit requests based on the client's source IP address.
+{{< callout type="info" >}}
+The descriptor entry `name` in the policy must match the `key` in the rate limit service ConfigMap. For example, `name: remote_address` in the policy matches `key: remote_address` in the ConfigMap.
+{{< /callout >}}
 
-```yaml,paths="global-rate-limit-by-ip"
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: ip-rate-limit
-  namespace: httpbin
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbin
-  traffic:
-    rateLimit:
-      global:
-        backendRef:
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        domain: api-gateway
-        descriptors:
-          - entries:
-              - name: remote_address
-                expression: "source.address"
-EOF
-```
+1. Apply the policy.
 
-{{< doc-test paths="global-rate-limit-by-ip" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for ip-rate-limit policy to be accepted
-  wait:
-    target:
-      apiVersion: agentgateway.dev/v1alpha1
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: httpbin
-        name: ip-rate-limit
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
+   ```yaml {paths="global-rate-limit-by-ip"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: ip-rate-limit
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       rateLimit:
+         global:
+           backendRef:
+             name: ratelimit
+             namespace: ratelimit
+             port: 8081
+           domain: agentgateway
+           descriptors:
+             - entries:
+                 - name: remote_address
+                   expression: "source.address"
+   EOF
+   ```
 
-{{< reuse "agw-docs/snippets/review-table.md" >}}
+   {{< doc-test paths="global-rate-limit-by-ip" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for ip-rate-limit policy to be accepted
+     wait:
+       target:
+         apiVersion: agentgateway.dev/v1alpha1
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: httpbin
+           name: ip-rate-limit
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `backendRef` | Yes | Reference to the rate limit service. Supports `Service` or `Backend` kind. |
-| `backendRef.name` | Yes | Name of the Service or Backend. |
-| `backendRef.namespace` | Yes | Namespace where the service lives. |
-| `backendRef.port` | Yes | gRPC port (typically 8081). |
-| `domain` | Yes | Must match the `domain` in the rate limit service configuration. |
-| `descriptors` | Yes | Array of descriptor rules (max 16). Each rule extracts request attributes. |
-| `descriptors[].entries` | Yes | Array of descriptor entries (max 16). Each entry uses a CEL expression to extract a value. |
-| `descriptors[].entries[].name` | Yes | Descriptor name. Must match a `key` in the rate limit service config. Case-sensitive. |
-| `descriptors[].entries[].expression` | Yes | CEL expression returning a string. Examples: `source.address`, `request.path`, `request.headers["x-user-id"]`. |
-| `descriptors[].unit` | No | Cost unit: `Requests` (default) or `Tokens`. Use `Tokens` for LLM token-based rate limiting. |
+2. Send 15 requests to the httpbin app.
 
-**How it works:**
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   for i in $(seq 1 15); do
+     STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+       http://$INGRESS_GW_ADDRESS:80/get \
+       -H "host: www.example.com")
+     echo "Request $i: HTTP $STATUS"
+   done
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   for i in $(seq 1 15); do
+     STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+       localhost:8080/get \
+       -H "host: www.example.com")
+     echo "Request $i: HTTP $STATUS"
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
-1. The CEL expression `source.address` extracts the client IP (such as `"192.168.1.100"`)
-2. The gateway sends `{ key: "remote_address", value: "192.168.1.100" }` to the rate limit service
-3. The service matches this against its configuration's `remote_address` descriptor
-4. If the client has made more than 10 requests in the last minute (per the config), the service returns `OVER_LIMIT`
-5. The gateway returns 429 to the client
+   The first 10 requests succeed with 200, and subsequent requests return 429. All requests from the same IP share the same counter.
 
-{{< doc-test paths="global-rate-limit-by-ip" >}}
-# Send 15 requests rapidly to exceed the 10 req/min limit
-for i in $(seq 1 15); do
-  curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/get -H "host: www.example.com" &
-done
-wait
+   Example output:
 
-# Verify rate limit is active
-YAMLTest -f - <<'EOF'
-- name: Verify global rate limit by IP
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/get"
-    method: GET
-    headers:
-      host: www.example.com
-  source:
-    type: local
-  expect:
-    statusCode: 429
-  retries:
-    maxAttempts: 3
-    intervalSeconds: 0
-EOF
-{{< /doc-test >}}
+   ```
+   Request 1: HTTP 200
+   Request 2: HTTP 200
+   ...
+   Request 10: HTTP 200
+   Request 11: HTTP 429
+   Request 12: HTTP 429
+   ...
+   Request 15: HTTP 429
+   ```
 
-### Rate limit by user ID
+   {{< doc-test paths="global-rate-limit-by-ip" >}}
+   # Send 15 requests rapidly to exceed the 10 req/min limit
+   for i in $(seq 1 15); do
+     curl -s -o /dev/null http://${INGRESS_GW_ADDRESS}:80/get -H "host: www.example.com" &
+   done
+   wait
 
-Extract the user ID from a header and rate limit per user.
+   # Verify rate limit is active
+   YAMLTest -f - <<'EOF'
+   - name: Verify global rate limit by IP
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/get"
+       method: GET
+       headers:
+         host: www.example.com
+     source:
+       type: local
+     expect:
+       statusCode: 429
+     retries:
+       maxAttempts: 3
+       intervalSeconds: 0
+   EOF
+   {{< /doc-test >}}
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: user-rate-limit
-  namespace: httpbin
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbin
-  traffic:
-    rateLimit:
-      global:
-        backendRef:
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        domain: api-gateway
-        descriptors:
-          - entries:
-              - name: x-user-id
-                expression: 'request.headers["x-user-id"]'
-EOF
-```
 
-The CEL expression `request.headers["x-user-id"]` extracts the header value. Each unique user ID gets its own rate limit counter.
+### Rate limit by user ID {#rate-limit-by-user-id}
 
-### Rate limit by request path
+Extract the user ID from a header and rate limit per user (50 requests per minute per user, as configured in the rate limit service).
 
-Apply different rate limits to different API paths.
+1. Apply the policy.
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: path-rate-limit
-  namespace: httpbin
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbin
-  traffic:
-    rateLimit:
-      global:
-        backendRef:
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        domain: api-gateway
-        descriptors:
-          - entries:
-              - name: path
-                expression: "request.path"
-EOF
-```
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: user-rate-limit
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       rateLimit:
+         global:
+           backendRef:
+             name: ratelimit
+             namespace: ratelimit
+             port: 8081
+           domain: agentgateway
+           descriptors:
+             - entries:
+                 - name: x-user-id
+                   expression: 'request.headers["x-user-id"]'
+   EOF
+   ```
 
-The rate limit service configuration defines different limits for `/api/v1` (100/min) vs `/api/v2` (200/min).
+   The CEL expression `request.headers["x-user-id"]` extracts the `x-user-id` header value from the request. Each unique user ID gets its own rate limit counter.
 
-### Rate limit by service tier (static descriptor)
-
-Use a static value to categorize traffic — for example, by service tier.
-
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: tier-rate-limit
-  namespace: httpbin
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbin
-  traffic:
-    rateLimit:
-      global:
-        backendRef:
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        domain: api-gateway
-        descriptors:
-          - entries:
-              - name: service
-                expression: '"premium"'
-EOF
-```
-
-The CEL expression `"premium"` returns a constant string. All traffic on this route is treated as "premium" tier and gets 1000 requests per minute.
-
-### Nested descriptors (multi-dimensional rate limiting)
-
-Combine multiple descriptor entries to create composite rate limits — for example, "per user per path" or "per IP per API key".
-
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: nested-rate-limit
-  namespace: httpbin
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbin
-  traffic:
-    rateLimit:
-      global:
-        backendRef:
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        domain: api-gateway
-        descriptors:
-          - entries:
-              - name: x-user-id
-                expression: 'request.headers["x-user-id"]'
-              - name: path
-                expression: "request.path"
-EOF
-```
-
-The rate limit service must have a nested descriptor configuration to match:
-
-```yaml
-domain: api-gateway
-descriptors:
-  - key: x-user-id
-    value: "alice"
-    descriptors:
-      - key: path
-        value: "/api/v1"
-        rate_limit:
-          unit: minute
-          requests_per_unit: 50
-```
-
-This allows different limits for the same user hitting different paths.
-
-### Combine local and global rate limiting
-
-Apply both in-process and distributed rate limits to the same traffic.
-
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: combined-rate-limit
-  namespace: httpbin
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: httpbin
-  traffic:
-    rateLimit:
-      local:
-        - requests: 100
-          unit: Seconds
-      global:
-        backendRef:
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        domain: api-gateway
-        descriptors:
-          - entries:
-              - name: x-user-id
-                expression: 'request.headers["x-user-id"]'
-EOF
-```
-
-This configuration enforces:
-- **Local**: 100 requests per second per proxy replica (protects against traffic spikes)
-- **Global**: 50 requests per minute per user across all replicas (enforces user quotas)
-
-Both limits are evaluated. A request must pass both checks to succeed.
-
-## Test the rate limits {#test}
-
-1. Send requests without the `x-user-id` header. These requests won't match the user-based descriptor and will be allowed (assuming no other descriptors match).
+2. Send a request without the `x-user-id` header. This request does not match the user-based descriptor and is allowed.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -639,7 +544,7 @@ Both limits are evaluated. A request must pass both checks to succeed.
    {{% /tab %}}
    {{< /tabs >}}
 
-2. Send requests with a user ID header. These are rate limited according to the service configuration.
+3. Send requests with a user ID header to trigger the rate limit.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -666,28 +571,9 @@ Both limits are evaluated. A request must pass both checks to succeed.
    {{% /tab %}}
    {{< /tabs >}}
 
-   With a limit of 50 requests per minute for user "alice", the first 50 requests succeed with 200, and subsequent requests return 429.
+   The first 50 requests succeed with 200, and subsequent requests return 429.
 
-3. Inspect a rate-limited response:
-
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:80/get \
-     -H "host: www.example.com" \
-     -H "x-user-id: alice"
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -i localhost:8080/get \
-     -H "host: www.example.com" \
-     -H "x-user-id: alice"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-   Example output:
+   Example rate-limited response:
 
    ```
    HTTP/1.1 429 Too Many Requests
@@ -700,12 +586,309 @@ Both limits are evaluated. A request must pass both checks to succeed.
    rate limit exceeded
    ```
 
+### Rate limit by request path {#rate-limit-by-request-path}
+
+Apply different rate limits to different API paths (`/api/v1` at 100/min, `/api/v2` at 200/min, as configured in the rate limit service).
+
+1. Apply the policy.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: path-rate-limit
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       rateLimit:
+         global:
+           backendRef:
+             name: ratelimit
+             namespace: ratelimit
+             port: 8081
+           domain: agentgateway
+           descriptors:
+             - entries:
+                 - name: path
+                   expression: "request.path"
+   EOF
+   ```
+
+2. Send requests to different paths and compare the rate limits.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   # /api/v1 has a 100 req/min limit
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "v1 Request $i: HTTP %{http_code}\n" \
+       http://$INGRESS_GW_ADDRESS:80/api/v1 \
+       -H "host: www.example.com"
+   done
+
+   # /api/v2 has a 200 req/min limit
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "v2 Request $i: HTTP %{http_code}\n" \
+       http://$INGRESS_GW_ADDRESS:80/api/v2 \
+       -H "host: www.example.com"
+   done
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   # /api/v1 has a 100 req/min limit
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "v1 Request $i: HTTP %{http_code}\n" \
+       localhost:8080/api/v1 \
+       -H "host: www.example.com"
+   done
+
+   # /api/v2 has a 200 req/min limit
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "v2 Request $i: HTTP %{http_code}\n" \
+       localhost:8080/api/v2 \
+       -H "host: www.example.com"
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Each path has an independent rate limit counter. Exhausting the limit on `/api/v1` does not affect `/api/v2`.
+
+### Rate limit by service tier (static descriptor)
+
+Use a static value to categorize traffic — for example, by service tier (1000 requests per minute for the "premium" tier, as configured in the rate limit service).
+
+1. Apply the policy.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: tier-rate-limit
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       rateLimit:
+         global:
+           backendRef:
+             name: ratelimit
+             namespace: ratelimit
+             port: 8081
+           domain: agentgateway
+           descriptors:
+             - entries:
+                 - name: service
+                   expression: '"premium"'
+   EOF
+   ```
+
+   The CEL expression `"premium"` returns a constant string. All traffic on this route is treated as "premium" tier.
+
+2. Send a request and inspect the rate limit headers to verify the limit.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -i localhost:8080/get -H "host: www.example.com"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   The `x-ratelimit-limit` header in the response confirms the 1000 request limit. All traffic on this route shares the same "premium" counter because the descriptor uses a static value.
+
+### Nested descriptors (multi-dimensional rate limiting)
+
+Combine multiple descriptor entries to create composite rate limits — for example, "per user per path" or "per IP per API key".
+
+1. Apply the policy.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: nested-rate-limit
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       rateLimit:
+         global:
+           backendRef:
+             name: ratelimit
+             namespace: ratelimit
+             port: 8081
+           domain: agentgateway
+           descriptors:
+             - entries:
+                 - name: x-user-id
+                   expression: 'request.headers["x-user-id"]'
+                 - name: path
+                   expression: "request.path"
+   EOF
+   ```
+
+   The rate limit service must have a nested descriptor configuration to match:
+
+   ```yaml
+   domain: agentgateway
+   descriptors:
+     - key: x-user-id
+       value: "alice"
+       descriptors:
+         - key: path
+           value: "/api/v1"
+           rate_limit:
+             unit: minute
+             requests_per_unit: 50
+   ```
+
+2. Send requests as different users to different paths and verify that each user-path combination has its own counter.
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   # Requests as alice to /api/v1
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "alice /api/v1 Request $i: HTTP %{http_code}\n" \
+       http://$INGRESS_GW_ADDRESS:80/api/v1 \
+       -H "host: www.example.com" \
+       -H "x-user-id: alice"
+   done
+
+   # Requests as bob to /api/v1 — separate counter from alice
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "bob /api/v1 Request $i: HTTP %{http_code}\n" \
+       http://$INGRESS_GW_ADDRESS:80/api/v1 \
+       -H "host: www.example.com" \
+       -H "x-user-id: bob"
+   done
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   # Requests as alice to /api/v1
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "alice /api/v1 Request $i: HTTP %{http_code}\n" \
+       localhost:8080/api/v1 \
+       -H "host: www.example.com" \
+       -H "x-user-id: alice"
+   done
+
+   # Requests as bob to /api/v1 — separate counter from alice
+   for i in $(seq 1 5); do
+     curl -s -o /dev/null -w "bob /api/v1 Request $i: HTTP %{http_code}\n" \
+       localhost:8080/api/v1 \
+       -H "host: www.example.com" \
+       -H "x-user-id: bob"
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Each user-path combination (such as `alice + /api/v1` and `bob + /api/v1`) maintains a separate rate limit counter.
+
+### Combine local and global rate limiting
+
+Apply both local and global rate limits to the same traffic.
+
+1. Apply the policy.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: combined-rate-limit
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       rateLimit:
+         local:
+           - requests: 100
+             unit: Seconds
+         global:
+           backendRef:
+             name: ratelimit
+             namespace: ratelimit
+             port: 8081
+           domain: agentgateway
+           descriptors:
+             - entries:
+                 - name: x-user-id
+                   expression: 'request.headers["x-user-id"]'
+   EOF
+   ```
+
+   This configuration enforces:
+   - **Local**: 100 requests per second per proxy replica (protects against traffic spikes)
+   - **Global**: 50 requests per minute per user across all replicas (enforces user quotas)
+
+   Both limits are evaluated. A request must pass both checks to succeed.
+
+2. Send requests with a user ID header. The global per-user limit (50/min) is reached before the local per-replica limit (100/s).
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   for i in $(seq 1 60); do
+     STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+       http://$INGRESS_GW_ADDRESS:80/get \
+       -H "host: www.example.com" \
+       -H "x-user-id: alice")
+     echo "Request $i: HTTP $STATUS"
+   done
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   for i in $(seq 1 60); do
+     STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+       localhost:8080/get \
+       -H "host: www.example.com" \
+       -H "x-user-id: alice")
+     echo "Request $i: HTTP $STATUS"
+   done
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   The first 50 requests succeed (global limit), then subsequent requests return 429.
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh,paths="global-rate-limit-by-ip"
+```sh {paths="global-rate-limit-by-ip"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} user-rate-limit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} path-rate-limit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tier-rate-limit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} nested-rate-limit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} combined-rate-limit -n httpbin
 kubectl delete deployment ratelimit redis -n ratelimit
 kubectl delete service ratelimit redis -n ratelimit
 kubectl delete configmap ratelimit-config -n ratelimit
