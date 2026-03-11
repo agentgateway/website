@@ -279,7 +279,7 @@ cd .. && rm -rf mcp-auth-tutorial
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/mcp/mcp-authn" title="MCP Authentication Reference" subtitle="Complete MCP auth guide" >}}
-  {{< card link="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Fine-grained tool access control" >}}
-  {{< card link="/configuration/security/" title="Security Configuration" subtitle="All security options" >}}
+  {{< card path="/mcp/mcp-authn" title="MCP Authentication Reference" subtitle="Complete MCP auth guide" >}}
+  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Fine-grained tool access control" >}}
+  {{< card path="/configuration/security/" title="Security Configuration" subtitle="All security options" >}}
 {{< /cards >}}

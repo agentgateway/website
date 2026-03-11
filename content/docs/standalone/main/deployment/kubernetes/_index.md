@@ -17,5 +17,5 @@ Kgateway benefits include:
 
 
 {{< cards >}}
-  {{< card path="/kubernetes/" title="Get started with agentgateway on Kubernetes" icon="external-link">}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Get started with agentgateway on Kubernetes" icon="external-link">}}
 {{< /cards >}}

@@ -57,7 +57,7 @@ binds:
         weight: 1
 ```
 
-For more information, see [TCP route matching](../traffic-management/matching#tcp-routes).
+For more information, see [TCP route matching]({{< link-hextra path="/configuration/traffic-management/matching#tcp-routes" >}}).
 
 ## Before you begin
 
@@ -171,8 +171,8 @@ Update the configuration file to remove the route.
 After you create routes, you might want to apply policies to them.
 
 {{< cards >}}
-  {{< card path="/traffic-management/matching" title="Request matching" >}}
-  {{< card path="/traffic-management/" title="Traffic management" >}}
+  {{< card path="/configuration/traffic-management/matching" title="Request matching" >}}
+  {{< card path="/configuration/traffic-management/" title="Traffic management" >}}
   {{< card path="/resiliency/" title="Resiliency" >}}
   {{< card path="/security/" title="Security" >}}
 {{< /cards >}}

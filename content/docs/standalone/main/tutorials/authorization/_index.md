@@ -193,5 +193,4 @@ mcpAuthorization:
 
 {{< cards >}}
   {{< card path="/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
-  {{< card path="/configuration/security/authentication" title="Authentication" subtitle="Authentication methods" >}}
 {{< /cards >}}

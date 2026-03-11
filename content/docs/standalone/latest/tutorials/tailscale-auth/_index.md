@@ -307,5 +307,5 @@ The connecting IP isn't recognized by Tailscale. Ensure you're connecting via a 
 
 {{< cards >}}
   {{< card path="/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
-  {{< card path="/configuration/traffic-management/external-authorization/" title="External Authorization" subtitle="ExtAuthz configuration reference" >}}
+  {{< card path="/configuration/traffic-management/extproc/" title="External Authorization" subtitle="ExtAuthz configuration reference" >}}
 {{< /cards >}}
