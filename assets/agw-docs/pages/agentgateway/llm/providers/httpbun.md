@@ -36,7 +36,7 @@ curl -X POST httpbun.com/llm/chat/completions \
 
 httpbun ships as a single Docker image. The default bind port inside the container is `3090` when configured via environment variable.
 
-```bash,paths="setup-httpbun-llm"
+```bash {paths="setup-httpbun-llm"}
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -122,7 +122,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} to configure httpbun as a
 **No API key needed**: httpbun accepts requests without authentication, so there is no `policies.auth` block in the following example. This also means that you don't need to manage a Kubernetes Secret: one less prerequisite to set up!
 {{< /callout >}}
 
-```bash,paths="setup-httpbun-llm"
+```bash {paths="setup-httpbun-llm"}
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -154,7 +154,7 @@ Route incoming traffic from the gateway to the {{< reuse "agw-docs/snippets/back
 
 1. Create the HTTPRoute.
 
-   ```bash,paths="setup-httpbun-llm"
+   ```bash {paths="setup-httpbun-llm"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute

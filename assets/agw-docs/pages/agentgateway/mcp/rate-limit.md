@@ -62,13 +62,7 @@ EOF
 
 **Route-level, MCP-specific limits**
 
-With both the gateway-level and route-level policies in place, the MCP route is subject to its own tighter limit (5 req/s), while the gateway ceiling protects against any single client flooding a different route.
-
-```
-Client → Gateway (10000 req/min) → MCP route (5 req/s) → mcp-server
-```
-
-The more specific policy wins for the traffic it matches.
+With both policies in place, the MCP route uses its own tighter limit (5 req/s), while the gateway ceiling applies to all other routes.
 
 ### Use cases
 
@@ -98,7 +92,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
 1. Apply a rate limit directly to the MCP HTTPRoute. The following example allows 5 tool calls per second with a burst of up to 15 (5 base + 10 burst) before the request is rate limited and a 429 HTTP response is returned. The burst headroom is important for MCP clients: during session initialization, an agent typically fires `initialize` → `tools/list` → several `tools/call` requests back-to-back. Without burst capacity, the MCP server would hit the limit before doing any real work.
 
-   ```yaml,paths="mcp-local-rate-limit"
+   ```yaml {paths="mcp-local-rate-limit"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -488,6 +482,6 @@ The following steps show how to set up global rate limiting infrastructure and c
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh,paths="mcp-local-rate-limit"
+```sh {paths="mcp-local-rate-limit"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-rate-limit -n default
 ```

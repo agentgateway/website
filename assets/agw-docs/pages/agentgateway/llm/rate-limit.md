@@ -55,7 +55,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 
 1. Apply a token budget to your LLM HTTPRoute. The following example limits total token consumption to 100 tokens per minute across all requests hitting this route.
 
-   ```yaml,paths="llm-token-rate-limit"
+   ```yaml {paths="llm-token-rate-limit"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -101,8 +101,6 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    |-------|----------|-------------|
    | `tokens` | Yes (or `requests`) | Number of tokens allowed per `unit`. |
    | `unit` | Yes | `Seconds`, `Minutes`, or `Hours`. |
-
-   Note that if you configure `tokens`, you cannot also configure the `burst` setting, which is valid only with `requests`. This is because token counting happens after the LLM response completes. The gateway can't know how many tokens a request will consume until it's done, so it can't pre-allocate burst capacity. The burst mechanism requires knowing the cost upfront (which works for request counts, but not for token counts). 
 
 2. Verify the policy attached.
 
@@ -319,6 +317,6 @@ For detailed instructions on setting up global rate limiting with descriptors an
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh,paths="llm-token-rate-limit"
+```sh {paths="llm-token-rate-limit"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

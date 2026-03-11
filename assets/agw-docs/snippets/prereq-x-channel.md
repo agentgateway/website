@@ -14,7 +14,7 @@
      --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
    ```
 
-3. [Set up an agentgateway proxy]({{< link-hextra path="/setup/">}}).
+3. [Set up an agentgateway proxy]({{< link-hextra path="/setup/gateway/">}}).
 
 4. Follow the [Sample app guide]({{< link-hextra path="/install/sample-app/" >}}) to deploy the httpbin sample app
 

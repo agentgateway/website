@@ -15,7 +15,7 @@ Global rate limiting requires two components:
 
 1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with `rateLimit.global`**: Configure your rate limit policy with descriptors that extract request attributes using CEL expressions. The policy specifies the rate limit service reference (`backendRef`), a domain identifier, and CEL-based descriptor rules.
 
-2. **Rate Limit Service**: An external service implementing the Envoy Rate Limit gRPC protocol. The service stores the actual rate limit values, maintains counters in a backend store (typically Redis), and returns allow/deny decisions based on descriptor matching.
+2. **Rate Limit Service**: An external service implementing the [Envoy Rate Limit protocol](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter). The service stores the actual rate limit values, maintains counters in a backend store (typically Redis), and returns allow/deny decisions based on descriptor matching.
 
 ### Request flow
 
@@ -25,15 +25,15 @@ Global rate limiting works as follows:
 2. The gateway sends these descriptor key-value pairs to the rate limit service via gRPC
 3. The rate limit service matches the descriptors against its configuration and checks the counter
 4. If the limit is exceeded, the service returns `OVER_LIMIT`; otherwise it returns `OK` and increments the counter
-5. If `OVER_LIMIT`, the gateway returns a 429 response to the client; if `OK`, the request proceeds to the backend
+5. If `OVER_LIMIT` is detected, the gateway returns a 429 response to the client; if the service sends back an `OK`, the request proceeds to the backend
 
-Review the following sequence diagram to understand the request flow with global rate limiting.
+The following sequence diagram shows the request flow with global rate limiting.
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant Gateway
-    participant RateLimiter
+    participant RateLimiter as Rate Limit Service
     participant App
 
     Client->>Gateway: 1. Send request to protected App
@@ -49,13 +49,6 @@ sequenceDiagram
         Gateway->>Client: 6. Deny request & return rate limit message
     end
 ```
-
-1. The Client sends a request to an App protected by the Gateway.
-2. The Gateway receives the request.
-3. The Gateway evaluates the CEL expressions in the policy's descriptors to extract rate limit dimensions (such as client IP, user ID, path) and sends them to the Rate Limit Service via gRPC.
-4. The Rate Limit Service checks its configuration for matching descriptors, applies the configured limits, and returns a decision.
-5. If allowed, the Gateway forwards the request to the App.
-6. If the rate limit is exceeded, the Gateway denies the request with a 429 response and rate limit headers.
 
 ### Response headers
 
@@ -83,8 +76,8 @@ Review the following example policy, also used in the [Rate limit by client IP](
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayPolicy
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
 metadata:
   name: ip-rate-limit
   namespace: httpbin
@@ -134,13 +127,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 1. Create a namespace for the rate limit infrastructure.
 
-   ```sh,paths="global-rate-limit-by-ip"
+   ```sh {paths="global-rate-limit-by-ip"}
    kubectl create namespace ratelimit
    ```
 
 2. Deploy Redis as the backing store.
 
-   ```yaml,paths="global-rate-limit-by-ip"
+   ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -178,7 +171,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
-   ```yaml,paths="global-rate-limit-by-ip"
+   ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -248,7 +241,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 4. Deploy the rate limit service.
 
-   ```yaml,paths="global-rate-limit-by-ip"
+   ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -382,9 +375,13 @@ For AI-specific use cases:
 
 Limit requests based on the client's source IP address (10 requests per minute per IP, as configured in the rate limit service).
 
+{{< callout type="info" >}}
+The descriptor entry `name` in the policy must match the `key` in the rate limit service ConfigMap. For example, `name: remote_address` in the policy matches `key: remote_address` in the ConfigMap.
+{{< /callout >}}
+
 1. Apply the policy.
 
-   ```yaml,paths="global-rate-limit-by-ip"
+   ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -431,7 +428,7 @@ Limit requests based on the client's source IP address (10 requests per minute p
    EOF
    {{< /doc-test >}}
 
-2. Send 15 rapid requests from the same client.
+2. Send 15 requests to the httpbin app.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -457,6 +454,19 @@ Limit requests based on the client's source IP address (10 requests per minute p
    {{< /tabs >}}
 
    The first 10 requests succeed with 200, and subsequent requests return 429. All requests from the same IP share the same counter.
+
+   Example output:
+
+   ```
+   Request 1: HTTP 200
+   Request 2: HTTP 200
+   ...
+   Request 10: HTTP 200
+   Request 11: HTTP 429
+   Request 12: HTTP 429
+   ...
+   Request 15: HTTP 429
+   ```
 
    {{< doc-test paths="global-rate-limit-by-ip" >}}
    # Send 15 requests rapidly to exceed the 10 req/min limit
@@ -799,7 +809,7 @@ Combine multiple descriptor entries to create composite rate limits — for exam
 
 ### Combine local and global rate limiting
 
-Apply both in-process and distributed rate limits to the same traffic.
+Apply both local and global rate limits to the same traffic.
 
 1. Apply the policy.
 
@@ -872,7 +882,7 @@ Apply both in-process and distributed rate limits to the same traffic.
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh,paths="global-rate-limit-by-ip"
+```sh {paths="global-rate-limit-by-ip"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} user-rate-limit -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} path-rate-limit -n httpbin
