@@ -36,7 +36,9 @@ jobs:
           docs-link-checking/install-lychee.sh
 
       - name: Hugo build
-        run: hugo --config hugo.yaml
+        run: |
+          npm i -D postcss postcss-cli autoprefixer
+          hugo --config hugo.yaml
 
       - name: Prepare workspace
         run: mkdir -p artifacts
