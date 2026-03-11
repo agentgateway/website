@@ -119,7 +119,7 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepal
    | Setting | Description | 
    | -- | -- | 
    | `http2KeepaliveInterval` | The number of seconds to keep the connection alive.  |
-   | `http2KeepaliveTimeout` | The number of seconds a connection needs to be idle. |
+   | `http2KeepaliveTimeout` | The number of seconds a connection is idle before keep-alive probes are sent. |
    
 
 2. Port-forward the gateway proxy on port 15000. 
