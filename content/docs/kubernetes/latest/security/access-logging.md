@@ -4,7 +4,7 @@ weight: 10
 description: Capture an access log for all the requests that enter the proxy.
 test:
   access-logging:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
