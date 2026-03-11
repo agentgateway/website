@@ -24,7 +24,7 @@ The following rules are applied during schema validation:
 
 ## Set up direct responses 
 
-1. Create an HTTPRoute resource that routes traffic with the `/health` path.
+1. Create an HTTPRoute resource that routes traffic with the `/` path.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -40,11 +40,11 @@ The following rules are applied during schema validation:
        - matches:
            - path:
                type: PathPrefix
-               value: /health
+               value: /
    EOF
    ```
 
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `directResponse`. Traffic along the `/health` path is not forwarded. Instead, a custom message is returned with the successful response.
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `directResponse`. Traffic along the `/` path is not forwarded. Instead, a custom message is returned with the successful response.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
@@ -65,22 +65,23 @@ The following rules are applied during schema validation:
    ```
 
    
-3. Send a request along the `/health` path. Verify that your request succeeds, that you get back a 200 HTTP response code, and the custom message is included.  
+3. Send a request along the `/status/404` path. Verify that your request succeeds, that you get back a 200 HTTP response code, and the custom message is included instead of returning a `404` error.  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/health
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/404
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/health
+   curl -vi localhost:8080/status/404
    ```
    {{% /tab %}}
    {{< /tabs >}}
    
    Example output: 
    ```
+   ...
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    < content-length: 15
@@ -93,7 +94,7 @@ The following rules are applied during schema validation:
    
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} health-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
