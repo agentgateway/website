@@ -15,8 +15,7 @@ You cannot configure multiple direct response resources on the same route. If yo
 
 
 ### Schema validation
-The following rules are applied during schema validation: 
-* The `body` field can have a size of up to 4KB. 
+The following rule is applied during schema validation: 
 * The `status` field can define a valid HTTP status code in the 200-599 range. 
 
 
