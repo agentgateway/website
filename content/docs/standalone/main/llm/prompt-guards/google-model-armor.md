@@ -56,7 +56,7 @@ EOF
 
 | Setting | Description |
 | -- | -- |
-| `templateId` | The identifier of the Model Armor template to apply. Find this in the Google Cloud console under Security > Model Armor. |
+| `templateId` | The identifier of the Model Armor template to apply. Find this in the Google Cloud console under **Security** > **Model Armor**. |
 | `projectId` | The Google Cloud project ID where the Model Armor template is configured. |
 | `location` | The region where the Model Armor template is deployed. Defaults to `us-central1`. |
 | `policies.backendAuth.gcp` | GCP authentication configuration. Agentgateway uses the credentials available in the environment, such as Application Default Credentials. |

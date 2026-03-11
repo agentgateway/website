@@ -12,7 +12,7 @@ Regex-based prompt guards let you inspect LLM requests and responses against cus
 
 ### Built-in prompt guard patterns
 
-Agentgateway includes built-in patterns for common PII types that you can reference in your prompt guards. 
+Agentgateway includes the following built-in patterns for common PII types that you can reference in your prompt guards. 
 
 | Pattern | Description |
 | -- | -- |

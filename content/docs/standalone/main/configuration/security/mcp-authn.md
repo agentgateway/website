@@ -69,7 +69,7 @@ You can control how agentgateway handles requests that lack valid credentials by
 | Mode | Behavior |
 |------|----------|
 | `strict` (default) | A valid token issued by a configured issuer must be present. Requests without a valid token are rejected with `401 Unauthorized`. |
-| `optional` | If a token is present, it is validated. Requests without a token are allowed through. |
+| `optional` | If a token is present, it is validated. Requests without a token are permitted. |
 | `permissive` | Requests are never rejected based on authentication. |
 
 The following example sets the mode to `permissive`:
