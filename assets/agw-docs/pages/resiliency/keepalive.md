@@ -34,7 +34,7 @@ With keepalive, the kernel sends probe packets with only an acknowledgement flag
    
    | Setting | Description | 
    | -- | -- | 
-   | `retries` | The maximum number of retries to send without a response before a connection is considered stale. | 
+   | `retries` | The maximum number of keep-alive probes to send without a response before a connection is considered stale. | 
    | `time` | The number of seconds a connection needs to be idle before retries are sent. |
    | `interval` | The number of seconds between keep-alive probes.  |  
 
