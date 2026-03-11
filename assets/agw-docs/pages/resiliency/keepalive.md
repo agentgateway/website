@@ -36,7 +36,7 @@ With keepalive, the kernel sends probe packets with only an acknowledgement flag
    | -- | -- | 
    | `retries` | The maximum number of retries to send without a response before a connection is considered stale. | 
    | `time` | The number of seconds a connection needs to be idle before retries are sent. |
-   | `interval` | The number of seconds between retries.  |  
+   | `interval` | The number of seconds between keep-alive probes.  |  
 
 2. Port-forward the gateway proxy on port 15000. 
    ```sh
