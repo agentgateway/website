@@ -357,9 +357,7 @@ Prompt caching is supported for Bedrock Claude 3+ and Nova models.
 
 Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
 
-{{< callout type="info" >}}
-Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
-{{< /callout >}}
+**Note**: Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
 
 {{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
 {{% tab tabName="Bedrock default" %}}
