@@ -22,7 +22,7 @@ jobs:
         with:
           repository: solo-io/docs-link-checking
           path: docs-link-checking
-          token: ${{ secrets.DOCS_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Set up Hugo
         uses: peaceiris/actions-hugo@v3
