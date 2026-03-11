@@ -19,30 +19,22 @@ To learn more about CEL, see the following resources:
 
 1. Create a configuration file with your LLM transformation settings. The following example caps `max_tokens` to 10, regardless of what the client requests.
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-          - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-3.5-turbo
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           ai:
-             transformations:
-               max_tokens: "min(llmRequest.max_tokens, 10)"
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       transformation:
+         max_tokens: "min(llmRequest.max_tokens, 10)"
    EOF
    ```
 
    | Setting | Description |
    | -- | -- |
-   | `ai.transformations` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
+   | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
 
    {{< callout type="info" >}}
    You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.

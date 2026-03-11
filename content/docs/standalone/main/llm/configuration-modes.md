@@ -1,6 +1,6 @@
 ---
 title: Routing-based configuration for LLMs
-weight: 60
+weight: 100
 description: Use traditional HTTP routing configuration for advanced use cases like path-based routing and non-LLM backends
 ---
 
@@ -181,10 +181,11 @@ binds:
           host: api.example.com:443
 ```
 
-## Next steps
+## Guides that use routing-based configuration
+
+The following guides require the traditional `binds/listeners/routes` format because they use features only available in that mode.
 
 {{< cards >}}
-  {{< card link="../providers/" title="LLM Providers" subtitle="Configure specific LLM providers like OpenAI, Anthropic, and Bedrock" >}}
-  {{< card link="../api-keys/" title="API Keys" subtitle="Manage API keys for LLM providers" >}}
-  {{< card link="../../configuration/overview/" title="Configuration Overview" subtitle="Learn more about agentgateway configuration" >}}
+  {{< card link="../spending/" title="Control spend" subtitle="Rate limit token usage to prevent unexpected bills" >}}
+  {{< card link="../providers/multiple-llms/" title="Multiple LLM providers" subtitle="Load balance across provider groups" >}}
 {{< /cards >}}
