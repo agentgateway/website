@@ -64,7 +64,7 @@ To learn more about CEL, see the following resources:
          "content": "Tell me a short story"
        }
      ]
-   }' | jq '.usage.completion_tokens'
+   }' | jq 
    ```
    {{% /tab %}}
 
@@ -81,7 +81,7 @@ To learn more about CEL, see the following resources:
          "content": "Tell me a short story"
        }
      ]
-   }' | jq '.usage.completion_tokens'
+   }' | jq 
    ```
    {{% /tab %}}
 
