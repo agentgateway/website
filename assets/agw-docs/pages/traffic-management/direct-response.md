@@ -97,6 +97,6 @@ The following rule is applied during schema validation:
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} health-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete httproute health-check -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete httproute direct-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
