@@ -16,4 +16,5 @@ Consume services from LLM providers.
   {{< card link="functions" title="Call functions" >}}
   {{< card link="guardrail-api" title="Guardrail Webhook API" >}}
   {{< card link="observability" title="View metrics and logs" >}}
+  {{< card link="tracing" title="View traces" >}}
 {{< /cards >}}
