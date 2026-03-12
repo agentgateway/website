@@ -43,7 +43,7 @@ The following rule is applied during schema validation:
    EOF
    ```
 
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `directResponse`. Traffic along the `/` path is not forwarded. Instead, a custom message is returned with the successful response.
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `directResponse` configuration. The policy is applied on the HTTPRoute that you created earlier and returns a 200 HTTP response code with a custom message body.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
