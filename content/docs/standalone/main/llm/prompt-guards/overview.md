@@ -68,10 +68,10 @@ Use this table to decide which content safety layer to use for your requirements
 | Organization-specific restricted terms | Regex with custom patterns | Simple pattern matching for known strings |
 | Named entity recognition (people, orgs, places) | Custom webhook | Requires NER models not available in built-in options |
 | HIPAA, PCI-DSS, or other compliance requirements | Layered approach | Combine regex + external moderation + custom validation |
-| Jailbreak - DAN & Role Hijacking | Regex with custom patterns || 
-| Credentials & Secrets (API keys, tokens, passwords) | Regex with custom patterns || 
-| System prompt extraction | Regex with custom patterns ||
-| Encoding Evasion & Delimiter Injection | Regex with custom patterns ||
+| Jailbreak - DAN & Role Hijacking | Regex with custom patterns | Pattern-match known jailbreak phrases and role-injection strings before they reach the LLM |
+| Credentials & Secrets (API keys, tokens, passwords) | Regex with custom patterns | Deterministic pattern matching for structured credential formats with no external dependencies |
+| System prompt extraction | Regex with custom patterns | Detect phrases that attempt to reveal or override system instructions before the request is forwarded |
+| Encoding Evasion & Delimiter Injection | Regex with custom patterns | Match encoded or delimiter-based bypass patterns to block evasion attempts early in the pipeline |
 | Integration with existing DLP tools | Custom webhook | Allows reuse of existing security infrastructure |
 | Fastest performance with minimal latency | Regex only | No external API calls |
 | Most comprehensive protection | All three layers | Defense-in-depth with multiple detection methods |
