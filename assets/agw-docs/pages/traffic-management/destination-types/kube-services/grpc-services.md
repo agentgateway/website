@@ -346,9 +346,9 @@ Verify that the gRPC route to the echo service is working.
 Explore the traffic management, resiliency, and security policies that you can apply to make your gRPC services more robust and secure.
 
 {{< cards >}}
-  {{< card link="../../../../traffic-management/" title="Traffic management" >}}
-  {{< card link="../../../../resiliency/" title="Resiliency" >}}
-  {{< card link="../../../../security/" title="Security" >}}
+  {{< card path="/traffic-management/" title="Traffic management" >}}
+  {{< card path="/resiliency/" title="Resiliency" >}}
+  {{< card path="/security/" title="Security" >}}
 {{< /cards >}}
 
 ## Cleanup

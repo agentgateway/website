@@ -22,7 +22,7 @@ jobs:
         with:
           repository: solo-io/docs-link-checking
           path: docs-link-checking
-          token: ${{ secrets.DOCS_TOKEN }}
+          token: ${{ secrets.GH_TOKEN }}
 
       - name: Set up Hugo
         uses: peaceiris/actions-hugo@v3
@@ -36,7 +36,9 @@ jobs:
           docs-link-checking/install-lychee.sh
 
       - name: Hugo build
-        run: hugo --config hugo.yaml
+        run: |
+          npm i -D postcss postcss-cli autoprefixer
+          hugo --config hugo.yaml
 
       - name: Prepare workspace
         run: mkdir -p artifacts
@@ -53,7 +55,20 @@ jobs:
             --config docs-link-checking/lychee.toml \
             --root-dir "${{ github.workspace }}/public" \
             --index-files index.html \
-            --remap "^https://agentgateway\.dev/ file:///${{ github.workspace }}/public/" \
+            --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/" \
+            --remap "public/docs/about public/docs/standalone/latest/about" \
+            --remap "public/docs/agent public/docs/standalone/latest/agent" \
+            --remap "public/docs/configuration public/docs/standalone/latest/configuration" \
+            --remap "public/docs/deployment public/docs/standalone/latest/deployment" \
+            --remap "public/docs/faqs public/docs/standalone/latest/faqs" \
+            --remap "public/docs/inference public/docs/standalone/latest/inference" \
+            --remap "public/docs/integrations public/docs/standalone/latest/integrations" \
+            --remap "public/docs/llm public/docs/standalone/latest/llm" \
+            --remap "public/docs/mcp public/docs/standalone/latest/mcp" \
+            --remap "public/docs/operations public/docs/standalone/latest/operations" \
+            --remap "public/docs/quickstart public/docs/standalone/latest/quickstart" \
+            --remap "public/docs/reference public/docs/standalone/latest/reference" \
+            --remap "public/docs/tutorials public/docs/standalone/latest/tutorials" \
             --format json \
             --user-agent curl/8.4.0 \
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \

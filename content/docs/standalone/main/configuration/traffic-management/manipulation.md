@@ -4,7 +4,7 @@ weight: 10
 ---
 
 Attach to:
-{{< badge content="Route" link="/docs/configuration/routes/">}} {{< badge content="Backend" link="/docs/configuration/backends/">}}
+{{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
 
 There are a few different policies that offer manipulation of HTTP requests and responses.
 

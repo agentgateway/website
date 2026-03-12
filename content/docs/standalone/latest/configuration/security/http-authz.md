@@ -4,7 +4,7 @@ weight: 12
 ---
 
 Attach to:
-{{< badge content="Route" link="/docs/configuration/routes/">}}
+{{< badge content="Route" path="/configuration/routes/">}}
 
 HTTP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} allows defining rules to allow or deny requests based on their properties, using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
 

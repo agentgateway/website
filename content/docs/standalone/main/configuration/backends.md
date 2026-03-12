@@ -2,7 +2,7 @@
 title: Backends
 weight: 13
 description: 
-prev: /docs/configuration/listeners
+prev: /configuration/listeners
 ---
 
 Agentgateway {{< gloss "Backend" >}}backends{{< /gloss >}} control where traffic is routed to.

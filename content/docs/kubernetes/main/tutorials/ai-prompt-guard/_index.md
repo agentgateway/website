@@ -250,7 +250,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/main/llm/prompt-guards" title="Prompt Guards Reference" subtitle="Complete prompt guard configuration" >}}
-  {{< card link="/docs/kubernetes/main/tutorials/telemetry" title="Telemetry" subtitle="Add observability to your deployment" >}}
-  {{< card link="/docs/kubernetes/main/llm/" title="LLM Overview" subtitle="All LLM gateway features" >}}
+  {{< card path="/llm/prompt-guards" title="Prompt Guards Reference" subtitle="Complete prompt guard configuration" >}}
+  {{< card path="/tutorials/telemetry" title="Telemetry" subtitle="Add observability to your deployment" >}}
+  {{< card path="/llm/" title="LLM Overview" subtitle="All LLM gateway features" >}}
 {{< /cards >}}

@@ -22,3 +22,4 @@ Consume services from LLM providers.
   {{< card link="observability" title="View metrics and logs" subtitle="Token usage, prompt logging, LLM-specific metrics" >}}
   {{< card link="tracing" title="View traces" subtitle="OpenTelemetry tracing configuration" >}}
 {{< /cards >}}
+

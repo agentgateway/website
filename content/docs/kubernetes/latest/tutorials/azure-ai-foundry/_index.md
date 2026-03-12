@@ -284,7 +284,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/latest/llm/providers/azureopenai" title="Azure OpenAI Reference" subtitle="Complete Azure OpenAI configuration" >}}
-  {{< card link="/docs/kubernetes/latest/tutorials/llm-gateway" title="LLM Gateway" subtitle="Route to multiple LLM providers" >}}
-  {{< card link="/docs/kubernetes/latest/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Protect your LLM requests" >}}
+  {{< card path="/llm/providers/azureopenai" title="Azure OpenAI Reference" subtitle="Complete Azure OpenAI configuration" >}}
+  {{< card path="/tutorials/llm-gateway" title="LLM Gateway" subtitle="Route to multiple LLM providers" >}}
+  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Protect your LLM requests" >}}
 {{< /cards >}}

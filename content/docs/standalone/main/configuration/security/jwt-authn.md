@@ -4,7 +4,7 @@ weight: 15
 ---
 
 Attach to:
-{{< badge content="Listener" link="/docs/configuration/listeners/">}} {{< badge content="Route" link="/docs/configuration/routes/">}}
+{{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
 {{< gloss "JWT (JSON Web Token)" >}}JWT tokens{{< /gloss >}} from incoming requests can be verified.
 

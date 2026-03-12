@@ -125,7 +125,7 @@ Agentgateway federates multiple MCP servers:
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/tutorials/openapi" title="OpenAPI to MCP" subtitle="Expose REST APIs as tools" >}}
-  {{< card link="/docs/tutorials/authorization" title="Authorization" subtitle="Add JWT authentication" >}}
-  {{< card link="/docs/tutorials/multiplex" title="Multiplexing Guide" subtitle="Advanced options" >}}
+  {{< card path="/tutorials/openapi" title="OpenAPI to MCP" subtitle="Expose REST APIs as tools" >}}
+  {{< card path="/tutorials/jwt-authorization" title="Authorization" subtitle="Add JWT authentication" >}}
+  {{< card path="/tutorials/multiplex" title="Multiplexing Guide" subtitle="Advanced options" >}}
 {{< /cards >}}

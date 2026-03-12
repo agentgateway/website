@@ -106,6 +106,6 @@ Agentgateway includes the following attributes in traces:
 ## Learn more
 
 {{< cards >}}
-  {{< card link="/docs/tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step telemetry setup" >}}
-  {{< card link="/docs/llm/observability" title="LLM Observability" subtitle="AI-specific observability" >}}
+  {{< card path="/tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step telemetry setup" >}}
+  {{< card path="/llm/observability" title="LLM Observability" subtitle="AI-specific observability" >}}
 {{< /cards >}}
