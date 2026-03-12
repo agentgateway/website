@@ -10,6 +10,7 @@ Consume services from LLM providers.
   {{< card link="about" title="About" >}}
   {{< card link="providers" title="Providers" >}}
   {{< card link="api-keys" title="Manage API keys" >}}
+  {{< card link="rate-limit" title="Rate limiting for LLMs" subtitle="Token and request budgets" >}}
   {{< card link="failover" title="Model failover" subtitle="Failover and load balancing" >}}
   {{< card link="prompt-guards" title="Set up prompt guards" >}}
   {{< card link="prompt-enrichment" title="Enrich prompts" >}}
