@@ -45,13 +45,27 @@ This combines the benefits of automatic intelligent load balancing with explicit
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use.
 
+{{< doc-test paths="load-balancing" >}}
+export ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-<insert your API key>}
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: anthropic-secret
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+type: Opaque
+stringData:
+  Authorization: $ANTHROPIC_API_KEY
+EOF
+{{< /doc-test >}}
+
 ## Load balance across multiple providers {#multiple-providers}
 
 Create a backend with multiple providers in the same priority group to enable load balancing.
 
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with multiple providers. In this example, requests are load balanced across OpenAI and Anthropic.
 
-   ```yaml
+   ```yaml,paths="load-balancing"
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -81,7 +95,7 @@ Create a backend with multiple providers in the same priority group to enable lo
 
 2. Create an HTTPRoute to route traffic to the backend.
 
-   ```yaml
+   ```yaml,paths="load-balancing"
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -104,6 +118,40 @@ Create a backend with multiple providers in the same priority group to enable lo
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+
+{{< doc-test paths="load-balancing" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for loadbalanced-backend to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: loadbalanced-backend
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+
+- name: wait for loadbalanced-route HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: loadbalanced-route
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
 
 3. Send multiple requests to observe load balancing behavior.
 
@@ -129,6 +177,48 @@ Create a backend with multiple providers in the same priority group to enable lo
    {{< /tabs >}}
 
    You'll see responses from both providers, with the P2C algorithm automatically selecting the best provider for each request based on current health and performance metrics.
+
+{{< doc-test paths="load-balancing" >}}
+YAMLTest -f - <<'EOF'
+- name: verify load balanced request succeeds
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/chat"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "messages": [{"role": "user", "content": "Say hello in one word"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+
+- name: verify second load balanced request succeeds
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/chat"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "messages": [{"role": "user", "content": "Say hello in one word"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+EOF
+{{< /doc-test >}}
 
 ## Traffic splitting for A/B testing {#traffic-splitting}
 
