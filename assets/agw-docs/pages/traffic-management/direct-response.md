@@ -55,7 +55,7 @@ The following rule is applied during schema validation:
      targetRefs:
        - group: gateway.networking.k8s.io
          kind: HTTPRoute
-         name: health-check
+         name: direct-response
      traffic:
        directResponse:
          status: 200
