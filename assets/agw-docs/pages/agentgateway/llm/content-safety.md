@@ -2,7 +2,9 @@ Protect LLM requests and responses from sensitive data exposure and harmful cont
 
 ## About
 
-Content safety (also known as PII detection, PII sanitization, or data loss prevention) helps you prevent sensitive information from reaching LLM providers and block harmful content in both requests and responses. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} provides a layered approach to content safety through prompt guards that can reject, mask, or moderate content before it reaches the LLM or returns to users.
+Content safety helps you prevent sensitive information from reaching LLM providers and block harmful content in both requests and responses. Content safety practices broadly cover a range of techniques including personally identifiable information (PII) detection, PII sanitization, data loss prevention, prompt guards, and other guardrail features.
+
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} provides a layered approach to content safety through prompt guards that can reject, mask, or moderate content before it reaches the LLM or returns to users.
 
 You can layer multiple protection mechanisms to create comprehensive content safety:
 - **Regex-based detection**: Fast, deterministic matching for known patterns like credit cards, SSNs, emails, and custom patterns
@@ -11,11 +13,7 @@ You can layer multiple protection mechanisms to create comprehensive content saf
 
 This guide shows you how to use each layer and combine them for defense-in-depth content protection.
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
-
-## How content safety works
+### How content safety works
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} processes content safety checks in the request and response paths. You can configure multiple prompt guards that run in sequence, allowing you to combine different detection methods.
 
@@ -55,6 +53,45 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Pass**: Allow content to proceed to the next layer
 - **Reject**: Block the request and return an error message
 - **Mask**: Replace sensitive patterns with placeholders and continue
+
+### Choose the right approach
+
+Use this table to decide which content safety layer to use for your requirements.
+
+| Requirement | Recommended Approach | Reason |
+|-------------|---------------------|--------|
+| Detect known PII formats (SSN, credit cards, emails) | Regex with builtins | Fast, deterministic, no external dependencies |
+| Block hate speech, violence, harmful content | External moderation (OpenAI, Bedrock) | ML-based detection trained for content safety |
+| Organization-specific restricted terms | Regex with custom patterns | Simple pattern matching for known strings |
+| Named entity recognition (people, orgs, places) | Custom webhook | Requires NER models not available in built-in options |
+| HIPAA, PCI-DSS, or other compliance requirements | Layered approach | Combine regex + external moderation + custom validation |
+| Integration with existing DLP tools | Custom webhook | Allows reuse of existing security infrastructure |
+| Fastest performance with minimal latency | Regex only | No external API calls |
+| Most comprehensive protection | All three layers | Defense-in-depth with multiple detection methods |
+
+### Performance considerations
+
+Each content safety layer adds latency to requests. Plan your configuration accordingly.
+
+- **Regex guards**: < 1ms per check, negligible latency impact
+- **External moderation**: 50-200ms depending on provider and network latency
+- **Custom webhooks**: Varies based on webhook implementation and location
+
+To optimize performance:
+- Use regex for fast, deterministic checks before slower external checks
+- Deploy webhook servers in the same region as the gateway
+- Configure appropriate timeouts for external moderation endpoints
+- Consider request size limits to avoid processing very large prompts
+
+For webhook-specific performance tuning, see the [Guardrail Webhook optimization guide]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}#optimize-performance).
+
+{{< callout type="info" >}}
+**Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
+{{< /callout >}}
+
+## Before you begin
+
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 ## Layer 1: Regex-based detection
 
@@ -463,41 +500,6 @@ spec:
               port: 8000
 EOF
 ```
-
-## Choosing the right approach
-
-Use this table to decide which content safety layer to use for your requirements:
-
-| Requirement | Recommended Approach | Reason |
-|-------------|---------------------|--------|
-| Detect known PII formats (SSN, credit cards, emails) | Regex with builtins | Fast, deterministic, no external dependencies |
-| Block hate speech, violence, harmful content | External moderation (OpenAI, Bedrock) | ML-based detection trained for content safety |
-| Organization-specific restricted terms | Regex with custom patterns | Simple pattern matching for known strings |
-| Named entity recognition (people, orgs, places) | Custom webhook | Requires NER models not available in built-in options |
-| HIPAA, PCI-DSS, or other compliance requirements | Layered approach | Combine regex + external moderation + custom validation |
-| Integration with existing DLP tools | Custom webhook | Allows reuse of existing security infrastructure |
-| Fastest performance with minimal latency | Regex only | No external API calls |
-| Most comprehensive protection | All three layers | Defense-in-depth with multiple detection methods |
-
-## Performance considerations
-
-Each content safety layer adds latency to requests. Plan your configuration accordingly:
-
-- **Regex guards**: < 1ms per check, negligible latency impact
-- **External moderation**: 50-200ms depending on provider and network latency
-- **Custom webhooks**: Varies based on webhook implementation and location
-
-To optimize performance:
-- Use regex for fast, deterministic checks before slower external checks
-- Deploy webhook servers in the same region as the gateway
-- Configure appropriate timeouts for external moderation endpoints
-- Consider request size limits to avoid processing very large prompts
-
-For webhook-specific performance tuning, see the [Guardrail Webhook optimization guide]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}#optimize-performance).
-
-{{< callout type="info" >}}
-**Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
-{{< /callout >}}
 
 ## What's next
 
