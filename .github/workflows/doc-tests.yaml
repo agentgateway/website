@@ -1,6 +1,10 @@
 name: Doc tests
 
 on:
+  pull_request:
+    paths:
+      - 'assets/**'
+      - 'content/**'
   schedule:
     # Every day at 06:00 UTC
     - cron: '0 6 * * *'
