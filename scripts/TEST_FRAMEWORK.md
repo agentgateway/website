@@ -190,15 +190,17 @@ YAMLTest -f - <<'EOF'
     jsonPath: "$.status.loadBalancer.ingress[0].ip"
     jsonPathExpectation:
       comparator: exists
-    targetEnv: INGRESS_GW_ADDRESS
     polling:
       timeoutSeconds: 300
       intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
 EOF
 {{< /doc-test >}}
 ```
 
-`targetEnv` exports the matched value as an environment variable for downstream steps.
+`setVars` exports the `jsonPath`-matched value as an environment variable for downstream steps. It is a sibling of `wait:` (not nested inside it).
 
 ### Wait for an HTTPRoute condition
 
@@ -357,7 +359,7 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 1. **Trace prerequisites** — follow "Before you begin" links back to `helm.md`.
 2. **Verify path labels** on all prerequisite code blocks; add `paths="..."` where missing.
 3. **Add wait blocks** after each `kubectl apply` that creates something tests depend on.
-4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `targetEnv`.
+4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `setVars`.
 5. **Add the feature assertion** as a `{{< doc-test >}}` shortcode block on the feature page.
 6. **Write the `test:` front matter** on the feature page, listing sources in dependency order (install → setup → prereqs → feature).
 7. **Regenerate** with `--generate-only` and inspect the script for unresolved shortcodes or missing commands.
