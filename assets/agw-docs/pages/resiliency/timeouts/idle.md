@@ -20,7 +20,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
 
 1. Create an AgentgatewayPolicy with the idle timeout configuration. In this example, you apply an idle timeout of 30 seconds. 
 
-   ```yaml
+   ```yaml {paths="idle-timeout"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -87,6 +87,30 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
       ```
 
       
+{{< doc-test paths="all" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for idle-time policy in config dump
+  retries: 20
+  http:
+    url: http://localhost:15000
+    skipSslVerification: true
+    method: GET
+    path: /config_dump
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+  expect:
+    bodyContains:
+    - '"http1IdleTimeout"'
+    - '"30s"'
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
