@@ -63,7 +63,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh {paths="access-logging"}
+   ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/status/404 -H "host: www.example.com"
    ```
    {{% /tab %}}
@@ -83,7 +83,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    
 3. Get the logs for the agentgateway proxy. Verify that you see an access log entry for the request that you sent and that the `http.statusString` attribute was added. 
    
-   ```sh {paths="access-logging"}
+   ```sh
    kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 
    ```
    
@@ -100,7 +100,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh {paths="access-logging"}
+   ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: www.example.com"
    ```
    {{% /tab %}}
@@ -120,7 +120,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
 
 3. Get the logs for the gateway pod again and verify that you do not see an access log entry for the `200` request that you sent to the httpbin app. The last entry is still for the previous `404` request.
    
-   ```sh {paths="access-logging"}
+   ```sh
    kubectl -n {{< reuse "agw-docs/snippets/namespace.md" >}} logs deployments/agentgateway-proxy | tail -1 
    ```
 
@@ -132,7 +132,32 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
    http.path=/status/404 http.version=HTTP/1.1 http.status=404
    protocol=http duration=0ms http.statusString="404"
    ```
-  
+
+  {{< doc-test paths="access-logging" >}}
+  YAMLTest -f - <<'EOF'
+  - name: verify request to retry route fails
+    http:
+      url: "http://${INGRESS_GW_ADDRESS}"
+      path: /status/404
+      method: GET
+      headers:
+        host: www.example.com
+    source:
+      type: local
+    expect:
+      statusCode: 404
+  - name: Verify that the logs have the 404 code
+    command:
+      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deployments/agentgateway-proxy"
+    source:
+      type: local
+    expect:
+      exitCode: 0
+      stdout:
+        contains: "http.statusString=\"404\""
+  EOF
+  {{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.

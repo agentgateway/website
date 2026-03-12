@@ -14,9 +14,9 @@
      --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
    ```
 
-3. Follow the [Get started guide]({{< link-hextra path="/quickstart/install/" >}}) to install the agentgateway control plane. 
+3. [Set up an agentgateway proxy]({{< link-hextra path="/setup/gateway/">}}).
 
-4. Follow the [Sample app guide]({{< link-hextra path="/install/sample-app/" >}}) to deploy the httpbin sample app.
+4. Follow the [Sample app guide]({{< link-hextra path="/install/sample-app/" >}}) to deploy the httpbin sample app
 
 5. Get the external address of the gateway and save it in an environment variable.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}

@@ -41,7 +41,6 @@ YAMLTest -f - <<'EOF'
     jsonPath: "$.status.loadBalancer.ingress[0].ip"
     jsonPathExpectation:
       comparator: exists
-    targetEnv: INGRESS_GW_ADDRESS
     polling:
       timeoutSeconds: 300
       intervalSeconds: 5

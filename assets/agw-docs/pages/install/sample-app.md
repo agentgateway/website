@@ -54,7 +54,7 @@ Install the sample httpbin app.
 
    ```sh
    kubectl get pods -n httpbin
-   ````
+   ```
 
 ### Step 2: Create a route to the httpbin app
 

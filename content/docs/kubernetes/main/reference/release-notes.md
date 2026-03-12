@@ -326,6 +326,46 @@ spec:
       - name: api-keys-secret
 ```
 
+### LLM request transformations
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1041 -->
+
+You can now use CEL expressions to dynamically compute and set fields in LLM requests. This allows you to enforce policies, such as capping token usage, without changing client code.
+
+The following example caps `max_tokens` to 10 for all requests to the `openai` HTTPRoute:
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: cap-max-tokens
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  backend:
+    ai:
+      transformations:
+      - field: max_tokens
+        expression: "min(llmRequest.max_tokens, 10)"
+```
+
+For more information, see [Transform requests]({{< link-hextra path="/llm/transformations/" >}}).
+
+### Extended thinking and structured outputs for Claude providers
+
+Extended thinking and structured outputs are now supported for Anthropic and Amazon Bedrock Claude providers.
+
+**Extended thinking** lets Claude reason through complex problems before generating a response. Thinking is opt-in. You must provide specific attributes in your request to enable extended thinking. 
+
+**Structured outputs** constrain the model to respond with a specific JSON schema. You define the JSON schema as part of your request. 
+
+For more information, see the following resources:
+* [Anthropic extended thinking and structured outputs]({{< link-hextra path="/llm/providers/anthropic/" >}})
+* [Bedrock extended thinking and structured outputs]({{< link-hextra path="/llm/providers/bedrock/" >}})
+
 ## 🪲 Bug fixes {#v10-bug-fixes}
 
 ### MCP per-request policy evaluation

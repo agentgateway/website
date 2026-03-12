@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 
 import argparse
+import os
 import re
 import subprocess
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -189,24 +191,207 @@ def run_command(command: List[str], cwd: Path, verbose: bool = True) -> Tuple[in
     return return_code, "".join(output_lines)
 
 
-def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, verbose: bool) -> Dict:
+def collect_cluster_context(cluster_name: str, context_dir: Path, verbose: bool) -> None:
+    """Collect Kubernetes diagnostics from a kind cluster into context_dir.
+
+    Mirrors the procgen server-status action: gathers pod logs, failed pods,
+    events, nodes, CRDs, services, deployments, and helm values for every
+    namespace, saving everything under context_dir/<category>/.
+
+    Uses the kubeconfig exported from kind directly to avoid --context flag
+    ordering issues with kubectl plugins/multi-resource commands.
+    """
+    # Export the kubeconfig for this cluster into a temp env var so we never
+    # need --context anywhere (avoids "flags cannot be placed before plugin name").
+    kubeconfig_result = subprocess.run(
+        ["kind", "get", "kubeconfig", "--name", cluster_name],
+        capture_output=True, text=True, timeout=30,
+    )
+    kubeconfig_content = kubeconfig_result.stdout
+    kubeconfig_env = {**os.environ, "KUBECONFIG": ""}
+
+    # Write kubeconfig to a temp file so subprocesses can share it
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as kf:
+        kf.write(kubeconfig_content)
+        kubeconfig_path = kf.name
+
+    kubeconfig_env["KUBECONFIG"] = kubeconfig_path
+    base_cmd = ["kubectl"]
+
+    def run(args: List[str], out_file: Optional[Path] = None) -> str:
+        cmd = base_cmd + args
+        if verbose:
+            print(f"  $ {' '.join(cmd)}")
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=60, env=kubeconfig_env)
+            output = result.stdout + result.stderr
+        except Exception as exc:
+            output = str(exc)
+        if out_file:
+            out_file.parent.mkdir(parents=True, exist_ok=True)
+            out_file.write_text(output, encoding="utf-8")
+        return output
+
+    def run_raw(cmd: List[str], timeout: int = 30) -> subprocess.CompletedProcess:
+        return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=kubeconfig_env)
+
+    try:
+        print(f"\n--- Collecting cluster context for: {cluster_name} -> {context_dir} ---")
+        context_dir.mkdir(parents=True, exist_ok=True)
+
+        # Overview: pods, services, deployments across all namespaces (separate calls to avoid
+        # the "flags before plugin name" error that comma-joined multi-resource gets can trigger)
+        run(["get", "po", "-A"], context_dir / "pods.txt")
+        run(["get", "svc", "-A"], context_dir / "services-overview.txt")
+        run(["get", "deploy", "-A"], context_dir / "deployments-overview.txt")
+
+        # Failed (non-Running) pods
+        run(["get", "po", "-A", "--field-selector=status.phase!=Running", "-oyaml"],
+            context_dir / "failed-pods.yaml")
+
+        # Events sorted by time
+        run(["get", "events", "-A", "--sort-by=.lastTimestamp"],
+            context_dir / "events.txt")
+
+        # Nodes
+        nodes_dir = context_dir / "nodes"
+        run(["get", "nodes", "-oyaml"], nodes_dir / "nodes.yaml")
+        run(["describe", "nodes"], nodes_dir / "nodes-describe.log")
+
+        # All custom resources — collect every CRD unconditionally
+        crds_dir = context_dir / "crds"
+        crd_list_output = run(["get", "crd", "--no-headers"])
+        for line in crd_list_output.splitlines():
+            parts = line.split()
+            crd = parts[0] if parts else ""
+            if not crd:
+                continue
+            run(["get", crd, "-A", "-oyaml"], crds_dir / f"{crd}.yaml")
+
+        # Per-namespace pod logs, services, deployments, helm values
+        ns_output = run_raw(
+            base_cmd + ["get", "ns", "-o", "jsonpath={range .items[*]}{.metadata.name}{'\\n'}{end}"],
+        )
+        namespaces = [ns for ns in ns_output.stdout.splitlines() if ns.strip()]
+
+        pods_dir = context_dir / "pods"
+        svcs_dir = context_dir / "services"
+        deploys_dir = context_dir / "deployments"
+        helm_dir = context_dir / "helm-values"
+
+        for ns in namespaces:
+            # Pods
+            pod_output = run_raw(
+                base_cmd + ["-n", ns, "get", "po", "-o",
+                            "jsonpath={range .items[*]}{.metadata.name}{'\\n'}{end}"],
+            )
+            for po in pod_output.stdout.splitlines():
+                po = po.strip()
+                if not po:
+                    continue
+                run(["-n", ns, "describe", "po", po], pods_dir / f"{ns}-{po}-describe.log")
+                run(["-n", ns, "get", "po", po, "-oyaml"], pods_dir / f"{ns}-{po}-pod.yaml")
+                # Container logs (previous then current)
+                containers_out = run_raw(
+                    base_cmd + ["-n", ns, "get", "po", po, "-o",
+                                "jsonpath={range .spec.containers[*]}{.name}{'\\n'}{end}"],
+                )
+                for container in containers_out.stdout.splitlines():
+                    container = container.strip()
+                    if not container:
+                        continue
+                    prev = run_raw(base_cmd + ["-n", ns, "logs", "-p", "-c", container, po], timeout=60)
+                    if prev.returncode == 0 and prev.stdout.strip():
+                        log_text = prev.stdout
+                    else:
+                        curr = run_raw(base_cmd + ["-n", ns, "logs", "-c", container, po], timeout=60)
+                        log_text = curr.stdout + curr.stderr
+                    log_file = pods_dir / f"{ns}-{po}-{container}-logs.log"
+                    log_file.parent.mkdir(parents=True, exist_ok=True)
+                    log_file.write_text(log_text, encoding="utf-8")
+
+            # Services
+            svc_output = run_raw(
+                base_cmd + ["-n", ns, "get", "svc", "-o",
+                            "jsonpath={range .items[*]}{.metadata.name}{'\\n'}{end}"],
+            )
+            for svc in svc_output.stdout.splitlines():
+                svc = svc.strip()
+                if not svc:
+                    continue
+                run(["-n", ns, "describe", "svc", svc], svcs_dir / f"{ns}-{svc}-describe.log")
+                run(["-n", ns, "get", "svc", svc, "-oyaml"], svcs_dir / f"{ns}-{svc}-svc.yaml")
+
+            # Deployments
+            deploy_output = run_raw(
+                base_cmd + ["-n", ns, "get", "deploy", "-o",
+                            "jsonpath={range .items[*]}{.metadata.name}{'\\n'}{end}"],
+            )
+            for deploy in deploy_output.stdout.splitlines():
+                deploy = deploy.strip()
+                if not deploy:
+                    continue
+                run(["-n", ns, "describe", "deploy", deploy], deploys_dir / f"{ns}-{deploy}-describe.log")
+                run(["-n", ns, "get", "deploy", deploy, "-oyaml"], deploys_dir / f"{ns}-{deploy}-deploy.yaml")
+
+            # Helm values
+            helm_output = subprocess.run(
+                ["helm", "list", "-n", ns, "-q"],
+                capture_output=True, text=True, timeout=30, env=kubeconfig_env,
+            )
+            for chart in helm_output.stdout.splitlines():
+                chart = chart.strip()
+                if not chart:
+                    continue
+                helm_vals = subprocess.run(
+                    ["helm", "get", "values", "-n", ns, chart, "-o", "yaml"],
+                    capture_output=True, text=True, timeout=30, env=kubeconfig_env,
+                )
+                out_file = helm_dir / f"{ns}-{chart}.yaml"
+                out_file.parent.mkdir(parents=True, exist_ok=True)
+                out_file.write_text(helm_vals.stdout + helm_vals.stderr, encoding="utf-8")
+
+        print(f"--- Context collection complete: {context_dir} ---\n")
+    finally:
+        os.unlink(kubeconfig_path)
+
+
+def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, verbose: bool, context_base_dir: Optional[Path] = None) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
+
+    # Build a unique context dir slug from the full report key (doc_rel::test_name),
+    # e.g. content/docs/kubernetes/main/security/csrf.md::default  ->
+    #      content-docs-kubernetes-main-security-csrf--default
+    # This avoids collisions when the same test name appears in multiple doc versions.
+    doc_rel = test_case.document.relative_to(repo_root).as_posix()
+    context_slug = sanitize_name(f"{doc_rel.removesuffix('.md')}--{test_case.name}")
 
     checks: List[str] = []
     status = "failed"
     error: Optional[str] = None
+    collected_context_dir: Optional[Path] = None
 
     if verbose:
-        print(f"\n=== Running test: {test_case.name} ({test_case.document.relative_to(repo_root).as_posix()}) ===")
+        print(f"\n=== Running test: {test_case.name} ({doc_rel}) ===")
 
     create_code, create_output = run_command(["kind", "create", "cluster", "--name", cluster_name], repo_root, verbose)
     if create_code != 0:
+        # Best-effort context collection even if cluster creation partially failed
+        if context_base_dir is not None:
+            collected_context_dir = context_base_dir / context_slug
+            collected_context_dir.mkdir(parents=True, exist_ok=True)
+            (collected_context_dir / "test-execution.log").write_text(create_output, encoding="utf-8")
+            try:
+                collect_cluster_context(cluster_name, collected_context_dir, verbose)
+            except Exception as exc:
+                print(f"  [context collection skipped: {exc}]")
         return {
             "status": "failed",
             "checks": checks,
             "error": create_output.strip(),
             "cluster": cluster_name,
+            **({"context_dir": str(collected_context_dir.relative_to(repo_root))} if collected_context_dir else {}),
         }
 
     cloud_provider = subprocess.Popen(
@@ -224,6 +409,15 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, ver
         status = "passed" if test_code == 0 else "failed"
         if test_code != 0:
             error = output.strip()
+            # Collect cluster diagnostics before the cluster is deleted
+            if context_base_dir is not None:
+                collected_context_dir = context_base_dir / context_slug
+                collected_context_dir.mkdir(parents=True, exist_ok=True)
+                (collected_context_dir / "test-execution.log").write_text(output, encoding="utf-8")
+                try:
+                    collect_cluster_context(cluster_name, collected_context_dir, verbose)
+                except Exception as exc:
+                    print(f"  [context collection error: {exc}]")
     finally:
         cloud_provider.terminate()
         try:
@@ -243,6 +437,8 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, ver
     }
     if error:
         result["error"] = error
+    if collected_context_dir is not None:
+        result["context_dir"] = str(collected_context_dir.relative_to(repo_root))
     return result
 
 
@@ -334,12 +530,14 @@ def main() -> int:
         print(f"Wrote report scaffold: {report_path.relative_to(repo_root)}")
         return 0
 
+    context_base_dir = generated_dir / "context"
+
     test_results: Dict[str, Dict] = {}
     exit_code = 0
     for test_case in test_cases:
         doc_rel = test_case.document.relative_to(repo_root).as_posix()
         key = f"{doc_rel}::{test_case.name}"
-        result = run_test_case(repo_root, test_case, args.cluster_prefix, args.verbose)
+        result = run_test_case(repo_root, test_case, args.cluster_prefix, args.verbose, context_base_dir=context_base_dir)
         test_results[key] = result
         if result.get("status") != "passed":
             exit_code = 1

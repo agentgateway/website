@@ -219,6 +219,31 @@ spec:
 EOF
 ```
 
+### PreRouting phase
+
+By default, API key authentication is enforced during routing. Use the `PreRouting` phase to validate API keys before any routing decision is made. This is useful when you want to enforce authentication for all traffic at the gateway level, regardless of the route.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: apikey-auth
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+  traffic:
+    phase: PreRouting
+    apiKeyAuthentication:
+      mode: Strict
+      secretRef:
+        name: apikey
+EOF
+```
+
 ### Optional validation mode
 
 Use the `Optional` mode to validate API keys when present, but allow requests without an API key. This mode is useful for services that offer both authenticated and unauthenticated access.

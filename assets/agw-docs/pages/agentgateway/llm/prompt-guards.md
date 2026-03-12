@@ -1,5 +1,9 @@
 Use content safety and PII detection: secure access to the LLM and the data that is returned with Web Application Filter and Data Loss Prevention (DLP) policies.
 
+{{< callout type="info" >}}
+For a comprehensive overview of content safety approaches including regex, external moderation, and custom webhooks, see the [Content safety and PII protection guide]({{< link-hextra path="/llm/content-safety/" >}}).
+{{< /callout >}}
+
 ## About prompt guards {#about}
 
 Prompt guards provide content safety and PII detection: they ensure that prompt-based interactions with a language model are secure, appropriate, and aligned with the intended use. These mechanisms help to filter, block, monitor, and control LLM inputs and outputs to filter offensive content, prevent misuse, and ensure ethical and responsible AI usage.

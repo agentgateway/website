@@ -16,3 +16,7 @@ Gain insight into the health and performance of your gateway environment. Get pr
   {{< card link="nacks" title="Monitoring agentgateway proxies for NACKs" >}}
   {{< card link="tracing" title="Tracing" >}}
 {{< /cards >}}
+
+## External observability platforms
+
+For specialized LLM observability platforms with prompt logging, cost tracking, and evaluation capabilities, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).

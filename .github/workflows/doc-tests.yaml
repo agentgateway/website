@@ -51,6 +51,7 @@ jobs:
       - name: Run doc tests
         run: python3 scripts/doc_test_run.py --repo-root .
         env:
+          DEBUG_MODE: true
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
       - name: Generate job summary

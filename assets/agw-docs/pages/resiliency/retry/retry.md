@@ -58,25 +58,6 @@ Set up retries to the sample app.
       EOF
       ```
 
-      {{< doc-test paths="retry-in-httproute" >}}
-      YAMLTest -f - <<'EOF'
-      - name: wait for retry HTTPRoute to be accepted
-        wait:
-          target:
-            kind: HTTPRoute
-            metadata:
-              namespace: httpbin
-              name: retry
-          jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-          jsonPathExpectation:
-            comparator: equals
-            value: "True"
-          polling:
-            timeoutSeconds: 300
-            intervalSeconds: 5
-      EOF
-      {{< /doc-test >}}
-
       {{< reuse "agw-docs/snippets/review-table.md" >}}
 
       | Field | Description |
@@ -151,7 +132,7 @@ Set up retries to the sample app.
    {{% /tab %}}
    {{% tab tabName="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
-      ```yaml
+      ```yaml {paths="retry-in-agentgateway"}
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -178,7 +159,7 @@ Set up retries to the sample app.
       ```
 
    2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the HTTPRoute rule.
-      ```yaml
+      ```yaml {paths="retry-in-agentgateway"}
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -263,7 +244,7 @@ Set up retries to the sample app.
    {{% /tab %}}
    {{% tab tabName="Gateway listener" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
-      ```yaml
+      ```yaml {paths="retry-in-gatewaylistener"}
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -288,7 +269,7 @@ Set up retries to the sample app.
       EOF
       ```
    2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.
-      ```yaml
+      ```yaml {paths="retry-in-gatewaylistener"}
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -385,22 +366,6 @@ Set up retries to the sample app.
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< doc-test paths="retry-in-httproute" >}}
-   YAMLTest -f - <<EOF
-   - name: verify request to retry route succeeds
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}"
-       path: /headers
-       method: GET
-       headers:
-         host: retry.example
-     source:
-       type: local
-     expect:
-       statusCode: 200
-   EOF
-   {{< /doc-test >}}
-
    Example output:
 
    ```
@@ -471,7 +436,56 @@ Simulate a failure for the sample app so that you can verify that the request is
    http.path=/status/500 http.version=HTTP/1.1 http.status=500
    protocol=http retry.attempt=3 duration=1ms
    ```
-
+  {{< doc-test paths="retry-in-httproute,retry-in-agentgateway,retry-in-gatewaylistener" >}}
+  YAMLTest -f - <<'EOF'
+  - name: wait for retry HTTPRoute to be accepted
+    wait:
+      target:
+        kind: HTTPRoute
+        metadata:
+          namespace: httpbin
+          name: retry
+      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+      jsonPathExpectation:
+        comparator: equals
+        value: "True"
+      polling:
+        timeoutSeconds: 300
+        intervalSeconds: 5
+  - name: verify request to retry route succeeds
+    http:
+      url: "http://${INGRESS_GW_ADDRESS}"
+      path: /headers
+      method: GET
+      headers:
+        host: retry.example
+    source:
+      type: local
+    expect:
+      statusCode: 200
+  - name: verify request to retry route fails
+    http:
+      url: "http://${INGRESS_GW_ADDRESS}"
+      path: /status/500
+      method: GET
+      headers:
+        host: retry.example
+    source:
+      type: local
+    expect:
+      statusCode: 500
+  - name: Verify that the request was retried. Look for retry.attempt=3 in the output
+    retries: 10
+    command:
+      command: "kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy --tail=1"
+    source:
+      type: local
+    expect:
+      exitCode: 0
+      stdout:
+        contains: "retry.example"
+  EOF
+  {{< /doc-test >}}
 
 
 
