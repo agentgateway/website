@@ -60,6 +60,44 @@ mcpAuthentication:
     - query
 ```
 
+## JWT claim validation
+
+By default, agentgateway requires the `exp` (expiration) claim to be present in every JWT token. You can customize the claims that you require in a JWT by using the `jwtValidationOptions.requiredClaims` field.
+
+The following RFC 7519 registered claims are supported: `exp`, `nbf`, `aud`, `iss`, `sub`.
+
+> [!NOTE]
+> The `requiredClaims` field checks if a claim is present in the JWT. If a claim is present, its value is always validated, regardless where you added this claim in the `requiredClaims` field. For example, if `exp` is present, the token is still rejected if it is expired, even if `exp` is not listed in `requiredClaims`.
+
+**Use case: IDPs that omit the `exp` claim**
+
+Some enterprise identity providers issue tokens without an `exp` claim. In this case, set `requiredClaims` to an empty list to allow such tokens through:
+
+```yaml
+mcpAuthentication:
+  issuer: http://localhost:9000
+  jwks:
+    url: http://localhost:9000/.well-known/jwks.json
+  jwtValidationOptions:
+    requiredClaims: []
+```
+
+**Use case: Require additional claims**
+
+To enforce that tokens include specific claims such as `aud` (audience) and `sub` (subject) in addition to `exp`:
+
+```yaml
+mcpAuthentication:
+  issuer: http://localhost:9000
+  jwks:
+    url: http://localhost:9000/.well-known/jwks.json
+  jwtValidationOptions:
+    requiredClaims:
+      - exp
+      - aud
+      - sub
+```
+
 ## Authentication mode
 
 You can control how agentgateway handles requests that lack valid credentials by setting the `mode` field. The following modes are supported:
