@@ -29,7 +29,7 @@ The following rule is applied during schema validation:
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
-     name: health-check
+     name: direct-response
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      parentRefs:
