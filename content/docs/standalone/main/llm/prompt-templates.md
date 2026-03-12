@@ -2,6 +2,10 @@
 title: Prompt templates
 weight: 55
 description: Use static and dynamic prompt templates to customize LLM requests.
+test:
+  prompt-templates:
+  - file: content/docs/standalone/main/llm/prompt-templates.md
+    path: prompt-templates
 ---
 
 Use prompt templates to inject dynamic context, user identity, or other runtime information into your LLM prompts. Agentgateway supports both static template patterns (prepend/append) and dynamic variable-based templating using CEL expressions.
@@ -57,7 +61,7 @@ With this configuration, every request includes the prepended and appended syste
 Test with curl.
 
 ```sh
-curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
+curl "localhost:4000/v1/chat/completions" -H content-type:application/json -d '{
   "model": "gpt-3.5-turbo",
   "messages": [
     {
@@ -78,11 +82,23 @@ Dynamic templates use CEL transformations to inject variables from the request c
 JWT claims in transformations require JWT authentication to be configured. See the [authentication documentation](https://agentgateway.dev/docs/standalone/latest/configuration/security/authentication/) for setup instructions.
 {{< /callout >}}
 
+{{< doc-test paths="prompt-templates" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
+{{< /doc-test >}}
+
 ### Inject user identity from headers
 
 Configure transformations to inject user identity from request headers into the prompt.
 
-```yaml
+```yaml {paths="prompt-templates"}
+cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
 llm:
@@ -102,12 +118,20 @@ llm:
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
+EOF
 ```
+
+{{< doc-test paths="prompt-templates" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
 
 Test with a user ID header.
 
-```sh
-curl "localhost:3000/v1/chat/completions" -H content-type:application/json -H "x-user-id: alice" -d '{
+```sh {paths="prompt-templates"}
+curl -s "localhost:4000/v1/chat/completions" -H content-type:application/json -H "x-user-id: alice" -d '{
   "model": "gpt-3.5-turbo",
   "messages": [
     {
@@ -117,6 +141,27 @@ curl "localhost:3000/v1/chat/completions" -H content-type:application/json -H "x
   ]
 }' | jq -r '.choices[].message.content'
 ```
+
+{{< doc-test paths="prompt-templates" >}}
+YAMLTest -f - <<'EOF'
+- name: request with user identity header succeeds through transformation
+  http:
+    url: "http://localhost:4000/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+      x-user-id: alice
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 The request body includes a system message: `"You are assisting user: alice"`.
 

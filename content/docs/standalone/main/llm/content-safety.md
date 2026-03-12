@@ -2,6 +2,10 @@
 title: Content safety and PII protection
 weight: 85
 description: Protect LLM requests and responses from sensitive data exposure and harmful content using layered content safety controls (PII detection, DLP).
+test:
+  content-safety-regex:
+  - file: content/docs/standalone/main/llm/content-safety.md
+    path: content-safety-regex
 ---
 
 Protect LLM requests and responses from sensitive data exposure and harmful content using layered content safety controls.
@@ -20,6 +24,17 @@ This guide shows you how to use each layer and combine them for defense-in-depth
 ## Before you begin
 
 Complete the [LLM gateway tutorial]({{< link-hextra path="/tutorials/llm-gateway/" >}}) to set up agentgateway with an LLM provider.
+
+{{< doc-test paths="content-safety-regex" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
+{{< /doc-test >}}
 
 ## How content safety works
 
@@ -102,7 +117,8 @@ You can also define custom regex patterns for organization-specific sensitive da
 
 Example that rejects requests containing specific restricted terms:
 
-```yaml
+```yaml {paths="content-safety-regex"}
+cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
 llm:
@@ -121,14 +137,95 @@ llm:
           - pattern: "project-\\w+-secret"  # Custom pattern with regex
         rejection:
           body: "Request blocked due to policy violation"
+EOF
 ```
+
+{{< doc-test paths="content-safety-regex" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
 
 ### Test regex guards
 
-Send a request with a fake credit card number and verify it gets masked in the response:
+Send a normal request and verify it succeeds:
+
+```sh {paths="content-safety-regex"}
+curl -s http://localhost:4000/v1/chat/completions \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [
+      {
+        "role": "user",
+        "content": "Say hello"
+      }
+    ]
+  }' | jq .
+```
+
+Send a request containing a restricted term and verify it is rejected:
+
+```sh {paths="content-safety-regex"}
+curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/v1/chat/completions \
+  -H "content-type: application/json" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [
+      {
+        "role": "user",
+        "content": "This is confidential information"
+      }
+    ]
+  }'
+```
+
+{{< doc-test paths="content-safety-regex" >}}
+YAMLTest -f - <<'EOF'
+- name: normal request succeeds through content safety guard
+  http:
+    url: "http://localhost:4000/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+
+- name: request with restricted term is rejected by regex guard
+  http:
+    url: "http://localhost:4000/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "This is confidential information"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 403
+EOF
+{{< /doc-test >}}
+
+Example output for a rejected request:
+```
+Request blocked due to policy violation
+```
+
+To test built-in pattern masking, use the built-in patterns configuration and send a request with a fake credit card number:
 
 ```sh
-curl http://localhost:3000/v1/chat/completions \
+curl http://localhost:4000/v1/chat/completions \
   -H "content-type: application/json" \
   -d '{
     "model": "gpt-3.5-turbo",
@@ -187,7 +284,7 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 
 2. Test with content that triggers moderation:
    ```sh
-   curl -i http://localhost:3000/v1/chat/completions \
+   curl -i http://localhost:4000/v1/chat/completions \
      -H "content-type: application/json" \
      -d '{
        "model": "gpt-4o-mini",

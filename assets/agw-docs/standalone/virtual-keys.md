@@ -29,13 +29,24 @@ flowchart TD
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
+{{< doc-test paths="virtual-keys" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
+{{< /doc-test >}}
+
 ## Set up virtual keys
 
 ### Step 1: Configure API key authentication
 
 Create a configuration with API key authentication. This example creates two virtual keys for Alice and Bob.
 
-```yaml
+```yaml {paths="virtual-keys"}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
@@ -71,18 +82,25 @@ EOF
 agentgateway -f config.yaml
 ```
 
+{{< doc-test paths="virtual-keys" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
 ### Step 3: Test the virtual keys
 
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
-   ```sh
-   curl http://localhost:4000/v1/chat/completions \
+   ```sh {paths="virtual-keys"}
+   curl -s http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer sk-alice-abc123def456" \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [{"role": "user", "content": "Hello!"}]
-     }'
+     }' | jq .
    ```
 
    Example successful response:
@@ -104,8 +122,8 @@ agentgateway -f config.yaml
 
 2. Send a request without a valid API key. Verify that the request is rejected with a 401 status.
 
-   ```sh
-   curl -i http://localhost:4000/v1/chat/completions \
+   ```sh {paths="virtual-keys"}
+   curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/v1/chat/completions \
      -H "Authorization: Bearer invalid-key" \
      -H "Content-Type: application/json" \
      -d '{
@@ -118,6 +136,61 @@ agentgateway -f config.yaml
    ```
    HTTP/1.1 401 Unauthorized
    ```
+
+{{< doc-test paths="virtual-keys" >}}
+YAMLTest -f - <<'EOF'
+- name: request with valid API key succeeds
+  http:
+    url: "http://localhost:4000/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer sk-alice-abc123def456"
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello!"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+
+- name: request with invalid API key is rejected
+  http:
+    url: "http://localhost:4000/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer invalid-key"
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello!"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 401
+
+- name: request with Bob's key also succeeds independently
+  http:
+    url: "http://localhost:4000/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer sk-bob-xyz789uvw012"
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello!"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 ## Add a global token budget
 
