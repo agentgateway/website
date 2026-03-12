@@ -87,7 +87,8 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
    YAMLTest -f - <<'EOF'
    - name: request with max_tokens transformation returns capped completion
      http:
-       url: "http://localhost:4000/v1/chat/completions"
+       url: "http://localhost:4000"
+       path: /v1/chat/completions
        method: POST
        headers:
          content-type: application/json

@@ -2,9 +2,19 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 ## Before you begin
 
+{{< doc-test paths="llm" >}}
+# For CI/tests: install dev version to local bin without sudo
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
+
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   ```sh {paths="llm"}
+   ```sh
    curl -sL https://agentgateway.dev/install | bash
    ```
 

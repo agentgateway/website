@@ -141,7 +141,8 @@ sleep 3
 YAMLTest -f - <<'EOF'
 - name: request with valid API key succeeds
   http:
-    url: "http://localhost:4000/v1/chat/completions"
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
     method: POST
     headers:
       content-type: application/json
@@ -158,7 +159,8 @@ YAMLTest -f - <<'EOF'
 
 - name: request with invalid API key is rejected
   http:
-    url: "http://localhost:4000/v1/chat/completions"
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
     method: POST
     headers:
       content-type: application/json
@@ -175,7 +177,8 @@ YAMLTest -f - <<'EOF'
 
 - name: request with Bob's key also succeeds independently
   http:
-    url: "http://localhost:4000/v1/chat/completions"
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
     method: POST
     headers:
       content-type: application/json

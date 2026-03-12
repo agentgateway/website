@@ -185,7 +185,8 @@ curl -s -o /dev/null -w "%{http_code}" http://localhost:4000/v1/chat/completions
 YAMLTest -f - <<'EOF'
 - name: normal request succeeds through content safety guard
   http:
-    url: "http://localhost:4000/v1/chat/completions"
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
     method: POST
     headers:
       content-type: application/json
@@ -201,7 +202,8 @@ YAMLTest -f - <<'EOF'
 
 - name: request with restricted term is rejected by regex guard
   http:
-    url: "http://localhost:4000/v1/chat/completions"
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
     method: POST
     headers:
       content-type: application/json
