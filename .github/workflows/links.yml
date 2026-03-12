@@ -56,7 +56,6 @@ jobs:
             --root-dir "${{ github.workspace }}/public" \
             --index-files index.html \
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/" \
-            --exclude-path ${{ github.workspace }}/public/content/_index.html
             --format json \
             --user-agent curl/8.4.0 \
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
