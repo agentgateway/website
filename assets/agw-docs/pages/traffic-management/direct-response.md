@@ -49,7 +49,7 @@ The following rule is applied during schema validation:
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: health-response
+     name: direct-response
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
