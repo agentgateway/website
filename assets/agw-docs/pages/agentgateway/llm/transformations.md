@@ -88,7 +88,7 @@ To learn more about CEL, see the following resources:
    {{< /tabs >}}
 
    Example output: 
-   ```console {hl_lines=[4,20,28]}
+   ```console {hl_lines=[5,28]}
    {
      "model": "gpt-3.5-turbo-0125",
      "usage": {

@@ -4,8 +4,8 @@ weight: 10
 description: Protect your applications from Cross-Site Request Forgery (CSRF) attacks.
 test:
   csrf:
-  - file: content/docs/kubernetes/main/install/helm.md
-    path: standard
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md

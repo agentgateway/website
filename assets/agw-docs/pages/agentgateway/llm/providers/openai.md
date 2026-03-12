@@ -19,13 +19,13 @@ The following example uses OpenAI. If you use another AI provider, create an API
 1. [Create an API key to access the OpenAI API](https://platform.openai.com/api-keys). 
 
 2. Save the API key in an environment variable.
-   
-   ```sh
-   export OPENAI_API_KEY=<insert your API key>
+
+   ```sh,paths="openai-setup"
+   export OPENAI_API_KEY=${OPENAI_API_KEY:-<insert your API key>}
    ```
 
 3. Create a Kubernetes secret to store your AI API key.
-   ```yaml
+   ```yaml,paths="openai-setup"
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -42,7 +42,7 @@ The following example uses OpenAI. If you use another AI provider, create an API
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
 
-```yaml
+```yaml,paths="openai-setup"
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -100,7 +100,7 @@ EOF
 ```
 {{% /tab %}}
 {{% tab tabName="Custom route" %}}
-```yaml
+```yaml,paths="openai-setup"
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -125,6 +125,25 @@ EOF
 ```
 {{% /tab %}}
 {{< /tabs >}}
+
+{{< doc-test paths="openai-setup" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai backend to be ready
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
    
 ### Step 4: Send a request to the LLM
 
@@ -202,6 +221,41 @@ curl "localhost:8080/openai" -H content-type:application/json  -d '{
 ```
 {{% /tab %}}
 {{< /tabs >}}
+
+{{< doc-test paths="openai-setup" >}}
+YAMLTest -f - <<'EOF'
+- name: send request to OpenAI and verify response with token usage
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Say hello in one word"
+          }
+        ]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+      - path: "$.usage.prompt_tokens"
+        comparator: greaterThan
+        value: 0
+      - path: "$.usage.completion_tokens"
+        comparator: greaterThan
+        value: 0
+EOF
+{{< /doc-test >}}
    
 Example output: 
 ```json
