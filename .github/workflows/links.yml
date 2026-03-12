@@ -56,6 +56,14 @@ jobs:
             --root-dir "${{ github.workspace }}/public" \
             --index-files index.html \
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/" \
+            --remap "/docs/about/" "/docs/standalone/latest/about/" \
+            --remap "/docs/agent/" "/docs/standalone/latest/agent/" \
+            --remap "/docs/configuration/" "/docs/standalone/latest/configuration/" \
+            --remap "/docs/deployment/" "/docs/standalone/latest/deployment/" \
+            --remap "/docs/integrations/" "/docs/standalone/latest/integrations/" \
+            --remap "/docs/llm/" "/docs/standalone/latest/llm/" \
+            --remap "/docs/mcp/" "/docs/standalone/latest/mcp/" \
+            --remap "/docs/quickstart/" "/docs/standalone/latest/quickstart/" \
             --format json \
             --user-agent curl/8.4.0 \
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
