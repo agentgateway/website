@@ -69,40 +69,32 @@ Regex-based prompt guards provide fast, deterministic pattern matching for known
 ### Built-in patterns
 
 Agentgateway includes built-in regex patterns for common sensitive data types:
-- `CreditCard`: Credit card numbers (Visa, MasterCard, Amex, Discover)
-- `Ssn`: US Social Security Numbers
-- `Email`: Email addresses
-- `PhoneNumber`: US phone numbers
-- `CaSin`: Canadian Social Insurance Numbers
+- `creditCard`: Credit card numbers (Visa, MasterCard, Amex, Discover)
+- `ssn`: US Social Security Numbers
+- `email`: Email addresses
+- `phoneNumber`: US phone numbers
+- `caSin`: Canadian Social Insurance Numbers
 
 Example configuration that masks credit cards in responses:
 
 ```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        ai:
-          promptGuard:
-            response:
-            - regex:
-                builtins:
-                - creditCard
-                - ssn
-                - email
-                action: mask
-```
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
-{{< callout type="info" >}}
-In standalone configuration, builtin names use camelCase: `creditCard`, `ssn`, `email`, `phoneNumber`, `caSin`.
-{{< /callout >}}
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      response:
+      - regex:
+          action: mask
+          rules:
+          - builtin: creditCard
+          - builtin: ssn
+          - builtin: email
+```
 
 ### Custom patterns
 
@@ -111,28 +103,24 @@ You can also define custom regex patterns for organization-specific sensitive da
 Example that rejects requests containing specific restricted terms:
 
 ```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        ai:
-          promptGuard:
-            request:
-            - response:
-                message: "Request blocked due to policy violation"
-              regex:
-                action: reject
-                rules:
-                - pattern: "confidential"
-                - pattern: "internal-only"
-                - pattern: "project-\\w+-secret"  # Custom pattern with regex
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - regex:
+          action: reject
+          rules:
+          - pattern: "confidential"
+          - pattern: "internal-only"
+          - pattern: "project-\\w+-secret"  # Custom pattern with regex
+        rejection:
+          body: "Request blocked due to policy violation"
 ```
 
 ### Test regex guards
@@ -177,27 +165,24 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 
 1. Configure the prompt guard to use OpenAI Moderation:
    ```yaml
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4o-mini
-         policies:
-           ai:
-             promptGuard:
-               request:
-               - openaiModeration:
-                   auth:
-                     key:
-                       file: $HOME/.secrets/openai
-                   model: omni-moderation-latest
-                 response:
-                   message: "Content blocked by moderation policy"
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         request:
+         - openAIModeration:
+             model: omni-moderation-latest
+             policies:
+               backendAuth:
+                 key:
+                   file: $HOME/.secrets/openai
+           rejection:
+             body: "Content blocked by moderation policy"
    ```
 
 2. Test with content that triggers moderation:
@@ -236,35 +221,31 @@ For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails
 
 2. Configure the prompt guard:
    ```yaml
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4o-mini
-         policies:
-           ai:
-             promptGuard:
-               request:
-               - bedrockGuardrails:
-                   guardrailIdentifier: your-guardrail-id
-                   guardrailVersion: "1"  # or "DRAFT"
-                   region: us-west-2
-                   policies:
-                     backendAuth:
-                       aws: {}
-               response:
-               - bedrockGuardrails:
-                   guardrailIdentifier: your-guardrail-id
-                   guardrailVersion: "1"
-                   region: us-west-2
-                   policies:
-                     backendAuth:
-                       aws: {}
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         request:
+         - bedrockGuardrails:
+             guardrailIdentifier: your-guardrail-id
+             guardrailVersion: "1"  # or "DRAFT"
+             region: us-west-2
+             policies:
+               backendAuth:
+                 aws: {}
+         response:
+         - bedrockGuardrails:
+             guardrailIdentifier: your-guardrail-id
+             guardrailVersion: "1"
+             region: us-west-2
+             policies:
+               backendAuth:
+                 aws: {}
    ```
 
 {{< callout type="info" >}}
@@ -289,27 +270,23 @@ For advanced content safety requirements beyond regex and cloud provider service
 Configure a prompt guard to call your webhook service:
 
 ```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        ai:
-          promptGuard:
-            request:
-            - webhook:
-                protocol: http
-                address: content-safety-webhook.example.com:8000
-            response:
-            - webhook:
-                protocol: http
-                address: content-safety-webhook.example.com:8000
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - webhook:
+          protocol: http
+          address: content-safety-webhook.example.com:8000
+      response:
+      - webhook:
+          protocol: http
+          address: content-safety-webhook.example.com:8000
 ```
 
 For details on the webhook protocol and implementing custom webhook servers, see the Guardrail Webhook API documentation.
@@ -321,51 +298,48 @@ You can configure multiple prompt guards that run in sequence, creating defense-
 Example configuration that uses all three layers:
 
 ```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        ai:
-          promptGuard:
-            request:
-            # Layer 1: Fast regex check for known patterns
-            - regex:
-                builtins:
-                - ssn
-                - creditCard
-                - email
-                action: reject
-                response:
-                  message: "Request contains PII and cannot be processed"
-            # Layer 2: OpenAI moderation for harmful content
-            - openaiModeration:
-                auth:
-                  key:
-                    file: $HOME/.secrets/openai
-                model: omni-moderation-latest
-              response:
-                message: "Content blocked by moderation policy"
-            # Layer 3: Custom webhook for domain-specific checks
-            - webhook:
-                protocol: http
-                address: content-safety-webhook.example.com:8000
-            response:
-            # Response guards run in same order
-            - regex:
-                builtins:
-                - ssn
-                - creditCard
-                action: mask
-            - webhook:
-                protocol: http
-                address: content-safety-webhook.example.com:8000
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      # Layer 1: Fast regex check for known patterns
+      - regex:
+          action: reject
+          rules:
+          - builtin: ssn
+          - builtin: creditCard
+          - builtin: email
+        rejection:
+          body: "Request contains PII and cannot be processed"
+      # Layer 2: OpenAI moderation for harmful content
+      - openAIModeration:
+          model: omni-moderation-latest
+          policies:
+            backendAuth:
+              key:
+                file: $HOME/.secrets/openai
+        rejection:
+          body: "Content blocked by moderation policy"
+      # Layer 3: Custom webhook for domain-specific checks
+      - webhook:
+          protocol: http
+          address: content-safety-webhook.example.com:8000
+      response:
+      # Response guards run in same order
+      - regex:
+          action: mask
+          rules:
+          - builtin: ssn
+          - builtin: creditCard
+      - webhook:
+          protocol: http
+          address: content-safety-webhook.example.com:8000
 ```
 
 ## Choosing the right approach

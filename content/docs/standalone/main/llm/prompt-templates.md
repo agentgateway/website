@@ -27,30 +27,29 @@ You can use these approaches individually or combine them for maximum flexibilit
 
 Static templates prepend or append fixed messages to every request. This is ideal for setting consistent behavior guidelines, adding organizational policies, or defining output formats.
 
-Configure static templates in your route's `policies` section.
+Configure static templates by using a CEL body transformation in your `llm.policies` section. The transformation prepends and appends system messages to the request's message array.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
-        promptEnrichment:
-          prepend:
-          - role: system
-            content: "You are a helpful customer service assistant. Always be polite and professional."
-          append:
-          - role: system
-            content: "If you cannot answer a question, say so clearly rather than making up information."
+
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          json(request.body).with(body,
+            {
+              "model": body.model,
+              "messages": [{"role": "system", "content": "You are a helpful customer service assistant. Always be polite and professional."}]
+                + body.messages
+                + [{"role": "system", "content": "If you cannot answer a question, say so clearly rather than making up information."}]
+            }
+          ).toJson()
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
 With this configuration, every request includes the prepended and appended system messages, even if the client does not send them.
@@ -58,7 +57,7 @@ With this configuration, every request includes the prepended and appended syste
 Test with curl.
 
 ```sh
-curl "localhost:3000" -H content-type:application/json -d '{
+curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
   "model": "gpt-3.5-turbo",
   "messages": [
     {
@@ -85,35 +84,30 @@ Configure transformations to inject user identity from request headers into the 
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
-        transformations:
-          request:
-            body: |
-              json(request.body).with(body,
-                {
-                  "model": body.model,
-                  "messages": [{"role": "system", "content": "You are assisting user: " + default(request.headers["x-user-id"], "anonymous")}]
-                    + body.messages
-                }
-              ).toJson()
+
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          json(request.body).with(body,
+            {
+              "model": body.model,
+              "messages": [{"role": "system", "content": "You are assisting user: " + default(request.headers["x-user-id"], "anonymous")}]
+                + body.messages
+            }
+          ).toJson()
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
 Test with a user ID header.
 
 ```sh
-curl "localhost:3000" -H content-type:application/json -H "x-user-id: alice" -d '{
+curl "localhost:3000/v1/chat/completions" -H content-type:application/json -H "x-user-id: alice" -d '{
   "model": "gpt-3.5-turbo",
   "messages": [
     {
@@ -153,21 +147,27 @@ JWT claims are not currently available in CEL transformations when using `mcpAut
 Inject user identity and organization from JWT claims into the prompt.
 
 ```yaml
-policies:
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          {
-            "model": body.model,
-            "messages": [
-              {
-                "role": "system",
-                "content": "You are assisting " + jwt.sub + " from organization " + jwt['org-id'] + ". Tailor responses to their role: " + default(jwt.role, "user") + "."
-              }
-            ] + body.messages
-          }
-        ).toJson()
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          json(request.body).with(body,
+            {
+              "model": body.model,
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "You are assisting " + jwt.sub + " from organization " + jwt['org-id'] + ". Tailor responses to their role: " + default(jwt.role, "user") + "."
+                }
+              ] + body.messages
+            }
+          ).toJson()
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
 ### Conditional templates based on headers
@@ -175,21 +175,27 @@ policies:
 Route premium users to enhanced instructions.
 
 ```yaml
-policies:
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          request.headers["x-user-tier"] == "premium" ?
-            {
-              "model": body.model,
-              "messages": [{"role": "system", "content": "Provide detailed, comprehensive answers with examples."}] + body.messages
-            } :
-            {
-              "model": body.model,
-              "messages": [{"role": "system", "content": "Provide concise, brief answers."}] + body.messages
-            }
-        ).toJson()
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          json(request.body).with(body,
+            request.headers["x-user-tier"] == "premium" ?
+              {
+                "model": body.model,
+                "messages": [{"role": "system", "content": "Provide detailed, comprehensive answers with examples."}] + body.messages
+              } :
+              {
+                "model": body.model,
+                "messages": [{"role": "system", "content": "Provide concise, brief answers."}] + body.messages
+              }
+          ).toJson()
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
 ### Add request tracking metadata
@@ -197,56 +203,59 @@ policies:
 Inject request ID and timestamp for debugging.
 
 ```yaml
-policies:
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          {
-            "model": body.model,
-            "messages": [
-              {
-                "role": "system",
-                "content": "Request ID: " + uuid() + " | Timestamp: " + string(request.startTime)
-              }
-            ] + body.messages
-          }
-        ).toJson()
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          json(request.body).with(body,
+            {
+              "model": body.model,
+              "messages": [
+                {
+                  "role": "system",
+                  "content": "Request ID: " + uuid() + " | Timestamp: " + string(request.startTime)
+                }
+              ] + body.messages
+            }
+          ).toJson()
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
 ### Combine static and dynamic templates
 
-Use prompt enrichment for static guidelines and transformations for dynamic context.
+Use a single transformation to combine static guidelines with dynamic context. The CEL expression prepends static system messages, includes the original user messages, and appends both a static guideline and dynamic user context.
 
 ```yaml
-policies:
-  # Static guidelines via prompt enrichment
-  promptEnrichment:
-    prepend:
-    - role: system
-      content: "You are a helpful assistant. Always be polite."
-    append:
-    - role: system
-      content: "If uncertain, say so clearly."
-
-  # Dynamic user context via transformation
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          {
-            "model": body.model,
-            "messages": body.messages + [
-              {
-                "role": "system",
-                "content": "User context: " + default(request.headers["x-user-id"], "anonymous")
-              }
-            ]
-          }
-        ).toJson()
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          json(request.body).with(body,
+            {
+              "model": body.model,
+              "messages":
+                [{"role": "system", "content": "You are a helpful assistant. Always be polite."}]
+                + body.messages
+                + [
+                    {"role": "system", "content": "If uncertain, say so clearly."},
+                    {"role": "system", "content": "User context: " + default(request.headers["x-user-id"], "anonymous")}
+                  ]
+            }
+          ).toJson()
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
-This applies both static prompts (prepend/append) and dynamic user context (from headers).
+This applies both static prompts (prepend/append) and dynamic user context (from headers) in a single transformation.
 
 ## Next steps
 
