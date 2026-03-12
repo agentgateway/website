@@ -14,6 +14,10 @@ To learn more about how to use CEL, refer to the following resources:
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 - [Agentgateway reference docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/)
 
+{{< callout type="info" >}}
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+{{< /callout >}}
+
 ### Header transformation
 
 You can add, set, or remove request and response headers with agentgateway's transformation policies. 

@@ -12,6 +12,10 @@ Prompt templates allow you to standardize prompts across your organization with 
 
 Unlike simple `{{variable}}` substitution systems, agentgateway uses [CEL (Common Expression Language)](https://agentgateway.dev/docs/standalone/latest/reference/cel/) expressions. This gives you full expression logic including conditionals, functions, and complex transformations.
 
+{{< callout type="info" >}}
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+{{< /callout >}}
+
 ## Templating approaches
 
 Agentgateway provides two complementary approaches to prompt templating.

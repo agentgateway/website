@@ -26,4 +26,8 @@ mcpAuthorization:
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
+{{< callout type="info" >}}
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+{{< /callout >}}
+
 Refer to the [CEL reference]({{< link-hextra path="/configuration/traffic-management/transformations" >}}) for allowed variables.

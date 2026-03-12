@@ -59,6 +59,6 @@ EOF
 | `guardrailIdentifier` | The identifier of the Bedrock guardrail to apply. Retrieve this by running `aws bedrock list-guardrails`. |
 | `guardrailVersion` | The version of the guardrail. Use `DRAFT` for development or a specific version number for production. |
 | `region` | The AWS region where the guardrail is configured, such as `us-west-2`. |
-| `policies.backendAuth.aws` | AWS authentication configuration. Agentgateway uses the credentials available in the environment, such as environment variables or an instance profile.  |
+| `policies.backendAuth.aws` | AWS authentication configuration. Agentgateway uses the credentials available in the environment, such as environment variables or an instance profile. |
 
 When a request or response matches a guardrail policy, agentgateway blocks the interaction and returns an error such as: `The request was rejected due to inappropriate content`.

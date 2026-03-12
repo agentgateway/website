@@ -56,9 +56,9 @@ policies:
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Reject requests
+## PII detection
 
-The following example rejects requests that contain Social Security Numbers (using a custom keyword pattern) or email addresses (using the built-in `email` pattern). When a request is blocked, agentgateway returns a custom error response.
+The following example rejects requests that contain PII data, such as Social Security Numbers (using a custom keyword pattern) or email addresses (using the built-in `email` pattern). When a request is blocked, agentgateway returns a custom error response.
 
 1. Create a configuration file with regex prompt guard policies.
    ```yaml
@@ -197,7 +197,7 @@ The following example rejects requests that contain Social Security Numbers (usi
    }
    ```
 
-## Mask responses
+## Mask PII in responses
 
 You can also filter LLM responses to redact sensitive data before it reaches the client. When a match is found, agentgateway replaces built-in pattern matches with `<ENTITY_TYPE>` (for example, `<CREDIT_CARD>`) and custom pattern matches with `<masked>`. The following example masks credit card numbers in responses.
 
@@ -264,5 +264,4 @@ You can also filter LLM responses to redact sensitive data before it reaches the
    "service_tier":"default",
    "system_fingerprint":"fp_a1ddba3226"}%    
    ```
-
 
