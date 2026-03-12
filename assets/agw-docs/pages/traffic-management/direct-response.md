@@ -64,7 +64,7 @@ The following rule is applied during schema validation:
    ```
 
    
-3. Send a request along the `/status/404` path. Verify that your request succeeds, that you get back a 200 HTTP response code, and the custom message is included instead of returning a `404` error.  
+3. Send a request along the `/status/404` path of the httpbin app. Typically, this path returns a 404 HTTP response code. However, because you apply a direct response to this route, the request returns a 200 HTTP response code with a custom message instead as defined in your policy. Verify that you see the 200 HTTP response code with your custom message.  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
