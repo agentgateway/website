@@ -142,7 +142,7 @@ Agentgateway comes with built-in rate limiting capabilities to limit the number 
        provider: openAI
        params:
          apiKey: "$OPENAI_API_KEY"
-       tokenize: true
+         tokenize: true
    EOF
    ```
 
