@@ -17,9 +17,11 @@ The previous release version pattern was changed to align the version number pat
 
 ### CEL 2.0
 
-This release includes a major refactor to the CEL implementation in agentgateway to improve scalability and performance. The following user facing changes were introduced:
+This release includes a major refactor to the CEL implementation in agentgateway that brings substantial performance improvements and enhanced functionality. Individual CEL expressions are now 5-500x faster, which has improved end-to-end proxy performance by 50%+ in some tests. For more details on the performance improvements, see this [blog post on CEL optimization](https://blog.howardjohn.info/posts/cel-fast/).
 
-* **Function name changes**: Due to dependency updates, function names were changed. Previously, function names followed a camel case pattern, such as `base64Encode`. Now, function names use dot notations, such as `base64.encode`. The old camel case names remain in place for backwards compatibility.
+The following user-facing changes were introduced:
+
+* **Function name changes**: For compatibility with the CEL-Go implementation, the `base64Encode` and `base64Decode` functions now use dot notation: `base64.encode` and `base64.decode`. The old camel case names remain in place for backwards compatibility.
 * **New string functions**: The following string manipulation functions were added to the CEL library: `startsWith`, `endsWith`, `stripPrefix`, and `stripSuffix`. These functions align with the Google [CEL-Go strings extension](https://pkg.go.dev/github.com/google/cel-go/ext#Strings).
 * **Null values fail**: If a top-level variable returns a null value, the CEL expression now fails. Previously, null values always returned true. For example, the `has(jwt)` expression was previously successful if the JWT was missing or could not be found. Now, this expression fails.
 * **Logical operators**: Logical `||` and `&&` operators now handle evaluation errors gracefully instead of propagating them. For example, `a || b` returns `true` if `a` is true even if `b` errors. Previously, the CEL expression failed.
