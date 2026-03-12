@@ -253,6 +253,6 @@ cd .. && rm -rf prompt-guard-test
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/llm/" title="LLM Gateway" subtitle="LLM gateway features" >}}
-  {{< card path="/configuration/traffic-management/llm/" title="AI Policies" subtitle="AI policy configuration reference" >}}
+  {{< card link="/docs/llm/" title="LLM Gateway" subtitle="LLM gateway features" >}}
+  {{< card link="/docs/configuration/traffic-management/llm/" title="AI Policies" subtitle="AI policy configuration reference" >}}
 {{< /cards >}}
