@@ -266,7 +266,7 @@ docker stop jaeger && docker rm jaeger
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/mcp/mcp-observability" title="MCP Observability" subtitle="MCP-specific metrics and traces" >}}
-  {{< card path="/llm/observability" title="LLM Observability" subtitle="LLM-specific metrics and traces" >}}
-  {{< card path="/reference/observability/traces" title="Tracing Reference" subtitle="Complete tracing options" >}}
+  {{< card link="/docs/mcp/mcp-observability" title="MCP Observability" subtitle="MCP-specific metrics and traces" >}}
+  {{< card link="/docs/llm/observability" title="LLM Observability" subtitle="LLM-specific metrics and traces" >}}
+  {{< card link="/docs/reference/observability/traces" title="Tracing Reference" subtitle="Complete tracing options" >}}
 {{< /cards >}}

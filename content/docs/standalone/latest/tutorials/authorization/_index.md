@@ -192,6 +192,6 @@ mcpAuthorization:
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
-  {{< card path="/configuration/security/authentication" title="Authentication" subtitle="Authentication methods" >}}
+  {{< card link="/docs/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
+  {{< card link="/docs/configuration/security/authentication" title="Authentication" subtitle="Authentication methods" >}}
 {{< /cards >}}

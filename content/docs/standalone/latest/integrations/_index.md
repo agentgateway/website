@@ -9,14 +9,14 @@ Integrate agentgateway with your existing infrastructure and tools.
 ## LLM Providers
 
 {{< cards >}}
-  {{< card path="/llm/providers/openai" title="OpenAI" subtitle="GPT-4, GPT-4o, and more" >}}
-  {{< card path="/llm/providers/anthropic" title="Anthropic" subtitle="Claude models" >}}
-  {{< card path="/llm/providers/azure" title="Azure OpenAI" subtitle="Azure-hosted OpenAI models" >}}
-  {{< card path="/llm/providers/bedrock" title="Amazon Bedrock" subtitle="AWS foundation models" >}}
-  {{< card path="/llm/providers/gemini" title="Google Gemini" subtitle="Gemini models" >}}
-  {{< card path="/llm/providers/vertex" title="Vertex AI" subtitle="Google Cloud AI platform" >}}
-  {{< card path="/llm/providers/openai-compatible" title="xAI / Grok" subtitle="xAI's Grok models (OpenAI-compatible)" >}}
-  {{< card path="/llm/providers/openai-compatible" title="OpenAI-Compatible" subtitle="Cohere, Ollama, and other compatible APIs" >}}
+  {{< card link="/docs/llm/providers/openai" title="OpenAI" subtitle="GPT-4, GPT-4o, and more" >}}
+  {{< card link="/docs/llm/providers/anthropic" title="Anthropic" subtitle="Claude models" >}}
+  {{< card link="/docs/llm/providers/azure" title="Azure OpenAI" subtitle="Azure-hosted OpenAI models" >}}
+  {{< card link="/docs/llm/providers/bedrock" title="Amazon Bedrock" subtitle="AWS foundation models" >}}
+  {{< card link="/docs/llm/providers/gemini" title="Google Gemini" subtitle="Gemini models" >}}
+  {{< card link="/docs/llm/providers/vertex" title="Vertex AI" subtitle="Google Cloud AI platform" >}}
+  {{< card link="/docs/llm/providers/openai-compatible" title="xAI / Grok" subtitle="xAI's Grok models (OpenAI-compatible)" >}}
+  {{< card link="/docs/llm/providers/openai-compatible" title="OpenAI-Compatible" subtitle="Cohere, Ollama, and other compatible APIs" >}}
 {{< /cards >}}
 
 ## Observability

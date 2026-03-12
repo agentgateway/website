@@ -285,6 +285,6 @@ For production deployments, consider the following.
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
-  {{< card path="/configuration/traffic-management/external-authorization/" title="External Authorization" subtitle="ExtAuthz configuration reference" >}}
+  {{< card link="/docs/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
+  {{< card link="/docs/configuration/traffic-management/external-authorization/" title="External Authorization" subtitle="ExtAuthz configuration reference" >}}
 {{< /cards >}}

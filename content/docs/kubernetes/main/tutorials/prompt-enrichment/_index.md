@@ -449,7 +449,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/prompt-enrichment" title="Prompt Enrichment Reference" subtitle="Complete configuration options" >}}
-  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive data in requests" >}}
-  {{< card path="/tutorials/llm-gateway" title="LLM Gateway" subtitle="Route to multiple providers" >}}
+  {{< card link="/docs/kubernetes/main/llm/prompt-enrichment" title="Prompt Enrichment Reference" subtitle="Complete configuration options" >}}
+  {{< card link="/docs/kubernetes/main/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive data in requests" >}}
+  {{< card link="/docs/kubernetes/main/tutorials/llm-gateway" title="LLM Gateway" subtitle="Route to multiple providers" >}}
 {{< /cards >}}

@@ -160,7 +160,7 @@ Agentgateway provides:
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/tutorials/authorization" title="Authorization" subtitle="Add JWT authentication" >}}
-  {{< card path="/agent/" title="Agent Overview" subtitle="Understanding A2A connectivity" >}}
-  {{< card path="/agent/a2a" title="A2A Reference" subtitle="Complete A2A configuration" >}}
+  {{< card link="/docs/tutorials/authorization" title="Authorization" subtitle="Add JWT authentication" >}}
+  {{< card link="/docs/agent/" title="Agent Overview" subtitle="Understanding A2A connectivity" >}}
+  {{< card link="/docs/agent/a2a" title="A2A Reference" subtitle="Complete A2A configuration" >}}
 {{< /cards >}}

@@ -307,7 +307,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/observability/" title="Observability Reference" subtitle="Complete observability configuration" >}}
-  {{< card path="/observability/otel-stack" title="OTel Stack" subtitle="Full OpenTelemetry stack setup" >}}
-  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
+  {{< card link="/docs/kubernetes/latest/observability/" title="Observability Reference" subtitle="Complete observability configuration" >}}
+  {{< card link="/docs/kubernetes/latest/observability/otel-stack" title="OTel Stack" subtitle="Full OpenTelemetry stack setup" >}}
+  {{< card link="/docs/kubernetes/latest/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
 {{< /cards >}}

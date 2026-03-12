@@ -542,7 +542,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/" title="LLM Overview" subtitle="Learn more about LLM gateway features on Kubernetes" >}}
-  {{< card path="/llm/providers/" title="More Providers" subtitle="Configure additional LLM providers" >}}
-  {{< card path="/security/" title="Security" subtitle="Secure your agentgateway deployment" >}}
+  {{< card link="/docs/kubernetes/main/llm/" title="LLM Overview" subtitle="Learn more about LLM gateway features on Kubernetes" >}}
+  {{< card link="/docs/kubernetes/main/llm/providers/" title="More Providers" subtitle="Configure additional LLM providers" >}}
+  {{< card link="/docs/kubernetes/main/security/" title="Security" subtitle="Secure your agentgateway deployment" >}}
 {{< /cards >}}
