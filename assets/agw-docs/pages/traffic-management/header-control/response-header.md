@@ -9,8 +9,8 @@ For more information, see the [HTTPHeaderFilter specification](https://gateway-a
 
 Add headers to incoming requests before they are sent back to the client. If the response already has the header set, the value of the header in the `ResponseHeaderModifier` filter is appended to the value of the header in the response. 
 
-1. Set up a header modifier that adds a `my-response: hello` response header. 
-   ```yaml
+1. Set up a header modifier that adds a `my-response: hello` response header.
+   ```yaml {paths="add-response-header"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -27,7 +27,7 @@ Add headers to incoming requests before they are sent back to the client. If the
        - filters:
            - type: ResponseHeaderModifier
              responseHeaderModifier:
-               add: 
+               add:
                - name: my-response
                  value: hello
          backendRefs:
@@ -85,8 +85,8 @@ curl -vi localhost:8080/response-headers -H "host: headers.example"
 
 Setting headers is similar to adding headers. If the response does not include the header, it is added by the `ResponseHeaderModifier` filter. However, if the request already contains the header, its value is overwritten with the value from the `ResponseHeaderModifier` filter. 
 
-1. Set up a header modifier that sets a `my-response: custom` response header. 
-   ```yaml
+1. Set up a header modifier that sets a `my-response: custom` response header.
+   ```yaml {paths="set-response-header"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -103,7 +103,7 @@ Setting headers is similar to adding headers. If the response does not include t
        - filters:
            - type: ResponseHeaderModifier
              responseHeaderModifier:
-               set: 
+               set:
                - name: my-response
                  value: custom
          backendRefs:
@@ -189,9 +189,9 @@ You can remove HTTP headers from a response before the response is sent back to 
    content-length: 3
    ```
    
-2. Set up a header modifier that removes the `content-type` header from the response. 
+2. Set up a header modifier that removes the `content-type` header from the response.
 
-   ```yaml
+   ```yaml {paths="remove-response-header"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -208,7 +208,7 @@ You can remove HTTP headers from a response before the response is sent back to 
        - filters:
            - type: ResponseHeaderModifier
              responseHeaderModifier:
-               remove: 
+               remove:
                - content-type
          backendRefs:
            - name: httpbin
@@ -251,8 +251,56 @@ You can remove HTTP headers from a response before the response is sent back to 
    content-length: 3
    ```
 
-1. Optional: Remove the resource that you created. 
+1. Optional: Remove the resource that you created.
 
    ```sh
    kubectl delete httproute httpbin-headers -n httpbin
    ```
+
+{{< doc-test paths="add-response-header" >}}
+YAMLTest -f - <<'EOF'
+- name: verify add-response-header returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}"
+    path: /response-headers
+    method: GET
+    headers:
+      host: headers.example
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="set-response-header" >}}
+YAMLTest -f - <<'EOF'
+- name: verify set-response-header returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}"
+    path: /response-headers
+    method: GET
+    headers:
+      host: headers.example
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="remove-response-header" >}}
+YAMLTest -f - <<'EOF'
+- name: verify remove-response-header returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}"
+    path: /response-headers
+    method: GET
+    headers:
+      host: headers.example
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
