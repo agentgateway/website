@@ -25,9 +25,9 @@ Good job! You now have the {{< reuse "/agw-docs/snippets/kgateway.md" >}} contro
 Choose a quick start to route traffic with agentgateway:
 
 {{< cards >}}
-  {{< card path="/llm" title="LLM (OpenAI)" subtitle="Route requests to OpenAI's chat completions API." >}}
-  {{< card path="/mcp" title="MCP servers" subtitle="Connect to an MCP server and try tools." >}}
-  {{< card path="/non-agentic-http" title="Non-agentic HTTP" subtitle="Route HTTP traffic to a backend such as httpbin." >}}
+  {{< card path="/quickstart/llm" title="LLM (OpenAI)" subtitle="Route requests to OpenAI's chat completions API." >}}
+  {{< card path="/quickstart/mcp" title="MCP servers" subtitle="Connect to an MCP server and try tools." >}}
+  {{< card path="/quickstart/non-agentic-http" title="Non-agentic HTTP" subtitle="Route HTTP traffic to a backend such as httpbin." >}}
 {{< /cards >}}
 
 ## Cleanup
