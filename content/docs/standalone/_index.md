@@ -10,8 +10,8 @@ description:
 Select the version for the agentgateway standalone binary docs.
 
 {{< cards >}}
-  {{< card path="/standalone/main/" title="Main" subtitle="In development docs subject to change" >}}
-  {{< card path="/standalone/latest/" title="Latest" subtitle="Docs for the latest agentgateway release" >}}
+  {{< card link="main/" title="Main" subtitle="In development docs subject to change" >}}
+  {{< card link="latest/" title="Latest" subtitle="Docs for the latest agentgateway release" >}}
 {{< /cards >}}
 
 > [!TIP] 
