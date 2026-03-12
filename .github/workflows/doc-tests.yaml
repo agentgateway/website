@@ -52,11 +52,24 @@ jobs:
       - name: Install yamltest
         run: npm install -g yamltest@latest
 
+      - name: Get changed markdown files
+        id: changed-files
+        if: github.event_name == 'pull_request'
+        run: |
+          FILES=$(git diff --name-only HEAD^1...HEAD | grep '^content/.*\.md$' | tr '\n' ' ' || true)
+          echo "files=${FILES}" >> $GITHUB_OUTPUT
+
       - name: Run doc tests
-        run: python3 scripts/doc_test_run.py --repo-root .
+        run: |
+          if [ -n "$CHANGED_FILES" ]; then
+            python3 scripts/doc_test_run.py --repo-root . --file $CHANGED_FILES
+          else
+            python3 scripts/doc_test_run.py --repo-root .
+          fi
         env:
           DEBUG_MODE: true
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
       - name: Generate job summary
         id: summary

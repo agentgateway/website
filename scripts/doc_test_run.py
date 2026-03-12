@@ -478,8 +478,8 @@ def main() -> int:
         help="Stream all command output (default: enabled)",
     )
     parser.add_argument("--generate-only", action="store_true", help="Only generate scripts/manifests, do not run tests")
-    parser.add_argument("--file", default=None, help="Path to a single markdown file to test (relative to repo root or absolute)")
-    parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (requires --file)")
+    parser.add_argument("--file", nargs="+", default=None, metavar="FILE", help="Path(s) to one or more markdown files to test (relative to repo root or absolute)")
+    parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (only used when --file specifies a single file)")
     args = parser.parse_args()
 
     repo_root = Path(args.repo_root).resolve()
@@ -487,15 +487,22 @@ def main() -> int:
     report_path = (repo_root / args.report_file).resolve()
 
     if args.file:
-        md_file = Path(args.file)
-        if not md_file.is_absolute():
-            md_file = repo_root / md_file
-        test_cases, tested_documents = build_test_cases_from_file(repo_root, md_file, generated_dir, filter_test_name=args.test)
+        filter_test_name = args.test if len(args.file) == 1 else None
+        test_cases = []
+        tested_docs: List[str] = []
+        for f in args.file:
+            md_file = Path(f)
+            if not md_file.is_absolute():
+                md_file = repo_root / md_file
+            cases, docs = build_test_cases_from_file(repo_root, md_file, generated_dir, filter_test_name=filter_test_name)
+            test_cases.extend(cases)
+            tested_docs.extend(docs)
+        tested_documents = sorted(set(tested_docs))
         if not test_cases:
-            if args.test:
-                print(f"No test named '{args.test}' found in {args.file}")
+            if args.test and len(args.file) == 1:
+                print(f"No test named '{args.test}' found in {args.file[0]}")
             else:
-                print(f"No test metadata found in {args.file}")
+                print(f"No test metadata found in the provided file(s).")
             return 1
     else:
         test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
