@@ -45,7 +45,7 @@ words.style.transform = `translateY(-${current * 25}%)`;
 Agent Gateway is an open source data plane built on AI-native protocols (A2A & MCP) to connect, secure, and observe agent-to-agent and agent-to-tool communication across any framework and environment.
 </p>
 <div class="flex flex-wrap justify-center gap-4 pt-10">
-{{< button style="primary" href="/docs/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}
+{{< button style="primary" href="/docs/standalone/latest/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}
 {{< button style="secondary" href="https://github.com/agentgateway/agentgateway" text="View on GitHub" icon="github" >}}
 {{< button style="secondary" href="https://discord.gg/y9efgEmppm" text="Discord" icon="discord" >}}
 </div>
@@ -201,7 +201,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
   <div class="max-w-7xl mx-auto px-6">
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <!-- Install -->
-      <a href="/docs/quickstart/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
+      <a href="/docs/standalone/latest/quickstart/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
         <div class="w-10 h-10 bg-primary-bg rounded-lg flex items-center justify-center mb-4">
           <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -222,7 +222,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
         <p class="text-secondary-text text-sm">Step-by-step guides for MCP connectivity, A2A, and LLM routing.</p>
       </a>
       <!-- Documentation -->
-      <a href="/docs/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
+      <a href="/docs/standalone/latest/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
         <div class="w-10 h-10 bg-primary-bg rounded-lg flex items-center justify-center mb-4">
           <svg class="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -232,7 +232,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
         <p class="text-secondary-text text-sm">Complete reference for configuration, security, and policies.</p>
       </a>
       <!-- Integrations -->
-      <a href="/docs/integrations/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
+      <a href="/docs/standalone/latest/integrations/" class="group bg-tertiary-bg rounded-xl border border-secondary-border p-6 hover:border-tertiary-text transition-all">
         <div class="w-10 h-10 bg-primary-bg rounded-lg flex items-center justify-center mb-4">
           <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path>
@@ -370,7 +370,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
 <p class="text-secondary-text text-xs mb-2">Route to any provider that supports the OpenAI API format:</p>
 <p class="text-secondary-text text-xs">Cohere, Mistral, Groq, Together AI, Fireworks, Ollama, LM Studio, vLLM, llama.cpp, and any custom endpoint with <code class="text-tertiary-text">/v1/chat/completions</code></p>
 </div>
-<a href="/docs/llm/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
+<a href="/docs/standalone/latest/llm/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
 </div>
 </div>
 </div>
@@ -397,7 +397,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
 <li class="flex items-start gap-2"><span class="text-tertiary-text">•</span><span><strong class="text-primary-text">LoRA adapters</strong> — Route to models with specific fine-tuned adapters</span></li>
 <li class="flex items-start gap-2"><span class="text-tertiary-text">•</span><span><strong class="text-primary-text">Work queue depth</strong> — Avoid overloaded inference servers</span></li>
 </ul>
-<a href="/docs/llm/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
+<a href="/docs/standalone/latest/llm/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
 </div>
 </div>
 </div>
@@ -423,7 +423,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
 <li class="flex items-start gap-2"><span class="text-tertiary-text">•</span><span><strong class="text-primary-text">OpenAPI integration</strong> — Expose existing REST APIs as MCP-native tools</span></li>
 <li class="flex items-start gap-2"><span class="text-tertiary-text">•</span><span><strong class="text-primary-text">Authentication & authorization</strong> — Built-in MCP auth spec compliance with OAuth providers (Auth0, Keycloak)</span></li>
 </ul>
-<a href="/docs/mcp/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
+<a href="/docs/standalone/latest/mcp/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
 </div>
 </div>
 </div>
@@ -449,7 +449,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
 <li class="flex items-start gap-2"><span class="text-tertiary-text">•</span><span>Collaborate on long-running tasks</span></li>
 <li class="flex items-start gap-2"><span class="text-tertiary-text">•</span><span>Operate without exposing internal state or tools</span></li>
 </ul>
-<a href="/docs/agent/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
+<a href="/docs/standalone/latest/agent/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
 </div>
 </div>
 </div>
@@ -486,7 +486,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
 <p class="text-secondary-text text-xs">Built-in OpenTelemetry metrics, logs, and distributed tracing</p>
 </div>
 </div>
-<a href="/docs/configuration/security/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
+<a href="/docs/standalone/latest/configuration/security/" class="text-tertiary-text hover:underline text-sm font-medium">Learn more →</a>
 </div>
 </div>
 </div>
@@ -515,7 +515,7 @@ chevron.classList.remove('rotate-180');
 <div class="max-w-4xl mx-auto px-6">
 <div class="flex justify-between items-center mb-6">
 <h2 class="text-primary-text text-2xl lg:text-3xl font-bold">Getting Started</h2>
-<a href="/docs/deployment/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1">View all docs <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+<a href="/docs/standalone/latest/deployment/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1">View all docs <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
 </div>
 <div class="bg-primary-bg rounded-lg border border-secondary-border overflow-hidden mb-6">
 <div class="flex items-center justify-between border-b border-secondary-border px-4 py-2">
@@ -530,14 +530,14 @@ chevron.classList.remove('rotate-180');
 </div>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<a href="/docs/quickstart/" class="bg-primary-bg rounded-lg border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors">
+<a href="/docs/standalone/latest/quickstart/" class="bg-primary-bg rounded-lg border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors">
 <div class="flex items-center gap-2 mb-2">
 <svg class="w-4 h-4 text-tertiary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
 <h3 class="text-primary-text font-semibold">Quick Start</h3>
 </div>
 <p class="text-secondary-text text-sm">Get up and running with Agent Gateway in under 5 minutes.</p>
 </a>
-<a href="/docs/mcp/" class="bg-primary-bg rounded-lg border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors">
+<a href="/docs/standalone/latest/mcp/" class="bg-primary-bg rounded-lg border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors">
 <div class="flex items-center gap-2 mb-2">
 <svg class="w-4 h-4 text-tertiary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
 <h3 class="text-primary-text font-semibold">MCP Connectivity Guide</h3>
@@ -697,31 +697,31 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 <div class="max-w-7xl mx-auto px-6">
 <div class="flex justify-between items-center mb-8">
 <h2 class="text-primary-text text-2xl lg:text-3xl font-bold">Popular Integrations</h2>
-<a href="/docs/integrations/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1">View all integrations <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
+<a href="/docs/standalone/latest/integrations/" class="text-tertiary-text hover:underline text-sm font-medium flex items-center gap-1">View all integrations <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg></a>
 </div>
 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-<a href="/docs/integrations/llm-providers/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
+<a href="/docs/standalone/latest/integrations/llm-providers/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
 <div class="flex items-center gap-3 mb-2">
 <svg class="w-5 h-5 text-tertiary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
 <h3 class="text-primary-text font-bold">LLM Providers</h3>
 </div>
 <p class="text-secondary-text text-sm">Connect to OpenAI, Anthropic, Azure OpenAI, Amazon Bedrock, and Google Gemini.</p>
 </a>
-<a href="/docs/integrations/mcp-servers/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
+<a href="/docs/standalone/latest/integrations/mcp-servers/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
 <div class="flex items-center gap-3 mb-2">
 <svg class="w-5 h-5 text-tertiary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
 <h3 class="text-primary-text font-bold">MCP Servers</h3>
 </div>
 <p class="text-secondary-text text-sm">Expose and federate MCP tool servers with stdio, SSE, and streamable HTTP transports.</p>
 </a>
-<a href="/docs/integrations/platforms/kubernetes/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
+<a href="/docs/standalone/latest/integrations/platforms/kubernetes/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
 <div class="flex items-center gap-3 mb-2">
 <svg class="w-5 h-5 text-tertiary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
 <h3 class="text-primary-text font-bold">Kubernetes Gateway API</h3>
 </div>
 <p class="text-secondary-text text-sm">Deploy with kgateway for dynamic provisioning using Kubernetes Gateway API.</p>
 </a>
-<a href="/docs/integrations/observability/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
+<a href="/docs/standalone/latest/integrations/observability/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
 <div class="flex items-center gap-3 mb-2">
 <svg class="w-5 h-5 text-tertiary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
 <h3 class="text-primary-text font-bold">Observability</h3>
@@ -810,7 +810,7 @@ function showK8sOption(option) {
     AI-native connectivity for agentic applications
   </h2>
   <div class="flex flex-col md:flex-row text-start gap-8 items-center md:items-stretch justify-center mx-6 min-h-36">
-    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/mcp/">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/standalone/latest/mcp/">
       <h3 class="font-bold text-primary-text">
         <span class="text-tertiary-text">Tool Federation</span>
       </h3>
@@ -818,7 +818,7 @@ function showK8sOption(option) {
         Provide a single MCP endpoint for all the tools your agents consume, with unified security, observability, and governance for all agent-to-tool communication.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/mcp/connect/">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/standalone/latest/mcp/connect/">
       <h3 class="font-bold  text-primary-text">
         <span class="text-tertiary-text">Unified Connectivity</span>
       </h3>
