@@ -37,7 +37,7 @@ Keep the TCP connection alive by sending out probes after the connection has bee
    | Setting | Description | 
    | -- | -- | 
    | `retries` | The maximum number of keep-alive probes to send without a response before a connection is considered stale. | 
-   | `time` | The number of seconds a connection needs to be idle before retries are sent. |
+   | `time` | The number of seconds a connection is idle before keep-alive probes are sent. |
    | `interval` | The number of seconds between keep-alive probes.  |  
 
 2. Port-forward the gateway proxy on port 15000. 
