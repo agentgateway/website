@@ -180,12 +180,3 @@ binds:
       - http:
           host: api.example.com:443
 ```
-
-## Guides that use routing-based configuration
-
-The following guides require the traditional `binds/listeners/routes` format because they use features only available in that mode.
-
-{{< cards >}}
-  {{< card link="../spending/" title="Control spend" subtitle="Rate limit token usage to prevent unexpected bills" >}}
-  {{< card link="../providers/multiple-llms/" title="Multiple LLM providers" subtitle="Load balance across provider groups" >}}
-{{< /cards >}}
