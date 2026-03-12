@@ -1,8 +1,8 @@
 ---
 title: Security
 weight: 60
-prev: /docs/configuration/resiliency
-next: /docs/reference
+prev: /configuration/resiliency
+next: /reference
 ---
 
 Secure backends and routes with different types of security, authentication, authorization, and rate limiting policies.

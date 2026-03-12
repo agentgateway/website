@@ -4,4 +4,4 @@ weight: 15
 description: Redirects to the MCP JWT authorization guide.
 ---
 
-{{< redirect "../../../mcp/mcp-access/" >}}
+{{< redirect path="/mcp/mcp-access/" >}}

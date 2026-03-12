@@ -4,7 +4,7 @@ weight: 14
 ---
 
 Attach to:
-{{< badge content="Route" link="/docs/configuration/routes/">}}
+{{< badge content="Route" path="/configuration/routes/">}}
 
 Directly respond to a request with a custom response using {{< gloss "Direct Response" >}}direct response{{< /gloss >}}, without forwarding to any backend.
 

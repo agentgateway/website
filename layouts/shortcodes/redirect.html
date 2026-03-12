@@ -1,4 +1,28 @@
-{{ $url := .Get 0 }}
+{{- /*
+    A shortcode to redirect to a URL.
+
+    @param {string} 0   The URL to redirect to (used as-is).
+    @param {string} url The URL to redirect to (used as-is).
+    @param {string} path A section-relative path resolved like card.html (e.g. "/tutorials/basic/").
+
+    @example {{< redirect "/some/url" >}}
+    @example {{< redirect url="/some/url" >}}
+    @example {{< redirect path="/tutorials/basic/" >}}
+*/ -}}
+{{- $url := .Get 0 | default (.Get "url") | default "" -}}
+{{- $path := .Get "path" -}}
+{{- if $path -}}
+  {{- $pathTrimmed := strings.TrimPrefix "/" $path -}}
+  {{- $section := "" -}}
+  {{- with findRE `^/docs/(?:kubernetes|standalone)/(?:latest|main)` .Page.RelPermalink }}{{ $section = index . 0 }}{{ end -}}
+  {{- if not $section }}{{ $section = strings.TrimSuffix "/" .Page.FirstSection.RelPermalink }}{{ end -}}
+  {{- $section = replaceRE `^https?://[^/]+` "" $section -}}
+  {{- $section = replaceRE `^/localhost:[^/]+` "" $section -}}
+  {{- if not (hasPrefix $section "/") }}{{ $section = printf "/%s" $section }}{{ end -}}
+  {{- $url = printf "%s/%s" $section $pathTrimmed -}}
+  {{- if not (strings.HasSuffix $url "/") }}{{ $url = printf "%s/" $url }}{{ end -}}
+  {{- range (seq 10) }}{{ $url = replace $url "//" "/" }}{{ end -}}
+{{- end -}}
 <script>
   window.location.href = "{{ $url }}";
 </script>

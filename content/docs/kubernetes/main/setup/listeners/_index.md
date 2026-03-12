@@ -8,7 +8,6 @@ weight: 20
   {{< card link="http" title="HTTP listener" >}}
   {{< card link="https" title="HTTPS listener" >}}
   {{< card link="mtls" title="mTLS listener" >}}
-  {{< card link="sni" title="SNI listener" >}}
   {{< card link="tcp" title="TCP listener" >}}
 {{< /cards >}}
 

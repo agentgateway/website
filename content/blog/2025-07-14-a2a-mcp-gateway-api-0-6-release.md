@@ -34,7 +34,7 @@ Agentgateway can be used to implement authentication and authorization for your 
 
 Agentgateway now implements the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) with support for HTTPRoute, GRPCRoute, TCPRoute, and TLSRoute. This isn't just basic support, we've implemented all core and extended features, and most experimental ones too. This means you can:
 
-* Match traffic based on headers, paths, and query params
+* Match traffic based on headers, paths, and query parameters
 * Apply CORS, redirects, header rewrites, request mirroring
 * Configure timeouts, retries, and direct responses
 

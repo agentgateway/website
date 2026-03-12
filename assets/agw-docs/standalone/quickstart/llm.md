@@ -126,7 +126,7 @@ Example output (abbreviated):
 Check out more guides related to LLM consumption with agentgateway.
 
 {{< cards >}}
-  {{< card link="../../llm/configuration-modes/" title="Configuration modes" subtitle="Learn about simplified LLM vs traditional HTTP routing configuration." >}}
-  {{< card link="../../llm/spending/" title="Control spending" subtitle="Control spending by setting rate limits for your LLM requests." >}}
-  {{< card link="../../llm/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
+  {{< card path="/llm/spending/" title="Control spending" subtitle="Control spending by setting rate limits for your LLM requests." >}}
+  {{< card path="/llm/observability/" title="LLM observability" subtitle="View metrics, traces, and logs for LLM traffic." >}}
+  {{< card path="/llm/providers/openai/" title="OpenAI provider reference" subtitle="Optional model override, multiple routes, passthrough, and Codex connection." >}}
 {{< /cards >}}

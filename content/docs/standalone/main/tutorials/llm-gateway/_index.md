@@ -451,7 +451,7 @@ curl http://localhost:4000/v1/chat/completions \
 ## Next steps
 
 {{< cards >}}
-  {{< card link="../../llm/configuration-modes/" title="Routing-based configuration" subtitle="Use traditional HTTP routing for advanced use cases" >}}
-  {{< card link="../../llm/spending/" title="Cost Tracking" subtitle="Monitor LLM spending" >}}
-  {{< card link="../../configuration/resiliency/rate-limits/" title="Rate Limiting" subtitle="Configure rate limits" >}}
+  {{< card path="/llm/" title="LLM Overview" subtitle="Understanding LLM gateway features" >}}
+  {{< card path="/llm/spending" title="Cost Tracking" subtitle="Monitor LLM spending" >}}
+  {{< card path="/configuration/resiliency/rate-limits" title="Rate Limiting" subtitle="Configure rate limits" >}}
 {{< /cards >}}

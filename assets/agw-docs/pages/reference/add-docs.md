@@ -148,13 +148,13 @@ Use the cards shortcode to display a card in the documentation that links to a s
 Example card: 
 
 {{< cards >}}
-{{< card link="../../../quickstart" title="Get started" >}}
+{{< card path="/quickstart" title="Get started" >}}
 {{< /cards >}}
 
 Shortcode syntax
 ```markdown
 {{</* cards */>}}
-{{</* card link="../../../quickstart" title="Get started" */>}}
+{{</* card path="/quickstart" title="Get started" */>}}
 {{</* /cards */>}}
 ```
 
