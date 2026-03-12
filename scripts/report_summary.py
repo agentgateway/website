@@ -37,6 +37,12 @@ def _format_checks(checks: list) -> str:
     return f"{n} check{'s' if n != 1 else ''} passed"
 
 
+def _format_checks_count(n: int) -> str:
+    if n == 0:
+        return "\u2014"
+    return f"{n} check{'s' if n != 1 else ''} passed"
+
+
 def generate_summary(report: dict) -> str:
     lines: list[str] = []
 
@@ -49,8 +55,9 @@ def generate_summary(report: dict) -> str:
         lines.append("No test results found.")
         return "\n".join(lines)
 
-    total = len(tests)
-    passed = sum(1 for t in tests.values() if t.get("status") == "passed")
+    doc_groups = _group_by_document(tests)
+    total = len(doc_groups)
+    passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
     failed = total - passed
 
     # Header
@@ -60,26 +67,23 @@ def generate_summary(report: dict) -> str:
         lines.append(f"## \u274c Doc Test Results \u2014 {passed} passed | {failed} failed | {total} total")
     lines.append("")
 
-    # Results table
+    # Results table — one row per document
     lines.append("| Status | Test | Document | Checks |")
     lines.append("|:------:|------|----------|--------|")
 
     failed_tests: list[tuple[str, dict]] = []
 
-    for key, result in tests.items():
-        # key format: "content/docs/.../file.md::test-name"
-        parts = key.split("::", 1)
-        doc = parts[0] if len(parts) > 0 else key
-        test_name = parts[1] if len(parts) > 1 else key
-
-        status = result.get("status", "unknown")
+    for doc, group in doc_groups.items():
+        status = group["status"]
         icon = _status_icon(status)
-        checks = result.get("checks", [])
-        checks_str = _escape_md_table(_format_checks(checks))
+        test_label = _escape_md_table(_format_test_names(group["tests"]))
+        check_count = group["check_count"]
+        checks_str = _format_checks_count(check_count)
 
-        lines.append(f"| {icon} | `{_escape_md_table(test_name)}` | `{_escape_md_table(doc)}` | {checks_str} |")
+        lines.append(f"| {icon} | `{test_label}` | `{_escape_md_table(doc)}` | {checks_str} |")
 
-        if status != "passed" and result.get("error"):
+    for key, result in tests.items():
+        if result.get("status") != "passed" and result.get("error"):
             failed_tests.append((key, result))
 
     # Failed test details
@@ -135,6 +139,37 @@ def _truncate_tail(text: str, limit: int = _SLACK_TEXT_LIMIT // 2, prefix: str =
     return prefix + text[-(limit - len(prefix)):]
 
 
+def _group_by_document(tests: dict) -> dict:
+    """Collapse per-test results into per-document groups.
+
+    Returns an ordered dict keyed by doc path, each value being a dict with:
+      - status: "passed" if all tests passed, else "failed"
+      - tests: list of test names in order
+      - check_count: total number of checks across all tests
+    """
+    groups: dict = {}
+    for key, result in tests.items():
+        parts = key.split("::", 1)
+        doc = parts[0] if len(parts) > 0 else key
+        test_name = parts[1] if len(parts) > 1 else key
+        if doc not in groups:
+            groups[doc] = {"status": "passed", "tests": [], "check_count": 0}
+        groups[doc]["tests"].append(test_name)
+        groups[doc]["check_count"] += len(result.get("checks", []))
+        if result.get("status") != "passed":
+            groups[doc]["status"] = "failed"
+    return groups
+
+
+def _format_test_names(tests: list) -> str:
+    """Format a list of test names as 'first' or 'first + N more'."""
+    if not tests:
+        return ""
+    if len(tests) == 1:
+        return tests[0]
+    return f"{tests[0]} + {len(tests) - 1} more"
+
+
 def _extract_version(doc_path: str) -> str:
     """Extract the version segment from a doc path.
 
@@ -180,8 +215,9 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
             blocks.append(_run_url_block(run_url))
         return {"text": fallback, "blocks": blocks}, None
 
-    total = len(tests)
-    passed = sum(1 for t in tests.values() if t.get("status") == "passed")
+    doc_groups = _group_by_document(tests)
+    total = len(doc_groups)
+    passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
     failed = total - passed
 
     # --- header ---
@@ -195,23 +231,20 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
         {"type": "header", "text": {"type": "plain_text", "text": header_text[:150]}},
     ]
 
-    # --- results list ---
+    # --- results list — one line per document ---
     result_lines: list[str] = []
     failed_tests: list[tuple[str, dict]] = []
 
-    for key, result in tests.items():
-        parts = key.split("::", 1)
-        doc = parts[0] if len(parts) > 0 else key
-        test_name = parts[1] if len(parts) > 1 else key
-
-        status = result.get("status", "unknown")
+    for doc, group in doc_groups.items():
+        status = group["status"]
         icon = _status_icon(status)
-        checks = result.get("checks", [])
-        checks_str = _format_checks(checks)
+        test_label = _format_test_names(group["tests"])
+        checks_str = _format_checks_count(group["check_count"])
 
-        result_lines.append(f"{icon}  `{test_name}` \u2014 {checks_str}  (_`{doc}`_)")
+        result_lines.append(f"{icon}  `{test_label}` \u2014 {checks_str}  (_`{doc}`_)")
 
-        if status != "passed" and result.get("error"):
+    for key, result in tests.items():
+        if result.get("status") != "passed" and result.get("error"):
             failed_tests.append((key, result))
 
     results_text = _truncate("\n".join(result_lines))
