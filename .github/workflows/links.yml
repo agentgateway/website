@@ -60,10 +60,15 @@ jobs:
             --remap "/docs/agent/" "/docs/standalone/latest/agent/" \
             --remap "/docs/configuration/" "/docs/standalone/latest/configuration/" \
             --remap "/docs/deployment/" "/docs/standalone/latest/deployment/" \
+            --remap "/docs/faqs/" "/docs/standalone/latest/faqs/" \
+            --remap "/docs/inference/" "/docs/standalone/latest/inference/" \
             --remap "/docs/integrations/" "/docs/standalone/latest/integrations/" \
             --remap "/docs/llm/" "/docs/standalone/latest/llm/" \
             --remap "/docs/mcp/" "/docs/standalone/latest/mcp/" \
+            --remap "/docs/operations/" "/docs/standalone/latest/operations/" \
             --remap "/docs/quickstart/" "/docs/standalone/latest/quickstart/" \
+            --remap "/docs/reference/" "/docs/standalone/latest/reference/" \
+            --remap "/docs/tutorials/" "/docs/standalone/latest/tutorials/" \
             --format json \
             --user-agent curl/8.4.0 \
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
