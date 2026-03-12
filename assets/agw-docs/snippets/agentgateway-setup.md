@@ -62,3 +62,37 @@
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+{{< doc-test paths="all" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-proxy deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: wait for agentgateway-proxy service LB address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    targetEnv: INGRESS_GW_ADDRESS
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
