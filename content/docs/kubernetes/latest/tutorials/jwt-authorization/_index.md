@@ -267,7 +267,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/latest/security/jwt/" title="JWT Reference" subtitle="Complete JWT configuration options" >}}
-  {{< card link="/docs/kubernetes/latest/mcp/tool-access" title="Tool Access Control" subtitle="Control MCP tool access with JWT claims" >}}
-  {{< card link="/docs/kubernetes/latest/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive data in LLM requests" >}}
+  {{< card path="/security/jwt/" title="JWT Reference" subtitle="Complete JWT configuration options" >}}
+  {{< card path="/mcp/tool-access" title="Tool Access Control" subtitle="Control MCP tool access with JWT claims" >}}
+  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive data in LLM requests" >}}
 {{< /cards >}}

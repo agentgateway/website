@@ -388,7 +388,7 @@ cd .. && rm -rf http-routing-test
 ## Learn more
 
 {{< cards >}}
-  {{< card link="/docs/configuration/routes" title="Routes Configuration" subtitle="Complete routing options" >}}
-  {{< card link="/docs/configuration/resiliency/" title="Resiliency" subtitle="Rate limits, retries, and timeouts" >}}
-  {{< card link="/docs/configuration/traffic-management/" title="Traffic Management" subtitle="Headers, rewrites, and mirroring" >}}
+  {{< card path="/configuration/routes" title="Routes Configuration" subtitle="Complete routing options" >}}
+  {{< card path="/configuration/resiliency/" title="Resiliency" subtitle="Rate limits, retries, and timeouts" >}}
+  {{< card path="/configuration/traffic-management/" title="Traffic Management" subtitle="Headers, rewrites, and mirroring" >}}
 {{< /cards >}}

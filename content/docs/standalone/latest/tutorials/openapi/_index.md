@@ -349,6 +349,6 @@ targets:
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/mcp/connect/openapi" title="OpenAPI Transform" subtitle="Advanced OpenAPI options" >}}
-  {{< card link="/docs/mcp/" title="MCP Overview" subtitle="Understanding MCP connectivity" >}}
+  {{< card path="/mcp/connect/openapi" title="OpenAPI Transform" subtitle="Advanced OpenAPI options" >}}
+  {{< card path="/mcp/" title="MCP Overview" subtitle="Understanding MCP connectivity" >}}
 {{< /cards >}}
