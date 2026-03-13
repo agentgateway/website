@@ -8,7 +8,7 @@ To run agentgateway as a standalone binary, follow the steps to download, instal
 
 Download and install the agentgateway binary. Alternatively, you can manually download the binary from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases/latest).
 
-{{< tabs >}}
+{{< tabs tabTotal="2" items="Latest, Specific version" >}}
 {{% tab tabName="Latest" %}}
 
 To install the latest release:

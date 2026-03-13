@@ -11,6 +11,7 @@ Gain insight into the health and performance of your gateway environment. Get pr
 ## Guides
 
 {{< cards >}}
+  {{< card link="ui" title="Admin UI" >}}
   {{< card link="otel-stack" title="Set up the OpenTelemetry stack" >}}
   {{< card link="control-plane-metrics" title="Review control plane metrics" >}}
   {{< card link="nacks" title="Monitoring agentgateway proxies for NACKs" >}}
