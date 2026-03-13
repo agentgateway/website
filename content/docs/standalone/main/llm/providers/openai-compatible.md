@@ -70,6 +70,14 @@ llm:
 Groq uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
 {{< /callout >}}
 
+## Fireworks AI
+
+Fireworks AI provides access to open-source models via OpenAI-compatible endpoints.
+
+{{< callout type="info" >}}
+Fireworks AI uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
+{{< /callout >}}
+
 ## Generic configuration
 
 For any OpenAI-compatible provider that uses standard paths (`/v1/chat/completions`), use this template:
@@ -151,8 +159,6 @@ binds:
 ```
 
 ### Fireworks AI with URL rewriting
-
-Fireworks AI provides access to open-source models via OpenAI-compatible endpoints.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
