@@ -6,7 +6,6 @@ weight: 11
 Attach to:
 {{< badge content="Route" path="/configuration/routes/">}}
 
-
 ## About CSRF protection
 
 According to [OWASP](https://owasp.org/www-community/attacks/csrf), CSRF is defined as follows:

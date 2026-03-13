@@ -4,7 +4,7 @@ weight: 70
 icon: import_contacts
 ---
 
-Control traffic with external processing, request matching, transformations, and traffic splitting.
+Control traffic with external processing, request matching, redirects, transformations, and traffic splitting.
 
 {{< cards >}}
   {{< card link="direct-response" title="Direct response" >}}

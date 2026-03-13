@@ -3,14 +3,14 @@ title: Budget and spend limits
 weight: 35
 description: Control LLM spending by enforcing token budget limits per API key or user.
 test:
-  budget-limits:
+  budget-limits-apikey-auth:
   - file: content/docs/kubernetes/latest/install/helm.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/llm/providers/httpbun.md
-    path: setup-httpbun-llm
-  - file: content/docs/kubernetes/latest/llm/budget-limits.md
+  - file: content/docs/kubernetes/main/llm/providers/openai.md
+    path: openai-setup
+  - file: content/docs/kubernetes/main/llm/budget-limits.md
     path: budget-limits
 ---
 

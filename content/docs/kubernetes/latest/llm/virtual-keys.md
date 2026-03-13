@@ -3,14 +3,14 @@ title: Virtual key management
 weight: 32
 description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
 test:
-  virtual-keys:
+  virtual-keys-auth:
   - file: content/docs/kubernetes/latest/install/helm.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/llm/providers/httpbun.md
-    path: setup-httpbun-llm
-  - file: content/docs/kubernetes/latest/llm/virtual-keys.md
+  - file: content/docs/kubernetes/main/llm/providers/openai.md
+    path: openai-setup
+  - file: content/docs/kubernetes/main/llm/virtual-keys.md
     path: virtual-keys
 ---
 

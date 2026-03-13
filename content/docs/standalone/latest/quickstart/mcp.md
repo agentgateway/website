@@ -4,7 +4,7 @@ weight: 12
 description: Connect to an MCP server and try tools in the agentgateway playground.
 test:
   mcp-playground:
-  - file: content/docs/standalone/latest/quickstart/mcp.md
+  - file: content/docs/standalone/main/quickstart/mcp.md
     path: mcp
 ---
 

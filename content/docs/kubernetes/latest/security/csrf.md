@@ -4,13 +4,13 @@ weight: 10
 description: Protect your applications from Cross-Site Request Forgery (CSRF) attacks.
 test:
   csrf:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
-    path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/security/csrf.md
+  - file: content/docs/kubernetes/main/security/csrf.md
     path: csrf
 ---
 

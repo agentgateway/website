@@ -45,10 +45,10 @@ kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/re
 # agentgateway CRDs
 helm upgrade -i --create-namespace \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}}
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
 
 # Control plane
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -252,5 +252,5 @@ kind delete cluster --name agentgateway
 {{< cards >}}
   {{< card path="/llm/prompt-guards" title="Prompt Guards Reference" subtitle="Complete prompt guard configuration" >}}
   {{< card path="/tutorials/telemetry" title="Telemetry" subtitle="Add observability to your deployment" >}}
-  {{< card path="/llm" title="LLM Overview" subtitle="All LLM gateway features" >}}
+  {{< card path="/llm/" title="LLM Overview" subtitle="All LLM gateway features" >}}
 {{< /cards >}}

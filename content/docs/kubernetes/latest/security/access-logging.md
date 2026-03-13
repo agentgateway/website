@@ -6,11 +6,11 @@ test:
   access-logging:
   - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/security/access-logging.md
+  - file: content/docs/kubernetes/main/security/access-logging.md
     path: access-logging
 ---
 
