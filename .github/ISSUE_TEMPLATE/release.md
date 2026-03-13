@@ -13,9 +13,8 @@ assignees: ''
 ## Pre-release
 
 - [ ] Confirm that the upgrade and release note pages are updated. Typically, this is a separate issue.
-- [ ] In `content/docs`, create the new `main` by making a copy of the current main directory. Rename the directories appropriately. For example, the old main is copied to a new `main`, the old main becomes `latest`, and the old latest becomes a `2.x.x` version.
+- [ ] In `content/docs`, create the new `main` by making a copy of the current main directory. Rename the directories appropriately. For example, the old main is copied to a new `main`, the old main becomes `latest`, and the old latest version gets deleted (agentgateway only maintains `n` latest and `n+1` main in development).
 - [ ] In the `hugo.yaml` file, update the `versions` to include the new minor version as main, the previous main as latest, and the previous latest as its version.
-- [ ] Retire any version older than `n-3` (remove the directory and version from the `hugo.yaml` file)
 - [ ] Update the version conrefs in the `assets/docs/versions` directory. Often, there is not a release for the next version, so you might have to use the same for latest and main.
 - [ ] Add the release date to the version table in `assets/docs/pages/reference/versions.md`, and remove any retired versions.
 - [ ] Update the version shortcodes to include the newest version. For example, if 2.2.x is the latest release, search for `version include-if="2.1.x"` to add `version include-if="2.2.x,2.1.x"`. Keep in mind that the include-if might start with different versions, like `include-if="2.0.x,2.1.x,2.2.x"` so do a few searches.
