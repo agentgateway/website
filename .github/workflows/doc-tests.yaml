@@ -61,6 +61,7 @@ jobs:
           FILES=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
             --paginate --jq '.[].filename' | grep '^content/.*\.md$' | tr '\n' ' ' || true)
           echo "files=${FILES}" >> $GITHUB_OUTPUT
+          echo "files=${FILES}"
 
       - name: Run doc tests
         run: |
