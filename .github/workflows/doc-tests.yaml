@@ -55,8 +55,11 @@ jobs:
       - name: Get changed markdown files
         id: changed-files
         if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          FILES=$(git diff --name-only HEAD^1...HEAD | grep '^content/.*\.md$' | tr '\n' ' ' || true)
+          FILES=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
+            --paginate --jq '.[].filename' | grep '^content/.*\.md$' | tr '\n' ' ' || true)
           echo "files=${FILES}" >> $GITHUB_OUTPUT
 
       - name: Run doc tests
