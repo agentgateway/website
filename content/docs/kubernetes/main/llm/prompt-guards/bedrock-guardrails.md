@@ -4,61 +4,162 @@ weight: 20
 description: Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content.
 ---
 
-[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you define content policies in the AWS console and apply them to LLM traffic passing through agentgateway. When a request or response violates a guardrail policy, agentgateway blocks the interaction and returns an error.
+[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) provide content filtering, PII detection, topic restrictions, and word filters. You must create the guardrail policies in the AWS console and then apply them to LLM route that you want to protect. When a request or response violates a guardrail policy, the agentgateway proxy blocks the interaction and returns an error.
 
 ## Before you begin
 
-1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
+
+## Set up AWS Bedrock guardrails
+
+1. Authenticate with AWS Bedrock by using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html). Make sure that you have permission to invoke the Bedrock Guardrails API.
 2. Create a guardrail in the [AWS console](https://console.aws.amazon.com/bedrock/home#/guardrails) or via the AWS CLI.
-3. Retrieve your guardrail identifier by running: `aws bedrock list-guardrails --region <aws-region>`
-4. Authenticate with AWS Bedrock using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html). Make sure that you have permission to invoke the Bedrock Guardrails API.
+3. Retrieve your guardrail identifier and version. For more information, see the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html).
+   ```sh
+   aws bedrock list-guardrails --region <aws-region>
+   ```
 
-## Configure Bedrock Guardrails
+   Example output: 
+   ```console
+   {
+    "guardrails": [
+        {
+            "id": "a1aaaa11aa1a",
+            "arn": "arn:aws:bedrock:us-west-2:11111111111:guardrail/a1aaaa11aa1a",
+            "status": "READY",
+            "name": "my-guardrail",
+            "description": "Testing agentgateway bedrock guardrail integration ",
+            "version": "DRAFT",
+            "createdAt": "2026-02-09T17:59:29+00:00",
+            "updatedAt": "2026-02-09T18:01:29.567223+00:00"
+        }
+    ]
+   }
+   ```
 
-Configure the `promptGuard` policy under `policies.ai` in your agentgateway configuration. You can apply guardrails to the `request` phase, the `response` phase, or both.
+4. Create a Kubernetes secret that 
+   ```sh
+   kubectl create secret generic aws-secret \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --from-literal=accessKey="$AWS_ACCESS_KEY_ID" \
+     --from-literal=secretKey="$AWS_SECRET_ACCESS_KEY" \
+     --from-literal=sessionToken="$AWS_SESSION_TOKEN" \
+     --type=Opaque \
+     --dry-run=client -o yaml | kubectl apply -f -
+   ```
 
-```yaml
-cat <<EOF > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-       - ai:
-          name: bedrock
-          provider:
-            openAI:
-              model: amazon.titan-text-express-v1
-      policies:
-        backendAuth:
-          key: "$BEDROCK_API_KEY"
-        ai:
-          promptGuard:
-            request:
-            - bedrockGuardrails:
-                guardrailIdentifier: <your-guardrail-id>
-                guardrailVersion: DRAFT
-                region: us-west-2
-                policies:
-                  backendAuth:
-                    aws: {}
-            response:
-            - bedrockGuardrails:
-                guardrailIdentifier: <your-guardrail-id>
-                guardrailVersion: DRAFT
-                region: us-west-2
-                policies:
-                  backendAuth:
-                    aws: {}
-EOF
+5. Configure the prompt guard. Add the ID, version, and region of your guardrail. 
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: openai-prompt-guard
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     backend:
+       ai:
+         promptGuard:
+           request:
+           - bedrockGuardrails:
+               identifier: pwetj8qk6knv
+               version: "DRAFT" 
+               region: us-east-1
+               policies:
+                 auth:
+                   aws: 
+                     secretRef:
+                       name: aws-secret
+           response:
+           - bedrockGuardrails:
+               identifier: pwetj8qk6knv
+               version: "DRAFT" 
+               region: us-east-1
+               policies:
+                 auth:
+                   aws: 
+                     secretRef:
+                       name: aws-secret
+   EOF
+   ```
+
+   {{< callout type="info" >}}
+   The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
+   {{< /callout >}}
+
+
+5. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 
+   {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
+   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+    "model": "",
+    "messages": [
+      {
+        "role": "user",
+        "content": "My email is test@solo.io"
+      }
+    ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+    "model": "",
+    "messages": [
+      {
+        "role": "user",
+        "content": "My email is test@solo.io"
+      }
+    ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
+    "model": "",
+    "messages": [
+      {
+        "role": "user",
+        "content": "My email is test@solo.io"
+      }
+    ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/openai" -H content-type:application/json  -d '{
+    "model": "",
+    "messages": [
+      {
+        "role": "user",
+        "content": "My email is test@solo.io"
+      }
+    ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+   
+   Example output: 
+   ```console
+   The request was rejected due to inappropriate content
+   ```
+
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} openai-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```
-
-| Setting | Description |
-| -- | -- |
-| `guardrailIdentifier` | The identifier of the Bedrock guardrail to apply. Retrieve this by running `aws bedrock list-guardrails`. |
-| `guardrailVersion` | The version of the guardrail. Use `DRAFT` for development or a specific version number for production. |
-| `region` | The AWS region where the guardrail is configured, such as `us-west-2`. |
-| `policies.backendAuth.aws` | AWS authentication configuration. Agentgateway uses the credentials available in the environment, such as environment variables or an instance profile. |
-
-When a request or response matches a guardrail policy, agentgateway blocks the interaction and returns an error such as: `The request was rejected due to inappropriate content`.
+    

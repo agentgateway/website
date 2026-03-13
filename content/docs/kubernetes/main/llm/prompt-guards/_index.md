@@ -8,12 +8,24 @@ Guardrails are security policies that inspect LLM requests and responses to dete
 
 Agentgateway supports the following prompt guard options:
 
-- **Regex filters**: Use custom regex patterns or built-in PII detectors to reject requests or mask responses that contain sensitive data such as SSNs, email addresses, or credentials.
-- **AWS Bedrock Guardrails**: Use [AWS-managed guardrail policies](https://aws.amazon.com/bedrock/guardrails/) to filter content based on topics, words, PII, and other safety criteria.
-- **Google Model Armor**: Use [Google Cloud's Model Armor service](https://docs.cloud.google.com/model-armor/overview) to sanitize user prompts and model responses against configurable safety templates.
+- **Regex-based filters**: Fast, deterministic matching for known patterns like credit cards, SSNs, emails, and custom patterns
+- **External moderation**: Leverage built-in model moderation endpoints and cloud provider-specific guardrails for advanced content filtering
+- **Custom webhooks**: Integrate your own guardrail logic for specialized requirements
+
+
+Check out the following guides to build your guardrail system. 
 
 {{< cards >}}
-  {{< card link="regex" title="Regex filters" >}}
-  {{< card link="bedrock-guardrails" title="AWS Bedrock Guardrails" >}}
-  {{< card link="google-model-armor" title="Google Model Armor" >}}
+  {{< card link="../regex" title="Regex filters" description="Use custom regex patterns and built-in PII detectors to filter LLM requests and responses." >}}
+  {{< card link="../moderation" title="OpenAI moderation" description="Use the OpenAI Moderation API to detect harmful content across categories including hate, harassment, and violence." >}}
+  {{< card link="../bedrock-guardrails" title="AWS Bedrock Guardrails" description="Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content." >}}
+  {{< card link="../google-model-armor" title="Google Model Armor" description="Apply Google Cloud Model Armor templates to sanitize LLM requests and responses." >}}
+  {{< card link="../webhooks" title="Custom webhooks" description="Integrate your own content safety logic by forwarding requests and responses to a custom webhook." >}}
+  {{< card link="../multi-layer" title="Multi-layered guardrails" description="Run prompt guards in sequence, creating defense-in-depth protection." >}}
+{{< /cards >}}
+
+To track guardrails and content safety, see the following guide. 
+
+{{< cards >}}
+  {{< card link="../../observability" title="Observe LLM traffic" description="Track content safety metrics and blocked requests." >}}
 {{< /cards >}}

@@ -13,7 +13,10 @@ Agentgateway supports the following prompt guard options:
 - **Google Model Armor**: Use [Google Cloud's Model Armor service](https://docs.cloud.google.com/model-armor/overview) to sanitize user prompts and model responses against configurable safety templates.
 
 {{< cards >}}
+  {{< card link="overview" title="About guardrails" >}}
   {{< card link="regex" title="Regex filters" >}}
+  {{< card link="moderation" title="OpenAI moderation" >}}
   {{< card link="bedrock-guardrails" title="AWS Bedrock Guardrails" >}}
   {{< card link="google-model-armor" title="Google Model Armor" >}}
+  {{< card link="webhooks" title="Custom webhooks" >}}
 {{< /cards >}}

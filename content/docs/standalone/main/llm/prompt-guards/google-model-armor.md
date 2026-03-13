@@ -9,9 +9,16 @@ description: Apply Google Cloud Model Armor templates to sanitize LLM requests a
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Create a Model Armor template in the [Google Cloud console](https://console.cloud.google.com/security/model-armor).
-3. Note the template ID, project ID, and the region where the template is deployed.
-4. Ensure your agentgateway has GCP credentials configured with permission to call the Model Armor API.
+2. Log in to Google Cloud console with Application Default Credentials.
+   ```sh
+   gcloud auth application-default login
+   ```
+
+3. Create a Model Armor template in the [Google Cloud console](https://console.cloud.google.com/security/model-armor). For more information, see the [Google Cloud documentation](https://docs.cloud.google.com/model-armor/overview). 
+4. Note the template ID, project ID, and the region where the template is deployed. Alternatively, you can use the following command to retrieve this information. 
+   ```sh
+   gcloud model-armor templates list --location=<location>
+   ```
 
 ## Configure Google Model Armor
 
@@ -39,7 +46,7 @@ binds:
             - googleModelArmor:
                 templateId: <your-template-id>
                 projectId: <your-project-id>
-                location: us-central1
+                location: <location>
                 policies:
                   backendAuth:
                     gcp: {}
@@ -47,7 +54,7 @@ binds:
             - googleModelArmor:
                 templateId: <your-template-id>
                 projectId: <your-project-id>
-                location: us-central1
+                location: <location>
                 policies:
                   backendAuth:
                     gcp: {}
@@ -61,4 +68,19 @@ EOF
 | `location` | The region where the Model Armor template is deployed. Defaults to `us-central1`. |
 | `policies.backendAuth.gcp` | GCP authentication configuration. Agentgateway uses the credentials available in the environment, such as Application Default Credentials. |
 
-When a request or response matches a Model Armor policy, agentgateway blocks the interaction and returns an error to the caller.
+## Test the guardrail
+
+```sh
+curl "localhost:3000/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
+  "model": "",
+  "messages": [
+   {"role": "user", "content": "I want to harm myself"}
+ ]
+}'
+```
+
+Example output: 
+```console
+The request was rejected due to inappropriate content%  
+```
+
