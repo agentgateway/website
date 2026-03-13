@@ -89,7 +89,7 @@ test:
 
 - Use the **content** path for `file`. List sources in dependency order if chaining (install → … → feature).
 - One scenario can list only the current page with one path if the guide is self-contained.
-- For Kubernetes docs, prerequisite files often come from `latest` (e.g. `content/docs/kubernetes/latest/install/helm.md`) while the feature page may be in `main` or `latest`.
+- For Kubernetes docs, prerequisite files often come from `latest` (e.g. `content/docs/kubernetes/latest/quickstart/install.md`) while the feature page may be in `main` or `latest`.
 
 ### 7. Optional: YAMLTest assertions
 
