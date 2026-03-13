@@ -2,6 +2,9 @@
 # Version configuration is read directly from hugo.yaml (params.sections.standalone.versions).
 # Released versions resolve the latest matching tag dynamically via tagPrefix derived from the
 # version string (e.g. 1.0.x -> v1.0.*). The "main" linkVersion uses the main branch directly.
+#
+# workflow_dispatch inputs:
+#   doc_version: a specific version (e.g. 1.0.x), or "all" to run for every version in hugo.yaml
 name: Generate API reference docs for agentgateway
 
 on:
@@ -10,7 +13,7 @@ on:
   workflow_dispatch:
     inputs:
       doc_version:
-        description: 'Doc version to generate (must match a version in hugo.yaml), e.g. 1.0.x'
+        description: 'Doc version to generate (must match a version in hugo.yaml), e.g. 1.0.x, or "all"'
         required: true
         default: '1.0.x'
 
@@ -19,9 +22,7 @@ jobs:
     name: Setup and validate
     runs-on: ubuntu-22.04
     outputs:
-      ref: ${{ steps.resolve_ref.outputs.ref }}
-      link_version: ${{ steps.version_variables.outputs.link_version }}
-      doc_version: ${{ steps.version_variables.outputs.doc_version }}
+      matrix: ${{ steps.build_matrix.outputs.matrix }}
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v4
@@ -29,70 +30,86 @@ jobs:
           path: website
           fetch-depth: 1
 
-      - name: Resolve version from hugo.yaml
-        id: version_variables
-        run: |
-          if [[ "${{ github.event_name }}" == "release" ]]; then
-            doc_version="1.0.x"
-          else
-            doc_version="${{ inputs.doc_version }}"
-          fi
-          echo "doc_version=${doc_version}" >> $GITHUB_OUTPUT
-
-          link_version=$(python3 -c "
-          import yaml, sys
-          with open('website/hugo.yaml') as f:
-              cfg = yaml.safe_load(f)
-          versions = cfg['params']['sections']['standalone']['versions']
-          entry = next((v for v in versions if v['version'] == sys.argv[1]), None)
-          if not entry:
-              valid = [v['version'] for v in versions]
-              print(f'Error: version {sys.argv[1]} not found in hugo.yaml. Valid versions: {valid}', file=sys.stderr)
-              sys.exit(1)
-          print(entry['linkVersion'])
-          " "$doc_version")
-
-          if [[ -z "$link_version" ]]; then
-            echo "Error: failed to resolve linkVersion from hugo.yaml"
-            exit 1
-          fi
-
-          echo "link_version=${link_version}" >> $GITHUB_OUTPUT
-          echo "Using ${doc_version}: linkVersion=${link_version}, apiFile=api-${link_version}.md"
-
-      - name: Resolve and verify agentgateway ref
-        id: resolve_ref
+      - name: Build version matrix
+        id: build_matrix
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          LINK_VERSION="${{ steps.version_variables.outputs.link_version }}"
-          DOC_VERSION="${{ steps.version_variables.outputs.doc_version }}"
-
-          if [[ "$LINK_VERSION" == "main" ]]; then
-            echo "Using branch: main"
-            if ! git ls-remote --heads https://github.com/agentgateway/agentgateway.git refs/heads/main | grep -q main; then
-              echo "Error: main branch not found in agentgateway/agentgateway"
-              exit 1
-            fi
-            echo "ref=main" >> $GITHUB_OUTPUT
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            input_version="1.0.x"
           else
-            # Derive tag prefix from version string: "1.0.x" -> "v1.0."
-            TAG_PREFIX=$(echo "$DOC_VERSION" | sed 's/\.[^.]*$/\./' | sed 's/^/v/')
-            echo "Resolving latest tag with prefix ${TAG_PREFIX}..."
-            LATEST=$(gh api repos/agentgateway/agentgateway/tags --paginate \
-              --jq '.[].name' | grep "^${TAG_PREFIX}" | sort -V | tail -1)
-            if [[ -z "$LATEST" ]]; then
-              echo "Error: no tags found matching prefix ${TAG_PREFIX} in agentgateway/agentgateway"
-              exit 1
-            fi
-            echo "Resolved to tag: ${LATEST}"
-            echo "ref=${LATEST}" >> $GITHUB_OUTPUT
+            input_version="${{ inputs.doc_version }}"
           fi
 
+          # Read all versions from hugo.yaml
+          all_versions=$(python3 -c "
+          import yaml, json, sys
+          with open('website/hugo.yaml') as f:
+              cfg = yaml.safe_load(f)
+          versions = cfg['params']['sections']['standalone']['versions']
+          print(json.dumps(versions))
+          ")
+
+          # Determine which versions to process
+          if [[ "$input_version" == "all" ]]; then
+            target_versions="$all_versions"
+          else
+            target_versions=$(python3 -c "
+          import json, sys
+          versions = json.loads(sys.argv[1])
+          entry = next((v for v in versions if v['version'] == sys.argv[2]), None)
+          if not entry:
+              valid = [v['version'] for v in versions]
+              print(f'Error: version {sys.argv[2]} not found in hugo.yaml. Valid versions: {valid}', file=sys.stderr)
+              sys.exit(1)
+          print(json.dumps([entry]))
+            " "$all_versions" "$input_version")
+          fi
+
+          # Resolve the git ref for each version and build the matrix
+          matrix_items='[]'
+          while IFS= read -r entry; do
+            doc_version=$(echo "$entry" | jq -r '.version')
+            link_version=$(echo "$entry" | jq -r '.linkVersion')
+
+            if [[ "$link_version" == "main" ]]; then
+              echo "Checking branch: main"
+              if ! git ls-remote --heads https://github.com/agentgateway/agentgateway.git refs/heads/main | grep -q main; then
+                echo "Error: main branch not found in agentgateway/agentgateway"
+                exit 1
+              fi
+              ref="main"
+            else
+              TAG_PREFIX=$(echo "$doc_version" | sed 's/\.[^.]*$/\./' | sed 's/^/v/')
+              echo "Resolving latest tag with prefix ${TAG_PREFIX}..."
+              ref=$(gh api repos/agentgateway/agentgateway/tags --paginate \
+                --jq '.[].name' | grep "^${TAG_PREFIX}" | sort -V | tail -1)
+              if [[ -z "$ref" ]]; then
+                echo "Error: no tags found matching prefix ${TAG_PREFIX} in agentgateway/agentgateway"
+                exit 1
+              fi
+              echo "Resolved ${doc_version} (${link_version}) -> ${ref}"
+            fi
+
+            item=$(jq -n \
+              --arg dv "$doc_version" \
+              --arg lv "$link_version" \
+              --arg r "$ref" \
+              '{doc_version: $dv, link_version: $lv, ref: $r}')
+            matrix_items=$(echo "$matrix_items" | jq --argjson item "$item" '. + [$item]')
+          done < <(echo "$target_versions" | jq -c '.[]')
+
+          matrix=$(echo "$matrix_items" | jq -c '{include: .}')
+          echo "matrix=${matrix}" >> $GITHUB_OUTPUT
+          echo "Matrix: $matrix"
+
   api-docs:
-    name: Generate API docs
+    name: Generate API docs (${{ matrix.link_version }})
     runs-on: ubuntu-22.04
     needs: setup
+    strategy:
+      matrix: ${{ fromJson(needs.setup.outputs.matrix) }}
+      fail-fast: false
     env:
       GOTOOLCHAIN: auto
     steps:
@@ -115,13 +132,13 @@ jobs:
           repository: agentgateway/agentgateway
           token: ${{ secrets.GITHUB_TOKEN }}
           path: agentgateway
-          ref: ${{ needs.setup.outputs.ref }}
+          ref: ${{ matrix.ref }}
 
       - name: Generate agentgateway API docs
         run: |
           pushd website || exit 1
 
-          LINK_VERSION="${{ needs.setup.outputs.link_version }}"
+          LINK_VERSION="${{ matrix.link_version }}"
           API_FILE="api-${LINK_VERSION}.md"
 
           # API types live in agentgateway controller/api/v1alpha1/agentgateway/
@@ -160,7 +177,7 @@ jobs:
 
       - name: Generate shared types documentation
         run: |
-          LINK_VERSION="${{ needs.setup.outputs.link_version }}"
+          LINK_VERSION="${{ matrix.link_version }}"
           TARGET_FILE="website/assets/agw-docs/pages/reference/api/api-${LINK_VERSION}.md"
           SHARED_DIR="agentgateway/controller/api/v1alpha1/shared"
           AGENTGATEWAY_SOURCE_DIR="agentgateway/controller/api/v1alpha1/agentgateway"
@@ -176,7 +193,7 @@ jobs:
 
       - name: Generate Helm and metrics docs
         run: |
-          LINK_VERSION="${{ needs.setup.outputs.link_version }}" \
+          LINK_VERSION="${{ matrix.link_version }}" \
           WEBSITE_DIR="website" \
           KGATEWAY_DIR="agentgateway/controller" \
           python3 website/scripts/generate-ref-docs.py
@@ -190,19 +207,19 @@ jobs:
           path: website
           base: main
           body: |
-            Generate reference documentation for agentgateway (${{ needs.setup.outputs.link_version }}).
+            Generate reference documentation for agentgateway (${{ matrix.link_version }}).
 
-            Source: agentgateway/agentgateway at `${{ needs.setup.outputs.ref }}`.
-            Updates API reference (including shared types such as CEL expression), Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ needs.setup.outputs.link_version }} version.
+            Source: agentgateway/agentgateway at `${{ matrix.ref }}`.
+            Updates API reference (including shared types such as CEL expression), Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ matrix.link_version }} version.
 
             This PR was created automatically by the reference-docs workflow.
 
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
-          branch: ref-docs-${{ needs.setup.outputs.link_version }}
-          commit-message: 'docs: update API (incl. shared types), Helm, and metrics docs from agentgateway ${{ needs.setup.outputs.ref }}'
+          branch: ref-docs-${{ matrix.link_version }}
+          commit-message: 'docs: update API (incl. shared types), Helm, and metrics docs from agentgateway ${{ matrix.ref }}'
           committer: GitHub Action <action@github.com>
           delete-branch: true
-          title: '[Automated] Update reference docs (${{ needs.setup.outputs.link_version }}) from agentgateway ${{ needs.setup.outputs.ref }}'
+          title: '[Automated] Update reference docs (${{ matrix.link_version }}) from agentgateway ${{ matrix.ref }}'
           token: ${{ secrets.CREATE_PR_TOKEN || secrets.GITHUB_TOKEN }}
 
       - name: Output PR URL
