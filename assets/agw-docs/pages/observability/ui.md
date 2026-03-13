@@ -32,8 +32,8 @@ for i in $(seq 1 20); do curl -s http://localhost:15000/ui/ > /dev/null 2>&1 && 
 
    The Admin UI dashboard shows your configured listeners and port binding in **read-only** mode.
 
-   {{< reuse-image src="img/agentgateway-ui-landing.png" >}}
-   {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
+   {{< reuse-image src="img/agentgateway-ui-kube-landing.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-landing-dark.png" >}}
 
 {{< doc-test paths="ui-k8s" >}}
 YAMLTest -f - <<'EOF'
