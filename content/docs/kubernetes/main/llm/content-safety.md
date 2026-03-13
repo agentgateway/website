@@ -4,9 +4,9 @@ weight: 85
 description: Protect LLM requests and responses from sensitive data exposure and harmful content using layered content safety controls (PII detection, DLP).
 test:
   content-safety-regex-masking:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/llm/providers/openai.md
     path: openai-setup

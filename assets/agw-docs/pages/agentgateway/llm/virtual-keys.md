@@ -272,7 +272,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         name: openai
-    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
