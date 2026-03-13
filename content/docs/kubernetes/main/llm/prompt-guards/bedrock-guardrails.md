@@ -6,15 +6,16 @@ description: Apply AWS Bedrock Guardrails to filter LLM requests and responses f
 
 [AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) provide content filtering, PII detection, topic restrictions, and word filters. You must create the guardrail policies in the AWS console and then apply them to LLM route that you want to protect. When a request or response violates a guardrail policy, the agentgateway proxy blocks the interaction and returns an error.
 
+AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Language Model (LLM), whether it is hosted on AWS Bedrock, another cloud provider (like Google or Azure), or on-premises.
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
 ## Set up AWS Bedrock guardrails
 
-1. Authenticate with AWS Bedrock by using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html). Make sure that you have permission to invoke the Bedrock Guardrails API.
-2. Create a guardrail in the [AWS console](https://console.aws.amazon.com/bedrock/home#/guardrails) or via the AWS CLI.
-3. Retrieve your guardrail identifier and version. For more information, see the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html).
+1. Create a guardrail in the [AWS console](https://console.aws.amazon.com/bedrock/home#/guardrails) or via the AWS CLI.
+2. Retrieve your guardrail identifier and version. For more information, see the [AWS documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-components.html).
    ```sh
    aws bedrock list-guardrails --region <aws-region>
    ```
@@ -37,7 +38,7 @@ description: Apply AWS Bedrock Guardrails to filter LLM requests and responses f
    }
    ```
 
-4. Create a Kubernetes secret that 
+3. Create a Kubernetes secret with your AWS credentials. Make sure that you have permission to invoke the Bedrock Guardrails API.
    ```sh
    kubectl create secret generic aws-secret \
      -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
@@ -48,7 +49,7 @@ description: Apply AWS Bedrock Guardrails to filter LLM requests and responses f
      --dry-run=client -o yaml | kubectl apply -f -
    ```
 
-5. Configure the prompt guard. Add the ID, version, and region of your guardrail. 
+4. Configure the prompt guard. Add the ID, version, and region of your guardrail. 
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -161,5 +162,6 @@ description: Apply AWS Bedrock Guardrails to filter LLM requests and responses f
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} openai-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+kubectl delete secret aws-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```
     

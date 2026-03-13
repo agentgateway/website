@@ -8,7 +8,7 @@ Protect LLM requests and responses from sensitive data exposure and harmful cont
 
 ## About
 
-Guardrails (also known as content safety, PII detection, PII sanitization, or data loss prevention) helps you prevent sensitive information from reaching LLM providers and block harmful content in both requests and responses. Agentgateway provides a layered approach to content safety through prompt guards that can reject, mask, or moderate content before it reaches the LLM or returns to users.
+In agentgateway, you can use guardrails to help prevent sensitive information from reaching LLM providers and block harmful content in both requests and responses. Guardrails broadly cover a range of content safety techniques including personally identifiable information (PII) detection, PII sanitization, data loss prevention, prompt guards, and other guardrail features.
 
 You can layer multiple protection mechanisms to create comprehensive guardrail protection:
 - **Regex-based filters**: Fast, deterministic matching for known patterns like credit cards, SSNs, emails, and custom patterns
@@ -17,7 +17,7 @@ You can layer multiple protection mechanisms to create comprehensive guardrail p
 
 ## How guardrails works
 
-Agentgateway processes guardrail checks in the request and response paths. You can configure multiple prompt guards that run in sequence, allowing you to combine different detection methods.
+Agentgateway checks for content safety in the request and response paths. You can configure multiple prompt guards that run in sequence, allowing you to combine different detection methods.
 
 ```mermaid
 sequenceDiagram

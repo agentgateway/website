@@ -6,10 +6,12 @@ description: Apply Google Cloud Model Armor templates to sanitize LLM requests a
 
 [Google Cloud Model Armor](https://cloud.google.com/security/products/model-armor) lets you create safety templates in the Google Cloud console and apply them to LLM traffic. Model Armor sanitizes both user prompts and model responses against your configured policies, blocking content that violates your templates.
 
+Google Cloud Model Armor guardrails are model-agnostic and can be applied to any Large Language Model (LLM), whether it is hosted on AWS Bedrock, another cloud provider (like Google or Azure), or on-premises.
+
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
-Access to Google. 
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. Set up access to the [Gemini LLM provider]({{< link-hextra path="/llm/providers/gemini/" >}}). 
 
 ## Set up the Google Model Armor
 
