@@ -191,21 +191,21 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
        - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /test
-       backendRefs:
-       - name: openai-mini-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         weight: 80
-       - name: openai-premium-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         weight: 20
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /test
+         backendRefs:
+           - name: openai-mini-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+             weight: 80
+           - name: openai-premium-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+             weight: 20
    EOF
    ```
 
