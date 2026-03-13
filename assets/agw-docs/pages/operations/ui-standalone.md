@@ -110,21 +110,3 @@ kill $AGW_CUSTOM_PID 2>/dev/null || true
 {{< callout type="info" >}}
 If you change <code>adminAddr</code>, update any agentgateway admin API commands to use the new address. For example, change <code>curl http://localhost:15000/logging</code> to use the new port.
 {{< /callout >}}
-
-## Troubleshooting
-
-### The UI is not reachable
-
-**What's happening:**
-
-Navigating to `http://localhost:15000/ui/` returns a connection refused error.
-
-**Why it's happening:**
-
-The Admin UI binds to `localhost` only, so it is not accessible from outside the machine. If you changed `adminAddr`, the UI is available at the new address instead.
-
-**How to fix it:**
-
-- Verify agentgateway is running: check for `serving UI at http://localhost:15000/ui` in the startup logs.
-- If you configured a custom `adminAddr`, open the UI at that address instead.
-- To allow remote access, set `adminAddr` to `0.0.0.0:<port>` to bind on all interfaces.

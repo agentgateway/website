@@ -4,7 +4,7 @@ Use the agentgateway Admin UI to inspect your Kubernetes proxy configuration.
 
 The agentgateway Admin UI is a built-in web interface that runs on port 15000 of the `agentgateway-proxy` pod. In Kubernetes mode, the UI is **read-only**. It reflects the configuration pushed by the agentgateway controller. Make configuration changes by updating your Kubernetes resources such as via GitOps, not through the UI.
 
-The Admin UI is useful for debugging and verifying what configuration the proxy has received, and for testing MCP tool calls through the built-in Playground.
+The Admin UI is useful for debugging and verifying what configuration the proxy has received, and for testing MCP tool calls through the built-in playground.
 
 ## Access the Admin UI {#access-admin-ui}
 
@@ -52,21 +52,3 @@ EOF
 {{< callout type="info" >}}
 The port-forward connection closes when you stop the <code>kubectl port-forward</code> command. Run it in a dedicated terminal tab or in the background if you need persistent access.
 {{< /callout >}}
-
-## Troubleshooting
-
-### No listeners are shown in the UI
-
-**What's happening:**
-
-The Admin UI loads but shows no listeners or an empty configuration.
-
-**Why it's happening:**
-
-The proxy might not have configuration from the controller yet, or your Gateway and route resources might not be fully reconciled.
-
-**How to fix it:**
-
-- Check that the `agentgateway-proxy` pod is running: `kubectl get pods -n agentgateway-system`.
-- Check the controller logs for reconciliation errors: `kubectl logs -n agentgateway-system -l app=agentgateway-controller`.
-- Verify your `Gateway` and route resources have no validation errors: `kubectl describe gateway -n <namespace>`.
