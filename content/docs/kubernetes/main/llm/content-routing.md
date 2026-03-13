@@ -4,7 +4,7 @@ weight: 36
 description: Route requests to different LLM backends based on request body content, such as the requested model name.
 test:
   content-routing-model:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/latest/quickstart/helm.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all

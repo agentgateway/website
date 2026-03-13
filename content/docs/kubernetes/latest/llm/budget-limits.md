@@ -4,7 +4,7 @@ weight: 35
 description: Control LLM spending by enforcing token budget limits per API key or user.
 test:
   budget-limits:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/latest/quickstart/helm.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
