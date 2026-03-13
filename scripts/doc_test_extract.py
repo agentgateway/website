@@ -480,7 +480,7 @@ class Extractor:
                     continue
                 if block.language not in SHELL_LANGS:
                     continue
-                if selectors and set(block.paths).intersection(selectors):
+                if selectors and ("all" in selectors or "all" in block.paths or set(block.paths).intersection(selectors)):
                     selected.append(block)
         # Emit blocks in source order (prereqs first), then by line within each file,
         # so hidden blocks (e.g. start server in background) appear before dependent blocks.
@@ -501,7 +501,7 @@ class Extractor:
             for test_include in result.test_includes:
                 if self.skip_tabs_without_paths and not test_include.paths:
                     continue
-                if selectors and set(test_include.paths).intersection(selectors):
+                if selectors and ("all" in selectors or "all" in test_include.paths or set(test_include.paths).intersection(selectors)):
                     selected.append(test_include)
         return selected
 

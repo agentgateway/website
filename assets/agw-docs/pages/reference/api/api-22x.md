@@ -595,7 +595,7 @@ _Appears in:_
 | `overrides` _[FieldDefault](#fielddefault) array_ | Provide overrides to merge with user input fields. If the field is already set, the field will be overwritten. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `modelAliases` _object (keys:string, values:string)_ | ModelAliases maps friendly model names to actual provider model names.<br />Example: \{"fast": "gpt-3.5-turbo", "smart": "gpt-4-turbo"\}<br />Note: This field is only applicable when using the agentgateway data plane. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `promptCaching` _[PromptCachingConfig](#promptcachingconfig)_ | promptCaching enables automatic prompt caching for supported providers (AWS Bedrock).<br />Reduces API costs by caching static content like system prompts and tool definitions.<br />Only applicable for Bedrock Claude 3+ and Nova models. |  | Optional: \{\} <br /> |
-| `routes` _object (keys:string, values:[RouteType](#routetype))_ | routes defines how to identify the type of traffic to handle.<br />The keys are URL path suffixes matched using ends-with comparison (e.g., "/v1/chat/completions").<br />The special "*" wildcard matches any path.<br />If not specified, all traffic defaults to "completions" type. |  | Optional: \{\} <br /> |
+| `routes` _object (keys:string, values:[RouteType](#routetype))_ | routes defines how to identify the type of traffic to handle.<br />The keys are URL path suffixes matched using ends-with comparison (e.g., "/v1/chat/completions").<br />The special "*" wildcard matches any path.<br />If not specified, all traffic defaults to "Completions" type. |  | Optional: \{\} <br /> |
 
 
 #### BackendAuth

@@ -12,41 +12,30 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: anthropic
-          provider:
-            anthropic:
-              model: claude-opus-4-6
-          routes:
-            /v1/messages: messages
-            /v1/chat/completions: completions
-            /v1/models: passthrough
-            "*": passthrough
-      policies:
-        backendAuth:
-          key: "$ANTHROPIC_API_KEY"
+
+llm:
+  models:
+  - name: "*"
+    provider: anthropic
+    params:
+      apiKey: "$ANTHROPIC_API_KEY"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `name` | The name of the LLM provider for this AI backend, `anthropic`. |
-| `model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
-| `routes` | Include the routes to the LLM endpoints that you want to support. The keys are URL suffix matches, such as `"/v1/messages"` and `"/v1/chat/completions"`. The special `*` wildcard matches any path. If not specified, all traffic is treated as OpenAI's chat completions format. The `messages` format processes requests in Anthropic's native messages format. This enables full compatibility with Claude Code and other Anthropic-native tools.|
-| `backendAuth` | Anthropic uses API keys for authentication. You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must pass in a valid API key. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | The LLM provider, set to `anthropic` for Claude models. |
+| `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.apiKey` | The Anthropic API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
 ## Example request
 
 After running agentgateway with the configuration from the previous section, you can send a request to the `v1/messages` endpoint. Agentgateway automatically adds the `x-api-key` authorization and `anthropic-version` headers to the request. The request is forwarded to the Anthropic API and the response is returned to the client.
 
 ```json
-curl -X POST http://localhost:3000/v1/messages \
+curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-opus-4-6",
@@ -90,7 +79,7 @@ Example response:
 Anthropic's `count_tokens` API is supported for estimating token usage before making a request. Agentgateway automatically handles the required `anthropic-version` header and formats the request correctly for Anthropic's API.
 
 ```bash
-curl -X POST http://localhost:3000/v1/messages/count_tokens \
+curl -X POST http://localhost:4000/v1/messages/count_tokens \
   -H "Content-Type: application/json" \
   -d '{
     "model": "claude-opus-4-6",
@@ -249,37 +238,26 @@ Connect to Claude Code locally to verify access to the Anthropic provider throug
    export ANTHROPIC_API_KEY="sk-ant-api03-your-actual-key-here"
    ```
 
-2. Start agentgateway with the following configuration. Make sure that the `v1/messages` route is set so that Claude Code can connect to agentgateway.
+2. Start agentgateway with the following configuration.
    ```yaml
    cat > config.yaml << EOF
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: anthropic
-             provider:
-               anthropic:
-                 model: claude-opus-4-6
-             routes:
-               /v1/messages: messages
-               /v1/chat/completions: completions
-               /v1/models: passthrough
-               "*": passthrough
-         policies:
-           backendAuth:
-             key: "$ANTHROPIC_API_KEY"
+
+   llm:
+     models:
+     - name: "*"
+       provider: anthropic
+       params:
+         apiKey: "$ANTHROPIC_API_KEY"
    EOF
-   
+
    agentgateway -f config.yaml
    ```
 
 3. In another terminal, configure Claude Code to use the agentgateway instance that is running on your localhost.
 
    ```bash
-   export ANTHROPIC_BASE_URL="http://localhost:3000"
+   export ANTHROPIC_BASE_URL="http://localhost:4000"
    ```
 
 4. Start Claude Code with the new configuration.
