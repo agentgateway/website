@@ -20,7 +20,41 @@ For more information, see the [Azure documentation](https://learn.microsoft.com/
 
 ## Configuration
 
-{{< reuse "agw-docs/snippets/review-configuration.md" >}} The tabs have examples for different authentication methods.
+The simplified LLM configuration supports basic Azure OpenAI authentication with client credentials.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: azure
+    params:
+      azureEndpoint: "https://your-resource.openai.azure.com"
+      azureTenantId: "your-tenant-id"
+      azureClientId: "your-client-id"
+      azureClientSecret: "$AZURE_CLIENT_SECRET"
+```
+
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | The LLM provider, set to `azure` for Azure OpenAI. |
+| `params.model` | The specific Azure OpenAI model to use. |
+| `params.azureEndpoint` | The Azure OpenAI endpoint URL. |
+| `params.azureTenantId` | The Azure tenant ID for authentication. |
+| `params.azureClientId` | The Azure client ID for authentication. |
+| `params.azureClientSecret` | The Azure client secret for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
+
+{{< callout type="info" >}}
+For advanced Azure authentication methods (managed identity, workload identity, or Azure AI Foundry), use the traditional `binds/listeners/routes` configuration format. See the [Routing-based configuration guide](../configuration-modes/) for more information.
+{{< /callout >}}
+
+## Advanced configuration
+
+For advanced Azure AI scenarios, use the traditional configuration format. The following tabs show examples for different authentication methods.
 
 {{< tabs items="Foundry,Client secret,System-assigned managed identity,User-assigned managed identity,Workload identity" >}}
 
