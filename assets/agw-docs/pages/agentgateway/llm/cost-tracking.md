@@ -25,24 +25,12 @@ To set up advanced observability with Grafana, Prometheus, and OpenTelemetry for
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} exposes the `agentgateway_gen_ai_client_token_usage` Prometheus metric that tracks input and output tokens for each request.
 
 1. Port-forward the agentgateway proxy on port 15020.
-
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh,paths="cost-tracking"
-   export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o=jsonpath="{.status.addresses[0].value}")
-   echo $INGRESS_GW_ADDRESS
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
-   ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15020 &
    sleep 2
    ```
-   {{% /tab %}}
-   {{< /tabs >}}
 
 2. Open the {{< reuse "agw-docs/snippets/agentgateway.md" >}} [metrics endpoint](http://localhost:15020/metrics).
-
 
 3. Look for the `agentgateway_gen_ai_client_token_usage` metric. This histogram includes labels that identify each request:
    - `gen_ai_token_type`: Whether the metric measures `input` or `output` tokens
@@ -62,7 +50,7 @@ To set up advanced observability with Grafana, Prometheus, and OpenTelemetry for
 
 {{< doc-test paths="cost-tracking" >}}
 # Verify metrics endpoint is accessible and contains token usage metrics
-curl -s http://$INGRESS_GW_ADDRESS:15020/metrics | grep -q "agentgateway_gen_ai_client_token_usage"
+curl -s http://localhost:15020/metrics | grep -q "agentgateway_gen_ai_client_token_usage"
 if [ $? -eq 0 ]; then
   echo "✓ Token usage metrics found"
 else
