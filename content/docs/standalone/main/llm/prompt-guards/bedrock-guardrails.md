@@ -15,42 +15,34 @@ description: Apply AWS Bedrock Guardrails to filter LLM requests and responses f
 
 ## Configure Bedrock Guardrails
 
-Configure the `promptGuard` policy under `policies.ai` in your agentgateway configuration. You can apply guardrails to the `request` phase, the `response` phase, or both.
+Configure `guardrails` on a model in your agentgateway configuration. You can apply guardrails to the `request` phase, the `response` phase, or both.
 
 ```yaml
-cat <<EOF > config.yaml
+cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-       - ai:
-          name: bedrock
-          provider:
-            openAI:
-              model: amazon.titan-text-express-v1
-      policies:
-        backendAuth:
-          key: "$BEDROCK_API_KEY"
-        ai:
-          promptGuard:
-            request:
-            - bedrockGuardrails:
-                guardrailIdentifier: <your-guardrail-id>
-                guardrailVersion: DRAFT
-                region: us-west-2
-                policies:
-                  backendAuth:
-                    aws: {}
-            response:
-            - bedrockGuardrails:
-                guardrailIdentifier: <your-guardrail-id>
-                guardrailVersion: DRAFT
-                region: us-west-2
-                policies:
-                  backendAuth:
-                    aws: {}
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: us-west-2
+    guardrails:
+      request:
+      - bedrockGuardrails:
+          guardrailIdentifier: <your-guardrail-id>
+          guardrailVersion: DRAFT
+          region: us-west-2
+          policies:
+            backendAuth:
+              aws: {}
+      response:
+      - bedrockGuardrails:
+          guardrailIdentifier: <your-guardrail-id>
+          guardrailVersion: DRAFT
+          region: us-west-2
+          policies:
+            backendAuth:
+              aws: {}
 EOF
 ```
 

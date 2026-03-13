@@ -12,29 +12,93 @@ Configure any LLM provider that provides OpenAI-compatible endpoints with agentg
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: api.x.ai
-        backendTLS: {}
-        backendAuth:
-          key: $XAI_API_KEY
-      backends:
-      - ai:
-          name: xai
-          hostOverride: api.x.ai:443
-          provider:
-            openAI:
-              model: grok-2-latest
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$XAI_API_KEY"
+      baseUrl: "https://api.x.ai"
 ```
 
 ## Cohere
 
 [Cohere](https://cohere.com/) provides an OpenAI-compatible endpoint for their models.
+
+{{< callout type="info" >}}
+Cohere uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
+{{< /callout >}}
+
+## Ollama (Local)
+
+[Ollama](https://ollama.ai/) runs models locally and provides an OpenAI-compatible API.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      baseUrl: "http://localhost:11434"
+```
+
+## Together AI
+
+[Together AI](https://together.ai/) provides access to open-source models via OpenAI-compatible endpoints.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: llama-3.2-90b
+    provider: openAI
+    params:
+      model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+      apiKey: "$TOGETHER_API_KEY"
+      baseUrl: "https://api.together.xyz"
+```
+
+## Groq
+
+[Groq](https://groq.com/) provides fast inference via OpenAI-compatible endpoints.
+
+{{< callout type="info" >}}
+Groq uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
+{{< /callout >}}
+
+## Generic configuration
+
+For any OpenAI-compatible provider that uses standard paths (`/v1/chat/completions`), use this template:
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$PROVIDER_API_KEY"
+      baseUrl: "<provider-base-url>"
+```
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | Set to `openai` for OpenAI-compatible providers. |
+| `params.model` | The model name as expected by the provider. If set, this model is used for all requests. If not set, the model from the request is passed through. |
+| `params.apiKey` | The provider's API key. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `params.baseUrl` | The provider's base URL (e.g., `https://api.provider.com`). |
+
+## Advanced configuration
+
+For providers that require URL path rewriting (like Cohere or Groq) or other advanced HTTP policies, use the traditional `binds/listeners/routes` configuration format.
+
+### Cohere with URL rewriting
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -60,58 +124,7 @@ binds:
               model: command-r-plus
 ```
 
-## Ollama (Local)
-
-[Ollama](https://ollama.ai/) runs models locally and provides an OpenAI-compatible API.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: localhost:11434
-      backends:
-      - ai:
-          name: ollama
-          hostOverride: localhost:11434
-          provider:
-            openAI:
-              model: llama3.2
-```
-
-## Together AI
-
-[Together AI](https://together.ai/) provides access to open-source models via OpenAI-compatible endpoints.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: api.together.xyz
-        backendTLS: {}
-        backendAuth:
-          key: $TOGETHER_API_KEY
-      backends:
-      - ai:
-          name: together
-          hostOverride: api.together.xyz:443
-          provider:
-            openAI:
-              model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
-```
-
-## Groq
-
-[Groq](https://groq.com/) provides fast inference via OpenAI-compatible endpoints.
+### Groq with URL rewriting
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -137,43 +150,4 @@ binds:
               model: llama-3.3-70b-versatile
 ```
 
-## Generic configuration
-
-For any OpenAI-compatible provider, use this template:
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: <provider-api-host>
-          path:
-            full: "<provider-chat-endpoint>"  # Often /v1/chat/completions
-        backendTLS: {}  # Include if provider uses HTTPS
-        backendAuth:
-          key: $PROVIDER_API_KEY
-      backends:
-      - ai:
-          name: <provider-name>
-          hostOverride: <provider-api-host>:443
-          provider:
-            openAI:
-              model: <model-name>
-```
-
-## Configuration reference
-
-| Setting | Description |
-|---------|-------------|
-| `urlRewrite` | Configure a policy to rewrite the URL of the upstream requests to match your LLM provider. |
-| `authority` | Set the default hostname authority to forward incoming requests. |
-| `path` | Rewrite the path to the appropriate LLM provider endpoint. This setting is optional if requests on the provider hostname are already sent on this path. |
-| `backendTLS` | Optionally configure a policy to use TLS when connecting to the LLM provider. |
-| `backendAuth` | You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must authenticate per the LLM provider requirements. |
-| `ai.name` | The name of the LLM provider for this AI backend. |
-| `ai.hostOverride` | Override the hostname. If not set, the hostname defaults to OpenAI (`api.openai.com`). This setting is optional if the hostname is already set in the URL rewrite policy's `authority` setting. |
-| `ai.provider.openAI.model` | Optionally set the model to use for requests. If not set, the request must include the model to use. |
+For more information about choosing between configuration modes, see the [Routing-based configuration guide](../configuration-modes/).

@@ -25,13 +25,37 @@ This pattern lets you route based on any field in the request body while using t
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to route to.
 
+{{< doc-test paths="content-routing" >}}
+export OPENAI_API_KEY=${OPENAI_API_KEY:-<insert your API key>}
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openai-secret
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+type: Opaque
+stringData:
+  Authorization: $OPENAI_API_KEY
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: anthropic-secret
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+type: Opaque
+stringData:
+  Authorization: ${ANTHROPIC_API_KEY:-$OPENAI_API_KEY}
+EOF
+{{< /doc-test >}}
+
 ## Route by model name {#model-routing}
 
 This example shows how to route requests to different backends based on the `model` field in the request body.
 
 1. Create multiple {{< reuse "agw-docs/snippets/backend.md" >}} resources for different models. This example creates backends for OpenAI and Anthropic models.
 
-   ```yaml
+   ```yaml,paths="content-routing"
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -43,10 +67,10 @@ This example shows how to route requests to different backends based on the `mod
        provider:
          openai:
            model: gpt-4o
-       policies:
-         auth:
-           secretRef:
-             name: openai-secret
+     policies:
+       auth:
+         secretRef:
+           name: openai-secret
    ---
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -58,16 +82,16 @@ This example shows how to route requests to different backends based on the `mod
        provider:
          anthropic:
            model: claude-3-5-sonnet-latest
-       policies:
-         auth:
-           secretRef:
-             name: anthropic-secret
+     policies:
+       auth:
+         secretRef:
+           name: anthropic-secret
    EOF
    ```
 
 2. Create an HTTPRoute with multiple rules that match on the `x-model` header. The transformation policy (created in step 3) will extract the model name from the request body into this header.
 
-   ```yaml
+   ```yaml,paths="content-routing"
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -112,7 +136,7 @@ This example shows how to route requests to different backends based on the `mod
 
 3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
-   ```yaml
+   ```yaml,paths="content-routing"
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -133,6 +157,55 @@ This example shows how to route requests to different backends based on the `mod
              value: 'json(request.body).model'
    EOF
    ```
+
+{{< doc-test paths="content-routing" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai-backend to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: openai-backend
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+
+- name: wait for anthropic-backend to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: anthropic-backend
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+
+- name: wait for content-routing HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: content-routing
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
 
 4. Send a request with `gpt-4o` in the model field. Verify that the request routes to the OpenAI backend.
 
@@ -196,6 +269,30 @@ This example shows how to route requests to different backends based on the `mod
    {{% /tab %}}
    {{< /tabs >}}
 
+{{< doc-test paths="content-routing" >}}
+YAMLTest -f - <<'EOF'
+- name: verify GPT model routes to OpenAI backend
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "model": "gpt-4o",
+        "messages": [{"role": "user", "content": "Say hello in one word"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    jsonPath:
+      - path: "$.model"
+        comparator: contains
+        value: "gpt"
+EOF
+{{< /doc-test >}}
+
 ## Route by custom field {#custom-field}
 
 You can extract any field from the request body for routing decisions, not just the `model` field.
@@ -216,10 +313,10 @@ This example shows routing based on a custom `priority` field in the request bod
        provider:
          openai:
            model: gpt-4o
-       policies:
-         auth:
-           secretRef:
-             name: openai-secret
+     policies:
+       auth:
+         secretRef:
+           name: openai-secret
    ---
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -231,10 +328,10 @@ This example shows routing based on a custom `priority` field in the request bod
        provider:
          openai:
            model: gpt-4o-mini
-       policies:
-         auth:
-           secretRef:
-             name: openai-secret
+     policies:
+       auth:
+         secretRef:
+           name: openai-secret
    EOF
    ```
 
