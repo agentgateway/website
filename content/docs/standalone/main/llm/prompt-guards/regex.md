@@ -27,9 +27,13 @@ Agentgateway includes the following built-in patterns for common PII types that 
 Use custom patterns to match credentials, secrets, or application-specific sensitive data.
 
 ```yaml
-policies:
-  ai:
-    promptGuard:
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
       request:
       - regex:
           action: reject
@@ -62,59 +66,51 @@ The following example rejects requests that contain Social Security Numbers (usi
 
 1. Create a configuration file with regex prompt guard policies.
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4o-mini
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           ai:
-             promptGuard:
-               request:
-               - regex:
-                   action: reject
-                   rules:
-                   - pattern: SSN
-                   - pattern: Social Security
-                 rejection:
-                   status: 400
-                   headers:
-                     set:
-                       content-type: "application/json"
-                   body: |
-                     {
-                       "error": {
-                         "message": "Request rejected: Content contains sensitive information",
-                         "type": "invalid_request_error",
-                         "code": "content_policy_violation"
-                       }
-                     }
-               - regex:
-                   action: reject
-                   rules:
-                   - builtin: email
-                 rejection:
-                   status: 400
-                   headers:
-                     set:
-                       content-type: "application/json"
-                   body: |
-                     {
-                       "error": {
-                         "message": "Request blocked: Contains email address",
-                         "type": "invalid_request_error",
-                         "code": "pii_detected"
-                       }
-                     }
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         request:
+         - regex:
+             action: reject
+             rules:
+             - pattern: SSN
+             - pattern: Social Security
+           rejection:
+             status: 400
+             headers:
+               set:
+                 content-type: "application/json"
+             body: |
+               {
+                 "error": {
+                   "message": "Request rejected: Content contains sensitive information",
+                   "type": "invalid_request_error",
+                   "code": "content_policy_violation"
+                 }
+               }
+         - regex:
+             action: reject
+             rules:
+             - builtin: email
+           rejection:
+             status: 400
+             headers:
+               set:
+                 content-type: "application/json"
+             body: |
+               {
+                 "error": {
+                   "message": "Request blocked: Contains email address",
+                   "type": "invalid_request_error",
+                   "code": "pii_detected"
+                 }
+               }
    EOF
    ```
 
@@ -203,28 +199,20 @@ You can also filter LLM responses to redact sensitive data before it reaches the
 
 1. Create a configuration that masks phone numbers in LLM responses by using the built-in `phoneNumber` pattern.
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4o-mini
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           ai:
-             promptGuard:
-               response:
-               - regex:
-                   action: mask
-                   rules:
-                   - builtin: phoneNumber
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         response:
+         - regex:
+             action: mask
+             rules:
+             - builtin: phoneNumber
    EOF
    ```
 

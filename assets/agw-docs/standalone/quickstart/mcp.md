@@ -2,9 +2,19 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 ## Before you begin
 
+{{< doc-test paths="mcp" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
+
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   ```sh {paths="mcp"}
+   ```sh
    curl -sL https://agentgateway.dev/install | bash
    ```
 
