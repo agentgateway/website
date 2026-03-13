@@ -148,6 +148,7 @@ binds:
           provider:
             openAI:
               model: llama-3.3-70b-versatile
+```
 
 ### Fireworks AI with URL rewriting
 
