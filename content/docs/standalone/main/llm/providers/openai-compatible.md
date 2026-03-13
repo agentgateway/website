@@ -150,4 +150,33 @@ binds:
               model: llama-3.3-70b-versatile
 ```
 
+### Fireworks AI with URL rewriting
+
+Fireworks AI provides access to open-source models via OpenAI-compatible endpoints.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+  - port: 3000
+    listeners:
+      - routes:
+          - policies:
+              urlRewrite:
+                authority:
+                  full: api.fireworks.ai
+                path:
+                  full: "/inference/v1/chat/completions"
+              backendTLS: {}
+              backendAuth:
+                key: $FIREWORKS_API_KEY
+            backends:
+              - ai:
+                  name: fireworks
+                  hostOverride: api.fireworks.ai:443
+                  provider:
+                    openAI:
+                      model: accounts/fireworks/models/kimi-k2p5
+
+```
+
 For more information about choosing between configuration modes, see the [Routing-based configuration guide](../configuration-modes/).
