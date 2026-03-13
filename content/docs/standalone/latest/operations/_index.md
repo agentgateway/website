@@ -7,5 +7,6 @@ icon: settings
 Manage your standalone agentgateway lifecycle, such as debugging.
 
 {{< cards >}}
+  {{< card link="ui" title="Admin UI" >}}
   {{< card link="debug" title="Debug" >}}
 {{< /cards >}}
