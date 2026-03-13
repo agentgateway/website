@@ -153,6 +153,7 @@ binds:
 
 Fireworks AI provides access to open-source models via OpenAI-compatible endpoints.
 
+```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
   - port: 3000
