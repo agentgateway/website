@@ -61,7 +61,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: default
         name: mcp-website-fetcher
-    jsonPath: "$.status.availableReplicas"
+    bodyJsonPath: "$.status.availableReplicas"
     jsonPathExpectation:
       comparator: greaterThan
       value: 0
@@ -128,7 +128,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: default
         name: mcp
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"

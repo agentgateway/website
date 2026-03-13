@@ -270,7 +270,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.model"
         comparator: exists
       - path: "$.choices[0].message.content"

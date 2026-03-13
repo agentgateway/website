@@ -129,7 +129,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
          metadata:
            namespace: httpbin
            name: httpbin-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       bodyJsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"

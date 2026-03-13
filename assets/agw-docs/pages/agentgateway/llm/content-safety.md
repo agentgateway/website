@@ -238,7 +238,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.choices[0].message.content"
         comparator: contains
         value: "<CREDIT_CARD>"

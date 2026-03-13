@@ -311,7 +311,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
          metadata:
            namespace: ratelimit
            name: redis
-       jsonPath: "$.status.availableReplicas"
+       bodyJsonPath: "$.status.availableReplicas"
        jsonPathExpectation:
          comparator: greaterThan
          value: 0
@@ -325,7 +325,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
          metadata:
            namespace: ratelimit
            name: ratelimit
-       jsonPath: "$.status.availableReplicas"
+       bodyJsonPath: "$.status.availableReplicas"
        jsonPathExpectation:
          comparator: greaterThan
          value: 0
@@ -418,7 +418,7 @@ The descriptor entry `name` in the policy must match the `key` in the rate limit
          metadata:
            namespace: httpbin
            name: ip-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       bodyJsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"

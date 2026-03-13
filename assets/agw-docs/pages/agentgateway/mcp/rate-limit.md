@@ -123,7 +123,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
          metadata:
            namespace: default
            name: mcp-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       bodyJsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"

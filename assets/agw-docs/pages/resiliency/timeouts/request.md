@@ -379,7 +379,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: httpbin
         name: httpbin-timeout
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"

@@ -40,7 +40,7 @@ Install the sample httpbin app.
          metadata:
            namespace: httpbin
            name: httpbin
-       jsonPath: "$.status.availableReplicas"
+       bodyJsonPath: "$.status.availableReplicas"
        jsonPathExpectation:
          comparator: greaterThan
          value: 0
@@ -89,7 +89,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: httpbin
         name: httpbin
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
@@ -103,7 +103,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: httpbin
         name: httpbin
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"

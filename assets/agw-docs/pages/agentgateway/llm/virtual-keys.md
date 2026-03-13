@@ -244,15 +244,15 @@ spec:
     - name: agentgateway-proxy
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /openai
-    backendRefs:
-    - name: openai
-      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-      group: agentgateway.dev
-      kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /openai
+      backendRefs:
+        - name: openai
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: agentgateway.dev
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
 
@@ -272,7 +272,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
         name: openai
-    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
@@ -297,7 +297,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.total_tokens"
         comparator: greaterThan
         value: 0
@@ -319,7 +319,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.total_tokens"
         comparator: greaterThan
         value: 0

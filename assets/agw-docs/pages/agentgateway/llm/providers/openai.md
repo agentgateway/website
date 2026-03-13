@@ -135,7 +135,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: openai
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    bodyJsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
@@ -244,7 +244,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.total_tokens"
         comparator: greaterThan
         value: 0
