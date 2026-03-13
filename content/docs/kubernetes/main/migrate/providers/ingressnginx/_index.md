@@ -160,7 +160,7 @@ For agentgateway:
 - For this documentation, the **agentgateway emitter** is the supported target; session affinity and regex path matching are not supported by the agentgateway emitter.
 - Some NGINX behaviors cannot be reproduced exactly due to differences between NGINX and semantics of other proxy implementations.
 - Regex-mode is implemented by converting HTTPRoute path matches to `RegularExpression`. Some ingress-nginx details (such as case-insensitive `~*` behavior)
-  may not be reproduced exactly depending on the underlying Gateway API / Envoy behavior and the patterns provided.
+  might not be reproduced exactly depending on the underlying Gateway API / Envoy behavior and the patterns provided.
 
 If you rely on annotations not listed above, please open an [issue](https://github.com/kgateway-dev/ingress2gateway/issues) or be prepared to apply
 post-migration manual adjustments.

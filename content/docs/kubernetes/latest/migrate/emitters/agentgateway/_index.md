@@ -201,7 +201,7 @@ If a policy covers **all** backends of the generated HTTPRoute, it is attached u
 
 ## Notifications
 
-Some conversions require follow-up user action that cannot be expressed safely as emitted manifests. The agentgateway emitter emits **INFO** notifications on the CLI in those cases. For example, when projecting **Basic Authentication**, the emitter may notify that ingress-nginx expects htpasswd under Secret key `auth` while agentgateway expects key `.htaccess`.
+Some conversions require follow-up user action that cannot be expressed safely as emitted manifests. The agentgateway emitter emits **INFO** notifications on the CLI in those cases. For example, when projecting **Basic Authentication**, the emitter might notify that ingress-nginx expects htpasswd under Secret key `auth` while agentgateway expects key `.htaccess`.
 
 ## Limitations
 
