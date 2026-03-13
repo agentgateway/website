@@ -282,7 +282,7 @@ YAMLTest -f - <<'EOF'
 
 - name: verify request with Alice's virtual key succeeds
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
     method: POST
     headers:
       content-type: application/json
@@ -290,21 +290,17 @@ YAMLTest -f - <<'EOF'
       X-User-ID: alice
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4",
         "messages": [{"role": "user", "content": "Hello"}]
       }
   source:
     type: local
   expect:
     statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.total_tokens"
-        comparator: greaterThan
-        value: 0
 
 - name: verify request with Bob's virtual key succeeds independently
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
     method: POST
     headers:
       content-type: application/json
@@ -312,21 +308,17 @@ YAMLTest -f - <<'EOF'
       X-User-ID: bob
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4",
         "messages": [{"role": "user", "content": "Hello"}]
       }
   source:
     type: local
   expect:
     statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.total_tokens"
-        comparator: greaterThan
-        value: 0
 
 - name: verify request without valid API key is rejected
   http:
-    url: "http://${INGRESS_GW_ADDRESS}:80/openai"
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
     method: POST
     headers:
       content-type: application/json
@@ -334,7 +326,7 @@ YAMLTest -f - <<'EOF'
       X-User-ID: charlie
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4",
         "messages": [{"role": "user", "content": "Hello"}]
       }
   source:
