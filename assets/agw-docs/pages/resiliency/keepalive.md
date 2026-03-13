@@ -175,7 +175,7 @@ Keep the HTTP connection alive by sending out probes after the connection has be
     
 ### Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin
