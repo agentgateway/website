@@ -87,7 +87,7 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
       ```
 
       
-{{< doc-test paths="all" >}}
+{{< doc-test paths="idle-timeout" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for idle-time policy in config dump
   retries: 20
