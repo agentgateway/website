@@ -8,10 +8,12 @@ test:
     path: standard
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/openai.md
-    path: openai-setup
+  - file: content/docs/kubernetes/main/llm/providers/httpbun.md
+    path: setup-httpbun-llm
   - file: content/docs/kubernetes/main/llm/virtual-keys.md
     path: virtual-keys
+  - file: content/docs/kubernetes/main/llm/virtual-keys.md
+    path: virtual-keys-httpbun-test
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/virtual-keys.md" >}}

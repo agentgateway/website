@@ -12,6 +12,8 @@ test:
     path: setup-httpbun-llm
   - file: content/docs/kubernetes/latest/llm/virtual-keys.md
     path: virtual-keys
+  - file: content/docs/kubernetes/latest/llm/virtual-keys.md
+    path: virtual-keys-httpbun-test
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/virtual-keys.md" >}}

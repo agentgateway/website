@@ -262,8 +262,8 @@ EOF
 The following tests verify API key authentication and routing. For full end-to-end testing of per-key token budget enforcement, deploy a rate limit server as described in the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}).
 {{< /callout >}}
 
-{{< doc-test paths="virtual-keys" >}}
-# Test virtual key authentication and routing (rate limit server deployment required for full budget enforcement tests)
+{{< doc-test paths="virtual-keys-openai-test" >}}
+# Test virtual key authentication and routing against the OpenAI route
 YAMLTest -f - <<'EOF'
 - name: wait for HTTPRoute to be accepted
   wait:
@@ -327,6 +327,82 @@ YAMLTest -f - <<'EOF'
     body: |
       {
         "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 401
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="virtual-keys-httpbun-test" >}}
+# Test virtual key authentication and routing against the httpbun route
+YAMLTest -f - <<'EOF'
+- name: wait for HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+        name: httpbun-llm
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+
+- name: verify request with Alice's virtual key succeeds
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer sk-alice-abc123def456"
+      X-User-ID: alice
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Hello"}],
+        "httpbun": {"content": "Hello from httpbun"}
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+
+- name: verify request with Bob's virtual key succeeds independently
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer sk-bob-xyz789uvw012"
+      X-User-ID: bob
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Hello"}],
+        "httpbun": {"content": "Hello from httpbun"}
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+
+- name: verify request without valid API key is rejected
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+      Authorization: "Bearer invalid-key"
+      X-User-ID: charlie
+    body: |
+      {
+        "model": "gpt-4",
         "messages": [{"role": "user", "content": "Hello"}]
       }
   source:
