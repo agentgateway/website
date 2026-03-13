@@ -136,7 +136,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    appProtocol: kgateway.dev/mcp
+    appProtocol: agentgateway.dev/mcp
 EOF
 ```
 

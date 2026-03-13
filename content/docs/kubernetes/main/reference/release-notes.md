@@ -74,16 +74,18 @@ spec:
         from: All
 ```
 
-### CEL 2.0 
+### CEL 2.0
 
-This release includes a major refactor to the CEL implementation in agentgateway to improve scalability and performance. The following user facing changes were introduced:
+This release includes a major refactor to the CEL implementation in agentgateway that brings substantial performance improvements and enhanced functionality. Individual CEL expressions are now 5-500x faster, which has improved end-to-end proxy performance by 50%+ in some tests. For more details on the performance improvements, see this [blog post on CEL optimization](https://blog.howardjohn.info/posts/cel-fast/).
 
-* **Function name changes**: <!-- CEL expressions can now be applied directly to rate limiting, authorization, and observability policies. -->Due to dependency updates, function names were changed. Previously, function names followed a camel case pattern, such as `base64Encode`. Now, function names use dot notations, such as `base64.encode`. The old camel case names remain in place for backwards compatibility. 
-* **New string functions**: The following string manipulation functions were added to the CEL library: `startsWith`, `endsWith`, `stripPrefix`, and `stripSuffix`. These functions align with the Google [CEL-Go strings extension](https://pkg.go.dev/github.com/google/cel-go/ext#Strings). 
-* **Null values fail**: If a top-level variable returns a null value, the CEL expression now fails. Previously, null values always returned true. For example, the `has(jwt)` expression was previously successful if the JWT was missing or could not be found. Now, this expression fails. 
-* **Logical operators**:  Logical `||` and `&&` operators now handle evaluation errors gracefully instead of propagating them. For example, `a || b` returns `true` if `a` is true even if `b` errors. Previously, the CEL expression failed. 
+The following user-facing changes were introduced:
 
-Make sure to update and verify any existing CEL expressions that you use in your environment. 
+* **Function name changes**: For compatibility with the CEL-Go implementation, the `base64Encode` and `base64Decode` functions now use dot notation: `base64.encode` and `base64.decode`. The old camel case names remain in place for backwards compatibility.
+* **New string functions**: The following string manipulation functions were added to the CEL library: `startsWith`, `endsWith`, `stripPrefix`, and `stripSuffix`. These functions align with the Google [CEL-Go strings extension](https://pkg.go.dev/github.com/google/cel-go/ext#Strings).
+* **Null values fail**: If a top-level variable returns a null value, the CEL expression now fails. Previously, null values always returned true. For example, the `has(jwt)` expression was previously successful if the JWT was missing or could not be found. Now, this expression fails.
+* **Logical operators**:  Logical `||` and `&&` operators now handle evaluation errors gracefully instead of propagating them. For example, `a || b` returns `true` if `a` is true even if `b` errors. Previously, the CEL expression failed.
+
+Make sure to update and verify any existing CEL expressions that you use in your environment.
 
 For more information, see the [CEL expression]({{< link-hextra path="/reference/cel/" >}}) reference. 
 
@@ -177,21 +179,24 @@ The following features were introduced in 1.0.0.
 
 ### Kubernetes Gateway API version 1.5.0
 
-The Kubernetes Gateway API dependency is updated to support version 1.5.0. This version introduces several changes, including: 
-* **XListenerSets promoted to ListenerSets**: The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead. 
-* **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs]({{< link-hextra path="/setup/listeners/mtls/" >}}). 
+The Kubernetes Gateway API dependency is updated to support version 1.5.0. Gateway API 1.5 also comes with a number of new conformance tests; Agentgateway continues to be on the frontier of Gateway API support and passes all tests (standard, extended, and experimental).
+
+This version introduces several changes, including:
+* **XListenerSets promoted to ListenerSets**: The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. You must install the standard channel of the Kubernetes Gateway API to get the ListenerSet API definition. If you use XListenerSet resources in your setup today, update these resources to use the ListenerSet API instead.
+* **TLSRoute promotion**: TLSRoute has been promoted from experimental to standard. If you are on the standard channel, you need to use `v1` instead of `v1alpha2`. The experimental channel can continue to use `v1alpha2`.
+* **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs]({{< link-hextra path="/setup/listeners/mtls/" >}}).
 * **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin. For an example, see the [CORS]({{< link-hextra path="/security/cors/" >}}) guide. 
-* **BackendTLS**: You can now apply BackendTLSPolicy resources to your routes to originate a TLS connection to a backend. For an example, see the [BackendTLS]({{< link-hextra path="/security/backendtls/" >}}) guide. 
 
 ### Autoscaling policies for agentgateway controller
 
-You can now configure Horizontal Pod Autoscaler or Vertical Pod Autoscaler policies for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. To set up these policies, you use the `horizontalPodAutoscaler` or `verticalPodAutoscaler` fields in the Helm chart.  
+You can now configure Horizontal Pod Autoscaler policies for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. To set up these policies, you use the `horizontalPodAutoscaler` field in the Helm chart.
 
-Review the following Helm configuration examples. For more information, see [Advanced install settings]({{< link-hextra path="/install/advanced/" >}}). 
+Review the following Helm configuration example. For more information, see [Advanced install settings]({{< link-hextra path="/install/advanced/" >}}).
 
-**Vertical Pod Autoscaler**: 
+<!-- TODO VPA
+**Vertical Pod Autoscaler**:
 
-The following configuration ensures that the control plan pod is always assigned a minimum of 0.1 CPU cores (100millicores) and 128Mi of memory. 
+The following configuration ensures that the control plan pod is always assigned a minimum of 0.1 CPU cores (100millicores) and 128Mi of memory.
 
 ```yaml
 verticalPodAutoscaler:
@@ -204,6 +209,7 @@ verticalPodAutoscaler:
         cpu: 100m
         memory: 128Mi
 ```
+-->
 
 **Horizontal Pod Autoscaler**:
 
@@ -223,32 +229,7 @@ horizontalPodAutoscaler:
         averageUtilization: 80
 ```
 
-### Priority class support for agentgateway controller
-
-You can now assign a PriorityClassName to the control plane pods by using the Helm chart. [Priority](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/) indicates the importance of a pod relative to other pods. If a pod cannot be scheduled, the scheduler tries to preempt (evict) lower priority pods to make scheduling of the pending pod possible. 
-
-To assign a PriorityClassName to the control plane, you must first create a PriorityClass resource. The following example creates a PriorityClass with the name `system-cluster-critical` that assigns a priority of 1 Million. 
-
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: scheduling.k8s.io/v1
-kind: PriorityClass
-metadata:
-  name: system-cluster-critical
-value: 1000000
-globalDefault: false
-description: "Use this priority class on system-critical pods only."
-EOF
-```
-
-In your Helm values file, add the name of the PriorityClass in the `controller.priorityClassName` field. 
-
-```yaml
-controller: 
-  priorityClassName: 
-```
-
-<!-- 
+<!--
 
 ### Use agw as a mesh egress
 
@@ -260,45 +241,7 @@ https://github.com/solo-io/gloo-gateway/pull/1462
 
 
 
---> 
-
-### Common labels
-
-Add custom labels to all resources that are created by the {{< reuse "agw-docs/snippets/kgateway.md" >}} Helm charts, including the Deployment, Service, and ServiceAccount of gateway proxies. This allows you to better organize your resources or integrate with external tools. 
-
-The following snippet adds the `label-key` and `agw-managed` labels to all resources. 
-
-```yaml
-
-commonLabels: 
-  label-key: label-value
-  agw-managed: "true"
-```
-
-
-### Static IP addresses for Gateways
-
-You can now assign a static IP address to the Kubernetes service that exposes your Gateway as shown in the following example. 
-
-```yaml
-kind: Gateway
-apiVersion: gateway.networking.k8s.io/v1
-metadata:
-  name: agentgateway-proxy
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
-  addresses:
-    - type: IPAddress
-      value: 203.0.113.11
-  listeners:
-    - protocol: HTTP
-      port: 80
-      name: http
-      allowedRoutes:
-        namespaces:
-          from: Same
-```
+-->
 
 ### GRPCRoute support
 
@@ -306,14 +249,15 @@ You can now attach GRPCRoutes to your agentgateway proxy to route traffic to gRP
 
 ### PreRouting phase support for auth policies
 
-You can now use the `phase: PreRouting` setting on JWT, basic auth, and API key authentication policies. This setting applies extauth policies before a routing decision is made. Note that the policy must target a Gateway rather than an HTTPRoute. 
+You can now use the `phase: PreRouting` setting on JWT, basic auth, API key authentication, and transformation policies. This setting applies policies before a routing decision is made, which allows the policies to influence how requests are routed. Note that the policy must target a Gateway rather than an HTTPRoute.
 
-The following API key auth example sets the prerouting phase:
+A key use case is body-based routing for LLM requests. The following example extracts the `model` field from a JSON request body and sets it as a header, which can then be used for routing decisions:
+
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
 metadata:
-  name: apikey-pre-routing
+  name: body-based-routing
 spec:
   targetRefs:
   - kind: Gateway
@@ -321,10 +265,39 @@ spec:
     group: gateway.networking.k8s.io
   traffic:
     phase: PreRouting
-    apiKeyAuthentication:
-      secretRefs:
-      - name: api-keys-secret
+    transformation:
+      request:
+        set:
+        - name: X-Gateway-Model-Name
+          value: 'json(request.body).model'
 ```
+
+This allows you to route requests to different backends based on the model name specified in the request body. For example, you could route GPT-4 requests to one backend and Claude requests to another:
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: route-by-model
+spec:
+  parentRefs:
+  - name: my-gateway
+  rules:
+  - matches:
+    - headers:
+      - name: X-Gateway-Model-Name
+        value: gpt-4
+    backendRefs:
+    - name: openai-backend
+  - matches:
+    - headers:
+      - name: X-Gateway-Model-Name
+        value: claude-3
+    backendRefs:
+    - name: anthropic-backend
+```
+
+For more details on this pattern, see the [body-based routing blog post](https://blog.howardjohn.info/posts/bbr-agentgateway/).
 
 ### LLM request transformations
 
@@ -365,6 +338,14 @@ Extended thinking and structured outputs are now supported for Anthropic and Ama
 For more information, see the following resources:
 * [Anthropic extended thinking and structured outputs]({{< link-hextra path="/llm/providers/anthropic/" >}})
 * [Bedrock extended thinking and structured outputs]({{< link-hextra path="/llm/providers/bedrock/" >}})
+
+### Additional features
+
+Several additional capabilities are now available for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane and Gateway resources:
+
+* **Priority class support**: Assign a PriorityClassName to control plane pods using the `controller.priorityClassName` Helm field. [Priority](https://kubernetes.io/docs/concepts/scheduling-eviction/pod-priority-preemption/) indicates the importance of a pod relative to other pods and allows higher priority pods to preempt lower priority ones when scheduling.
+* **Common labels**: Add custom labels to all resources created by the Helm charts using the `commonLabels` field, including the Deployment, Service, and ServiceAccount of gateway proxies. This allows you to better organize your resources or integrate with external tools.
+* **Static IP addresses for Gateways**: Assign a static IP address to the Kubernetes service that exposes your Gateway using the `spec.addresses` field with `type: IPAddress`.
 
 ## 🪲 Bug fixes {#v10-bug-fixes}
 
