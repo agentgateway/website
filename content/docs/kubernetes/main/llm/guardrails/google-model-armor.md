@@ -178,18 +178,18 @@ In your GKE cluster, set up workload identity.
          promptGuard:
            request:
            - googleModelArmor:
-               templateId: nina-test-agentgateway1
-               projectId: developers-369321
-               location: us-central1
+               templateId: <template-ID
+               projectId: <project-ID>
+               location: <location>
                policies:
                  auth:
                    gcp: 
                      type: AccessToken
            response:
            - googleModelArmor:
-               templateId: nina-test-agentgateway1
-               projectId: developers-369321
-               location: us-central1
+               templateId: <template-ID
+               projectId: <project-ID>
+               location: <location>
                policies:
                  auth:
                    gcp: 

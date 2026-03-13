@@ -67,9 +67,9 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
          promptGuard:
            request:
            - bedrockGuardrails:
-               identifier: pwetj8qk6knv
-               version: "DRAFT" 
-               region: us-east-1
+               identifier: <guardrail-ID>
+               version: "<version>" 
+               region: <region>>
                policies:
                  auth:
                    aws: 
@@ -77,9 +77,9 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
                        name: aws-secret
            response:
            - bedrockGuardrails:
-               identifier: pwetj8qk6knv
-               version: "DRAFT" 
-               region: us-east-1
+               identifier: <guardrail-ID>
+               version: "<version>" 
+               region: <region>>
                policies:
                  auth:
                    aws: 
