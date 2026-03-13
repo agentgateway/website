@@ -8,8 +8,6 @@ test:
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/openai.md
-    path: openai-setup
   - file: content/docs/kubernetes/main/llm/content-routing.md
     path: content-routing
 ---

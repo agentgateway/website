@@ -46,8 +46,18 @@ This combines the benefits of automatic intelligent load balancing with explicit
 2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use.
 
 {{< doc-test paths="load-balancing" >}}
-export ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-<insert your API key>}
+export OPENAI_API_KEY=${OPENAI_API_KEY:-<insert your API key>}
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openai-secret
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+type: Opaque
+stringData:
+  Authorization: $OPENAI_API_KEY
+---
 apiVersion: v1
 kind: Secret
 metadata:
@@ -55,7 +65,7 @@ metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 type: Opaque
 stringData:
-  Authorization: $ANTHROPIC_API_KEY
+  Authorization: ${ANTHROPIC_API_KEY:-$OPENAI_API_KEY}
 EOF
 {{< /doc-test >}}
 
@@ -92,6 +102,34 @@ Create a backend with multiple providers in the same priority group to enable lo
                      name: anthropic-secret
    EOF
    ```
+
+{{< doc-test paths="load-balancing" >}}
+kubectl apply -f- <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: loadbalanced-backend
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  ai:
+    groups:
+      - providers:
+          - name: openai-gpt4
+            openai:
+              model: gpt-4o
+            policies:
+              auth:
+                secretRef:
+                  name: openai-secret
+          - name: openai-gpt35
+            openai:
+              model: gpt-3.5-turbo
+            policies:
+              auth:
+                secretRef:
+                  name: openai-secret
+EOF
+{{< /doc-test >}}
 
 2. Create an HTTPRoute to route traffic to the backend.
 
