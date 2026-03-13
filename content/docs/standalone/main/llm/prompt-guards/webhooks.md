@@ -21,26 +21,22 @@ Configure a prompt guard to call your webhook service. You can use the [guardrai
 
 ```yaml
 cat <<EOF > config.yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        ai:
-          promptGuard:
-            request:
-            - webhook:
-                target:
-                  host: content-safety-webhook.example.com:8000
-            response:
-            - webhook:
-                target:
-                  host: content-safety-webhook.example.com:8000
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      - webhook:
+          target:
+            host: content-safety-webhook.example.com:8000
+      response:
+      - webhook:
+          target:
+            host: content-safety-webhook.example.com:8000
 EOF
 ```

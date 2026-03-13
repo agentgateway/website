@@ -15,29 +15,23 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 1. Create a configuration file and add the OpenAI moderation model that you want to use.
    ```yaml
    cat <<EOF > config.yaml
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4o-mini
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           ai:
-             promptGuard:
-               request:
-               - openAIModeration:
-                   model: omni-moderation-latest
-                   policies:
-                     backendAuth:
-                       key: "$OPENAI_API_KEY"
-                 rejection:
-                   body: "Content blocked by moderation policy"
+   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         request:
+         - openAIModeration:
+             model: omni-moderation-latest
+             policies:
+               backendAuth:
+                 key: "$OPENAI_API_KEY"
+           rejection:
+             body: "Content blocked by moderation policy"
    EOF
    ```
 
@@ -48,7 +42,7 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 
 3. Send a request to the LLM that triggers the built-in guardrail. Verify that the request is blocked with a 403 response message. 
    ```sh
-   curl -i http://localhost:3000/v1/chat/completions \
+   curl -i http://localhost:4000/v1/chat/completions \
      -H "content-type: application/json" \
      -d '{
        "model": "gpt-4o-mini",

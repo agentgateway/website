@@ -6,6 +6,8 @@ description: Apply Google Cloud Model Armor templates to sanitize LLM requests a
 
 [Google Cloud Model Armor](https://cloud.google.com/security/products/model-armor) lets you create safety templates in the Google Cloud console and apply them to LLM traffic. Model Armor sanitizes both user prompts and model responses against your configured policies, blocking content that violates your templates.
 
+Google Cloud Model Armor guardrails are model-agnostic and can be applied to any Large Language Model (LLM), whether it is hosted on AWS Bedrock, another cloud provider (like Google or Azure), or on-premises.
+
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -22,42 +24,35 @@ description: Apply Google Cloud Model Armor templates to sanitize LLM requests a
 
 ## Configure Google Model Armor
 
-Configure the `promptGuard` policy under `policies.ai` in your agentgateway configuration. You can apply Model Armor to the `request` phase, the `response` phase, or both.
+Configure the `guardrails` field under `llm.models[]` in your agentgateway configuration. You can apply Model Armor to the `request` phase, the `response` phase, or both.
 
 ```yaml
 cat <<EOF > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-       - ai:
-          name: gemini
-          provider:
-            openAI:
-              model: gemini-1.5-flash
-      policies:
-        backendAuth:
-          key: "$GOOGLE_API_KEY"
-        ai:
-          promptGuard:
-            request:
-            - googleModelArmor:
-                templateId: <your-template-id>
-                projectId: <your-project-id>
-                location: <location>
-                policies:
-                  backendAuth:
-                    gcp: {}
-            response:
-            - googleModelArmor:
-                templateId: <your-template-id>
-                projectId: <your-project-id>
-                location: <location>
-                policies:
-                  backendAuth:
-                    gcp: {}
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gemini-1.5-flash
+      apiKey: "$GOOGLE_API_KEY"
+    guardrails:
+      request:
+      - googleModelArmor:
+          templateId: <your-template-id>
+          projectId: <your-project-id>
+          location: <location>
+          policies:
+            backendAuth:
+              gcp: {}
+      response:
+      - googleModelArmor:
+          templateId: <your-template-id>
+          projectId: <your-project-id>
+          location: <location>
+          policies:
+            backendAuth:
+              gcp: {}
 EOF
 ```
 
@@ -71,7 +66,7 @@ EOF
 ## Test the guardrail
 
 ```sh
-curl "localhost:3000/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
+curl "localhost:4000/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
   "model": "",
   "messages": [
    {"role": "user", "content": "I want to harm myself"}

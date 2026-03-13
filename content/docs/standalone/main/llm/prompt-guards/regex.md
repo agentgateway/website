@@ -27,9 +27,14 @@ Agentgateway includes the following built-in patterns for common PII types that 
 Use custom patterns to match credentials, secrets, or application-specific sensitive data.
 
 ```yaml
-policies:
-  ai:
-    promptGuard:
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
       request:
       - regex:
           action: reject
@@ -64,57 +69,50 @@ The following example rejects requests that contain PII data, such as Social Sec
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4o-mini
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           ai:
-             promptGuard:
-               request:
-               - regex:
-                   action: reject
-                   rules:
-                   - pattern: SSN
-                   - pattern: Social Security
-                 rejection:
-                   status: 400
-                   headers:
-                     set:
-                       content-type: "application/json"
-                   body: |
-                     {
-                       "error": {
-                         "message": "Request rejected: Content contains sensitive information",
-                         "type": "invalid_request_error",
-                         "code": "content_policy_violation"
-                       }
-                     }
-               - regex:
-                   action: reject
-                   rules:
-                   - builtin: email
-                 rejection:
-                   status: 400
-                   headers:
-                     set:
-                       content-type: "application/json"
-                   body: |
-                     {
-                       "error": {
-                         "message": "Request blocked: Contains email address",
-                         "type": "invalid_request_error",
-                         "code": "pii_detected"
-                       }
-                     }
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         request:
+         - regex:
+             action: reject
+             rules:
+             - pattern: SSN
+             - pattern: Social Security
+           rejection:
+             status: 400
+             headers:
+               set:
+                 content-type: "application/json"
+             body: |
+               {
+                 "error": {
+                   "message": "Request rejected: Content contains sensitive information",
+                   "type": "invalid_request_error",
+                   "code": "content_policy_violation"
+                 }
+               }
+         - regex:
+             action: reject
+             rules:
+             - builtin: email
+           rejection:
+             status: 400
+             headers:
+               set:
+                 content-type: "application/json"
+             body: |
+               {
+                 "error": {
+                   "message": "Request blocked: Contains email address",
+                   "type": "invalid_request_error",
+                   "code": "pii_detected"
+                 }
+               }
    EOF
    ```
 
@@ -133,7 +131,7 @@ The following example rejects requests that contain PII data, such as Social Sec
 
 3. In a new terminal, send a request to your LLM provider. Verify that the request succeeds. 
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
@@ -157,7 +155,7 @@ The following example rejects requests that contain PII data, such as Social Sec
 
 4. Send a request containing the SSN keyword. The prompt guard blocks the request and returns your custom error response.
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
@@ -178,7 +176,7 @@ The following example rejects requests that contain PII data, such as Social Sec
 
 5. Send another request with an email address. The prompt guard blocks it by using the built-in `email` pattern.
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
@@ -205,26 +203,19 @@ You can also filter LLM responses to redact sensitive data before it reaches the
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4o-mini
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           ai:
-             promptGuard:
-               response:
-               - regex:
-                   action: mask
-                   rules:
-                   - builtin: phoneNumber
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         model: gpt-4o-mini
+         apiKey: "$OPENAI_API_KEY"
+       guardrails:
+         response:
+         - regex:
+             action: mask
+             rules:
+             - builtin: phoneNumber
    EOF
    ```
 
@@ -235,7 +226,7 @@ You can also filter LLM responses to redact sensitive data before it reaches the
 
 3. In a new terminal, send a request to your LLM provider with a phone number and verify that the number is masked in your response. 
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
