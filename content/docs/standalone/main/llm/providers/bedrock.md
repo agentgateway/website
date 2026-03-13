@@ -16,34 +16,30 @@ Before you can use Bedrock as an LLM provider, you must authenticate by using th
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: bedrock
-          provider:
-            bedrock:
-              region: us-west-2
-              # Optional; overrides the model in requests
-              model: amazon.titan-text-express-v1
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      region: us-west-2
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `ai.name` | The name of the LLM provider for this AI backend. |
-| `bedrock.region` | The AWS region. |
-| `bedrock.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
+| `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.region` | The AWS region where the Bedrock model is hosted. |
 
 ## Token counting
 
 Bedrock supports token counting for Anthropic models via the `count_tokens` endpoint. Agentgateway automatically handles the required formatting for Bedrock's count-tokens endpoint, including adding the `max_tokens: 1` parameter and Base64 encoding the request body.
 
 ```bash
-curl -X POST http://localhost:3000/v1/messages/count_tokens \
+curl -X POST http://localhost:4000/v1/messages/count_tokens \
   -H "Content-Type: application/json" \
   -d '{
     "model": "anthropic.claude-3-5-sonnet-20241022-v2:0",

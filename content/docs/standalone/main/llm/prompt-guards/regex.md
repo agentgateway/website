@@ -67,7 +67,7 @@ The following example rejects requests that contain PII data, such as Social Sec
 
 1. Create a configuration file with regex prompt guard policies.
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:
@@ -201,7 +201,7 @@ You can also filter LLM responses to redact sensitive data before it reaches the
 
 1. Create a configuration that masks phone numbers in LLM responses by using the built-in `phoneNumber` pattern.
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
      models:

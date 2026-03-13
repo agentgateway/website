@@ -147,7 +147,7 @@ spec:
   - protocol: TCP
     port: 3001
     targetPort: 3001
-    appProtocol: kgateway.dev/mcp
+    appProtocol: agentgateway.dev/mcp
   type: ClusterIP
 EOF
 ```
@@ -227,7 +227,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8000
-    appProtocol: kgateway.dev/mcp
+    appProtocol: agentgateway.dev/mcp
   type: ClusterIP
 EOF
 ```
@@ -239,7 +239,7 @@ kubectl rollout status deploy/mcp-server-everything -n agentgateway-system --tim
 kubectl rollout status deploy/mcp-website-fetcher -n agentgateway-system --timeout=60s
 ```
 
-> **Key detail**: Both services have the label `mcp-federation: "true"` and `appProtocol: kgateway.dev/mcp`. This is how AgentGateway discovers and federates them.
+> **Key detail**: Both services have the label `mcp-federation: "true"` and `appProtocol: agentgateway.dev/mcp`. This is how AgentGateway discovers and federates them.
 
 ## Step 5: Create the Multiplexed MCP Backend
 

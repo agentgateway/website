@@ -58,6 +58,7 @@
 
 ```sh {paths="standard"}
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
+--version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
 

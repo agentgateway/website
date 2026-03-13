@@ -27,7 +27,7 @@ Google Cloud Model Armor guardrails are model-agnostic and can be applied to any
 Configure the `guardrails` field under `llm.models[]` in your agentgateway configuration. You can apply Model Armor to the `request` phase, the `response` phase, or both.
 
 ```yaml
-cat <<EOF > config.yaml
+cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
   models:
