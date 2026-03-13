@@ -370,7 +370,7 @@ Specify timeouts for a specific route.
    http.status=504 protocol=http error="upstream call timeout" duration=2001ms
    ```
 
-{{< doc-test paths="all" >}}
+{{< doc-test paths="timeout-in-httproute,timeout-in-trafficpolicy,timeout-in-gatewaylistener" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for httpbin-timeout HTTPRoute to be accepted
   wait:
