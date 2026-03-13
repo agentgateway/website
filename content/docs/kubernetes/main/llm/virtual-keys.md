@@ -4,7 +4,7 @@ weight: 32
 description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
 test:
   virtual-keys-auth:
-  - file: content/docs/kubernetes/latest/quickstart/helm.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
