@@ -4,7 +4,9 @@ weight: 20
 description: Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content.
 ---
 
-[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you define content policies in the AWS console and apply them to LLM traffic passing through agentgateway. When a request or response violates a guardrail policy, agentgateway blocks the interaction and returns an error.
+[AWS Bedrock Guardrails](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails.html) let you define content policies in the AWS console and apply them to LLM traffic passing through the agentgateway prxoy. When a request or response violates a guardrail policy, agentgateway blocks the interaction and returns an error.
+
+AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Language Model (LLM), whether it is hosted on AWS Bedrock, another cloud provider (like Google or Azure), or on-premises.
 
 ## Before you begin
 
@@ -15,7 +17,7 @@ description: Apply AWS Bedrock Guardrails to filter LLM requests and responses f
 
 ## Configure Bedrock Guardrails
 
-Configure `guardrails` on a model in your agentgateway configuration. You can apply guardrails to the `request` phase, the `response` phase, or both.
+Configure the `guardrails` field under `llm.models[]` in your agentgateway configuration. You can apply guardrails to the `request` phase, the `response` phase, or both.
 
 ```yaml
 cat <<'EOF' > config.yaml
@@ -23,9 +25,10 @@ cat <<'EOF' > config.yaml
 llm:
   models:
   - name: "*"
-    provider: bedrock
+    provider: openAI
     params:
-      awsRegion: us-west-2
+      model: amazon.titan-text-express-v1
+      apiKey: "$BEDROCK_API_KEY"
     guardrails:
       request:
       - bedrockGuardrails:
@@ -51,6 +54,6 @@ EOF
 | `guardrailIdentifier` | The identifier of the Bedrock guardrail to apply. Retrieve this by running `aws bedrock list-guardrails`. |
 | `guardrailVersion` | The version of the guardrail. Use `DRAFT` for development or a specific version number for production. |
 | `region` | The AWS region where the guardrail is configured, such as `us-west-2`. |
-| `policies.backendAuth.aws` | AWS authentication configuration. Agentgateway uses the credentials available in the environment, such as environment variables or an instance profile. |
+| `policies.backendAuth.aws` | AWS authentication configuration. Agentgateway uses the credentials available in the environment, such as environment variables or an instance profile.  |
 
 When a request or response matches a guardrail policy, agentgateway blocks the interaction and returns an error such as: `The request was rejected due to inappropriate content`.
