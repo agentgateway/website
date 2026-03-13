@@ -167,7 +167,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: openai-backend
-    bodyJsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
@@ -182,7 +182,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: anthropic-backend
-    bodyJsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
@@ -197,7 +197,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: content-routing
-    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"

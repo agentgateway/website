@@ -166,7 +166,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: loadbalanced-backend
-    bodyJsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"
@@ -181,7 +181,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: loadbalanced-route
-    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"

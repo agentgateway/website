@@ -85,7 +85,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
          metadata:
            namespace: agentgateway-system
            name: llm-token-budget
-       bodyJsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"

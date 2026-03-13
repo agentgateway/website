@@ -91,7 +91,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: default
         name: httpbun
-    bodyJsonPath: "$.status.availableReplicas"
+    jsonPath: "$.status.availableReplicas"
     jsonPathExpectation:
       comparator: greaterThan
       value: 0
@@ -187,7 +187,7 @@ Route incoming traffic from the gateway to the {{< reuse "agw-docs/snippets/back
          metadata:
            namespace: agentgateway-system
            name: httpbun-llm
-       bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"
@@ -201,7 +201,7 @@ Route incoming traffic from the gateway to the {{< reuse "agw-docs/snippets/back
          metadata:
            namespace: agentgateway-system
            name: httpbun-llm
-       bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+       jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"

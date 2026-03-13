@@ -164,7 +164,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: agentgateway-proxy
-    bodyJsonPath: "$.status.availableReplicas"
+    jsonPath: "$.status.availableReplicas"
     jsonPathExpectation:
       comparator: greaterThan
       value: 0
@@ -187,7 +187,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: agentgateway-system
         name: agentgateway-proxy
-    bodyJsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
     jsonPathExpectation:
       comparator: exists
     polling:
@@ -214,7 +214,7 @@ YAMLTest -f - <<'EOF'
       metadata:
         namespace: httpbin
         name: httpbin
-    bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
     jsonPathExpectation:
       comparator: equals
       value: "True"

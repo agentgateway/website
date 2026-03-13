@@ -445,7 +445,7 @@ Simulate a failure for the sample app so that you can verify that the request is
         metadata:
           namespace: httpbin
           name: retry
-      bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
       jsonPathExpectation:
         comparator: equals
         value: "True"

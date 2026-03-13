@@ -388,7 +388,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         metadata:
           namespace: httpbin
           name: retry
-      bodyJsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
       jsonPathExpectation:
         comparator: equals
         value: "True"
