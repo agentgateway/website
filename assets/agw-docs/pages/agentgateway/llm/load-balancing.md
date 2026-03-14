@@ -145,15 +145,15 @@ EOF
        - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /chat
-       backendRefs:
-       - name: loadbalanced-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /chat
+         backendRefs:
+           - name: loadbalanced-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
@@ -232,7 +232,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.total_tokens"
         comparator: greaterThan
         value: 0
@@ -251,7 +251,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.total_tokens"
         comparator: greaterThan
         value: 0
@@ -318,21 +318,21 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
        - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /test
-       backendRefs:
-       - name: stable-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         weight: 80
-       - name: canary-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-         weight: 20
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /test
+         backendRefs:
+           - name: stable-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+             weight: 80
+           - name: canary-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+             weight: 20
    EOF
    ```
 

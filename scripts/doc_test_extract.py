@@ -104,7 +104,10 @@ class Extractor:
         for source in self.sources:
             source_file = self._resolve_workspace_path(source["file"])
             selectors = set(source.get("paths", []))
-            self.path_selectors_by_file[source_file] = selectors
+            if source_file in self.path_selectors_by_file:
+                self.path_selectors_by_file[source_file].update(selectors)
+            else:
+                self.path_selectors_by_file[source_file] = selectors
 
         self.file_cache: Dict[Path, FileResult] = {}
         self.visited: Set[Path] = set()

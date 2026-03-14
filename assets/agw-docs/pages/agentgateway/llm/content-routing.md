@@ -103,34 +103,34 @@ This example shows how to route requests to different backends based on the `mod
        - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
-     # Route GPT models to OpenAI
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /v1/chat/completions
-         headers:
-         - type: RegularExpression
-           name: x-model
-           value: "^gpt-.*"
-       backendRefs:
-       - name: openai-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-     # Route Claude models to Anthropic
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /v1/chat/completions
-         headers:
-         - type: RegularExpression
-           name: x-model
-           value: "^claude-.*"
-       backendRefs:
-       - name: anthropic-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       # Route GPT models to OpenAI
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /v1/chat/completions
+             headers:
+               - type: RegularExpression
+                 name: x-model
+                 value: "^gpt-.*"
+         backendRefs:
+           - name: openai-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       # Route Claude models to Anthropic
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /v1/chat/completions
+             headers:
+               - type: RegularExpression
+                 name: x-model
+                 value: "^claude-.*"
+         backendRefs:
+           - name: anthropic-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
@@ -286,7 +286,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.model"
         comparator: contains
         value: "gpt"
@@ -349,40 +349,40 @@ This example shows routing based on a custom `priority` field in the request bod
        - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /v1/chat/completions
-         headers:
-         - type: Exact
-           name: x-priority
-           value: "high"
-       filters:
-       - type: ExtensionRef
-         extensionRef:
-           group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
-           kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-           name: extract-priority
-       backendRefs:
-       - name: high-priority-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /v1/chat/completions
-       filters:
-       - type: ExtensionRef
-         extensionRef:
-           group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
-           kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-           name: extract-priority
-       backendRefs:
-       - name: standard-priority-backend
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /v1/chat/completions
+             headers:
+               - type: Exact
+                 name: x-priority
+                 value: "high"
+         filters:
+           - type: ExtensionRef
+             extensionRef:
+               group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
+               kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+               name: extract-priority
+         backendRefs:
+           - name: high-priority-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /v1/chat/completions
+         filters:
+           - type: ExtensionRef
+             extensionRef:
+               group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
+               kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+               name: extract-priority
+         backendRefs:
+           - name: standard-priority-backend
+             namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 

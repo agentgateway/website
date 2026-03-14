@@ -111,7 +111,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.completion_tokens"
         comparator: equals
         value: 100
@@ -133,7 +133,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.completion_tokens"
         comparator: equals
         value: 10

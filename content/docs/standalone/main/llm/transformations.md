@@ -106,7 +106,7 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
        type: local
      expect:
        statusCode: 200
-       jsonPath:
+       bodyJsonPath:
          - path: "$.usage.completion_tokens"
            comparator: equals
            value: 10

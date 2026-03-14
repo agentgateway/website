@@ -52,11 +52,31 @@ jobs:
       - name: Install yamltest
         run: npm install -g yamltest@latest
 
+      - name: Get changed markdown files
+        id: changed-files
+        if: github.event_name == 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          FILES=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
+            --paginate --jq '.[].filename' | grep '^content/.*\.md$' | tr '\n' ' ' || true)
+          echo "files=${FILES}" >> $GITHUB_OUTPUT
+          echo "files=${FILES}"
+
       - name: Run doc tests
-        run: python3 scripts/doc_test_run.py --repo-root .
+        run: |
+          if [ -n "$CHANGED_FILES" ]; then
+            echo "Running doc tests for changed files only."
+            python3 scripts/doc_test_run.py --repo-root . --file $CHANGED_FILES
+          else
+            echo "Running doc tests for all files."
+            python3 scripts/doc_test_run.py --repo-root .
+          fi
         env:
           DEBUG_MODE: true
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
+          PYTHONUNBUFFERED: '1'
 
       - name: Generate job summary
         id: summary
