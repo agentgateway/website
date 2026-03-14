@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Doc test guides skill
 
-Use this skill when adding tests to documentation guides in the `agentgateway-oss-website` repo so that code blocks and hidden steps are assembled into runnable scripts. The canonical reference is [scripts/TEST_FRAMEWORK.md](scripts/TEST_FRAMEWORK.md). This skill summarizes the workflow and gotchas for **guides** (especially standalone/quickstart).
+Use this skill when adding tests to documentation guides in the `agentgateway/website` repo so that code blocks and hidden steps are assembled into runnable scripts. The canonical reference is [scripts/TEST_FRAMEWORK.md](scripts/TEST_FRAMEWORK.md). This skill summarizes the workflow and gotchas for **guides** (especially standalone/quickstart).
 
 ---
 
