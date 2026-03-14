@@ -12,7 +12,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 
 ## When to use
 
-- Adding a new test scenario to a guide for the agentgateway standalone or Kubernetes docs.
+- Adding a new test scenario to a guide for the agentgateway standalone or agentgateway on Kubernetes open source docs.
 - Planning which files to change and how to tag paths for a doc test.
 - Debugging generated scripts (order, env vars, background processes).
 
