@@ -381,7 +381,7 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
         return {
             "status": "failed",
             "checks": checks,
-            "error": "Test script contains 'kubectl port-forward', which is not supported in automated tests.",
+            "error": "Test shell script contains 'kubectl port-forward', which is not supported in automated tests.",
         }
 
     create_code, create_output = run_command(["kind", "create", "cluster", "--name", cluster_name], repo_root)
