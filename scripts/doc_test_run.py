@@ -375,6 +375,15 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
     logger.info('\n')
     logger.info("=== Running test: %s (%s) ===", test_case.name, doc_rel)
 
+    script_content = test_case.script_path.read_text(encoding="utf-8")
+    if re.search(r"\bkubectl\s+port-forward\b", script_content):
+        logger.warning("SKIPPED (port-forward): %s", doc_rel)
+        return {
+            "status": "failed",
+            "checks": checks,
+            "error": "Test script contains 'kubectl port-forward', which is not supported in automated tests.",
+        }
+
     create_code, create_output = run_command(["kind", "create", "cluster", "--name", cluster_name], repo_root)
     if create_code != 0:
         # Best-effort context collection even if cluster creation partially failed
