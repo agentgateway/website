@@ -193,7 +193,7 @@ The simplest way to get involved with kgateway is by joining our [Discord](https
 
 ## Contributors
 
-Thanks to the 40+ contributors who made this release possible:   
+Thanks to the 28 contributors who worked on agentgateway between the previous v0.12 release and v1.0, as well as the 40+ contributors who have been with us since we began this journey!  
 
 {{< reuse-image src="img/blog/v1-release-blog/contributors.png" width="500px" >}}
 
