@@ -185,4 +185,4 @@ binds:
 
 ```
 
-For more information about choosing between configuration modes, see the [Routing-based configuration guide](../configuration-modes/).
+For more information about choosing between configuration modes, see the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).

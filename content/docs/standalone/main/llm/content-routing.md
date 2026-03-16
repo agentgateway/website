@@ -255,4 +255,4 @@ When implementing content-based routing, be aware of these limitations:
 
 - Learn about [transformations](../../configuration/traffic-management/transformations/) for more advanced request manipulation
 - Set up [backend routing](../../configuration/routes/) for multiple backends
-- Configure [rate limiting](./spending/) to control costs per route
+- Configure [rate limiting]({{< link-hextra path="/llm/spending/" >}}) to control costs per route

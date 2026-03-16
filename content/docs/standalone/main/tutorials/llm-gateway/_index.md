@@ -314,7 +314,7 @@ Example output:
 Route to different LLM providers based on a header. This lets you switch providers without changing your application code.
 
 {{< callout type="info" >}}
-This example uses the traditional `binds/listeners/routes` configuration format because it demonstrates header-based HTTP routing. For simpler use cases, see the simplified `llm:` format in the examples above or learn more in the [Routing-based configuration guide](../../llm/configuration-modes/).
+This example uses the traditional `binds/listeners/routes` configuration format because it demonstrates header-based HTTP routing. For simpler use cases, see the simplified `llm:` format in the examples above or learn more in the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).
 {{< /callout >}}
 
 ### Step 1: Set your API keys

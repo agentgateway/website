@@ -76,7 +76,7 @@ The response follows the prepended and appended guidelines even though they were
 Dynamic templates use CEL transformations to inject variables from the request context into prompts. This is ideal for personalizing prompts with user identity, adding request metadata, or applying conditional prompt modification based on headers or claims.
 
 {{< callout type="info" >}}
-JWT claims in transformations require JWT authentication to be configured. See the [authentication documentation](https://agentgateway.dev/docs/standalone/latest/configuration/security/authentication/) for setup instructions.
+JWT claims in transformations require JWT authentication to be configured. See the [authentication documentation](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) for setup instructions.
 {{< /callout >}}
 
 ### Inject user identity from headers
@@ -252,4 +252,4 @@ This applies both static prompts (prepend/append) and dynamic user context (from
 
 - Learn about [CEL expressions](/docs/reference/cel/) for advanced templating.
 - Explore [transformations](/docs/configuration/traffic-management/transformations/) for request/response modification.
-- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/authentication/) to use JWT claims in templates.
+- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) to use JWT claims in templates.
