@@ -4,7 +4,7 @@ Review the following information about supported release versions for the [agent
 
 | agentgateway | Release date | Kubernetes | Gateway API`*` | Helm | Istio`†` |
 |----------|--------------|------------|----------------|------|----------|
-| 1.0.x | 13 Mar 2026 | 1.31 - 1.35 | 1.5.x | >= 3.12 | tbd |
+| 1.0.x | 16 Mar 2026 | 1.31 - 1.35 | 1.5.x | >= 3.12 | tbd |
 | 2.2.x | 09 Feb 2026 | 1.31 - 1.35 | 1.4.x | >= 3.12 | 1.23 - 1.27 |
 
 `*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/implementations/#agent-gateway-with-kgateway) and agentgateway conformance report per version, such as Gateway API [v1.5.0](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.5.0/agentgateway-agentgateway).
