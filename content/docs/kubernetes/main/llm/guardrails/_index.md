@@ -1,6 +1,6 @@
 ---
 title: Guardrails
-weight: 60
+weight: 55
 description: Protect LLM interactions with prompt guards that evaluate and filter requests and responses for harmful or policy-violating content.
 ---
 

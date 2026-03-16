@@ -1,6 +1,6 @@
 ---
 title: Content-based routing
-weight: 36
+weight: 45
 description: Route requests to different LLM backends based on request body content, such as the requested model name.
 test:
   content-routing-model:
