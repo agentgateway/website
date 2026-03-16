@@ -96,9 +96,15 @@ jobs:
         with:
           title: Link Checker Report - agentgateway OSS
           content-filepath: ./artifacts/agentgateway-oss-links.md
-          labels: links,bug
+
+      - name: Apply labels to issue
+        if: steps.lychee.outputs.has_failures == 'true'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh issue edit ${{ steps.create-issue.outputs.issue-number }} --add-label "links,bug" --repo ${{ github.repository }}
 
       - name: Set issue URL for Slack
+        if: steps.lychee.outputs.has_failures == 'true'
         id: issue-url
         env:
           ISSUE_NUMBER: ${{ steps.create-issue.outputs.issue-number }}
