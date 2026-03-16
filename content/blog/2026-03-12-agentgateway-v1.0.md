@@ -1,6 +1,6 @@
 ---
 title: "A Year In: agentgateway Hits v1.0.0 — and the Pieces Are Converging"
-publishDate: 2026-03-12
+publishDate: 2026-03-16
 author: "Sebastian Maniak"
 description: "A Year In: agentgateway Hits v1.0.0 — and the Pieces Are Converging"
 ---
@@ -39,7 +39,7 @@ A few things that define the project:
 
 ## Why v1.0 Matters
 
-v1.0 marks an important milestone for the agentgateway project: it is now fully independent\!
+v1.0 marks an important milestone for the agentgateway project: it is now fully independent!
 
 ### Decoupling from kgateway
 
@@ -53,18 +53,18 @@ Documentation has also been updated to reflect the new structure, with v1.0.0 be
 
 ### One release, one set of artifacts
 
-* The v1.0.0 alpha releases publish a consistent set of artifacts:
-    * Docker images (controller \+ gateway)
-    * Helm charts (agentgateway \+ agentgateway-crds)
-    * Binaries
-        * cr.agentgateway.dev/agentgateway:v1.0.0
-        * cr.agentgateway.dev/controller:v1.0.0
-        * cr.agentgateway.dev/charts/agentgateway:v1.0.0
-        * cr.agentgateway.dev/charts/agentgateway-crds:v1.0.0
+The v1.0.0 alpha releases publish a consistent set of artifacts:
+* Docker images (controller \+ gateway)
+* Helm charts (agentgateway \+ agentgateway-crds)
+  * Binaries
+      * cr.agentgateway.dev/agentgateway:v1.0.0
+      * cr.agentgateway.dev/controller:v1.0.0
+      * cr.agentgateway.dev/charts/agentgateway:v1.0.0
+      * cr.agentgateway.dev/charts/agentgateway-crds:v1.0.0
 
 ## 🌟 New features
 
-agentgateway added a number of exciting features in v1.0. You can find the full list of new features in the [release notes](https://agentgateway.dev/docs/kubernetes/main/reference/release-notes/).
+Agentgateway added a number of exciting features in v1.0. You can find the full list of new features in the [release notes](https://agentgateway.dev/docs/kubernetes/main/reference/release-notes/).
 
 ### Kubernetes Gateway API version 1.5.0
 
@@ -140,8 +140,6 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-### 
-
 ### CEL 2.0
 
 This release includes a major refactor to the CEL implementation in agentgateway to improve scalability and performance. The following user facing changes were introduced:
@@ -183,7 +181,7 @@ This native approach simplifies operations and dramatically improves performance
 
 ## Availability
 
-agentgateway v1.0 is available for download on [GitHub](https://github.com/agentgateway/agentgateway/releases).
+Agentgateway v1.0 is available for download on [GitHub](https://github.com/agentgateway/agentgateway/releases).
 
 To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/).
 
