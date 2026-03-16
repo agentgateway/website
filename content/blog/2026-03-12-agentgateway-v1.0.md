@@ -73,9 +73,9 @@ Agentgateway added a number of exciting features in v1.0. You can find the full 
 The Kubernetes Gateway API dependency is updated to support version 1.5.0. This version introduces several changes, including:
 
 * **XListenerSets promoted to ListenerSets**: The experimental XListenerSet API is promoted to the standard ListenerSet API in version 1.5.0. The experimental XListenerSet API is promoted to ListenerSet in version 1.5.0. You no longer need the `X` prefix—existing experimental resources can continue to use v1alpha, but the API kind should be updated to `ListenerSet`.
-* **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs]({{< link-hextra path="/setup/listeners/mtls/" >}}).
-* **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin. For an example, see the [CORS]({{< link-hextra path="/security/cors/" >}}) guide.
-* **BackendTLS**: You can now apply BackendTLSPolicy resources to your routes to originate a TLS connection to a backend. For an example, see the [BackendTLS]({{< link-hextra path="/security/backendtls/" >}}) guide.
+* **AllowInsecureFallback mode for mTLS listeners**: If you set up mTLS listeners on your agentgateway proxy, you can now configure the proxy to establish a TLS connection, even if the client TLS certificate could not be validated successfully. For more information, see the [mTLS listener docs](/docs/kubernetes/latest/setup/listeners/mtls/).
+* **CORS wildcard support**: The `allowOrigins` field now supports wildcard `*` origins to allow any origin. For an example, see the [CORS](/docs/kubernetes/latest/security/cors/) guide.
+* **BackendTLS**: You can now apply BackendTLSPolicy resources to your routes to originate a TLS connection to a backend. For an example, see the [BackendTLS](/docs/kubernetes/latest/security/backendtls/) guide.
 * Agentgateway continues to pass all Gateway API conformance tests (standard, extended, and experimental). TLSRoute is promoted; for users on the standard channel, use v1 instead of v1alpha2.
 
 ### Simplified LLM configuration
@@ -154,7 +154,7 @@ This release includes a major refactor to the CEL implementation in agentgateway
 
 Make sure to update and verify any existing CEL expressions that you use in your environment.
 
-For more information, see the [CEL expression]({{< link-hextra path="/reference/cel/" >}}) reference.
+For more information, see the [CEL expression](/docs/standalone/latest/reference/cel/) reference.
 
 ### PreRouting phase support for policies
 
