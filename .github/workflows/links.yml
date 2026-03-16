@@ -99,6 +99,7 @@ jobs:
 
       - name: Apply labels to issue
         if: steps.lychee.outputs.has_failures == 'true'
+        shell: bash
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: gh issue edit ${{ steps.create-issue.outputs.issue-number }} --add-label "links,bug" --repo ${{ github.repository }}
