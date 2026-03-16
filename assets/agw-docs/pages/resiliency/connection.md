@@ -1,10 +1,10 @@
-Manage HTTP connections to an upstream service.
+Manage HTTP connections to a proxy.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Configure HTTP protocol connections {#http}
 
-You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to a service in your cluster. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to only HTTP/1 or HTTP/2 requests when indicated in the name.
+You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the proxy gateway. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to only HTTP/1 or HTTP/2 requests when indicated in the name.
 
 ### General settings {#general}
 
