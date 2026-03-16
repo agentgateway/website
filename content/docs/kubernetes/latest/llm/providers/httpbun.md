@@ -4,11 +4,11 @@ weight: 100
 description:
 test:
   setup-httpbun-llm:
-  - file: content/docs/kubernetes/main/install/helm.md
+  - file: content/docs/kubernetes/latest/install/helm.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/httpbun.md
+  - file: content/docs/kubernetes/latest/llm/providers/httpbun.md
     path: setup-httpbun-llm
 ---
 

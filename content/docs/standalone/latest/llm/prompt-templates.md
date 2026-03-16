@@ -4,7 +4,7 @@ weight: 55
 description: Use static and dynamic prompt templates to customize LLM requests.
 test:
   prompt-templates:
-  - file: content/docs/standalone/main/llm/prompt-templates.md
+  - file: content/docs/standalone/latest/llm/prompt-templates.md
     path: prompt-templates
 ---
 
