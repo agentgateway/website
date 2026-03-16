@@ -18,11 +18,13 @@ For agentgateway, that convergence looks like this:
 
 None of those numbers alone tell the story. All of them arriving together do.
 
-<img width="1304" height="613" alt="Screenshot 2026-03-12 at 12 28 40 PM" src="https://github.com/user-attachments/assets/6c8f6ed9-d03f-4900-859e-fbdc7e4dfbf7" />
+{{< reuse-image src="img/blog/v1-release-blog/1m-image-pulls.png" width="500px" >}}
 
 ---
 
 ## What Is agentgateway?
+
+<img width="1304" height="613" alt="Screenshot 2026-03-12 at 12 28 40 PM" src="https://github.com/user-attachments/assets/6c8f6ed9-d03f-4900-859e-fbdc7e4dfbf7" />
 
 Agentgateway is an open-source LLM, MCP, and A2A gateway hosted under the Linux Foundation. It's a connectivity data plane for agentic AI — designed for the traffic patterns that traditional API gateways were never built to handle.
 
