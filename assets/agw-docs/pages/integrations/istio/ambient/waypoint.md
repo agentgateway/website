@@ -1,3 +1,7 @@
+{{< callout type="warning" >}}
+The waypoint integration for Envoy-based gateway proxies is deprecated and is planned to be removed in version 2.2. If you want to use AI capabilities, use an [agentgateway proxy]({{< link-hextra path="/setup/">}}) instead.
+{{< /callout >}}
+
 ## Create a waypoint proxy
 
 Use the `{{< reuse "/agw-docs/snippets/waypoint-class.md" >}}` GatewayClass to deploy {{< reuse "/agw-docs/snippets/kgateway.md" >}} as a waypoint proxy in your cluster.

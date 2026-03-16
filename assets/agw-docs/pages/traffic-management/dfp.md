@@ -95,15 +95,10 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Remove the DFP Backend. 
-   ```sh
-   kubectl delete backend dfp-backend -n httpbin
-   ```
-
-2. Remove the HTTPRoute. 
-   ```sh
-   kubectl delete httproute dfp-httproute -n httpbin
-   ```
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} dfp-backend -n httpbin
+kubectl delete httproute dfp-httproute -n httpbin
+```
 
 
 

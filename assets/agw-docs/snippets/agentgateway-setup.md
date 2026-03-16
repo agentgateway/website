@@ -90,9 +90,13 @@ YAMLTest -f - <<'EOF'
     jsonPath: "$.status.loadBalancer.ingress[0].ip"
     jsonPathExpectation:
       comparator: exists
-    targetEnv: INGRESS_GW_ADDRESS
     polling:
       timeoutSeconds: 300
       intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
 EOF
+
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 {{< /doc-test >}}
