@@ -10,14 +10,14 @@ You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP 
 
 You can use the `maxBufferSize` setting for both HTTP/1 and HTTP/2.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies connection configuration to the httpbin app.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies connection configuration to the proxy.
 
    ```yaml {paths="connection-general"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: httpbin-maxbuffer
+     name: maxbuffer
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
@@ -49,10 +49,10 @@ You can use the `maxBufferSize` setting for both HTTP/1 and HTTP/2.
    Example output:
    ```json {linenos=table,hl_lines=[18],filename="http://localhost:15000/config_dump"}
    {
-     "key": "frontend/agentgateway-system/httpbin-maxbuffer:frontend-http:agentgateway-system/agentgateway-proxy",
+     "key": "frontend/agentgateway-system/maxbuffer:frontend-http:agentgateway-system/agentgateway-proxy",
      "name": {
        "kind": "AgentgatewayPolicy",
-       "name": "httpbin-maxbuffer",
+       "name": "maxbuffer",
        "namespace": "agentgateway-system"
      },
      "target": {
@@ -81,7 +81,7 @@ You can use the `maxBufferSize` setting for both HTTP/1 and HTTP/2.
 
 {{< doc-test paths="connection-general" >}}
 YAMLTest -f - <<'EOF'
-- name: wait for httpbin-maxbuffer policy in config dump
+- name: wait for maxbuffer policy in config dump
   retries: 20
   http:
     url: http://localhost:15000
@@ -108,21 +108,21 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-maxbuffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} maxbuffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 ### HTTP/1.1 settings {#http1}
 
 Use these settings to control header limits and idle connection behavior for HTTP/1.1 connections.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/1.1 connection configuration to the httpbin app.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/1.1 connection configuration to the proxy.
 
    ```yaml {paths="connection-http1"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: httpbin-http1
+     name: http1
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
@@ -156,10 +156,10 @@ Use these settings to control header limits and idle connection behavior for HTT
    Example output:
    ```json {linenos=table,hl_lines=[19,20],filename="http://localhost:15000/config_dump"}
    {
-     "key": "frontend/agentgateway-system/httpbin-http1:frontend-http:agentgateway-system/agentgateway-proxy",
+     "key": "frontend/agentgateway-system/http1:frontend-http:agentgateway-system/agentgateway-proxy",
      "name": {
        "kind": "AgentgatewayPolicy",
-       "name": "httpbin-http1",
+       "name": "http1",
        "namespace": "agentgateway-system"
      },
      "target": {
@@ -188,7 +188,7 @@ Use these settings to control header limits and idle connection behavior for HTT
 
 {{< doc-test paths="connection-http1" >}}
 YAMLTest -f - <<'EOF'
-- name: wait for httpbin-http1 policy in config dump
+- name: wait for http1 policy in config dump
   retries: 20
   http:
     url: http://localhost:15000
@@ -216,21 +216,21 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 ### HTTP/2 flow control {#http2-flow}
 
 Use these settings to tune HTTP/2 flow control, which governs how much data can be in-flight at the stream and connection levels.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/2 flow control configuration to the httpbin app.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/2 flow control configuration to the proxy.
 
    ```yaml {paths="connection-http2-flow"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: httpbin-http2-flow
+     name: http2-flow
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
@@ -267,10 +267,10 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
    Example output:
    ```json {linenos=table,hl_lines=[21,22,23],filename="http://localhost:15000/config_dump"}
    {
-     "key": "frontend/agentgateway-system/httpbin-http2-flow:frontend-http:agentgateway-system/agentgateway-proxy",
+     "key": "frontend/agentgateway-system/http2-flow:frontend-http:agentgateway-system/agentgateway-proxy",
      "name": {
        "kind": "AgentgatewayPolicy",
-       "name": "httpbin-http2-flow",
+       "name": "http2-flow",
        "namespace": "agentgateway-system"
      },
      "target": {
@@ -299,7 +299,7 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
 
 {{< doc-test paths="connection-http2-flow" >}}
 YAMLTest -f - <<'EOF'
-- name: wait for httpbin-http2-flow policy in config dump
+- name: wait for http2-flow policy in config dump
   retries: 20
   http:
     url: http://localhost:15000
@@ -327,7 +327,7 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 ### HTTP/2 keepalive {#http2-keepalive}
