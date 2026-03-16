@@ -19,6 +19,10 @@ To learn more about CEL, see the following resources:
 - [CEL expression reference]({{< link-hextra path="/reference/cel/" >}})
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 
+{{< callout type="info" >}}
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+{{< /callout >}}
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -107,7 +111,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.completion_tokens"
         comparator: equals
         value: 100
@@ -129,7 +133,7 @@ YAMLTest -f - <<'EOF'
     type: local
   expect:
     statusCode: 200
-    jsonPath:
+    bodyJsonPath:
       - path: "$.usage.completion_tokens"
         comparator: equals
         value: 10
@@ -204,4 +208,4 @@ llm:
 
 - Learn about [CEL expressions](/docs/reference/cel/) for advanced expression logic.
 - Explore [transformations]({{< link-hextra path="/llm/transformations/" >}}) for more LLM request transformation examples.
-- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/authentication/) to use JWT claims in transformations.
+- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) to use JWT claims in transformations.

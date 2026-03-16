@@ -10,7 +10,7 @@ The P2C algorithm provides better performance than simple round-robin, random, o
 ## Configuration
 
 {{< callout type="info" >}}
-Provider groups with load balancing require the traditional `binds/listeners/routes` configuration format. For more information, see the [Routing-based configuration guide](../../configuration-modes/).
+Provider groups with load balancing require the traditional `binds/listeners/routes` configuration format. For more information, see the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).
 {{< /callout >}}
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}} The example sets two providers, OpenAI and Gemini. Each provider can have its own individual settings, such as host and path overrides, API keys, backend TLS, and more.

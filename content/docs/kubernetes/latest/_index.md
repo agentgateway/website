@@ -1,7 +1,7 @@
 ---
-title: Main (in dev)
+title: Latest
 weight: 460
-description: Use kgateway with agentgateway. 
+description: Use agentgateway in a Kubernetes environment. 
 ---
 
 Welcome to the documentation for using agentgateway on Kubernetes!

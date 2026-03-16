@@ -70,6 +70,14 @@ llm:
 Groq uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
 {{< /callout >}}
 
+## Fireworks AI
+
+Fireworks AI provides access to open-source models via OpenAI-compatible endpoints.
+
+{{< callout type="info" >}}
+Fireworks AI uses a custom API path. For providers with custom paths, use the traditional `binds/listeners/routes` configuration with URL rewriting. See the following [Advanced configuration](#advanced-configuration) section.
+{{< /callout >}}
+
 ## Generic configuration
 
 For any OpenAI-compatible provider that uses standard paths (`/v1/chat/completions`), use this template:
@@ -150,4 +158,31 @@ binds:
               model: llama-3.3-70b-versatile
 ```
 
-For more information about choosing between configuration modes, see the [Routing-based configuration guide](../configuration-modes/).
+### Fireworks AI with URL rewriting
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+  - port: 3000
+    listeners:
+      - routes:
+          - policies:
+              urlRewrite:
+                authority:
+                  full: api.fireworks.ai
+                path:
+                  full: "/inference/v1/chat/completions"
+              backendTLS: {}
+              backendAuth:
+                key: $FIREWORKS_API_KEY
+            backends:
+              - ai:
+                  name: fireworks
+                  hostOverride: api.fireworks.ai:443
+                  provider:
+                    openAI:
+                      model: accounts/fireworks/models/kimi-k2p5
+
+```
+
+For more information about choosing between configuration modes, see the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).

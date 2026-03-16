@@ -1,5 +1,5 @@
 ---
-linkTitle: "Main (in dev)"
+linkTitle: "Latest"
 title: Welcome
 ---
 

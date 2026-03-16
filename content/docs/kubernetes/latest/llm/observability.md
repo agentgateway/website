@@ -1,6 +1,6 @@
 ---
-title: View metrics and logs
-weight: 80
+title: Metrics and logs
+weight: 95
 description:
 ---
 

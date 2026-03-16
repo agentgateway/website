@@ -32,6 +32,7 @@ llm:
   - name: "*"
     provider: openAI
     params:
+      model: gpt-4o-mini
       apiKey: "$OPENAI_API_KEY"
     guardrails:
       request:
@@ -60,9 +61,9 @@ llm:
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Reject requests
+## PII detection
 
-The following example rejects requests that contain Social Security Numbers (using a custom keyword pattern) or email addresses (using the built-in `email` pattern). When a request is blocked, agentgateway returns a custom error response.
+The following example rejects requests that contain PII data, such as Social Security Numbers (using a custom keyword pattern) or email addresses (using the built-in `email` pattern). When a request is blocked, agentgateway returns a custom error response.
 
 1. Create a configuration file with regex prompt guard policies.
    ```yaml
@@ -73,6 +74,7 @@ The following example rejects requests that contain Social Security Numbers (usi
      - name: "*"
        provider: openAI
        params:
+         model: gpt-4o-mini
          apiKey: "$OPENAI_API_KEY"
        guardrails:
          request:
@@ -129,7 +131,7 @@ The following example rejects requests that contain Social Security Numbers (usi
 
 3. In a new terminal, send a request to your LLM provider. Verify that the request succeeds. 
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
@@ -153,7 +155,7 @@ The following example rejects requests that contain Social Security Numbers (usi
 
 4. Send a request containing the SSN keyword. The prompt guard blocks the request and returns your custom error response.
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
@@ -174,7 +176,7 @@ The following example rejects requests that contain Social Security Numbers (usi
 
 5. Send another request with an email address. The prompt guard blocks it by using the built-in `email` pattern.
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
@@ -193,7 +195,7 @@ The following example rejects requests that contain Social Security Numbers (usi
    }
    ```
 
-## Mask responses
+## Mask PII in responses
 
 You can also filter LLM responses to redact sensitive data before it reaches the client. When a match is found, agentgateway replaces built-in pattern matches with `<ENTITY_TYPE>` (for example, `<CREDIT_CARD>`) and custom pattern matches with `<masked>`. The following example masks credit card numbers in responses.
 
@@ -206,6 +208,7 @@ You can also filter LLM responses to redact sensitive data before it reaches the
      - name: "*"
        provider: openAI
        params:
+         model: gpt-4o-mini
          apiKey: "$OPENAI_API_KEY"
        guardrails:
          response:
@@ -223,7 +226,7 @@ You can also filter LLM responses to redact sensitive data before it reaches the
 
 3. In a new terminal, send a request to your LLM provider with a phone number and verify that the number is masked in your response. 
    ```sh
-   curl http://localhost:3000/v1/chat/completions \
+   curl http://localhost:4000/v1/chat/completions \
      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-4o-mini",
@@ -252,5 +255,4 @@ You can also filter LLM responses to redact sensitive data before it reaches the
    "service_tier":"default",
    "system_fingerprint":"fp_a1ddba3226"}%    
    ```
-
 

@@ -7,4 +7,4 @@ weight: 10
 
 ## Packages
 
-{{< reuse "/agw-docs/pages/reference/api/api-latest.md" >}}
+{{< reuse "/agw-docs/pages/reference/api/api-23x.md" >}}

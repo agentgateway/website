@@ -73,6 +73,29 @@ For example, configure `redirect` to redirect users to a sign-in page, and `meta
 |`includeRequestBody.allowPartialMessage`|If true, send partial body when max_request_bytes is reached|
 
 
-For some more advanced scenarios, follow these examples:
-* [Oauth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) integration ([example](https://github.com/agentgateway/agentgateway/tree/main/examples/oauth2-proxy)). 
-* [Tailscale](https://tailscale.com/) integration ([example](https://github.com/agentgateway/agentgateway/tree/main/examples/tailscale-auth)). 
+## Backend connection policies
+
+You can configure connection policies on the `extAuthz` field to secure or tune how agentgateway connects to the external authorization service. This includes TLS, authentication, and connection timeouts.
+
+```yaml
+extAuthz:
+  host: authz-server:9001
+  policies:
+    backendTLS:
+      root: /certs/ca.pem
+      hostname: authz-server
+    backendAuth:
+      key:
+        file: /secrets/api-key
+    http:
+      requestTimeout: "5s"
+  protocol:
+    grpc: {}
+```
+
+| Field | Description |
+|-------|-------------|
+| `policies.backendTLS` | TLS settings for the connection to the authorization service. Use `root` to specify a CA cert, `hostname` to override the SNI hostname, `insecure: true` to skip certificate verification (not recommended for production). |
+| `policies.backendAuth` | Credentials to authenticate to the authorization service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
+| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). |
+| `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
