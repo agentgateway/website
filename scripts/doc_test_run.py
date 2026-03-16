@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
 import argparse
+import logging
 import os
 import re
 import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import dataclass
@@ -17,6 +19,7 @@ except ModuleNotFoundError:
 
 from doc_test_extract import Extractor
 
+logger = logging.getLogger(__name__)
 
 DEFAULT_OPTIONS = {
     "follow_reuse": True,
@@ -168,9 +171,8 @@ def generate_script_and_manifest(repo_root: Path, definition: Dict, script_path:
     manifest_path.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
 
 
-def run_command(command: List[str], cwd: Path, verbose: bool = True) -> Tuple[int, str]:
-    if verbose:
-        print(f"$ {' '.join(command)}")
+def run_command(command: List[str], cwd: Path) -> Tuple[int, str]:
+    logger.debug("$ %s", " ".join(command))
 
     proc = subprocess.Popen(
         command,
@@ -184,14 +186,13 @@ def run_command(command: List[str], cwd: Path, verbose: bool = True) -> Tuple[in
     if proc.stdout is not None:
         for line in proc.stdout:
             output_lines.append(line)
-            if verbose:
-                print(line, end="")
+            logger.debug("%s", line.rstrip())
 
     return_code = proc.wait()
     return return_code, "".join(output_lines)
 
 
-def collect_cluster_context(cluster_name: str, context_dir: Path, verbose: bool) -> None:
+def collect_cluster_context(cluster_name: str, context_dir: Path) -> None:
     """Collect Kubernetes diagnostics from a kind cluster into context_dir.
 
     Mirrors the procgen server-status action: gathers pod logs, failed pods,
@@ -220,8 +221,7 @@ def collect_cluster_context(cluster_name: str, context_dir: Path, verbose: bool)
 
     def run(args: List[str], out_file: Optional[Path] = None) -> str:
         cmd = base_cmd + args
-        if verbose:
-            print(f"  $ {' '.join(cmd)}")
+        logger.debug("  $ %s", " ".join(cmd))
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=60, env=kubeconfig_env)
             output = result.stdout + result.stderr
@@ -236,7 +236,7 @@ def collect_cluster_context(cluster_name: str, context_dir: Path, verbose: bool)
         return subprocess.run(cmd, capture_output=True, text=True, timeout=timeout, env=kubeconfig_env)
 
     try:
-        print(f"\n--- Collecting cluster context for: {cluster_name} -> {context_dir} ---")
+        logger.info("Collecting cluster context: %s -> %s", cluster_name, context_dir)
         context_dir.mkdir(parents=True, exist_ok=True)
 
         # Overview: pods, services, deployments across all namespaces (separate calls to avoid
@@ -351,12 +351,12 @@ def collect_cluster_context(cluster_name: str, context_dir: Path, verbose: bool)
                 out_file.parent.mkdir(parents=True, exist_ok=True)
                 out_file.write_text(helm_vals.stdout + helm_vals.stderr, encoding="utf-8")
 
-        print(f"--- Context collection complete: {context_dir} ---\n")
+        logger.info("Context collection complete: %s", context_dir)
     finally:
         os.unlink(kubeconfig_path)
 
 
-def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, verbose: bool, context_base_dir: Optional[Path] = None) -> Dict:
+def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
 
@@ -372,10 +372,19 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, ver
     error: Optional[str] = None
     collected_context_dir: Optional[Path] = None
 
-    if verbose:
-        print(f"\n=== Running test: {test_case.name} ({doc_rel}) ===")
+    logger.info('\n')
+    logger.info("=== Running test: %s (%s) ===", test_case.name, doc_rel)
 
-    create_code, create_output = run_command(["kind", "create", "cluster", "--name", cluster_name], repo_root, verbose)
+    script_content = test_case.script_path.read_text(encoding="utf-8")
+    if re.search(r"\bkubectl\s+port-forward\b", script_content):
+        logger.warning("SKIPPED (port-forward): %s", doc_rel)
+        return {
+            "status": "failed",
+            "checks": checks,
+            "error": "Test shell script contains 'kubectl port-forward', which is not supported in automated tests.",
+        }
+
+    create_code, create_output = run_command(["kind", "create", "cluster", "--name", cluster_name], repo_root)
     if create_code != 0:
         # Best-effort context collection even if cluster creation partially failed
         if context_base_dir is not None:
@@ -383,9 +392,9 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, ver
             collected_context_dir.mkdir(parents=True, exist_ok=True)
             (collected_context_dir / "test-execution.log").write_text(create_output, encoding="utf-8")
             try:
-                collect_cluster_context(cluster_name, collected_context_dir, verbose)
+                collect_cluster_context(cluster_name, collected_context_dir)
             except Exception as exc:
-                print(f"  [context collection skipped: {exc}]")
+                logger.warning("Context collection skipped: %s", exc)
         return {
             "status": "failed",
             "checks": checks,
@@ -394,17 +403,23 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, ver
             **({"context_dir": str(collected_context_dir.relative_to(repo_root))} if collected_context_dir else {}),
         }
 
-    cloud_provider = subprocess.Popen(
-        ["cloud-provider-kind", "--gateway-channel", "disabled"],
-        cwd=str(repo_root),
-        stdout=None,
-        stderr=None if verbose else subprocess.DEVNULL,
-        text=True,
-    )
+    verbose = logger.isEnabledFor(logging.DEBUG)
+    already_running = subprocess.run(["pgrep", "-x", "cloud-provider-kind"], capture_output=True).returncode == 0
+    if already_running:
+        logger.info("cloud-provider-kind already running, skipping start")
+        cloud_provider = None
+    else:
+        cloud_provider = subprocess.Popen(
+            ["cloud-provider-kind", "--gateway-channel", "disabled"],
+            cwd=str(repo_root),
+            stdout=None,
+            stderr=None if verbose else subprocess.DEVNULL,
+            text=True,
+        )
 
     try:
         time.sleep(2)
-        test_code, output = run_command(["bash", test_case.script_path.as_posix()], repo_root, verbose)
+        test_code, output = run_command(["bash", test_case.script_path.as_posix()], repo_root)
         checks = [line.strip() for line in output.splitlines() if line.strip().startswith("✓ ")]
         status = "passed" if test_code == 0 else "failed"
         if test_code != 0:
@@ -415,17 +430,18 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, ver
                 collected_context_dir.mkdir(parents=True, exist_ok=True)
                 (collected_context_dir / "test-execution.log").write_text(output, encoding="utf-8")
                 try:
-                    collect_cluster_context(cluster_name, collected_context_dir, verbose)
+                    collect_cluster_context(cluster_name, collected_context_dir)
                 except Exception as exc:
-                    print(f"  [context collection error: {exc}]")
+                    logger.warning("Context collection error: %s", exc)
     finally:
-        cloud_provider.terminate()
-        try:
-            cloud_provider.wait(timeout=10)
-        except subprocess.TimeoutExpired:
-            cloud_provider.kill()
+        if cloud_provider is not None:
+            cloud_provider.terminate()
+            try:
+                cloud_provider.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                cloud_provider.kill()
 
-        delete_code, delete_output = run_command(["kind", "delete", "cluster", "--name", cluster_name], repo_root, verbose)
+        delete_code, delete_output = run_command(["kind", "delete", "cluster", "--name", cluster_name], repo_root)
         if delete_code != 0 and not error:
             error = delete_output.strip()
             status = "failed"
@@ -478,35 +494,47 @@ def main() -> int:
         help="Stream all command output (default: enabled)",
     )
     parser.add_argument("--generate-only", action="store_true", help="Only generate scripts/manifests, do not run tests")
-    parser.add_argument("--file", default=None, help="Path to a single markdown file to test (relative to repo root or absolute)")
-    parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (requires --file)")
+    parser.add_argument("--file", nargs="+", default=None, metavar="FILE", help="Path(s) to one or more markdown files to test (relative to repo root or absolute)")
+    parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (only used when --file specifies a single file)")
     args = parser.parse_args()
+
+    logging.basicConfig(
+        level=logging.DEBUG if args.verbose else logging.INFO,
+        format="%(levelname)s: %(message)s",
+        stream=sys.stdout,
+    )
 
     repo_root = Path(args.repo_root).resolve()
     generated_dir = (repo_root / args.generated_dir).resolve()
     report_path = (repo_root / args.report_file).resolve()
 
     if args.file:
-        md_file = Path(args.file)
-        if not md_file.is_absolute():
-            md_file = repo_root / md_file
-        test_cases, tested_documents = build_test_cases_from_file(repo_root, md_file, generated_dir, filter_test_name=args.test)
+        filter_test_name = args.test if len(args.file) == 1 else None
+        test_cases = []
+        tested_docs: List[str] = []
+        for f in args.file:
+            md_file = Path(f)
+            if not md_file.is_absolute():
+                md_file = repo_root / md_file
+            cases, docs = build_test_cases_from_file(repo_root, md_file, generated_dir, filter_test_name=filter_test_name)
+            test_cases.extend(cases)
+            tested_docs.extend(docs)
+        tested_documents = sorted(set(tested_docs))
         if not test_cases:
-            if args.test:
-                print(f"No test named '{args.test}' found in {args.file}")
+            if args.test and len(args.file) == 1:
+                logger.error("No test named '%s' found in %s", args.test, args.file[0])
             else:
-                print(f"No test metadata found in {args.file}")
+                logger.error("No test metadata found in the provided file(s).")
             return 1
     else:
         test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
     if not test_cases:
-        print("No docs with test metadata found.")
+        logger.info("No docs with test metadata found.")
         write_report(report_path, tested_documents, {})
         return 0
 
     for test_case in test_cases:
-        if args.verbose:
-            print(f"Generating script for {test_case.document.relative_to(repo_root).as_posix()}::{test_case.name}")
+        logger.debug("Generating script for %s::%s", test_case.document.relative_to(repo_root).as_posix(), test_case.name)
         inferred_version = infer_version_from_sources(test_case.sources, args.version)
         definition = {
             "name": sanitize_name(f"{test_case.document.stem}-{test_case.name}"),
@@ -526,31 +554,34 @@ def main() -> int:
 
     if args.generate_only:
         write_report(report_path, tested_documents, {})
-        print(f"Generated {len(test_cases)} scripts from metadata")
-        print(f"Wrote report scaffold: {report_path.relative_to(repo_root)}")
+        logger.info("Generated %d scripts from metadata", len(test_cases))
+        logger.info("Wrote report scaffold: %s", report_path.relative_to(repo_root))
         return 0
 
     context_base_dir = generated_dir / "context"
 
+    logger.info("Running %d test scenario(s)", len(test_cases))
     test_results: Dict[str, Dict] = {}
     exit_code = 0
     for test_case in test_cases:
         doc_rel = test_case.document.relative_to(repo_root).as_posix()
         key = f"{doc_rel}::{test_case.name}"
-        result = run_test_case(repo_root, test_case, args.cluster_prefix, args.verbose, context_base_dir=context_base_dir)
+        result = run_test_case(repo_root, test_case, args.cluster_prefix, context_base_dir=context_base_dir)
+        status_icon = "PASSED" if result.get("status") == "passed" else "FAILED"
+        logger.info("%s: %s", status_icon, key)
         test_results[key] = result
         if result.get("status") != "passed":
             exit_code = 1
 
     write_report(report_path, tested_documents, test_results)
-    print("\n\n================= Test Results =================")
-    print(f"Wrote report: {report_path.relative_to(repo_root)}")
+    logger.info("================= Test Results =================")
+    logger.info("Wrote report: %s", report_path.relative_to(repo_root))
     passed_count = sum(1 for r in test_results.values() if r['status'] == 'passed')
     failed_count = sum(1 for r in test_results.values() if r['status'] != 'passed')
-    print(f"Test results: {len(test_cases)} total, {passed_count} passed, {failed_count} failed")
+    logger.info("Test results: %d total, %d passed, %d failed", len(test_cases), passed_count, failed_count)
     if failed_count > 0:
-        print("\nFailed test results:")
-        print(yaml.safe_dump(test_results, sort_keys=False))
+        logger.info("Failed test results:")
+        logger.debug("%s", yaml.safe_dump(test_results, sort_keys=False))
     return exit_code
 
 

@@ -14,13 +14,13 @@ Today, we're excited to share the [next major milestone](https://github.com/agen
 And notably, agentgateway now fully supports:
 
 * The latest [MCP spec (2025-06-18)](https://modelcontextprotocol.io/), including latest authorization changes
-* The v0.2.x release of [A2A](https://github.com/agentgateway/a2a-spec)
+* The v0.2.x release of [A2A](https://github.com/a2aproject/A2A)
 
 Let's take a closer look at the updated capabilities.
 
 ## Deep Protocol Awareness: MCP and A2A
 
-Agentgateway continues to deepen its native support for the emerging [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) and [Agent-to-Agent Protocol (A2A)](https://github.com/agentgateway/a2a-spec) with updated support including:
+Agentgateway continues to deepen its native support for the emerging [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) and [Agent-to-Agent Protocol (A2A)](https://github.com/a2aproject/A2A) with updated support including:
 
 * Protocol-aware routing, telemetry, and tracing
 * Support for MCP server/tool aggregation (virtualized MCP servers)
@@ -74,14 +74,14 @@ Combined with the fine-grained traffic policy controls, agentgateway can act as 
 
 ## Inference Routing
 
-If you are running your own models on self-hosted GPU infrastructure, agentgateway now implements the [Inference Gateway](https://github.com/agentgateway/inference-gateway) extensions for more accurate, efficient prompt routing. Using the InferencePool API, you can route based on:
+If you are running your own models on self-hosted GPU infrastructure, agentgateway now implements the [Inference Gateway](https://github.com/kubernetes-sigs/gateway-api-inference-extension) extensions for more accurate, efficient prompt routing. Using the InferencePool API, you can route based on:
 
 * Prompt criticality
 * GPU and KV cache utilization
 * Work queue / waiting queue depth
 * Lora adapters
 
-This gives AI platform operators more efficient and cost-conscious routing. This can also form the foundation for deeper optimizations like [llm-d](https://github.com/agentgateway/llm-d).
+This gives AI platform operators more efficient and cost-conscious routing. This can also form the foundation for deeper optimizations like [llm-d](https://github.com/llm-d/llm-d).
 
 ## Get Involved
 
