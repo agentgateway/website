@@ -208,4 +208,4 @@ llm:
 
 - Learn about [CEL expressions](/docs/reference/cel/) for advanced expression logic.
 - Explore [transformations]({{< link-hextra path="/llm/transformations/" >}}) for more LLM request transformation examples.
-- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/authentication/) to use JWT claims in transformations.
+- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) to use JWT claims in transformations.

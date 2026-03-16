@@ -49,7 +49,7 @@ llm:
 | `params.azureClientSecret` | The Azure client secret for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
 {{< callout type="info" >}}
-For advanced Azure authentication methods (managed identity, workload identity, or Azure AI Foundry), use the traditional `binds/listeners/routes` configuration format. See the [Routing-based configuration guide](../configuration-modes/) for more information.
+For advanced Azure authentication methods (managed identity, workload identity, or Azure AI Foundry), use the traditional `binds/listeners/routes` configuration format. See the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}) for more information.
 {{< /callout >}}
 
 ## Advanced configuration

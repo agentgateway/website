@@ -25,6 +25,5 @@ Consume services from LLM providers.
   {{< card link="guardrail-api" title="Guardrail Webhook API" subtitle="Custom guardrail controls via webhooks" >}}
   {{< card link="cost-tracking" title="Track LLM costs" subtitle="Cost tracking, spend monitoring, usage tracking" >}}
   {{< card link="observability" title="View metrics and logs" subtitle="Token usage, prompt logging, LLM-specific metrics" >}}
-  {{< card link="tracing" title="View traces" subtitle="OpenTelemetry tracing configuration" >}}
 {{< /cards >}}
 

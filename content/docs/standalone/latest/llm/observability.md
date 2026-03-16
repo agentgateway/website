@@ -8,7 +8,7 @@ Get prompt logging, cost tracking, and a full audit trail: review LLM-specific m
 
 ## Before you begin
 
-Complete an LLM guide, such as the [control spend](../spending) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
+Complete an LLM guide, such as the [control spend]({{< link-hextra path="/llm/spending/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
 
 ## View LLM metrics
 

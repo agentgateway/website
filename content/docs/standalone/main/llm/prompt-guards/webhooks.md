@@ -17,7 +17,7 @@ For advanced content safety requirements beyond regex and cloud provider service
 
 ## Configuration
 
-Configure a prompt guard to call your webhook service. You can use the [guardrail API](https://agentgateway.dev/docs/kubernetes/main/llm/prompt-guards/webhook/) guide to create your own guardrail webhook in Kubernetes.  
+Configure a prompt guard to call your webhook service. You can use the [guardrail API](https://agentgateway.dev/docs/kubernetes/main/llm/guardrail-api/) guide to create your own guardrail webhook in Kubernetes.  
 
 ```yaml
 cat <<EOF > config.yaml

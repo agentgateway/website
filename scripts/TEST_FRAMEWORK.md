@@ -440,3 +440,31 @@ make test-artifacts-fetch
 If you run into issues with installing yamltest, include the `--force` flag.
 
 On macOS, you might need to run either the `python3 scripts/doc_test_run.py` command with `sudo`, or run `sudo cloud-provider-kind` in a separate tab before running the tests. In macOS, the cloud-provider-kind tool to get a LoadBalancer IP requires elevated permissions.
+
+### Common issues
+
+**File paths differ between `latest` and `main`**
+
+When copying a test chain from `main` to `latest` (or vice versa), update every `file:` path in the front matter. A `main` chain references files under `content/docs/kubernetes/main/`, while `latest` uses `content/docs/kubernetes/latest/`. Using the wrong version directory causes the extractor to pull blocks from a different version's content, or fail silently if the file doesn't exist.
+
+**Wrong prerequisite file paths**
+
+The install prerequisite should point to `content/docs/kubernetes/<version>/quickstart/install.md`, not `content/docs/kubernetes/<version>/install/helm.md` or similar. Check the "Before you begin" section of the guide you're testing and follow the links to confirm the exact paths rather than guessing from memory.
+
+**Test fails immediately with "kubectl port-forward" error**
+
+Tests that contain `kubectl port-forward` in the generated script are automatically failed without running. Port-forwarding requires a persistent background process that doesn't work in the automated test environment. Replace any port-forward-based verification with a `YAMLTest` HTTP assertion using `${INGRESS_GW_ADDRESS}` instead.
+
+**`/expect: unknown property "jsonPath"` errors**
+
+This error almost always means the `expect` block has bad indentation. `bodyJsonPath` must be a direct child of `expect:`, not nested under `statusCode` or `headers`. Double-check that all keys under `expect:` are at the same indentation level:
+
+```yaml
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.choices[0].message.content"
+        comparator: contains
+        value: "hello"
+```
+
