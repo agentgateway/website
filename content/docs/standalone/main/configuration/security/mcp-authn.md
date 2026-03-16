@@ -4,7 +4,7 @@ weight: 30
 ---
 
 Attach to:
-{{< badge content="Backend" link="/docs/configuration/backends/">}} (MCP Backends only)
+{{< badge content="Backend" path="/configuration/backends/">}} (MCP Backends only)
 
 MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
 
@@ -60,6 +60,30 @@ mcpAuthentication:
     - header
     - body
     - query
+```
+
+## Authentication mode
+
+You can control how agentgateway handles requests that lack valid credentials by setting the `mode` field. The following modes are supported:
+
+| Mode | Behavior |
+|------|----------|
+| `strict` (default) | A valid token issued by a configured issuer must be present. Requests without a valid token are rejected with `401 Unauthorized`. |
+| `optional` | If a token is present, it is validated. Requests without a token are permitted. |
+| `permissive` | Requests are never rejected based on authentication. |
+
+The following example sets the mode to `permissive`:
+
+```yaml
+mcpAuthentication:
+  mode: permissive
+  issuer: http://localhost:9000
+  jwks:
+    url: http://localhost:9000/.well-known/jwks.json
+  resourceMetadata:
+    resource: http://localhost:3000/mcp
+    scopesSupported:
+    - read:all
 ```
 
 ## Passthrough

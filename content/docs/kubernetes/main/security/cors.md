@@ -3,9 +3,9 @@ title: CORS
 weight: 10
 test:
   cors-in-httproute:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
@@ -13,9 +13,9 @@ test:
     path: cors-in-httproute
 
   cors-in-agentgatewaypolicy:
-  - file: content/docs/kubernetes/latest/install/helm.md
-    path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin

@@ -131,7 +131,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    appProtocol: kgateway.dev/mcp
+    appProtocol: agentgateway.dev/mcp
 EOF
 ```
 
@@ -174,7 +174,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    appProtocol: kgateway.dev/mcp
+    appProtocol: agentgateway.dev/mcp
 EOF
 ```
 
@@ -306,6 +306,6 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/main/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
-  {{< card link="/docs/kubernetes/main/mcp/" title="MCP Documentation" subtitle="Complete MCP configuration reference" >}}
+  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
+  {{< card path="/mcp/" title="MCP Documentation" subtitle="Complete MCP configuration reference" >}}
 {{< /cards >}}

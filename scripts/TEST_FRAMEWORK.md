@@ -74,9 +74,9 @@ On the page being tested, add a `test:` key to the YAML front matter. Each child
 title: CORS
 test:
   cors-in-httproute:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
@@ -84,9 +84,9 @@ test:
     path: cors-in-httproute
 
   cors-in-agentgatewaypolicy:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
@@ -190,15 +190,17 @@ YAMLTest -f - <<'EOF'
     jsonPath: "$.status.loadBalancer.ingress[0].ip"
     jsonPathExpectation:
       comparator: exists
-    targetEnv: INGRESS_GW_ADDRESS
     polling:
       timeoutSeconds: 300
       intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
 EOF
 {{< /doc-test >}}
 ```
 
-`targetEnv` exports the matched value as an environment variable for downstream steps.
+`setVars` exports the `jsonPath`-matched value as an environment variable for downstream steps. It is a sibling of `wait:` (not nested inside it).
 
 ### Wait for an HTTPRoute condition
 
@@ -357,7 +359,7 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 1. **Trace prerequisites** — follow "Before you begin" links back to `helm.md`.
 2. **Verify path labels** on all prerequisite code blocks; add `paths="..."` where missing.
 3. **Add wait blocks** after each `kubectl apply` that creates something tests depend on.
-4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `targetEnv`.
+4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `setVars`.
 5. **Add the feature assertion** as a `{{< doc-test >}}` shortcode block on the feature page.
 6. **Write the `test:` front matter** on the feature page, listing sources in dependency order (install → setup → prereqs → feature).
 7. **Regenerate** with `--generate-only` and inspect the script for unresolved shortcodes or missing commands.
@@ -438,3 +440,31 @@ make test-artifacts-fetch
 If you run into issues with installing yamltest, include the `--force` flag.
 
 On macOS, you might need to run either the `python3 scripts/doc_test_run.py` command with `sudo`, or run `sudo cloud-provider-kind` in a separate tab before running the tests. In macOS, the cloud-provider-kind tool to get a LoadBalancer IP requires elevated permissions.
+
+### Common issues
+
+**File paths differ between `latest` and `main`**
+
+When copying a test chain from `main` to `latest` (or vice versa), update every `file:` path in the front matter. A `main` chain references files under `content/docs/kubernetes/main/`, while `latest` uses `content/docs/kubernetes/latest/`. Using the wrong version directory causes the extractor to pull blocks from a different version's content, or fail silently if the file doesn't exist.
+
+**Wrong prerequisite file paths**
+
+The install prerequisite should point to `content/docs/kubernetes/<version>/quickstart/install.md`, not `content/docs/kubernetes/<version>/install/helm.md` or similar. Check the "Before you begin" section of the guide you're testing and follow the links to confirm the exact paths rather than guessing from memory.
+
+**Test fails immediately with "kubectl port-forward" error**
+
+Tests that contain `kubectl port-forward` in the generated script are automatically failed without running. Port-forwarding requires a persistent background process that doesn't work in the automated test environment. Replace any port-forward-based verification with a `YAMLTest` HTTP assertion using `${INGRESS_GW_ADDRESS}` instead.
+
+**`/expect: unknown property "jsonPath"` errors**
+
+This error almost always means the `expect` block has bad indentation. `bodyJsonPath` must be a direct child of `expect:`, not nested under `statusCode` or `headers`. Double-check that all keys under `expect:` are at the same indentation level:
+
+```yaml
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.choices[0].message.content"
+        comparator: contains
+        value: "hello"
+```
+

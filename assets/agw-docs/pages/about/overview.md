@@ -79,17 +79,17 @@ The Gateway API is an API which can be used to program an ingress or an API gate
 {{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.
 
 {{< cards >}}
-  {{< card link="../../security/access-logging/" title="Access logging" tag="Security" >}}
-  {{< card link="../../integrations/aws-elb/" title="AWS ALB and NLB" tag="Traffic" >}}
-  {{< card link="../../traffic-management/destination-types/backends/lambda" title="AWS Lambda" tag="Traffic" >}}
-  {{< card link="../../traffic-management/route-delegation/" title="Delegation" tag="Traffic" >}}
-  {{< card link="../../traffic-management/direct-response/" title="Direct responses" tag="Traffic" >}}
-  {{< card link="../../traffic-management/extproc/" title="Direct responses" tag="Traffic" >}}
-  {{< card link="../../setup/customize/" title="Gateway customization" tag="Setup" >}}
-  {{< card link="../../integrations/" title="Integrations" tag="Setup" >}}
-  {{< card link="../../resiliency/mirroring/" title="Mirroring" tag="Resiliency" >}}
-  {{< card link="../../traffic-management/transformations/" title="Transformations" tag="Traffic" >}}
-  {{< card link="../../traffic-management/weighted-routes/" title="Weighted routing" tag="Traffic" >}}
+  {{< card path="/security/access-logging/" title="Access logging" tag="Security" >}}
+  {{< card path="/integrations/aws-elb/" title="AWS ALB and NLB" tag="Traffic" >}}
+  {{< card path="/traffic-management/destination-types/backends/lambda" title="AWS Lambda" tag="Traffic" >}}
+  {{< card path="/traffic-management/route-delegation/" title="Delegation" tag="Traffic" >}}
+  {{< card path="/traffic-management/direct-response/" title="Direct responses" tag="Traffic" >}}
+  {{< card path="/traffic-management/extproc/" title="Direct responses" tag="Traffic" >}}
+  {{< card path="/setup/customize/" title="Gateway customization" tag="Setup" >}}
+  {{< card path="/integrations/" title="Integrations" tag="Setup" >}}
+  {{< card path="/resiliency/mirroring/" title="Mirroring" tag="Resiliency" >}}
+  {{< card path="/traffic-management/transformations/" title="Transformations" tag="Traffic" >}}
+  {{< card path="/traffic-management/weighted-routes/" title="Weighted routing" tag="Traffic" >}}
 {{< /cards >}}
 
 ## Default gateway proxy setup

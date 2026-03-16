@@ -35,6 +35,6 @@ For example:
 
 The following table shows the complete agentgateway configuration file schema, with columns for the field and description.
 
-{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v0.12.0/schema/config.md"
+{{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/config.md"
     section="Configuration File Schema"
 %}}

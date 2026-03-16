@@ -69,10 +69,10 @@ kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/re
 # agentgateway CRDs
 helm upgrade -i --create-namespace \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}}
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
 
 # Control plane
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -443,7 +443,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/latest/llm/providers/anthropic" title="Anthropic Reference" subtitle="Complete Anthropic provider configuration" >}}
-  {{< card link="/docs/kubernetes/latest/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Advanced prompt guard patterns" >}}
-  {{< card link="/docs/kubernetes/latest/tutorials/prompt-enrichment" title="Prompt Enrichment" subtitle="Inject context at the gateway layer" >}}
+  {{< card path="/llm/providers/anthropic" title="Anthropic Reference" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Advanced prompt guard patterns" >}}
+  {{< card path="/tutorials/prompt-enrichment" title="Prompt Enrichment" subtitle="Inject context at the gateway layer" >}}
 {{< /cards >}}

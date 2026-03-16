@@ -37,6 +37,12 @@ def _format_checks(checks: list) -> str:
     return f"{n} check{'s' if n != 1 else ''} passed"
 
 
+def _format_checks_count(n: int) -> str:
+    if n == 0:
+        return "\u2014"
+    return f"{n} check{'s' if n != 1 else ''} passed"
+
+
 def generate_summary(report: dict) -> str:
     lines: list[str] = []
 
@@ -47,15 +53,11 @@ def generate_summary(report: dict) -> str:
         lines.append("## Doc Test Results")
         lines.append("")
         lines.append("No test results found.")
-        if tested_documents:
-            lines.append("")
-            lines.append(f"Tested documents ({len(tested_documents)}):")
-            for doc in tested_documents:
-                lines.append(f"- `{doc}`")
         return "\n".join(lines)
 
-    total = len(tests)
-    passed = sum(1 for t in tests.values() if t.get("status") == "passed")
+    doc_groups = _group_by_document(tests)
+    total = len(doc_groups)
+    passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
     failed = total - passed
 
     # Header
@@ -65,26 +67,23 @@ def generate_summary(report: dict) -> str:
         lines.append(f"## \u274c Doc Test Results \u2014 {passed} passed | {failed} failed | {total} total")
     lines.append("")
 
-    # Results table
+    # Results table — one row per document
     lines.append("| Status | Test | Document | Checks |")
     lines.append("|:------:|------|----------|--------|")
 
     failed_tests: list[tuple[str, dict]] = []
 
-    for key, result in tests.items():
-        # key format: "content/docs/.../file.md::test-name"
-        parts = key.split("::", 1)
-        doc = parts[0] if len(parts) > 0 else key
-        test_name = parts[1] if len(parts) > 1 else key
-
-        status = result.get("status", "unknown")
+    for doc, group in doc_groups.items():
+        status = group["status"]
         icon = _status_icon(status)
-        checks = result.get("checks", [])
-        checks_str = _escape_md_table(_format_checks(checks))
+        test_label = _escape_md_table(_format_test_names(group["tests"]))
+        check_count = group["check_count"]
+        checks_str = _format_checks_count(check_count)
 
-        lines.append(f"| {icon} | `{_escape_md_table(test_name)}` | `{_escape_md_table(doc)}` | {checks_str} |")
+        lines.append(f"| {icon} | `{test_label}` | `{_escape_md_table(doc)}` | {checks_str} |")
 
-        if status != "passed" and result.get("error"):
+    for key, result in tests.items():
+        if result.get("status") != "passed" and result.get("error"):
             failed_tests.append((key, result))
 
     # Failed test details
@@ -123,16 +122,6 @@ def generate_summary(report: dict) -> str:
             lines.append("</details>")
             lines.append("")
 
-    # Tested documents
-    if tested_documents:
-        lines.append("<details>")
-        lines.append(f"<summary><strong>Tested documents ({len(tested_documents)})</strong></summary>")
-        lines.append("")
-        for doc in tested_documents:
-            lines.append(f"- `{doc}`")
-        lines.append("")
-        lines.append("</details>")
-
     return "\n".join(lines)
 
 
@@ -150,6 +139,51 @@ def _truncate_tail(text: str, limit: int = _SLACK_TEXT_LIMIT // 2, prefix: str =
     return prefix + text[-(limit - len(prefix)):]
 
 
+def _group_by_document(tests: dict) -> dict:
+    """Collapse per-test results into per-document groups.
+
+    Returns an ordered dict keyed by doc path, each value being a dict with:
+      - status: "passed" if all tests passed, else "failed"
+      - tests: list of test names in order
+      - check_count: total number of checks across all tests
+    """
+    groups: dict = {}
+    for key, result in tests.items():
+        parts = key.split("::", 1)
+        doc = parts[0] if len(parts) > 0 else key
+        test_name = parts[1] if len(parts) > 1 else key
+        if doc not in groups:
+            groups[doc] = {"status": "passed", "tests": [], "check_count": 0}
+        groups[doc]["tests"].append(test_name)
+        groups[doc]["check_count"] += len(result.get("checks", []))
+        if result.get("status") != "passed":
+            groups[doc]["status"] = "failed"
+    return groups
+
+
+def _format_test_names(tests: list) -> str:
+    """Format a list of test names as 'first' or 'first + N more'."""
+    if not tests:
+        return ""
+    if len(tests) == 1:
+        return tests[0]
+    return f"{tests[0]} + {len(tests) - 1} more"
+
+
+def _extract_version(doc_path: str) -> str:
+    """Extract the version segment from a doc path.
+
+    Expects paths like ``content/docs/kubernetes/main/...`` and returns
+    the two segments immediately following ``docs/``, e.g. ``kubernetes/main``.
+    """
+    path_parts = doc_path.replace("\\", "/").split("/")
+    try:
+        idx = path_parts.index("docs")
+        return "/".join(path_parts[idx + 1 : idx + 3])
+    except (ValueError, IndexError):
+        return ""
+
+
 def _run_url_block(run_url: str) -> dict:
     """Build a context block with a link to the GitHub Actions run."""
     return {
@@ -160,25 +194,12 @@ def _run_url_block(run_url: str) -> dict:
     }
 
 
-def _extract_version(doc_path: str) -> str:
-    """Extract the version segment from a doc path.
-
-    Expects paths like ``content/docs/kubernetes/main/...`` and returns
-    the segment immediately following ``docs/``, e.g. ``main``.
-    """
-    path_parts = doc_path.replace("\\", "/").split("/")
-    try:
-        idx = path_parts.index("docs")
-        return "/".join(path_parts[idx + 1 : idx + 3])
-    except (ValueError, IndexError):
-        return ""
-
-
-def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
+def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dict, dict | None]:
     """Generate a Slack Block Kit payload from test results.
 
-    Returns a dict with ``text`` (notification fallback) and ``blocks``
-    (Block Kit array) keys, ready to be merged into a chat.postMessage call.
+    Returns a tuple of ``(main_payload, thread_payload)`` where each payload
+    has ``text`` and ``blocks`` keys ready for chat.postMessage.
+    ``thread_payload`` is ``None`` when there are no failures.
     """
     tests: dict = report.get("tests", {})
     tested_documents: list = report.get("tested_documents", [])
@@ -190,17 +211,13 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
             {"type": "header", "text": {"type": "plain_text", "text": "Doc Test Results"}},
             {"type": "section", "text": {"type": "mrkdwn", "text": "No test results found."}},
         ]
-        if tested_documents:
-            doc_list = "\n".join(f"\u2022 `{d}`" for d in tested_documents)
-            blocks.append(
-                {"type": "section", "text": {"type": "mrkdwn", "text": _truncate(f"*Tested documents ({len(tested_documents)}):*\n{doc_list}")}}
-            )
         if run_url:
             blocks.append(_run_url_block(run_url))
-        return {"text": fallback, "blocks": blocks}
+        return {"text": fallback, "blocks": blocks}, None
 
-    total = len(tests)
-    passed = sum(1 for t in tests.values() if t.get("status") == "passed")
+    doc_groups = _group_by_document(tests)
+    total = len(doc_groups)
+    passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
     failed = total - passed
 
     # --- header ---
@@ -214,74 +231,67 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> dict:
         {"type": "header", "text": {"type": "plain_text", "text": header_text[:150]}},
     ]
 
-    # --- results list ---
+    # --- results list — one line per document ---
     result_lines: list[str] = []
     failed_tests: list[tuple[str, dict]] = []
 
-    for key, result in tests.items():
-        parts = key.split("::", 1)
-        doc = parts[0] if len(parts) > 0 else key
-        test_name = parts[1] if len(parts) > 1 else key
-
-        status = result.get("status", "unknown")
+    for doc, group in doc_groups.items():
+        status = group["status"]
         icon = _status_icon(status)
-        checks = result.get("checks", [])
-        checks_str = _format_checks(checks)
+        test_label = _format_test_names(group["tests"])
+        checks_str = _format_checks_count(group["check_count"])
 
-        result_lines.append(f"{icon}  `{test_name}` \u2014 {checks_str}  (_`{doc}`_)")
+        result_lines.append(f"{icon}  `{test_label}` \u2014 {checks_str}  (_`{doc}`_)")
 
-        if status != "passed" and result.get("error"):
+    for key, result in tests.items():
+        if result.get("status") != "passed" and result.get("error"):
             failed_tests.append((key, result))
 
     results_text = _truncate("\n".join(result_lines))
     blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": results_text}})
 
-    # --- failed test details ---
-    if failed_tests:
-        blocks.append({"type": "divider"})
-        blocks.append(
-            {"type": "section", "text": {"type": "mrkdwn", "text": f"*Failed Tests ({len(failed_tests)})*"}}
-        )
-
-        for key, result in failed_tests:
-            # Guard against exceeding the 50-block limit; leave room for
-            # the tested-documents section at the end.
-            if len(blocks) >= _SLACK_MAX_BLOCKS - 2:
-                blocks.append(
-                    {"type": "section", "text": {"type": "mrkdwn", "text": "_... additional failures omitted (block limit reached)_"}}
-                )
-                break
-
-            parts = key.split("::", 1)
-            doc = parts[0] if len(parts) > 0 else key
-            test_name = parts[1] if len(parts) > 1 else key
-            version = _extract_version(doc)
-            title = f"{test_name} ({version})" if version else test_name
-            error = result.get("error", "No error output captured.")
-            checks = result.get("checks", [])
-
-            detail_parts: list[str] = [f"*`{title}`*"]
-            if checks:
-                detail_parts.append("*Checks:*  " + ", ".join(checks))
-            detail_parts.append(f"```{_truncate_tail(error)}```")
-
-            blocks.append(
-                {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}
-            )
-
-    # --- tested documents ---
-    if tested_documents and len(blocks) < _SLACK_MAX_BLOCKS:
-        blocks.append({"type": "divider"})
-        doc_list = "\n".join(f"\u2022 `{d}`" for d in tested_documents)
-        blocks.append(
-            {"type": "section", "text": {"type": "mrkdwn", "text": _truncate(f"*Tested documents ({len(tested_documents)}):*\n{doc_list}")}}
-        )
-
     # --- workflow run link ---
     if run_url and len(blocks) < _SLACK_MAX_BLOCKS:
         blocks.append(_run_url_block(run_url))
 
-    return {"text": header_text, "blocks": blocks}
+    main_payload = {"text": header_text, "blocks": blocks}
+
+    # --- failed test details (thread reply) ---
+    if not failed_tests:
+        return main_payload, None
+
+    thread_blocks: list[dict] = [
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Failed Tests ({len(failed_tests)})*"}}
+    ]
+
+    for key, result in failed_tests:
+        # Guard against exceeding the 50-block limit
+        if len(thread_blocks) >= _SLACK_MAX_BLOCKS - 1:
+            thread_blocks.append(
+                {"type": "section", "text": {"type": "mrkdwn", "text": "_... additional failures omitted (block limit reached)_"}}
+            )
+            break
+
+        parts = key.split("::", 1)
+        doc = parts[0] if len(parts) > 0 else key
+        test_name = parts[1] if len(parts) > 1 else key
+        version = _extract_version(doc)
+        title = f"{test_name} ({version})" if version else test_name
+        error = result.get("error", "No error output captured.")
+        checks = result.get("checks", [])
+
+        detail_parts: list[str] = [f"*`{title}`*"]
+        if checks:
+            detail_parts.append("*Checks:*  " + ", ".join(checks))
+        detail_parts.append(f"```{_truncate_tail(error)}```")
+
+        thread_blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}
+        )
+
+    thread_payload = {"text": f"Failed Tests ({len(failed_tests)})", "blocks": thread_blocks}
+
+    return main_payload, thread_payload
 
 
 def main() -> int:
@@ -315,8 +325,8 @@ def main() -> int:
         report = yaml.safe_load(f) or {}
 
     if slack_mode:
-        payload = generate_slack_blocks(report, run_url=run_url)
-        print(json.dumps(payload))
+        main_payload, thread_payload = generate_slack_blocks(report, run_url=run_url)
+        print(json.dumps({"main": main_payload, "thread": thread_payload}))
     else:
         summary = generate_summary(report)
         print(summary)

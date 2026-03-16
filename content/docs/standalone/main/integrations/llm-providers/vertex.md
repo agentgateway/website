@@ -4,4 +4,4 @@ weight: 60
 description: Connect agentgateway to Google Cloud's Vertex AI platform
 ---
 
-{{< redirect "/docs/llm/providers/vertex/" >}}
+{{< redirect path="/llm/providers/vertex/" >}}

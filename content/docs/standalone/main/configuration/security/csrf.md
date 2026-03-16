@@ -4,7 +4,7 @@ weight: 11
 ---
 
 Attach to:
-{{< badge content="Route" link="/docs/configuration/routes/">}}
+{{< badge content="Route" path="/configuration/routes/">}}
 
 ## About CSRF protection
 

@@ -4,14 +4,32 @@ weight: 20
 description: Set up per-try timeouts.
 test:
   per-try-timeout-in-httproute:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
   - file: content/docs/kubernetes/main/resiliency/retry/per-try-timeout.md
     path: per-try-timeout-in-httproute
+  per-try-timeout-in-agentgateway:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/resiliency/retry/per-try-timeout.md
+    path: per-try-timeout-in-agentgateway
+  per-try-timeout-in-gatewaylistener:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/resiliency/retry/per-try-timeout.md
+    path: per-try-timeout-in-gatewaylistener
 ---
 
 {{< reuse "agw-docs/pages/resiliency/retry/per-try-timeout.md" >}}

@@ -12,9 +12,19 @@ flowchart LR
 
 ## Before you begin
 
+{{< doc-test paths="httpbin" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
+
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   ```sh {paths="httpbin"}
+   ```sh
    curl -sL https://agentgateway.dev/install | bash
    ```
 
@@ -163,7 +173,7 @@ docker stop httpbin
 ## Next steps
 
 {{< cards >}}
-  {{< card link="../../configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
-  {{< card link="../../configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to ensure gateway and app resilience." >}}
-  {{< card link="../../configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
+  {{< card path="/configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
+  {{< card path="/configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to ensure gateway and app resilience." >}}
+  {{< card path="/configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
 {{< /cards >}}

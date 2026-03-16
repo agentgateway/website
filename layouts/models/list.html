@@ -183,15 +183,16 @@
                                     </div>
 
                                     <!-- Supported Models -->
+                                    {{ $providerSlug := .slug }}
                                     {{ with .models }}
                                     <div class="mb-5">
-                                        <p class="text-sm font-semibold text-gray-700 mb-2">Supported Models ({{ len . }})</p>
-                                        <div class="flex flex-wrap gap-1.5">
+                                        <p class="text-sm font-semibold text-gray-700 mb-2">Supported Models ({{ len . }}) <span class="text-xs font-normal text-purple-500">— click a model to use it</span></p>
+                                        <div class="flex flex-wrap gap-1.5 model-list" data-slug="{{ $providerSlug }}">
                                             {{ range . }}
-                                            <code class="text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded">{{ . }}</code>
+                                            <code class="model-chip text-xs bg-white border border-gray-200 text-gray-700 px-2 py-1 rounded cursor-pointer hover:border-purple-400 hover:bg-purple-50 hover:text-purple-700 transition-all" onclick="event.stopPropagation(); selectModel('{{ $providerSlug }}', this)">{{ . }}</code>
                                             {{ end }}
                                         </div>
-                                        <p class="text-xs text-gray-400 mt-2">Any model the provider offers works -- just change the <code class="bg-gray-200 px-1 rounded">model</code> field in the config below.</p>
+                                        <p class="text-xs text-gray-400 mt-2">Click any model above to update the configuration below, or edit the <code class="bg-gray-200 px-1 rounded">model</code> field directly.</p>
                                     </div>
                                     {{ end }}
 
@@ -216,7 +217,7 @@
                                                 Copy
                                             </button>
                                         </div>
-                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-standalone">{{ .standalone | htmlEscape | safeHTML }}</code></pre>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-standalone" data-original="{{ .standalone | htmlEscape | safeHTML }}" data-default-model="{{ .model }}">{{ .standalone | htmlEscape | safeHTML }}</code></pre>
                                     </div>
 
                                     <!-- Kubernetes Config -->
@@ -228,7 +229,7 @@
                                                 Copy
                                             </button>
                                         </div>
-                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-kubernetes">{{ .kubernetes | htmlEscape | safeHTML }}</code></pre>
+                                        <pre class="bg-gray-900 text-gray-100 rounded-lg p-5 overflow-x-auto text-sm leading-relaxed"><code id="code-{{ .slug }}-kubernetes" data-original="{{ .kubernetes | htmlEscape | safeHTML }}" data-default-model="{{ .model }}">{{ .kubernetes | htmlEscape | safeHTML }}</code></pre>
                                     </div>
 
                                     <!-- Test Command -->
@@ -553,6 +554,66 @@ function toggleProvider(slug) {
         arrow.classList.remove('rotate-180');
         toggleText.textContent = 'View configuration';
     }
+}
+
+// Select a model from the Supported Models list and update configs
+function selectModel(slug, chip) {
+    const modelName = chip.textContent.trim();
+    const modelList = chip.closest('.model-list');
+
+    // Update visual selection
+    modelList.querySelectorAll('.model-chip').forEach(c => {
+        c.classList.remove('bg-purple-600', 'text-white', 'border-purple-600');
+        c.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+    });
+    chip.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+    chip.classList.add('bg-purple-600', 'text-white', 'border-purple-600');
+
+    // Update standalone config — always replace from original template
+    const standaloneCode = document.getElementById('code-' + slug + '-standalone');
+    if (standaloneCode) {
+        const original = standaloneCode.getAttribute('data-original');
+        const defaultModel = standaloneCode.getAttribute('data-default-model');
+        standaloneCode.textContent = original.replace(
+            new RegExp('model: ' + escapeRegex(defaultModel), 'g'),
+            'model: ' + modelName
+        );
+    }
+
+    // Update kubernetes config — always replace from original template
+    const k8sCode = document.getElementById('code-' + slug + '-kubernetes');
+    if (k8sCode) {
+        const original = k8sCode.getAttribute('data-original');
+        const defaultModel = k8sCode.getAttribute('data-default-model');
+        k8sCode.textContent = original.replace(
+            new RegExp('model: ' + escapeRegex(defaultModel), 'g'),
+            'model: ' + modelName
+        );
+    }
+
+    // Update test command with the selected model
+    const testCode = document.getElementById('code-' + slug + '-test');
+    if (testCode) {
+        const standaloneTest = testCode.getAttribute('data-standalone-test');
+        const defaultModel = standaloneCode ? standaloneCode.getAttribute('data-default-model') : '';
+        let updatedTest = standaloneTest.replace(
+            new RegExp('"model":\\s*"' + escapeRegex(defaultModel) + '"', 'g'),
+            '"model": "' + modelName + '"'
+        );
+        // Adjust port if on Kubernetes tab
+        const detail = document.getElementById('detail-' + slug);
+        const activeTab = detail.querySelector('.tab-btn.active');
+        const isK8s = activeTab && activeTab.textContent.trim() === 'Kubernetes';
+        if (isK8s) {
+            updatedTest = updatedTest.replace(/localhost:3000/g, 'localhost:8080');
+        }
+        testCode.textContent = updatedTest;
+    }
+}
+
+// Escape special regex characters in a string
+function escapeRegex(str) {
+    return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // Switch between standalone and kubernetes tabs

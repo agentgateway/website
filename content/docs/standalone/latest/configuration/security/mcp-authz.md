@@ -4,7 +4,7 @@ weight: 40
 ---
 
 Attach to:
-{{< badge content="Backend" link="/docs/configuration/backends/">}} (MCP Backends only)
+{{< badge content="Backend" path="/configuration/backends/">}} (MCP Backends only)
 
 The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}}), but runs in the context of an MCP request.
 
@@ -25,5 +25,9 @@ mcpAuthorization:
   # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
   - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
+
+{{< callout type="info" >}}
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+{{< /callout >}}
 
 Refer to the [CEL reference]({{< link-hextra path="/configuration/traffic-management/transformations" >}}) for allowed variables.

@@ -2,7 +2,7 @@
 title: Routes
 weight: 14
 description: Configure routes on listeners for agentgateway.
-next: /docs/configuration/traffic-management
+next: /configuration/traffic-management
 ---
 
 {{< gloss "Route" >}}Routes{{< /gloss >}} are the entry points for traffic to your agentgateway. They are configured on listeners and are used to route traffic to {{< gloss "Backend" >}}backends{{< /gloss >}}.
@@ -57,7 +57,7 @@ binds:
         weight: 1
 ```
 
-For more information, see [TCP route matching](../traffic-management/matching#tcp-routes).
+For more information, see [TCP route matching]({{< link-hextra path="/configuration/traffic-management/matching#tcp-routes" >}}).
 
 ## Before you begin
 
@@ -171,8 +171,8 @@ Update the configuration file to remove the route.
 After you create routes, you might want to apply policies to them.
 
 {{< cards >}}
-  {{< card link="../traffic-management/matching/" title="Request matching" >}}
-  {{< card link="../traffic-management/" title="Traffic management" >}}
-  {{< card link="../resiliency/" title="Resiliency" >}}
-  {{< card link="../security/" title="Security" >}}
+  {{< card path="/configuration/traffic-management/matching/" title="Request matching" >}}
+  {{< card path="/configuration/traffic-management/" title="Traffic management" >}}
+  {{< card path="/resiliency/" title="Resiliency" >}}
+  {{< card path="/security/" title="Security" >}}
 {{< /cards >}}

@@ -5,6 +5,6 @@ description:
 ---
 
 {{< cards >}}
-{{< card link="../../retry/per-try-timeout/" title="Per-try timeouts" >}}
+{{< card path="/resiliency/retry/per-try-timeout/" title="Per-try timeouts" >}}
 {{< /cards >}}
 

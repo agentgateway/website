@@ -36,7 +36,7 @@ Agentgateway comes with the following key features:
 
 Agentgateway provides {{< gloss "Policy" >}}policies{{< /gloss >}} to govern how traffic for MCP and A2A {{< gloss "Backend" >}}backends{{< /gloss >}} is managed, {{< gloss "Transformation" >}}transformed{{< /gloss >}}, and secured. 
 
-Based on the [schema](https://github.com/agentgateway/agentgateway/blob/main/schema/local.json), you can configure the following policies. Each policy can be applied individually or in combination, allowing you to tailor security and traffic management to your needs.
+Based on the [schema](https://github.com/agentgateway/agentgateway/blob/main/schema/config.json), you can configure the following policies. Each policy can be applied individually or in combination, allowing you to tailor security and traffic management to your needs.
 
 **Traffic management**: 
 * **Header manipulation**: Add, set, or remove HTTP request and response headers.

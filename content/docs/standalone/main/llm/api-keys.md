@@ -2,7 +2,7 @@
 title: Manage API keys
 weight: 40
 description: Manage API keys for LLM provider authentication.
-prev: /docs/llm/providers
+prev: /llm/providers
 ---
 
 Managing API keys is an important security mechanism to prevent unauthorized access to your LLM provider. If API keys are compromised, attackers can deliberately run expensive queries, such as large and recursive prompts, at your expense.
@@ -29,24 +29,16 @@ Browse through the tabs to learn about different ways for how to provide your AP
 
 You can provide your API key directly in the agentgateway configuration. This option is the least secure. Only use this option for quick tests.
 
-1. Configure the agentgateway proxy and enter your key in the `policies.backendAuth.key` field directly. 
+1. Configure the agentgateway proxy and enter your key in the `params.apiKey` field directly.
    ```yaml
    cat <<EOF > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-          - ai:
-             name: openai
-             provider:
-               openAI:
-                 # Optional; overrides the model in requests
-                 model: gpt-3.5-turbo
-         policies:
-           backendAuth:
-             key: "sk-proj...."
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "sk-proj...."
    EOF
    ```
 
@@ -58,56 +50,43 @@ You can provide your API key directly in the agentgateway configuration. This op
    export OPENAI_API_KEY=<your-api-key>
    ```
 
-2. Configure the agentgateway proxy to refer to that environment variable. Agentgateway automatically replaces the value of the variable with the value that is stored in the environment. 
+2. Configure the agentgateway proxy to refer to that environment variable. Agentgateway automatically replaces the value of the variable with the value that is stored in the environment.
    ```yaml
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-          - ai:
-             name: openai
-             provider:
-               openAI:
-                 # Optional; overrides the model in requests
-                 model: gpt-3.5-turbo
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
    EOF
    ```
    
 {{% /tab %}}
 {{% tab %}}
 
-You can store your API key in a file and load the file into agentgateway during startup. 
+You can store your API key in a file and load the file into agentgateway during startup.
 
-1. Save your API key in a file, such as `key.txt`. 
+1. Save your API key in a file, such as `key.txt`.
    ```sh
    echo "<your-apikey>" >> key.txt
    ```
 
-2. Configure the agentgateway proxy. 
+2. Load the key from the file into an environment variable and configure the agentgateway proxy.
+   ```sh
+   export OPENAI_API_KEY=$(cat key.txt)
+   ```
+
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-          - ai:
-             name: openai
-             provider:
-               openAI:
-                 # Optional; overrides the model in requests
-                 model: gpt-3.5-turbo
-         policies:
-           backendAuth:
-             key: 
-               file: "key.txt"
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
    EOF
    ```
 {{% /tab %}}

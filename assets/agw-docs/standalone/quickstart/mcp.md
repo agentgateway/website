@@ -2,9 +2,19 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 ## Before you begin
 
+{{< doc-test paths="mcp" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
+
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   ```sh {paths="mcp"}
+   ```sh
    curl -sL https://agentgateway.dev/install | bash
    ```
 
@@ -96,7 +106,7 @@ You can change listener, route, and backend configuration in the UI. Any updates
 Check out more guides for using MCP servers with agentgateway.
 
 {{< cards >}}
-  {{< card link="../../mcp/connect/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
-  {{< card link="../../mcp/connect/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
-  {{< card link="../../mcp/authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
+  {{< card path="/mcp/connect/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
+  {{< card path="/mcp/connect/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
+  {{< card path="/mcp/mcp-authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
 {{< /cards >}}

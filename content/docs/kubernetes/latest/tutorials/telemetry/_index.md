@@ -45,10 +45,10 @@ kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/re
 # agentgateway CRDs
 helm upgrade -i --create-namespace \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}}
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
 
 # Control plane
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -307,7 +307,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/latest/observability/" title="Observability Reference" subtitle="Complete observability configuration" >}}
-  {{< card link="/docs/kubernetes/latest/observability/otel-stack" title="OTel Stack" subtitle="Full OpenTelemetry stack setup" >}}
-  {{< card link="/docs/kubernetes/latest/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
+  {{< card path="/observability/" title="Observability Reference" subtitle="Complete observability configuration" >}}
+  {{< card path="/observability/otel-stack" title="OTel Stack" subtitle="Full OpenTelemetry stack setup" >}}
+  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
 {{< /cards >}}
