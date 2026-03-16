@@ -1,6 +1,6 @@
 ---
 title: Budget and spend limits
-weight: 35
+weight: 75
 description: Control LLM spending by enforcing token budget limits per API key or user.
 test:
   budget-limits-apikey-auth:

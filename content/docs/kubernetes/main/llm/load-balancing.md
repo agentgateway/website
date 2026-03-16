@@ -1,6 +1,6 @@
 ---
 title: Load balancing
-weight: 34
+weight: 35
 description: Distribute requests across multiple LLM providers automatically (Power of Two Choices, P2C).
 test:
   load-balancing-multi-provider:
