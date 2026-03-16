@@ -1,6 +1,6 @@
 ---
-title: Virtual key management
-weight: 32
+title: Virtual keys
+weight: 30
 description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
 test:
   virtual-keys:

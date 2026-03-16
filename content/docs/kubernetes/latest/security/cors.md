@@ -1,7 +1,6 @@
 ---
 title: CORS
 weight: 10
-description:
 test:
   cors-in-httproute:
   - file: content/docs/kubernetes/latest/quickstart/install.md
@@ -25,3 +24,4 @@ test:
 ---
 
 {{< reuse "agw-docs/pages/security/cors.md" >}}
+

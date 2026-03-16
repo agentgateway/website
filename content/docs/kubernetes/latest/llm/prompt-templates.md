@@ -1,6 +1,6 @@
 ---
 title: Prompt templates
-weight: 55
+weight: 65
 description: Use static and dynamic prompt templates to customize LLM requests.
 ---
 

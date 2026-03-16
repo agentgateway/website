@@ -1,6 +1,6 @@
 ---
-title: Manage API keys
-weight: 30
+title: API keys
+weight: 25
 description: Manage API keys for LLM provider authentication.
 ---
 

@@ -8,7 +8,7 @@ test:
     path: experimental
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: content/docs/kubernetes/latest/install/sample-app.md
     path: install-httpbin
   - file: content/docs/kubernetes/latest/resiliency/timeouts/idle.md
     path: idle-timeout

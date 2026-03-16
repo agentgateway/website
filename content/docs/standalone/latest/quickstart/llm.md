@@ -8,4 +8,4 @@ test:
     path: llm
 ---
 
-{{< reuse "agw-docs/standalone/quickstart/llm-latest.md" >}}
+{{< reuse "agw-docs/standalone/quickstart/llm.md" >}}

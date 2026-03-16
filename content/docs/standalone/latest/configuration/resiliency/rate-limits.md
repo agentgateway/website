@@ -122,3 +122,63 @@ remoteRateLimit:
 ```
 
 Each descriptor value is a [CEL expression]({{< link-hextra path="/configuration/traffic-management/transformations" >}}).
+
+#### Failure behavior
+
+By default, if the remote rate limit service is unavailable or returns an error, agentgateway **fails closed**: the request is denied with a `500 Internal Server Error`. This prevents unmetered traffic in the event of a service outage.
+
+To allow requests through when the rate limit service is unavailable, set `failureMode` to `failOpen`:
+
+```yaml
+remoteRateLimit:
+  host: localhost:9090
+  domain: example.com
+  failureMode: failOpen
+  descriptors:
+  - entries:
+    - key: organization
+      value: 'request.headers["x-organization"]'
+    type: requests
+```
+
+| Value | Behavior |
+|-------|----------|
+| `failClosed` (default) | Deny requests with `500` when the rate limit service is unavailable |
+| `failOpen` | Allow requests through when the rate limit service is unavailable |
+
+{{< callout type="warning" >}}
+Be cautious when setting the failure mode to `failOpen`. While this setting prevents service disruptions if the rate limiting server is unavailable, rate limits are not enforced for your routes until the rate limiting server is available again.
+{{< /callout >}}
+
+#### Backend connection policies
+
+You can configure connection policies on the `remoteRateLimit` field to secure or tune how agentgateway connects to the rate limit service. This includes TLS, authentication, and connection timeouts.
+
+```yaml
+remoteRateLimit:
+  host: ratelimit-service:8081
+  domain: my-api
+  policies:
+    backendAuth:
+      key:
+        file: /secrets/api-key
+    backendTLS:
+      root: /certs/ca.pem
+      insecure: false
+    tcp:
+      connectTimeout:
+        secs: 3
+        nanos: 0
+  descriptors:
+    - entries:
+        - key: service
+          value: '"my-service"'
+  failureMode: failOpen
+```
+
+| Field | Description |
+|-------|-------------|
+| `policies.backendAuth` | Credentials to authenticate to the rate limit service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
+| `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
+| `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
+| `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |

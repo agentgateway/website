@@ -2,71 +2,59 @@
 title: Prompt templates
 weight: 55
 description: Use static and dynamic prompt templates to customize LLM requests.
+test:
+  prompt-templates:
+  - file: content/docs/standalone/latest/llm/prompt-templates.md
+    path: prompt-templates
 ---
 
-Use prompt templates to inject dynamic context, user identity, or other runtime information into your LLM prompts. Agentgateway supports both static template patterns (prepend/append) and dynamic variable-based templating using CEL expressions.
+Use model-level transformations to dynamically customize LLM request parameters based on request context such as headers, user identity, or other runtime information. Agentgateway uses [CEL (Common Expression Language)](https://agentgateway.dev/docs/standalone/latest/reference/cel/) expressions to evaluate and set LLM request fields at runtime.
 
-## About prompt templates
+## About LLM transformations
 
-Prompt templates allow you to standardize prompts across your organization with consistent instructions, inject dynamic context such as user identity or JWT claims, customize behavior per user, and add metadata like request IDs for tracking.
+Model-level transformations allow you to dynamically compute LLM request fields using CEL expressions that can reference incoming request headers, existing request fields, and other context. This is useful for enforcing per-user policies, customizing model behavior based on caller identity, and applying conditional request modifications without changing client code.
 
-Unlike simple `{{variable}}` substitution systems, agentgateway uses [CEL (Common Expression Language)](https://agentgateway.dev/docs/standalone/latest/reference/cel/) expressions. This gives you full expression logic including conditionals, functions, and complex transformations.
+To learn more about CEL, see the following resources:
 
-## Templating approaches
+- [CEL expression reference]({{< link-hextra path="/reference/cel/" >}})
+- [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 
-Agentgateway provides two complementary approaches to prompt templating.
+{{< callout type="info" >}}
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+{{< /callout >}}
 
-| Approach | Use Case | Example |
-|----------|----------|---------|
-| Static templates | Fixed prompts that apply to all requests | "Answer all questions in French." |
-| Dynamic templates | Variable injection from JWT claims, headers, or request context | "You are assisting user `{jwt.sub}` from organization `{jwt.org}`." |
+## Before you begin
 
-You can use these approaches individually or combine them for maximum flexibility.
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Static prompt templates
+{{< doc-test paths="prompt-templates" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
+{{< /doc-test >}}
 
-Static templates prepend or append fixed messages to every request. This is ideal for setting consistent behavior guidelines, adding organizational policies, or defining output formats.
+## Conditionally set max tokens based on user identity
 
-Configure static templates in your route's `policies` section.
+Use a CEL expression in the model-level `transformation` field to dynamically set `max_tokens` based on the caller's identity from a request header. This example gives admin users a higher token limit than regular users.
 
-```yaml
+```yaml {paths="prompt-templates"}
+cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
-        promptEnrichment:
-          prepend:
-          - role: system
-            content: "You are a helpful customer service assistant. Always be polite and professional."
-          append:
-          - role: system
-            content: "If you cannot answer a question, say so clearly rather than making up information."
-```
 
-With this configuration, every request includes the prepended and appended system messages, even if the client does not send them.
-
-Test with curl.
-
-```sh
-curl "localhost:3000" -H content-type:application/json -d '{
-  "model": "gpt-3.5-turbo",
-  "messages": [
-    {
-      "role": "user",
-      "content": "How do I return a product?"
-    }
-  ]
-}' | jq -r '.choices[].message.content'
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      max_tokens: "request.headers['x-user-id'] == 'admin' ? 100 : 10"
+EOF
 ```
 
 The response follows the prepended and appended guidelines even though they were not in the original request.
@@ -110,23 +98,69 @@ binds:
               ).toJson()
 ```
 
-Test with a user ID header.
+Send a request as a regular user and verify the response is capped at the lower token limit.
 
-```sh
-curl "localhost:3000" -H content-type:application/json -H "x-user-id: alice" -d '{
-  "model": "gpt-3.5-turbo",
-  "messages": [
-    {
-      "role": "user",
-      "content": "What are my recent orders?"
-    }
-  ]
-}' | jq -r '.choices[].message.content'
+```sh {paths="prompt-templates"}
+curl -s http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-user-id: alice" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Tell me a story"}]
+  }' | jq .
 ```
 
-The request body includes a system message: `"You are assisting user: alice"`.
+{{< doc-test paths="prompt-templates" >}}
+YAMLTest -f - <<'EOF'
+- name: admin user gets higher token limit
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+      x-user-id: admin
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Tell me a story"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.usage.completion_tokens"
+        comparator: equals
+        value: 100
 
-### Available CEL variables for templating
+- name: regular user gets lower token limit
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+      x-user-id: alice
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Tell me a story"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.usage.completion_tokens"
+        comparator: equals
+        value: 10
+EOF
+{{< /doc-test >}}
+
+In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
+
+## Available CEL variables
 
 You can use these variables in your CEL transformation expressions.
 
@@ -135,121 +169,61 @@ You can use these variables in your CEL transformation expressions.
 | `request.headers["name"]` | Request header values | `request.headers["x-user-id"]` |
 | `request.path` | Request path | `request.path` returns `/` |
 | `request.method` | HTTP method | `request.method` returns `POST` |
-| `jwt.sub` | JWT subject claim | `jwt.sub` returns `"user123"` |
-| `jwt.iss` | JWT issuer claim | `jwt.iss` returns `"https://auth.example.com"` |
-| `jwt.aud` | JWT audience claim | `jwt.aud` returns `"api://myapp"` |
-| `jwt['custom-claim']` | Custom JWT claims | `jwt['org-id']` returns custom claim value |
+| `llmRequest.max_tokens` | Original max_tokens from the request | `min(llmRequest.max_tokens, 100)` |
+| `llmRequest.model` | Requested model name | `llmRequest.model` |
 
 For a complete list of available variables and functions, see the [CEL reference documentation](/docs/reference/cel/).
 
-## Common templating patterns
+## Common transformation patterns
 
-### User context from JWT claims
+### Cap token usage
 
-{{< callout type="warning" >}}
-JWT claims are not currently available in CEL transformations when using `mcpAuthentication`. This is tracked in [agentgateway issue #870](https://github.com/agentgateway/agentgateway/issues/870). Use `jwtAuth` in the route policies instead.
-{{< /callout >}}
-
-Inject user identity and organization from JWT claims into the prompt.
+Enforce a maximum token limit regardless of what the client requests.
 
 ```yaml
-policies:
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          {
-            "model": body.model,
-            "messages": [
-              {
-                "role": "system",
-                "content": "You are assisting " + jwt.sub + " from organization " + jwt['org-id'] + ". Tailor responses to their role: " + default(jwt.role, "user") + "."
-              }
-            ] + body.messages
-          }
-        ).toJson()
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      max_tokens: "min(llmRequest.max_tokens, 1024)"
 ```
 
-### Conditional templates based on headers
+### Set temperature based on headers
 
-Route premium users to enhanced instructions.
+Allow callers to control creativity through a header while enforcing bounds.
 
 ```yaml
-policies:
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          request.headers["x-user-tier"] == "premium" ?
-            {
-              "model": body.model,
-              "messages": [{"role": "system", "content": "Provide detailed, comprehensive answers with examples."}] + body.messages
-            } :
-            {
-              "model": body.model,
-              "messages": [{"role": "system", "content": "Provide concise, brief answers."}] + body.messages
-            }
-        ).toJson()
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      temperature: "request.headers['x-creativity'] == 'high' ? 0.9 : 0.1"
 ```
 
-### Add request tracking metadata
+### Combine multiple transformations
 
-Inject request ID and timestamp for debugging.
+Apply several field-level transformations in a single configuration.
 
 ```yaml
-policies:
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          {
-            "model": body.model,
-            "messages": [
-              {
-                "role": "system",
-                "content": "Request ID: " + uuid() + " | Timestamp: " + string(request.startTime)
-              }
-            ] + body.messages
-          }
-        ).toJson()
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      max_tokens: "request.headers['x-user-tier'] == 'premium' ? 4096 : 256"
+      temperature: "request.headers['x-user-tier'] == 'premium' ? 0.8 : 0.3"
 ```
-
-### Combine static and dynamic templates
-
-Use prompt enrichment for static guidelines and transformations for dynamic context.
-
-```yaml
-policies:
-  # Static guidelines via prompt enrichment
-  promptEnrichment:
-    prepend:
-    - role: system
-      content: "You are a helpful assistant. Always be polite."
-    append:
-    - role: system
-      content: "If uncertain, say so clearly."
-
-  # Dynamic user context via transformation
-  transformations:
-    request:
-      body: |
-        json(request.body).with(body,
-          {
-            "model": body.model,
-            "messages": body.messages + [
-              {
-                "role": "system",
-                "content": "User context: " + default(request.headers["x-user-id"], "anonymous")
-              }
-            ]
-          }
-        ).toJson()
-```
-
-This applies both static prompts (prepend/append) and dynamic user context (from headers).
 
 ## Next steps
 
-- Learn about [CEL expressions](/docs/reference/cel/) for advanced templating.
-- Explore [transformations](/docs/configuration/traffic-management/transformations/) for request/response modification.
-- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) to use JWT claims in templates.
+- Learn about [CEL expressions]({{< link-hextra path="reference/cel/">}}) for advanced expression logic.
+- Explore [transformations]({{< link-hextra path="/llm/transformations/" >}}) for more LLM request transformation examples.
+- Set up [authentication]({{< link-hextra path="configuration/security/jwt-authn/" >}}) to use JWT claims in transformations.

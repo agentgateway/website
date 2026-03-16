@@ -59,12 +59,12 @@ Install the AgentGateway CRDs and control plane:
 ```bash
 helm upgrade -i --create-namespace \
   --namespace agentgateway-system \
-  --version v2.2.1 \
+  --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
   agentgateway-crds oci://ghcr.io/kgateway-dev/charts/agentgateway-crds
 
 helm upgrade -i -n agentgateway-system \
   agentgateway oci://ghcr.io/kgateway-dev/charts/agentgateway \
-  --version v2.2.1
+  --version v{{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 
 Verify the control plane is running:
