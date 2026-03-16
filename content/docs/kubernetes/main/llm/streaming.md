@@ -1,6 +1,6 @@
 ---
 title: Streaming
-weight: 18
+weight: 45
 description: Stream responses from the LLM to the end user through agentgateway.
 ---
 
@@ -10,11 +10,12 @@ Click through the following tabs to see the request flows for each.
 
 <!-- Diagrams in Excalidraw https://app.excalidraw.com/s/AKnnsusvczX/AZJRSy6wV4F -->
 
-{{< tabs tabTotal="2">}}
+{{< tabs tabTotal="2" items="Single response,Streaming">}}
 {{% tab tabName="Single response" %}}
 
-{{< reuse-image src="/img/gateway/aig-streaming-false-light.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
-{{< reuse-image-dark srcDark="/img/gateway/aig-streaming-false-dark.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
+{{< reuse-image src="/img/aig-streaming-false-light.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
+
+{{< reuse-image-dark srcDark="/img/aig-streaming-false-dark.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
 
 1. The client sends a request without streaming.
 2. The gateway receives the request and forwards it to the LLM.
@@ -24,8 +25,8 @@ Click through the following tabs to see the request flows for each.
 {{% /tab %}}
 {{% tab tabName="Streaming" %}}
 
-{{< reuse-image src="/img/gateway/aig-streaming-true-light.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
-{{< reuse-image-dark srcDark="/img/gateway/aig-streaming-true-dark.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
+{{< reuse-image src="/img/aig-streaming-true-light.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
+{{< reuse-image-dark srcDark="/img/aig-streaming-true-dark.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
 
 1. The client sends a request with streaming enabled.
 2. The gateway receives the request and forwards it to the LLM.
