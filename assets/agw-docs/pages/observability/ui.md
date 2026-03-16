@@ -13,7 +13,7 @@ The Admin UI is not exposed as a Kubernetes Service. To access it, use `kubectl 
 1. Forward port 15000 from the `agentgateway-proxy` deployment to your local machine.
 
    ```sh
-   kubectl port-forward deploy/agentgateway-proxy -n agentgateway-system 15000
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
    ```
 
    Example output:
@@ -22,11 +22,6 @@ The Admin UI is not exposed as a Kubernetes Service. To access it, use `kubectl 
    Forwarding from 127.0.0.1:15000 -> 15000
    Forwarding from [::1]:15000 -> 15000
    ```
-
-{{< doc-test paths="ui-k8s" >}}
-kubectl port-forward deploy/agentgateway-proxy -n agentgateway-system 15000 &
-for i in $(seq 1 20); do curl -s http://localhost:15000/ui/ > /dev/null 2>&1 && break || sleep 2; done
-{{< /doc-test >}}
 
 2. While the port-forward is running, open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
 
@@ -38,14 +33,20 @@ for i in $(seq 1 20); do curl -s http://localhost:15000/ui/ > /dev/null 2>&1 && 
 {{< doc-test paths="ui-k8s" >}}
 YAMLTest -f - <<'EOF'
 - name: Admin UI returns HTTP 200
+  retries: 3
   http:
     url: "http://localhost:15000/ui/"
     method: GET
   source:
-    type: local
+    type: pod
+    usePortForward: true
+    selector:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
   expect:
     statusCode: 200
-  retries: 3
 EOF
 {{< /doc-test >}}
 
