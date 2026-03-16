@@ -2,6 +2,16 @@
 title: Streaming
 weight: 45
 description: Stream responses from the LLM to the end user through agentgateway.
+test:
+  streaming-openai:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/llm/providers/openai.md
+    path: openai-setup
+  - file: content/docs/kubernetes/main/llm/streaming.md
+    path: streaming-openai
 ---
 
 Models return a response in two main ways: all at once in a single chunk, or in a stream of chunks.
@@ -123,7 +133,7 @@ The following steps show how to stream a response from OpenAI.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
+   ```sh {paths="streaming-openai"}
    curl "$INGRESS_GW_ADDRESS:8080/openai" -H content-type:application/json  -d '{
       "stream": true,
       "model": "gpt-3.5-turbo",
@@ -177,3 +187,25 @@ The following steps show how to stream a response from OpenAI.
    ```
 
    If you string together the `{"content":...}` chunks, you get the complete response. The `[DONE]` message indicates that the streaming process is complete.
+
+{{< doc-test paths="streaming-openai" >}}
+# Verify streaming response contains SSE chunks and terminates with [DONE]
+STREAM_RESPONSE=$(curl -s "$INGRESS_GW_ADDRESS:8080/openai" -H content-type:application/json -d '{
+  "stream": true,
+  "model": "gpt-3.5-turbo",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Say hello in one word"
+    }
+  ]
+}')
+
+# Verify the response contains streaming chunk markers
+echo "$STREAM_RESPONSE" | grep -q "chat.completion.chunk" || { echo "FAIL: Response does not contain streaming chunks"; exit 1; }
+echo "PASS: Response contains streaming chunks"
+
+# Verify the stream terminates with [DONE]
+echo "$STREAM_RESPONSE" | grep -q '\[DONE\]' || { echo "FAIL: Response does not end with [DONE]"; exit 1; }
+echo "PASS: Stream terminates with [DONE]"
+{{< /doc-test >}}
