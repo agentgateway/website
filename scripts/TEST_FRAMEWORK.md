@@ -457,12 +457,12 @@ Tests that contain `kubectl port-forward` in the generated script are automatica
 
 **`/expect: unknown property "jsonPath"` errors**
 
-This error almost always means the `expect` block has bad indentation. `bodyJsonPath` must be a direct child of `expect:`, not nested under `statusCode` or `headers`. Double-check that all keys under `expect:` are at the same indentation level:
+This error almost always means the `expect` block has bad indentation. `jsonPath` must be a direct child of `expect:`, not nested under `statusCode` or `headers`. Double-check that all keys under `expect:` are at the same indentation level:
 
 ```yaml
   expect:
     statusCode: 200
-    bodyJsonPath:
+    jsonPath:
       - path: "$.choices[0].message.content"
         comparator: contains
         value: "hello"
