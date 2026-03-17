@@ -2,7 +2,7 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to use agentgateway
 
 ## Before you begin
 
-- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{% link-hextra path="/integrations/llm-clients/" %}}) for instructions.
+- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) for instructions.
 - Cursor installed (version 0.30 or later).
 
 ## Configure Cursor
