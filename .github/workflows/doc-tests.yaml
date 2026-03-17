@@ -81,7 +81,7 @@ jobs:
 
           FILES=$(echo "$FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
           echo "files=${FILES}" >> $GITHUB_OUTPUT
-          echo "files=${FILES}"
+          echo "$FILES" | tr ' ' '\n'
 
       - name: Run doc tests
         run: |
