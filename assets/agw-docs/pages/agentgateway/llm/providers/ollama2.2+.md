@@ -132,7 +132,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
 5. Send a request to verify agentgateway can route to Ollama.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer, Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS" \
@@ -149,9 +149,13 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
+   In one terminal, start a port-forward to the gateway:
+
    ```sh
    kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
    ```
+
+   In a second terminal, send a request:
 
    ```sh
    curl "localhost:8080" \
