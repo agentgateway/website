@@ -4,7 +4,7 @@ weight: 40
 test:
   mcp-auth-setup:
   - file: content/docs/kubernetes/latest/install/helm.md
-    path: standard
+    path: experimental
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/latest/mcp/static-mcp.md
