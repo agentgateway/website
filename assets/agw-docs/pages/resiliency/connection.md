@@ -139,7 +139,7 @@ Use these settings to control header limits and idle connection behavior for HTT
    | Setting | Description |
    | -- | -- |
    | `http1MaxHeaders` | The maximum number of headers allowed in HTTP/1.1 requests. Defaults to 100 if unset. Valid range: 1–4096. Requests that exceed this limit receive a 431 response. |
-   | `http1IdleTimeout` | The timeout before an unused HTTP/1.1 connection is closed. Defaults to 10 minutes if unset. |
+   | `http1IdleTimeout` | The duration of time before an unused HTTP/1.1 connection is closed. Defaults to 10 minutes if unset. |
 
 2. Port-forward the gateway proxy on port 15000.
    ```sh
