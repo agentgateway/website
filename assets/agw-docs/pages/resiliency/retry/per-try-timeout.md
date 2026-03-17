@@ -8,7 +8,7 @@ Set separate timeouts for retries.
 
 The per-try timeout allows you to set a timeout for retried requests. If the timeout expires, the agentgateway proxy cancels the retry attempt and immediately retries on another upstream host. 
 
-A request timeout represents the time the proxy waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger request timeout<!--[request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}})--> to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
+A request timeout represents the time the proxy waits for the entire request to complete, including retries. Without a per-try timeout, retries might take longer than the overall request timeout, and therefore might not be executed as the request times out before the retry attempts can be performed. You can configure a larger [request timeout]({{< link-hextra path="/resiliency/timeouts/request/" >}}) to account for this case. However, you can also define timeouts for each retry so that you can protect against slow retry attempts from consuming the entire request timeout.
 
 Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try timeouts on a Gateway listener level, use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} instead. 
 
@@ -430,6 +430,20 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
   {{< /doc-test >}}
   {{< doc-test paths="per-try-timeout-in-httproute" >}}
   YAMLTest -f - <<'EOF'
+  - name: wait for retry HTTPRoute to be ready
+    wait:
+      target:
+        kind: HTTPRoute
+        metadata:
+          namespace: httpbin
+          name: retry
+      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+      jsonPathExpectation:
+        comparator: equals
+        value: "True"
+      polling:
+        timeoutSeconds: 120
+        intervalSeconds: 2
   - name: Check configdump
     retries: 10
     http:
@@ -452,6 +466,20 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
   {{< /doc-test >}}
   {{< doc-test paths="per-try-timeout-in-agentgateway,per-try-timeout-in-gatewaylistener" >}}
   YAMLTest -f - <<'EOF'
+  - name: wait for retry policy to be accepted
+    wait:
+      target:
+        kind: AgentgatewayPolicy
+        metadata:
+          namespace: httpbin
+          name: retry
+      jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+      jsonPathExpectation:
+        comparator: equals
+        value: "True"
+      polling:
+        timeoutSeconds: 120
+        intervalSeconds: 2
   - name: Check configdump
     retries: 10
     http:
