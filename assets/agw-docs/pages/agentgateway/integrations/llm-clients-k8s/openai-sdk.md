@@ -2,7 +2,7 @@ Use the OpenAI Python or Node.js SDK to send requests through agentgateway deplo
 
 ## Before you begin
 
-- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{% link-hextra path="/integrations/llm-clients/" %}}) for instructions.
+- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) for instructions.
 - The OpenAI SDK installed in your project.
 
 ## Python
