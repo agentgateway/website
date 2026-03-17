@@ -232,6 +232,31 @@ spec:
 EOF
 ```
 
+### PreRouting phase
+
+By default, basic auth is enforced during routing. Use the `PreRouting` phase to validate credentials before any routing decision is made. This is useful when you want to enforce authentication for all traffic at the gateway level, regardless of the route.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: basic-auth
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+  traffic:
+    phase: PreRouting
+    basicAuthentication:
+      mode: Strict
+      users:
+        - "user:\$apr1\$TYiryv0/\$8BvzLUO9IfGPGGsPnAgSu1"
+EOF
+```
+
 ### Optional validation mode
 
 Use the `Optional` mode to validate credentials when present, but allow requests without credentials. This mode is useful for services that offer both authenticated and unauthenticated access.

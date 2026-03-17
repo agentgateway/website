@@ -1,7 +1,5 @@
 In this installation guide, you install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} {{< gloss "Control Plane" >}}control plane{{< /gloss >}} in a Kubernetes cluster by using [Helm](https://helm.sh/). Helm is a popular package manager for Kubernetes configuration files. This approach is flexible for adopting to your own command line, continuous delivery, or other workflows.
 
-
-
 As part of the control plane installation, you enable the {{< reuse "/agw-docs/snippets/agentgateway.md" >}} data plane.
 
 ## Before you begin

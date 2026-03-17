@@ -36,7 +36,7 @@ curl -X POST httpbun.com/llm/chat/completions \
 
 httpbun ships as a single Docker image. The default bind port inside the container is `3090` when configured via environment variable.
 
-```bash
+```bash {paths="setup-httpbun-llm"}
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -82,6 +82,25 @@ spec:
 EOF
 ```
 
+{{< doc-test paths="setup-httpbun-llm" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbun deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: default
+        name: httpbun
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 Verify the pod is running:
 
 ```bash
@@ -103,7 +122,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} to configure httpbun as a
 **No API key needed**: httpbun accepts requests without authentication, so there is no `policies.auth` block in the following example. This also means that you don't need to manage a Kubernetes Secret: one less prerequisite to set up!
 {{< /callout >}}
 
-```bash
+```bash {paths="setup-httpbun-llm"}
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -135,7 +154,7 @@ Route incoming traffic from the gateway to the {{< reuse "agw-docs/snippets/back
 
 1. Create the HTTPRoute.
 
-   ```bash
+   ```bash {paths="setup-httpbun-llm"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -159,6 +178,39 @@ Route incoming traffic from the gateway to the {{< reuse "agw-docs/snippets/back
    EOF
    ```
 
+   {{< doc-test paths="setup-httpbun-llm" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for httpbun-llm HTTPRoute to be accepted
+     wait:
+       target:
+         kind: HTTPRoute
+         metadata:
+           namespace: agentgateway-system
+           name: httpbun-llm
+       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
+   - name: wait for httpbun-llm HTTPRoute refs to be resolved
+     wait:
+       target:
+         kind: HTTPRoute
+         metadata:
+           namespace: agentgateway-system
+           name: httpbun-llm
+       jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
+
 2. Verify the route was accepted. Look for `Accepted: True` and `ResolvedRefs: True` in the status. If `ResolvedRefs` is `False`, double-check that the {{< reuse "agw-docs/snippets/backend.md" >}} name and namespace in the route match exactly what you created in Step 2.
 
    ```bash
@@ -167,6 +219,30 @@ Route incoming traffic from the gateway to the {{< reuse "agw-docs/snippets/back
 
 ## Step 4: Verify the connection
 
+{{< doc-test paths="setup-httpbun-llm" >}}
+# Get the gateway address
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+# Test httpbun LLM endpoint
+YAMLTest -f - <<'EOF'
+- name: Verify httpbun LLM responds with mock completion
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Hello!"}],
+        "httpbun": {"content": "Test response"}
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider LoadBalancer" %}}

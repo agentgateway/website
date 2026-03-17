@@ -46,6 +46,7 @@
   51%, 100% { opacity: 0; }
 }
 
+
 @keyframes codeLine {
   from {
     opacity: 0;

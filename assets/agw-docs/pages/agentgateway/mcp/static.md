@@ -16,7 +16,7 @@ Notice the following details about the Service:
 * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy uses the MCP protocol when connecting to the service.
 * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
-```yaml
+```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -52,11 +52,30 @@ spec:
 EOF
 ```
 
+{{< doc-test paths="setup-mcp-server" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp-website-fetcher deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: default
+        name: mcp-website-fetcher
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 ### Step 2: Create the backend for the MCP server
 
-Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse "agw-docs/snippets/agentgateway.md" >}} target details for the MCP server. 
-   
-```yaml
+Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse "agw-docs/snippets/agentgateway.md" >}} target details for the MCP server.
+
+```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -78,7 +97,7 @@ EOF
 
 Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. Use a path match so that requests to `/mcp` go to the MCP backend and are not routed to an LLM or other backend.
 
-```yaml
+```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -100,6 +119,25 @@ spec:
 EOF
 ```
 
+{{< doc-test paths="setup-mcp-server" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: default
+        name: mcp
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 ### Step 4: Verify the connection {#verify}
 
 Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspector) to verify that you can connect to your sample MCP server through agentgateway.
@@ -113,7 +151,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
      ```
    * **Port-forward for local testing**:
      ```sh
-     kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}  8080:80
+     kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
      ```
 
 2. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser. If the MCP inspector tool does not open automatically, run `mcp-inspector`. 

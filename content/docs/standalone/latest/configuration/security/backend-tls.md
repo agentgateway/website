@@ -4,7 +4,7 @@ weight: 10
 ---
 
 Attach to:
-{{< badge content="Backend" link="/docs/configuration/backends/">}}
+{{< badge content="Backend" path="/configuration/backends/">}}
 
 By default, requests to backends will use HTTP.
 To use HTTPS, a backend {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}} policy can be configured.

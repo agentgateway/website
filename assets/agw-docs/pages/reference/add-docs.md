@@ -70,7 +70,7 @@ If you want to add a folder or "twistie" to the left-hand navigation of the docs
 
 ## Hugo shortcodes {#shortcodes}
 
-As mentioned earlier, the documentation in the kgateway project is built by using the static site generator Hugo. Hugo uses reusable templates, commonly referred to as shortcodes, to display, style, and render site elements, such as tables, videos, or cards and to manage the content for these elements more easily. Supported shortcodes can be found in the [kgateway project repo](https://github.com/kgateway-dev/kgateway.dev/tree/main/layouts/shortcodes) as well as the [Hextra Hugo theme](https://github.com/imfing/hextra/tree/main/exampleSite/content/docs/guide/shortcodes). 
+As mentioned earlier, the documentation in the kgateway project is built by using the static site generator Hugo. Hugo uses reusable templates, commonly referred to as shortcodes, to display, style, and render site elements, such as tables, videos, or cards and to manage the content for these elements more easily. Supported shortcodes can be found in the [kgateway project repo](https://github.com/kgateway-dev/kgateway.dev/tree/main/layouts/shortcodes) as well as the [Hextra Hugo theme](https://github.com/imfing/hextra/tree/main/layouts/_shortcodes). 
 
 Review common shortcodes that you find throughout the documentation: 
 
@@ -148,13 +148,13 @@ Use the cards shortcode to display a card in the documentation that links to a s
 Example card: 
 
 {{< cards >}}
-{{< card link="../../../quickstart" title="Get started" >}}
+{{< card path="/quickstart" title="Get started" >}}
 {{< /cards >}}
 
 Shortcode syntax
 ```markdown
 {{</* cards */>}}
-{{</* card link="../../../quickstart" title="Get started" */>}}
+{{</* card path="/quickstart" title="Get started" */>}}
 {{</* /cards */>}}
 ```
 
@@ -253,5 +253,3 @@ The kgateway project automatically generates the following documentation from th
 * [API reference]({{< link-hextra path="/reference/api/" >}})
 * [Helm reference]({{< link-hextra path="/reference/helm/" >}})
 * [Control plane metrics]({{< link-hextra path="/observability/control-plane-metrics/">}})
-
-To learn more about how to generate these docs, see the [GitHub Workflows README](https://github.com/kgateway-dev/kgateway.dev/tree/main/.github/workflows/README.md).

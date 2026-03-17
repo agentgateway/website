@@ -1,6 +1,6 @@
 ---
 title: Providers
-weight: 20
+weight: 15
 description:
 ---
 

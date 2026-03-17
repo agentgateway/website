@@ -1,7 +1,3 @@
----
-title: Request headers
-weight: 25
----
 
 Use the `RequestHeaderModifier` filter to add, append, overwrite, or remove request headers for a specific route. 
 
@@ -15,7 +11,7 @@ For more information, see the [HTTPHeaderFilter specification](https://gateway-a
 Add headers to incoming requests before they are forwarded to an upstream service. If the request already has the header set, the value of the header in the `RequestHeaderModifier` filter is appended to the value of the header in the request. 
 
 1. Set up a header modifier that adds a `my-header: hello` request header for a Gateway API-native HTTPRoute.
-   ```yaml
+   ```yaml {paths="add-request-header"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -32,7 +28,7 @@ Add headers to incoming requests before they are forwarded to an upstream servic
        - filters:
            - type: RequestHeaderModifier
              requestHeaderModifier:
-               add: 
+               add:
                - name: my-header
                  value: hello
          backendRefs:
@@ -137,8 +133,8 @@ Add headers to incoming requests before they are forwarded to an upstream servic
 
 Setting headers is similar to adding headers. If the request does not include the header, it is added by the `RequestHeaderModifier` filter. However, if the request already contains the header, its value is overwritten with the value from the `RequestHeaderModifier` filter. 
 
-1. Set up a header modifier that sets a `my-header: hello` request header. 
-   ```yaml
+1. Set up a header modifier that sets a `my-header: hello` request header.
+   ```yaml {paths="set-request-header"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -155,7 +151,7 @@ Setting headers is similar to adding headers. If the request does not include th
        - filters:
            - type: RequestHeaderModifier
              requestHeaderModifier:
-               set: 
+               set:
                - name: my-header
                  value: hello
          backendRefs:
@@ -283,8 +279,8 @@ You can remove HTTP headers from a request before the request is forwarded to th
      }
    }
    ```
-2. Set up a header modifier that removes the `User-Agent` header when requests are sent to the `headers.example` domain. 
-   ```yaml
+2. Set up a header modifier that removes the `User-Agent` header when requests are sent to the `headers.example` domain.
+   ```yaml {paths="remove-request-header"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -301,7 +297,7 @@ You can remove HTTP headers from a request before the request is forwarded to th
        - filters:
            - type: RequestHeaderModifier
              requestHeaderModifier:
-               remove: 
+               remove:
                  - User-Agent
          backendRefs:
            - name: httpbin
@@ -344,96 +340,60 @@ You can remove HTTP headers from a request before the request is forwarded to th
    }
    ```
 
-4. Optional: Clean up the resources that you created.  
-   
+4. Optional: Clean up the resources that you created.
+
    ```sh
    kubectl delete httproute httpbin-headers -n httpbin
    ```
 
-## Dynamic request headers {#dynamic-request-header}
+{{< doc-test paths="add-request-header" >}}
+YAMLTest -f - <<'EOF'
+- name: verify add-request-header returns 200 with my-header
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}"
+    path: /headers
+    method: GET
+    headers:
+      host: headers.example
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyContains:
+    - '"My-Header"'
+EOF
+{{< /doc-test >}}
 
-You can return dynamic information about the request in the request header. For more information, see the Envoy docs for [Custom request/response headers](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_conn_man/headers.html#custom-request-response-headers).
+{{< doc-test paths="set-request-header" >}}
+YAMLTest -f - <<'EOF'
+- name: verify set-request-header returns 200 with my-header
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}"
+    path: /headers
+    method: GET
+    headers:
+      host: headers.example
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyContains:
+    - '"My-Header"'
+EOF
+{{< /doc-test >}}
 
-{{< reuse "agw-docs/snippets/dynamic-req-resp-headers.md" >}}
-
-1. Set up a header modifier that sets the `X-Client-Ip` header with the value of the downstream remote address. 
-   ```yaml {linenos=table,hl_lines=[18,19],linenostart=1}
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: httpbin-headers
-     namespace: httpbin
-   spec:
-     parentRefs:
-     - name: agentgateway-proxy
-       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     hostnames:
-       - headers.example
-     rules:
-       - filters:
-           - type: RequestHeaderModifier
-             requestHeaderModifier:
-               set: 
-                 - name: x-client-ip
-                   value: "%DOWNSTREAM_REMOTE_ADDRESS_WITHOUT_PORT%"
-         backendRefs:
-           - name: httpbin
-             port: 8000
-   EOF
-   ```
-   
-   |Setting|Description|
-   |--|--|
-   |`spec.parentRefs`| The name and namespace of the gateway that serves this HTTPRoute. In this example, you use the `agentgateway-proxy` Gateway that was created as part of the get started guide. |
-   |`spec.rules.filters.type`| The type of filter that you want to apply to incoming requests. In this example, the `RequestHeaderModifier` filter is used.|
-   |`spec.rules.filters.requestHeaderModifier.set`|The request header that you want to set. In this example, the `x-client-ip` header is set to the downstream remote address without the port. For more potential values, see [Command operators in the Envoy docs](https://www.envoyproxy.io/docs/envoy/latest/configuration/observability/access_log/usage.html#command-operators). |
-   |`spec.rules.backendRefs`|The backend destination you want to forward traffic to. In this example, all traffic is forwarded to the httpbin app that you set up as part of the get started guide. |
-   
-
-2. Send a request to the httpbin app on the `headers.example` domain. Verify that the `X-Client-Ip` request header is set to the downstream remote address without the port. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vi http://${INGRESS_GW_ADDRESS}:8080/headers -H "host: headers.example:8080"
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vi localhost:8080/headers -H "host: headers.example"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-   Example output: 
-   ```sh {linenos=table,hl_lines=[9,10,11],linenostart=1}
-   {
-     "headers": {
-       "Accept": [
-         "*/*"
-       ],
-       "Host": [
-         "headers.example:8080"
-       ],
-       "X-Client-Ip": [
-         "127.0.0.1"
-       ],
-       "X-Envoy-Expected-Rq-Timeout-Ms": [
-         "15000"
-       ],
-       "X-Forwarded-Proto": [
-         "http"
-       ],
-       "X-Request-Id": [
-         "f83bb750-67f7-47dc-8c79-4a582892034c"
-       ]
-     }
-   }
-   ```
-
-3. Optional: Clean up the resources that you created.  
-   
-   ```sh
-   kubectl delete httproute httpbin-headers -n httpbin
-   ```
-   
+{{< doc-test paths="remove-request-header" >}}
+YAMLTest -f - <<'EOF'
+- name: verify remove-request-header returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}"
+    path: /headers
+    method: GET
+    headers:
+      host: headers.example
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}

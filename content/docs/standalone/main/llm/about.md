@@ -2,8 +2,8 @@
 title: About
 weight: 1
 description: Overview of supported LLM providers and their capabilities
-next: /docs/llm/providers
-prev: /docs/llm
+next: /llm/providers
+prev: /llm
 ---
 
 Agentgateway provides seamless integration with various Large Language Model (LLM) providers. This way, you can consume AI services through a unified interface while still maintaining flexibility in the providers that you use.
@@ -121,4 +121,49 @@ console.log(response);
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## Model routing and aliases
+
+When you configure a model in the `llm` section, two fields control how requests are routed, as shown in the following table.
+
+| Field | Purpose |
+|-------|---------|
+| `models.name` | The model name to match in incoming client requests. Agentgateway compares this value against the `model` field in the request body. Use a wildcard `*` to match any model name. |
+| `params.model` | The model name sent to the upstream provider. If set, this overrides the model from the request. If not set, the model from the request is passed through. |
+
+### Pass-through mode
+
+Use `name: "*"` without setting `params.model` to accept any model name and pass it directly to the provider. This is the simplest configuration for single-provider setups.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
+Clients specify the actual model in their requests, such as `"model": "gpt-4o-mini"`, and agentgateway forwards it to the provider as-is.
+
+### Model aliases
+
+Set `name` to a user-friendly alias and `params.model` to the actual provider model. This lets you decouple client-facing model names from provider-specific identifiers, making it easier to swap models without updating client code.
+
+```yaml
+llm:
+  models:
+  - name: fast
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "$OPENAI_API_KEY"
+  - name: smart
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "$OPENAI_API_KEY"
+```
+
+Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translates these to the corresponding provider models.
 

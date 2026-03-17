@@ -15,6 +15,8 @@ const STORAGE_KEY = 'chatbot-state';
 const INPUT_STORAGE_KEY = 'chatbot-input';
 const MAX_CONTEXT_PAGES = 3;
 const INPUT_SAVE_DEBOUNCE_MS = 300;
+const HISTORY_LIMIT_NOTE_AT = 3;   // show history-limit note after this many user messages
+const NEW_CHAT_TOOLTIP_AT = 10;    // show new-chat note after this many user messages
 
 /**
  * A URL is only eligible as a context page if it is same-origin AND
@@ -59,6 +61,9 @@ document.addEventListener('alpine:init', () => {
     sessionId: '',
     showContextMenu: false,
     showModelMenu: false,
+    historyLimitNoteShown: false,
+    historyLimitNoteIndex: -1,
+    showNewConvBanner: false,
 
     // Feedback
     showFeedbackModal: false,
@@ -79,6 +84,10 @@ document.addEventListener('alpine:init', () => {
     markdownRenderer: null,
     currentEventSource: null,
     _saveInputTimer: null,
+    _pendingStreamTokens: '',
+    _streamRenderScheduled: false,
+    _streamRenderRafId: null,
+    _streamRenderTimer: null,
 
     // ─── Lifecycle ───────────────────────────────────────────
 
@@ -89,6 +98,13 @@ document.addEventListener('alpine:init', () => {
 
       // Hugo-generated page index for @ mentions
       this.pageIndex = loadPageIndex();
+
+      // Clear persisted state on hard refresh (F5 / Ctrl+R / refresh button)
+      const navEntry = performance.getEntriesByType('navigation')[0];
+      const isReload = navEntry?.type === 'reload';
+      if (isReload) {
+        try { sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+      }
 
       // Restore persisted conversation (runs BEFORE watchers are set up,
       // so setting isOpen / messages here does NOT fire the watchers).
@@ -271,9 +287,11 @@ document.addEventListener('alpine:init', () => {
         this.currentEventSource.close();
         this.currentEventSource = null;
       }
+      this.clearStreamRenderScheduler();
       const lastMsg = this.messages[this.messages.length - 1];
       if (lastMsg?.isStreaming) {
         try {
+          this.flushPendingStreamTokens();
           const html = this.markdownRenderer.flush();
           if (html) lastMsg.content = html;
           lastMsg.markdown = this.markdownRenderer.getContent();
@@ -310,7 +328,6 @@ document.addEventListener('alpine:init', () => {
     newChat() {
       this.stopActiveStream();
       this.messages = [];
-      this.userInput = '';
       this.isExpanded = false;
       this.isProcessing = false;
       this.showThinking = false;
@@ -321,14 +338,17 @@ document.addEventListener('alpine:init', () => {
       this.feedbackModalIndex = -1;
       this.feedbackComment = '';
       this.closeMentionMenu();
+      this.historyLimitNoteShown = false;
+      this.historyLimitNoteIndex = -1;
+      this.showNewConvBanner = false;
       this.sessionId = this.generateSessionId();
       this.thinkingAnimator.stop();
       this.markdownRenderer.reset();
-      this.clearSavedInput();
       this.saveState();
       this.$nextTick(() => {
         this.autoResizeInput();
         this.$refs.input?.focus();
+        if (this.$refs.messagesSpacer) this.$refs.messagesSpacer.style.minHeight = '0';
       });
     },
 
@@ -385,6 +405,7 @@ document.addEventListener('alpine:init', () => {
         this.currentEventSource.close();
         this.currentEventSource = null;
       }
+      this.clearStreamRenderScheduler();
       const lastMsg = this.messages[this.messages.length - 1];
       if (lastMsg?.isStreaming) {
         lastMsg.isStreaming = false;
@@ -793,6 +814,59 @@ document.addEventListener('alpine:init', () => {
 
     // ─── Query ───────────────────────────────────────────────
 
+    clearStreamRenderScheduler() {
+      if (this._streamRenderRafId !== null) {
+        window.cancelAnimationFrame(this._streamRenderRafId);
+        this._streamRenderRafId = null;
+      }
+      if (this._streamRenderTimer !== null) {
+        clearTimeout(this._streamRenderTimer);
+        this._streamRenderTimer = null;
+      }
+      this._streamRenderScheduled = false;
+    },
+
+    scheduleStreamRender() {
+      if (this._streamRenderScheduled) return;
+      this._streamRenderScheduled = true;
+
+      const run = () => {
+        this._streamRenderScheduled = false;
+        this._streamRenderRafId = null;
+        this._streamRenderTimer = null;
+        this.flushPendingStreamTokens();
+      };
+
+      if (typeof window.requestAnimationFrame === 'function') {
+        this._streamRenderRafId = window.requestAnimationFrame(run);
+      } else {
+        this._streamRenderTimer = setTimeout(run, 16);
+      }
+    },
+
+    flushPendingStreamTokens() {
+      if (!this._pendingStreamTokens) return;
+
+      const idx = this.messages.length - 1;
+      const msg = this.messages[idx];
+      if (!msg || msg.role !== 'assistant' || !msg.isStreaming) {
+        this._pendingStreamTokens = '';
+        return;
+      }
+
+      this.markdownRenderer.addToken(this._pendingStreamTokens);
+      this._pendingStreamTokens = '';
+
+      const html = this.markdownRenderer.render();
+      msg.content = html;
+
+      if (this.markdownRenderer.getContent().length > 0 && this.showThinking) {
+        this.showThinking = false;
+        this.thinkingAnimator.stop();
+        msg.isLoading = false;
+      }
+    },
+
     async sendQuery() {
       const query = this.userInput.trim();
       if (!query || this.isProcessing) return;
@@ -819,6 +893,15 @@ document.addEventListener('alpine:init', () => {
 
       if (this.messages.length === 1) this.isExpanded = true;
 
+      const userMsgCount = this.messages.filter(m => m.role === 'user').length;
+      if (userMsgCount === HISTORY_LIMIT_NOTE_AT) {
+        this.historyLimitNoteShown = true;
+        this.historyLimitNoteIndex = this.messages.length - 1;
+      }
+      if (userMsgCount === NEW_CHAT_TOOLTIP_AT) {
+        this.showNewConvBanner = true;
+      }
+
       // Clear input and context
       this.userInput = '';
       this.contextPages = [];
@@ -838,12 +921,15 @@ document.addEventListener('alpine:init', () => {
       });
 
       this.markdownRenderer.reset();
+      this.clearStreamRenderScheduler();
+      this._pendingStreamTokens = '';
       this.showThinking = true;
 
       await this.$nextTick();
       if (this.$refs.thinkingDots) {
         this.thinkingAnimator.start(this.$refs.thinkingDots);
       }
+      this.scrollUserMessageToTop();
 
       try {
         this.currentEventSource = await this.streamer.stream(query, {
@@ -852,25 +938,22 @@ document.addEventListener('alpine:init', () => {
           pages,
 
           onToken: (token) => {
-            this.markdownRenderer.addToken(token);
-            const html = this.markdownRenderer.render();
-            const idx = this.messages.length - 1;
-            this.messages[idx].content = html;
-
-            if (this.markdownRenderer.getContent().length > 0 && this.showThinking) {
-              this.showThinking = false;
-              this.thinkingAnimator.stop();
-              this.messages[idx].isLoading = false;
-            }
+            this._pendingStreamTokens += token;
+            this.scheduleStreamRender();
           },
 
           onDone: () => {
+            this.clearStreamRenderScheduler();
+            this.flushPendingStreamTokens();
             const html = this.markdownRenderer.flush();
             const idx = this.messages.length - 1;
-            this.messages[idx].content = html;
-            this.messages[idx].markdown = this.markdownRenderer.getContent();
-            this.messages[idx].isStreaming = false;
-            this.messages[idx].isLoading = false;
+            const msg = this.messages[idx];
+            if (msg?.role === 'assistant') {
+              msg.content = html;
+              msg.markdown = this.markdownRenderer.getContent();
+              msg.isStreaming = false;
+              msg.isLoading = false;
+            }
             this.showThinking = false;
             this.thinkingAnimator.stop();
             this.isProcessing = false;
@@ -881,6 +964,8 @@ document.addEventListener('alpine:init', () => {
 
           onError: (errorMessage, errorType) => {
             console.error('Stream error:', errorMessage, errorType);
+            this.clearStreamRenderScheduler();
+            this._pendingStreamTokens = '';
             this.showThinking = false;
             this.thinkingAnimator.stop();
             const idx = this.messages.length - 1;
@@ -896,6 +981,8 @@ document.addEventListener('alpine:init', () => {
         });
       } catch (error) {
         console.error('Chat error:', error);
+        this.clearStreamRenderScheduler();
+        this._pendingStreamTokens = '';
         this.showThinking = false;
         this.thinkingAnimator.stop();
         const idx = this.messages.length - 1;
@@ -1000,9 +1087,35 @@ document.addEventListener('alpine:init', () => {
       return Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
     },
 
-    scrollToBottom() {
-      const c = this.$refs.messagesContainer;
-      if (c) c.scrollTop = c.scrollHeight;
+    scrollUserMessageToTop() {
+      // Wait for the browser to complete layout after Alpine's DOM update
+      // before computing scroll position.  A double-rAF is used so the
+      // measurement happens after any pending CSS height transitions
+      // (e.g. the expanded-class change) have been picked up by layout.
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          const c = this.$refs.messagesContainer;
+          const spacer = this.$refs.messagesSpacer;
+          if (!c) return;
+
+          // The spacer sits after all messages. Grow it so there is enough
+          // scrollable height to push the latest user message to the very top.
+          if (spacer) spacer.style.minHeight = c.clientHeight + 'px';
+
+          // children: [welcome div, ...message wrappers (one per message), spacer]
+          // after sendQuery pushes user msg + assistant placeholder, the user
+          // message is the third-to-last child (before assistant + spacer).
+          const children = c.children;
+          // Find the user message element: skip spacer (last) and assistant placeholder (second-to-last)
+          const userMsgEl = children[children.length - 3];
+          if (!userMsgEl) return;
+
+          c.scrollTo({
+            top: c.scrollTop + (userMsgEl.getBoundingClientRect().top - c.getBoundingClientRect().top - 8),
+            behavior: 'smooth'
+          });
+        });
+      });
     },
 
     isLastMessage(index) {

@@ -1,14 +1,14 @@
 ---
 title: Observe traffic
-weight: 50
-description:
+weight: 80
+description: Get prompt logging, cost tracking, and an audit trail for LLM traffic.
 ---
 
-Review LLM-specific metrics, logs, and traces. 
+Get prompt logging, cost tracking, and a full audit trail: review LLM-specific metrics, logs, and traces (request/response capture and token usage) via OpenTelemetry. 
 
 ## Before you begin
 
-Complete an LLM guide, such as the [control spend](../spending) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
+Complete an LLM guide, such as the [control spend]({{< link-hextra path="/llm/spending/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
 
 ## View LLM metrics
 
@@ -29,28 +29,20 @@ For more information, see the [Semantic conventions for generative AI metrics](h
 
 1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
 
-2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent. 
+2. Configure your agentgateway proxy to emit traces and send them to the built-in OpenTelemetry collector agent.
    ```yaml
-   cat <<EOF > config.yaml
+   cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   config:  
+   config:
      tracing:
        otlpEndpoint: http://localhost:4317
        randomSampling: true
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-          - ai:
-             name: openai
-             provider:
-               openAI:
-                 # Optional; overrides the model in requests
-                 model: gpt-3.5-turbo
-         policies:
-           backendAuth:
-             key: "$OPENAI_API_KEY"
+   llm:
+     models:
+     - name: "*"
+       provider: openAI
+       params:
+         apiKey: "$OPENAI_API_KEY"
    EOF
    ```
 

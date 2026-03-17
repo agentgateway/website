@@ -12,6 +12,16 @@ flowchart LR
 
 ## Before you begin
 
+{{< doc-test paths="httpbin" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
+
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
    ```sh
@@ -31,13 +41,13 @@ Run the httpbin image so it listens on port 80 inside the container. Map it to a
 {{< tabs items="Linux, macOS (Apple Silicon)" >}}
 {{% tab %}}
 
-```sh
+```sh {paths="httpbin,httpbin-linux"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin
 ```
 {{% /tab %}}
 {{% tab %}}
 
-```sh
+```sh {paths="httpbin-macos"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform linux/amd64
 ```
 {{% /tab %}}
@@ -45,8 +55,8 @@ docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform lin
 
 Verify that httpbin responds.
 
-```sh
-curl -s http://localhost:8000/headers | head -20
+```sh {paths="httpbin"}
+curl -s http://localhost:8000/headers | head -20 || true
 ```
 
 Example output:
@@ -54,8 +64,8 @@ Example output:
 ```json
 {
   "headers": {
-    "Accept": "*/*", 
-    "Host": "localhost:8000", 
+    "Accept": "*/*",
+    "Host": "localhost:8000",
     "User-Agent": "curl/8.7.1"
   }
 }
@@ -65,7 +75,7 @@ Example output:
 
 Create a `config.yaml` that listens on port 3000 and routes traffic to the httpbin host. Use a static `host` backend with the address and port where httpbin is reachable, such as `127.0.0.1:8000`.
 
-```yaml
+```yaml {paths="httpbin"}
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -86,6 +96,13 @@ In a separate terminal, run agentgateway with the config file.
 agentgateway -f config.yaml
 ```
 
+{{< doc-test paths="httpbin" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
 Example output:
 
 ```
@@ -98,9 +115,23 @@ info  proxy::gateway started bind  bind="bind/3000"
 
 Send a request to agentgateway on port 3000. Agentgateway forwards it to httpbin; the response is returned to you.
 
-```sh
+```sh {paths="httpbin"}
 curl -i http://localhost:3000/headers
 ```
+
+{{< doc-test paths="httpbin" >}}
+YAMLTest -f - <<'EOF'
+- name: request through agentgateway to httpbin returns 200
+  http:
+    url: "http://localhost:3000"
+    path: /headers
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 Example response (status and headers):
 
@@ -115,8 +146,8 @@ Example JSON body:
 ```json
 {
   "headers": {
-    "Accept": "*/*", 
-    "Host": "localhost:3000", 
+    "Accept": "*/*",
+    "Host": "localhost:3000",
     "User-Agent": "curl/8.7.1"
   }
 }
@@ -124,7 +155,7 @@ Example JSON body:
 
 You can try other httpbin endpoints through agentgateway, such as the following.
 
-```sh
+```sh {paths="httpbin"}
 curl -s http://localhost:3000/get
 curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -d '{"key":"value"}'
 ```
@@ -133,7 +164,7 @@ curl -s http://localhost:3000/post -X POST -H "Content-Type: application/json" -
 
 When you are done, stop and remove the httpbin container.
 
-```sh
+```sh {paths="httpbin"}
 docker stop httpbin
 ```
 
@@ -142,7 +173,7 @@ docker stop httpbin
 ## Next steps
 
 {{< cards >}}
-  {{< card link="../../configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
-  {{< card link="../../configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to ensure gateway and app resilience." >}}
-  {{< card link="../../configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
+  {{< card path="/configuration/traffic-management" title="Traffic management" subtitle="Control and route traffic through agentgateway." >}}
+  {{< card path="/configuration/resiliency" title="Resiliency" subtitle="Simulate failures, disruptions, and adverse conditions to ensure gateway and app resilience." >}}
+  {{< card path="/configuration/security" title="Security" subtitle="Secure backends and routes with authentication, authorization, and rate limiting policies." >}}
 {{< /cards >}}

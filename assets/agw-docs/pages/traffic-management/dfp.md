@@ -27,13 +27,12 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 1. Create a Backend for the Dynamic Forward Proxy. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: Backend
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: dfp-backend
      namespace: httpbin
    spec:
-     type: DynamicForwardProxy
      dynamicForwardProxy: {}
    EOF
    ```
@@ -48,13 +47,13 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
      name: dfp-httproute
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
        - backendRefs:
            - name: dfp-backend
-             group: gateway.kgateway.dev
-             kind: Backend
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
@@ -62,7 +61,7 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:80 -H "host: httpbin.org" 
+   curl -vik http://$INGRESS_GW_ADDRESS:8080 -H "host: httpbin.org" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port forward for local testing" %}}
@@ -96,15 +95,10 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Remove the DFP Backend. 
-   ```sh
-   kubectl delete backend dfp-backend -n httpbin
-   ```
-
-2. Remove the HTTPRoute. 
-   ```sh
-   kubectl delete httproute dfp-httproute -n httpbin
-   ```
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} dfp-backend -n httpbin
+kubectl delete httproute dfp-httproute -n httpbin
+```
 
 
 

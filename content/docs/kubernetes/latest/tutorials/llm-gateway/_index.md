@@ -145,7 +145,7 @@ kubectl get nodes
 Install the custom resources for the Kubernetes Gateway API.
 
 ```bash
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 ```
 
 Example output:
@@ -167,7 +167,7 @@ Deploy the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs using Helm. This c
 ```bash
 helm upgrade -i --create-namespace \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}}
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
 ```
 
 ---
@@ -177,7 +177,7 @@ helm upgrade -i --create-namespace \
 Install the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane with Helm.
 
 ```bash
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}}/ \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -354,7 +354,7 @@ spec:
   ai:
     provider:
       anthropic:
-        model: claude-haiku-4-5-20251001
+        model: claude-sonnet-4-20250514
   policies:
     auth:
       secretRef:
@@ -483,10 +483,11 @@ curl "localhost:8080/v1/chat/completions" \
 
 {{< tab >}}
 ```bash
-curl "localhost:8080/v1/chat/completions" \
+curl "localhost:8080/v1/messages" \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "claude-haiku-4-5-20251001",
+    "model": "claude-sonnet-4-20250514",
+    "max_tokens": 1024,
     "messages": [{"role": "user", "content": "Hello! What is Kubernetes in one sentence?"}]
   }' | jq
 ```
@@ -541,7 +542,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/latest/llm/" title="LLM Overview" subtitle="Learn more about LLM gateway features on Kubernetes" >}}
-  {{< card link="/docs/kubernetes/latest/llm/providers/" title="More Providers" subtitle="Configure additional LLM providers" >}}
-  {{< card link="/docs/kubernetes/latest/security/" title="Security" subtitle="Secure your agentgateway deployment" >}}
+  {{< card path="/llm/" title="LLM Overview" subtitle="Learn more about LLM gateway features on Kubernetes" >}}
+  {{< card path="/llm/providers/" title="More Providers" subtitle="Configure additional LLM providers" >}}
+  {{< card path="/security/" title="Security" subtitle="Secure your agentgateway deployment" >}}
 {{< /cards >}}

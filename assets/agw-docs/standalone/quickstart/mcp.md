@@ -2,6 +2,16 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 ## Before you begin
 
+{{< doc-test paths="mcp" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
+
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
    ```sh
@@ -18,7 +28,7 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 Download the basic MCP example configuration.
 
-```sh
+```sh {paths="mcp"}
 curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
 ```
 
@@ -26,7 +36,7 @@ curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
 
 Inspect the file to see how the listener, route, and MCP backend are defined.
 
-```sh
+```sh {paths="mcp"}
 cat config.yaml
 ```
 
@@ -43,6 +53,13 @@ Run agentgateway with the config file.
 ```sh
 agentgateway -f config.yaml
 ```
+
+{{< doc-test paths="mcp" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
 
 Example output:
 
@@ -89,7 +106,7 @@ You can change listener, route, and backend configuration in the UI. Any updates
 Check out more guides for using MCP servers with agentgateway.
 
 {{< cards >}}
-  {{< card link="../../mcp/connect/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
-  {{< card link="../../mcp/connect/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
-  {{< card link="../../mcp/authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
+  {{< card path="/mcp/connect/stdio" title="stdio" subtitle="Connect to an MCP server via stdio" >}}
+  {{< card path="/mcp/connect/virtual" title="Virtual MCP" subtitle="Federate multiple MCP servers." >}}
+  {{< card path="/mcp/mcp-authn" title="OpenAPI" subtitle="Enable OAuth 2.0 protection for MCP servers." >}}
 {{< /cards >}}

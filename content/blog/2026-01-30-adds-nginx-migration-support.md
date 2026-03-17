@@ -36,7 +36,7 @@ Usage:
   ingress2gateway print [flags]
 
 Flags:
-  -A, --all-namespaces                       If present, list the requested object(s) across all namespaces. Namespace in current context is ignored even
+  -A, --all-namespaces                       If present, list the requested objects across all namespaces. Namespace in current context is ignored even
                                              if specified with --namespace.
       --emitter standard                     If present, the tool will try to use the specified emitter to generate the Gateway API resources, supported values are [agentgateway kgateway standard]. The standard emitter will only output Gateway API (default "standard")
   -h, --help                                 help for print

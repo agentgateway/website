@@ -27,7 +27,7 @@ flowchart LR
 Install the sample httpbin app.
 
 1. Install the httpbin app.
-   ```sh,paths="install-httpbin"
+   ```sh {paths="install-httpbin"}
    kubectl apply -f https://raw.githubusercontent.com/kgateway-dev/kgateway/refs/heads/main/examples/httpbin.yaml
    ```
 
@@ -51,16 +51,16 @@ Install the sample httpbin app.
    {{< /doc-test >}}
 
 2. Verify that the httpbin app is up and running.
-   
+
    ```sh
    kubectl get pods -n httpbin
-   ````
+   ```
 
 ### Step 2: Create a route to the httpbin app
 
 Create an HTTPRoute resource that routes requests to the httpbin app through the Gateway that you created before you began.
 
-```sh,paths="install-httpbin"
+```sh {paths="install-httpbin"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -121,7 +121,7 @@ Send a request to the httpbin app through the agentgateway proxy.
 {{% tab tabName="Cloud Provider LoadBalancer" %}}
 1. Get the external address of the gateway proxy and save it in an environment variable.
 
-   ```sh,paths="install-httpbin"
+   ```sh {paths="install-httpbin"}
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $INGRESS_GW_ADDRESS
    ```
@@ -210,9 +210,9 @@ Send a request to the httpbin app through the agentgateway proxy.
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your API gateway capabilities.
 
 {{< cards >}}
-  {{< card link="traffic-management" title="Traffic management" subtitle="Add routing capabilities to your httpbin route." >}}
-  {{< card link="resiliency" title="Resiliency" subtitle="Make your routes more resilient to failures and disruptions." >}}
-  {{< card link="security" title="Security" subtitle="Secure routes with external authentication and rate limiting policies." >}}
+  {{< card path="/traffic-management" title="Traffic management" subtitle="Add routing capabilities to your httpbin route." >}}
+  {{< card path="/resiliency" title="Resiliency" subtitle="Make your routes more resilient to failures and disruptions." >}}
+  {{< card path="/security" title="Security" subtitle="Secure routes with external authentication and rate limiting policies." >}}
 {{< /cards >}}
 
 ## Cleanup

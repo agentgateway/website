@@ -1,10 +1,10 @@
 ---
 title: Telemetry & Observability
 weight: 6
-description: Enable OpenTelemetry tracing and metrics for agentgateway on Kubernetes
+description: Enable tracing, prompt logging, cost tracking, and metrics for agentgateway on Kubernetes
 ---
 
-Enable distributed tracing and metrics collection for agentgateway on Kubernetes using OpenTelemetry and Jaeger.
+Enable distributed tracing and metrics collection for agentgateway on Kubernetes using OpenTelemetry and Jaeger. Get prompt logging, cost tracking, and an audit trail: traces include LLM request/response data and token usage for each request.
 
 ## What you'll build
 
@@ -40,15 +40,15 @@ kind create cluster --name agentgateway
 
 ```bash
 # Gateway API CRDs
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
 # agentgateway CRDs
 helm upgrade -i --create-namespace \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}}
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
 
 # Control plane
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -307,7 +307,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/main/observability/" title="Observability Reference" subtitle="Complete observability configuration" >}}
-  {{< card link="/docs/kubernetes/main/observability/otel-stack" title="OTel Stack" subtitle="Full OpenTelemetry stack setup" >}}
-  {{< card link="/docs/kubernetes/main/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
+  {{< card path="/observability/" title="Observability Reference" subtitle="Complete observability configuration" >}}
+  {{< card path="/observability/otel-stack" title="OTel Stack" subtitle="Full OpenTelemetry stack setup" >}}
+  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
 {{< /cards >}}

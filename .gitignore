@@ -10,3 +10,4 @@ resources/
 _plans/
 out/
 **/__pycache__/
+config.yaml

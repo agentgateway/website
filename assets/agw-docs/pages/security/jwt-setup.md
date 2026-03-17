@@ -150,6 +150,7 @@ Review other common JWT auth configuration examples that you can add to your {{<
 You can configure multiple JWT providers to accept tokens from different identity providers. The following example uses Keycloak and the Auth0 identity providers. 
 
 ```yaml
+
 traffic:
   jwtAuthentication:
     mode: Strict
@@ -181,6 +182,7 @@ traffic:
 For testing purposes, you can use inline JWKS instead of a remote JWKS endpoint. Note that this setup is not recommended for production as it requires manual key updates.
 
 ```yaml
+
 traffic:
   jwtAuthentication:
     mode: Strict
@@ -202,6 +204,7 @@ To allow requests, even if no JWT was provided or if the JWT cannot be validated
 The JWT is optional. If a JWT is provided during the request, the agentgateway proxy validates it. In the case that the JWT validation fails, the request is denied. However, keep in mind that if no JWT is provided during the request, the request is explicitly allowed. 
 
 ```yaml
+
 traffic:
   jwtAuthentication:
     mode: Optional
@@ -218,11 +221,12 @@ traffic:
             port: 8080
 ```
 
-**Permissive** 
+**Permissive**
 
-Requests are never rejected, even if no or invalid JWTs are provided during the request. 
+Requests are never rejected, even if no or invalid JWTs are provided during the request.
 
 ```yaml
+
 traffic:
   jwtAuthentication:
     mode: Permissive
@@ -239,6 +243,29 @@ traffic:
             port: 8080
 ```
 
+### PreRouting phase
+
+By default, JWT authentication is enforced during routing. Use the `PreRouting` phase to validate JWTs before any routing decision is made. This is useful when you want to enforce authentication for all traffic at the gateway level, regardless of the route.
+
+```yaml
+
+traffic:
+  phase: PreRouting
+  jwtAuthentication:
+    mode: Strict
+    providers:
+    - issuer: "${KEYCLOAK_ISSUER}"
+      audiences: ["my-application"]
+      jwks:
+        remote:
+          jwksPath: "${KEYCLOAK_JWKS_PATH}"
+          cacheDuration: "5m"
+          backendRef:
+            name: keycloak
+            namespace: keycloak
+            kind: Service
+            port: 8080
+```
 
 ## Cleanup
 

@@ -22,14 +22,14 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 1. Install the experimental Kubernetes Gateway API CRDs.
    
    ```sh
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
    ```
 
 2. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. 
    {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute (AgentgatewayPolicy),Gateway listener" >}}
    {{% tab tabName="HTTPRoute (Kubernetes GW API)" %}}
    Use the `timeouts.backendRequest` field to configure the per-try timeout. Note that you must set a retry policy also to configure a per-try timeout. 
-   ```yaml
+   ```yaml {paths="per-try-timeout-in-httproute"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -119,7 +119,9 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
                 "retry": {
                   "attempts": 3,
                   "backoff": "1s",
-                  "codes": [517]
+                  "codes": [
+                    "517 <unknown status code>"
+                  ]
                 }
               }
             ]
@@ -131,7 +133,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    {{% /tab %}}
    {{% tab tabName="HTTPRoute (AgentGatewayPolicy)" %}}
    1. Create an HTTPRoute to route requests along the `retry.example` domain to the httpbin app. Note that you add a name `timeout` to your HTTPRoute rule so that you can configure the per-try timeout for that rule later. 
-      ```yaml
+      ```yaml {paths="per-try-timeout-in-agentgateway"}
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -156,7 +158,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       EOF
       ```
    2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `timeout` HTTPRoute rule. Note that you must set a retry policy also to apply a per-try timeout. 
-      ```yaml
+      ```yaml {paths="per-try-timeout-in-agentgateway"}
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -255,7 +257,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    {{% /tab %}}
    {{% tab tabName="Gateway listener" %}}
    1. Create an HTTPRoute to route requests along the `retry.example` domain to the httpbin app. 
-      ```yaml
+      ```yaml {paths="per-try-timeout-in-gatewaylistener"}
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1
       kind: HTTPRoute
@@ -279,7 +281,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       EOF
       ```
    2. Create {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure the per-try timeout. In this example, the per-try timeout is set to 5 seconds and assigned to the `http` Gateway listener that you set up as part of the [before you begin](#before-you-begin) section. Note that you must set a retry policy also to apply a per-try timeout. 
-      ```yaml
+      ```yaml {paths="per-try-timeout-in-gatewaylistener"}
       kubectl apply -f- <<EOF
       apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -377,9 +379,96 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
    {{% /tab %}}
    {{< /tabs >}}
 
-
-
-
+{{< doc-test paths="per-try-timeout-in-httproute,per-try-timeout-in-agentgateway,per-try-timeout-in-gatewaylistener" >}}
+  YAMLTest -f - <<'EOF'
+  - name: wait for retry HTTPRoute to be accepted
+    wait:
+      target:
+        kind: HTTPRoute
+        metadata:
+          namespace: httpbin
+          name: retry
+      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+      jsonPathExpectation:
+        comparator: equals
+        value: "True"
+      polling:
+        timeoutSeconds: 300
+        intervalSeconds: 5
+  - name: verify request to retry route succeeds
+    http:
+      url: "http://${INGRESS_GW_ADDRESS}"
+      path: /headers
+      method: GET
+      headers:
+        host: retry.example
+    source:
+      type: local
+    expect:
+      statusCode: 200
+  - name: Check configdump
+    http:
+      url: http://localhost:15000
+      skipSslVerification: true
+      method: GET
+      path: /config_dump
+    source:
+      type: pod
+      usePortForward: true
+      selector:
+        kind: Deployment
+        metadata:
+          namespace: agentgateway-system
+          name: agentgateway-proxy
+    expect:
+      bodyContains:
+      - '"attempts":3'
+      - '"backoff":"1s'
+      - '517 <unknown status code>'
+  EOF
+  {{< /doc-test >}}
+  {{< doc-test paths="per-try-timeout-in-httproute" >}}
+  YAMLTest -f - <<'EOF'
+  - name: Check configdump
+    http:
+      url: http://localhost:15000
+      skipSslVerification: true
+      method: GET
+      path: /config_dump
+    source:
+      type: pod
+      usePortForward: true
+      selector:
+        kind: Deployment
+        metadata:
+          namespace: agentgateway-system
+          name: agentgateway-proxy
+    expect:
+      bodyContains:
+      - '"backendRequestTimeout":"5s'
+  EOF
+  {{< /doc-test >}}
+  {{< doc-test paths="per-try-timeout-in-agentgateway,per-try-timeout-in-gatewaylistener" >}}
+  YAMLTest -f - <<'EOF'
+  - name: Check configdump
+    http:
+      url: http://localhost:15000
+      skipSslVerification: true
+      method: GET
+      path: /config_dump
+    source:
+      type: pod
+      usePortForward: true
+      selector:
+        kind: Deployment
+        metadata:
+          namespace: agentgateway-system
+          name: agentgateway-proxy
+    expect:
+      bodyContains:
+      - '"requestTimeout":"5s'
+  EOF
+  {{< /doc-test >}}
 
 
 ## Cleanup

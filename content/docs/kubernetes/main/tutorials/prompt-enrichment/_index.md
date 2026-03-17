@@ -60,15 +60,15 @@ kind create cluster --name agentgateway
 
 ```bash
 # Gateway API CRDs
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
 # agentgateway CRDs
 helm upgrade -i --create-namespace \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}}
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
 
 # Control plane
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -119,7 +119,7 @@ Choose your LLM provider and set your API key:
 
 {{% tab tabName="OpenAI" %}}
 ```bash
-export API_KEY=<insert your OpenAI API key>
+export OPENAI_API_KEY=<insert your OpenAI API key>
 
 kubectl apply -f- <<EOF
 apiVersion: v1
@@ -129,7 +129,7 @@ metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 type: Opaque
 stringData:
-  Authorization: $API_KEY
+  Authorization: $OPENAI_API_KEY
 ---
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -171,7 +171,7 @@ EOF
 
 {{% tab tabName="Anthropic" %}}
 ```bash
-export API_KEY=<insert your Anthropic API key>
+export ANTHROPIC_API_KEY=<insert your Anthropic API key>
 
 kubectl apply -f- <<EOF
 apiVersion: v1
@@ -181,7 +181,7 @@ metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 type: Opaque
 stringData:
-  Authorization: $API_KEY
+  Authorization: $ANTHROPIC_API_KEY
 ---
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -449,7 +449,7 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/main/llm/prompt-enrichment" title="Prompt Enrichment Reference" subtitle="Complete configuration options" >}}
-  {{< card link="/docs/kubernetes/main/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive data in requests" >}}
-  {{< card link="/docs/kubernetes/main/tutorials/llm-gateway" title="LLM Gateway" subtitle="Route to multiple providers" >}}
+  {{< card path="/llm/prompt-enrichment" title="Prompt Enrichment Reference" subtitle="Complete configuration options" >}}
+  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive data in requests" >}}
+  {{< card path="/tutorials/llm-gateway" title="LLM Gateway" subtitle="Route to multiple providers" >}}
 {{< /cards >}}

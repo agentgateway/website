@@ -39,15 +39,15 @@ kind create cluster --name agentgateway
 
 ```bash
 # Gateway API CRDs
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
 # agentgateway CRDs
 helm upgrade -i --create-namespace \
   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}}
+  --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
 
 # Control plane
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} oci://{{< reuse "agw-docs/snippets/helm-path.md" >}}/charts/{{< reuse "agw-docs/snippets/helm-kgateway.md" >}} \
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
@@ -131,7 +131,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    appProtocol: kgateway.dev/mcp
+    appProtocol: agentgateway.dev/mcp
 EOF
 ```
 
@@ -174,7 +174,7 @@ spec:
   ports:
   - port: 80
     targetPort: 8080
-    appProtocol: kgateway.dev/mcp
+    appProtocol: agentgateway.dev/mcp
 EOF
 ```
 
@@ -306,6 +306,6 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/kubernetes/latest/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
-  {{< card link="/docs/kubernetes/latest/mcp/" title="MCP Documentation" subtitle="Complete MCP configuration reference" >}}
+  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
+  {{< card path="/mcp/" title="MCP Documentation" subtitle="Complete MCP configuration reference" >}}
 {{< /cards >}}

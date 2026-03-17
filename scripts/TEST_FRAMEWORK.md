@@ -29,10 +29,10 @@ A **path** is a string label attached to a fenced code block or hidden command b
 
 ### Tagging visible code blocks
 
-Add `,paths="<name>"` to the fenced code language line:
+Add `,{paths="<name>}"` to the fenced code language line:
 
 ````md
-```sh,paths="install-httpbin"
+```sh,{paths="install-httpbin"}
 kubectl apply -f https://raw.githubusercontent.com/.../httpbin.yaml
 ```
 ````
@@ -40,7 +40,7 @@ kubectl apply -f https://raw.githubusercontent.com/.../httpbin.yaml
 A block may belong to multiple paths:
 
 ````md
-```sh,paths="standard,experimental"
+```sh,{paths="standard,experimental"}
 helm upgrade -i --create-namespace ...
 ```
 ````
@@ -74,9 +74,9 @@ On the page being tested, add a `test:` key to the YAML front matter. Each child
 title: CORS
 test:
   cors-in-httproute:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
@@ -84,9 +84,9 @@ test:
     path: cors-in-httproute
 
   cors-in-agentgatewaypolicy:
-  - file: content/docs/kubernetes/latest/install/helm.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
@@ -133,7 +133,7 @@ The extractor follows `{{< reuse "..." >}}` and internal links automatically, so
 If a block you need has no path, add one:
 
 ````md
-```sh,paths="install-httpbin"
+```sh {paths="install-httpbin"}
 kubectl apply -f ...
 ```
 ````
@@ -141,7 +141,7 @@ kubectl apply -f ...
 If the same block already belongs to another path and you need to add yours:
 
 ````md
-```sh,paths="standard,my-new-path"
+```sh {paths="standard,my-new-path"}
 ...
 ```
 ````
@@ -190,15 +190,17 @@ YAMLTest -f - <<'EOF'
     jsonPath: "$.status.loadBalancer.ingress[0].ip"
     jsonPathExpectation:
       comparator: exists
-    targetEnv: INGRESS_GW_ADDRESS
     polling:
       timeoutSeconds: 300
       intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
 EOF
 {{< /doc-test >}}
 ```
 
-`targetEnv` exports the matched value as an environment variable for downstream steps.
+`setVars` exports the `jsonPath`-matched value as an environment variable for downstream steps. It is a sibling of `wait:` (not nested inside it).
 
 ### Wait for an HTTPRoute condition
 
@@ -298,10 +300,28 @@ Each test scenario:
 4. Deletes the cluster.
 5. Writes results to `out/tests/generated/test-results.yaml`.
 
-### Run a specific scenario by generating and executing its script directly
+### Run a single test scenario
+
+Point directly to a file and (optionally) a named scenario. This generates the script, creates a `kind` cluster, starts `cloud-provider-kind`, runs the test, and cleans up — all in one command:
 
 ```sh
-python3 scripts/doc_test_run.py --generate-only
+# Run one specific scenario
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md \
+  --test cors-in-httproute
+
+# Run all scenarios defined in a single file
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md
+```
+
+To only generate the script without running (useful for inspection):
+
+```sh
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md \
+  --test cors-in-httproute \
+  --generate-only
 bash out/tests/generated/<script-name>.sh
 ```
 
@@ -309,7 +329,9 @@ bash out/tests/generated/<script-name>.sh
 
 | Flag | Default | Description |
 |---|---|---|
-| `--docs-glob` | `content/docs/**/*.md` | Glob to discover pages with `test:` metadata |
+| `--file` | — | Path to a single markdown file to generate/run tests for |
+| `--test` | — | Name of a specific test scenario within `--file` |
+| `--docs-glob` | `content/docs/**/*.md` | Glob to discover pages with `test:` metadata (ignored when `--file` is set) |
 | `--product` | `kubernetes` | Context product used for `conditional-text` resolution |
 | `--generated-dir` | `out/tests/generated` | Output directory for scripts and manifests |
 | `--generate-only` | false | Skip cluster creation and execution |
@@ -337,11 +359,79 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 1. **Trace prerequisites** — follow "Before you begin" links back to `helm.md`.
 2. **Verify path labels** on all prerequisite code blocks; add `paths="..."` where missing.
 3. **Add wait blocks** after each `kubectl apply` that creates something tests depend on.
-4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `targetEnv`.
+4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `setVars`.
 5. **Add the feature assertion** as a `{{< doc-test >}}` shortcode block on the feature page.
 6. **Write the `test:` front matter** on the feature page, listing sources in dependency order (install → setup → prereqs → feature).
 7. **Regenerate** with `--generate-only` and inspect the script for unresolved shortcodes or missing commands.
 8. **Run locally** with `bash out/tests/generated/<script>.sh` against an existing cluster to verify before committing.
+
+---
+
+## Displaying test status on doc pages
+
+Doc pages with passing tests display a "Verified" badge below the page title.
+
+### How it works
+
+1. **Test results** are written to `out/tests/generated/test-results.yaml` after tests run.
+2. **`doc_test_inject_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
+   - `test_status: passed` — all tests for the page passed
+   - `test_status: failed` — one or more tests failed (no badge displayed)
+3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
+
+### Makefile targets
+
+The Makefile provides convenient targets for working with test status:
+
+| Target | Description |
+|---|---|
+| `make deps` | Install Python dependencies (PyYAML) |
+| `make test-generate` | Generate doc test scripts without running them |
+| `make test-run` | Run all doc tests |
+| `make test-artifacts-fetch` | Fetch test artifacts from the latest main branch workflow run |
+| `make test-status` | Inject test status into markdown files |
+| `make fetch-test-artifacts-build` | Fetch artifacts, inject status, and build Hugo site |
+| `make fetch-test-artifacts-serve` | Fetch artifacts, inject status, and serve Hugo site locally |
+| `make test-run-build` | Run tests, inject status, and build Hugo site |
+| `make test-run-serve` | Run tests, inject status, and serve Hugo site locally |
+
+### Running locally
+
+To preview the "Verified" badges locally:
+
+```sh
+# Option 1: Fetch results from CI and serve
+make fetch-test-artifacts-serve
+
+# Option 2: Run tests locally and serve
+make test-run-serve
+```
+
+To manually inject test status after running tests:
+
+```sh
+make test-status
+```
+
+This updates the markdown files in `content/docs/` with the test status. The badge will appear when you run Hugo.
+
+### Fetching test artifacts
+
+The `test-artifacts-fetch` target downloads test results from the most recent completed workflow run on the `main` branch. This requires a `GITHUB_TOKEN` environment variable with `actions:read` scope:
+
+```sh
+export GITHUB_TOKEN=<your-token>
+make test-artifacts-fetch
+```
+
+### CLI options for inject script
+
+| Flag | Default | Description |
+|---|---|---|
+| `--repo-root` | `.` | Repository root directory |
+| `--results-file` | `out/tests/generated/test-results.yaml` | Path to test results file |
+| `--dry-run` | false | Preview changes without modifying files |
+| `--quiet` | false | Suppress verbose output |
 
 ---
 
@@ -350,3 +440,31 @@ The `version` context (used to resolve `{{< version include-if="..." >}}` blocks
 If you run into issues with installing yamltest, include the `--force` flag.
 
 On macOS, you might need to run either the `python3 scripts/doc_test_run.py` command with `sudo`, or run `sudo cloud-provider-kind` in a separate tab before running the tests. In macOS, the cloud-provider-kind tool to get a LoadBalancer IP requires elevated permissions.
+
+### Common issues
+
+**File paths differ between `latest` and `main`**
+
+When copying a test chain from `main` to `latest` (or vice versa), update every `file:` path in the front matter. A `main` chain references files under `content/docs/kubernetes/main/`, while `latest` uses `content/docs/kubernetes/latest/`. Using the wrong version directory causes the extractor to pull blocks from a different version's content, or fail silently if the file doesn't exist.
+
+**Wrong prerequisite file paths**
+
+The install prerequisite should point to `content/docs/kubernetes/<version>/quickstart/install.md`, not `content/docs/kubernetes/<version>/install/helm.md` or similar. Check the "Before you begin" section of the guide you're testing and follow the links to confirm the exact paths rather than guessing from memory.
+
+**Test fails immediately with "kubectl port-forward" error**
+
+Tests that contain `kubectl port-forward` in the generated script are automatically failed without running. Port-forwarding requires a persistent background process that doesn't work in the automated test environment. Replace any port-forward-based verification with a `YAMLTest` HTTP assertion using `${INGRESS_GW_ADDRESS}` instead.
+
+**`/expect: unknown property "jsonPath"` errors**
+
+This error almost always means the `expect` block has bad indentation. `bodyJsonPath` must be a direct child of `expect:`, not nested under `statusCode` or `headers`. Double-check that all keys under `expect:` are at the same indentation level:
+
+```yaml
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.choices[0].message.content"
+        comparator: contains
+        value: "hello"
+```
+

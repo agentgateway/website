@@ -12,26 +12,20 @@ Configure Google Gemini as an LLM provider in agentgateway.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: gemini
-          provider:
-            gemini:
-              # Optional; overrides the model in requests
-              model: gemini-1.5-flash
-      policies:
-        backendAuth:
-          key: "$GEMINI_API_KEY"
+
+llm:
+  models:
+  - name: "*"
+    provider: gemini
+    params:
+      apiKey: "$GEMINI_API_KEY"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 | Setting | Description |
 |---------|-------------|
-| `ai.name` | The name of the LLM provider for this AI backend. |
-| `ai.provider.gemini.model` | Optionally set the model to use for requests. If set, any models in the request are overwritten. If not set, the request must include the model to use. |
-| `backendAuth` | Gemini uses API keys for authentication. You can optionally configure a policy to attach an API key that authenticates to the LLM provider on outgoing requests. If you do not include an API key, each request must pass in a valid API key. |
+| `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
+| `provider` | The LLM provider, set to `gemini` for Google Gemini models. |
+| `params.model` | The specific Gemini model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
+| `params.apiKey` | The Gemini API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |

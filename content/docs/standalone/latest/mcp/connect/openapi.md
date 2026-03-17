@@ -97,15 +97,17 @@ Build the Docker image from the source code. The example builds the image for an
    ```
 
 3. Update the agentgateway configuration file as follows:
-   
-   * **Listener**: An HTTP listener is configured and exposed on port 3000. 
-   * **Backend**: Use an MCP backend to set up an OpenAPI server based on the Petstore sample app.   
-   * **OpenAPI schema**: In the `openapi` target of the configuration file, update the `file` field to point to the OpenAPI schema that you downloaded earlier.
+
+   * **Listener**: An HTTP listener is configured and exposed on port 3000.
+   * **Backend**: Use an MCP backend to set up an OpenAPI server based on the Petstore sample app.
+   * **OpenAPI schema**: In the `openapi` target of the configuration file, set the schema source. You can provide the schema as a local file path, an inline string, or a remote URL. This example uses a local file path. 
    * **CORS policy**: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
 
    ```
    open config.yaml
    ```
+
+   Reference a local OpenAPI schema file.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -129,7 +131,7 @@ Build the Docker image from the source code. The example builds the image for an
                - "*"
    ```
 
-1. Run the agentgateway. 
+4. Run the agentgateway. 
    ```sh
    agentgateway -f config.yaml
    ```
@@ -181,3 +183,58 @@ Build the Docker image from the source code. The example builds the image for an
    3. Click **Run Tool**. Verify that the pet is added to the petstore. 
       
       {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
+
+
+## Other configurations
+
+### Schema URL
+
+Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at startup.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: openapi
+            openapi:
+              schema:
+                url: http://localhost:8080/api/v3/openapi.json
+              host: localhost:8080
+      policies:
+        cors:
+          allowOrigins:
+            - "*"
+          allowHeaders:
+            - "*"
+```
+
+### Inline schema
+
+Embed the OpenAPI schema directly as an inline string.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: openapi
+            openapi:
+              schema: |
+                {"openapi":"3.0.0",...}
+              host: localhost:8080
+      policies:
+        cors:
+          allowOrigins:
+            - "*"
+          allowHeaders:
+            - "*"
+```
