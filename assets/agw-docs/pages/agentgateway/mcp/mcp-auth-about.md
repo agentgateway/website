@@ -26,7 +26,7 @@ The MCP OAuth flow that is facilitated by the agentgateway proxy includes the fo
 1. **Initialization**: In the initialization phase, the MCP client tries to connect to a protected MCP server. This connection fails with a 401 HTTP response.
 2. **Discovery**: The MCP client discovers the OAuth authorization server that protects the MCP server and required scopes to access the MCP server by using agentgateway.
 3. **Client registration**: The agentgateway proxy registers the client with the IdP and returns the client ID.
-4. **Authentication**: The MCP client is redirected to the IdP for login. After successful login, the client receives a JWT access token. This authentication happens at "connect time" with agentgateway, not each "request time" when the client calls a tool.
+4. **Authentication**: The MCP client is redirected to the IdP for login. After successful login, the client receives a JWT access token. This authentication happens at "connect time" with agentgateway, not each "request time" when the client calls a tool. This type of connection is sometimes called "eager auth."
 5. **MCP server access**: The client uses the JWT token to access the MCP server and its tools.
 
 Review the following diagram to learn about the steps that are involved in each phase:
