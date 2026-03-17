@@ -1,147 +1,65 @@
-# Cursor
+Configure [Cursor](https://cursor.com/), the AI code editor, to route requests through agentgateway.
 
-Configure [Cursor](https://cursor.sh/), the AI-powered code editor, to use agentgateway as its LLM backend.
+## Before you begin
 
-## Overview
+- agentgateway running at `http://localhost:3000` with a configured LLM backend.
+- Cursor installed (version 0.30 or later).
 
-Cursor supports custom OpenAI-compatible endpoints through its model configuration settings. This allows you to route all Cursor AI requests through agentgateway.
+## Configure Cursor
 
-## Prerequisites
-
-- agentgateway running and accessible (e.g., `http://localhost:3000`)
-- A configured LLM backend in agentgateway
-- Cursor installed (version 0.30+)
-
-## Configuration
-
-### Method 1: Settings UI
-
-1. Open Cursor Settings:
+1. Open Cursor Settings.
    - **macOS**: `Cmd + ,` or **Cursor** → **Settings**
    - **Windows/Linux**: `Ctrl + ,` or **File** → **Preferences** → **Settings**
 
-2. Navigate to **Models** section
+2. Navigate to the **Models** tab.
 
-3. Click **Add Model** or **Configure Custom Model**
+3. Under **OpenAI API Key**, enter a placeholder value such as `anything` if agentgateway has no authentication configured, or your gateway API key if authentication is enabled.
 
-4. Enter your agentgateway details:
-   - **API Base URL**: `http://localhost:3000/v1` (or your gateway URL with `/v1` path)
-   - **API Key**: Your gateway API key, or `anything` if no authentication
-   - **Model Name**: The model configured in your agentgateway backend (e.g., `gpt-4o-mini`, `claude-sonnet-4-20250514`)
+4. Enable **Override OpenAI Base URL** and enter your agentgateway address:
 
-5. Save and restart Cursor
+   ```
+   http://localhost:3000
+   ```
 
-### Method 2: Settings JSON
+5. Click **Verify** to confirm the connection.
 
-Cursor stores configuration in a JSON file. You can edit this directly for more control.
+## Verify the connection
 
-1. Open Command Palette:
-   - **macOS**: `Cmd + Shift + P`
-   - **Windows/Linux**: `Ctrl + Shift + P`
-
-2. Type `Preferences: Open User Settings (JSON)` and select it
-
-3. Add your custom model configuration:
-
-```json
-{
-  "cursor.models": [
-    {
-      "name": "agent-gateway",
-      "apiBase": "http://localhost:3000/v1",
-      "apiKey": "anything",
-      "model": "gpt-4o-mini"
-    }
-  ]
-}
-```
-
-4. Save the file and restart Cursor
-
-## Multi-provider setup
-
-You can configure multiple gateway backends as different models in Cursor:
-
-```json
-{
-  "cursor.models": [
-    {
-      "name": "gateway-openai",
-      "apiBase": "http://localhost:3000/v1",
-      "apiKey": "anything",
-      "model": "gpt-4o-mini"
-    },
-    {
-      "name": "gateway-anthropic",
-      "apiBase": "http://localhost:3001/v1",
-      "apiKey": "anything",
-      "model": "claude-sonnet-4-20250514"
-    }
-  ]
-}
-```
-
-Then switch between them in Cursor's model selector.
-
-## Using environment variables
-
-Cursor respects OpenAI environment variables. Set these before launching Cursor:
-
-```bash
-export OPENAI_API_BASE=http://localhost:3000/v1
-export OPENAI_API_KEY=anything
-cursor .
-```
-
-## Example agentgateway configuration
-
-Here's a complete gateway configuration for Cursor with OpenAI backend:
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        backendAuth:
-          key: $OPENAI_API_KEY  # Your OpenAI API key
-      backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4o-mini
-```
-
-## Verification
-
-Test your configuration:
-
-1. Open a file in Cursor
-2. Open the Cursor chat panel (`Cmd + L` on macOS, `Ctrl + L` on Windows/Linux)
-3. Ask a question: "What is this file about?"
-4. Cursor should respond using your agentgateway backend
+1. Open the Cursor chat panel (`Cmd + L` on macOS, `Ctrl + L` on Windows/Linux).
+2. Send a message, for example: "Hello, are you working?"
+3. Cursor should respond using your agentgateway backend.
 
 ## Troubleshooting
 
 ### "Failed to fetch" error
 
-- Verify agentgateway is running: `curl http://localhost:3000/v1/models`
-- Check the base URL includes `/v1` path
-- Ensure no firewall blocking the connection
+**What's happening:**
+
+Cursor cannot connect to agentgateway.
+
+**Why it's happening:**
+
+agentgateway may not be running, or the base URL is incorrect.
+
+**How to fix it:**
+
+1. Verify agentgateway is running:
+   ```sh
+   curl http://localhost:3000/v1/models
+   ```
+2. Confirm the base URL does not include a trailing path such as `/v1`.
 
 ### "Invalid API key" error
 
-- If agentgateway has no auth configured, set API key to any placeholder value (`anything`)
-- If using `backendAuth` policy, ensure your gateway has valid provider credentials
+**What's happening:**
 
-### Model not found
+Cursor rejects requests with an authentication error.
 
-- Verify the model name matches your agentgateway backend configuration
-- Check agentgateway logs for backend connection errors
+**Why it's happening:**
 
-## Related documentation
+If agentgateway has no authentication configured, Cursor still requires a non-empty API key field. If authentication is configured, the key may be incorrect.
 
-- [agentgateway LLM Configuration]({{< link-hextra path="/llm/" >}})
-- [Backend Authentication]({{< link-hextra path="/security/policies/backend-auth/" >}})
+**How to fix it:**
+
+- If agentgateway has no authentication, enter any placeholder value (`anything`) in the API key field.
+- If using gateway authentication, enter the correct API key.
