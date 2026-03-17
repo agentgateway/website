@@ -2,7 +2,7 @@ Use the OpenAI Python or Node.js SDK to send requests through agentgateway.
 
 ## Before you begin
 
-- agentgateway running at `http://localhost:3000` with a configured LLM backend.
+- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
 - The OpenAI SDK installed in your project.
 
 ## Python
@@ -80,7 +80,7 @@ The SDK cannot connect to agentgateway.
 
 **Why it's happening:**
 
-agentgateway is not running, or the `base_url` / `baseURL` does not include the `/v1` path.
+Agentgateway is not running, or the `base_url` / `baseURL` does not include the `/v1` path.
 
 **How to fix it:**
 
