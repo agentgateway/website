@@ -1,24 +1,22 @@
-Configure [vLLM](https://github.com/vllm-project/vllm), the high-performance LLM serving engine, to serve self-hosted models through {{< reuse "agw-docs/snippets/agw-kgw.md" >}}.
+Configure [vLLM](https://github.com/vllm-project/vllm), a high-performance LLM serving engine, through {{< reuse "agw-docs/snippets/agw-kgw.md" >}}. This guide covers two deployment patterns:
 
-## Overview
-
-vLLM is a fast and memory-efficient inference engine for large language models. It's designed for high-throughput serving and is commonly deployed in Kubernetes clusters for production workloads.
-
-This guide shows two deployment patterns:
-- **External vLLM**: Connect to a vLLM instance running outside your Kubernetes cluster
-- **In-cluster vLLM**: Deploy vLLM within your Kubernetes cluster
+- **External vLLM**: Connect to a vLLM server running outside your Kubernetes cluster on dedicated GPU hardware.
+- **In-cluster vLLM**: Deploy vLLM as a workload inside your Kubernetes cluster.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-## Option 1: Connect to external vLLM instance
+## Set up vLLM
 
-Use this option if vLLM is already deployed on dedicated GPU infrastructure outside your Kubernetes cluster.
+Choose your deployment option and follow the corresponding steps to set up the vLLM server and create the required Kubernetes resources.
 
-### Set up external vLLM
+{{< tabs tabTotal="2" items="External vLLM,In-cluster vLLM" >}}
+{{% tab tabName="External vLLM" %}}
 
-1. Install and run vLLM on a machine with GPU access. Follow the [vLLM installation guide](https://docs.vllm.ai/en/latest/getting_started/installation.html).
+### Configure the external vLLM server
+
+1. Install vLLM on a GPU-enabled machine. See the [vLLM installation guide](https://docs.vllm.ai/en/latest/getting_started/installation.html).
 
 2. Start the vLLM OpenAI-compatible server:
 
@@ -29,144 +27,60 @@ Use this option if vLLM is already deployed on dedicated GPU infrastructure outs
      --dtype auto
    ```
 
-3. Verify vLLM is accessible:
+3. Verify the server is accessible:
 
    ```sh
-   curl http://<vllm-server-ip>:8000/v1/models
+   curl http://<VLLM_SERVER_IP>:8000/v1/models
    ```
 
-### Configure Kubernetes to connect to external vLLM
+### Create Kubernetes resources for the external vLLM server
 
-1. Get the IP address of your vLLM server.
+1. Get the IP address of the vLLM server.
 
-2. Create a headless Service and Endpoints pointing to the external vLLM instance:
+2. Create a headless Service and EndpointSlice that point to the external vLLM server. Replace `<VLLM_SERVER_IP>` with the actual IP address.
 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
    metadata:
-     name: vllm-external
+     name: vllm
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      type: ClusterIP
-     clusterIP: None  # Headless service
+     clusterIP: None
      ports:
      - port: 8000
        targetPort: 8000
        protocol: TCP
    ---
-   apiVersion: v1
-   kind: Endpoints
+   apiVersion: discovery.k8s.io/v1
+   kind: EndpointSlice
    metadata:
-     name: vllm-external
+     name: vllm
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   subsets:
+     labels:
+       kubernetes.io/service-name: vllm
+   addressType: IPv4
+   endpoints:
    - addresses:
-     - ip: 10.0.1.50  # Replace with your vLLM server IP
-     ports:
-     - port: 8000
-       protocol: TCP
+     - <VLLM_SERVER_IP>
+   ports:
+   - port: 8000
+     protocol: TCP
    EOF
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource:
+{{% /tab %}}
+{{% tab tabName="In-cluster vLLM" %}}
 
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   metadata:
-     name: vllm
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     ai:
-       provider:
-         openai:
-           model: meta-llama/Llama-3.1-8B-Instruct
-         host: vllm-external.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
-         port: 8000
-   EOF
-   ```
+### Deploy vLLM inside the cluster
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+{{< callout type="info" >}}
+Running vLLM in production requires Kubernetes nodes with NVIDIA GPU support. The Deployment below omits GPU resource requests so you can validate the configuration structure in a non-GPU cluster. Add `resources.requests` and `resources.limits` with `nvidia.com/gpu` for production deployments.
+{{< /callout >}}
 
-   | Setting | Description |
-   |---------|-------------|
-   | `ai.provider.openai` | Use OpenAI-compatible provider for vLLM. |
-   | `openai.model` | The model served by vLLM (must match the model vLLM is serving). |
-   | `openai.host` | Kubernetes Service DNS name for the external vLLM instance. |
-   | `openai.port` | vLLM API port (default: `8000`). |
-
-4. Create an HTTPRoute:
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: vllm
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /vllm
-       backendRefs:
-       - name: vllm
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ```
-
-5. Test the setup:
-
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl "$INGRESS_GW_ADDRESS/vllm" -H content-type:application/json  -d '{
-      "model": "meta-llama/Llama-3.1-8B-Instruct",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Explain the benefits of vLLM."
-        }
-      ]
-    }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl "localhost:8080/vllm" -H content-type:application/json  -d '{
-      "model": "meta-llama/Llama-3.1-8B-Instruct",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Explain the benefits of vLLM."
-        }
-      ]
-    }' | jq
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-## Option 2: Deploy vLLM in Kubernetes cluster
-
-Use this option to deploy vLLM directly in your Kubernetes cluster alongside agentgateway.
-
-### Before you begin
-
-- Kubernetes cluster with GPU nodes (NVIDIA GPUs with CUDA support).
-- NVIDIA GPU Operator or device plugin installed.
-- Sufficient GPU memory for your chosen model.
-
-### Deploy vLLM in the cluster
-
-1. Create a vLLM Deployment with GPU resources:
+1. Create the vLLM Deployment and Service:
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -189,45 +103,25 @@ Use this option to deploy vLLM directly in your Kubernetes cluster alongside age
          - name: vllm
            image: vllm/vllm-openai:latest
            args:
-             - "--model"
-             - "meta-llama/Llama-3.1-8B-Instruct"
-             - "--host"
-             - "0.0.0.0"
-             - "--port"
-             - "8000"
-             - "--dtype"
-             - "auto"
+           - "--model"
+           - "meta-llama/Llama-3.1-8B-Instruct"
+           - "--host"
+           - "0.0.0.0"
+           - "--port"
+           - "8000"
+           - "--dtype"
+           - "auto"
            ports:
            - containerPort: 8000
              name: http
-           resources:
-             requests:
-               nvidia.com/gpu: 1  # Request 1 GPU
-             limits:
-               nvidia.com/gpu: 1  # Limit to 1 GPU
            env:
            - name: HUGGING_FACE_HUB_TOKEN
              valueFrom:
                secretKeyRef:
-                 name: hf-token  # Create this secret if accessing gated models
+                 name: hf-token
                  key: token
                  optional: true
-   EOF
-   ```
-
-   {{< callout type="info" >}}
-   **Model access**: For gated models (like Llama), create a Hugging Face token secret:
-   ```sh
-   kubectl create secret generic hf-token \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=token=<your-hf-token>
-   ```
-   {{< /callout >}}
-
-2. Create a Service for the vLLM deployment:
-
-   ```yaml
-   kubectl apply -f- <<EOF
+   ---
    apiVersion: v1
    kind: Service
    metadata:
@@ -243,7 +137,20 @@ Use this option to deploy vLLM directly in your Kubernetes cluster alongside age
    EOF
    ```
 
-3. Wait for vLLM to be ready:
+   {{< callout type="note" >}}
+   vLLM downloads model weights on first startup, which can take several minutes depending on model size and network speed. Monitor progress with:
+   ```sh
+   kubectl logs -f deployment/vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+   For gated models such as Llama, create a Hugging Face token secret before deploying:
+   ```sh
+   kubectl create secret generic hf-token \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --from-literal=token=<your-hf-token>
+   ```
+   {{< /callout >}}
+
+2. Wait for the vLLM pod to be ready:
 
    ```sh
    kubectl wait --for=condition=ready pod \
@@ -252,14 +159,14 @@ Use this option to deploy vLLM directly in your Kubernetes cluster alongside age
      --timeout=300s
    ```
 
-   {{< callout type="note" >}}
-   **Initial startup**: vLLM needs to download the model weights on first launch, which can take several minutes depending on model size and network speed. Monitor the logs:
-   ```sh
-   kubectl logs -f deployment/vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-   {{< /callout >}}
+{{% /tab %}}
+{{< /tabs >}}
 
-4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource:
+## Create the agentgateway backend resources
+
+These steps are the same for both external and in-cluster vLLM.
+
+1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource. The `openai` provider type is used because vLLM exposes an OpenAI-compatible API.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -278,207 +185,122 @@ Use this option to deploy vLLM directly in your Kubernetes cluster alongside age
    EOF
    ```
 
-5. Create an HTTPRoute (same as Option 1 step 4 above).
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#agentgatewaybackend" >}}).
 
-## vLLM configuration options
+   | Setting | Description |
+   |---------|-------------|
+   | `ai.provider.openai` | The OpenAI-compatible provider type. vLLM exposes an OpenAI-compatible API, so the `openai` type is used here. |
+   | `openai.model` | The model name as served by vLLM. This must match the `--model` argument used when starting vLLM. |
+   | `host` | The in-cluster DNS name of the Service pointing to the vLLM instance. |
+   | `port` | The port vLLM listens on. The default is `8000`. |
 
-### Quantization
+2. Create an HTTPRoute to expose the vLLM backend through the gateway.
 
-Reduce memory usage with quantization:
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: vllm
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: vllm
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
 
-```yaml
-args:
-  - "--model"
-  - "meta-llama/Llama-3.1-8B-Instruct"
-  - "--quantization"
-  - "awq"  # or "gptq", "squeezellm"
-```
+3. Send a request to verify agentgateway can route to vLLM.
 
-### Tensor parallelism
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS" \
+     -H "content-type: application/json" \
+     -d '{
+       "model": "meta-llama/Llama-3.1-8B-Instruct",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Explain the benefits of vLLM for serving large language models."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
+   ```
 
-Distribute model across multiple GPUs:
-
-```yaml
-args:
-  - "--model"
-  - "meta-llama/Llama-3.1-70B-Instruct"
-  - "--tensor-parallel-size"
-  - "4"  # Use 4 GPUs
-resources:
-  requests:
-    nvidia.com/gpu: 4
-  limits:
-    nvidia.com/gpu: 4
-```
-
-### Engine arguments
-
-Tune performance parameters:
-
-```yaml
-args:
-  - "--model"
-  - "meta-llama/Llama-3.1-8B-Instruct"
-  - "--max-model-len"
-  - "4096"  # Maximum sequence length
-  - "--gpu-memory-utilization"
-  - "0.9"  # Use 90% of GPU memory
-  - "--max-num-seqs"
-  - "256"  # Maximum number of sequences to process in parallel
-```
-
-## Scaling and high availability
-
-### Horizontal scaling
-
-Scale vLLM for higher throughput:
-
-```sh
-kubectl scale deployment vllm \
-  -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  --replicas=3
-```
-
-Kubernetes will load balance requests across vLLM replicas through the Service.
-
-### Resource limits
-
-Set appropriate resource requests and limits:
-
-```yaml
-resources:
-  requests:
-    memory: "16Gi"
-    nvidia.com/gpu: 1
-  limits:
-    memory: "32Gi"
-    nvidia.com/gpu: 1
-```
-
-### Node affinity
-
-Pin vLLM to GPU nodes:
-
-```yaml
-spec:
-  template:
-    spec:
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: nvidia.com/gpu.present
-                operator: In
-                values:
-                - "true"
-```
-
-## Monitoring
-
-vLLM exposes Prometheus metrics at `/metrics`:
-
-```yaml
-apiVersion: v1
-kind: Service
-metadata:
-  name: vllm-metrics
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  labels:
-    app: vllm
-spec:
-  selector:
-    app: vllm
-  ports:
-  - port: 8000
-    targetPort: 8000
-    name: metrics
-```
-
-Key metrics to monitor:
-- `vllm_request_duration_seconds` - Request latency.
-- `vllm_num_requests_running` - Active requests.
-- `vllm_gpu_cache_usage_perc` - GPU memory utilization.
+   ```sh
+   curl "localhost:8080" \
+     -H "content-type: application/json" \
+     -d '{
+       "model": "meta-llama/Llama-3.1-8B-Instruct",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Explain the benefits of vLLM for serving large language models."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 ## Troubleshooting
 
-### Pod stuck in Pending state
+### Connection refused or 503 response
 
 **What's happening:**
 
-vLLM pod doesn't start, shows `Pending` status.
+The gateway returns a 503 response or requests fail with a connection error.
 
 **Why it's happening:**
 
-No GPU nodes available or insufficient GPU memory.
+For external vLLM, the cluster cannot reach the server — check the EndpointSlice IP and firewall rules. For in-cluster vLLM, the pod may still be starting or may have failed to schedule.
 
 **How to fix it:**
 
-1. Check GPU availability:
+1. For external vLLM, verify the server is reachable and the EndpointSlice is correct:
+   ```sh
+   curl http://<VLLM_SERVER_IP>:8000/v1/models
+   kubectl get endpointslice vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+   ```
+
+2. For in-cluster vLLM, check the pod status and logs:
+   ```sh
+   kubectl get pods -l app=vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl logs deployment/vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+### Pod stuck in Pending state (in-cluster only)
+
+**What's happening:**
+
+The vLLM pod does not start and shows a `Pending` status.
+
+**Why it's happening:**
+
+No GPU nodes are available in the cluster, or the GPU resource requests cannot be satisfied.
+
+**How to fix it:**
+
+1. Check GPU node availability:
    ```sh
    kubectl describe nodes | grep -A 5 "nvidia.com/gpu"
    ```
 
-2. Check pod events:
+2. Check the pod events for scheduling errors:
    ```sh
    kubectl describe pod -l app=vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-
-### Out of memory errors
-
-**What's happening:**
-
-vLLM crashes with CUDA out-of-memory errors.
-
-**Why it's happening:**
-
-The model requires more GPU memory than is available.
-
-**How to fix it:**
-
-1. Use a smaller model or quantized variant.
-2. Reduce `--max-model-len`.
-3. Lower `--gpu-memory-utilization` (try `0.8` or `0.7`).
-4. Enable tensor parallelism across more GPUs.
-
-### Slow inference
-
-**What's happening:**
-
-High latency on requests.
-
-**Why it's happening:**
-
-Model too large for available GPU memory (swapping to CPU), insufficient `--max-num-seqs` for concurrent requests, or CPU bottleneck in preprocessing.
-
-**How to fix it:**
-
-1. Increase GPU memory or use smaller model.
-2. Tune `--max-num-seqs` and `--max-model-len`.
-3. Use faster CPUs or increase CPU requests.
-
-### Connection refused from agentgateway
-
-**What's happening:**
-
-agentgateway cannot reach vLLM service.
-
-**Why it's happening:**
-
-The vLLM Service may not exist, have no endpoints, or network policies are blocking traffic.
-
-**How to fix it:**
-
-1. Verify vLLM Service exists and has endpoints:
-   ```sh
-   kubectl get svc vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   kubectl get endpoints vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-
-2. Test connectivity from another pod:
-   ```sh
-   kubectl run -it --rm debug --image=curlimages/curl --restart=Never \
-     -- curl http://vllm.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:8000/v1/models
    ```
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
