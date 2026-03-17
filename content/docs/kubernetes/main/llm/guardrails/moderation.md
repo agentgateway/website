@@ -10,7 +10,7 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
-### Block harmful content
+## Block harmful content
 
 1. Configure the prompt guard to use OpenAI Moderation:
    ```yaml

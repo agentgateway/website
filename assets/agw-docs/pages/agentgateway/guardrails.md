@@ -1,32 +1,8 @@
 Use the Guardrail Webhook API to set up your own custom guardrail controls for {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
-## About guardrails {#about}
+### About custom webhooks {#about-guardrail-support}
 
-Guardrails provide content safety and PII detection. They are control mechanisms that help ensure safe, consistent, and compliant interactions with large language models (LLMs) by validating both input and output content.
-
-### Benefits of guardrails {#about-benefits}
-
-Because LLMs generate text based on probability calculations and training data that is outside your control and business context, their responses can vary widely. LLMs might hallucinate, generate harmful or unhelpful content, leak sensitive data, or otherwise return unexpected responses that are not aligned with your organization's standards. 
-
-Guardrails mitigate such risks by letting you take action on:
-
-* Input, or the content before sending requests to the LLM.
-* Output, or the content before delivering responses to the user.
-
-For example, a guardrail might:
-
-* Scan input and mask sensitive data patterns before they reach the LLM, such as employee IDs or other personally identifiable information (PII).
-* Verify that LLM responses follow a required JSON structure before returning them to users.
-
-By applying guardrails to both input and output, you can:
-
-* Reject or mask harmful or unhelpful content.
-* Enforce desired formats, content boundaries, and safety rules.
-* Comply with regulatory requirements, industry standards, internal policies, style guides, and more.
-
-### Support for guardrails {#about-guardrail-support}
-
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards]({{< link-hextra path="/llm/prompt-guards/">}}) to reject, mask, or pass prompt data through a moderation endpoint.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards]({{< link-hextra path="/llm/guardrails/">}}) to reject, mask, or pass prompt data through a moderation endpoint.
 
 However, you might want to bring your own guardrails for situations such as:
 
