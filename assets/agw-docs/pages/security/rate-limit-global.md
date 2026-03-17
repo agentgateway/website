@@ -135,7 +135,6 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
    ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
-   apiVersion: apps/v1
    kind: Deployment
    metadata:
      name: redis
@@ -156,7 +155,6 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
              ports:
                - containerPort: 6379
    ---
-   apiVersion: v1
    kind: Service
    metadata:
      name: redis
@@ -173,7 +171,6 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
    ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
-   apiVersion: v1
    kind: ConfigMap
    metadata:
      name: ratelimit-config
@@ -243,7 +240,6 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
    ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
-   apiVersion: apps/v1
    kind: Deployment
    metadata:
      name: ratelimit
@@ -287,7 +283,6 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
              configMap:
                name: ratelimit-config
    ---
-   apiVersion: v1
    kind: Service
    metadata:
      name: ratelimit
@@ -413,7 +408,6 @@ The descriptor entry `name` in the policy must match the `key` in the rate limit
    - name: wait for ip-rate-limit policy to be accepted
      wait:
        target:
-         apiVersion: agentgateway.dev/v1alpha1
          kind: AgentgatewayPolicy
          metadata:
            namespace: httpbin
