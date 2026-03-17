@@ -135,6 +135,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
    ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
+   apiVersion: apps/v1
    kind: Deployment
    metadata:
      name: redis
@@ -155,6 +156,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
              ports:
                - containerPort: 6379
    ---
+   apiVersion: v1
    kind: Service
    metadata:
      name: redis
@@ -171,6 +173,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
    ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
+   apiVersion: v1
    kind: ConfigMap
    metadata:
      name: ratelimit-config
@@ -240,6 +243,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
    ```yaml {paths="global-rate-limit-by-ip"}
    kubectl apply -f- <<EOF
+   apiVersion: apps/v1
    kind: Deployment
    metadata:
      name: ratelimit
@@ -283,6 +287,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
              configMap:
                name: ratelimit-config
    ---
+   apiVersion: v1
    kind: Service
    metadata:
      name: ratelimit
@@ -306,7 +311,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
          metadata:
            namespace: ratelimit
            name: redis
-       jsonPath: "$.status.availableReplicas"
+       bodyJsonPath: "$.status.availableReplicas"
        jsonPathExpectation:
          comparator: greaterThan
          value: 0
@@ -320,7 +325,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
          metadata:
            namespace: ratelimit
            name: ratelimit
-       jsonPath: "$.status.availableReplicas"
+       bodyJsonPath: "$.status.availableReplicas"
        jsonPathExpectation:
          comparator: greaterThan
          value: 0
@@ -412,7 +417,7 @@ The descriptor entry `name` in the policy must match the `key` in the rate limit
          metadata:
            namespace: httpbin
            name: ip-rate-limit
-       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       bodyJsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"
