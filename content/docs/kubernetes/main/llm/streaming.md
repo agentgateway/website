@@ -134,7 +134,7 @@ The following steps show how to stream a response from OpenAI.
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh {paths="streaming-openai"}
-   curl "http://${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json  -d '{
+   curl "http://${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json  -d '{
       "stream": true,
       "model": "gpt-3.5-turbo",
       "messages": [
@@ -190,7 +190,7 @@ The following steps show how to stream a response from OpenAI.
 
 {{< doc-test paths="streaming-openai" >}}
 # Verify streaming response contains SSE chunks and terminates with [DONE]
-STREAM_RESPONSE=$(curl -s "http://${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -d '{
+STREAM_RESPONSE=$(curl -s "http://${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json -d '{
   "stream": true,
   "model": "gpt-3.5-turbo",
   "messages": [
