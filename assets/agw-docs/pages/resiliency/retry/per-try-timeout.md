@@ -422,8 +422,8 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
-      - '"attempts":3'
-      - '"backoff":"1s'
+      - '"attempts": 3'
+      - '"backoff": "1s'
       - '517 <unknown status code>'
   EOF
   {{< /doc-test >}}
@@ -445,7 +445,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
-      - '"backendRequestTimeout":"5s'
+      - '"backendRequestTimeout": "5s'
   EOF
   {{< /doc-test >}}
   {{< doc-test paths="per-try-timeout-in-agentgateway,per-try-timeout-in-gatewaylistener" >}}
@@ -466,7 +466,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
-      - '"requestTimeout":"5s'
+      - '"requestTimeout": "5s'
   EOF
   {{< /doc-test >}}
 
