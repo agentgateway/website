@@ -2,7 +2,7 @@ Test and interact with agentgateway using curl.
 
 ## Before you begin
 
-- agentgateway running at `http://localhost:3000` with a configured LLM backend.
+- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
 - curl installed (pre-installed on macOS and Linux).
 
 ## Send a request
@@ -83,7 +83,7 @@ curl cannot connect to agentgateway.
 
 **Why it's happening:**
 
-agentgateway is not running, or it is listening on a different port.
+Agentgateway is not running, or it is listening on a different port.
 
 **How to fix it:**
 
