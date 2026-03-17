@@ -235,11 +235,9 @@ YAMLTest -f - <<'EOF'
       }
   source:
     type: local
+  retries: 5
   expect:
     statusCode: 429
-  retries:
-    maxAttempts: 5
-    intervalSeconds: 1
 EOF
 {{< /doc-test >}}
 
