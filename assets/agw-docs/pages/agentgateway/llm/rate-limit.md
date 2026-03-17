@@ -57,6 +57,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 
    ```yaml {paths="llm-token-rate-limit"}
    kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: llm-token-budget
@@ -79,6 +80,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
    - name: wait for llm-token-budget policy to be accepted
      wait:
        target:
+         apiVersion: agentgateway.dev/v1alpha1
          kind: AgentgatewayPolicy
          metadata:
            namespace: agentgateway-system
@@ -234,9 +236,11 @@ YAMLTest -f - <<'EOF'
       }
   source:
     type: local
-  retries: 5
   expect:
     statusCode: 429
+  retries:
+    maxAttempts: 5
+    intervalSeconds: 1
 EOF
 {{< /doc-test >}}
 
