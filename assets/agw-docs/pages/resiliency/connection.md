@@ -4,112 +4,16 @@ Manage HTTP connections to a proxy.
 
 ## Configure HTTP protocol connections {#http}
 
-You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the proxy gateway. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated in the name.
+You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the proxy gateway. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
 
 ### General settings {#general}
 
 You can use the `maxBufferSize` setting for both HTTP/1 and HTTP/2.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies connection configuration to the proxy.
+{{< cards >}}
+  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Fine-tune connection speeds for read and write operations by setting a connection buffer limit." >}}
+{{< /cards >}}
 
-   ```yaml {paths="connection-general"}
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: maxbuffer
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-     - kind: Gateway
-       name: agentgateway-proxy
-       group: gateway.networking.k8s.io
-     frontend:
-       http:
-         maxBufferSize: 2097152
-   EOF
-   ```
-
-   | Setting | Description |
-   | -- | -- |
-   | `maxBufferSize` | The maximum size of HTTP body that can be buffered into memory. Defaults to 2mb if unset. Minimum value: 1. |
-
-2. Port-forward the gateway proxy on port 15000.
-   ```sh
-   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
-   ```
-
-3. Get the config dump and verify that the policy is set as you configured it.
-
-   Example `jq` command:
-   ```sh
-   curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.frontend != null and .policy.frontend.hTTP != null and .policy.frontend.hTTP.maxBufferSize != null)] | .[0]'
-   ```
-
-   Example output:
-   ```json {linenos=table,hl_lines=[18],filename="http://localhost:15000/config_dump"}
-   {
-     "key": "frontend/agentgateway-system/maxbuffer:frontend-http:agentgateway-system/agentgateway-proxy",
-     "name": {
-       "kind": "AgentgatewayPolicy",
-       "name": "maxbuffer",
-       "namespace": "agentgateway-system"
-     },
-     "target": {
-       "gateway": {
-        "gatewayName": "agentgateway-proxy",
-        "gatewayNamespace": "agentgateway-system",
-        "listenerName": null
-      }
-    },
-    "policy": {
-      "frontend": {
-        "hTTP": {
-          "maxBufferSize": 2097152,
-          "http1MaxHeaders": null,
-          "http1IdleTimeout": null,
-          "http2WindowSize": null,
-          "http2ConnectionWindowSize": null,
-          "http2FrameSize": null,
-          "http2KeepaliveInterval": null,
-          "http2KeepaliveTimeout": null
-        }
-      }
-    }
-   }
-   ```
-
-{{< doc-test paths="connection-general" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for maxbuffer policy in config dump
-  retries: 20
-  http:
-    url: http://localhost:15000
-    skipSslVerification: true
-    method: GET
-    path: /config_dump
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-  expect:
-    bodyContains:
-    - '"maxBufferSize"'
-    - '2097152'
-EOF
-{{< /doc-test >}}
-
-#### Cleanup
-
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
-
-```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} maxbuffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-```
 
 ### HTTP/1.1 settings {#http1}
 
@@ -343,6 +247,7 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n 
 You can learn more about these individual HTTP connection settings.
 
 {{< cards >}}
+  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Fine-tune connection speeds for read and write operations by setting a connection buffer limit." >}}
   {{< card path="/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Set idle timeout settings." >}}
   {{< card path="/resiliency/keepalive/" title="Keepalive" subtitle="Set keepalive settings." >}}
 {{< /cards >}}
