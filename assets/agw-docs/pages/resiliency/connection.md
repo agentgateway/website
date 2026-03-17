@@ -42,8 +42,8 @@ Use these settings to control header limits and idle connection behavior for HTT
 
    | Setting | Description |
    | -- | -- |
-   | `http1MaxHeaders` | The maximum number of headers allowed in HTTP/1.1 requests. Defaults to 100 if unset. Valid range: 1–4096. Requests that exceed this limit receive a 431 response. |
-   | `http1IdleTimeout` | The duration of time before an unused HTTP/1.1 connection is closed. Defaults to 10 minutes if unset. |
+   | `http1MaxHeaders` | The maximum number of headers allowed in HTTP/1.1 requests. Requests that exceed the limit receive a 431 response. |
+   | `http1IdleTimeout` | The duration of time before an unused HTTP/1.1 connection is closed. |
 
 2. Port-forward the gateway proxy on port 15000.
    ```sh
@@ -151,9 +151,9 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
 
    | Setting | Description |
    | -- | -- |
-   | `http2WindowSize` | The initial window size for stream-level flow control for received data. Minimum value: 1. |
-   | `http2ConnectionWindowSize` | The initial window size for connection-level flow control for received data. Minimum value: 1. |
-   | `http2FrameSize` | The maximum frame size to use for HTTP/2 connections. Defaults to 16kb if unset. Valid range: 16384–1677215. |
+   | `http2WindowSize` | The initial window size for stream-level flow control for received data. |
+   | `http2ConnectionWindowSize` | The initial window size for connection-level flow control for received data. |
+   | `http2FrameSize` | The maximum frame size to use for HTTP/2 connections. |
 
 2. Port-forward the gateway proxy on port 15000.
 
