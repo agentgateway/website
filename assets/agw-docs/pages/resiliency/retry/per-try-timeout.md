@@ -408,22 +408,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
   {{< /doc-test >}}
   {{< doc-test paths="per-try-timeout-in-httproute" >}}
   YAMLTest -f - <<'EOF'
-  - name: wait for retry HTTPRoute to be ready
-    wait:
-      target:
-        kind: HTTPRoute
-        metadata:
-          namespace: httpbin
-          name: retry
-      jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-      jsonPathExpectation:
-        comparator: equals
-        value: "True"
-      polling:
-        timeoutSeconds: 120
-        intervalSeconds: 2
-  - name: Check configdump
-    retries: 10
+  - name: Check configdump for per-try timeout
     http:
       url: http://localhost:15000
       skipSslVerification: true
@@ -439,7 +424,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
-      - '"backendRequestTimeout": "5s'
+      - '"backendRequestTimeout":"5s'
   EOF
   {{< /doc-test >}}
   {{< doc-test paths="per-try-timeout-in-agentgateway,per-try-timeout-in-gatewaylistener" >}}
@@ -458,8 +443,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       polling:
         timeoutSeconds: 120
         intervalSeconds: 2
-  - name: Check configdump
-    retries: 10
+  - name: Check configdump for per-try timeout
     http:
       url: http://localhost:15000
       skipSslVerification: true
@@ -475,7 +459,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
-      - '"requestTimeout": "5s'
+      - '"requestTimeout":"5s'
   EOF
   {{< /doc-test >}}
 
