@@ -4,7 +4,7 @@ Manage HTTP connections to a proxy.
 
 ## Configure HTTP protocol connections {#http}
 
-You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the proxy gateway. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to only HTTP/1 or HTTP/2 requests when indicated in the name.
+You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the proxy gateway. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated in the name.
 
 ### General settings {#general}
 
