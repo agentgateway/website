@@ -11,7 +11,7 @@ Configure [vLLM](https://github.com/vllm-project/vllm), a high-performance LLM s
 
 Choose your deployment option and follow the corresponding steps to set up the vLLM server and create the required Kubernetes resources.
 
-{{< tabs tabTotal="2" items="External vLLM,In-cluster vLLM" >}}
+{{< tabs tabTotal="2" items="External vLLM, In-cluster vLLM" >}}
 {{% tab tabName="External vLLM" %}}
 
 ### Configure the external vLLM server
@@ -218,7 +218,7 @@ These steps are the same for both external and in-cluster vLLM.
 
 3. Send a request to verify agentgateway can route to vLLM.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer, Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS" \
@@ -235,9 +235,13 @@ These steps are the same for both external and in-cluster vLLM.
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
+   In one terminal, start a port-forward to the gateway:
+
    ```sh
    kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
    ```
+
+   In a second terminal, send a request:
 
    ```sh
    curl "localhost:8080" \
