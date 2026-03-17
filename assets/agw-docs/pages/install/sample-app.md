@@ -45,7 +45,7 @@ Install the sample httpbin app.
          comparator: greaterThan
          value: 0
        polling:
-         timeoutSeconds: 600
+         timeoutSeconds: 300
          intervalSeconds: 5
    EOF
    {{< /doc-test >}}
