@@ -287,7 +287,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
       metadata:
         name: retry
-        namespace: httpbin
+        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
       spec:
         targetRefs:
         - kind: Gateway
@@ -300,7 +300,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
             backoff: 1s
             codes: [517]
           timeouts:
-            request: 5s 
+            request: 5s
       EOF
       ```
 
@@ -323,16 +323,16 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       ```json {linenos=table,hl_lines=[19,20,21,22,23,24,25,46,47,48],filename="http://localhost:15000/config_dump"}
       {
         "retry": {
-          "key": "traffic/httpbin/retry:retry:httpbin/agentgateway-proxy/http",
+          "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/agentgateway-proxy/http",
           "name": {
             "kind": "AgentgatewayPolicy",
             "name": "retry",
-            "namespace": "httpbin"
+            "namespace": "agentgateway-system"
           },
           "target": {
             "gateway": {
               "gatewayName": "agentgateway-proxy",
-              "gatewayNamespace": "httpbin",
+              "gatewayNamespace": "agentgateway-system",
               "listenerName": "http"
             }
           },
@@ -350,16 +350,16 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           }
         },
         "timeout": {
-          "key": "traffic/httpbin/retry:timeout:httpbin/agentgateway-proxy/http",
+          "key": "traffic/agentgateway-system/retry:timeout:agentgateway-system/agentgateway-proxy/http",
           "name": {
             "kind": "AgentgatewayPolicy",
             "name": "retry",
-            "namespace": "httpbin"
+            "namespace": "agentgateway-system"
           },
           "target": {
             "gateway": {
               "gatewayName": "agentgateway-proxy",
-              "gatewayNamespace": "httpbin",
+              "gatewayNamespace": "agentgateway-system",
               "listenerName": "http"
             }
           },
@@ -469,7 +469,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       target:
         kind: AgentgatewayPolicy
         metadata:
-          namespace: httpbin
+          namespace: agentgateway-system
           name: retry
       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
       jsonPathExpectation:
@@ -507,6 +507,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 ```sh
 kubectl delete httproute retry -n httpbin
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 
