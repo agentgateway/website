@@ -32,7 +32,7 @@ You can use the `maxBufferSize` setting for both HTTP/1 and HTTP/2.
 
    | Setting | Description |
    | -- | -- |
-   | `maxBufferSize` | The maximum size HTTP body that is buffered into memory. Defaults to 2mb if unset. Minimum value: 1. |
+   | `maxBufferSize` | The maximum size of HTTP body that can be buffered into memory. Defaults to 2mb if unset. Minimum value: 1. |
 
 2. Port-forward the gateway proxy on port 15000.
    ```sh
