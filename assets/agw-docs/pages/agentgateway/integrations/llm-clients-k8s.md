@@ -2,7 +2,7 @@ Before configuring your AI clients, retrieve the agentgateway endpoint URL.
 
 ## Get the gateway URL
 
-{{< tabs tabTotal="3" items="Cloud Provider LoadBalancer,Port-forward for local testing,Ingress" >}}
+{{< tabs tabTotal="3" items="Cloud Provider LoadBalancer, Port-forward for local testing, Ingress" >}}
 {{% tab tabName="Cloud Provider LoadBalancer" %}}
 
 If agentgateway is exposed with a LoadBalancer service, retrieve the external IP or hostname:
