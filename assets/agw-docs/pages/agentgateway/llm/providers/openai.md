@@ -20,12 +20,12 @@ The following example uses OpenAI. If you use another AI provider, create an API
 
 2. Save the API key in an environment variable.
 
-   ```sh,paths="openai-setup"
+   ```sh {paths="openai-setup"}
    export OPENAI_API_KEY=${OPENAI_API_KEY:-<insert your API key>}
    ```
 
 3. Create a Kubernetes secret to store your AI API key.
-   ```yaml,paths="openai-setup"
+   ```yaml {paths="openai-setup"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -42,7 +42,7 @@ The following example uses OpenAI. If you use another AI provider, create an API
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an LLM provider that references the AI API key secret.
 
-```yaml,paths="openai-setup"
+```yaml {paths="openai-setup"}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -100,7 +100,7 @@ EOF
 ```
 {{% /tab %}}
 {{% tab tabName="Custom route" %}}
-```yaml,paths="openai-setup"
+```yaml {paths="openai-setup"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
