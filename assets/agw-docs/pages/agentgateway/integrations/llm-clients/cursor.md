@@ -2,7 +2,7 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to route requests t
 
 ## Before you begin
 
-- agentgateway running at `http://localhost:3000` with a configured LLM backend.
+- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
 - Cursor installed (version 0.30 or later).
 
 ## Configure Cursor
@@ -39,7 +39,7 @@ Cursor cannot connect to agentgateway.
 
 **Why it's happening:**
 
-agentgateway may not be running, or the base URL is incorrect.
+Agentgateway may not be running, or the base URL is incorrect.
 
 **How to fix it:**
 
