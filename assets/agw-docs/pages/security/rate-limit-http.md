@@ -250,9 +250,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
        type: local
      expect:
        statusCode: 429
-     retries:
-       maxAttempts: 3
-       intervalSeconds: 0
+     retries: 3
    EOF
    {{< /doc-test >}}
 

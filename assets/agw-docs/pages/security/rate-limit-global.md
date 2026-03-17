@@ -486,9 +486,7 @@ The descriptor entry `name` in the policy must match the `key` in the rate limit
        type: local
      expect:
        statusCode: 429
-     retries:
-       maxAttempts: 3
-       intervalSeconds: 0
+     retries: 3
    EOF
    {{< /doc-test >}}
 
