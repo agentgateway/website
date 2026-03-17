@@ -22,7 +22,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 1. Install the experimental Kubernetes Gateway API CRDs.
    
    ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml --server-side
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```
 
 2. Configure the per-try timeout. You can apply the timeout to an HTTPRoute by using a Kubernetes Gateway API-native approach. To apply it to an HTTPRoute rule or Gateway listener, use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. 
@@ -406,26 +406,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       type: local
     expect:
       statusCode: 200
-  - name: Check configdump
-    retries: 10
-    http:
-      url: http://localhost:15000
-      skipSslVerification: true
-      method: GET
-      path: /config_dump
-    source:
-      type: pod
-      usePortForward: true
-      selector:
-        kind: Deployment
-        metadata:
-          namespace: agentgateway-system
-          name: agentgateway-proxy
-    expect:
-      bodyContains:
-      - '"attempts": 3'
-      - '"backoff": "1s'
-      - '517 <unknown status code>'
   EOF
   {{< /doc-test >}}
   {{< doc-test paths="per-try-timeout-in-httproute" >}}
@@ -461,6 +441,9 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
+      - '"attempts": 3'
+      - '"backoff": "1s'
+      - '517 <unknown status code>'
       - '"backendRequestTimeout": "5s'
   EOF
   {{< /doc-test >}}
@@ -497,6 +480,9 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
+      - '"attempts": 3'
+      - '"backoff": "1s'
+      - '517 <unknown status code>'
       - '"requestTimeout": "5s'
   EOF
   {{< /doc-test >}}
