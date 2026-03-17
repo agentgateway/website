@@ -2,7 +2,7 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 ## Before you begin
 
-- agentgateway running at `http://localhost:3000` with a configured LLM backend.
+- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
 - VS Code with the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) installed.
 
 ## Configure Continue
@@ -49,7 +49,7 @@ Continue cannot reach agentgateway.
 
 **Why it's happening:**
 
-agentgateway is not running, or the `apiBase` URL is incorrect.
+Agentgateway is not running, or the `apiBase` URL is incorrect.
 
 **How to fix it:**
 
