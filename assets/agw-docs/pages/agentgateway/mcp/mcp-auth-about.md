@@ -8,7 +8,15 @@ The MCP OAuth specification extends the standard OAuth 2.0 Authorization Code Fl
 
 ## Challenges
 
+Learn about some common challenges with MCP auth.
+
+### Non-compliance to MCP OAuth spec {#non-compliance}
+
 Most IdPs do not comply to the MCP OAuth specification and therefore do not expose the resource and authorization server metadata in a format that an MCP client can understand. Because of that, clients cannot dynamically register with the IdP to obtain their client ID. Instead, they must manually register with each IdP that they want to use. In cases where MCP clients, IdPs, and MCP servers are not in the same environment or are owned by different teams and organizations, pre-registration of clients can become unfeasible.
+
+### Connect-time authentication {#connect-time}
+
+When MCP clients connect directly to remote MCP servers, each server handles its own OAuth independently. A developer working in an IDE like Cursor or Claude Code might have their agent call a tool, only for an OAuth pop-up to interrupt the session. The developer loses context, and faces another pop-up when the agent calls a tool on a different server. Each server might use a different identity provider, and none of them enforce corporate Single Sign-On (SSO).
 
 ## Agentgateway to fill in the gaps
 
@@ -18,7 +26,7 @@ The MCP OAuth flow that is facilitated by the agentgateway proxy includes the fo
 1. **Initialization**: In the initialization phase, the MCP client tries to connect to a protected MCP server. This connection fails with a 401 HTTP response.
 2. **Discovery**: The MCP client discovers the OAuth authorization server that protects the MCP server and required scopes to access the MCP server by using agentgateway.
 3. **Client registration**: The agentgateway proxy registers the client with the IdP and returns the client ID.
-4. **Authentication**: The MCP client is redirected to the IdP for login. After successful login, the client receives a JWT access token.
+4. **Authentication**: The MCP client is redirected to the IdP for login. After successful login, the client receives a JWT access token. This authentication happens at "connect time" with agentgateway, not each "request time" when the client calls a tool.
 5. **MCP server access**: The client uses the JWT token to access the MCP server and its tools.
 
 Review the following diagram to learn about the steps that are involved in each phase:
@@ -70,6 +78,14 @@ sequenceDiagram
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
 
 For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-access/">}}).
+
+### Benefits
+
+Agentgateway's approach provides the following benefits.
+
+- **No mid-session interruptions**: Tool calls succeed immediately because the client already authenticated when it connected.
+- **Single sign-on**: One login through your enterprise IdP grants access to all MCP servers behind the gateway.
+- **Consistent policy enforcement**: Authentication and authorization policies are applied uniformly at the gateway, rather than depending on each MCP server to implement its own security.
 
 ## Setup
 

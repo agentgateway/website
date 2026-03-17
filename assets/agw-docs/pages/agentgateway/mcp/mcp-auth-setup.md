@@ -14,7 +14,7 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 2. Follow the steps to set up an [MCP server with a fetch tool]({{< link-hextra path="/mcp/static-mcp/" >}}).
 3. Follow the steps to [set up Keycloak]({{< link-hextra path="/mcp/auth/keycloak/" >}}).
 4. Install the experimental channel Gateway API.
-   ```sh
+   ```sh {paths="mcp-auth-setup"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
    ```
 
@@ -23,7 +23,7 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces authentication for the MCP backend.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with MCP authentication configuration.
-   ```yaml
+   ```yaml {paths="mcp-auth-setup"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -87,12 +87,32 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
    | `resourceMetadat.bearerMethodsSupported` | Methods to provide the bearer token when authenticating with the server. In this example, the bearer token can be provided as a header, query parameter, or as part of the body. |
 
 2. Verify that the policy was accepted.
-   ```sh
+   ```sh {paths="mcp-auth-setup"}
    kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-echo-authn -o yaml
    ```
 
+{{< doc-test paths="mcp-auth-setup" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp-echo-authn policy to be accepted
+  wait:
+    target:
+      apiVersion: agentgateway.dev/v1alpha1
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: default
+        name: mcp-echo-authn
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 3. Update the HTTPRoute that routes incoming traffic to the MCP server to include the discovery paths for the MCP resource and authorization server. This way, the agentgateway proxy can retrieve the resource and authorization server metadata during the MCP auth flow.
-   ```yaml
+   ```yaml {paths="mcp-auth-setup"}
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -149,6 +169,51 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
    EOF
    ```
 
+{{< doc-test paths="mcp-auth-setup" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: default
+        name: mcp
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+- name: unauthenticated MCP request returns 401 (connect-time auth enforced)
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/mcp"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 401
+    headers:
+      - name: www-authenticate
+        comparator: contains
+        value: resource_metadata
+  retries: 3
+- name: resource metadata discovery returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/.well-known/oauth-protected-resource/mcp"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.resource"
+        comparator: contains
+        value: "/mcp"
+  retries: 3
+EOF
+{{< /doc-test >}}
+
 ## Verify MCP auth
 
 1. Open the MCP inspector.
@@ -197,6 +262,15 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
       {{< reuse-image src="img/oauth-connect-to-server.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-connect-to-server-dark.png" >}}
 
+5. Verify that tool calls work without re-authentication. Because the client authenticates at connect time, tool calls succeed immediately without any additional login prompts.
+   1. From the menu bar, click the **Tools** tab.
+   2. Click **List Tools** and select the `fetch` tool.
+   3. In the **url** field, enter a website URL, such as `https://example.com/`.
+   4. Click **Run Tool**.
+   5. Verify that the tool call succeeds and returns the fetched content. No additional authentication is required because the token from the initial connection is reused for all tool calls within the session.
+
+      {{< reuse-image src="img/mcp-inspector-fetch.png" >}}
+      {{< reuse-image-dark srcDark="img/mcp-inspector-fetch-dark.png" >}}
 
 ## Clean up
 
