@@ -407,6 +407,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
     expect:
       statusCode: 200
   - name: Check configdump
+    retries: 10
     http:
       url: http://localhost:15000
       skipSslVerification: true
@@ -430,6 +431,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
   {{< doc-test paths="per-try-timeout-in-httproute" >}}
   YAMLTest -f - <<'EOF'
   - name: Check configdump
+    retries: 10
     http:
       url: http://localhost:15000
       skipSslVerification: true
@@ -451,6 +453,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
   {{< doc-test paths="per-try-timeout-in-agentgateway,per-try-timeout-in-gatewaylistener" >}}
   YAMLTest -f - <<'EOF'
   - name: Check configdump
+    retries: 10
     http:
       url: http://localhost:15000
       skipSslVerification: true
