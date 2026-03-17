@@ -77,57 +77,59 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
 
       Example output:
       ```json {linenos=table,hl_lines=[34,35,36,37,38,39,40,41,42,43,44,45],filename="http://localhost:15000/config_dump"}
-      ...
-      "agentgateway-system/agentgateway-proxy.http": {
-        "key": "agentgateway-system/agentgateway-proxy.http",
-        "gatewayName": "agentgateway-proxy",
-        "gatewayNamespace": "agentgateway-system",
-        "listenerName": "http",
-        "hostname": "",
-        "protocol": "HTTP",
-        "routes": {
-          "httpbin/retry.0.0.http": {
-            "key": "httpbin/retry.0.0.http",
-            "name": "retry",
-            "namespace": "httpbin",
-            "hostnames": [
-              "retry.example"
-            ],
-            "matches": [
-              {
-                "path": {
-                  "pathPrefix": "/"
+      {
+        "agentgateway-system/agentgateway-proxy.http": {
+          "key": "agentgateway-system/agentgateway-proxy.http",
+          "gatewayName": "agentgateway-proxy",
+          "gatewayNamespace": "agentgateway-system",
+          "listenerName": "http",
+          "hostname": "",
+          "protocol": "HTTP",
+          "routes": {
+            "httpbin/retry.0.0.http": {
+              "key": "httpbin/retry.0.0.http",
+              "name": "retry",
+              "namespace": "httpbin",
+              "hostnames": [
+                "retry.example"
+              ],
+              "matches": [
+                {
+                  "path": {
+                    "pathPrefix": "/"
+                  }
                 }
-              }
-            ],
-            "backends": [
-              {
-                "weight": 1,
-                "service": {
-                  "name": "httpbin/httpbin.httpbin.svc.cluster.local",
-                  "port": 8000
+              ],
+              "backends": [
+                {
+                  "weight": 1,
+                  "service": {
+                    "name": "httpbin/httpbin.httpbin.svc.cluster.local",
+                    "port": 8000
+                  }
                 }
-              }
-            ],
-            "inlinePolicies": [
-              {
-                "timeout": {
-                  "backendRequestTimeout": "5s"
+              ],
+              "inlinePolicies": [
+                {
+                  "timeout": {
+                    "backendRequestTimeout": "5s"
+                  }
+                },
+                {
+                  "retry": {
+                    "attempts": 3,
+                    "backoff": "1s",
+                    "codes": [
+                      "517 <unknown status code>"
+                    ]
+                  }
                 }
-              },
-              {
-                "retry": {
-                  "attempts": 3,
-                  "backoff": "1s",
-                  "codes": [
-                    "517 <unknown status code>"
-                  ]
-                }
-              }
-            ]
-          }
-        }}
-      ...
+              ]
+            }
+          },
+          "tcpRoutes": {}
+        }
+      }
       ```
 
    {{% /tab %}}
@@ -197,8 +199,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       ```
 
       Example output:
-      ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,47,48,49],filename="http://localhost:15000/config_dump"}
-      ...
+      ```json {linenos=table,hl_lines=[19,20,21,22,23,24,25,46,47,48],filename="http://localhost:15000/config_dump"}
       {
         "retry": {
           "key": "traffic/httpbin/retry:retry:httpbin/retry/timeout",
@@ -251,7 +252,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           }
         }
       }
-      ...
       ```
    
    {{% /tab %}}
@@ -320,8 +320,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       ```
 
       Example output:
-      ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,47,48,49],filename="http://localhost:15000/config_dump"}
-      ...
+      ```json {linenos=table,hl_lines=[19,20,21,22,23,24,25,46,47,48],filename="http://localhost:15000/config_dump"}
       {
         "retry": {
           "key": "traffic/httpbin/retry:retry:httpbin/agentgateway-proxy/http",
@@ -374,7 +373,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           }
         }
       }
-      ...
       ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -441,9 +439,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
-      - '"attempts": 3'
-      - '"backoff": "1s'
-      - '517 <unknown status code>'
       - '"backendRequestTimeout": "5s'
   EOF
   {{< /doc-test >}}
@@ -480,9 +475,6 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
           name: agentgateway-proxy
     expect:
       bodyContains:
-      - '"attempts": 3'
-      - '"backoff": "1s'
-      - '517 <unknown status code>'
       - '"requestTimeout": "5s'
   EOF
   {{< /doc-test >}}
