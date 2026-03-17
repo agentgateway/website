@@ -124,7 +124,6 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
    - name: wait for httpbin rate limit policy to be accepted
      wait:
        target:
-         apiVersion: agentgateway.dev/v1alpha1
          kind: AgentgatewayPolicy
          metadata:
            namespace: httpbin
@@ -251,9 +250,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
        type: local
      expect:
        statusCode: 429
-     retries:
-       maxAttempts: 3
-       intervalSeconds: 0
+     retries: 3
    EOF
    {{< /doc-test >}}
 

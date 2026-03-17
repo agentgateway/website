@@ -94,8 +94,33 @@ test:
 ### 7. Optional: YAMLTest assertions
 
 - For HTTP checks (e.g. "GET returns 200"), add a hidden `{{< doc-test paths="<name>" >}}` block with a YAMLTest snippet:
-  - `YAMLTest -f - <<'EOF'` and a test entry with `http:` and `expect:` (e.g. `statusCode: 200`).
+  - `YAMLTest -f - <<'EOF'` and a test entry with `http:` and `expect:`.
 - Place it after the block that starts the server (so after the hidden "start in background" block in the doc).
+- Supported `expect:` properties (all are direct children of `expect:`, at the same indentation level):
+  - `statusCode: <number>` — assert HTTP response status code
+  - `headers:` — list of `{name, comparator, value}` entries for response header assertions (case-insensitive)
+  - `bodyJsonPath:` — list of `{path, comparator, value}` entries using JSONPath expressions against the response body
+
+Example with all three:
+
+```yaml
+  expect:
+    statusCode: 200
+    headers:
+      - name: content-type
+        comparator: contains
+        value: application/json
+    bodyJsonPath:
+      - path: "$.choices[0].message.content"
+        comparator: contains
+        value: "hello"
+```
+
+> **Do not use `jsonPath`** — the correct property name is `bodyJsonPath`. Using `jsonPath` causes `/expect: unknown property "jsonPath"` schema validation errors.
+
+- For Kubernetes tests, use `${INGRESS_GW_ADDRESS}` as the host in the URL (e.g. `url: "http://${INGRESS_GW_ADDRESS}:80/get"`). **Never use `kubectl port-forward`** in visible blocks — tests containing `kubectl port-forward` are automatically failed without running.
+
+- For cleanup blocks tagged with a specific path, add `--ignore-not-found` to all `kubectl delete` commands. The tagged path may only create a subset of the resources the cleanup tries to delete (e.g., when a cleanup block covers resources from multiple scenarios but only one scenario runs in a given test).
 
 ### 8. Generate and verify
 
@@ -112,6 +137,11 @@ test:
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse).
+- [ ] When copying a test chain between `main` and `latest`, **update every `file:` path** in front matter to match the target version directory.
+- [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
+- [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.
+- [ ] Cleanup blocks tagged with a path use `--ignore-not-found` on all `kubectl delete` commands.
+- [ ] YAMLTest `expect:` uses `bodyJsonPath` (not `jsonPath`) for response body assertions; all keys under `expect:` are at the same indentation level.
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
 

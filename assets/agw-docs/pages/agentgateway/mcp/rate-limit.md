@@ -118,7 +118,6 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    - name: wait for mcp-rate-limit policy to be accepted
      wait:
        target:
-         apiVersion: agentgateway.dev/v1alpha1
          kind: AgentgatewayPolicy
          metadata:
            namespace: default
