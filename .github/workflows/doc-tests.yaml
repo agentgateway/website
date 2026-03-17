@@ -58,30 +58,10 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ALL_CHANGED=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
-            --paginate --jq '.[].filename' || true)
-
-          # Start with directly changed content/*.md files
-          FILES=$(echo "$ALL_CHANGED" | grep '^content/.*\.md$' | tr '\n' ' ' || true)
-
-          # For each changed assets/agw-docs/pages/*.md file, check for corresponding
-          # content files in the kubernetes/standalone main/latest directories
-          ASSET_FILES=$(echo "$ALL_CHANGED" | grep '^assets/agw-docs/pages/.*\.md$' || true)
-          if [ -n "$ASSET_FILES" ]; then
-            while IFS= read -r asset_file; do
-              rel_path="${asset_file#assets/agw-docs/pages/}"
-              for content_dir in "content/docs/kubernetes/main" "content/docs/kubernetes/latest" "content/docs/standalone/main" "content/docs/standalone/latest"; do
-                candidate="${content_dir}/${rel_path}"
-                if [ -f "$candidate" ] && ! echo "$FILES" | grep -qF "$candidate"; then
-                  FILES="$FILES $candidate"
-                fi
-              done
-            done <<< "$ASSET_FILES"
-          fi
-
-          FILES=$(echo "$FILES" | tr ' ' '\n' | sort -u | tr '\n' ' ' | xargs)
+          FILES=$(gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/files \
+            --paginate --jq '.[].filename' | grep '^content/.*\.md$' | tr '\n' ' ' || true)
           echo "files=${FILES}" >> $GITHUB_OUTPUT
-          echo "$FILES" | tr ' ' '\n'
+          echo "files=${FILES}"
 
       - name: Run doc tests
         run: |
