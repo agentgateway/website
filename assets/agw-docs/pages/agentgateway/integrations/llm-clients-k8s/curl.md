@@ -2,7 +2,7 @@ Test your agentgateway Kubernetes deployment using curl.
 
 ## Before you begin
 
-- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{% link-hextra path="/integrations/llm-clients/" %}}) for instructions.
+- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) for instructions.
 - curl installed (pre-installed on macOS and Linux).
 
 ## Send a request
