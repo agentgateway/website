@@ -427,7 +427,7 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
       - '"backendRequestTimeout":"5s'
   EOF
   {{< /doc-test >}}
-  {{< doc-test paths="per-try-timeout-in-agentgateway,per-try-timeout-in-gatewaylistener" >}}
+  {{< doc-test paths="per-try-timeout-in-agentgateway" >}}
   YAMLTest -f - <<'EOF'
   - name: wait for retry policy to be accepted
     wait:
@@ -444,6 +444,42 @@ Per-try timeouts can be configured on an HTTPRoute directly. To enable per-try t
         timeoutSeconds: 120
         intervalSeconds: 2
   - name: Check configdump for per-try timeout
+    http:
+      url: http://localhost:15000
+      skipSslVerification: true
+      method: GET
+      path: /config_dump
+    source:
+      type: pod
+      usePortForward: true
+      selector:
+        kind: Deployment
+        metadata:
+          namespace: agentgateway-system
+          name: agentgateway-proxy
+    expect:
+      bodyContains:
+      - '"requestTimeout":"5s'
+  EOF
+  {{< /doc-test >}}
+  {{< doc-test paths="per-try-timeout-in-gatewaylistener" >}}
+  YAMLTest -f - <<'EOF'
+  - name: wait for retry policy to be accepted
+    wait:
+      target:
+        kind: AgentgatewayPolicy
+        metadata:
+          namespace: httpbin
+          name: retry
+      jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+      jsonPathExpectation:
+        comparator: equals
+        value: "True"
+      polling:
+        timeoutSeconds: 120
+        intervalSeconds: 2
+  - name: Check configdump for per-try timeout
+    retries: 5
     http:
       url: http://localhost:15000
       skipSslVerification: true
