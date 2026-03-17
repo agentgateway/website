@@ -311,7 +311,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
          metadata:
            namespace: ratelimit
            name: redis
-       bodyJsonPath: "$.status.availableReplicas"
+       jsonPath: "$.status.availableReplicas"
        jsonPathExpectation:
          comparator: greaterThan
          value: 0
@@ -325,7 +325,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
          metadata:
            namespace: ratelimit
            name: ratelimit
-       bodyJsonPath: "$.status.availableReplicas"
+       jsonPath: "$.status.availableReplicas"
        jsonPathExpectation:
          comparator: greaterThan
          value: 0
@@ -417,7 +417,7 @@ The descriptor entry `name` in the policy must match the `key` in the rate limit
          metadata:
            namespace: httpbin
            name: ip-rate-limit
-       bodyJsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
        jsonPathExpectation:
          comparator: equals
          value: "True"
@@ -880,14 +880,14 @@ Apply both local and global rate limits to the same traffic.
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="global-rate-limit-by-ip"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} user-rate-limit -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} path-rate-limit -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tier-rate-limit -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} nested-rate-limit -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} combined-rate-limit -n httpbin
-kubectl delete deployment ratelimit redis -n ratelimit
-kubectl delete service ratelimit redis -n ratelimit
-kubectl delete configmap ratelimit-config -n ratelimit
-kubectl delete namespace ratelimit
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ip-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} user-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} path-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tier-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} nested-rate-limit -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} combined-rate-limit -n httpbin --ignore-not-found
+kubectl delete deployment ratelimit redis -n ratelimit --ignore-not-found
+kubectl delete service ratelimit redis -n ratelimit --ignore-not-found
+kubectl delete configmap ratelimit-config -n ratelimit --ignore-not-found
+kubectl delete namespace ratelimit --ignore-not-found
 ```
