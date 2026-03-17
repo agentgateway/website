@@ -2,7 +2,7 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 ## Before you begin
 
-- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{% link-hextra path="/integrations/llm-clients/" %}}) for instructions.
+- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) for instructions.
 - VS Code with the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) installed.
 
 ## Configure Continue
