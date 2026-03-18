@@ -12,4 +12,4 @@ test:
     path: ollama-provider-setup
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama2.2+.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama.md" >}}

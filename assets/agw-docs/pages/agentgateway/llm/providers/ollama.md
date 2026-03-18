@@ -1,376 +1,380 @@
----
-title: Ollama
-weight: 15
-description: Configure Agentgateway to route LLM traffic to Ollama for local model inference
----
-
-[Ollama](https://ollama.ai/) enables you to run large language models locally on your machine. Agentgateway can route requests to your local Ollama instance, providing a unified interface for both local and cloud-based LLMs.
-
-## Use cases
-
-- **Local development**: Test and develop without cloud API costs
-- **Privacy**: Keep sensitive data on your machine
-- **Offline usage**: Run models without internet connectivity
-- **Cost optimization**: Avoid per-token charges during development
-- **Custom models**: Use fine-tuned or specialized local models
+Configure [Ollama](https://ollama.com/) to serve local models through {{< reuse "agw-docs/snippets/agw-kgw.md" >}}. Ollama runs on a machine outside your cluster, and agentgateway routes requests to it over the network.
 
 ## Before you begin
 
-1. **Install Ollama**: Download and install from [ollama.ai](https://ollama.ai/download)
-2. **Pull a model**: Download at least one model
-   ```bash
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+
+You also need:
+- [Ollama](https://ollama.com/download) installed and running on a machine accessible from your Kubernetes cluster.
+- The IP address of the machine running Ollama.
+
+## Set up Ollama
+
+1. Pull a model to serve.
+
+   ```sh
    ollama pull llama3.2
    ```
-3. **Verify Ollama is running**: Check that Ollama is serving on port 11434
-   ```bash
-   curl http://localhost:11434/api/version
+
+2. By default, Ollama only listens on `localhost`. Configure it to accept external connections by setting the `OLLAMA_HOST` environment variable, then restart Ollama.
+
+   ```sh
+   export OLLAMA_HOST=0.0.0.0:11434
    ```
 
-## Basic configuration
+   {{< callout type="warning" >}}
+   Binding Ollama to `0.0.0.0` exposes it on all network interfaces. Use firewall rules to restrict access to your Kubernetes cluster nodes only.
+   {{< /callout >}}
 
-Configure Agentgateway to route to your local Ollama instance:
+3. Verify Ollama is accessible from the machine's network address.
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: localhost:11434
-      backends:
-      - ai:
-          name: ollama
-          hostOverride: localhost:11434
-          provider:
-            openAI:
-              model: llama3.2  # Default model
-```
+   ```sh
+   curl http://<OLLAMA_IP>:11434/v1/models
+   ```
 
-{{< callout type="info" >}}
-**No TLS configuration needed**: Ollama runs on localhost over HTTP by default. The `backendTLS` policy is not required.
-{{< /callout >}}
+## Configure agentgateway to reach Ollama
 
-### Test the configuration
+Because Ollama runs outside your Kubernetes cluster, you need a headless Service and EndpointSlice to give it a stable in-cluster DNS name.
 
-```bash
-curl 'http://localhost:3000/v1/chat/completions' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "model": "llama3.2",
-    "messages": [
+1. Get the IP address of the machine running Ollama.
+
+   ```sh
+   # macOS
+   ipconfig getifaddr en0
+
+   # Linux
+   hostname -I | awk '{print $1}'
+   ```
+
+2. Create a headless Service and EndpointSlice that point to the external Ollama instance. Replace `<OLLAMA_IP>` with the actual IP address.
+
+   ```yaml {paths="ollama-provider-setup"}
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: ollama
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     type: ClusterIP
+     clusterIP: None
+     ports:
+     - port: 11434
+       targetPort: 11434
+       protocol: TCP
+   ---
+   apiVersion: discovery.k8s.io/v1
+   kind: EndpointSlice
+   metadata:
+     name: ollama
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       kubernetes.io/service-name: ollama
+   addressType: IPv4
+   endpoints:
+   - addresses:
+     - <OLLAMA_IP>
+   ports:
+   - port: 11434
+     protocol: TCP
+   EOF
+   ```
+
+3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource. The `openai` provider type is used because Ollama exposes an OpenAI-compatible API. The `host` and `port` fields point to the headless Service DNS name.
+
+   ```yaml {paths="ollama-provider-setup"}
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: ollama
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: llama3.2
+         host: ollama.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+         port: 11434
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API reference]({{< link-hextra path="/reference/api/#agentgatewaybackend" >}}).
+
+   | Setting | Description |
+   |---------|-------------|
+   | `ai.provider.openai` | The OpenAI-compatible provider type. Ollama exposes an OpenAI-compatible API, so the `openai` type is used here. |
+   | `openai.model` | The Ollama model to use. This must match a model you pulled with `ollama pull`. |
+   | `host` | The in-cluster DNS name of the headless Service pointing to the external Ollama instance. |
+   | `port` | The port Ollama listens on. The default is `11434`. |
+
+4. Create an HTTPRoute to expose the Ollama backend through the gateway.
+
+   ```yaml {paths="ollama-provider-setup"}
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: ollama
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: ollama
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+
+{{< doc-test paths="ollama-provider-setup" >}}
+kubectl apply -f- <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbun-ollama
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    app: httpbun-ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbun-ollama
+  template:
+    metadata:
+      labels:
+        app: httpbun-ollama
+    spec:
+      containers:
+      - name: httpbun
+        image: sharat87/httpbun
+        env:
+        - name: HTTPBUN_BIND
+          value: "0.0.0.0:3090"
+        ports:
+        - containerPort: 3090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbun-ollama
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  selector:
+    app: httpbun-ollama
+  ports:
+  - protocol: TCP
+    port: 3090
+    targetPort: 3090
+EOF
+
+YAMLTest -f - <<'EOF'
+- name: wait for httpbun-ollama deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: httpbun-ollama
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 180
+      intervalSeconds: 5
+EOF
+
+HTTPBUN_OLLAMA_POD_IP=$(kubectl get pod -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=httpbun-ollama -o jsonpath='{.items[0].status.podIP}')
+kubectl patch endpoints ollama-external -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p "{\"subsets\":[{\"addresses\":[{\"ip\":\"${HTTPBUN_OLLAMA_POD_IP}\"}],\"ports\":[{\"port\":3090,\"protocol\":\"TCP\"}]}]}"
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"openai":{"model":"gpt-4"},"port":3090,"path":"/llm/chat/completions"}}}}'
+
+YAMLTest -f - <<'EOF'
+- name: wait for ollama HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: ollama
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+- name: wait for ollama HTTPRoute refs to be resolved
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: ollama
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+YAMLTest -f - <<'EOF'
+- name: verify ollama route serves OpenAI-compatible responses
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/ollama"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
       {
-        "role": "user",
-        "content": "Hello! Tell me about Ollama in one sentence."
+        "model": "gpt-4",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Respond with the word hello."
+          }
+        ],
+        "httpbun": {
+          "content": "ollama provider route is working"
+        }
       }
-    ]
-  }'
-```
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.choices[0].message.content"
+        comparator: contains
+        value: "ollama provider route is working"
+EOF
+{{< /doc-test >}}
 
-## Model configuration
+5. Send a request to verify the setup.
 
-### List available models
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer, Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS" \
+     -H "content-type: application/json" \
+     -d '{
+       "model": "llama3.2",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Explain the benefits of running models locally."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   In one terminal, start a port-forward to the gateway:
 
-See which models you have pulled locally:
+   ```sh
+   kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
+   ```
 
-```bash
-ollama list
-```
+   In a second terminal, send a request:
 
-Example output:
-```
-NAME                    ID              SIZE      MODIFIED
-llama3.2:latest         a80c4f17acd5    2.0 GB    2 weeks ago
-mistral:latest          f974a74358d6    4.1 GB    3 weeks ago
-codellama:latest        8fdf8f752f6e    3.8 GB    1 month ago
-```
+   ```sh
+   curl "localhost:8080" \
+     -H "content-type: application/json" \
+     -d '{
+       "model": "llama3.2",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Explain the benefits of running models locally."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
-### Pull additional models
-
-Download models from the [Ollama library](https://ollama.ai/library):
-
-```bash
-# Pull a specific model
-ollama pull mistral
-
-# Pull a specific tag/size
-ollama pull llama3.2:70b
-```
-
-### Specify model in requests
-
-You can override the default model in each request:
-
-```bash
-curl 'http://localhost:3000/v1/chat/completions' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "model": "mistral",
-    "messages": [{"role": "user", "content": "Hello"}]
-  }'
-```
-
-{{< callout type="note" >}}
-If you omit the `model` field in the backend configuration, clients **must** specify the model in each request.
-{{< /callout >}}
-
-## Advanced configuration
-
-### Multiple Ollama instances
-
-Route to different Ollama instances (e.g., different machines or ports):
-
-```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    # Route to local Ollama
-    - policies:
-        urlRewrite:
-          authority:
-            full: localhost:11434
-      backends:
-      - ai:
-          name: ollama-local
-          hostOverride: localhost:11434
-          provider:
-            openAI:
-              model: llama3.2
-
-    # Route to remote Ollama instance
-    - policies:
-        urlRewrite:
-          authority:
-            full: 192.168.1.100:11434
-      backends:
-      - ai:
-          name: ollama-remote
-          hostOverride: 192.168.1.100:11434
-          provider:
-            openAI:
-              model: mistral
-```
-
-### Custom port
-
-If you're running Ollama on a non-default port:
-
-```bash
-# Start Ollama on custom port
-OLLAMA_HOST=0.0.0.0:8080 ollama serve
-```
-
-Update your configuration:
-
-```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: localhost:8080
-      backends:
-      - ai:
-          name: ollama
-          hostOverride: localhost:8080
-          provider:
-            openAI:
-              model: llama3.2
-```
-
-### Model parameters
-
-Control generation parameters:
-
-```bash
-curl 'http://localhost:3000/v1/chat/completions' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "model": "llama3.2",
-    "messages": [{"role": "user", "content": "Write a poem"}],
-    "temperature": 0.7,
-    "max_tokens": 500,
-    "top_p": 0.9
-  }'
-```
-
-## Embeddings with Ollama
-
-Ollama supports embedding models for semantic search and RAG applications.
-
-### Pull an embedding model
-
-```bash
-ollama pull nomic-embed-text
-```
-
-### Configure for embeddings
-
-```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        urlRewrite:
-          authority:
-            full: localhost:11434
-      backends:
-      - ai:
-          name: ollama-embeddings
-          hostOverride: localhost:11434
-          provider:
-            openAI:
-              model: nomic-embed-text
-```
-
-### Generate embeddings
-
-```bash
-curl 'http://localhost:3000/v1/embeddings' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "model": "nomic-embed-text",
-    "input": "The quick brown fox jumps over the lazy dog"
-  }'
-```
-
-### Popular embedding models
-
-| Model | Size | Use Case |
-|-------|------|----------|
-| `nomic-embed-text` | 274 MB | General purpose, high quality |
-| `mxbai-embed-large` | 669 MB | Long context, high accuracy |
-| `all-minilm` | 45 MB | Fast, lightweight |
-
-## Production considerations
-
-### Performance tuning
-
-**GPU acceleration**: Ollama automatically uses GPU if available. Check with:
-```bash
-ollama ps  # Shows GPU utilization
-```
-
-**Model loading**: First request may be slow as the model loads into memory. Keep frequently-used models loaded:
-```bash
-ollama run llama3.2  # Keeps model in memory
-```
-
-**Concurrent requests**: Ollama handles multiple concurrent requests. Monitor with:
-```bash
-ollama ps  # Shows active model and memory usage
-```
-
-### Resource requirements
-
-| Model Size | RAM Required | GPU VRAM (if using GPU) |
-|------------|--------------|------------------------|
-| 3B params | 8 GB | 4 GB |
-| 7B params | 16 GB | 8 GB |
-| 13B params | 32 GB | 16 GB |
-| 70B params | 64+ GB | 40+ GB |
-
-{{< callout type="warning" >}}
-**Memory usage**: Ollama loads the entire model into RAM/VRAM. Ensure you have sufficient memory before pulling large models.
-{{< /callout >}}
-
-### When NOT to use Ollama
-
-Ollama is great for development but may not be ideal for:
-- **Production at scale**: Cloud providers offer better reliability and scaling
-- **Low-resource environments**: Large models require significant RAM/GPU
-- **Latest models**: Cloud providers often have newer/larger models
-- **High availability**: Ollama runs on a single machine without built-in redundancy
+   Example output:
+   ```json
+   {
+     "id": "chatcmpl-123",
+     "object": "chat.completion",
+     "created": 1727967462,
+     "model": "llama3.2",
+     "choices": [
+       {
+         "index": 0,
+         "message": {
+           "role": "assistant",
+           "content": "Running models locally provides complete data privacy, no API costs or rate limits, and consistent low latency without network dependencies."
+         },
+         "finish_reason": "stop"
+       }
+     ],
+     "usage": {
+       "prompt_tokens": 15,
+       "completion_tokens": 32,
+       "total_tokens": 47
+     }
+   }
+   ```
 
 ## Troubleshooting
 
-### Connection refused
+### Connection refused or 503 response
 
-**Problem**: `curl: (7) Failed to connect to localhost port 11434: Connection refused`
+**What's happening:**
 
-**Solutions**:
-1. Check Ollama is running:
-   ```bash
-   ps aux | grep ollama
+Requests fail with a connection error or the gateway returns a 503 response.
+
+**Why it's happening:**
+
+The Kubernetes cluster cannot reach the Ollama instance. This is usually caused by an incorrect IP in the EndpointSlice, a firewall blocking port 11434, or Ollama not configured to accept external connections.
+
+**How to fix it:**
+
+1. Verify Ollama is reachable from the machine's network address:
+   ```sh
+   curl http://<OLLAMA_IP>:11434/v1/models
    ```
-2. Start Ollama if not running:
-   ```bash
-   ollama serve
+
+2. Check that the EndpointSlice contains the correct IP:
+   ```sh
+   kubectl get endpointslice ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
    ```
-3. Check port binding:
-   ```bash
-   lsof -i :11434
+
+3. Test connectivity from inside the cluster:
+   ```sh
+   kubectl run -it --rm debug --image=curlimages/curl --restart=Never \
+     -- curl http://ollama.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local:11434/v1/models
    ```
 
 ### Model not found
 
-**Problem**: `{"error":"model 'llama3.2' not found"}`
+**What's happening:**
 
-**Solutions**:
-1. List pulled models:
-   ```bash
+The request returns an error indicating the model is not available.
+
+**Why it's happening:**
+
+The model specified in the request or the {{< reuse "agw-docs/snippets/backend.md" >}} resource has not been pulled in Ollama.
+
+**How to fix it:**
+
+1. List models available in Ollama:
+   ```sh
    ollama list
    ```
-2. Pull the model:
-   ```bash
+
+2. Pull the model if it is missing:
+   ```sh
    ollama pull llama3.2
    ```
-3. Use exact model name from `ollama list` output
 
-### Slow performance
-
-**Problem**: Responses are very slow
-
-**Solutions**:
-1. **Use smaller models**: Try `llama3.2:3b` instead of `llama3.2:70b`
-2. **Check GPU usage**:
-   ```bash
-   ollama ps  # Should show GPU if available
-   ```
-3. **Reduce context window**:
-   ```bash
-   # Use max_tokens to limit response length
-   curl ... --data '{"model": "llama3.2", "max_tokens": 100, ...}'
-   ```
-4. **Unload unused models**:
-   ```bash
-   ollama stop <model-name>
-   ```
-
-### Out of memory
-
-**Problem**: Ollama crashes or fails to load model
-
-**Solutions**:
-1. Use a smaller model variant:
-   ```bash
-   ollama pull llama3.2:3b  # Instead of 70b
-   ```
-2. Check available memory:
-   ```bash
-   # macOS
-   vm_stat
-
-   # Linux
-   free -h
-   ```
-3. Close other applications to free memory
-4. Use model quantization (Ollama automatically uses Q4 quantization)
-
-## Next steps
-
-- [Configure multiple LLM providers]({{< ref "/docs/standalone/latest/llm/providers/multiple-llms" >}}) for fallback
-- [Set up API keys]({{< ref "/docs/standalone/latest/llm/api-keys" >}}) to control access
-- [Enable observability]({{< ref "/docs/standalone/latest/llm/observability" >}}) to track token usage
-
-## Related resources
-
-- [Ollama Official Documentation](https://github.com/ollama/ollama/blob/main/docs/api.md)
-- [Ollama Model Library](https://ollama.ai/library)
-- [OpenAI-compatible providers]({{< ref "/docs/standalone/latest/llm/providers/openai-compatible" >}})
+{{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

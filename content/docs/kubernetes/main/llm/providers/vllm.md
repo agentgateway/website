@@ -12,4 +12,4 @@ test:
     path: vllm-provider-setup
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/llm/providers/vllm2.2+.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/vllm.md" >}}
