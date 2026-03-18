@@ -12,7 +12,7 @@ Note that when you specify a custom `host` override, agentgateway requires expli
 
 ## Set up access to an OpenAI-compatible provider
 
-Review the following examples for common OpenAI-compatible provider endpoints:
+Review the following examples for common OpenAI-compatible provider endpoints.
 
 - [Mistral AI](#mistral).
 - [DeepSeek](#deepseek).

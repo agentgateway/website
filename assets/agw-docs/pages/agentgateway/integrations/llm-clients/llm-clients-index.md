@@ -2,7 +2,6 @@ Agentgateway exposes an OpenAI-compatible API that works with any tool or SDK bu
 
 ## Before you begin
 
-You need:
 - Agentgateway running with at least one configured LLM backend.
 - The gateway address and model name from your backend configuration.
 

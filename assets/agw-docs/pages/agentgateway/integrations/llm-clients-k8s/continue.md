@@ -2,12 +2,13 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 ## Before you begin
 
-- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) for instructions.
+- [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) and set `INGRESS_GW_ADDRESS`.
 - VS Code with the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) installed.
 
 ## Configure Continue
 
-Edit `~/.continue/config.json` to add your agentgateway endpoint. Replace `<INGRESS_GW_ADDRESS>` and `<route-path>` with your gateway address and the path from your HTTPRoute configuration.
+1. Edit `~/.continue/config.json` to add your agentgateway endpoint.
+2. Replace `<INGRESS_GW_ADDRESS>` and `<route-path>` with your gateway address and the path from your HTTPRoute configuration.
 
 ```json
 {

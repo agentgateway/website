@@ -4,7 +4,7 @@ Configure [Ollama](https://ollama.com/) to serve local models through {{< reuse 
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-You also need:
+You also need the following prerequisites.
 - [Ollama](https://ollama.com/download) installed and running on a machine accessible from your Kubernetes cluster.
 - The IP address of the machine running Ollama.
 

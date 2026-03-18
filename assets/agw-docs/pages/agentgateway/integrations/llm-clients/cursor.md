@@ -26,7 +26,7 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to route requests t
 ## Verify the connection
 
 1. Open the Cursor chat panel (`Cmd + L` on macOS, `Ctrl + L` on Windows/Linux).
-2. Send a message, for example: "Hello, are you working?"
+2. Send a message such as "Hello, are you working?"
 3. Cursor should respond using your agentgateway backend.
 
 ## Troubleshooting

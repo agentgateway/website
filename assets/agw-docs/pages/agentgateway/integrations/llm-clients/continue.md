@@ -7,7 +7,8 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 ## Configure Continue
 
-Edit `~/.continue/config.json` to add your agentgateway endpoint:
+1. Edit `~/.continue/config.json` to add your agentgateway endpoint.
+2. Save the file and reload Continue in VS Code.
 
 ```json
 {

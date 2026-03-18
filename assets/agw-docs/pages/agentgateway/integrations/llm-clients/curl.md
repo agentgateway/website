@@ -46,7 +46,7 @@ Example output:
 
 ## Authentication
 
-If agentgateway requires authentication, include an `Authorization` header:
+If agentgateway requires authentication, include an `Authorization` header.
 
 ```sh
 curl http://localhost:3000/v1/chat/completions \
@@ -60,7 +60,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 ## Streaming responses
 
-Use the `-N` flag to disable output buffering for streaming:
+Use the `-N` flag to disable output buffering for streaming.
 
 ```sh
 curl http://localhost:3000/v1/chat/completions \

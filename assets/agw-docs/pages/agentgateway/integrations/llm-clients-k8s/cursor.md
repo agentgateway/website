@@ -2,8 +2,7 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to use agentgateway
 
 ## Before you begin
 
-- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) for instructions.
-- Cursor installed (version 0.30 or later).
+[Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}).
 
 ## Configure Cursor
 
@@ -21,14 +20,14 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to use agentgateway
    http://<INGRESS_GW_ADDRESS>/<route-path>
    ```
 
-   For example, if your HTTPRoute uses path `/openai`: `http://<INGRESS_GW_ADDRESS>/openai`.
+   For example, if your HTTPRoute uses path `/openai`, use `http://<INGRESS_GW_ADDRESS>/openai`.
 
 5. Click **Verify** to confirm the connection.
 
 ## Verify the connection
 
 1. Open the Cursor chat panel (`Cmd + L` on macOS, `Ctrl + L` on Windows/Linux).
-2. Send a message, for example: "Hello, are you working?"
+2. Send a message such as "Hello, are you working?"
 3. Cursor should respond using your agentgateway backend.
 
 ## Troubleshooting

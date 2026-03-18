@@ -28,10 +28,8 @@ Popular OpenAI-compatible providers include xAI (Grok), Cohere, Together AI, Gro
 ## Self-hosted solutions
 
 {{< cards >}}
-  {{< card link="ollama" title="Ollama" >}}
+  {{< card link="openai-compatible" title="OpenAI-compatible providers" subtitle="Includes vLLM and LM Studio self-hosted options" >}}
 {{< /cards >}}
-
-Additional self-hosted solutions like vLLM and LM Studio are also supported through the [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) configuration.
 
 ## Advanced configurations
 

@@ -2,8 +2,8 @@ Test your agentgateway Kubernetes deployment using curl.
 
 ## Before you begin
 
-- Retrieve your gateway URL and set the `INGRESS_GW_ADDRESS` environment variable. See [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) for instructions.
-- curl installed (pre-installed on macOS and Linux).
+- [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}).
+- Identify the route path from your HTTPRoute, such as `/openai`.
 
 ## Send a request
 
@@ -48,7 +48,7 @@ Example output:
 
 ## Authentication
 
-If agentgateway requires authentication, include an `Authorization` header:
+If agentgateway requires authentication, include an `Authorization` header.
 
 ```sh
 curl "http://$INGRESS_GW_ADDRESS/<route-path>" \
@@ -74,11 +74,11 @@ The route path in the URL does not match any HTTPRoute configured in agentgatewa
 
 **How to fix it:**
 
-Check your HTTPRoute path configuration:
+1. Check your HTTPRoute path configuration.
 
-```sh
-kubectl get httproute -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml | grep -A 5 "path:"
-```
+   ```sh
+   kubectl get httproute -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml | grep -A 5 "path:"
+   ```
 
 ### 503 Service Unavailable
 

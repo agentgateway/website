@@ -1,4 +1,4 @@
-Configure [vLLM](https://github.com/vllm-project/vllm), a high-performance LLM serving engine, through {{< reuse "agw-docs/snippets/agw-kgw.md" >}}. This guide covers two deployment patterns:
+Configure [vLLM](https://github.com/vllm-project/vllm), a high-performance LLM serving engine, through {{< reuse "agw-docs/snippets/agw-kgw.md" >}}. This guide covers two deployment patterns.
 
 - **External vLLM**: Connect to a vLLM server running outside your Kubernetes cluster on dedicated GPU hardware.
 - **In-cluster vLLM**: Deploy vLLM as a workload inside your Kubernetes cluster.
@@ -11,14 +11,11 @@ Configure [vLLM](https://github.com/vllm-project/vllm), a high-performance LLM s
 
 Choose your deployment option and follow the corresponding steps to set up the vLLM server and create the required Kubernetes resources.
 
-{{< tabs tabTotal="2" items="External vLLM, In-cluster vLLM" >}}
-{{% tab tabName="External vLLM" %}}
-
-### Configure the external vLLM server
+### Option 1: External vLLM
 
 1. Install vLLM on a GPU-enabled machine. See the [vLLM installation guide](https://docs.vllm.ai/en/latest/getting_started/installation.html).
 
-2. Start the vLLM OpenAI-compatible server:
+2. Start the vLLM OpenAI-compatible server.
 
    ```sh
    vllm serve meta-llama/Llama-3.1-8B-Instruct \
@@ -27,17 +24,13 @@ Choose your deployment option and follow the corresponding steps to set up the v
      --dtype auto
    ```
 
-3. Verify the server is accessible:
+3. Verify the server is accessible.
 
    ```sh
    curl http://<VLLM_SERVER_IP>:8000/v1/models
    ```
 
-### Create Kubernetes resources for the external vLLM server
-
-1. Get the IP address of the vLLM server.
-
-2. Create a headless Service and EndpointSlice that point to the external vLLM server. Replace `<VLLM_SERVER_IP>` with the actual IP address.
+4. Create a headless Service and EndpointSlice that point to the external vLLM server. Replace `<VLLM_SERVER_IP>` with the actual IP address.
 
    ```yaml {paths="vllm-provider-setup"}
    kubectl apply -f- <<EOF
@@ -71,61 +64,99 @@ Choose your deployment option and follow the corresponding steps to set up the v
    EOF
    ```
 
-{{% /tab %}}
-{{% tab tabName="In-cluster vLLM" %}}
+### Option 2: Deploy vLLM in Kubernetes cluster
 
-   ```yaml {paths="vllm-provider-setup"}
+Use this option to deploy vLLM directly in your Kubernetes cluster alongside agentgateway.
+
+Before you begin, make sure that your cluster has:
+
+- GPU nodes (NVIDIA GPUs with CUDA support).
+- NVIDIA GPU Operator or device plugin installed.
+- Sufficient GPU memory for your chosen model.
+
+Example steps:
+
+1. Create a vLLM Deployment with GPU resources.
+
+   {{< callout type="note" >}}
+   For gated models such as Llama, create a Hugging Face token secret before deploying.
+   ```sh
+   kubectl create secret generic hf-token \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --from-literal=token=<your-hf-token>
+   ```
+   {{< /callout >}}
+
+
+   ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   apiVersion: apps/v1
+   kind: Deployment
    metadata:
      name: vllm
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
-     ai:
-       provider:
-         openai:
-           model: meta-llama/Llama-3.1-8B-Instruct
-         host: vllm-external.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
-         port: 8000
+     replicas: 1
+     selector:
+       matchLabels:
+         app: vllm
+     template:
+       metadata:
+         labels:
+           app: vllm
+       spec:
+         containers:
+         - name: vllm
+           image: vllm/vllm-openai:latest
+           args:
+           - "--model"
+           - "meta-llama/Llama-3.1-8B-Instruct"
+           - "--host"
+           - "0.0.0.0"
+           - "--port"
+           - "8000"
+           - "--dtype"
+           - "auto"
+           ports:
+           - containerPort: 8000
+             name: http
+           env:
+           - name: HUGGING_FACE_HUB_TOKEN
+             valueFrom:
+               secretKeyRef:
+                 name: hf-token
+                 key: token
+                 optional: true
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: vllm
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     selector:
+       app: vllm
+     ports:
+     - port: 8000
+       targetPort: 8000
+       protocol: TCP
    EOF
    ```
 
-{{< callout type="info" >}}
-Running vLLM in production requires Kubernetes nodes with NVIDIA GPU support. The Deployment below omits GPU resource requests so you can validate the configuration structure in a non-GPU cluster. Add `resources.requests` and `resources.limits` with `nvidia.com/gpu` for production deployments.
-{{< /callout >}}
+2. Wait for the vLLM pod to be ready.
 
-   | Setting | Description |
-   |---------|-------------|
-   | `ai.provider.openai` | Use OpenAI-compatible provider for vLLM. |
-   | `openai.model` | The model served by vLLM (must match the model vLLM is serving). |
-   | `openai.host` | Kubernetes Service DNS name for the external vLLM instance. |
-   | `openai.port` | vLLM API port (default: `8000`). |
+   {{< callout type="note" >}}
+   vLLM downloads model weights on first startup, which can take several minutes depending on model size and network speed. Monitor progress with the following command.
+   ```sh
+   kubectl logs -f deployment/vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+   {{< /callout >}}
 
-4. Create an HTTPRoute:
-
-   ```yaml {paths="vllm-provider-setup"}
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: vllm
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /vllm
-       backendRefs:
-       - name: vllm
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
+   ```sh
+   kubectl wait --for=condition=ready pod \
+     -l app=vllm \
+     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --timeout=300s
    ```
 
 {{< doc-test paths="vllm-provider-setup" >}}
@@ -255,130 +286,6 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-5. Test the setup:
-
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl "$INGRESS_GW_ADDRESS/vllm" -H content-type:application/json  -d '{
-      "model": "meta-llama/Llama-3.1-8B-Instruct",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Explain the benefits of vLLM."
-        }
-      ]
-    }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl "localhost:8080/vllm" -H content-type:application/json  -d '{
-      "model": "meta-llama/Llama-3.1-8B-Instruct",
-      "messages": [
-        {
-          "role": "user",
-          "content": "Explain the benefits of vLLM."
-        }
-      ]
-    }' | jq
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-## Option 2: Deploy vLLM in Kubernetes cluster
-
-Use this option to deploy vLLM directly in your Kubernetes cluster alongside agentgateway.
-
-### Before you begin
-
-- Kubernetes cluster with GPU nodes (NVIDIA GPUs with CUDA support).
-- NVIDIA GPU Operator or device plugin installed.
-- Sufficient GPU memory for your chosen model.
-
-### Deploy vLLM in the cluster
-
-1. Create a vLLM Deployment with GPU resources:
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: apps/v1
-   kind: Deployment
-   metadata:
-     name: vllm
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     replicas: 1
-     selector:
-       matchLabels:
-         app: vllm
-     template:
-       metadata:
-         labels:
-           app: vllm
-       spec:
-         containers:
-         - name: vllm
-           image: vllm/vllm-openai:latest
-           args:
-           - "--model"
-           - "meta-llama/Llama-3.1-8B-Instruct"
-           - "--host"
-           - "0.0.0.0"
-           - "--port"
-           - "8000"
-           - "--dtype"
-           - "auto"
-           ports:
-           - containerPort: 8000
-             name: http
-           env:
-           - name: HUGGING_FACE_HUB_TOKEN
-             valueFrom:
-               secretKeyRef:
-                 name: hf-token
-                 key: token
-                 optional: true
-   ---
-   apiVersion: v1
-   kind: Service
-   metadata:
-     name: vllm
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     selector:
-       app: vllm
-     ports:
-     - port: 8000
-       targetPort: 8000
-       protocol: TCP
-   EOF
-   ```
-
-   {{< callout type="note" >}}
-   vLLM downloads model weights on first startup, which can take several minutes depending on model size and network speed. Monitor progress with:
-   ```sh
-   kubectl logs -f deployment/vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-   For gated models such as Llama, create a Hugging Face token secret before deploying:
-   ```sh
-   kubectl create secret generic hf-token \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --from-literal=token=<your-hf-token>
-   ```
-   {{< /callout >}}
-
-2. Wait for the vLLM pod to be ready:
-
-   ```sh
-   kubectl wait --for=condition=ready pod \
-     -l app=vllm \
-     -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --timeout=300s
-   ```
-
-{{% /tab %}}
-{{< /tabs >}}
-
 ## Create the agentgateway backend resources
 
 These steps are the same for both external and in-cluster vLLM.
@@ -452,13 +359,13 @@ These steps are the same for both external and in-cluster vLLM.
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
-   In one terminal, start a port-forward to the gateway:
+   In one terminal, start a port-forward to the gateway.
 
    ```sh
    kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
    ```
 
-   In a second terminal, send a request:
+   In a second terminal, send a request.
 
    ```sh
    curl "localhost:8080" \
