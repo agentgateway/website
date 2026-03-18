@@ -39,7 +39,7 @@ Choose your deployment option and follow the corresponding steps to set up the v
 
 2. Create a headless Service and EndpointSlice that point to the external vLLM server. Replace `<VLLM_SERVER_IP>` with the actual IP address.
 
-   ```yaml
+   ```yaml {paths="vllm-provider-setup"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -74,13 +74,230 @@ Choose your deployment option and follow the corresponding steps to set up the v
 {{% /tab %}}
 {{% tab tabName="In-cluster vLLM" %}}
 
-### Deploy vLLM inside the cluster
+   ```yaml {paths="vllm-provider-setup"}
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: vllm
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: meta-llama/Llama-3.1-8B-Instruct
+         host: vllm-external.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+         port: 8000
+   EOF
+   ```
 
 {{< callout type="info" >}}
 Running vLLM in production requires Kubernetes nodes with NVIDIA GPU support. The Deployment below omits GPU resource requests so you can validate the configuration structure in a non-GPU cluster. Add `resources.requests` and `resources.limits` with `nvidia.com/gpu` for production deployments.
 {{< /callout >}}
 
-1. Create the vLLM Deployment and Service:
+   | Setting | Description |
+   |---------|-------------|
+   | `ai.provider.openai` | Use OpenAI-compatible provider for vLLM. |
+   | `openai.model` | The model served by vLLM (must match the model vLLM is serving). |
+   | `openai.host` | Kubernetes Service DNS name for the external vLLM instance. |
+   | `openai.port` | vLLM API port (default: `8000`). |
+
+4. Create an HTTPRoute:
+
+   ```yaml {paths="vllm-provider-setup"}
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: vllm
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /vllm
+       backendRefs:
+       - name: vllm
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+
+{{< doc-test paths="vllm-provider-setup" >}}
+kubectl apply -f- <<'EOF'
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: httpbun-vllm
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    app: httpbun-vllm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: httpbun-vllm
+  template:
+    metadata:
+      labels:
+        app: httpbun-vllm
+    spec:
+      containers:
+      - name: httpbun
+        image: sharat87/httpbun
+        env:
+        - name: HTTPBUN_BIND
+          value: "0.0.0.0:3090"
+        ports:
+        - containerPort: 3090
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: httpbun-vllm
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  selector:
+    app: httpbun-vllm
+  ports:
+  - protocol: TCP
+    port: 3090
+    targetPort: 3090
+EOF
+
+YAMLTest -f - <<'EOF'
+- name: wait for httpbun-vllm deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: httpbun-vllm
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 180
+      intervalSeconds: 5
+EOF
+
+HTTPBUN_VLLM_POD_IP=$(kubectl get pod -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=httpbun-vllm -o jsonpath='{.items[0].status.podIP}')
+kubectl patch endpoints vllm-external -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p "{\"subsets\":[{\"addresses\":[{\"ip\":\"${HTTPBUN_VLLM_POD_IP}\"}],\"ports\":[{\"port\":3090,\"protocol\":\"TCP\"}]}]}"
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"openai":{"model":"gpt-4"},"port":3090,"path":"/llm/chat/completions"}}}}'
+
+YAMLTest -f - <<'EOF'
+- name: wait for vllm HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: vllm
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+- name: wait for vllm HTTPRoute refs to be resolved
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: vllm
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+YAMLTest -f - <<'EOF'
+- name: verify vllm route serves OpenAI-compatible responses
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/vllm"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [
+          {
+            "role": "user",
+            "content": "Respond with the word hello."
+          }
+        ],
+        "httpbun": {
+          "content": "vllm provider route is working"
+        }
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.choices[0].message.content"
+        comparator: contains
+        value: "vllm provider route is working"
+EOF
+{{< /doc-test >}}
+
+5. Test the setup:
+
+   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/vllm" -H content-type:application/json  -d '{
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain the benefits of vLLM."
+        }
+      ]
+    }' | jq
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl "localhost:8080/vllm" -H content-type:application/json  -d '{
+      "model": "meta-llama/Llama-3.1-8B-Instruct",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain the benefits of vLLM."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+## Option 2: Deploy vLLM in Kubernetes cluster
+
+Use this option to deploy vLLM directly in your Kubernetes cluster alongside agentgateway.
+
+### Before you begin
+
+- Kubernetes cluster with GPU nodes (NVIDIA GPUs with CUDA support).
+- NVIDIA GPU Operator or device plugin installed.
+- Sufficient GPU memory for your chosen model.
+
+### Deploy vLLM in the cluster
+
+1. Create a vLLM Deployment with GPU resources:
 
    ```yaml
    kubectl apply -f- <<EOF

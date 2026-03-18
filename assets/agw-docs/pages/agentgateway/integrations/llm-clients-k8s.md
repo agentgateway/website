@@ -2,50 +2,41 @@ Before configuring your AI clients, retrieve the agentgateway endpoint URL.
 
 ## Get the gateway URL
 
-{{< tabs tabTotal="3" items="Cloud Provider LoadBalancer, Port-forward for local testing, Ingress" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
-
-If agentgateway is exposed with a LoadBalancer service, retrieve the external IP or hostname:
-
-```sh
-# If your cloud provider assigns an IP address:
+{{< tabs tabTotal="3" items="Cloud Provider LoadBalancer IP address, Cloud Provider LoadBalancer Hostname, Port-forward for local testing" >}}
+{{% tab tabName="Cloud Provider LoadBalancer IP address" %}}
+```sh {paths="llm-clients-k8s-gateway-url"}
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
   -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
-
-# If your cloud provider assigns a hostname:
+```
+{{% /tab %}}
+{{% tab tabName="Cloud Provider LoadBalancer Hostname" %}}
+```sh
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
   -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
 
 echo "Gateway address: $INGRESS_GW_ADDRESS"
 ```
 
-{{% /tab %}}
+{{< doc-test paths="llm-clients-k8s-gateway-url" >}}
+if [ -z "${INGRESS_GW_ADDRESS}" ]; then
+  echo "INGRESS_GW_ADDRESS is empty"
+  exit 1
+fi
+{{< /doc-test >}}
+
 {{% tab tabName="Port-forward for local testing" %}}
 
-For local testing without a LoadBalancer:
+After port-forwarding, the gateway is accessible at `http://localhost:8080`. Use `localhost:8080` wherever the instructions reference `$INGRESS_GW_ADDRESS`.
 
 ```sh
 kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80
 ```
-
-The gateway is then accessible at `http://localhost:8080`. Use `localhost:8080` wherever the instructions reference `$INGRESS_GW_ADDRESS`.
-
-{{% /tab %}}
-{{% tab tabName="Ingress" %}}
-
-If agentgateway is exposed through an Ingress resource, retrieve the host:
-
-```sh
-kubectl get ingress -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
-  -o jsonpath='{.items[0].spec.rules[0].host}'
-```
-
 {{% /tab %}}
 {{< /tabs >}}
 
 ## Configure your client
 
-Once you have the gateway address, select a client below for configuration instructions.
+After you have the gateway address, select a client below for configuration instructions.
 
 {{< cards >}}
   {{< card link="cursor" title="Cursor" subtitle="AI code editor with custom model support" >}}
