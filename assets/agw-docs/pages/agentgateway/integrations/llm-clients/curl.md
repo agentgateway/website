@@ -5,6 +5,19 @@ Test and interact with agentgateway using curl.
 - Agentgateway running at `http://localhost:3000` with a configured LLM backend.
 - curl installed (pre-installed on macOS and Linux).
 
+## Example agentgateway configuration
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
 ## Send a request
 
 ```sh

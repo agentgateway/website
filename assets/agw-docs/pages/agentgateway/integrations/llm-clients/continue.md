@@ -5,6 +5,19 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 - Agentgateway running at `http://localhost:3000` with a configured LLM backend.
 - VS Code with the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) installed.
 
+## Example agentgateway configuration
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
 ## Configure Continue
 
 1. Edit `~/.continue/config.json` to add your agentgateway endpoint.

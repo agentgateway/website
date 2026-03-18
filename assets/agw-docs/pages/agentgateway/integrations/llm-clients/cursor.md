@@ -5,11 +5,24 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to route requests t
 - Agentgateway running at `http://localhost:3000` with a configured LLM backend.
 - Cursor installed (version 0.30 or later).
 
+## Example agentgateway configuration
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
 ## Configure Cursor
 
 1. Open Cursor Settings.
-   - **macOS**: `Cmd + ,` or **Cursor** → **Settings**
-   - **Windows/Linux**: `Ctrl + ,` or **File** → **Preferences** → **Settings**
+   - **macOS**: `Cmd + ,` or **Cursor** > **Settings**
+   - **Windows/Linux**: `Ctrl + ,` or **File** > **Preferences** > **Settings**
 
 2. Navigate to the **Models** tab.
 
