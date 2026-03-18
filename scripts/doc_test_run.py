@@ -523,9 +523,10 @@ def main() -> int:
         if not test_cases:
             if args.test and len(args.file) == 1:
                 logger.error("No test named '%s' found in %s", args.test, args.file[0])
+                return 1
             else:
                 logger.warning("No test metadata found in '%s'.", args.file[0])
-            return 1
+            
     else:
         test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
     if not test_cases:
