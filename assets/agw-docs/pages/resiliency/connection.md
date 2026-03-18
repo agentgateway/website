@@ -152,7 +152,7 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
    | Setting | Description |
    | -- | -- |
    | `http2WindowSize` | Controls how many bytes can be in-flight on a single HTTP/2 stream before the sender must wait for a `WINDOW_UPDATE` acknowledgment. Setting this to 1 means the client can only send 1 byte at a time per stream, essentially halting all throughput. The default is 65,535 bytes (64KB). |
-   | `http2ConnectionWindowSize` | The initial window size for connection-level flow control for received data. |
+   | `http2ConnectionWindowSize` | The initial window size for connection-level flow control for received data. This settings controls the total bytes in-flight across all streams on a single connection combined.  |
    | `http2FrameSize` | The maximum frame size to use for HTTP/2 connections. |
 
 2. Port-forward the gateway proxy on port 15000.
