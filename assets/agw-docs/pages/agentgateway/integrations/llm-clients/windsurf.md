@@ -27,6 +27,8 @@ agentgateway -f /tmp/test-windsurf.yaml --validate-only
 
 ## Configure Windsurf
 
+Configure Windsurf to route LLM requests through agentgateway. For more information, review the [Windsurf documentation](https://docs.windsurf.com/troubleshooting/windsurf-proxy-configuration).
+
 1. Open Windsurf Settings.
    - **macOS**: `Cmd + ,` or **Windsurf** > **Settings**
    - **Windows/Linux**: `Ctrl + ,` or **File** > **Preferences** > **Settings**
