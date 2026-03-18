@@ -28,10 +28,10 @@ jobs:
       has_tests: ${{ steps.list.outputs.has_tests }}
     steps:
       - name: Checkout website repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
@@ -100,15 +100,15 @@ jobs:
       fail-fast: false
     steps:
       - name: Checkout website repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: 'stable'
           cache: false
@@ -140,7 +140,7 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-result-${{ strategy.job-index }}
           path: out/tests/generated/test-results.yaml
@@ -148,7 +148,7 @@ jobs:
 
       - name: Upload test context (on failure)
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-context-${{ strategy.job-index }}
           path: out/tests/generated/context/
@@ -162,10 +162,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout website repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
@@ -173,7 +173,7 @@ jobs:
         run: pip install pyyaml
 
       - name: Download all test results
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: test-result-*
           path: collected-results/
@@ -211,7 +211,7 @@ jobs:
 
       - name: Upload merged results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: doc-test-results
           path: out/tests/generated/
