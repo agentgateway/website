@@ -258,46 +258,55 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
         main_body = "\u2705 All documents passed."
     blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": main_body}})
 
-    # --- failed test error details ---
-    for key, result in failed_tests:
-        if len(blocks) >= _SLACK_MAX_BLOCKS - 1:
-            blocks.append(
-                {"type": "section", "text": {"type": "mrkdwn", "text": "_... additional failures omitted (block limit reached)_"}}
-            )
-            break
-
-        parts = key.split("::", 1)
-        doc = parts[0] if len(parts) > 0 else key
-        test_name = parts[1] if len(parts) > 1 else key
-        version = _extract_version(doc)
-        title = f"{test_name} ({version})" if version else test_name
-        error = result.get("error", "No error output captured.")
-        checks = result.get("checks", [])
-
-        detail_parts: list[str] = [f"*`{title}`*"]
-        if checks:
-            detail_parts.append("*Checks:*  " + ", ".join(checks))
-        detail_parts.append(f"```{_truncate_tail(error)}```")
-
-        blocks.append(
-            {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}
-        )
-
     # --- workflow run link ---
     if run_url and len(blocks) < _SLACK_MAX_BLOCKS:
         blocks.append(_run_url_block(run_url))
 
     main_payload = {"text": header_text, "blocks": blocks}
 
-    # --- passed tests (thread reply) ---
-    if not passed_lines:
+    # --- thread reply: failed details + passed tests ---
+    if not failed_tests and not passed_lines:
         return main_payload, None
 
-    thread_blocks: list[dict] = [
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Passed Tests ({passed})*"}},
-        {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(passed_lines))}},
-    ]
-    thread_payload = {"text": f"Passed Tests ({passed})", "blocks": thread_blocks}
+    thread_blocks: list[dict] = []
+
+    if failed_tests:
+        thread_blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": f"*Failed Tests ({len(failed_tests)})*"}}
+        )
+        for key, result in failed_tests:
+            if len(thread_blocks) >= _SLACK_MAX_BLOCKS - 1:
+                thread_blocks.append(
+                    {"type": "section", "text": {"type": "mrkdwn", "text": "_... additional failures omitted (block limit reached)_"}}
+                )
+                break
+
+            parts = key.split("::", 1)
+            doc = parts[0] if len(parts) > 0 else key
+            test_name = parts[1] if len(parts) > 1 else key
+            version = _extract_version(doc)
+            title = f"{test_name} ({version})" if version else test_name
+            error = result.get("error", "No error output captured.")
+            checks = result.get("checks", [])
+
+            detail_parts: list[str] = [f"*`{title}`*"]
+            if checks:
+                detail_parts.append("*Checks:*  " + ", ".join(checks))
+            detail_parts.append(f"```{_truncate_tail(error)}```")
+
+            thread_blocks.append(
+                {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}
+            )
+
+    if passed_lines and len(thread_blocks) < _SLACK_MAX_BLOCKS - 1:
+        thread_blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": f"*Passed Tests ({passed})*"}}
+        )
+        thread_blocks.append(
+            {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(passed_lines))}}
+        )
+
+    thread_payload = {"text": f"Failed Tests ({len(failed_tests)})", "blocks": thread_blocks}
 
     return main_payload, thread_payload
 
