@@ -91,7 +91,7 @@ jobs:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
   run-test:
-    name: "Test: ${{ matrix.test }} (${{ matrix.file }})"
+    name: "${{ matrix.test }} (${{ matrix.file }})"
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
