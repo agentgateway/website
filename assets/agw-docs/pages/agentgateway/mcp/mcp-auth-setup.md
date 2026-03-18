@@ -96,7 +96,6 @@ YAMLTest -f - <<'EOF'
 - name: wait for mcp-echo-authn policy to be accepted
   wait:
     target:
-      apiVersion: agentgateway.dev/v1alpha1
       kind: AgentgatewayPolicy
       metadata:
         namespace: default
