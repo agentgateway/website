@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'assets/**'
-      - 'content/**'
+      - 'content/docs/**'
   schedule:
     # Every day at 06:00 UTC
     - cron: '0 6 * * *'
