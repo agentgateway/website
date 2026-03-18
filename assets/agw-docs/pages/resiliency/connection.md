@@ -8,7 +8,7 @@ You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP 
 
 ### Maximum buffer size {#buffer}
 
-You can use the `maxBufferSize` setting for both HTTP/1 and HTTP/2.
+Fine-tune connection speeds for read and write operations by setting a connection buffer limit (`maxBufferSize`). You can use this setting for both HTTP/1 and HTTP/2 connections.
 
 {{< cards >}}
   {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Fine-tune connection speeds for read and write operations by setting a connection buffer limit." >}}
