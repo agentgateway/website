@@ -15,7 +15,7 @@ Fine-tune connection speeds for read and write operations by setting a connectio
 {{< /cards >}}
 
 
-### HTTP/1.1 settings {#http1}
+### HTTP/1.1 {#http1}
 
 Use these settings to control header limits and idle connection behavior for HTTP/1.1 connections.
 
