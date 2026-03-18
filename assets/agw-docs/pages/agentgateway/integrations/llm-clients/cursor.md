@@ -26,23 +26,37 @@ llm:
 
 2. Navigate to the **Models** tab.
 
-3. Under **OpenAI API Key**, enter a placeholder value such as `anything` if agentgateway has no authentication configured, or your gateway API key if authentication is enabled.
-
-4. Enable **Override OpenAI Base URL** and enter your agentgateway address:
+3. Enable **Override OpenAI Base URL** and enter your agentgateway address.
 
    ```
    http://localhost:3000
    ```
 
-5. Click **Verify** to confirm the connection.
-
 ## Verify the connection
 
 1. Open the Cursor chat panel (`Cmd + L` on macOS, `Ctrl + L` on Windows/Linux).
-2. Send a message such as "Hello, are you working?"
-3. Cursor should respond using your agentgateway backend.
+2. Send a message such as "test".
+3. Cursor responds through your agentgateway backend.
 
 ## Troubleshooting
+
+### Unable to reach the model provider
+
+**What's happening:**
+
+You get an error similar to the following:
+
+```
+Request failed with status code 400: {"error":{"type":"client","reason":"ssrf_blocked","message":"connection to private IP is blocked","retryable":false}}
+```
+
+**Why it's happening:**
+
+The LLM provider was not able to process the request. You might have tried including an API key that is not valid. 
+
+**How to fix it:**
+
+When you configure agentgateway, you include credentials to the LLM provider, such as an API key. As such, you do not need to provide the credentials through Cursor as well. Toggle off any API key overrides.
 
 ### "Failed to fetch" error
 

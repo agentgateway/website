@@ -6,28 +6,29 @@ Configure [Windsurf](https://codeium.com/windsurf), the AI code editor by Codeiu
 
 ## Configure Windsurf
 
+Configure Windsurf to route LLM requests through agentgateway. For more information, review the [Windsurf documentation](https://docs.windsurf.com/troubleshooting/windsurf-proxy-configuration).
+
 1. Open Windsurf Settings.
    - **macOS**: `Cmd + ,` or **Windsurf** > **Settings**
    - **Windows/Linux**: `Ctrl + ,` or **File** > **Preferences** > **Settings**
 
-2. Search for **AI Provider** or navigate to the AI settings section.
+2. Search for **Http: Proxy**.
 
-3. Select **OpenAI Compatible** as the provider.
+3. Enter your agentgateway URL.
 
-4. Enter your agentgateway details.
-   - **API Base URL**: `http://<INGRESS_GW_ADDRESS>/<route-path>`
-   - **API Key**: A placeholder value such as `anything` if agentgateway has no authentication configured, or your gateway API key if authentication is enabled.
-   - **Model**: The model name from your agentgateway backend configuration.
+   ```
+   http://<INGRESS_GW_ADDRESS>/<route-path>
+   ```
 
-   For example, if your HTTPRoute uses path `/openai`, use `http://<INGRESS_GW_ADDRESS>/openai`.
+   For example, if your HTTPRoute uses path `/openai` on your `ai-example.com` secured host, use `https://ai-example.com/openai`.
 
-5. Save the settings.
+4. Save the settings.
 
 ## Verify the connection
 
 1. Open the Windsurf chat panel.
-2. Send a message such as "Hello, are you working?"
-3. Windsurf should respond using your agentgateway backend.
+2. Send a message such as "test".
+3. Windsurf responds through your agentgateway backend.
 
 ## Troubleshooting
 

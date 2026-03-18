@@ -31,22 +31,21 @@ agentgateway -f /tmp/test-windsurf.yaml --validate-only
    - **macOS**: `Cmd + ,` or **Windsurf** > **Settings**
    - **Windows/Linux**: `Ctrl + ,` or **File** > **Preferences** > **Settings**
 
-2. Search for **AI Provider** or navigate to the AI settings section.
+2. Search for **Http: Proxy**.
 
-3. Select **OpenAI Compatible** as the provider.
+3. Enter your agentgateway URL.
 
-4. Enter your agentgateway details.
-   - **API Base URL**: `http://localhost:3000/v1`
-   - **API Key**: A placeholder value such as `anything` if agentgateway has no authentication configured, or your gateway API key if authentication is enabled.
-   - **Model**: The model name from your agentgateway backend configuration (e.g., `gpt-4o-mini`).
+   ```
+   http://localhost:3000
+   ```
 
-5. Save the settings.
+4. Save the settings.
 
 ## Verify the connection
 
 1. Open the Windsurf chat panel.
-2. Send a message such as "Hello, are you working?"
-3. Windsurf should respond using your agentgateway backend.
+2. Send a message such as "test".
+3. Windsurf responds through your agentgateway backend.
 
 ## Troubleshooting
 
