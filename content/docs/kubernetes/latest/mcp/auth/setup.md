@@ -15,4 +15,5 @@ test:
     path: mcp-auth-setup
 ---
 
+
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-setup.md" >}}
