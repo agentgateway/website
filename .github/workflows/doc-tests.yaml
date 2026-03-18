@@ -95,7 +95,10 @@ jobs:
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 30
+
     strategy:
+      max-parallel: 100
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
       fail-fast: false
     steps:
