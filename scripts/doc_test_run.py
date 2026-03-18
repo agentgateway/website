@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import logging
 import os
 import re
@@ -494,6 +495,7 @@ def main() -> int:
         help="Stream all command output (default: enabled)",
     )
     parser.add_argument("--generate-only", action="store_true", help="Only generate scripts/manifests, do not run tests")
+    parser.add_argument("--list-tests", action="store_true", help="Print discovered test cases as JSON to stdout and exit")
     parser.add_argument("--file", nargs="+", default=None, metavar="FILE", help="Path(s) to one or more markdown files to test (relative to repo root or absolute)")
     parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (only used when --file specifies a single file)")
     args = parser.parse_args()
@@ -501,7 +503,7 @@ def main() -> int:
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
         format="%(levelname)s: %(message)s",
-        stream=sys.stdout,
+        stream=sys.stderr,
     )
 
     repo_root = Path(args.repo_root).resolve()
@@ -520,7 +522,7 @@ def main() -> int:
             test_cases.extend(cases)
             tested_docs.extend(docs)
         tested_documents = sorted(set(tested_docs))
-        if not test_cases:
+        if not test_cases and not args.list_tests:
             if args.test and len(args.file) == 1:
                 logger.error("No test named '%s' found in %s", args.test, args.file[0])
             else:
@@ -528,6 +530,15 @@ def main() -> int:
             return 1
     else:
         test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
+
+    if args.list_tests:
+        entries = [
+            {"file": tc.document.relative_to(repo_root).as_posix(), "test": tc.name}
+            for tc in test_cases
+        ]
+        print(json.dumps(entries))
+        return 0
+
     if not test_cases:
         logger.info("No docs with test metadata found.")
         write_report(report_path, tested_documents, {})

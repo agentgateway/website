@@ -231,8 +231,9 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
         {"type": "header", "text": {"type": "plain_text", "text": header_text[:150]}},
     ]
 
-    # --- results list — one line per document ---
-    result_lines: list[str] = []
+    # --- split results into failed and passed lists ---
+    failed_lines: list[str] = []
+    passed_lines: list[str] = []
     failed_tests: list[tuple[str, dict]] = []
 
     for doc, group in doc_groups.items():
@@ -240,34 +241,27 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
         icon = _status_icon(status)
         test_label = _format_test_names(group["tests"])
         checks_str = _format_checks_count(group["check_count"])
-
-        result_lines.append(f"{icon}  `{test_label}` \u2014 {checks_str}  (_`{doc}`_)")
+        line = f"{icon}  `{test_label}` \u2014 {checks_str}  (_`{doc}`_)"
+        if status == "passed":
+            passed_lines.append(line)
+        else:
+            failed_lines.append(line)
 
     for key, result in tests.items():
         if result.get("status") != "passed" and result.get("error"):
             failed_tests.append((key, result))
 
-    results_text = _truncate("\n".join(result_lines))
-    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": results_text}})
+    # Main body: failed docs only (or all-passed note)
+    if failed_lines:
+        main_body = _truncate("\n".join(failed_lines))
+    else:
+        main_body = "\u2705 All documents passed."
+    blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": main_body}})
 
-    # --- workflow run link ---
-    if run_url and len(blocks) < _SLACK_MAX_BLOCKS:
-        blocks.append(_run_url_block(run_url))
-
-    main_payload = {"text": header_text, "blocks": blocks}
-
-    # --- failed test details (thread reply) ---
-    if not failed_tests:
-        return main_payload, None
-
-    thread_blocks: list[dict] = [
-        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Failed Tests ({len(failed_tests)})*"}}
-    ]
-
+    # --- failed test error details ---
     for key, result in failed_tests:
-        # Guard against exceeding the 50-block limit
-        if len(thread_blocks) >= _SLACK_MAX_BLOCKS - 1:
-            thread_blocks.append(
+        if len(blocks) >= _SLACK_MAX_BLOCKS - 1:
+            blocks.append(
                 {"type": "section", "text": {"type": "mrkdwn", "text": "_... additional failures omitted (block limit reached)_"}}
             )
             break
@@ -285,11 +279,25 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
             detail_parts.append("*Checks:*  " + ", ".join(checks))
         detail_parts.append(f"```{_truncate_tail(error)}```")
 
-        thread_blocks.append(
+        blocks.append(
             {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(detail_parts))}}
         )
 
-    thread_payload = {"text": f"Failed Tests ({len(failed_tests)})", "blocks": thread_blocks}
+    # --- workflow run link ---
+    if run_url and len(blocks) < _SLACK_MAX_BLOCKS:
+        blocks.append(_run_url_block(run_url))
+
+    main_payload = {"text": header_text, "blocks": blocks}
+
+    # --- passed tests (thread reply) ---
+    if not passed_lines:
+        return main_payload, None
+
+    thread_blocks: list[dict] = [
+        {"type": "section", "text": {"type": "mrkdwn", "text": f"*Passed Tests ({passed})*"}},
+        {"type": "section", "text": {"type": "mrkdwn", "text": _truncate("\n".join(passed_lines))}},
+    ]
+    thread_payload = {"text": f"Passed Tests ({passed})", "blocks": thread_blocks}
 
     return main_payload, thread_payload
 
