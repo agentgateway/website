@@ -20,37 +20,23 @@ on:
         default: 'product-excellence-test-notifications'
 
 jobs:
-  doc-tests:
-    name: Generate and run doc tests
+  discover:
+    name: Discover test cases
     runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.list.outputs.matrix }}
+      has_tests: ${{ steps.list.outputs.has_tests }}
     steps:
       - name: Checkout website repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.x'
 
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: 'stable'
-          cache: false
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24'
-
       - name: Install Python dependencies
         run: pip install pyyaml
-
-      - name: Install cloud-provider-kind
-        run: go install sigs.k8s.io/cloud-provider-kind@latest
-
-      - name: Install yamltest
-        run: npm install -g yamltest@latest
 
       - name: Get changed markdown files
         id: changed-files
@@ -89,24 +75,122 @@ jobs:
           echo "files=${FILES}" >> $GITHUB_OUTPUT
           echo "$FILES" | tr ' ' '\n'
 
-      - name: Run doc tests
+      - name: List test cases
+        id: list
         run: |
           if [ -n "$CHANGED_FILES" ]; then
-            echo "Running doc tests for changed files only."
-            python3 scripts/doc_test_run.py --repo-root . --file $CHANGED_FILES
+            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests --file $CHANGED_FILES)
           else
-            echo "Running doc tests for all files."
-            python3 scripts/doc_test_run.py --repo-root .
+            TESTS=$(python3 scripts/doc_test_run.py --repo-root . --list-tests)
           fi
+          COUNT=$(echo "$TESTS" | jq 'length')
+          if [ "$COUNT" -gt 0 ]; then
+            echo "has_tests=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_tests=false" >> $GITHUB_OUTPUT
+          fi
+          MATRIX=$(echo "$TESTS" | jq -c '{include: .}')
+          echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
+          echo "Discovered $COUNT test case(s)"
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
+
+  run-test:
+    name: "${{ matrix.test }} (${{ matrix.file }})"
+    needs: discover
+    if: needs.discover.outputs.has_tests == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      max-parallel: 100
+      matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
+      fail-fast: false
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 'stable'
+          cache: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Install cloud-provider-kind
+        run: go install sigs.k8s.io/cloud-provider-kind@latest
+
+      - name: Install yamltest
+        run: npm install -g yamltest@latest
+
+      - name: Run doc test
+        run: |
+          python3 scripts/doc_test_run.py \
+            --repo-root . \
+            --file "${{ matrix.file }}" \
+            --test "${{ matrix.test }}"
         env:
           DEBUG_MODE: true
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
           PYTHONUNBUFFERED: '1'
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-result-${{ strategy.job-index }}
+          path: out/tests/generated/test-results.yaml
+          retention-days: 1
+
+      - name: Upload test context (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-context-${{ strategy.job-index }}
+          path: out/tests/generated/context/
+          retention-days: 1
+          if-no-files-found: ignore
+
+  report:
+    name: Aggregate results and report
+    needs: [discover, run-test]
+    if: always() && needs.discover.outputs.has_tests == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v6
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.x'
+
+      - name: Install Python dependencies
+        run: pip install pyyaml
+
+      - name: Download all test results
+        uses: actions/download-artifact@v7
+        with:
+          pattern: test-result-*
+          path: collected-results/
+
+      - name: Merge test results
+        run: python3 scripts/merge_test_results.py collected-results/ out/tests/generated/test-results.yaml
 
       - name: Generate job summary
         id: summary
-        if: always()
         run: |
           RESULTS_FILE=out/tests/generated/test-results.yaml
 
@@ -133,10 +217,26 @@ jobs:
           channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
 
-      - name: Upload generated test artifacts
+      - name: Upload merged results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: doc-test-results
           path: out/tests/generated/
           retention-days: 14
+
+      - name: Fail if any test failed
+        run: |
+          python3 -c "
+          import yaml, sys
+          with open('out/tests/generated/test-results.yaml') as f:
+              report = yaml.safe_load(f) or {}
+          tests = report.get('tests', {})
+          failed = [k for k, v in tests.items() if v.get('status') != 'passed']
+          if failed:
+              print(f'{len(failed)} test(s) failed:', file=sys.stderr)
+              for name in failed:
+                  print(f'  - {name}', file=sys.stderr)
+              sys.exit(1)
+          print(f'All {len(tests)} test(s) passed')
+          "
