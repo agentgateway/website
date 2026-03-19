@@ -98,6 +98,13 @@ binds:
               ).toJson()
 ```
 
+{{< doc-test paths="prompt-templates" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
 Send a request as a regular user and verify the response is capped at the lower token limit.
 
 ```sh {paths="prompt-templates"}
