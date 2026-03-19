@@ -1,4 +1,4 @@
-Configure [Windsurf](https://codeium.com/windsurf), the AI code editor by Codeium, to route requests through agentgateway.
+Configure [Windsurf](https://codeium.com/windsurf), the AI code editor by Codeium, to route requests to your LLM through your agentgateway proxy.
 
 ## Before you begin
 
@@ -48,38 +48,3 @@ Configure Windsurf to route LLM requests through agentgateway. For more informat
 1. Open the Windsurf chat panel.
 2. Send a message such as "test".
 3. Windsurf responds through your agentgateway backend.
-
-## Troubleshooting
-
-### "Failed to fetch" or connection error
-
-**What's happening:**
-
-Windsurf cannot connect to agentgateway.
-
-**Why it's happening:**
-
-Agentgateway may not be running, or the API base URL is incorrect.
-
-**How to fix it:**
-
-1. Verify agentgateway is running:
-   ```sh
-   curl http://localhost:3000/v1/models
-   ```
-2. Confirm the API base URL includes the `/v1` path.
-
-### "Invalid API key" error
-
-**What's happening:**
-
-Windsurf rejects requests with an authentication error.
-
-**Why it's happening:**
-
-If agentgateway has no authentication configured, Windsurf may still require a non-empty API key field. If authentication is configured, the key may be incorrect.
-
-**How to fix it:**
-
-- If agentgateway has no authentication, enter any placeholder value (`anything`) in the API key field.
-- If using gateway authentication, enter the correct API key.

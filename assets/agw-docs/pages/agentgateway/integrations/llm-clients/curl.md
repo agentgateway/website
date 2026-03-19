@@ -85,23 +85,3 @@ curl http://localhost:3000/v1/chat/completions \
     "stream": true
   }'
 ```
-
-## Troubleshooting
-
-### Connection refused
-
-**What's happening:**
-
-curl cannot connect to agentgateway.
-
-**Why it's happening:**
-
-Agentgateway is not running, or it is listening on a different port.
-
-**How to fix it:**
-
-1. Verify agentgateway is running:
-   ```sh
-   curl http://localhost:3000/v1/models
-   ```
-2. Check the port in your agentgateway configuration.

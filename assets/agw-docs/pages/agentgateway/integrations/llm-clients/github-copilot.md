@@ -53,25 +53,3 @@ agentgateway -f /tmp/test-copilot.yaml --validate-only
 1. Open a code file in VS Code.
 2. Start typing and wait for Copilot suggestions to appear.
 3. Open the Copilot chat panel (`Cmd + Shift + I` on macOS, `Ctrl + Shift + I` on Windows/Linux) and send a test message.
-
-## Troubleshooting
-
-### Copilot suggestions stop working
-
-**What's happening:**
-
-Copilot does not provide completions or chat responses after configuring the proxy URL.
-
-**Why it's happening:**
-
-The proxy URL may be incorrect, agentgateway may not be running, or the Copilot plan does not support custom endpoints.
-
-**How to fix it:**
-
-1. Verify agentgateway is running:
-   ```sh
-   curl http://localhost:3000/v1/models
-   ```
-2. Confirm the `debug.overrideProxyUrl` value includes the `/v1` path.
-3. Check that your GitHub Copilot subscription supports custom endpoints (Business or Enterprise plan required).
-4. Remove the `debug.overrideProxyUrl` setting and reload VS Code to restore default behavior.

@@ -26,7 +26,7 @@ llm:
    pip install openai
    ```
 
-2. Send a request through agentgateway.
+2. Create and run the following script to send a request through agentgateway.
 
    ```python
    from openai import OpenAI
@@ -66,7 +66,7 @@ client = OpenAI()  # picks up OPENAI_BASE_URL and OPENAI_API_KEY from env
    npm install openai
    ```
 
-2. Send a request through agentgateway.
+2. Create and run the following script to send a request through agentgateway.
 
    ```javascript
    import OpenAI from "openai";
@@ -82,23 +82,3 @@ client = OpenAI()  # picks up OPENAI_BASE_URL and OPENAI_API_KEY from env
    });
    console.log(response.choices[0].message.content);
    ```
-
-## Troubleshooting
-
-### Connection errors
-
-**What's happening:**
-
-The SDK cannot connect to agentgateway.
-
-**Why it's happening:**
-
-Agentgateway is not running, or the `base_url` / `baseURL` does not include the `/v1` path.
-
-**How to fix it:**
-
-1. Verify agentgateway is running:
-   ```sh
-   curl http://localhost:3000/v1/models
-   ```
-2. Confirm the URL ends with `/v1`.

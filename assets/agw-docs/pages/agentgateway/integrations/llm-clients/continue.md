@@ -20,7 +20,7 @@ llm:
 
 ## Configure Continue
 
-1. Edit `~/.continue/config.json` to add your agentgateway endpoint.
+1. Edit the `~/.continue/config.json` file to add your agentgateway endpoint.
 2. Save the file and reload Continue in VS Code.
 
 ```json
@@ -50,23 +50,3 @@ llm:
 1. Open the Continue sidebar in VS Code (`Cmd + M` on macOS, `Ctrl + M` on Windows/Linux).
 2. Select **agentgateway** from the model dropdown.
 3. Send a test message: "Hello, are you working?"
-
-## Troubleshooting
-
-### Connection refused
-
-**What's happening:**
-
-Continue cannot reach agentgateway.
-
-**Why it's happening:**
-
-Agentgateway is not running, or the `apiBase` URL is incorrect.
-
-**How to fix it:**
-
-1. Verify agentgateway is running:
-   ```sh
-   curl http://localhost:3000/v1/models
-   ```
-2. Confirm the `apiBase` value includes the `/v1` path.
