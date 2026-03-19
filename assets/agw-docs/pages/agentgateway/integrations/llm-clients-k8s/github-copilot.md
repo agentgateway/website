@@ -6,9 +6,13 @@ Custom endpoint configuration for GitHub Copilot requires a GitHub Copilot Busin
 
 ## Before you begin
 
-- [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}).
-- VS Code with the [GitHub Copilot extension](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) installed.
-- A GitHub Copilot Business or Enterprise subscription.
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
+3. Install the [GitHub Copilot extension](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) in VS Code.
+4. Have a GitHub Copilot Business or Enterprise subscription.
+
+## Get the gateway URL
+
+{{< reuse "agw-docs/snippets/agw-get-gateway-url-k8s.md" >}}
 
 ## Configure GitHub Copilot
 
@@ -35,28 +39,3 @@ Custom endpoint configuration for GitHub Copilot requires a GitHub Copilot Busin
 1. Open a code file in VS Code.
 2. Start typing and wait for Copilot suggestions to appear.
 3. Open the Copilot chat panel and send a test message.
-
-## Troubleshooting
-
-### Copilot suggestions stop working
-
-**What's happening:**
-
-Copilot does not provide completions or chat responses after configuring the proxy URL.
-
-**Why it's happening:**
-
-The gateway address or route path may be incorrect, the agentgateway proxy service may not be reachable, or the Copilot plan does not support custom endpoints.
-
-**How to fix it:**
-
-1. Verify the gateway is reachable:
-   ```sh
-   curl http://$INGRESS_GW_ADDRESS/<route-path> -v
-   ```
-2. Confirm you are using the correct route path from your HTTPRoute configuration:
-   ```sh
-   kubectl get httproute -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml | grep -A 5 "path:"
-   ```
-3. Check that your GitHub Copilot subscription supports custom endpoints (Business or Enterprise plan required).
-4. Remove the `debug.overrideProxyUrl` setting and reload VS Code to restore default behavior.

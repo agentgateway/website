@@ -78,7 +78,7 @@ Example steps:
 
 1. Create a vLLM Deployment with GPU resources.
 
-   {{< callout type="note" >}}
+   {{< callout type="info" >}}
    For gated models such as Llama, create a Hugging Face token secret before deploying.
    ```sh
    kubectl create secret generic hf-token \
@@ -145,7 +145,7 @@ Example steps:
 
 2. Wait for the vLLM pod to be ready.
 
-   {{< callout type="note" >}}
+   {{< callout type="info" >}}
    vLLM downloads model weights on first startup, which can take several minutes depending on model size and network speed. Monitor progress with the following command.
    ```sh
    kubectl logs -f deployment/vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}}

@@ -2,8 +2,12 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 ## Before you begin
 
-- [Get the gateway URL]({{< link-hextra path="/integrations/llm-clients/" >}}) and set `INGRESS_GW_ADDRESS`.
-- VS Code with the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) installed.
+{{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
+3. Install the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) in VS Code.
+
+## Get the gateway URL
+
+{{< reuse "agw-docs/snippets/agw-get-gateway-url-k8s.md" >}}
 
 ## Configure Continue
 
@@ -39,26 +43,3 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 1. Open the Continue sidebar in VS Code (`Cmd + M` on macOS, `Ctrl + M` on Windows/Linux).
 2. Select **agentgateway (Kubernetes)** from the model dropdown.
 3. Send a test message to confirm the connection.
-
-## Troubleshooting
-
-### Connection refused
-
-**What's happening:**
-
-Continue cannot reach agentgateway.
-
-**Why it's happening:**
-
-The `apiBase` URL is incorrect, or the gateway is not reachable from your machine.
-
-**How to fix it:**
-
-1. Verify the gateway is reachable:
-   ```sh
-   curl http://$INGRESS_GW_ADDRESS/<route-path> -v
-   ```
-2. Check the route path matches your HTTPRoute:
-   ```sh
-   kubectl get httproute -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml | grep -A 5 "path:"
-   ```
