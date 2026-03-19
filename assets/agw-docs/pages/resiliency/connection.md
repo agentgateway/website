@@ -1,17 +1,13 @@
-Manage HTTP connections to a proxy.
+You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
-
-## Configure HTTP protocol connections {#http}
-
-You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
 
 ## Maximum buffer size {#buffer}
 
 Fine-tune connection speeds for read and write operations by setting a connection buffer limit (`maxBufferSize`). You can use this setting for both HTTP/1 and HTTP/2 connections.
 
 {{< cards >}}
-  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Set the buffer size." >}}
+  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Configure a buffer size setting." >}}
 {{< /cards >}}
 
 
@@ -24,7 +20,7 @@ Use these settings to control header limits and idle connection behavior for HTT
 Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstream or upstream service if there are no active streams.
 
 {{< cards >}}
-  {{< card path="/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Set idle timeout settings." >}}
+  {{< card path="/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Configure an idle timeout setting." >}}
 {{< /cards >}}
 
 ### Max headers  {#http1-headers}
@@ -250,7 +246,7 @@ kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n 
 Manage idle and stale connections with HTTP/2 keepalive.
 
 {{< cards >}}
-  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="Set keepalive connection settings." >}}
+  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="COnfigure keepalive connection settings." >}}
 {{< /cards >}}
 
 
