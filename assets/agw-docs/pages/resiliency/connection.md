@@ -226,8 +226,9 @@ YAMLTest -f - <<'EOF'
   expect:
     bodyContains:
     - '"http2WindowSize"'
+    - '"http2ConnectionWindowSize"'
     - '"http2FrameSize"'
-    - '17000'
+    - '65536'
 EOF
 {{< /doc-test >}}
 
