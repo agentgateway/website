@@ -4,7 +4,7 @@ Review the following table to compare agentgateway's support of different LLM pr
 |-----|:------:|:---------:|:--------------:|:------------:|:-------------:|:----------------:|
 | Completions<br>`/v1/chat/completions` | ✅ Native | ✅ Translation | ✅ Translation| ✅ Native | ✅ Native`*`| ✅ Native`†` | 
 | Responses<br>`/v1/responses` | ✅ Native  | ❌ No |  ✅ Translation| ✅ Native| ❌ No | ❌ No |
-| Messages<br>`/v1/messages` |  ❌ No  | ✅ Native |  ✅ Translation | ❌ No | ❌ No | ✅ Native`†` |
+| Messages<br>`/v1/messages` |  ✅ Translation  | ✅ Native |  ✅ Translation | ✅ Translation | ✅ Translation | ✅ Native`†` |
 | Embeddings<br>`/v1/embeddings` | ✅ Native | ❌ No |  ✅ Translation | ✅ Native | ❌ No | ✅ Translation |
 | Realtime<br>`/v1/realtime` | ✅ Native  | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
 | Token Count<br>`/v1/messages/count_tokens` | ❌ No | ✅ Native|  ✅ Translation | ❌ No| ❌ No | ✅ Translation |
