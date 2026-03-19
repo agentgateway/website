@@ -30,8 +30,7 @@ llm:
       "title": "agentgateway",
       "provider": "openai",
       "model": "gpt-4o-mini",
-      "apiBase": "http://localhost:3000/v1",
-      "apiKey": "anything"
+      "apiBase": "http://localhost:3000/v1"
     }
   ]
 }
@@ -45,7 +44,6 @@ llm:
 | `provider` | Set to `openai` for any OpenAI-compatible endpoint. |
 | `model` | The model name from your agentgateway backend configuration. |
 | `apiBase` | Your agentgateway URL with the `/v1` path. |
-| `apiKey` | A placeholder value if agentgateway has no authentication, or your gateway API key. |
 
 ## Verify the connection
 

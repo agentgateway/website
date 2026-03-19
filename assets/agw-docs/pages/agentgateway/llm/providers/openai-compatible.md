@@ -1,4 +1,4 @@
-Configure OpenAI-compatible LLM providers such as Mistral, DeepSeek, or any other provider that implements the OpenAI API format in {{< reuse "agw-docs/snippets/agw-kgw.md" >}}.
+Configure OpenAI-compatible LLM providers such as Mistral, DeepSeek, or any other provider that implements the OpenAI API format in {{< reuse "agw-docs/snippets/kgateway.md" >}}.
 
 ## Overview
 
@@ -14,12 +14,12 @@ Note that when you specify a custom `host` override, agentgateway requires expli
 
 Review the following examples for common OpenAI-compatible provider endpoints.
 
-- [Mistral AI](#mistral).
-- [DeepSeek](#deepseek).
-- [Groq](#groq).
-- [Together AI](#together-ai).
-- [Perplexity](#perplexity).
-- [Fireworks AI](#fireworks-ai).  
+- [Mistral AI](#mistral)
+- [DeepSeek](#deepseek)
+- [Groq](#groq)
+- [Together AI](#together-ai)
+- [Perplexity](#perplexity)
+- [Fireworks AI](#fireworks-ai)  
 
 ### Mistral AI example {#mistral}
 

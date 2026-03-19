@@ -1,22 +1,27 @@
-Configure [Ollama](https://ollama.com/) to serve local models through {{< reuse "agw-docs/snippets/agw-kgw.md" >}}. Ollama runs on a machine outside your cluster, and agentgateway routes requests to it over the network.
+Configure [Ollama](https://ollama.com/) to serve local models through {{< reuse "agw-docs/snippets/kgateway.md" >}}. Ollama runs on a machine outside your cluster, and agentgateway routes requests to it over the network.
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-You also need the following prerequisites.
-- [Ollama](https://ollama.com/download) installed and running on a machine accessible from your Kubernetes cluster.
-- The IP address of the machine running Ollama.
+2. Install and run [Ollama](https://ollama.ai/download) on a machine accessible from your Kubernetes cluster.
+
+3. Get the IP address of the machine running Ollama.
 
 ## Set up Ollama
 
-1. Pull a model to serve.
+1. From the cluster where you installed Ollama, make sure that you have at least one model pulled.
+   
+   ```sh
+   ollama list
+   ```
 
+   If not, pull a model.
    ```sh
    ollama pull llama3.2
    ```
 
-2. By default, Ollama only listens on `localhost`. Configure it to accept external connections by setting the `OLLAMA_HOST` environment variable, then restart Ollama.
+2. Configure Ollama to accept external connections. By default, Ollama only listens on `localhost`. You can change this setting with the `OLLAMA_HOST` environment variable. 
 
    ```sh
    export OLLAMA_HOST=0.0.0.0:11434
@@ -26,7 +31,9 @@ You also need the following prerequisites.
    Binding Ollama to `0.0.0.0` exposes it on all network interfaces. Use firewall rules to restrict access to your Kubernetes cluster nodes only.
    {{< /callout >}}
 
-3. Verify Ollama is accessible from the machine's network address.
+3. Restart Ollama to apply the new setting.
+
+4. Verify Ollama is accessible from the machine's network address.
 
    ```sh
    curl http://<OLLAMA_IP>:11434/v1/models

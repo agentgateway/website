@@ -1,4 +1,4 @@
-Configure [vLLM](https://github.com/vllm-project/vllm), a high-performance LLM serving engine, through {{< reuse "agw-docs/snippets/agw-kgw.md" >}}. This guide covers two deployment patterns.
+Configure [vLLM](https://github.com/vllm-project/vllm), a high-performance LLM serving engine, through {{< reuse "agw-docs/snippets/kgateway.md" >}}. This guide covers two deployment patterns.
 
 - **External vLLM**: Connect to a vLLM server running outside your Kubernetes cluster on dedicated GPU hardware.
 - **In-cluster vLLM**: Deploy vLLM as a workload inside your Kubernetes cluster.
