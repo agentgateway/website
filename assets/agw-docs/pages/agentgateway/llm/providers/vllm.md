@@ -64,7 +64,7 @@ Choose your deployment option and follow the corresponding steps to set up the v
    EOF
    ```
 
-### Option 2: Deploy vLLM in Kubernetes cluster
+### Option 2: Deploy vLLM in a Kubernetes cluster
 
 Use this option to deploy vLLM directly in your Kubernetes cluster alongside agentgateway.
 

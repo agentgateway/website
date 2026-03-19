@@ -88,7 +88,7 @@ The gateway returns a 503 response.
 
 **Why it's happening:**
 
-The gateway cannot connect to the backend. The {{< reuse "agw-docs/snippets/backend.md" >}} may not be accepted, or the backend service may not be reachable.
+The gateway cannot connect to the backend. The {{< reuse "agw-docs/snippets/backend.md" >}} might not be accepted, or the backend service might not be reachable.
 
 **How to fix it:**
 

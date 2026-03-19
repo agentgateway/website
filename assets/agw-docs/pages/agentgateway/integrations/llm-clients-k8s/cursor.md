@@ -1,4 +1,4 @@
-Configure [Cursor](https://cursor.com/), the AI code editor, to use agentgateway deployed in Kubernetes.
+Configure [Cursor](https://cursor.com/), the AI code editor, to route requests to your LLM through your agentgateway proxy.
 
 ## Before you begin
 
@@ -6,7 +6,7 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to use agentgateway
 
 ## Configure Cursor
 
-1. Open Cursor Settings.
+1. Open the Cursor Settings.
    - **macOS**: `Cmd + ,` or **Cursor** → **Settings**
    - **Windows/Linux**: `Ctrl + ,` or **File** → **Preferences** → **Settings**
 

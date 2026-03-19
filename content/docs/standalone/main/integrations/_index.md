@@ -23,6 +23,8 @@ Integrate agentgateway with your existing infrastructure and tools.
 
 {{< cards >}}
   {{< card link="llm-clients/cursor" title="Cursor" subtitle="AI code editor" >}}
+  {{< card link="llm-clients/windsurf" title="Windsurf" subtitle="AI code editor by Codeium" >}}
+  {{< card link="llm-clients/github-copilot" title="GitHub Copilot" subtitle="AI pair programmer" >}}
   {{< card link="llm-clients/continue" title="VS Code Continue" subtitle="AI code assistant extension" >}}
   {{< card link="llm-clients/openai-sdk" title="OpenAI SDK" subtitle="Python and Node.js SDKs" >}}
   {{< card link="llm-clients/curl" title="curl" subtitle="Command-line testing" >}}

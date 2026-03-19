@@ -7,7 +7,7 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 ## Configure Continue
 
-1. Edit `~/.continue/config.json` to add your agentgateway endpoint.
+1. Edit the `~/.continue/config.json` file to add your agentgateway endpoint.
 2. Replace `<INGRESS_GW_ADDRESS>` and `<route-path>` with your gateway address and the path from your HTTPRoute configuration.
 
 ```json
