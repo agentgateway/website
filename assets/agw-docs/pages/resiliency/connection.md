@@ -197,8 +197,8 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
           "maxBufferSize": null,
           "http1MaxHeaders": null,
           "http1IdleTimeout": null,
-          "http2WindowSize": 1,
-          "http2ConnectionWindowSize": 1,
+          "http2WindowSize": 1048576,
+          "http2ConnectionWindowSize": 4194304,
           "http2FrameSize": 17000,
           "http2KeepaliveInterval": null,
           "http2KeepaliveTimeout": null
