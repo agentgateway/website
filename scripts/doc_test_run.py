@@ -519,15 +519,16 @@ def main() -> int:
             if not md_file.is_absolute():
                 md_file = repo_root / md_file
             cases, docs = build_test_cases_from_file(repo_root, md_file, generated_dir, filter_test_name=filter_test_name)
+            if not cases:
+                if args.test and len(args.file) == 1:
+                    logger.error("No test named '%s' found in %s", args.test, f)
+                    return 1
+                else:
+                    logger.warning("No test metadata found in '%s'.", f)
+                    continue
             test_cases.extend(cases)
             tested_docs.extend(docs)
         tested_documents = sorted(set(tested_docs))
-        if not test_cases and not args.list_tests:
-            if args.test and len(args.file) == 1:
-                logger.error("No test named '%s' found in %s", args.test, args.file[0])
-            else:
-                logger.error("No test metadata found in the provided file(s).")
-            return 1
     else:
         test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
 

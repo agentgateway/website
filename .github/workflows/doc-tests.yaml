@@ -4,7 +4,7 @@ on:
   pull_request:
     paths:
       - 'assets/**'
-      - 'content/**'
+      - 'content/docs/**'
   schedule:
     # Every day at 06:00 UTC
     - cron: '0 6 * * *'
@@ -57,12 +57,17 @@ jobs:
             while IFS= read -r asset_file; do
               rel_path="${asset_file#assets/agw-docs/pages/}"
               rel_path="${rel_path#agentgateway/}"
+              found=0
               for content_dir in "content/docs/kubernetes/main" "content/docs/kubernetes/latest" "content/docs/standalone/main" "content/docs/standalone/latest"; do
                 candidate="${content_dir}/${rel_path}"
                 if [ -f "$candidate" ] && ! echo "$FILES" | grep -qF "$candidate"; then
                   FILES="$FILES $candidate"
+                  found=1
                 fi
               done
+              if [ "$found" -eq 0 ]; then
+                echo "No content candidates found for asset file: $asset_file"
+              fi
             done <<< "$ASSET_FILES"
           fi
 

@@ -28,7 +28,7 @@ Set up your agentgateway proxy with the credentials so that you can access Googl
 {{< tabs tabTotal="2" items="Local cluster (kind), GKE cluster" >}}
 {{% tab tabName="Local cluster (kind)" %}}
 
-Create a service account with the required permissions to access Google Model Armor. Then mount a JSON key file to the `agentgatway-proxy` pod. 
+Create a service account with the required permissions to access Google Model Armor. Then mount a JSON key file to the `agentgateway-proxy` pod. 
 
 1. Set the Google Cloud project ID where you created the Google Model Armor template as an environment variable. 
    ```sh
