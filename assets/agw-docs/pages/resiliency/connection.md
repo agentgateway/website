@@ -120,13 +120,11 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-#### Cleanup
+4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
-
-```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-```
+  ```sh
+  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  ```
 
 ## HTTP/2 settings {#http2}
 
@@ -233,13 +231,11 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-#### Cleanup
+4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
-
-```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-```
+  ```sh
+  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  ```
 
 ### Keepalive {#http2-keepalive}
 
