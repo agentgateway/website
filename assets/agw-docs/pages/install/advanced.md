@@ -89,9 +89,9 @@ discoveryNamespaceSelectors:
 ```
 
 
-
+<!--
 ## TLS encryption {#tls-encryption}
 
-You can enable TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information, see the [TLS encryption]({{< link-hextra path="/install/tls" >}}) docs.
+You can enable TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information, see the [TLS encryption]({{< link-hextra path="/install/tls" >}}) docs.-->
 
 
