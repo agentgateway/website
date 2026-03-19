@@ -6,20 +6,32 @@ Manage HTTP connections to a proxy.
 
 You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
 
-### Maximum buffer size {#buffer}
+## Maximum buffer size {#buffer}
 
 Fine-tune connection speeds for read and write operations by setting a connection buffer limit (`maxBufferSize`). You can use this setting for both HTTP/1 and HTTP/2 connections.
 
 {{< cards >}}
-  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Fine-tune connection speeds for read and write operations by setting a connection buffer limit." >}}
+  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Set the buffer size." >}}
 {{< /cards >}}
 
 
-### HTTP/1.1 {#http1}
+## HTTP/1.1 settings {#http1}
 
 Use these settings to control header limits and idle connection behavior for HTTP/1.1 connections.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/1.1 connection configuration to the proxy.
+### Idle timeouts  {#http1-idle}
+
+Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstream or upstream service if there are no active streams.
+
+{{< cards >}}
+  {{< card path="/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Set idle timeout settings." >}}
+{{< /cards >}}
+
+### Max headers  {#http1-headers}
+
+Set the maximum number of headers allowed in HTTP/1.1 requests.
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies the HTTP/1.1 connection configuration to the proxy.
 
    ```yaml {paths="connection-http1"}
    kubectl apply -f- <<EOF
@@ -36,14 +48,13 @@ Use these settings to control header limits and idle connection behavior for HTT
      frontend:
        http:
          http1MaxHeaders: 15
-         http1IdleTimeout: 10s
    EOF
    ```
 
    | Setting | Description |
    | -- | -- |
    | `http1MaxHeaders` | The maximum number of headers allowed in HTTP/1.1 requests. Requests that exceed the limit receive a 431 response. |
-   | `http1IdleTimeout` | The duration of time before an unused HTTP/1.1 connection is closed. |
+
 
 2. Port-forward the gateway proxy on port 15000.
    ```sh
@@ -58,7 +69,7 @@ Use these settings to control header limits and idle connection behavior for HTT
    ```
 
    Example output:
-   ```json {linenos=table,hl_lines=[19,20],filename="http://localhost:15000/config_dump"}
+   ```json {linenos=table,hl_lines=[19],filename="http://localhost:15000/config_dump"}
    {
      "key": "frontend/agentgateway-system/http1:frontend-http:agentgateway-system/agentgateway-proxy",
      "name": {
@@ -78,7 +89,7 @@ Use these settings to control header limits and idle connection behavior for HTT
         "hTTP": {
           "maxBufferSize": null,
           "http1MaxHeaders": 15,
-          "http1IdleTimeout": "10s",
+          "http1IdleTimeout": null,
           "http2WindowSize": null,
           "http2ConnectionWindowSize": null,
           "http2FrameSize": null,
@@ -110,8 +121,6 @@ YAMLTest -f - <<'EOF'
   expect:
     bodyContains:
     - '"http1MaxHeaders"'
-    - '"http1IdleTimeout"'
-    - '"10s"'
 EOF
 {{< /doc-test >}}
 
@@ -123,9 +132,11 @@ EOF
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-### HTTP/2 flow control {#http2-flow}
+## HTTP/2 settings {#http2}
 
 Use these settings to tune HTTP/2 flow control, which governs how much data can be in-flight at the stream and connection levels.
+
+### Flow control {#http2-flow}
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/2 flow control configuration to the proxy.
 
@@ -143,8 +154,8 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
        group: gateway.networking.k8s.io
      frontend:
        http:
-         http2WindowSize: 1
-         http2ConnectionWindowSize: 1
+         http2WindowSize: 1048576
+         http2ConnectionWindowSize: 4194304
          http2FrameSize: 17000
    EOF
    ```
@@ -234,21 +245,12 @@ EOF
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
-### HTTP/2 keepalive {#http2-keepalive}
+### Keepalive {#http2-keepalive}
 
-
-{{< cards >}}
-  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="Manage idle and stale connections with HTTP/2 keepalive." >}}
-{{< /cards >}}
-
-
-## Next steps
-
-You can learn more about these individual HTTP connection settings.
+Manage idle and stale connections with HTTP/2 keepalive.
 
 {{< cards >}}
-  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Fine-tune connection speeds for read and write operations by setting a connection buffer limit." >}}
-  {{< card path="/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Set idle timeout settings." >}}
-  {{< card path="/resiliency/keepalive/" title="Keepalive" subtitle="Set keepalive settings." >}}
+  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="Set keepalive connection settings." >}}
 {{< /cards >}}
+
 
