@@ -274,5 +274,5 @@ Explore other agentgateway features.
 
 * Learn more about [load balancing strategies]({{< link-hextra path="/llm/load-balancing/" >}}) and the P2C algorithm.
 * Pass in [functions]({{< link-hextra path="/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
-* Set up [prompt guards]({{< link-hextra path="/llm/prompt-guards/">}}) to block unwanted requests and mask sensitive data.
+* Set up [prompt guards]({{< link-hextra path="/llm/guardrails/overview/">}}) to block unwanted requests and mask sensitive data.
 * [Enrich your prompts]({{< link-hextra path="/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.
