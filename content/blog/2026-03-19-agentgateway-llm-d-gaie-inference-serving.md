@@ -111,16 +111,19 @@ This is a story about how the open ecosystem is starting to line up:
 
 That combination is what makes "inference serving superpowers" more than a slogan. You get gateway policy and traffic control, inference-aware routing, smarter endpoint picking, and a standards-based path to evolve the stack over time.
 
-## Performance and scale are the next chapter
+## Try the demo
 
-llm-d already publishes strong performance signals around wide expert parallelism, prefill/decode disaggregation, and KV-aware routing. The next iteration of this post should add concrete scale data for the agentgateway + llm-d combination once the March 20, 2026 llm perf runs complete.
+If you want to see this stack running end to end, use the [agentgateway + llm-d demo](https://github.com/solo-io/agentgateway-llm-d).
 
-That update is where we can turn this story from architectural momentum into hard deployment evidence:
+The demo packages `agentgateway v1.0.0`, `GAIE v1.4.0`, and the `llm-d` simulated-accelerators flow into a repeatable local harness. It lets you send OpenAI-compatible requests through agentgateway, compare gateway traffic against a direct baseline, and inspect the system in Prometheus and Grafana.
 
-- throughput under scale,
-- latency behavior under realistic load,
-- and how the gateway plus scheduler stack behaves as concurrency climbs.
+```bash
+cp config/demo.env.example config/demo.env
+./scripts/demo.sh setup
+./scripts/demo.sh port-forward start
+./scripts/demo.sh smoke
+```
 
-For now, the most important point is this: the architecture is lining up, the standards are lining up, and the upstream integration work is already in motion.
+After that, run `./scripts/demo.sh traffic start` to light up the dashboards, or `./scripts/demo.sh walkthrough` for a guided flow.
 
 If you are building inference platforms on Kubernetes, that is exactly the kind of momentum worth paying attention to at KubeCon.
