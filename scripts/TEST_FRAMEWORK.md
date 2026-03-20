@@ -271,7 +271,7 @@ EOF
 - `source.type: local` sends the request from the local machine (default).
 - Use `source.type: pod` with a pod selector to send the request from inside the cluster.
 - The `headers` list under `expect` checks response headers (case-insensitive name matching).
-- Use `retries:` on a test entry to retry on failure.
+- Use `retries:` on a test entry to retry on transient failures (e.g. a race condition where a response code flips briefly). **Do not use `retries:` to work around a new-hostname ECONNRESET** — see the Troubleshooting section.
 
 ---
 
@@ -454,6 +454,30 @@ The install prerequisite should point to `content/docs/kubernetes/<version>/quic
 **Test fails immediately with "kubectl port-forward" error**
 
 Tests that contain `kubectl port-forward` in the generated script are automatically failed without running. Port-forwarding requires a persistent background process that doesn't work in the automated test environment. Replace any port-forward-based verification with a `YAMLTest` HTTP assertion using `${INGRESS_GW_ADDRESS}` instead.
+
+**Wait assertions pass but HTTP test hangs then fails with `read ECONNRESET`**
+
+When a test creates a new HTTPRoute with a hostname that was not previously registered, agentgateway-proxy (Rust/hyper) goes through two phases before it can serve the new route. `Accepted=True` and `ResolvedRefs=True` on the HTTPRoute only reflect control plane state (~50ms) — they do not guarantee the data plane is ready.
+
+- **Phase 1 (~120s)**: Proxy is unaware of the new hostname; every connection is immediately reset (< 1ms). `curl --max-time 5` iterations cost ~2s each (instant failure + 2s sleep).
+- **Phase 2 (last few seconds)**: Proxy receives xDS update and holds connections while applying it (4–26s per connection), then resets them.
+
+Adding `retries: 3` alone (without a warmup loop) multiplies the Phase 2 hang — observed total: 4 × 107s ≈ 429s.
+
+Fix: use **both** a curl warmup loop (covers Phase 1) and `retries: 1` on the first HTTP test entry (covers Phase 2):
+
+```
+{{< doc-test paths="<scenario-name>" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: <new-hostname>" && break
+  sleep 2
+done
+{{< /doc-test >}}
+```
+
+Then on the first YAMLTest HTTP assertion entry, add `retries: 1`. Once curl gets any HTTP response (even 404), Phase 1 is over. `retries: 1` absorbs Phase 2. Max poll window: ~420 seconds.
+
+This only applies when the feature page creates an HTTPRoute with a **new hostname** not in the prereq chain. Tests that update an existing prereq-chain HTTPRoute (same name/namespace) are not affected.
 
 **`/expect: unknown property "bodyJsonPath"` errors**
 
