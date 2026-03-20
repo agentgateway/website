@@ -8,9 +8,9 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 {{% reuse "agw-docs/snippets/listeners-https-create-cert.md" %}}
 
-6. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect. 
-   ```yaml
-   kubectl apply -f- <<EOF                                                          
+6. Configure an HTTPS listener on the Gateway that you created earlier. Note that your Gateway now has two listeners, `http` and `https`. You reference these listeners later in this guide to configure the HTTP to HTTPS redirect.
+   ```yaml {paths="https-redirect"}
+   kubectl apply -f- <<EOF
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:
@@ -41,8 +41,8 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 ## Redirect HTTP traffic to HTTPS
 
-1. Create an HTTPRoute for the httpbin app that sets up a `RequestRedirect` filter. By using the `https` scheme, you instruct the Gateway to redirect HTTP traffic to HTTPS and send back a 301 HTTP response code to the client. 
-   ```yaml
+1. Create an HTTPRoute for the httpbin app that sets up a `RequestRedirect` filter. By using the `https` scheme, you instruct the Gateway to redirect HTTP traffic to HTTPS and send back a 301 HTTP response code to the client.
+   ```yaml {paths="https-redirect"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -59,11 +59,15 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      hostnames: 
        - redirect.example
      rules:
-       - filters:
-         - type: RequestRedirect
-           requestRedirect:
-             scheme: https
-             statusCode: 301
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /
+         filters:
+           - type: RequestRedirect
+             requestRedirect:
+               scheme: https
+               statusCode: 301
    EOF
    ```
 
@@ -76,8 +80,8 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    |`spec.rules.filters.requestRedirect.scheme`|The type of redirect that you want to apply. The `https` scheme redirects all incoming HTTP traffic to HTTPS. |
    |`spec.rules.filters.requestRedirect.statusCode`|The HTTP status code that you want to return to the client in case of a redirect. For a permanent redirect, use the 301 HTTP status code.   |
 
-2. Create another HTTPRoute for the httpbin app that routes incoming HTTPS traffic to the httpbin app. Note that you bind this HTTPRoute to the HTTPS listener on your gateway by using `sectionName: https`. 
-   ```yaml
+2. Create another HTTPRoute for the httpbin app that routes incoming HTTPS traffic to the httpbin app. Note that you bind this HTTPRoute to the HTTPS listener on your gateway by using `sectionName: https`.
+   ```yaml {paths="https-redirect"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -176,23 +180,70 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    ```
 
 
+{{< doc-test paths="https-redirect" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbin-https-redirect HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: httpbin-https-redirect
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="https-redirect" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/status/200" -H "host: redirect.example" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="https-redirect" >}}
+YAMLTest -f - <<'EOF'
+- name: https redirect - HTTP request returns 301 with https location
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /status/200
+    method: GET
+    headers:
+      host: redirect.example
+  source:
+    type: local
+  expect:
+    statusCode: 301
+    headers:
+      - name: location
+        comparator: contains
+        value: https://redirect.example
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
-  
+
 1. Remove the HTTPRoutes for the httpbin app and the Kubernetes secret that holds the TLS certificate and key.
-   ```sh
-   kubectl delete httproute,secret -A -l gateway=https
+   ```sh {paths="https-redirect"}
+   kubectl delete httproute,secret -A -l gateway=https --ignore-not-found
    ```
 
 2. Remove the `example_certs` directory that stores your TLS credentials.
-   ```sh
+   ```sh {paths="https-redirect"}
    rm -rf example_certs
    ```
-  
-3. Remove the HTTPS listener from your Gateway. 
-   ```yaml
-   kubectl apply -f- <<EOF                                                          
+
+3. Remove the HTTPS listener from your Gateway.
+   ```yaml {paths="https-redirect"}
+   kubectl apply -f- <<EOF
    kind: Gateway
    apiVersion: gateway.networking.k8s.io/v1
    metadata:

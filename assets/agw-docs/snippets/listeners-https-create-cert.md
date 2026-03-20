@@ -1,10 +1,10 @@
-1. Create a directory to store your TLS credentials in. 
-   ```sh
+1. Create a directory to store your TLS credentials in.
+   ```sh {paths="https-redirect"}
    mkdir example_certs
    ```
 
 2. Create a self-signed root certificate. The following command creates a root certificate that is valid for a year and can serve any hostname. You use this certificate to sign the server certificate for the gateway later. For other command options, see the [OpenSSL docs](https://docs.openssl.org/master/man1/openssl-req/).
-   ```sh
+   ```sh {paths="https-redirect"}
    # root cert
    openssl req -x509 -sha256 \
    -nodes -days 365 \
@@ -15,7 +15,7 @@
    ```
 
 3. Create an OpenSSL configuration that matches the HTTPS hostname you plan to use. This example assumes that you want to use `example.com` as your domain. To use a different one, replace every `example.com` reference with the base domain that you want your listener to serve.
-   ```sh
+   ```sh {paths="https-redirect"}
    cat <<'EOF' > example_certs/gateway.cnf
    [ req ]
    default_bits = 2048
@@ -35,7 +35,7 @@
    ```
 
 4. Use the configuration and root certificate to create and sign the gateway certificate.
-   ```sh
+   ```sh {paths="https-redirect"}
    openssl req -new -nodes -keyout example_certs/gateway.key -out example_certs/gateway.csr -config example_certs/gateway.cnf
    openssl x509 -req -sha256 -days 365 \
      -CA example_certs/root.crt -CAkey example_certs/root.key -set_serial 0 \
@@ -44,7 +44,7 @@
    ```
 
 5. Create a Kubernetes secret to store your server TLS certificate. You create the secret in the same cluster and namespace that the gateway will be deployed to.
-   ```sh
+   ```sh {paths="https-redirect"}
    kubectl create secret tls -n {{< reuse "agw-docs/snippets/namespace.md" >}} https \
      --key example_certs/gateway.key \
      --cert example_certs/gateway.crt
