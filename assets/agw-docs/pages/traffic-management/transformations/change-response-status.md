@@ -1,38 +1,11 @@
-Update the response status based on headers being present in a response.
-
-
-## Before you begin
+Update the response status based on request query parameters.
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
-
 ## Change the response status
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In this example, you change the value of the `:status` pseudo response header to 401 if the response header `foo:bar` is present. If the `foo:bar` response header is not present, you return a 403 HTTP response code. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In this example, you change the value of the `:status` pseudo response header to 401 if the request URI contains `foo=bar`. If the request URI does not contain `foo=bar`, you return a 403 HTTP response code.
 
-   {{< tabs items="Envoy-based kgateway,Agentgateway" tabTotal="2" >}}
-   {{% tab tabName="Envoy-based kgateway" %}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: transformation
-     namespace: httpbin
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbin
-     transformation:
-       response:
-         set:
-         - name: ":status"
-           value: '{% if header("foo") == "bar" %}401{% else %}403{% endif %}'
-   EOF
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Agentgateway" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -52,28 +25,26 @@ Update the response status based on headers being present in a response.
            value: 'request.uri.contains("foo=bar") ? 401 : 403'
    EOF
    ```
-   {{% /tab %}}
-   {{< /tabs >}}
 
-2. Send a request to the httpbin app and include the `foo:bar` query parameter. This query parameter automatically gets added as a response header and therefore triggers the transformation rule that you set up. Verify that you get back a 401 HTTP response code. 
-   
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
+2. Send a request to the httpbin app and include the `foo=bar` query parameter. Verify that you get back a 401 HTTP response code.
+
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers?foo=bar \
-    -H "host: www.example.com:80" 
+    -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/response-headers?foo=bar" \
-   -H "host: www.example.com" 
+   -H "host: www.example.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   
-   Example output: 
-   ```console {hl_lines=[1,2,20,21]}
+
+   Example output:
+   ```console {hl_lines=[1,2]}
    < HTTP/1.1 401 Unauthorized
    HTTP/1.1 401 Unauthorized
    < access-control-allow-credentials: true
@@ -86,11 +57,6 @@ Update the response status based on headers being present in a response.
    foo: bar
    < content-length: 29
    content-length: 29
-   < x-envoy-upstream-service-time: 4
-   x-envoy-upstream-service-time: 4
-   < server: envoy
-   server: envoy
-   < 
 
    {
      "foo": [
@@ -99,25 +65,25 @@ Update the response status based on headers being present in a response.
    }
    ```
 
-3. Send another request to the httpbin app. This time, you include the `foo:baz` query parameter. Verify that you get back a 403 HTTP response code. 
-   
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
+3. Send another request to the httpbin app. This time, include the `foo=baz` query parameter. Verify that you get back a 403 HTTP response code.
+
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers?foo=baz \
-    -H "host: www.example.com:80" 
+    -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/response-headers?foo=baz" \
-   -H "host: www.example.com" 
+   -H "host: www.example.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   
-   Example output: 
-   ```console {hl_lines=[1,2,20,21]}
+
+   Example output:
+   ```console {hl_lines=[1,2]}
    < HTTP/1.1 403 Forbidden
    HTTP/1.1 403 Forbidden
    < access-control-allow-credentials: true
@@ -126,15 +92,10 @@ Update the response status based on headers being present in a response.
    access-control-allow-origin: *
    < content-type: application/json; encoding=utf-8
    content-type: application/json; encoding=utf-8
-   < foo: bar
-   foo: bar
+   < foo: baz
+   foo: baz
    < content-length: 29
    content-length: 29
-   < x-envoy-upstream-service-time: 4
-   x-envoy-upstream-service-time: 4
-   < server: envoy
-   server: envoy
-   < 
 
    {
      "foo": [
