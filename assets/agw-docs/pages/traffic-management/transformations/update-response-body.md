@@ -1,60 +1,13 @@
-Learn how to return a customized response body and how replace specific values in the body.
+Learn how to return a customized response body using CEL expressions.
 
-In this guide, you use the following methods to transform a JSON body:
+In this guide, you set a custom response body by evaluating a CEL expression against the request context. You can use `request.body` to read the raw incoming request body and construct a new response body string.
 
-* Directly access fields in the JSON body and inject them into a custom JSON body.
-* Use the `replace_with_random` Inja function to replace specific patterns in the JSON body.
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Update response body
 
-1. Send a request to the `json` endpoint of the httpbin app. The request returns a JSON body that you later transform.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/json \
-    -H "host: www.example.com:80" 
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vi localhost:8080/json \
-   -H "host: www.example.com"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-   
-   Example output:
-   ```console
-   {
-     "slideshow": {
-       "author": "Yours Truly",
-       "date": "date of publication",
-      "slides": [
-         {
-           "title": "Wake up to WonderWidgets!",
-           "type": "all"
-         },
-         {
-           "items": [
-             "Why <em>WonderWidgets</em> are great",
-             "Who <em>buys</em> WonderWidgets"
-           ],
-           "title": "Overview",
-           "type": "all"
-         }
-       ],
-       "title": "Sample Slide Show"
-     }
-   }
-   ```
-
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules: 
-   * A new body is created in the response with the values of the `author`, `title`, and `slides` fields.
-   * To extract the values, you use dot notation. Because the response is parsed as a JSON file, no extractors need to be defined. Instead, you can access the fields directly.   
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In the following example, you set the response body to a JSON object that echoes back the request path and method.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -70,97 +23,38 @@ In this guide, you use the following methods to transform a JSON body:
        name: httpbin
      transformation:
        response:
-         body: 
-           parseAs: AsJson
-           value: '{"author": "{{ slideshow.author }}", "title": "{{ slideshow.title }}", "slides": "{{ slideshow.slides }}}'
+         body:
+           value: '"{\"path\": \"" + request.path + "\", \"method\": \"" + request.method + "\"}"'
    EOF
    ```
-   
-3. Send a request to the `json` endpoint of the httpbin app again. Verify that you see the transformed response body.
+
+2. Send a request to the httpbin app. Verify that you get back a 200 HTTP response code and that the response body contains the transformed output.
+
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/json \
-    -H "host: www.example.com:80" 
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get \
+    -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/json \
+   curl -vi localhost:8080/get \
    -H "host: www.example.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   
+
    Example output:
-   ```console
-   {"author": "Yours Truly", "title": "Sample Slide Show", "slides":
-   "[{"title":"Wake up to WonderWidgets!","type":"all"},{"items":
-   ["Why <em>WonderWidgets</em> are great","Who <em>buys</em> WonderWidgets"],
-   "title":"Overview","type":"all"}]}
-   ```
+   ```console {hl_lines=[1,2,8]}
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
+   < content-type: application/json
+   content-type: application/json
+   < content-length: 34
+   content-length: 34
 
-4. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to replace the `all` pattern with a random string.
-
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: transformation
-     namespace: httpbin
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbin
-     transformation:
-       response:
-         body: 
-           parseAs: AsJson
-           value: '{{ replace_with_random(body(), "all") }}'
-   EOF
-   ```
-
-5. Send another request to the `json` endpoint of the httpbin app. Verify that every `all` value is replaced with a random string.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/json \
-    -H "host: www.example.com:80" 
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vi localhost:8080/json \
-   -H "host: www.example.com"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-   
-   Example output: 
-   ```console {hl_lines=[8,16]}
-   {
-     "slideshow": {
-       "author": "Yours Truly",
-       "date": "date of publication",
-       "slides": [
-         {
-           "title": "Wake up to WonderWidgets!",
-           "type": "5pESMzYNtg8W9AG/eVZ13A"
-         },
-         {
-           "items": [
-             "Why <em>WonderWidgets</em> are great",
-             "Who <em>buys</em> WonderWidgets"
-           ],
-           "title": "Overview",
-           "type": "5pESMzYNtg8W9AG/eVZ13A"
-         }
-       ],
-       "title": "Sample Slide Show"
-     }
-   }
+   {"path": "/get", "method": "GET"}
    ```
 
 ## Cleanup
