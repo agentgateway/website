@@ -24,8 +24,8 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 
 ## Set up a Dynamic Forward Proxy
 
-1. Create a Backend for the Dynamic Forward Proxy. 
-   ```yaml
+1. Create a Backend for the Dynamic Forward Proxy.
+   ```yaml {paths="dfp"}
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -37,8 +37,8 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
    EOF
    ```
 
-2. Create an HTTPRoute that routes incoming traffic to the DFP Backend. 
-   ```yaml
+2. Create an HTTPRoute that routes incoming traffic to the DFP Backend.
+   ```yaml {paths="dfp"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -56,6 +56,41 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+
+{{< doc-test paths="dfp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for dfp-httproute HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: dfp-httproute
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="dfp" >}}
+YAMLTest -f - <<'EOF'
+- name: dfp - request with host httpbin.org returns 200
+  retries: 5
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    method: GET
+    headers:
+      host: httpbin.org
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 3. Send a request to a hostname of your choice, such as `httpbin.org`. Verify that your gateway proxy successfully resolves the `httpbin.org` host and returns its welcome page.
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port forward for local testing" >}}

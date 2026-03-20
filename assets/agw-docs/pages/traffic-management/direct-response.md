@@ -24,7 +24,7 @@ The following rule is applied during schema validation:
 ## Set up direct responses 
 
 1. Create an HTTPRoute resource that routes traffic with the `/` path.
-   ```yaml
+   ```yaml {paths="direct-response"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -44,7 +44,7 @@ The following rule is applied during schema validation:
    ```
 
 2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `directResponse` configuration. The policy is applied on the HTTPRoute that you created earlier and returns a 200 HTTP response code with a custom message body.
-   ```yaml
+   ```yaml {paths="direct-response"}
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -64,6 +64,41 @@ The following rule is applied during schema validation:
    ```
 
    
+{{< doc-test paths="direct-response" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for direct-response HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: direct-response
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="direct-response" >}}
+YAMLTest -f - <<'EOF'
+- name: direct-response - /status/404 returns 200 with custom body
+  retries: 5
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/status/404"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyContains:
+    - "Status: Healthy"
+EOF
+{{< /doc-test >}}
+
 3. Send a request along the `/status/404` path of the httpbin app. Typically, this path returns a 404 HTTP response code. However, because you apply a direct response to this route, the request returns a 200 HTTP response code with a custom message instead as defined in your policy. Verify that you see the 200 HTTP response code with your custom message.  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
