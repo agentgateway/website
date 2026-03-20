@@ -88,7 +88,7 @@ discoveryNamespaceSelectors:
     version: v3
 ```
 
-
+<!-- TODO conditional-text oss-only -->
 {{< conditional-text include-if="kubernetes" >}}
 ## TLS encryption {#tls-encryption}
 
