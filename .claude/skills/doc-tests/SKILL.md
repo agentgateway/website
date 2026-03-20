@@ -47,6 +47,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 - Add `{paths="<name>"}` to the **info string** of every fenced block that should run in the test (e.g. ` ```sh {paths="llm"} `).
 - Only `sh`/`bash`/`shell`/`yaml`/`yml` are extracted. Blocks without `paths=` are skipped when `skip_tabs_without_paths` is true.
 - **Tabbed content**: Use different paths per tab (e.g. `{paths="httpbin,httpbin-linux"}` and `{paths="httpbin-macos"}`) so the scenario can pick one.
+- **Multiple paths must be comma-separated** — both in fenced block info strings (`{paths="a,b"}`) and in `{{< doc-test paths="a,b" >}}` shortcodes. The extractor splits on `,`, so space-separated values (e.g. `paths="a b"`) are treated as a single path name and will never match — causing the block to be silently excluded from the generated script. This is especially dangerous for shared setup blocks (e.g. "install binary") that need to run for multiple scenarios.
 
 ### 4. Long-running processes (standalone binary)
 
@@ -134,6 +135,7 @@ Example with all three:
 ## Checklist (quick)
 
 - [ ] Path tags and `{{< doc-test >}}` blocks added in the **asset** file(s) (`assets/agw-docs/...`), **not** in the content wrapper files — even if multiple content files (e.g. `latest/` and `main/`) reuse the same asset.
+- [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse).
