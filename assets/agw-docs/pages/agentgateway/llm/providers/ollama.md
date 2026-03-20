@@ -55,7 +55,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
 2. Create a headless Service and EndpointSlice that point to the external Ollama instance. Replace `<OLLAMA_IP>` with the actual IP address.
 
-   ```yaml {paths="ollama-provider-setup"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -197,7 +197,35 @@ YAMLTest -f - <<'EOF'
 EOF
 
 HTTPBUN_OLLAMA_POD_IP=$(kubectl get pod -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=httpbun-ollama -o jsonpath='{.items[0].status.podIP}')
-kubectl patch endpoints ollama-external -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p "{\"subsets\":[{\"addresses\":[{\"ip\":\"${HTTPBUN_OLLAMA_POD_IP}\"}],\"ports\":[{\"port\":3090,\"protocol\":\"TCP\"}]}]}"
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: ollama
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 11434
+    targetPort: 11434
+    protocol: TCP
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: ollama
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    kubernetes.io/service-name: ollama
+addressType: IPv4
+endpoints:
+- addresses:
+  - ${HTTPBUN_OLLAMA_POD_IP}
+ports:
+- port: 3090
+  protocol: TCP
+EOF
 kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"openai":{"model":"gpt-4"},"port":3090,"path":"/llm/chat/completions"}}}}'
 
 YAMLTest -f - <<'EOF'

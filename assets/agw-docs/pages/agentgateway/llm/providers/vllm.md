@@ -32,7 +32,7 @@ Choose your deployment option and follow the corresponding steps to set up the v
 
 4. Create a headless Service and EndpointSlice that point to the external vLLM server. Replace `<VLLM_SERVER_IP>` with the actual IP address.
 
-   ```yaml {paths="vllm-provider-setup"}
+   ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
@@ -219,8 +219,65 @@ YAMLTest -f - <<'EOF'
 EOF
 
 HTTPBUN_VLLM_POD_IP=$(kubectl get pod -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=httpbun-vllm -o jsonpath='{.items[0].status.podIP}')
-kubectl patch endpoints vllm-external -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p "{\"subsets\":[{\"addresses\":[{\"ip\":\"${HTTPBUN_VLLM_POD_IP}\"}],\"ports\":[{\"port\":3090,\"protocol\":\"TCP\"}]}]}"
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} vllm -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"openai":{"model":"gpt-4"},"port":3090,"path":"/llm/chat/completions"}}}}'
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Service
+metadata:
+  name: vllm
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - port: 8000
+    targetPort: 8000
+    protocol: TCP
+---
+apiVersion: discovery.k8s.io/v1
+kind: EndpointSlice
+metadata:
+  name: vllm
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    kubernetes.io/service-name: vllm
+addressType: IPv4
+endpoints:
+- addresses:
+  - ${HTTPBUN_VLLM_POD_IP}
+ports:
+- port: 3090
+  protocol: TCP
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: vllm
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  ai:
+    provider:
+      openai:
+        model: gpt-4
+      host: vllm.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
+      port: 3090
+      path: /llm/chat/completions
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: vllm
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+  - backendRefs:
+    - name: vllm
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+      group: agentgateway.dev
+      kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
 
 YAMLTest -f - <<'EOF'
 - name: wait for vllm HTTPRoute to be accepted
