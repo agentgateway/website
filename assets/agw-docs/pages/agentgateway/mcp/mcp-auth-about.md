@@ -18,6 +18,10 @@ Most IdPs do not comply to the MCP OAuth specification and therefore do not expo
 
 When MCP clients connect directly to remote MCP servers, each server handles its own OAuth independently. A developer working in an IDE like Cursor or Claude Code might have their agent call a tool, only for an OAuth pop-up to interrupt the session. The developer loses context, and faces another pop-up when the agent calls a tool on a different server. Each server might use a different identity provider, and none of them enforce corporate Single Sign-On (SSO).
 
+### SaaS MCP servers and shadow IT {#saas-shadow-it}
+
+Often, public SaaS providers such as GitHub, Databricks, and Slack offer their own hosted remote MCP servers. When users connect to these SaaS MCP servers directly, or even through an MCP gateway, they bypass corporate identity, security, and observability controls. The enterprise cannot see who is connecting to what, what data they are sending, or enforce permission scopes. This gap creates a shadow IT problem where external MCP endpoints operate outside the trust domain, with no audit trail of authorization decisions.
+
 ## Agentgateway to fill in the gaps
 
 Instead of pre-registering MCP clients, you can use agentgateway to register MCP clients dynamically with your IdP. The agentgateway proxy implements the MCP OAuth 2.0 specification, and can therefore facilitate the client registration process on behalf of the MCP client by translating the MCP OAuth information into configuration that the IdP understands.
@@ -83,9 +87,10 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 
 Agentgateway's approach provides the following benefits.
 
-- **No mid-session interruptions**: Tool calls succeed immediately because the client already authenticated when it connected.
+- **No mid-session interruptions**: Tool calls succeed immediately because the client already authenticated when it connected. This connect-time authentication avoids the disruptive pattern where each tool call triggers a separate OAuth pop-up.
 - **Single sign-on**: One login through your enterprise IdP grants access to all MCP servers behind the gateway.
 - **Consistent policy enforcement**: Authentication and authorization policies are applied uniformly at the gateway, rather than depending on each MCP server to implement its own security.
+- **Centralized observability**: All connections, including those to external SaaS MCP servers, flow through the gateway. Enterprises get full visibility into who is connecting to what, what data is being sent, and can enforce audit trails across trust domain boundaries.
 
 ## Setup
 
