@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Doc test guides skill
 
-Use this skill when adding tests to documentation guides in the `agentgateway/website` repo so that code blocks and hidden steps are assembled into runnable scripts. The canonical reference is [scripts/TEST_FRAMEWORK.md](../../../../scripts/TEST_FRAMEWORK.md). This skill summarizes the workflow and gotchas for **guides** (especially standalone/quickstart).
+Use this skill when adding tests to documentation guides in the `agentgateway/website` repo so that code blocks and hidden steps are assembled into runnable scripts. The canonical reference is [scripts/TEST_FRAMEWORK.md](../../../scripts/TEST_FRAMEWORK.md). This skill summarizes the workflow and gotchas for **guides** (especially standalone/quickstart).
 
 ---
 
@@ -221,6 +221,6 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 
 ## Reference
 
-- Full framework: [scripts/TEST_FRAMEWORK.md](../../../../scripts/TEST_FRAMEWORK.md)
+- Full framework: [scripts/TEST_FRAMEWORK.md](../../../scripts/TEST_FRAMEWORK.md)
 - Extractor: `scripts/doc_test_extract.py` (block selection, reuse resolution, block order sort)
 - Runner: `scripts/doc_test_run.py` (discovers `test:` pages, generates scripts, optional kind run)
