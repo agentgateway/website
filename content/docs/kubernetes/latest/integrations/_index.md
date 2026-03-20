@@ -9,5 +9,6 @@ Extend agentgateway capabilities by integrating with external tools and platform
 ## Guides
 
 {{< cards >}}
+  {{< card link="llm-clients" title="LLM Client Configuration" subtitle="Configure Cursor, Continue, OpenAI SDK, and curl for Kubernetes" >}}
   {{< card link="llm-observability" title="LLM Observability" subtitle="Prompt logging and cost tracking" >}}
 {{< /cards >}}
