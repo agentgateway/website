@@ -180,6 +180,8 @@ YAMLTest -f - <<'EOF'
     headers:
       host: www.example.com
       instructions: '{"addHeaders":{"extproc":"true"}}'
+  source:
+    type: local
   expect:
     statusCode: 200
     bodyJsonPath:
