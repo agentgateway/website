@@ -479,6 +479,31 @@ Then on the first YAMLTest HTTP assertion entry, add `retries: 1`. Once curl get
 
 This only applies when the feature page creates an HTTPRoute with a **new hostname** not in the prereq chain. Tests that update an existing prereq-chain HTTPRoute (same name/namespace) are not affected.
 
+**`read ECONNRESET` persists beyond the warmup window (cloud-provider-kind LB failure)**
+
+If the test already has the warmup loop + `retries: 1` pattern but the HTTP assertion still fails with `read ECONNRESET` after 200+ seconds (the warmup curl loop never breaks out), the issue is likely a cloud-provider-kind LoadBalancer networking failure — not a data-plane warmup problem.
+
+**How to distinguish from the data-plane warmup issue:** Check the controller logs in the diagnostic artifacts at `out/tests/generated/context/<scenario>/pods/<controller-pod>-controller-logs.log`. Look for `XDS: Pushing` entries with `clients:1` and `RDS` push responses for your routes:
+
+```
+{"msg":"XDS: Pushing","component":"krtxds","clients":1,"version":"..."}
+{"msg":"push response","component":"krtxds","type":"RDS","resources":1,...}
+```
+
+If the controller pushed routes to the proxy successfully, the proxy IS configured — the problem is at the network level between the LB IP and the pod.
+
+**Root cause:** cloud-provider-kind assigns a LoadBalancer IP to the Service, but traffic from that IP is not properly forwarded to the pod through the Kind Docker network. The LB IP is reachable (TCP connect succeeds) but the proxy resets the connection because it never receives the forwarded packets.
+
+**Typical diagnostic evidence:**
+- All pods Running with 0 restarts
+- LB IP assigned (e.g. `172.18.0.x`) and Service shows `80:<nodePort>/TCP`
+- HTTPRoutes show `Accepted=True`
+- Controller logs show successful xDS pushes with `clients:1`
+- Proxy log shows `started bind bind="80/agentgateway-system/agentgateway-proxy"`
+- curl gets `ECONNRESET` for the entire test duration (200+ seconds)
+
+**Resolution:** This is a transient infrastructure issue. Re-running the test typically resolves it. On macOS, ensure `cloud-provider-kind` has proper permissions (`sudo`). If it recurs frequently, check Docker resource allocation (memory/CPU) for the Kind cluster.
+
 **`/expect: unknown property "bodyJsonPath"` errors**
 
 This error almost always means the `expect` block has bad indentation. `bodyJsonPath` must be a direct child of `expect:`, not nested under `statusCode` or `headers`. Double-check that all keys under `expect:` are at the same indentation level:
