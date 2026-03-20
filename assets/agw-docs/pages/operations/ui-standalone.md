@@ -6,7 +6,7 @@ The agentgateway Admin UI is a built-in web interface that runs alongside the pr
 
 The Admin UI is separate from the [Web UI integrations]({{< link-hextra path="/integrations/web-uis/" >}}), which are third-party AI chat frontends (such as Open WebUI or LibreChat) that you connect to agentgateway as a backend. The Admin UI is the management interface for agentgateway itself.
 
-{{< doc-test paths="ui-standalone-default ui-standalone-custom-port" >}}
+{{< doc-test paths="ui-standalone-default,ui-standalone-custom-port" >}}
 # Install agentgateway binary for tests
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
