@@ -13,19 +13,19 @@ workload with policy, multi-tenancy, intelligent routing, cache locality, predic
 scale across nodes and data centers.
 
 This shift is exactly why [agentgateway](https://agentgateway.dev/), [llm-d](https://llm-d.ai/), and the
-[Gateway API Inference Extension (GAIE)](https://gateway-api-inference-extension.sigs.k8s.io/) belong together.
+[Gateway API Inference Extension (GIE)](https://gateway-api-inference-extension.sigs.k8s.io/) belong together.
 
 [llm-d](https://llm-d.ai/docs/architecture/) is pushing new frontiers in intelligent scheduling, prefill/decode
 disaggregation, tiered KV caching, and workload-aware autoscaling. [agentgateway](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0)
 is a high performance production-ready AI gateway for LLM, MCP, A2A, and Kubernetes-native inference traffic.
-GAIE has become the standard contract between the gateway layer and inference-aware scheduling.
+GIE has become the standard contract between the gateway layer and inference-aware scheduling.
 
 Put those pieces together and you get something more useful than a demo stack. You get a Kubernetes-native path
 to production inference serving.
 
 ## Inference is evolving from serving model endpoints to inference systems
 
-Across llm-d, GAIE, and the broader open inference ecosystem, three shifts stand out.
+Across llm-d, GIE, and the broader open inference ecosystem, three shifts stand out.
 
 - **Inference routing is becoming first-class infrastructure.** The gateway is no longer just a pass-through. It needs to understand models,
   priorities, failure modes, and inference objectives.
@@ -50,7 +50,7 @@ based on industry standards.
 }}%%
 flowchart LR
     A["Apps and agents"]:::entry --> B["agentgateway<br/>policy, ingress, Gateway API"]:::gateway
-    B --> C["GAIE InferencePool<br/>standard inference routing contract"]:::contract
+    B --> C["GIE InferencePool<br/>standard inference routing contract"]:::contract
     C --> D["llm-d inference scheduler<br/>KV-aware and load-aware endpoint picking"]:::scheduler
     D --> E["vLLM and serving backends"]:::backend
     D --> F["KV cache tiers<br/>GPU, CPU, SSD, remote storage"]:::cache
@@ -68,20 +68,20 @@ Each layer does a different job.
 
 - **agentgateway** gives you the production traffic layer. It is a high-performance, Rust-based AI gateway that supports both
   standalone and Kubernetes deployment modes, recently achieved GA in [release v1.0.0](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0),
-  and is the first [GAIE v1.4.0](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/conformance/reports/v1.4.0/gateway/agentgateway/README.md)
+  and is the first [GIE v1.4.0](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/conformance/reports/v1.4.0/gateway/agentgateway/README.md)
   conformant gateway.
-- **GAIE** gives you the shared language between the gateway and the inference scheduler. Its [InferencePool](https://gateway-api-inference-extension.sigs.k8s.io/api-types/inferencepool/) API and [extension protocol](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/v1.4.0/docs/proposals/004-endpoint-picker-protocol/README.md) let gateways route inference traffic without hard-coding scheduler behavior into the gateway itself.
+- **GIE** gives you the shared language between the gateway and the inference scheduler. Its [InferencePool](https://gateway-api-inference-extension.sigs.k8s.io/api-types/inferencepool/) API and [extension protocol](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/v1.4.0/docs/proposals/004-endpoint-picker-protocol/README.md) let gateways route inference traffic without hard-coding scheduler behavior into the gateway itself.
 - **llm-d** gives you the serving intelligence. Its architecture focuses on [intelligent inference scheduling, prefill/decode disaggregation,
   wide expert parallelism, tiered KV prefix caching, and workload autoscaling](https://llm-d.ai/docs/architecture/).
 
 The clean separation while being integrated through standard interfaces is the superpower. agentgateway does not need to reimplement llm-d's scheduler logic.
-llm-d does not need to reinvent gateway functionality, security policy, or Kubernetes networking APIs. GAIE is the thread that stitches them all together.
+llm-d does not need to reinvent gateway functionality, security policy, or Kubernetes networking APIs. GIE is the thread that stitches them all together.
 That makes the stack easier to understand and evolve over time.
 
 ## Why this combination matters right now
 
 The [llm-d inference scheduler](https://github.com/llm-d/llm-d-inference-scheduler) makes this relationship explicit. Its Endpoint Picker
-extends GAIE and adds llm-d-specific capabilities such as P/D disaggregation. At the same time, the [llm-d architecture](https://llm-d.ai/docs/architecture/)
+extends GIE and adds llm-d-specific capabilities such as P/D disaggregation. At the same time, the [llm-d architecture](https://llm-d.ai/docs/architecture/)
 leans into the exact optimizations that operators care about most:
 
 - Prefix-cache-aware routing
@@ -96,11 +96,11 @@ That is not abstract roadmap material. It is the current capabilities and future
 - Better interoperability pressure across adjacent projects in the inference and CNCF ecosystems.
 - Stronger trust signals around legal, security, and IP hygiene for teams that want to standardize on llm-d in production.
 
-On the gateway side, the integration is now easier to consume. llm-d now includes the [latest support for agentgateway and GAIE](https://github.com/llm-d/llm-d/pull/421).
+On the gateway side, the integration is now easier to consume. llm-d now includes the [latest support for agentgateway and GIE](https://github.com/llm-d/llm-d/pull/421).
 
-## Why GAIE is a big deal
+## Why GIE is a big deal
 
-GAIE matters because it keeps turning inference routing into a portable, testable interface instead of a stack-specific trick.
+GIE matters because it keeps turning inference routing into a portable, testable interface instead of a stack-specific trick.
 
 The [v1.4.0](https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/tag/v1.4.0) release added standalone Endpoint Picker (EPP) support,
 split conformance into its own Go module, and included InferencePool, Helm, and gRPC improvements such as `appProtocol`, `FailOpen`,
@@ -112,7 +112,7 @@ That matters for one simple reason: conformance is what turns a nice architectur
 
 If you want to see this stack running end-to-end, use the [agentgateway + llm-d demo](https://github.com/solo-io/agentgateway-llm-d).
 
-The demo packages the latest releases of `agentgateway`, `GAIE`, and `llm-d` without the need for GPUs to give the stack a try.
+The demo packages the latest releases of `agentgateway`, `GIE`, and `llm-d` without the need for GPUs to give the stack a try.
 It lets you send OpenAI-compatible requests through agentgateway, compare gateway traffic against a direct baseline, and inspect the system in Prometheus
 and Grafana. Running the demo is as simple as:
 
@@ -127,4 +127,4 @@ cp config/demo.env.example config/demo.env
 
 After that, run `./scripts/demo.sh traffic start` to light up the dashboards, or `./scripts/demo.sh walkthrough` for a guided flow.
 
-If you are building an inference platform on Kubernetes, agentgateway + llm-d + GAIE is the stack worth paying attention to.
+If you are building an inference platform on Kubernetes, agentgateway + llm-d + GIE is the stack worth paying attention to.
