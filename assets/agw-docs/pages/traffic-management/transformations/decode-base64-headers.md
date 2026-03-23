@@ -1,8 +1,8 @@
-Use CEL expressions to accomplish the following tasks:
+Use [CEL expressions](/reference/cel/) to accomplish the following tasks:
 
 - Extract a base64-encoded value from a specific request header.
 - Decode the base64-encoded value.
-- Trim the decoded value and only capture everything starting from the 11th character.
+- Trim the decoded value and only capture everything starting from the eleventh character.
 - Add the captured string as a response header.
 
 

@@ -1,4 +1,4 @@
-Learn how to return a customized response body using CEL expressions.
+Learn how to return a customized response body using [CEL expressions](/reference/cel/).
 
 In this guide, you set a custom response body by evaluating a CEL expression against the request context. You can use `request.body` to read the raw incoming request body and construct a new response body string.
 

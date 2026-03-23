@@ -1,4 +1,4 @@
-Update the response status based on request query parameters.
+Update the response status based on request query parameters by using [CEL expressions](/reference/cel/).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
