@@ -65,6 +65,32 @@ The following built-in functions are available in CEL transformation expressions
 | `base64.decode(string)` | `bytes` | Decodes a base64-encoded string ([example]({{< link-hextra path="/traffic-management/transformations/set-response-status/" >}}))|
 
 
+## Transformation phases {#phases}
+
+Transformations in `spec.traffic` support a `phase` field that controls when the policy is evaluated in the request lifecycle. If `phase` is omitted, `PostRouting` is used. 
+
+| Phase | Description | Valid target types |
+|-------|-------------|-------------------|
+| `PostRouting` | Default. Applied after the routing decision is made. | Gateway, Listener, HTTPRoute |
+| `PreRouting` | Applied before the routing decision is made. Useful for gateway-level gates that apply to all routes. | Gateway, Listener |
+
+
+```yaml
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: http
+  traffic:
+    phase: PreRouting
+    transformation:
+      request:
+        set:
+        - name: x-phase
+          value: '"pre-routing"'
+```
+
+
 ## CEL variables in access logs {#cel-log}
 
 When building or debugging transformations, you can log CEL variables to inspect what values are available at runtime. Configure this in your Helm values under `agentgateway.config.logging.fields.add`. Each entry maps a log field name to a CEL expression that is evaluated per request and written to the structured access log.
@@ -92,7 +118,7 @@ agentgateway:
   enabled: true
 ```
 
-This adds a `cel` field to every access log entry containing all available context variables. To view the logs, run:
+This configuration adds a `cel` field to every access log entry containing all available context variables. To view the logs, run:
 
 ```sh
 kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway | grep cel

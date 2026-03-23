@@ -2,7 +2,7 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to extract val
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Inject request headers into response headers
+## Inject request header fields into response headers
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
    * `x-gateway-response`: Use the value from the `x-gateway-request` request header and populate it into an `x-gateway-response` response header.

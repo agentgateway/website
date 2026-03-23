@@ -2,7 +2,7 @@ Update the response status based on request query parameters by using [CEL expre
 
 The transformation phase controls when the policy is evaluated:
 
-- **`PostRouting`** (default): The transformation is applied after the routing decision is made. Target an HTTPRoute.
+- **`PostRouting`**: The transformation is applied after the routing decision is made. Target an HTTPRoute.
 - **`PreRouting`**: The transformation is applied before routing decisions are made, acting as a gateway-level gate. Target a Gateway or Listener instead of an HTTPRoute.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
