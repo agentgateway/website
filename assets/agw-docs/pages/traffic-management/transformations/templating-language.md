@@ -74,8 +74,8 @@ Transformations in `spec.traffic` support a `phase` field that controls when the
 | `PostRouting` | Default. Applied after the routing decision is made. | Gateway, Listener, HTTPRoute |
 | `PreRouting` | Applied before the routing decision is made. Useful for gateway-level gates that apply to all routes. | Gateway, Listener |
 
-
-```yaml
+Example:
+```yaml  {hl_lines=[7]}
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io

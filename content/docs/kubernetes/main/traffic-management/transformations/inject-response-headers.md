@@ -1,6 +1,6 @@
 ---
 title: Inject response headers
-weight: 20
+weight: 50
 description: Extract values from a request header and inject it as a header to your response.
 ---
 

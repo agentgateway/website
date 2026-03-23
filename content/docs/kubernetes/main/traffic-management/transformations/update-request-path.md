@@ -1,6 +1,6 @@
 ---
 title: Update request paths and methods
-weight: 10
+weight: 40
 description: Change the request path and HTTP method when a request header is present.
 ---
 
