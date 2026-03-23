@@ -34,11 +34,12 @@ Use CEL expressions to accomplish the following tasks:
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     transformation:
-       response:
-         add:
-         - name: x-base64-decoded
-           value: 'string(base64_decode(request.headers["x-base64-encoded"])).substring(11)'
+     backend:
+       transformation:
+         response:
+           add:
+           - name: x-base64-decoded
+             value: 'string(base64.decode(request.headers["x-base64-encoded"])).substring(11)'
    EOF
    ```
 
@@ -62,7 +63,7 @@ Use CEL expressions to accomplish the following tasks:
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[14,15]}
+   ```console {hl_lines=[2,3,12,13]}
    * Mark bundle as not supporting multiuse
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
@@ -72,8 +73,6 @@ Use CEL expressions to accomplish the following tasks:
    access-control-allow-origin: *
    < content-type: application/json; encoding=utf-8
    content-type: application/json; encoding=utf-8
-   < date: Wed, 26 Jun 2024 02:54:48 GMT
-   date: Wed, 26 Jun 2024 02:54:48 GMT
    < content-length: 3
    content-length: 3
    < x-base64-decoded: ion test

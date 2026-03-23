@@ -21,10 +21,10 @@ In this guide, you set a custom response body by evaluating a CEL expression aga
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     transformation:
-       response:
-         body:
-           value: '"{\"path\": \"" + request.path + "\", \"method\": \"" + request.method + "\"}"'
+     backend:
+       transformation:
+         response:
+           body: '"{\"path\": \"" + request.path + "\", \"method\": \"" + request.method + "\"}"'
    EOF
    ```
 
@@ -51,8 +51,8 @@ In this guide, you set a custom response body by evaluating a CEL expression aga
    HTTP/1.1 200 OK
    < content-type: application/json
    content-type: application/json
-   < content-length: 34
-   content-length: 34
+   < content-length: 33
+   content-length: 33
 
    {"path": "/get", "method": "GET"}
    ```

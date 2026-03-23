@@ -13,7 +13,7 @@ CEL transformations allow you to use dynamic expressions to extract and transfor
 To learn more about how to use CEL, refer to the following resources:
 
 * [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
-* [Agentgateway reference docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/)
+* [Agentgateway reference docs](/reference/cel/)
 
 ## CEL syntax quick reference {#cel-syntax}
 

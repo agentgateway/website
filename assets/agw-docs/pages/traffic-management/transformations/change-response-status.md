@@ -1,6 +1,6 @@
 Update the response status based on request query parameters.
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Change the response status
 
@@ -18,11 +18,12 @@ Update the response status based on request query parameters.
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     transformation:
-       response:
-         set:
-         - name: ":status"
-           value: 'request.uri.contains("foo=bar") ? 401 : 403'
+     backend:
+       transformation:
+         response:
+           set:
+           - name: ":status"
+             value: 'request.uri.contains("foo=bar") ? 401 : 403'
    EOF
    ```
 

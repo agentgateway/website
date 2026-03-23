@@ -10,7 +10,7 @@ Pseudo headers are special headers that are used in HTTP/2 to provide metadata a
 
 Common pseudo headers include:
 * `:method`: The HTTP method that is used, such as GET or POST.
-* `:scheme`: The protocol that is used, such as http or https.
+* `:scheme`: The protocol that is used, such as `http` or `https`.
 * `:authority`: The hostname and port number that the request is sent to.
 * `:path`: The path of the request.
 
@@ -35,13 +35,14 @@ Common pseudo headers include:
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     transformation:
-       request:
-         set:
-         - name: ":path"
-           value: 'request.headers["foo"] == "bar" ? "/post" : request.path'
-         - name: ":method"
-           value: 'request.headers["foo"] == "bar" ? "POST" : request.method'
+     backend:
+       transformation:
+         request:
+           set:
+           - name: ":path"
+             value: 'request.headers["foo"] == "bar" ? "/post" : request.path'
+           - name: ":method"
+             value: 'request.headers["foo"] == "bar" ? "POST" : request.method'
    EOF
    ```
 
@@ -65,7 +66,7 @@ Common pseudo headers include:
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[1,2,25]}
+   ```console {hl_lines=[1,2,24]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    ...
@@ -115,7 +116,7 @@ Common pseudo headers include:
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[1,2,20]}
+   ```console {hl_lines=[1,2,19]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    ...
