@@ -4,7 +4,7 @@ CEL transformations allow you to use dynamic expressions to extract and transfor
 
 To learn more about how to use CEL, refer to the following resources:
 
-* [CEL reference](/reference/cel/)
+* [CEL reference]({{< link-hextra path="/reference/cel/" >}})
 * [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 
 
@@ -14,11 +14,11 @@ The following examples show common CEL patterns used in transformations.
 
 | Pattern | Example | Notes |
 |---------|---------|-------|
-| String literal | `"hello"` | Must use single-quoted string in YAML: `'"hello"'` |
-| Variable | `request.path` | No quotes needed |
-| Concatenation | `"prefix-" + request.path` | Use `+` to join strings |
-| Ternary | `request.headers["x-foo"] == "bar" ? "yes" : "no"` | Condition `?` true-value `:` false-value |
-| Map access | `request.headers["x-my-header"]` | Use bracket notation for headers |
+| String literal | `'"hello"'` | Wrap in single quotes in YAML. |
+| Variable | `request.path` | No quotes needed. |
+| Concatenation | `'"prefix-" + request.path'` | Wrap in single quotes in YAML. |
+| Ternary | `'request.headers["x-foo"] == "bar" ? "yes" : "no"'` | Wrap in single quotes in YAML. Both sides must be the same type, such as strings or integers on both sides.|
+| Map access | `'request.headers["x-my-header"]'` | Wrap in single quotes in YAML. |
 
 **YAML quoting:** When a CEL expression is a string literal or starts with a quote, wrap it in single quotes in YAML so the inner double quotes are preserved:
 
@@ -41,7 +41,7 @@ The following variables are available in CEL transformation expressions:
 | `request.host` | The hostname of the request (e.g., `"example.com"`) |
 | `request.uri` | The complete URI of the request (e.g., `"http://example.com/path"`) |
 | `request.version` | The HTTP version (e.g., `"HTTP/1.1"`) |
-| `request.headers["name"]` | Value of a request header by name (case-insensitive) |
+| `request.headers["name"]` | Value of a request header by case-insensitive name |
 | `request.body` | The raw request body as a string |
 | `source.address` | The IP address of the downstream client |
 | `jwt.sub` | The `sub` claim from a verified JWT |
@@ -58,11 +58,11 @@ The following built-in functions are available in CEL transformation expressions
 
 | Function | Returns | Description |
 |----------|---------|-------------|
-| `uuid()` | `string` | Generates a random UUIDv4 string |
-| `random()` | `float` | Generates a random float between `0.0` and `1.0` |
-| `string(value)` | `string` | Converts a value to its string representation |
-| `base64.encode(bytes)` | `string` | Encodes a value to base64 |
-| `base64.decode(string)` | `bytes` | Decodes a base64-encoded string |
+| `uuid()` | `string` | Generates a random UUIDv4 string ([example]({{< link-hextra path="/traffic-management/transformations/combine/" >}}))|
+| `random()` | `float` | Generates a random float between `0.0` and `1.0` ([example]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}))|
+| `string(value)` | `string` | Converts a value to its string representation ([example]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}))|
+| `base64.encode(bytes)` | `string` | Encodes a value to base64 ([example]({{< link-hextra path="/traffic-management/transformations/set-response-status/" >}}))|
+| `base64.decode(string)` | `bytes` | Decodes a base64-encoded string ([example]({{< link-hextra path="/traffic-management/transformations/set-response-status/" >}}))|
 
 
 ## CEL variables in access logs {#cel-log}

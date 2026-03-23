@@ -1,4 +1,4 @@
-Update the response status based on request query parameters by using [CEL expressions](/reference/cel/).
+Update the response status based on request query parameters by using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
 
 The transformation phase controls when the policy is evaluated:
 

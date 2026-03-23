@@ -1,4 +1,4 @@
-Use [CEL expressions](/reference/cel/) to construct a full request URL from context variables and forward it upstream as a request header.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to construct a full request URL from context variables and forward it upstream as a request header.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

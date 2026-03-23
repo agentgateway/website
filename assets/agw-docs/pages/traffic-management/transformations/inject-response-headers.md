@@ -1,4 +1,4 @@
-Use [CEL expressions](/reference/cel/) to extract values from request headers and add them to your responses.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to extract values from request headers and add them to your responses.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
