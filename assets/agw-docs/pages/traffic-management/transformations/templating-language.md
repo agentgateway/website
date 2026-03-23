@@ -64,11 +64,25 @@ The following built-in functions are available in CEL transformation expressions
 | `base64.encode(bytes)` | `string` | Encodes a value to base64 |
 | `base64.decode(string)` | `bytes` | Decodes a base64-encoded string |
 
-### Log CEL variables in agentgateway {#cel-log}
 
-You can log the full context of the CEL variables by [upgrading your Helm installation settings]({{< link-hextra path="/operations/upgrade/">}}), such as the following example:
+## CEL variables in access logs {#cel-log}
+
+When building or debugging transformations, you can log CEL variables to inspect what values are available at runtime. Configure this in your Helm values under `agentgateway.config.logging.fields.add`. Each entry maps a log field name to a CEL expression that is evaluated per request and written to the structured access log.
+
+Save your logging config to a `values.yaml` file and apply it with `helm upgrade`:
+
+```sh
+helm upgrade -i -n agentgateway-system agentgateway \
+  oci://cr.agentgateway.dev/charts/agentgateway \
+  -f values.yaml
+```
+
+#### Log all variables
+
+Use the `variables()` function to dump the full CEL context as a JSON object under a single log field. This is useful when you are unsure which variables are available.
 
 ```yaml
+# values.yaml
 agentgateway:
   config:
     logging:
@@ -77,6 +91,45 @@ agentgateway:
           cel: variables()
   enabled: true
 ```
+
+This adds a `cel` field to every access log entry containing all available context variables. To view the logs, run:
+
+```sh
+kubectl logs -n agentgateway-system -l app.kubernetes.io/name=agentgateway | grep cel
+```
+
+Example log output:
+
+```json
+{
+  "cel": {
+    "request.path": "/get",
+    "request.method": "GET",
+    "request.scheme": "http",
+    "request.host": "www.example.com",
+    "source.address": "10.244.0.6"
+  }
+}
+```
+
+#### Log specific variables
+
+To keep logs concise, you can log individual variables by name instead of the full context.
+
+```yaml
+# values.yaml
+agentgateway:
+  config:
+    logging:
+      fields:
+        add:
+          request_path: request.path
+          request_method: request.method
+          client_ip: source.address
+  enabled: true
+```
+
+The field names on the left (`request_path`, `request_method`, `client_ip`) are arbitrary. The names become the keys in the structured log output.
 
 
 
