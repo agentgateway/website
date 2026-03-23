@@ -17,8 +17,8 @@ This shift is exactly why [agentgateway](https://agentgateway.dev/), [llm-d](htt
 
 [llm-d](https://llm-d.ai/docs/architecture/) is pushing new frontiers in intelligent scheduling, prefill/decode
 disaggregation, tiered KV caching, and workload-aware autoscaling. [agentgateway](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0)
-is a high performance production-ready AI gateway for LLM, MCP, A2A, and Kubernetes-native inference traffic.
-GIE has become the standard contract between the gateway layer and inference-aware scheduling.
+has quickly developed into a production-ready high performance AI gateway for LLM, MCP, A2A, and Kubernetes-native
+inference traffic. GIE has become the standard contract between the gateway layer and inference-aware scheduling.
 
 Put those pieces together and you get something more useful than a demo stack. You get a Kubernetes-native path
 to production inference serving.
@@ -112,9 +112,9 @@ That matters for one simple reason: conformance is what turns a nice architectur
 
 If you want to see this stack running end-to-end, use the [agentgateway + llm-d demo](https://github.com/solo-io/agentgateway-llm-d).
 
-The demo packages the latest releases of `agentgateway`, `GIE`, and `llm-d` without the need for GPUs to give the stack a try.
-It lets you send OpenAI-compatible requests through agentgateway, compare gateway traffic against a direct baseline, and inspect the system in Prometheus
-and Grafana. Running the demo is as simple as:
+The demo gives you a reproducible way to try agentgateway, GIE, and llm-d without GPUs, using the latest agentgateway and GIE releases plus
+llm-d with the newly merged integration support. It lets you send OpenAI-compatible requests through agentgateway, compare gateway traffic
+against a direct baseline, and inspect the system in Prometheus and Grafana. Running the demo is as simple as:
 
 ```bash
 git clone https://github.com/solo-io/agentgateway-llm-d.git
