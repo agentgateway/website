@@ -5,6 +5,9 @@ author: "Lin Sun"
 description: "Agentgateway celebrates 1 million pulls, 175+ contributors, and 2,000+ stars in 1 year"
 ---
 
+{{< reuse-image src="img/blog/1year-anniversary/agw-1year-hero.png" width="800px" >}}
+{{< reuse-image-dark srcDark="img/blog/1year-anniversary/agw-1year-hero.png" width="800px" >}}
+
 On this day in 2025, we created agentgateway after first carefully evaluating Envoy Proxy. As a company deeply invested in Envoy, we initially didn’t want to start a new project, but we needed to keep pace with the rapid evolution of AI. Building on our success developing the new proxy for Istio Ambient, we ultimately decided to create agentgateway from the ground up.
 
 ## Rapid adoption among users
@@ -20,7 +23,7 @@ We have over 2,000 GitHub stars on [agentgateway’s main repository](https://gi
 
 Scroll through birthday wishes from some of our users and contributors.
 
-{{< testimonials-carousel >}}
+{{< testimonials >}}
   {{< testimonial author=`Joseph Sandoval` title=`Platform Product Manager, Adobe` link=`https://www.linkedin.com/in/josephrsandoval/` >}}
   As platform teams start running AI agents alongside their services, the communication layer becomes the new control plane. Agentgateway gets this right. It brings the policy, observability, and traffic management primitives the cloud native community already trusts to agent-to-agent communication. This is infrastructure the cloud-native ecosystem needs.
   {{< /testimonial >}}
@@ -33,7 +36,7 @@ Scroll through birthday wishes from some of our users and contributors.
   {{< testimonial author=`Shane O’Donnell` title=`VP of Engineering, Solo.io` link=`https://www.linkedin.com/in/irishshane/` >}}
   We use agentgateway internally for all of our engineers’ LLM usage. It’s made onboarding faster and easier while giving engineers access to more providers than ever before, all from one centralized place. The improved visibility, user-level metrics, and rich telemetry have helped us drive increased AI usage while identifying optimization opportunities to keep costs down.
   {{< /testimonial >}}
-{{< /testimonials-carousel >}}
+{{< /testimonials >}}
 
 ## Amazing diversity of contributors and partners
 
@@ -46,21 +49,9 @@ Since we created the project, we are thrilled to witness contributions from many
 
 Scroll through some thoughts from leaders and contributors in our community.
 
-{{< testimonials-carousel >}}
-  {{< testimonial author=`Vincent Caldeira` title=`Chief Technology Officer, APAC at Red Hat` link=`https://www.linkedin.com/in/caldeirav/overlay/about-this-profile/` >}}
-  As a developer building agentic systems, I have found that bridging the gap between local prototypes and secure, production-grade deployments is typically a massive hurdle, and this is exactly where agentgateway shines. Instead of forcing teams to hardcode authentication, routing, and monitoring logic directly into their AI applications, agentgateway acts as a drop-in AI-native data plane that deeply understands both the Model Context Protocol (MCP) and Agent-to-Agent (A2A) traffic. Through its cloud-native approach leveraging the Kubernetes Gateway API and xDS for dynamic configuration, it allows platform teams to quickly onboard agentic workflows alongside existing application micro services on multi-tenant platforms, making it easy to bridge to production without refactoring core agent or tool code.
-  {{< /testimonial >}}
+{{< testimonials >}}
   {{< testimonial author=`Matt White` title=`CTO of AI at the Linux Foundation` link=`https://www.linkedin.com/in/mdwdata/` >}}
   Agentgateway's first anniversary is an exciting milestone for the open source AI agent community. In its first year, the project has helped convene contributors and adopters around open approaches to AI agent infrastructure, with support for protocols such as A2A and MCP and growing participation from across the ecosystem. It is encouraging to see this level of collaboration around technologies intended to support agent-to-agent, agent-to-tool, and agent-to-LLM interactions. As the ecosystem continues to develop, open, interoperable, and community-driven infrastructure will play an important role in supporting innovation.
-  {{< /testimonial >}}
-  {{< testimonial author=`Mehmet Hilmi Emel` title=`AI & MLOps Engineer, ACEDEMAND IT Consulting Services` link=`https://www.linkedin.com/in/mehmet-hilmi-emel/overlay/about-this-profile/` >}}
-  As AI agents and LLMs become essential components of modern infrastructure, navigating this landscape requires far more than just connecting to models — and that's exactly where agentgateway shines. Through my experience, I've seen how powerfully it handles LLM consumption, alongside critical architectural needs like robust authorization, seamless MCP integration, and secure agent-to-agent (A2A) communication. It truly is a game-changer for building reliable AI ecosystems. Here's to the amazing community and many more milestones ahead!
-  {{< /testimonial >}}
-  {{< testimonial author=`Kevin Cao` title=`Contributor of agentgateway and DevOps Engineer, Independent` link=`https://github.com/apexlnc` >}}
-  Agentgateway is valuable because it treats AI workloads as a first-class part of the platform, not as something that needs its own parallel infrastructure. By unifying traffic management, policy, security, and observability across both AI and traditional services, it helps create a more coherent operating model for modern systems. That convergence reduces fragmentation, strengthens control, and gives platform teams a foundation that can scale with the next generation of workloads.
-  {{< /testimonial >}}
-  {{< testimonial author=`Huzefa Hamdard` title=`Senior Site Reliability Engineer, NIQ` link=`https://www.linkedin.com/in/huzefa-hamdard/` >}}
-  We're really excited about agentgateway, as it brings a much-needed governance and security layer to agentic systems. We're using it as the central control plane to route and enforce policies on MCP traffic. It integrates really well with our MCP-G solution, giving us both enforcement and visibility. And it's been great to work with agentgateway especially for implementing JWT authentication, RBAC, and fine-grained control over tool access.
   {{< /testimonial >}}
   {{< testimonial author=`Keith Mattix` title=`Principal Software Engineer Lead, Microsoft` link=`https://www.linkedin.com/in/keithmattix/` >}}
   Agentgateway is evidence that we really can just build things. Its native support for cloud native AI scenarios are best-in-class, and we're excited by the work of two Istio maintainers to bring agentgateway into the Istio project, evolving the project towards an agentic mesh.
@@ -68,7 +59,19 @@ Scroll through some thoughts from leaders and contributors in our community.
   {{< testimonial author=`Hasith Kalpage` title=`Director, Platform Engineering & CISO, Outshift by Cisco` link=`https://www.linkedin.com/in/haskalpa/` >}}
   The agentgateway open-source project enables a secure, observable MCP proxy for us to confidently deploy the Community AI platform engineer (CAIPE.io) at Outshift by Cisco. It's been a great collaboration so far and I wish the project continued success.
   {{< /testimonial >}}
-{{< /testimonials-carousel >}}
+  {{< testimonial author=`Vincent Caldeira` title=`Chief Technology Officer, APAC at Red Hat` link=`https://www.linkedin.com/in/caldeirav/overlay/about-this-profile/` >}}
+  As a developer building agentic systems, I have found that bridging the gap between local prototypes and secure, production-grade deployments is typically a massive hurdle, and this is exactly where agentgateway shines. Instead of forcing teams to hardcode authentication, routing, and monitoring logic directly into their AI applications, agentgateway acts as a drop-in AI-native data plane that deeply understands both the Model Context Protocol (MCP) and Agent-to-Agent (A2A) traffic. Through its cloud-native approach leveraging the Kubernetes Gateway API and xDS for dynamic configuration, it allows platform teams to quickly onboard agentic workflows alongside existing application micro services on multi-tenant platforms, making it easy to bridge to production without refactoring core agent or tool code.
+  {{< /testimonial >}}
+  {{< testimonial author=`Kevin Cao` title=`Contributor of agentgateway and DevOps Engineer, Independent` link=`https://github.com/apexlnc` >}}
+  Agentgateway is valuable because it treats AI workloads as a first-class part of the platform, not as something that needs its own parallel infrastructure. By unifying traffic management, policy, security, and observability across both AI and traditional services, it helps create a more coherent operating model for modern systems. That convergence reduces fragmentation, strengthens control, and gives platform teams a foundation that can scale with the next generation of workloads.
+  {{< /testimonial >}}
+  {{< testimonial author=`Mehmet Hilmi Emel` title=`AI & MLOps Engineer, ACEDEMAND IT Consulting Services` link=`https://www.linkedin.com/in/mehmet-hilmi-emel/overlay/about-this-profile/` >}}
+  As AI agents and LLMs become essential components of modern infrastructure, navigating this landscape requires far more than just connecting to models — and that's exactly where agentgateway shines. Through my experience, I've seen how powerfully it handles LLM consumption, alongside critical architectural needs like robust authorization, seamless MCP integration, and secure agent-to-agent (A2A) communication. It truly is a game-changer for building reliable AI ecosystems. Here's to the amazing community and many more milestones ahead!
+  {{< /testimonial >}}
+  {{< testimonial author=`Huzefa Hamdard` title=`Senior Site Reliability Engineer, NIQ` link=`https://www.linkedin.com/in/huzefa-hamdard/` >}}
+  We're really excited about agentgateway, as it brings a much-needed governance and security layer to agentic systems. We're using it as the central control plane to route and enforce policies on MCP traffic. It integrates really well with our MCP-G solution, giving us both enforcement and visibility. And it's been great to work with agentgateway especially for implementing JWT authentication, RBAC, and fine-grained control over tool access.
+  {{< /testimonial >}}
+{{< /testimonials >}}
 
 ## Agentgateway travels around the world
 
@@ -86,7 +89,7 @@ Scroll through some thoughts from leaders and contributors in our community.
 
 ## Continuous technical innovation
 
-Since Day 1, agentgateway keeps innovating: from the best performing AI gateway, to simplified configuration for LLM and MCP, to the ability to release faster, and more. Agentgateway also becomes an experimental dataplane for my favorite service mesh (also the most popular one), Istio. To learn more about the latest innovation in agentgateway, check out our recent 1.0 release [blog](https://agentgateway.dev/blog/2026-03-12-agentgateway-v1.0/).
+Since Day 1, agentgateway keeps innovating: from the [best performing AI gateway](https://github.com/howardjohn/gateway-api-bench/blob/main/README-v2.md#summary-of-findings), to simplified configuration for LLM and MCP, to the ability to release faster, and more. Agentgateway also becomes an experimental dataplane for my favorite service mesh (also the most popular one), Istio. To learn more about the latest innovation in agentgateway, check out our recent 1.0 release [blog](https://agentgateway.dev/blog/2026-03-12-agentgateway-v1.0/).
 
 ## Learn more about agentgateway
 
