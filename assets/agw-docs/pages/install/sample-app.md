@@ -28,7 +28,7 @@ Install the sample httpbin app.
 
 1. Install the httpbin app.
    ```sh {paths="install-httpbin"}
-   kubectl apply -f https://raw.githubusercontent.com/kgateway-dev/kgateway.dev/main/assets/agw-docs/examples/httpbin.yaml
+   kubectl apply -f https://raw.githubusercontent.com/agentgateway/website/refs/heads/main/assets/agw-docs/examples/httpbin.yaml
    ```
 
    {{< doc-test paths="install-httpbin" >}}
@@ -223,7 +223,7 @@ Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and runn
 1. Delete the httpbin app.
 
    ```sh
-   kubectl delete -f https://raw.githubusercontent.com/kgateway-dev/kgateway.dev/main/assets/agw-docs/examples/httpbin.yaml
+   kubectl delete -f https://raw.githubusercontent.com/agentgateway/website/refs/heads/main/assets/agw-docs/examples/httpbin.yaml
    ```
 
 2. Delete the HTTPRoute.
