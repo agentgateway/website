@@ -16,14 +16,21 @@
 # httpbin service
 ##################################################################################################
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: httpbin
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: httpbin
+  namespace: httpbin
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: httpbin
+  namespace: httpbin
   labels:
     app: httpbin
     service: httpbin
@@ -41,6 +48,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: httpbin
+  namespace: httpbin
 spec:
   replicas: 1
   selector:
@@ -66,19 +74,3 @@ spec:
             - "600s" # override default 10s
           ports:
             - containerPort: 8080
-        # Include curl container for e2e testing, allows sending traffic mediated by the proxy sidecar
-        - name: curl
-          image: curlimages/curl:7.83.1
-          resources:
-            requests:
-              cpu: "100m"
-            limits:
-              cpu: "200m"
-          imagePullPolicy: IfNotPresent
-          command:
-            - "tail"
-            - "-f"
-            - "/dev/null"
-        - name: hey
-          image: gcr.io/solo-public/docs/hey:0.1.4
-          imagePullPolicy: IfNotPresent
