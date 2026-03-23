@@ -34,7 +34,7 @@ Across llm-d, GIE, and the broader open inference ecosystem, three shifts stand 
 - **Standards matter.** Platform teams want the freedom to combine a gateway, scheduler, model server, and autoscaling strategy
   without custom glue or vendor lock-in at any layer.
 
-That is the bigger story behind this stack. The market is not just asking for faster inference. It is asking for composable inference systems
+That is the bigger story behind this stack. The market is not just asking for faster inference. It's asking for composable inference systems
 based on industry standards.
 
 ## Where the superpowers come from
@@ -67,7 +67,7 @@ flowchart LR
 Each layer does a different job.
 
 - **agentgateway** gives you the production traffic layer. It is a high-performance, Rust-based AI gateway that supports both
-  standalone and Kubernetes deployment modes, recently achieved GA in [release v1.0.0](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0),
+  standalone and Kubernetes deployment modes, [recently achieved GA](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0),
   and is the first [GIE v1.4.0](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/conformance/reports/v1.4.0/gateway/agentgateway/README.md)
   conformant gateway.
 - **GIE** gives you the shared language between the gateway and the inference scheduler. Its [InferencePool](https://gateway-api-inference-extension.sigs.k8s.io/api-types/inferencepool/) API and [extension protocol](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/v1.4.0/docs/proposals/004-endpoint-picker-protocol/README.md) let gateways route inference traffic without hard-coding scheduler behavior into the gateway itself.
@@ -90,9 +90,9 @@ leans into the exact optimizations that operators care about most:
 - Disaggregated prefill and decode
 - Tiered KV caching across host and storage layers
 
-That is not abstract roadmap material. It is the current capabilities and future direction of the project. llm-d's move into [CNCF Sandbox](https://github.com/cncf/sandbox/issues/462) sharpens that story for users. It means the project is being positioned with vendor-neutral governance, broader cross-vendor participation, and tighter alignment with upstream cloud-native interfaces instead of a single-vendor roadmap. For users, that translates into three practical benefits:
+That is not abstract roadmap material. It's the current capabilities and future direction of the project. llm-d's move into [CNCF Sandbox](https://github.com/cncf/sandbox/issues/462) sharpens that story for users. It means the project is being positioned with vendor-neutral governance, broader cross-vendor participation, and tighter alignment with upstream cloud-native interfaces instead of a single-vendor roadmap. For users, that translates into three practical benefits:
 
-- More confidence that the serving stack is being built as a portable, vendor-agnostic platform capability.
+- More confidence that the inference stack is being built as a portable, vendor-agnostic platform capability.
 - Better interoperability pressure across adjacent projects in the inference and CNCF ecosystems.
 - Stronger trust signals around legal, security, and IP hygiene for teams that want to standardize on llm-d in production.
 
@@ -112,8 +112,8 @@ That matters for one simple reason: conformance is what turns a nice architectur
 
 If you want to see this stack running end-to-end, use the [agentgateway + llm-d demo](https://github.com/solo-io/agentgateway-llm-d).
 
-The demo gives you a reproducible way to try agentgateway, GIE, and llm-d without GPUs, using the latest agentgateway and GIE releases plus
-llm-d with the newly merged integration support. It lets you send OpenAI-compatible requests through agentgateway, compare gateway traffic
+The demo gives you a reproducible way to try agentgateway, GIE, and llm-d without requiring GPUs, using the latest agentgateway and GIE releases
+plus llm-d with the newly merged integration support. It lets you send OpenAI-compatible requests through agentgateway, compare gateway traffic
 against a direct baseline, and inspect the system in Prometheus and Grafana. Running the demo is as simple as:
 
 ```bash
@@ -122,7 +122,7 @@ cd agentgateway-llm-d
 cp config/demo.env.example config/demo.env
 ./scripts/demo.sh setup
 ./scripts/demo.sh port-forward start
-./scripts/demo.sh smoke
+./scripts/demo.sh e2e
 ```
 
 After that, run `./scripts/demo.sh traffic start` to light up the dashboards, or `./scripts/demo.sh walkthrough` for a guided flow.
