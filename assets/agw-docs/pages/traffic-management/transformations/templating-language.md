@@ -54,15 +54,18 @@ JWT claims (`jwt.*`) are not available in transformations in agentgateway v2.1.x
 
 ## Built-in functions {#cel-functions}
 
-The following built-in functions are available in CEL transformation expressions:
+Review a subset of the built-in functions that are available in CEL transformation expressions. See [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) for a complete list.
 
 | Function | Returns | Description |
 |----------|---------|-------------|
-| `uuid()` | `string` | Generates a random UUIDv4 string ([example]({{< link-hextra path="/traffic-management/transformations/combine/" >}}))|
+| `base64.encode(bytes)` | `string` | Encodes a value to base64 ([example]({{< link-hextra path="/traffic-management/transformations/add-response-headers/" >}}))|
+| `base64.decode(string)` | `bytes` | Decodes a base64-encoded string ([example]({{< link-hextra path="/traffic-management/transformations/add-response-headers/" >}}))|
+| `expression.with(variable, result)` | any | Binds `expression` to `variable` to avoid re-evaluation, then returns `result`. Useful with other functions. ([example]({{< link-hextra path="/traffic-management/transformations/normalize-path/" >}}))|
 | `random()` | `float` | Generates a random float between `0.0` and `1.0` ([example]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}))|
 | `string(value)` | `string` | Converts a value to its string representation ([example]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}))|
-| `base64.encode(bytes)` | `string` | Encodes a value to base64 ([example]({{< link-hextra path="/traffic-management/transformations/set-response-status/" >}}))|
-| `base64.decode(string)` | `bytes` | Decodes a base64-encoded string ([example]({{< link-hextra path="/traffic-management/transformations/set-response-status/" >}}))|
+| `string.regexReplace(pattern, replacement)` | `string` | Replaces all substrings of `string` matching the RE2 `pattern` with `replacement` ([example]({{< link-hextra path="/traffic-management/transformations/normalize-path/" >}}))|
+| `uuid()` | `string` | Generates a random UUIDv4 string ([example]({{< link-hextra path="/traffic-management/transformations/combine/" >}}))|
+
 
 
 ## Transformation phases {#phases}
