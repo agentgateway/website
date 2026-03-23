@@ -2,13 +2,14 @@ Use [CEL expressions](/reference/cel/) to extract values from request headers an
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Inject response headers
+## Inject request headers into response headers
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
    * `x-gateway-response`: Use the value from the `x-gateway-request` request header and populate it into an `x-gateway-response` response header.
    * `x-podname`: Retrieve the value of the `x-pod-name` request header and add it to the `x-podname` response header.
    * `x-response-raw`: Adds a static string value of `hello` to the `x-response-raw` response header.
    * `x-replace`: Replaces the pattern-to-replace text in the `foo` header with a random number.
+   * Use `set` instead of `add` to reset the value entirely.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -22,7 +23,7 @@ Use [CEL expressions](/reference/cel/) to extract values from request headers an
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     backend:
+     traffic:
        transformation:
          response:
            set:

@@ -1,15 +1,10 @@
-Use [CEL expressions](/reference/cel/) to construct a full request URL from context variables and forward it upstream as a request header.
+Remove sensitive or internal headers from requests before they reach the upstream.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Forward the request URL upstream
+## Remove a request header
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
-   * Build a URL by concatenating the scheme, hostname, and path from the request context.
-   * `request.scheme` contains the scheme of the request, such as `http` or `https`.
-   * `request.host` contains the hostname of the request.
-   * `request.path` contains the path of the request.
-   * The constructed URL is added to the `x-forwarded-uri` request header before forwarding to the upstream.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In the following example, you remove the `x-internal-token` request header before the request is forwarded to the upstream. This removal prevents internal credentials from being exposed to the backend service.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -23,35 +18,35 @@ Use [CEL expressions](/reference/cel/) to construct a full request URL from cont
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     backend:
+     traffic:
        transformation:
          request:
-           add:
-           - name: x-forwarded-uri
-             value: 'request.scheme + "://" + request.host + request.path'
+           remove:
+           - x-internal-token
    EOF
    ```
 
-2. Send a request to the httpbin app. Verify that you get back a 200 HTTP response code and that you see the constructed URL in the `x-forwarded-uri` request header echoed back by httpbin.
+2. Send a request to the httpbin app and include the `x-internal-token` request header. Verify that you get back a 200 HTTP response code and that the `x-internal-token` header is not present in the headers echoed back by httpbin.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/get \
-    -H "host: www.example.com:80"
+    -H "host: www.example.com:80" \
+    -H "x-internal-token: my-secret-token"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/get \
-   -H "host: www.example.com"
+   -H "host: www.example.com" \
+   -H "x-internal-token: my-secret-token"
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[2,3,18,19]}
-   ...
+   ```console {hl_lines=[2,3]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    ...
@@ -67,15 +62,14 @@ Use [CEL expressions](/reference/cel/) to construct a full request URL from cont
        ],
        "User-Agent": [
          "curl/8.7.1"
-       ],
-       "X-Forwarded-Uri": [
-         "http://www.example.com:80/get"
        ]
      },
-     "origin": "10.244.0.6:59296",
+     "origin": "10.244.0.6:12345",
      "url": "http://www.example.com/get"
    }
    ```
+
+   Note that `x-internal-token` is absent from the headers, confirming it was removed before the request reached the upstream.
 
 ## Cleanup
 
@@ -84,4 +78,3 @@ Use [CEL expressions](/reference/cel/) to construct a full request URL from cont
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```
-

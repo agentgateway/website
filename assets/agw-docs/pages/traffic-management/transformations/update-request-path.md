@@ -35,7 +35,7 @@ Common pseudo headers include:
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     backend:
+     traffic:
        transformation:
          request:
            set:

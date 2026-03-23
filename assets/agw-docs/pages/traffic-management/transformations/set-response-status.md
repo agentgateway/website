@@ -4,7 +4,7 @@ Update the response status based on request query parameters by using [CEL expre
 
 ## Change the response status
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In this example, you change the value of the `:status` pseudo response header to 401 if the request URI contains `foo=bar`. If the request URI does not contain `foo=bar`, you return a 403 HTTP response code.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In this example, you change the value of the `:status` pseudo response header to 401 if the request URI contains `foo=bar`. If the request URI does not contain `foo=bar`, you return a 403 HTTP response code. Use `set` instead of `add` to reset the value entirely.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -18,7 +18,7 @@ Update the response status based on request query parameters by using [CEL expre
      - group: gateway.networking.k8s.io
        kind: HTTPRoute
        name: httpbin
-     backend:
+     traffic:
        transformation:
          response:
            set:

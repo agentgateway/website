@@ -13,4 +13,6 @@ Mutate and transform requests and responses before forwarding them to the destin
   {{< card link="redirect-url" title="Create redirect URLs" >}}
   {{< card link="change-response-status" title="Change response status" >}}
   {{< card link="update-response-body" title="Update response body" >}}
+  {{< card link="remove-header" title="Remove headers" >}}
+  {{< card link="combine-transformations" title="Combine transformations" >}}
 {{< /cards >}}
