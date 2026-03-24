@@ -10,7 +10,6 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to construct a
    * `request.host` contains the hostname of the request.
    * `request.path` contains the path of the request.
    * The constructed URL is added to the `x-forwarded-uri` request header before forwarding to the upstream.
-   * Use `add` instead of `set` when you want to append a multi-value header rather than reset it entirely.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -27,7 +26,7 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to construct a
      traffic:
        transformation:
          request:
-           add:
+           set:
            - name: x-forwarded-uri
              value: 'request.scheme + "://" + request.host + request.path'
    EOF

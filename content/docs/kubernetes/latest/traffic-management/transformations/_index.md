@@ -16,4 +16,5 @@ Mutate and transform requests and responses before forwarding them to the destin
   {{< card link="remove-header" title="Remove headers" >}}
   {{< card link="combine-transformations" title="Combine transformations" >}}
   {{< card link="normalize-path" title="Rewrite dynamic path segments" >}}
+  {{< card link="access-logs" title="Log CEL variables" >}}
 {{< /cards >}}

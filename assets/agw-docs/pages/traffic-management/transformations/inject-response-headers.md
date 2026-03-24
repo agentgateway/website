@@ -7,7 +7,7 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject, mod
 In this example, you apply all three header operations in a single transformation:
 
 * `set`: Extracts the `x-gateway-request` request header value and sets it as the `x-gateway-response` response header. Also injects a static `x-response-raw` header with the value `hello`. Use `set` to create a header or overwrite it if it already exists.
-* `add`: Appends a static `x-environment` header with the value `production`. Use `add` when you want to append a value to a header that may already be present.
+* `add`: Appends `https://example.com` to the `access-control-allow-origin` header. Because httpbin already returns `access-control-allow-origin: *`, the response ends up with two entries for that header. Use `add` when you want to append a value without overwriting what is already present.
 * `remove`: Strips the `access-control-allow-credentials` header from the response before it reaches the client.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
@@ -33,14 +33,14 @@ In this example, you apply all three header operations in a single transformatio
            - name: x-response-raw
              value: '"hello"'
            add:
-           - name: x-environment
-             value: '"production"'
+           - name: access-control-allow-origin
+             value: '"https://example.com"'
            remove:
            - access-control-allow-credentials
    EOF
    ```
 
-2. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify that you get back a 200 HTTP response code and that the response includes the injected headers and omits `access-control-allow-credentials`.
+2. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify that you get back a 200 HTTP response code and that the response includes the injected headers, contains two `access-control-allow-origin` values, and omits `access-control-allow-credentials`.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -60,13 +60,15 @@ In this example, you apply all three header operations in a single transformatio
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[3,4,11,12,13,14,15,16,17,18]}
+   ```console {hl_lines=[3,4,7,8,13,14,15,16,17,18,19,20]}
    ...
    * Request completely sent off
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    < access-control-allow-origin: *
    access-control-allow-origin: *
+   < access-control-allow-origin: https://example.com
+   access-control-allow-origin: https://example.com
    < content-type: application/json; encoding=utf-8
    content-type: application/json; encoding=utf-8
    < content-length: 3
@@ -75,11 +77,9 @@ In this example, you apply all three header operations in a single transformatio
    x-gateway-response: my-custom-value
    < x-response-raw: hello
    x-response-raw: hello
-   < x-environment: production
-   x-environment: production
    ```
 
-   Note that `access-control-allow-credentials` does not appear in the response because it was removed by the transformation.
+   Note that `access-control-allow-origin` appears twice — the original `*` from httpbin and the appended `https://example.com` added by the transformation. `access-control-allow-credentials` does not appear because it was removed.
 
 ## Cleanup
 
