@@ -1,4 +1,4 @@
-Update the response status based on request query parameters by using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
+Update the response status based on request query parameters by using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). The example uses `request.uri` and the `contains()` function with a ternary expression to conditionally set the `:status` pseudo header.
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}

@@ -1,4 +1,4 @@
-Use the `with()` and `regexReplace()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together to normalize a request path before forwarding it to the upstream.
+Use the `with()` and `regexReplace()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together with `request.path` to rewrite dynamic path segments before forwarding the request to the upstream.
 
 `with()` binds a complex expression to a temporary variable to avoid evaluating it multiple times. `regexReplace()` replaces text matching a regular expression with a replacement string. Together, they are useful for sanitizing dynamic values such as replacing numeric IDs in a path with a placeholder before the request reaches the upstream service.
 

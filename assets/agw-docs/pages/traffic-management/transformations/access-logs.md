@@ -1,4 +1,4 @@
-When building or debugging transformations, you can log CEL variables to inspect what values are available at runtime. Each entry maps a log field name to a CEL expression that is evaluated per request and written to the structured access log.
+When building or debugging transformations, you can log CEL variables to inspect what values are available at runtime. Each entry maps a log field name to a CEL expression that is evaluated per request and written to the structured access log. The examples use the `variables()` function to dump the full context, or individual variables such as `request.path`, `request.method`, and `source.address`.
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}

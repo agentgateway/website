@@ -1,4 +1,4 @@
-Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject, modify, and remove headers in requests and responses. You can extract values from existing headers, inject static values, or combine `set`, `add`, and `remove` operations in the same transformation.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject, modify, and remove headers in requests and responses. The example uses `request.headers[]` to extract a header value and combines `set`, `add`, and `remove` operations in a single transformation.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

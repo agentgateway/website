@@ -1,6 +1,4 @@
-Learn how to return a customized response body using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
-
-In this guide, you set a custom response body by evaluating a CEL expression against the request context. You can use request context variables such as `request.path`, `request.method`, `request.headers["name"]`, and `request.body` to construct a dynamic response body string.
+Learn how to return a customized response body using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). The examples use `request.path`, `request.method`, `request.headers[]`, `request.body`, `json()`, and `string()` to construct a dynamic response body string.
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}

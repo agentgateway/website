@@ -1,4 +1,4 @@
-Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to encode and decode base64 values in request headers and add the results as response headers.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to encode and decode base64 values in request headers and add the results as response headers. The examples use `base64.encode()`, `base64.decode()`, `bytes()`, `string()`, and `request.headers[]`.
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}

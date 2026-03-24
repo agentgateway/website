@@ -1,4 +1,4 @@
-Remove sensitive or internal headers from requests before they reach the upstream.
+Remove sensitive or internal headers from requests before they reach the upstream. The example uses the `remove` operation.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

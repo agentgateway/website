@@ -1,4 +1,4 @@
-Change the request path and HTTP method when a request header is present by using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). To update the path and HTTP method, the `:path` and `:method` pseudo headers are used.
+Change the request path and HTTP method when a request header is present by using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). The example uses `request.headers[]`, `request.path`, and `request.method` with a ternary expression to conditionally set the `:path` and `:method` pseudo headers.
 
 ## About pseudo headers
 
