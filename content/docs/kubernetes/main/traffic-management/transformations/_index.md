@@ -17,4 +17,5 @@ Mutate and transform requests and responses before forwarding them to the destin
   {{< card link="normalize-path" title="Rewrite dynamic path segments" >}}
   {{< card link="access-logs" title="Log CEL variables" >}}
   {{< card link="filter-request-body" title="Filter and merge request body fields" >}}
+  {{< card link="validate-request-body" title="Validate and set request body defaults" >}}
 {{< /cards >}}
