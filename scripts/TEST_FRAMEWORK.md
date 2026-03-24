@@ -271,7 +271,7 @@ EOF
 - `source.type: local` sends the request from the local machine (default).
 - Use `source.type: pod` with a pod selector to send the request from inside the cluster.
 - The `headers` list under `expect` checks response headers (case-insensitive name matching).
-- Use `retries:` on a test entry to retry on failure.
+- Use `retries:` on a test entry to retry on transient failures (e.g. a race condition where a response code flips briefly). **Do not use `retries:` to work around a new-hostname ECONNRESET** — see the Troubleshooting section.
 
 ---
 
@@ -454,6 +454,55 @@ The install prerequisite should point to `content/docs/kubernetes/<version>/quic
 **Test fails immediately with "kubectl port-forward" error**
 
 Tests that contain `kubectl port-forward` in the generated script are automatically failed without running. Port-forwarding requires a persistent background process that doesn't work in the automated test environment. Replace any port-forward-based verification with a `YAMLTest` HTTP assertion using `${INGRESS_GW_ADDRESS}` instead.
+
+**Wait assertions pass but HTTP test hangs then fails with `read ECONNRESET`**
+
+When a test creates a new HTTPRoute with a hostname that was not previously registered, agentgateway-proxy (Rust/hyper) goes through two phases before it can serve the new route. `Accepted=True` and `ResolvedRefs=True` on the HTTPRoute only reflect control plane state (~50ms) — they do not guarantee the data plane is ready.
+
+- **Phase 1 (~120s)**: Proxy is unaware of the new hostname; every connection is immediately reset (< 1ms). `curl --max-time 5` iterations cost ~2s each (instant failure + 2s sleep).
+- **Phase 2 (last few seconds)**: Proxy receives xDS update and holds connections while applying it (4–26s per connection), then resets them.
+
+Adding `retries: 3` alone (without a warmup loop) multiplies the Phase 2 hang — observed total: 4 × 107s ≈ 429s.
+
+Fix: use **both** a curl warmup loop (covers Phase 1) and `retries: 1` on the first HTTP test entry (covers Phase 2):
+
+```
+{{< doc-test paths="<scenario-name>" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: <new-hostname>" && break
+  sleep 2
+done
+{{< /doc-test >}}
+```
+
+Then on the first YAMLTest HTTP assertion entry, add `retries: 1`. Once curl gets any HTTP response (even 404), Phase 1 is over. `retries: 1` absorbs Phase 2. Max poll window: ~420 seconds.
+
+This only applies when the feature page creates an HTTPRoute with a **new hostname** not in the prereq chain. Tests that update an existing prereq-chain HTTPRoute (same name/namespace) are not affected.
+
+**`read ECONNRESET` persists beyond the warmup window (cloud-provider-kind LB failure)**
+
+If the test already has the warmup loop + `retries: 1` pattern but the HTTP assertion still fails with `read ECONNRESET` after 200+ seconds (the warmup curl loop never breaks out), the issue is likely a cloud-provider-kind LoadBalancer networking failure — not a data-plane warmup problem.
+
+**How to distinguish from the data-plane warmup issue:** Check the controller logs in the diagnostic artifacts at `out/tests/generated/context/<scenario>/pods/<controller-pod>-controller-logs.log`. Look for `XDS: Pushing` entries with `clients:1` and `RDS` push responses for your routes:
+
+```
+{"msg":"XDS: Pushing","component":"krtxds","clients":1,"version":"..."}
+{"msg":"push response","component":"krtxds","type":"RDS","resources":1,...}
+```
+
+If the controller pushed routes to the proxy successfully, the proxy IS configured — the problem is at the network level between the LB IP and the pod.
+
+**Root cause:** cloud-provider-kind assigns a LoadBalancer IP to the Service, but traffic from that IP is not properly forwarded to the pod through the Kind Docker network. The LB IP is reachable (TCP connect succeeds) but the proxy resets the connection because it never receives the forwarded packets.
+
+**Typical diagnostic evidence:**
+- All pods Running with 0 restarts
+- LB IP assigned (e.g. `172.18.0.x`) and Service shows `80:<nodePort>/TCP`
+- HTTPRoutes show `Accepted=True`
+- Controller logs show successful xDS pushes with `clients:1`
+- Proxy log shows `started bind bind="80/agentgateway-system/agentgateway-proxy"`
+- curl gets `ECONNRESET` for the entire test duration (200+ seconds)
+
+**Resolution:** This is a transient infrastructure issue. Re-running the test typically resolves it. On macOS, ensure `cloud-provider-kind` has proper permissions (`sudo`). If it recurs frequently, check Docker resource allocation (memory/CPU) for the Kind cluster.
 
 **`/expect: unknown property "bodyJsonPath"` errors**
 

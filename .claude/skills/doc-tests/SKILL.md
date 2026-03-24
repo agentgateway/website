@@ -6,7 +6,7 @@ version: 1.0.0
 
 # Doc test guides skill
 
-Use this skill when adding tests to documentation guides in the `agentgateway/website` repo so that code blocks and hidden steps are assembled into runnable scripts. The canonical reference is [scripts/TEST_FRAMEWORK.md](scripts/TEST_FRAMEWORK.md). This skill summarizes the workflow and gotchas for **guides** (especially standalone/quickstart).
+Use this skill when adding tests to documentation guides in the `agentgateway/website` repo so that code blocks and hidden steps are assembled into runnable scripts. The canonical reference is [scripts/TEST_FRAMEWORK.md](../../../scripts/TEST_FRAMEWORK.md). This skill summarizes the workflow and gotchas for **guides** (especially standalone/quickstart).
 
 ---
 
@@ -47,6 +47,7 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 - Add `{paths="<name>"}` to the **info string** of every fenced block that should run in the test (e.g. ` ```sh {paths="llm"} `).
 - Only `sh`/`bash`/`shell`/`yaml`/`yml` are extracted. Blocks without `paths=` are skipped when `skip_tabs_without_paths` is true.
 - **Tabbed content**: Use different paths per tab (e.g. `{paths="httpbin,httpbin-linux"}` and `{paths="httpbin-macos"}`) so the scenario can pick one.
+- **Multiple paths must be comma-separated** — both in fenced block info strings (`{paths="a,b"}`) and in `{{< doc-test paths="a,b" >}}` shortcodes. The extractor splits on `,`, so space-separated values (e.g. `paths="a b"`) are treated as a single path name and will never match — causing the block to be silently excluded from the generated script. This is especially dangerous for shared setup blocks (e.g. "install binary") that need to run for multiple scenarios.
 
 ### 4. Long-running processes (standalone binary)
 
@@ -119,13 +120,68 @@ Example with all three:
 > **Do not use `jsonPath`** — the correct property name is `bodyJsonPath`. Using `jsonPath` causes `/expect: unknown property "jsonPath"` schema validation errors.
 
 - For Kubernetes tests, use `${INGRESS_GW_ADDRESS}` as the host in the URL (e.g. `url: "http://${INGRESS_GW_ADDRESS}:80/get"`). **Never use `kubectl port-forward`** in visible blocks — tests containing `kubectl port-forward` are automatically failed without running.
+- **Host headers must not include a port** — use `host: "example.com"`, not `host: "example.com:80"`. The gateway's hostname matching is strict: including the port causes no route match, and agentgateway resets the TCP connection (`ECONNRESET`) rather than returning an HTTP error response.
+
+#### Data plane warmup for new hostnames
+
+When a test creates a new HTTPRoute with a hostname that was not previously registered (e.g. `match.example`), agentgateway-proxy (a Rust/hyper proxy, not Envoy) goes through two distinct phases before it can serve the new route. Kubernetes resource wait assertions (`Accepted=True`, `ResolvedRefs=True`) only reflect **control plane** state and pass in ~50ms — they do **not** guarantee the data plane has applied the new config yet.
+
+**Two-phase proxy behavior:**
+
+- **Phase 1 (~120s)**: The proxy is not yet aware of the new hostname. Every connection is immediately reset (`ECONNRESET` in < 1ms). Because the reset is instant (not a timeout), `curl --max-time 5` iterations each cost ~2s (immediate failure + 2s sleep). 60 iterations × 2s = 120s max for this phase.
+- **Phase 2 (last few seconds)**: The proxy receives the xDS config update and holds incoming connections while applying it (due to `header_read_timeout = 10 minutes`). Each connection hangs 4–26s before being reset. This is brief but can still fail a YAMLTest entry.
+- **Phase 3**: Proxy serves the route normally.
+
+**Symptom**: Wait assertions pass in under a second. The curl warmup loop runs for ~2 minutes (Phase 1), then the first YAMLTest HTTP entry hangs 4–26s and fails with `read ECONNRESET` (Phase 2). Adding `retries: 3` (without a warmup loop) makes Phase 2 far worse — each retry hangs for the full duration (observed: 4 × 107s ≈ 429s).
+
+**Fix**: Use **both** a curl warmup loop (covers Phase 1) and `retries: 1` on the first HTTP test entry (covers Phase 2):
+
+```
+{{< doc-test paths="<scenario-name>" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: <new-hostname>" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="<scenario-name>" >}}
+YAMLTest -f - <<'EOF'
+- name: <scenario> - first HTTP assertion
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get
+    method: GET
+    headers:
+      host: "<new-hostname>"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+```
+
+The curl loop exits as soon as the proxy returns any HTTP response (even 404) — that signals Phase 1 is over. `retries: 1` on the YAMLTest entry absorbs the Phase 2 hold (one retry after a 4–26s hang). Do **not** use `retries: 3` or higher without the warmup loop — it amplifies the total wait time dramatically.
+
+**When this applies**: Any test that creates an HTTPRoute with a hostname not already registered in the proxy. Tests that *update* or *replace* an existing HTTPRoute from the prereq chain (same name, same namespace) don't trigger this — the virtual host is already wired up.
+
+**How to spot it in advance**: Compare the HTTPRoute `name` in the feature page's `kubectl apply` blocks vs. the HTTPRoute names created in the prereq chain. If the feature creates a new name (e.g. `httpbin-match` for `match.example`) that isn't in the prereqs, add the warmup loop + `retries: 1`. If it overwrites an existing prereq-chain HTTPRoute (same name), skip it.
 
 - For cleanup blocks tagged with a specific path, add `--ignore-not-found` to all `kubectl delete` commands. The tagged path may only create a subset of the resources the cleanup tries to delete (e.g., when a cleanup block covers resources from multiple scenarios but only one scenario runs in a given test).
 
-### 8. Generate and verify
+### 8. Validate YAML code blocks
 
-- From **website** directory: `python3 scripts/doc_test_run.py --repo-root . --generate-only`
-- From repo root: `python3 website/scripts/doc_test_run.py --repo-root website --generate-only`
+Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to catch indentation bugs that cause silent misconfigurations:
+
+- **List items under a mapping key**: `- item:` followed by `- child:` at the same dash column means `child` is a sibling, not a child. Indent `- child:` 2 more spaces to nest it properly.
+- **Common hotspot**: `rules[].filters` in HTTPRoute specs. A misindented `- type: RequestRedirect` becomes a second rule instead of a filter entry, resulting in a route with no filter and no backend — the gateway resets the connection (`ECONNRESET`) instead of returning the expected HTTP response.
+- **Quick check**: For any `key:\n  - subkey:` pattern, verify the `-` of the list item is indented at least 2 spaces past the start of `key`.
+
+### 9. Generate and verify
+
+- From the repo root directory: `python3 scripts/doc_test_run.py --repo-root . --generate-only`
+- From repo root: `python3 scripts/doc_test_run.py --generate-only`
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
@@ -134,14 +190,18 @@ Example with all three:
 ## Checklist (quick)
 
 - [ ] Path tags and `{{< doc-test >}}` blocks added in the **asset** file(s) (`assets/agw-docs/...`), **not** in the content wrapper files — even if multiple content files (e.g. `latest/` and `main/`) reuse the same asset.
+- [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse).
 - [ ] When copying a test chain between `main` and `latest`, **update every `file:` path** in front matter to match the target version directory.
 - [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
 - [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.
+- [ ] Host headers in YAMLTest `http.headers` use bare hostnames — no port suffix (e.g. `host: "example.com"`, not `host: "example.com:80"`). Including a port causes ECONNRESET, not an HTTP error.
+- [ ] If the test creates an HTTPRoute with a hostname **not already in the prereq chain**, use the two-phase warmup fix: (1) add a curl warmup loop `{{< doc-test >}}` block before the YAMLTest block (`for i in $(seq 1 60); do curl -s --max-time 5 ... && break; sleep 2; done`) to cover Phase 1 (~120s of immediate resets), AND (2) add `retries: 1` to the **first** HTTP assertion in YAMLTest to absorb Phase 2 (4–26s hold then reset). Do **not** use `retries: 3` or higher without the warmup loop — it multiplies the total wait time.
 - [ ] Cleanup blocks tagged with a path use `--ignore-not-found` on all `kubectl delete` commands.
 - [ ] YAMLTest `expect:` uses `bodyJsonPath` (not `jsonPath`) for response body assertions; all keys under `expect:` are at the same indentation level.
+- [ ] YAML code blocks tagged with `paths=` have correct indentation — list items nested under a mapping key (e.g. `filters`, `matches`, `rules`) must be indented 2+ spaces past the key, not at the same level.
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
 
@@ -161,6 +221,6 @@ Example with all three:
 
 ## Reference
 
-- Full framework: [scripts/TEST_FRAMEWORK.md](scripts/TEST_FRAMEWORK.md)
+- Full framework: [scripts/TEST_FRAMEWORK.md](../../../scripts/TEST_FRAMEWORK.md)
 - Extractor: `scripts/doc_test_extract.py` (block selection, reuse resolution, block order sort)
 - Runner: `scripts/doc_test_run.py` (discovers `test:` pages, generates scripts, optional kind run)

@@ -30,7 +30,8 @@
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
      --set controller.image.pullPolicy=Always \
-     --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
+     --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \
+     --wait
    ```
    
 4. Make sure that the `{{< reuse "agw-docs/snippets/pod-name.md" >}}` control plane is running.

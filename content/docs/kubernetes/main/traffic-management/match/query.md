@@ -2,6 +2,16 @@
 title: Query parameter
 weight: 10
 description: Specify a set of URL query parameters which requests must match in entirety.
+test:
+  query-match:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/traffic-management/match/query.md
+    path: query-match
 ---
 
 Specify a set of URL query parameters which requests must match in entirety.
@@ -12,8 +22,8 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 ## Set up query parameter matching
 
-1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests with a `user=me` query parameter. 
-   ```yaml
+1. Create an HTTPRoute resource for the `match.example` domain that matches incoming requests with a `user=me` query parameter.
+   ```yaml {paths="query-match"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -89,12 +99,39 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    content-length: 0
    ```
 
+{{< doc-test paths="query-match" >}}
+YAMLTest -f - <<'EOF'
+- name: query match - no query param returns 404
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /status/200
+    method: GET
+    headers:
+      host: match.example
+  source:
+    type: local
+  expect:
+    statusCode: 404
+- name: query match - user=me query param returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /status/200?user=me
+    method: GET
+    headers:
+      host: match.example
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete httproute httpbin-match -n httpbin
+kubectl delete httproute httpbin-match -n httpbin --ignore-not-found
 ```
 
 

@@ -1,6 +1,25 @@
 ---
-title: Header 
+title: Header
 weight: 10
+test:
+  header-match-exact:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/traffic-management/match/header.md
+    path: header-match-exact
+  header-match-regex:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/traffic-management/match/header.md
+    path: header-match-regex
 ---
 
 Specify a set of headers which incoming requests must match in entirety, such as with regular expressions (regex).
@@ -13,8 +32,8 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 
 Match headers by an exact string, such as `version`.
 
-1. Create an HTTPRoute resource. 
-   ```yaml
+1. Create an HTTPRoute resource.
+   ```yaml {paths="header-match-exact"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -109,7 +128,7 @@ Match headers with regular expressions (regex).
      * Allowed pattern: `3.0-game`, not allowed: `30`
    * `Bearer\s.*`: The value of the `Authorization` request header must be `Bearer` followed by a space (`\s`), followed by zero or any characters (`.*`).
      * Allowed pattern: `Bearer 123`, not allowed: `Bearer` 
-   ```yaml
+   ```yaml {paths="header-match-regex"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -202,6 +221,67 @@ Match headers with regular expressions (regex).
    < content-type: text/plain; charset=utf-8
    content-type: text/plain; charset=utf-8
    ```
+{{< doc-test paths="header-match-exact" >}}
+YAMLTest -f - <<'EOF'
+- name: exact header match - no version header returns 404
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /status/200
+    method: GET
+    headers:
+      host: match.example
+  source:
+    type: local
+  expect:
+    statusCode: 404
+- name: exact header match - version v2 header returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /status/200
+    method: GET
+    headers:
+      host: match.example
+      version: v2
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="header-match-regex" >}}
+YAMLTest -f - <<'EOF'
+- name: regex header match - valid headers returns 200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /status/200
+    method: GET
+    headers:
+      host: match.example
+      Authorization: "Bearer 123"
+      pet: dogs
+      version: "3.0"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+- name: regex header match - invalid version returns 404
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /status/200
+    method: GET
+    headers:
+      host: match.example
+      Authorization: "Bearer 123"
+      pet: dogs
+      version: "30"
+  source:
+    type: local
+  expect:
+    statusCode: 404
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
