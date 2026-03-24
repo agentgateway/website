@@ -5,6 +5,7 @@ In this guide, you set a custom response body by evaluating a CEL expression aga
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
+
 ## Inject request header fields into the response body
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In the following example, you set the response body to a JSON object that includes the request path, method, and the value of the `x-request-id` request header. This example is useful for tying responses back to request traces.
@@ -35,14 +36,14 @@ In this guide, you set a custom response body by evaluating a CEL expression aga
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/get \
     -H "host: www.example.com:80" \
-    -H "x-request-id: abc-123"
+    -H "x-request-id: alice"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/get \
    -H "host: www.example.com" \
-   -H "x-request-id: abc-123"
+   -H "x-request-id: alice"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -56,7 +57,7 @@ In this guide, you set a custom response body by evaluating a CEL expression aga
    < content-length: 49
    content-length: 49
 
-   {"path": "/get", "method": "GET", "request-id": "abc-123"}
+   {"path": "/get", "method": "GET", "request-id": "alice"}
    ```
 
 ## Inject request body fields into the response body
@@ -70,7 +71,7 @@ In this example, you parse a JSON request body using `json()` to extract a field
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: transformation-body
+     name: transformation
      namespace: httpbin
    spec:
      targetRefs:
@@ -80,7 +81,7 @@ In this example, you parse a JSON request body using `json()` to extract a field
      traffic:
        transformation:
          response:
-           body: '"{\"hello\": \"" + json(request.body).name + "\"}"'
+           body: '"{\"hello\": \"" + string(json(request.body).name) + "\"}"'
    EOF
    ```
 
@@ -123,6 +124,5 @@ In this example, you parse a JSON request body using `json()` to extract a field
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation-body -n httpbin
 ```
 

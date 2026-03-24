@@ -52,7 +52,7 @@ In this example, you read a plain-text request header and add its base64-encoded
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[12,13]}
+   ```console {hl_lines=[1,2,11,12]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    < access-control-allow-credentials: true
@@ -88,7 +88,7 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: transformation-decode
+     name: transformation-encode
      namespace: httpbin
    spec:
      targetRefs:
@@ -124,7 +124,7 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[12,13]}
+   ```console {hl_lines=[1,2,11,12]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    < access-control-allow-credentials: true
@@ -145,6 +145,5 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation-encode -n httpbin
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation-decode -n httpbin
 ```
 

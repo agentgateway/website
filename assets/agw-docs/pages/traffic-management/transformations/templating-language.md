@@ -22,15 +22,11 @@ The following examples show common CEL patterns used in transformations.
 
 **YAML quoting:** When a CEL expression is a string literal or starts with a quote, wrap it in single quotes in YAML so the inner double quotes are preserved:
 
-```yaml
-value: '"static string"'       # CEL string literal
-value: '"prefix-" + request.path'  # concatenation starting with literal
-value: request.path             # bare variable — no extra quoting needed
-```
+
 
 ## Context variables {#context-variables}
 
-The following variables are available in CEL transformation expressions:
+Review a subset of variables are available in CEL transformation expressions.  See [CEL variables]({{< link-hextra path="/reference/cel/#variables" >}}) for a complete list.
 
 | Variable | Description |
 |----------|-------------|
@@ -74,8 +70,8 @@ Transformations in `spec.traffic` support a `phase` field that controls when the
 
 | Phase | Description | Valid target types |
 |-------|-------------|-------------------|
-| `PostRouting` | Default. Applied after the routing decision is made. | Gateway, Listener, HTTPRoute |
-| `PreRouting` | Applied before the routing decision is made. Useful for gateway-level gates that apply to all routes. | Gateway, Listener |
+| `PostRouting` | Default. Transformations are applied after the routing decision is made. | Gateway, Listener, HTTPRoute |
+| `PreRouting` | Transformations are applied before the routing decision is made. Useful for gateway-level gates that apply to all routes. | Gateway, Listener |
 
 Example:
 ```yaml  {hl_lines=[7]}
@@ -105,6 +101,8 @@ helm upgrade -i -n agentgateway-system agentgateway \
   oci://cr.agentgateway.dev/charts/agentgateway \
   -f values.yaml
 ```
+
+You can use one of the following `values.yaml` examples for configuration.
 
 #### Log all variables
 
@@ -157,9 +155,3 @@ agentgateway:
           client_ip: source.address
   enabled: true
 ```
-
-The field names on the left (`request_path`, `request_method`, `client_ip`) are arbitrary. The names become the keys in the structured log output.
-
-
-
-
