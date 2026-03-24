@@ -5,8 +5,8 @@ author: "Lin Sun"
 description: "Agentgateway celebrates 1 million pulls, 175+ contributors, and 2,000+ stars in 1 year"
 ---
 
-{{< reuse-image src="img/blog/1year-anniversary/agw-1year-hero.png" width="800px" >}}
-{{< reuse-image-dark srcDark="img/blog/1year-anniversary/agw-1year-hero.png" width="800px" >}}
+{{< reuse-image src="img/blog/1year-anniversary/agw-1year-hero-cake.png" width="800px" >}}
+{{< reuse-image-dark srcDark="img/blog/1year-anniversary/agw-1year-hero-cake.png" width="800px" >}}
 
 On this day in 2025, we created agentgateway after first carefully evaluating Envoy Proxy. As a company deeply invested in Envoy, we initially didn’t want to start a new project, but we needed to keep pace with the rapid evolution of AI. Building on our success developing the new proxy for Istio Ambient, we ultimately decided to create agentgateway from the ground up.
 
