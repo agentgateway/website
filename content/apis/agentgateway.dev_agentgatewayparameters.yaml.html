@@ -51,14 +51,6 @@
   color: #0f766e;
   margin-bottom: 0.4rem;
 }
-.ks-kind {
-  font-size: 1.875rem;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.2;
-  letter-spacing: -0.02em;
-  color: #020617;
-}
 .ks-resource-desc {
   margin: 0.75rem 0 1rem;
   padding: 0.8rem 0.95rem;
@@ -141,16 +133,21 @@
 }
 .ks-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(18rem, 24rem);
+  grid-template-columns: minmax(0, 1fr) minmax(20rem, clamp(24rem, 34vw, 40rem));
   gap: 1.25rem;
   align-items: start;
 }
 .ks-tree-pane {
   min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
 }
 .ks-detail-pane {
   position: sticky;
-  top: 1rem;
+  top: var(--ks-sticky-top, 1rem);
+  max-height: calc(100vh - var(--ks-sticky-top, 1rem) - 1rem);
+  overflow: auto;
 }
 .ks-detail-card {
   padding: 0.9rem 1rem;
@@ -209,6 +206,7 @@
   padding: 0;
   font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
   font-size: 0.8125rem;
+  min-width: max-content;
 }
 .ks-tree.ks-nested {
   margin-left: 1rem;
@@ -330,7 +328,6 @@
 <div class="ks-schema">
 <div class="ks-header">
   <div class="ks-apiversion">agentgateway.dev/v1alpha1</div>
-  <h2 class="ks-kind">AgentgatewayParameters</h2>
   <div class="ks-resource-desc">AgentgatewayParameters are configuration that is used to dynamically
 provision the agentgateway data plane. Labels and annotations that apply to
 all resources may be specified at a higher level; see
