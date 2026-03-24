@@ -3,7 +3,7 @@ title: "Inference Serving with Superpowers"
 toc: false
 publishDate: 2026-03-23
 author: "Daneyon Hansen"
-description: "agentgateway, llm-d, and Gateway API Inference Extension combine gateway policy,
+description: "Agentgateway, llm-d, and Gateway API Inference Extension combine gateway policy,
 smart inference scheduling, and Kubernetes-native standards for production quality inference serving."
 ---
 
@@ -16,7 +16,7 @@ This shift is exactly why [agentgateway](https://agentgateway.dev/), [llm-d](htt
 [Gateway API Inference Extension (GIE)](https://gateway-api-inference-extension.sigs.k8s.io/) belong together.
 
 [llm-d](https://llm-d.ai/docs/architecture/) is pushing new frontiers in intelligent scheduling, prefill/decode
-disaggregation, tiered KV caching, and workload-aware autoscaling. [agentgateway](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0)
+disaggregation, tiered KV caching, and workload-aware autoscaling. [Agentgateway](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0)
 has quickly developed into a production-ready high performance AI gateway for LLM, MCP, A2A, and Kubernetes-native
 inference traffic. GIE has become the standard contract between the gateway layer and inference-aware scheduling.
 
@@ -42,10 +42,13 @@ based on industry standards.
 ```mermaid
 %%{init: {
   "theme": "base",
+  "flowchart": {
+    "htmlLabels": false
+  },
   "themeVariables": {
     "background": "#030712",
     "lineColor": "#7734be",
-    "fontFamily": "ui-sans-serif"
+    "fontFamily": "Arial, Helvetica, sans-serif"
   }
 }}%%
 flowchart LR
@@ -55,18 +58,18 @@ flowchart LR
     D --> E["vLLM and serving backends"]:::backend
     D --> F["KV cache tiers<br/>GPU, CPU, SSD, remote storage"]:::cache
 
-    classDef entry fill:#7734be,stroke:#a78bfa,color:#f9fafb,stroke-width:2px;
-    classDef gateway fill:#10141f,stroke:#7734be,color:#f9fafb,stroke-width:2px;
-    classDef contract fill:#ede9fe,stroke:#7734be,color:#2c1d46,stroke-width:2px;
-    classDef scheduler fill:#2a1845,stroke:#c4b5fd,color:#f9fafb,stroke-width:2px;
+    classDef entry fill:#ede9fe,stroke:#a78bfa,color:#2c1d46,stroke-width:2px;
+    classDef gateway fill:#ddd6fe,stroke:#7734be,color:#2c1d46,stroke-width:2px;
+    classDef contract fill:#f5f3ff,stroke:#7734be,color:#2c1d46,stroke-width:2px;
+    classDef scheduler fill:#c4b5fd,stroke:#7c3aed,color:#2c1d46,stroke-width:2px;
     classDef backend fill:#f5f3ff,stroke:#8b5cf6,color:#2c1d46,stroke-width:2px;
-    classDef cache fill:#ddd6fe,stroke:#7c3aed,color:#2c1d46,stroke-width:2px;
+    classDef cache fill:#ede9fe,stroke:#7c3aed,color:#2c1d46,stroke-width:2px;
     linkStyle default stroke:#7734be,stroke-width:2px;
 ```
 
 Each layer does a different job.
 
-- **agentgateway** gives you the production traffic layer. It is a high-performance, Rust-based AI gateway that supports both
+- **Agentgateway** gives you the production traffic layer. It is a high-performance, Rust-based AI gateway that supports both
   standalone and Kubernetes deployment modes, [recently achieved GA](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0),
   and is the first [GIE v1.4.0](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/main/conformance/reports/v1.4.0/gateway/agentgateway/README.md)
   conformant gateway.
