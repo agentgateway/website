@@ -1,5 +1,5 @@
 ---
-title: Log CEL variables
+title: Enrich access logs
 weight: 100
 description: Log CEL context variables to access logs to inspect and debug transformation expressions at runtime.
 ---
