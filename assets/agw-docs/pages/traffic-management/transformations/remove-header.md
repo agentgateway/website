@@ -46,7 +46,7 @@ Remove sensitive or internal headers from requests before they reach the upstrea
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[2,3]}
+   ```console {hl_lines=[1,2]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    ...

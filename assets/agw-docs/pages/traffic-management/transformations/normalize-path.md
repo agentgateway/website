@@ -51,7 +51,7 @@ For example, a request to `/users/12345/orders/67890` produces `x-normalized-pat
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[2,3,18,19]}
+   ```console {hl_lines=[1,2,17,18,19]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    ...

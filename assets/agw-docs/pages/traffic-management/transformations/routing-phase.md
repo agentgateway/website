@@ -11,7 +11,7 @@ The transformation phase controls when the policy is evaluated:
 
 In this example, the transformation applies after routing and targets a specific HTTPRoute.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. You change the value of the `:status` pseudo response header to 401 if the request URI contains `foo=bar`. If the request URI does not contain `foo=bar`, you return a 403 HTTP response code.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. You change the value of the `:status` response header to 401 if the request URI contains `foo=bar`. If the request URI does not contain `foo=bar`, you return a 403 HTTP response code.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -135,7 +135,7 @@ In this example, the same transformation applies before routing, targeting the G
        transformation:
          response:
            set:
-           - name: ":status"
+           - name: "status"
              value: 'request.uri.contains("foo=bar") ? 401 : 403'
    EOF
    ```

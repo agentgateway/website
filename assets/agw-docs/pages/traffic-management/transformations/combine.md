@@ -89,7 +89,7 @@ Combine multiple transformation operations in a single policy to set, add, and r
    }
    ```
 
-   Note that `x-environment` is set to `production` (overwriting `staging`), `x-request-id` is added with a UUID, and `x-internal-token` is absent.
+   Note that `x-environment` is set to `production`, overwriting `staging`. `x-request-id` is added with a UUID and `x-internal-token` is absent.
 
 ## Cleanup
 
