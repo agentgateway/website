@@ -1,15 +1,16 @@
-Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to extract values from request headers and add them to your responses.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject, modify, and remove headers in requests and responses. You can extract values from existing headers, inject static values, or combine `set`, `add`, and `remove` operations in the same transformation.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Inject request header fields into response headers
+## Inject response headers
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
-   * `x-gateway-response`: Use the value from the `x-gateway-request` request header and populate it into an `x-gateway-response` response header.
-   * `x-podname`: Retrieve the value of the `x-pod-name` request header and add it to the `x-podname` response header.
-   * `x-response-raw`: Adds a static string value of `hello` to the `x-response-raw` response header.
-   * `x-replace`: Replaces the pattern-to-replace text in the `foo` header with a random number.
-   * Use `set` instead of `add` to reset the value entirely.
+In this example, you apply all three header operations in a single transformation:
+
+* `set`: Extracts the `x-gateway-request` request header value and sets it as the `x-gateway-response` response header. Also injects a static `x-response-raw` header with the value `hello`. Use `set` to create a header or overwrite it if it already exists.
+* `add`: Appends a static `x-environment` header with the value `production`. Use `add` when you want to append a value to a header that may already be present.
+* `remove`: Strips the `access-control-allow-credentials` header from the response before it reaches the client.
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -29,66 +30,56 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to extract val
            set:
            - name: x-gateway-response
              value: 'request.headers["x-gateway-request"]'
-           - name: x-pod-name
-             value: 'request.headers["x-pod-name"]'
            - name: x-response-raw
              value: '"hello"'
-           - name: x-replace
-             value: 'request.headers["x-foo"].replace("pattern-to-replace", string(random()))'
+           add:
+           - name: x-environment
+             value: '"production"'
+           remove:
+           - access-control-allow-credentials
    EOF
    ```
 
-2. Send a request to the httpbin app and include the `x-gateway-request`, `x-response-raw`, `x-pod-name`, and `x-foo` request headers. Verify that you get back a 200 HTTP response code and that the following response headers are included:
-   * `x-gateway-response` that is set to the value of the `x-gateway-request` request header.
-   * `x-pod-name` that is set to the value of the `x-pod-name` request header.
-   * `x-response-raw` that is set to `hello`.
-   * `x-replace` that is set to a random number.
+2. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify that you get back a 200 HTTP response code and that the response includes the injected headers and omits `access-control-allow-credentials`.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
     -H "host: www.example.com:80" \
-    -H "x-gateway-request: my custom request header" \
-    -H "x-pod-name: my-pod" \
-    -H "x-foo: pattern-to-replace"
+    -H "x-gateway-request: my-custom-value"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
    -H "host: www.example.com" \
-   -H "x-gateway-request: my custom request header" \
-   -H "x-pod-name: my-pod" \
-   -H "x-foo: pattern-to-replace"
+   -H "x-gateway-request: my-custom-value"
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
    Example output:
-
-   ```console {hl_lines=[3,4,13,14,15,16,17,18,19,20,21]}
+   ```console {hl_lines=[3,4,11,12,13,14,15,16,17,18]}
    ...
    * Request completely sent off
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
-   < access-control-allow-credentials: true
-   access-control-allow-credentials: true
    < access-control-allow-origin: *
    access-control-allow-origin: *
    < content-type: application/json; encoding=utf-8
    content-type: application/json; encoding=utf-8
    < content-length: 3
    content-length: 3
-   < x-gateway-response: my custom request header
-   x-gateway-response: my custom request header
-   < x-pod-name: my-pod
-   x-pod-name: my-pod
+   < x-gateway-response: my-custom-value
+   x-gateway-response: my-custom-value
    < x-response-raw: hello
    x-response-raw: hello
-   < x-replace: 0.3102405135686197
-   x-replace: 0.3102405135686197
+   < x-environment: production
+   x-environment: production
    ```
+
+   Note that `access-control-allow-credentials` does not appear in the response because it was removed by the transformation.
 
 ## Cleanup
 
@@ -97,4 +88,3 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to extract val
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```
-
