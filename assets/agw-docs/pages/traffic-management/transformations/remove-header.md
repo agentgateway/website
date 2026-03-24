@@ -2,7 +2,7 @@ Remove sensitive or internal headers from requests before they reach the upstrea
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Remove a request header
+## Remove request headers
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In the following example, you remove the `x-internal-token` request header before the request is forwarded to the upstream. This removal prevents internal credentials from being exposed to the backend service.
 
