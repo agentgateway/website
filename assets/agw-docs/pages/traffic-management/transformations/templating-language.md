@@ -87,21 +87,26 @@ JWT claims (`jwt.*`) are not available in transformations in agentgateway. This 
 
 ## Built-in functions {#cel-functions}
 
-
-
-
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Functions" %}}
 
 ### Function examples
 
-These functions are used in the documentation examples in this section. 
-- [`base64.encode(bytes)`]({{< link-hextra path="/traffic-management/transformations/add-response-headers/" >}})
-- [`base64.decode(string)`]({{< link-hextra path="/traffic-management/transformations/add-response-headers/" >}})
-- [`expression.with(variable, result)`]({{< link-hextra path="/traffic-management/transformations/normalize-path/" >}})
-- [`random()`]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}})
-- [`string(value)`]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}})
-- [`string.regexReplace(pattern, replacement)`]({{< link-hextra path="/traffic-management/transformations/normalize-path/" >}})
-- [`uuid()`]({{< link-hextra path="/traffic-management/transformations/combine/" >}})
+These functions are used in the documentation examples in this section.
+- [`base64.encode(bytes)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
+- [`base64.decode(string)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
+- [`bytes(string)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
+- [`default(expression, fallback)`]({{< link-hextra path="/traffic-management/transformations/validate/" >}})
+- [`expression.with(variable, result)`]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}})
+- [`fail()`]({{< link-hextra path="/traffic-management/transformations/validate/" >}})
+- [`json(string)`]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}})
+- [`map.filterKeys(k, predicate)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
+- [`map.merge(map2)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
+- [`random()`]({{< link-hextra path="/traffic-management/transformations/tracing/" >}})
+- [`string(value)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
+- [`string.contains(substring)`]({{< link-hextra path="/traffic-management/transformations/change-response-body/" >}})
+- [`string.regexReplace(pattern, replacement)`]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}})
+- [`uuid()`]({{< link-hextra path="/traffic-management/transformations/tracing/" >}})
+- [`variables()`]({{< link-hextra path="/traffic-management/transformations/access-logs/" >}})
 
 ## Transformation phases {#phases}
 

@@ -8,15 +8,15 @@ Mutate and transform requests and responses before forwarding them to the destin
 {{< cards >}}
   {{< card link="templating-language" title="Templating language" >}}
   {{< card link="inject-response-headers" title="Inject response headers" >}}
-  {{< card link="decode-base64-headers" title="Decode base64 headers" >}}
-  {{< card link="update-request-path" title="Update request paths and methods" >}}
-  {{< card link="redirect-url" title="Create redirect URLs" >}}
-  {{< card link="change-response-status" title="Change response status" >}}
-  {{< card link="update-response-body" title="Update response body" >}}
+  {{< card link="inject-response-body" title="Inject response bodies" >}}
+  {{< card link="encode" title="Encode base64" >}}
+  {{< card link="rewrite" title="Rewrite dynamic path segments" >}}
+  {{< card link="redirect" title="Create redirect URLs" >}}
+  {{< card link="change-response-body" title="Change response body" >}}
   {{< card link="remove-header" title="Remove headers" >}}
-  {{< card link="combine-transformations" title="Combine transformations" >}}
-  {{< card link="normalize-path" title="Rewrite dynamic path segments" >}}
-  {{< card link="access-logs" title="Log CEL variables" >}}
+  {{< card link="query" title="Extract query parameters" >}}
+  {{< card link="access-logs" title="Enrich access logs" >}}
   {{< card link="filter-request-body" title="Filter and merge request body fields" >}}
-  {{< card link="validate-request-body" title="Validate and set request body defaults" >}}
+  {{< card link="validate" title="Validate and set request body defaults" >}}
+  {{< card link="tracing" title="Generate request tracing headers" >}}
 {{< /cards >}}
