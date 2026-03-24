@@ -1,6 +1,6 @@
 ---
 title: Rewrite dynamic path segments
-weight: 75
+weight: 30
 description: Use CEL functions to rewrite request paths in a header.
 ---
 

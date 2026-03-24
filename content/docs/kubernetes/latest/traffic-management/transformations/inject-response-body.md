@@ -1,6 +1,6 @@
 ---
 title: Inject response bodies
-weight: 60
+weight: 100
 description: Learn how to return a customized response body and how to replace specific values in the body.
 ---
 

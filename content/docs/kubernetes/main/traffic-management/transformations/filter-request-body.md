@@ -1,6 +1,6 @@
 ---
 title: Filter and merge request body fields
-weight: 95
+weight: 60
 description: Use filterKeys() and merge() CEL functions to strip unwanted fields from a JSON request body and inject defaults before forwarding to the upstream.
 ---
 

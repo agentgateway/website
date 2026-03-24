@@ -1,6 +1,6 @@
 ---
 title: Create redirect URLs
-weight: 5
+weight: 40
 description: Extract the values of common headers to generate a redirect URL.
 ---
 

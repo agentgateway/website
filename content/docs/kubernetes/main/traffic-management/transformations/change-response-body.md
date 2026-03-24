@@ -1,6 +1,6 @@
 ---
 title: Change response body
-weight: 70
+weight: 110
 description: Update the response status based on the headers in a response.
 ---
 
