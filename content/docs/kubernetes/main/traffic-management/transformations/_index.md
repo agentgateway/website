@@ -11,7 +11,7 @@ Mutate and transform requests and responses before forwarding them to the destin
   {{< card link="inject-response-body" title="Inject response bodies" >}}
   {{< card link="encode" title="Encode base64" >}}
   {{< card link="rewrite" title="Rewrite dynamic path segments" >}}
-  {{< card link="redirect" title="Create redirect URLs" >}}
+  {{< card link="forward" title="Forward the request URL" >}}
   {{< card link="change-response-body" title="Change response body" >}}
   {{< card link="remove-header" title="Remove headers" >}}
   {{< card link="query" title="Extract query parameters" >}}

@@ -16,7 +16,7 @@ In this example, you read a plain-text request header and add its base64-encoded
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: transformation-encode
+     name: transformation
      namespace: httpbin
    spec:
      targetRefs:
@@ -88,7 +88,7 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: transformation-encode
+     name: transformation
      namespace: httpbin
    spec:
      targetRefs:
@@ -144,6 +144,6 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation-encode -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```
 

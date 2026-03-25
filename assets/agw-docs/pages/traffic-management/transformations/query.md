@@ -66,7 +66,7 @@ Common pseudo headers include:
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[1,2,24]}
+   ```console {hl_lines=[1,2,13,14,24]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    ...

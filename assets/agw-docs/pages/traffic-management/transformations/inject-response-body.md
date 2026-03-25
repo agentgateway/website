@@ -1,12 +1,14 @@
-Learn how to return a customized response body using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). The examples use `request.path`, `request.method`, `request.headers[]`, `request.body`, `json()`, and `string()` to construct a dynamic response body string.
+Learn how to return a customized response body by using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). The examples use `request.path`, `request.method`, `request.headers[]`, `request.body`, `json()`, and `string()` to construct a dynamic response body string.
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 
-## Inject request header fields into the response body
+## Inject request header fields into a response body
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In the following example, you set the response body to a JSON object that includes the request path, method, and the value of the `x-request-id` request header. This example is useful for tying responses back to request traces.
+In this example, you set the response body to a JSON string built from request context variables. The gateway intercepts the upstream response and replaces the body with the CEL expression result before returning it to the client. The upstream never sees the change, only the client receives the modified body. This is useful for tying responses back to request traces.
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that sets the response body to a JSON object containing the request path, method, and `x-request-id` header value. 
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -58,7 +60,7 @@ Learn how to return a customized response body using [CEL expressions]({{< link-
    {"path": "/get", "method": "GET", "request-id": "alice"}
    ```
 
-## Inject request body fields into the response body
+## Inject request body fields into a response body
 
 In this example, you parse a JSON request body using `json()` to extract a field and include it in the response body. Use `request.body` to access the raw incoming request body as a string.
 

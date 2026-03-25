@@ -6,9 +6,9 @@ Use the `with()` and `regexReplace()` [CEL functions]({{< link-hextra path="/ref
 
 ## Rewrite dynamic path segments
 
-In this example, you bind `request.path` to a temporary variable using `with()`, then use `regexReplace()` to replace any numeric path segments with `{id}`. Setting the result on the `:path` pseudo header rewrites the actual request path forwarded to the upstream.
+In this example, you bind `request.path` to a temporary variable using `with()`, then use `regexReplace()` to replace any numeric path segments with `id`. Setting the result on the `:path` pseudo header rewrites the actual request path forwarded to the upstream.
 
-For example, a request to `/users/12345/orders/67890` is forwarded upstream as `/users/{id}/orders/{id}`.
+For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
@@ -29,29 +29,29 @@ For example, a request to `/users/12345/orders/67890` is forwarded upstream as `
          request:
            set:
            - name: :path
-             value: 'request.path.with(p, p.regexReplace("/[0-9]+", "/{id}"))'
+             value: 'request.path.with(p, p.regexReplace("/[0-9]+", "/id"))'
    EOF
    ```
 
-2. Send a request to the httpbin app using a path with numeric IDs. Verify that you get back a 200 HTTP response code and that the `url` field in the response body shows the normalized path that was forwarded to the upstream.
+2. Send a request to the httpbin app using a path with a numeric ID. Verify that you get back a 200 HTTP response code and that the `url` field in the response body shows the normalized path forwarded to the upstream.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/users/12345/orders/67890 \
+   curl -vi http://$INGRESS_GW_ADDRESS:80/anything/users/12345 \
     -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/anything/users/12345/orders/67890 \
+   curl -vi localhost:8080/anything/users/12345 \
    -H "host: www.example.com"
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[1,2,14]}
+   ```console {hl_lines=[1,2,19]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    ...
@@ -70,7 +70,7 @@ For example, a request to `/users/12345/orders/67890` is forwarded upstream as `
        ]
      },
      "origin": "10.244.0.6:12345",
-     "url": "http://www.example.com/anything/users/{id}/orders/{id}"
+     "url": "http://www.example.com/anything/users/id"
    }
    ```
 

@@ -1,4 +1,4 @@
-Use the `filterKeys()` and `merge()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together with `json()` to sanitize a JSON request body before it reaches the upstream. `filterKeys()` removes unwanted fields by testing each key against a predicate. `merge()` combines two maps, with the second map's values overwriting any matching keys in the first.
+Use the `filterKeys()` and `merge()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together with `json()` and `toJson()` to sanitize a JSON request body before it reaches the upstream. `filterKeys()` removes unwanted fields by testing each key against a predicate. `merge()` combines two maps, with the second map's values overwriting any matching keys in the first. `toJson()` serializes the resulting map back to a JSON string.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -25,15 +25,15 @@ For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x
      traffic:
        transformation:
          request:
-           body: 'string(json(request.body).filterKeys(k, !k.startsWith("x_")).merge({"model": "gpt-4o", "max_tokens": 2048}))'
+           body: 'toJson(json(request.body).filterKeys(k, !k.startsWith("x_")).merge({"model": "gpt-4o", "max_tokens": 2048}))'
    EOF
    ```
 
    The expression breaks down as follows:
-   * `json(request.body)` — parses the raw request body string into a map.
-   * `.filterKeys(k, !k.startsWith("x_"))` — keeps only the keys that do not start with `x_`, stripping internal metadata fields.
-   * `.merge({"model": "gpt-4o", "max_tokens": 2048})` — merges in the default values, overwriting any existing `model` value and adding `max_tokens`.
-   * `string(...)` — converts the resulting map back to a string for the request body.
+   * `json(request.body)`: Parses the raw request body string into a map.
+   * `.filterKeys(k, !k.startsWith("x_"))`: Keeps only the keys that do not start with `x_`, stripping internal metadata fields.
+   * `.merge({"model": "gpt-4o", "max_tokens": 2048})`: Merges in the default values, overwriting any existing `model` value and adding `max_tokens`.
+   * `toJson(...)`: Serializes the resulting map back to a JSON string for the request body.
 
 2. Send a POST request to the httpbin app with a JSON body that includes internal metadata fields. Verify that you get back a 200 HTTP response code and that the `x_` fields are absent from the forwarded body.
 

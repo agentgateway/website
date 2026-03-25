@@ -60,11 +60,13 @@ In this example, you apply all three header operations in a single transformatio
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[3,4,7,8,13,14,15,16,17,18,19,20]}
+   ```console {hl_lines=[3,4,5,6,9,10,15,16,16,16,19,20]}
    ...
    * Request completely sent off
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
+   < x-response-raw: hello
+   x-response-raw: hello
    < access-control-allow-origin: *
    access-control-allow-origin: *
    < access-control-allow-origin: https://example.com
@@ -75,11 +77,10 @@ In this example, you apply all three header operations in a single transformatio
    content-length: 3
    < x-gateway-response: my-custom-value
    x-gateway-response: my-custom-value
-   < x-response-raw: hello
-   x-response-raw: hello
+   
    ```
 
-   Note that `access-control-allow-origin` appears twice — the original `*` from httpbin and the appended `https://example.com` added by the transformation. `access-control-allow-credentials` does not appear because it was removed.
+   Note that `access-control-allow-origin` appears twice: the original `*` from httpbin and the appended `https://example.com` added by the transformation. `access-control-allow-credentials` does not appear because it was removed.
 
 ## Cleanup
 

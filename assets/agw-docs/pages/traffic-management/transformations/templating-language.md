@@ -2,11 +2,6 @@
 
 CEL transformations allow you to use dynamic expressions to extract and transform values from requests and responses. You can apply them to routes for LLM providers, MCP servers, inference services, and agents.
 
-To learn more about how to use CEL, refer to the following resources:
-
-* [CEL reference]({{< link-hextra path="/reference/cel/" >}})
-* [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
-
 
 
 ## Where can CEL be used?
@@ -15,7 +10,7 @@ Transformations operate on three targets: request headers, response headers, and
 
 ### Adjust request headers
 
-Use `request.set` to modify the headers sent to the upstream service. CEL expressions can reference any request context variable.
+Use the `request` transformation to add, overwrite, or remove headers before the request reaches the upstream service. This transformation is useful for injecting routing hints, auth context, or tracing metadata that the upstream expects but the client does not send.
 
 ```yaml
 traffic:
@@ -26,11 +21,11 @@ traffic:
         value: 'request.scheme + "://" + request.host + request.path'
 ```
 
-For more information, see [Create redirect URLs]({{< link-hextra path="/traffic-management/transformations/redirect/" >}}).
+For more information about this example, see [Create redirect URLs]({{< link-hextra path="/traffic-management/transformations/forward/" >}}).
 
 ### Adjust response headers
 
-Modify the response headers returned to the client. 
+Use the `response` transformation to add, overwrite, or remove headers before the response reaches the client. This transformation is useful for encoding sensitive values, enforcing CORS policies, setting custom status codes, or stripping internal headers that should not be exposed.
 
 ```yaml
 traffic:
@@ -45,11 +40,11 @@ traffic:
       - access-control-allow-credentials
 ```
 
-For more information, see [Encode and decode base64 headers]({{< link-hextra path="/traffic-management/transformations/encode/" >}}).
+For more information about this example, see [Encode and decode base64 headers]({{< link-hextra path="/traffic-management/transformations/encode/" >}}).
 
 ### Adjust the response body
 
-Rreplace the entire response body with a CEL expression that evaluates to a string. This example builds a JSON response body from the request path and method. This is useful for constructing structured responses from request data.
+Use the `response.body` transformation to replace the entire response body with a CEL expression that evaluates to a string. This transformation is useful when the upstream response needs to be reformatted or enriched before it reaches the client. For example, you might want to build a structured JSON response from request data or inject values from request context into the body.
 
 ```yaml
 traffic:
@@ -58,20 +53,20 @@ traffic:
       body: '"{\"path\": \"" + request.path + "\", \"method\": \"" + request.method + "\"}"'
 ```
 
-For more information, see [Inject response body]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}).
+For more information about this example, see [Inject response bodies]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}).
 
 
 ## CEL syntax quick reference {#cel-syntax}
 
-The following examples show common CEL patterns used in transformations.
+Use these patterns to build expressions for header values, body content, and conditional logic in your transformation policies.
 
 | Pattern | Example | Use case | Notes |
 |---------|---------|----------|-------|
 | String literal | `'"hello"'` | Inject a fixed value into a header or body. | Wrap in single quotes in YAML. |
 | Variable | `request.path` | Forward a request property as-is, such as echoing the path into a header. | No quotes needed. |
 | Concatenation | `'"prefix-" + request.path'` | Build a value from a mix of static text and dynamic variables, such as constructing a URL or adding a namespace prefix to a header value. | Wrap in single quotes in YAML. |
-| Ternary | `'request.headers["x-foo"] == "bar" ? "yes" : "no"'` | Conditionally set a value based on a request property, such as changing a response status code when a specific query parameter is present. The pattern is `condition ? value_if_true : value_if_false`. In the example, if the `x-foo` header equals `"bar"`, the expression returns `"yes"`; otherwise it returns `"no"`. | Wrap in single quotes in YAML. Both sides must be the same type, such as strings or integers on both sides. |
-| Map access | `'request.headers["x-my-header"]'` | Read the value of a specific request header and forward it or use it in another expression. | Wrap in single quotes in YAML. |
+| Conditional expression | `'request.headers["x-foo"] == "bar" ? "yes" : "no"'` | Conditionally set a value based on a request property, such as changing a response status code when a specific query parameter is present. The pattern is `condition ? value_if_true : value_if_false`. In the example, if the `x-foo` header equals `"bar"`, the expression returns `"yes"`; otherwise it returns `"no"`. | Wrap in single quotes in YAML. Both sides must be the same type, such as strings or integers on both sides. |
+| Header lookup | `'request.headers["x-my-header"]'` | Read the value of a specific request header and forward it or use it in another expression. | Wrap in single quotes in YAML. |
 
 **YAML quoting:** When a CEL expression is a string literal or starts with a quote, wrap it in single quotes in YAML so the inner double quotes are preserved:
 
@@ -81,9 +76,6 @@ The following examples show common CEL patterns used in transformations.
 
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel.md" section="CEL context Schema" %}}
 
-{{< callout type="warning" >}}
-JWT claims (`jwt.*`) are not available in transformations in agentgateway. This is a known limitation being tracked. Check the agentgateway release notes for updates.
-{{< /callout >}}
 
 ## Built-in functions {#cel-functions}
 
@@ -103,6 +95,7 @@ These functions are used in the documentation examples in this section.
 - [`map.merge(map2)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
 - [`random()`]({{< link-hextra path="/traffic-management/transformations/tracing/" >}})
 - [`string(value)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
+- [`toJson(value)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
 - [`string.contains(substring)`]({{< link-hextra path="/traffic-management/transformations/change-response-body/" >}})
 - [`string.regexReplace(pattern, replacement)`]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}})
 - [`uuid()`]({{< link-hextra path="/traffic-management/transformations/tracing/" >}})
@@ -132,3 +125,10 @@ spec:
         - name: x-phase
           value: '"pre-routing"'
 ```
+
+## Next steps
+
+To learn more about how to use CEL, refer to the following resources:
+
+* [CEL reference]({{< link-hextra path="/reference/cel/" >}})
+* [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
