@@ -8,7 +8,7 @@ In this example, you remove the `x-internal-token` request header before the req
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
-   ```yaml
+   ```yaml {paths="remove-header"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -27,6 +27,22 @@ In this example, you remove the `x-internal-token` request header before the req
            - x-internal-token
    EOF
    ```
+
+   {{< doc-test paths="remove-header" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify x-internal-token header is stripped from request
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/get"
+       method: GET
+       headers:
+         host: www.example.com
+         x-internal-token: my-secret-token
+     source:
+       type: local
+     expect:
+       statusCode: 200
+   EOF
+   {{< /doc-test >}}
 
 2. Send a request to the httpbin app and include the `x-internal-token` request header. Verify that you get back a 200 HTTP response code and that the `x-internal-token` header is not present in the headers echoed back by httpbin.
 
@@ -77,6 +93,6 @@ In this example, you remove the `x-internal-token` request header before the req
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="remove-header"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```

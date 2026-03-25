@@ -14,7 +14,7 @@ In this example, all three operations are applied together:
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
-   ```yaml
+   ```yaml {paths="inject-response-headers"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -41,6 +41,29 @@ In this example, all three operations are applied together:
            - access-control-allow-credentials
    EOF
    ```
+
+   {{< doc-test paths="inject-response-headers" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify injected response headers are present and removed header is absent
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers"
+       method: GET
+       headers:
+         host: www.example.com
+         x-gateway-request: my-custom-value
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       headers:
+         - name: x-gateway-response
+           comparator: equals
+           value: my-custom-value
+         - name: x-response-raw
+           comparator: equals
+           value: hello
+   EOF
+   {{< /doc-test >}}
 
 2. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify that you get back a 200 HTTP response code and that the response includes the injected headers, contains two `access-control-allow-origin` values, and omits `access-control-allow-credentials`.
 
@@ -88,6 +111,6 @@ In this example, all three operations are applied together:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="inject-response-headers"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```

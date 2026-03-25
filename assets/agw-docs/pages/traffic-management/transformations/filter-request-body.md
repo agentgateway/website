@@ -10,7 +10,7 @@ For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
-   ```yaml
+   ```yaml {paths="filter-request-body"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -28,6 +28,30 @@ For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x
            body: 'toJson(json(request.body).filterKeys(k, !k.startsWith("x_")).merge({"model": "gpt-4o", "max_tokens": 2048}))'
    EOF
    ```
+
+   {{< doc-test paths="filter-request-body" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify x_ fields are stripped and defaults are merged into request body
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/post"
+       method: POST
+       headers:
+         host: www.example.com
+         content-type: application/json
+       body: '{"messages": [{"role": "user", "content": "hello"}], "model": "gpt-3.5-turbo", "x_trace_id": "abc123", "x_user_session": "xyz789"}'
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.data"
+           comparator: contains
+           value: "gpt-4o"
+         - path: "$.data"
+           comparator: contains
+           value: "max_tokens"
+   EOF
+   {{< /doc-test >}}
 
    The expression breaks down as follows:
    * `json(request.body)`: Parses the raw request body string into a map.
@@ -76,6 +100,6 @@ For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="filter-request-body"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```

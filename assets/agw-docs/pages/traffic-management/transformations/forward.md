@@ -8,7 +8,7 @@ In this example, you concatenate `request.scheme`, `request.host`, and `request.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
-   ```yaml
+   ```yaml {paths="forward"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -28,6 +28,25 @@ In this example, you concatenate `request.scheme`, `request.host`, and `request.
              value: 'request.scheme + "://" + request.host + request.path'
    EOF
    ```
+
+   {{< doc-test paths="forward" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify x-forwarded-uri is injected
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/get"
+       method: GET
+       headers:
+         host: www.example.com
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.headers.X-Forwarded-Uri[0]"
+           comparator: contains
+           value: "www.example.com"
+   EOF
+   {{< /doc-test >}}
 
 2. Send a request to the httpbin app. Verify that you get back a 200 HTTP response code and that you see the constructed URL in the `x-forwarded-uri` request header echoed back by httpbin.
 
@@ -78,7 +97,7 @@ In this example, you concatenate `request.scheme`, `request.host`, and `request.
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="forward"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```
 

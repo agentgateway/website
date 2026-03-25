@@ -21,7 +21,7 @@ Common pseudo headers include:
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. The policy rewrites the path to `/post` and the method to `POST` when the `foo: bar` request header is present. When the header is absent, the path and method are unchanged.
 
-   ```yaml
+   ```yaml {paths="query"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -43,6 +43,26 @@ Common pseudo headers include:
              value: 'request.headers["foo"] == "bar" ? "POST" : request.method'
    EOF
    ```
+
+   {{< doc-test paths="query" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify path and method are rewritten when foo=bar header is present
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/get"
+       method: GET
+       headers:
+         host: www.example.com
+         foo: bar
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.url"
+           comparator: contains
+           value: "/post"
+   EOF
+   {{< /doc-test >}}
 
 2. Send a request to the `/get` endpoint and include the `foo: bar` header to trigger the transformation. Verify that you get back a 200 HTTP response code. The httpbin `/post` endpoint only accepts `POST` requests, so a 200 response confirms both the path rewrite and the method change succeeded.
 
@@ -141,7 +161,7 @@ Common pseudo headers include:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="query"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```
 

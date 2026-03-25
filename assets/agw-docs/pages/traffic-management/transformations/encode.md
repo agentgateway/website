@@ -11,7 +11,7 @@ In this example, you read a plain-text request header and add its base64-encoded
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that reads the `x-user-id` request header and encodes it to base64 before adding it as the `x-user-id-encoded` response header.
 
-   ```yaml
+   ```yaml {paths="encode"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -31,6 +31,26 @@ In this example, you read a plain-text request header and add its base64-encoded
              value: 'base64.encode(bytes(request.headers["x-user-id"]))'
    EOF
    ```
+
+   {{< doc-test paths="encode" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify x-user-id-encoded response header contains base64 value
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers"
+       method: GET
+       headers:
+         host: www.example.com
+         x-user-id: alice
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       headers:
+         - name: x-user-id-encoded
+           comparator: equals
+           value: YWxpY2U=
+   EOF
+   {{< /doc-test >}}
 
 2. Send a request to the httpbin app and include the `x-user-id` request header. Verify that you get back a 200 HTTP response code and that the `x-user-id-encoded` response header contains the base64-encoded value.
 
@@ -83,7 +103,7 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that reads the `x-user-id-encoded` request header, decodes it from base64, and adds the result as the `x-user-id-decoded` response header.
 
-   ```yaml
+   ```yaml {paths="decode"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -103,6 +123,26 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
              value: 'string(base64.decode(request.headers["x-user-id-encoded"]))'
    EOF
    ```
+
+   {{< doc-test paths="decode" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify x-user-id-decoded response header contains plain-text value
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers"
+       method: GET
+       headers:
+         host: www.example.com
+         x-user-id-encoded: YWxpY2U=
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       headers:
+         - name: x-user-id-decoded
+           comparator: equals
+           value: alice
+   EOF
+   {{< /doc-test >}}
 
 2. Send a request to the httpbin app and include the base64-encoded value from the encode example in the `x-user-id-encoded` request header. Verify that you get back a 200 HTTP response code and that the `x-user-id-decoded` response header contains the original plain-text value.
 
@@ -143,7 +183,7 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="encode,decode"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```
 
