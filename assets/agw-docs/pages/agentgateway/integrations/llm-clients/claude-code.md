@@ -88,3 +88,11 @@ export ANTHROPIC_BASE_URL="http://localhost:4000"
    ```
 
    Every request, including prompts, tool calls, and file reads, flows through agentgateway.
+
+## Next steps
+
+{{< cards >}}
+  {{< card path="/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
+  {{< card path="/tutorials/ai-prompt-guard" title="AI prompt guard" subtitle="Advanced prompt guard patterns" >}}
+  {{< card path="/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardails for LLM requests and responses" >}}
+{{< /cards >}}

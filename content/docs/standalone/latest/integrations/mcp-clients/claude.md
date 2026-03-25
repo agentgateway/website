@@ -6,6 +6,10 @@ description: Connect Claude Desktop and Claude Code to agentgateway
 
 Configure Anthropic's Claude Desktop app or Claude Code CLI to use agentgateway as an MCP server.
 
+{{< callout type="info" >}}
+This page covers connecting Claude as an **MCP client**. To proxy Claude Code's **LLM traffic** (prompts and responses) through agentgateway, see the [Claude Code LLM client guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).
+{{< /callout >}}
+
 ## Claude Desktop
 
 Add agentgateway to your Claude Desktop configuration file:
