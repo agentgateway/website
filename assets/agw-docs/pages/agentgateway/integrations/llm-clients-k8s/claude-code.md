@@ -18,11 +18,15 @@ Claude Code uses Anthropic's native `/v1/messages` endpoint instead of the OpenA
 
 Create a secret, backend, and route to proxy Claude Code traffic through agentgateway.
 
-1. Export your Anthropic API key and create a Kubernetes secret.
+1. Export your Anthropic API key.
+
+   ```bash
+   export ANTHROPIC_API_KEY="sk-ant-your-key-here"
+   ```
+
+2. Create a Kubernetes secret for your API key. For other authentication methods, see [API keys]({{< link-hextra path="/llm/api-keys/" >}}).
 
    ```bash {paths="claude-code-k8s"}
-   export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test-placeholder}"
-
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Secret
@@ -35,7 +39,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    EOF
    ```
 
-2. Create an AgentgatewayBackend with the required route mapping.
+3. Create an AgentgatewayBackend with the `/v1/messages` route and any other details such as models that you want to configure.
 
    {{< tabs items="Flexible model (recommended),Fixed model" >}}
 

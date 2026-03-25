@@ -1,5 +1,5 @@
 ---
-title: Claude Code CLI Proxy
+title: Claude Code CLI proxy
 weight: 10
 description: Proxy and secure Claude Code CLI traffic through agentgateway on Kubernetes
 ---

@@ -1,5 +1,5 @@
 ---
-title: Basic MCP Server
+title: Basic MCP server
 weight: 1
 description: Get started with agentgateway by exposing a single MCP server
 ---

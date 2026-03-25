@@ -1,5 +1,5 @@
 ---
-title: MCP Clients
+title: MCP clients
 weight: 15
 description: Connect AI coding assistants and tools to agentgateway
 ---

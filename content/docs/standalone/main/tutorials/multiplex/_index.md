@@ -1,5 +1,5 @@
 ---
-title: Multiplex MCP Servers
+title: Multiplex MCP servers
 weight: 2
 description: Combine multiple MCP servers behind a single endpoint
 ---

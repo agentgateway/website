@@ -1,5 +1,5 @@
 ---
-title: Basic MCP Server
+title: Basic MCP server
 weight: 2
 description: Deploy and connect to an MCP server through agentgateway on Kubernetes
 ---

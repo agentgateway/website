@@ -1,5 +1,5 @@
 ---
-title: JWT Authorization
+title: JWT authorization
 weight: 4
 description: Secure your agentgateway with JWT authentication and fine-grained tool access control
 ---
