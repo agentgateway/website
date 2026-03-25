@@ -1,4 +1,4 @@
-Use the `default()` and `fail()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) with `json()`, `merge()`, and `toJson()` to control what happens when a field is absent from the request. `default(expression, fallbackValue)` returns the expression if it resolves, and the fallback if it does not. The fallback can be a value to substitute a default, or `fail()`, which skips the transformation entirely when the field is absent.
+Use the `default()` and `fail()` [CEL functions]({{< link-hextra path="/dreference/cel/#functions-policy-all" >}}) with `json()`, `merge()`, and `toJson()` to control what happens when a field is absent from the request. `default(expression, fallbackValue)` returns the expression if it resolves, and the fallback if it does not. The fallback can be a value to substitute a default, or `fail()`, which skips the transformation entirely when the field is absent.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
