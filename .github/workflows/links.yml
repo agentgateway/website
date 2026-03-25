@@ -107,6 +107,10 @@ jobs:
             --root-dir "${{ github.workspace }}/public"
             --index-files index.html
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
+            --remap "public/docs/observability public/docs/kubernetes/latest/observability"
+            --remap "public/docs/resiliency public/docs/kubernetes/latest/resiliency"
+            --remap "public/docs/security public/docs/kubernetes/latest/security"
+            --remap "public/docs/traffic-management public/docs/kubernetes/latest/traffic-management"
             --remap "public/docs/about public/docs/standalone/latest/about"
             --remap "public/docs/agent public/docs/standalone/latest/agent"
             --remap "public/docs/configuration public/docs/standalone/latest/configuration"
