@@ -12,7 +12,7 @@ This page covers connecting Claude as an **MCP client**. To proxy Claude Code's 
 
 ## Claude Desktop
 
-Add agentgateway to your Claude Desktop configuration file:
+Add agentgateway to your Claude Desktop configuration file.
 
 {{< tabs items="macOS,Windows" >}}
 {{< tab >}}
@@ -45,13 +45,13 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ## Claude Code CLI
 
-Configure Claude Code to connect to agentgateway:
+Configure Claude Code to connect to agentgateway.
 
 ```bash
 claude mcp add agentgateway --transport sse http://localhost:15000/mcp/sse
 ```
 
-Or add to your project's `.mcp.json`:
+Or, add to your project's `.mcp.json`.
 
 ```json
 {
@@ -66,7 +66,7 @@ Or add to your project's `.mcp.json`:
 
 ## Streamable HTTP Transport
 
-For better performance, use the streamable HTTP transport:
+For better performance, use the streamable HTTP transport.
 
 ```json
 {
@@ -80,7 +80,7 @@ For better performance, use the streamable HTTP transport:
 
 ## Authentication
 
-If agentgateway requires authentication, include the token in the URL or headers:
+If agentgateway requires authentication, include the token in the URL or headers.
 
 ```json
 {
