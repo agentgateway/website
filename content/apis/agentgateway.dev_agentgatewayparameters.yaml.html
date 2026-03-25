@@ -1,0 +1,1238 @@
+<!-- kubespec widget: AgentgatewayParameters (agentgateway.dev/v1alpha1) -->
+<div id="ks-widget-1"></div>
+<template id="ks-widget-1-template">
+<style>
+.ks-schema {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;
+  max-width: 56rem;
+}
+.ks-schema,
+.ks-schema * {
+  box-sizing: border-box;
+}
+.ks-schema :where(div, span, ul, li, details, summary, input, button, a) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+  text-decoration: none;
+}
+.ks-schema :where(ul, li) {
+  list-style: none;
+}
+.ks-schema :where(pre, code) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  white-space: inherit;
+  overflow: visible;
+}
+.ks-schema :where(button, input) {
+  background: none;
+}
+.ks-schema [hidden] {
+  display: none !important;
+}
+.ks-header { margin-bottom: 1rem; }
+.ks-apiversion {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #0f766e;
+  margin-bottom: 0.4rem;
+}
+.ks-resource-desc {
+  margin: 0.75rem 0 1rem;
+  padding: 0.8rem 0.95rem;
+  border-left: 4px solid #14b8a6;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #ecfeff 0%, #f8fafc 100%);
+  font-size: 0.875rem;
+  color: #164e63;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  max-width: 48rem;
+  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.08);
+}
+.ks-rich-block + .ks-rich-block,
+.ks-code-wrap + .ks-rich-block,
+.ks-rich-block + .ks-code-wrap,
+.ks-code-wrap + .ks-code-wrap,
+.ks-rich-heading + .ks-rich-block,
+.ks-rich-block + .ks-rich-heading,
+.ks-rich-heading + .ks-code-wrap,
+.ks-code-wrap + .ks-rich-heading,
+.ks-rich-heading + .ks-rich-heading {
+  margin-top: 0.7rem;
+}
+.ks-rich-heading {
+  color: #0f172a;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.ks-rich-h1 {
+  font-size: 1.1rem;
+}
+.ks-rich-h2 {
+  font-size: 1rem;
+}
+.ks-rich-h3 {
+  font-size: 0.94rem;
+}
+.ks-rich-h4,
+.ks-rich-h5,
+.ks-rich-h6 {
+  font-size: 0.88rem;
+}
+.ks-strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+.ks-inline-code {
+  display: inline-block;
+  padding: 0.02rem 0.34rem;
+  border-radius: 0.35rem;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.92em;
+}
+.ks-code-wrap {
+  border: 1px solid #dbe2ea;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.ks-code-block {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  overflow-x: auto;
+  white-space: pre;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.ks-search {
+  position: relative;
+  margin: 0.875rem 0 1rem;
+  max-width: 32rem;
+}
+.ks-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+.ks-search-input::placeholder { color: #9ca3af; }
+.ks-search-input:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.14);
+}
+.ks-search-results {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 0.375rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(8px);
+}
+.ks-search-results[hidden] { display: none; }
+.ks-search-result {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ks-search-result:hover,
+.ks-search-result.is-active { background: #ccfbf1; }
+.ks-search-result-path {
+  display: block;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+.ks-search-result-type {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: #475569;
+}
+.ks-search-empty {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+  color: #475569;
+}
+.ks-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.35fr) minmax(20rem, clamp(18rem, 24vw, 30rem));
+  gap: 1.25rem;
+  align-items: start;
+}
+.ks-tree-pane {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+}
+.ks-detail-pane {
+  position: sticky;
+  top: var(--ks-sticky-top, 1rem);
+  max-height: calc(100vh - var(--ks-sticky-top, 1rem) - 1rem);
+  overflow: auto;
+}
+.ks-detail-card {
+  padding: 0.9rem 1rem;
+  border: 1px solid #dbe2ea;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+}
+.ks-detail-path {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+  word-break: break-word;
+}
+.ks-detail-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.55rem;
+}
+.ks-detail-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.ks-detail-required {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.ks-detail-desc,
+.ks-detail-empty {
+  margin-top: 0.8rem;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #334155;
+  white-space: pre-wrap;
+}
+.ks-detail-empty {
+  color: #64748b;
+}
+.ks-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.8125rem;
+}
+.ks-tree.ks-nested {
+  margin-left: 0.5rem;
+  padding-left: 0.3125rem;
+  border-left: 2px solid #cbd5e1;
+}
+.ks-row { font-weight: 600; }
+.ks-row + .ks-row { margin-top: 0.125rem; }
+.ks-row-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.35rem;
+  cursor: pointer;
+}
+.ks-row-line:hover { background: #f8fafc; }
+.ks-row-line.is-active { background: #ccfbf1; }
+.ks-row-line.ks-search-hit { background: #99f6e4; }
+.ks-name-toggle,
+.ks-type-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  background: transparent;
+  cursor: default;
+  user-select: none;
+}
+.ks-name-toggle.is-clickable,
+.ks-type-toggle.is-clickable {
+  cursor: pointer;
+}
+.ks-name-toggle.is-clickable:hover,
+.ks-type-toggle.is-clickable:hover {
+  background: #f0fdfa;
+}
+.ks-name { color: #0f172a; }
+.ks-required {
+  color: #e11d48;
+  font-size: 0.6875rem;
+  margin-right: 0.125rem;
+  font-family: system-ui, sans-serif;
+}
+.ks-type { font-weight: 400; }
+.ks-type-string  { color: #ea580c; }
+.ks-type-boolean { color: #2563eb; }
+.ks-type-integer { color: #0284c7; }
+.ks-type-object  { color: #7c3aed; }
+.ks-type-complex { color: #db2777; }
+.ks-type-other   { color: #0f766e; }
+.ks-validation {
+  margin-top: 0.8rem;
+  border-top: 1px solid #dbe2ea;
+  padding-top: 0.65rem;
+}
+.ks-validation-summary {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #64748b;
+  user-select: none;
+}
+.ks-validation-summary:hover { color: #0f766e; }
+.ks-validation-summary::before {
+  content: "▸" !important;
+  margin-right: 0.4rem;
+  color: #94a3b8;
+  transition: transform 120ms ease;
+}
+.ks-validation[open] > .ks-validation-summary::before {
+  transform: rotate(90deg);
+}
+.ks-validation-body {
+  padding-top: 0.45rem;
+}
+.ks-validation-item {
+  display: grid;
+  grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+  gap: 0.25rem 0.6rem;
+  padding-top: 0.35rem;
+}
+.ks-validation-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.ks-validation-value {
+  min-width: 0;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ks-validation-value-block {
+  margin: 0;
+  font-family: inherit;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+.ks-documentation {
+  margin-top: 0.7rem;
+}
+.ks-doc-link-row + .ks-doc-link-row {
+  margin-top: 0.35rem;
+}
+.ks-doc-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  font-size: 0.72rem;
+  color: #0f766e;
+  text-decoration: underline;
+  text-decoration-color: rgba(15, 118, 110, 0.28);
+  text-underline-offset: 0.14em;
+  word-break: break-word;
+}
+.ks-doc-link:hover {
+  color: #115e59;
+  text-decoration-color: currentColor;
+}
+@media (max-width: 900px) {
+  .ks-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ks-detail-pane {
+    position: static;
+  }
+}
+
+</style>
+<div class="ks-schema">
+<div class="ks-header">
+  <div class="ks-apiversion">agentgateway.dev/v1alpha1</div>
+  <div class="ks-resource-desc"><div class="ks-rich-block">AgentgatewayParameters are configuration that is used to dynamically<br />provision the agentgateway data plane. Labels and annotations that apply to<br />all resources may be specified at a higher level; see<br />https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure</div></div>
+  <div class="ks-search"><input class="ks-search-input" type="search" placeholder="Search fields like spec.template.spec.containers" autocomplete="off" spellcheck="false" aria-label="Search schema fields" data-ks-search-input /><div class="ks-search-results" data-ks-search-results hidden></div></div>
+</div>
+<div class="ks-layout">
+<div class="ks-tree-pane">
+<ul class="ks-tree">
+<li class="ks-row" data-ks-path="apiVersion"><div class="ks-row-line" id="ks-widget-1-node-0" data-ks-node-id="ks-widget-1-node-0" data-ks-path="apiVersion"><span class="ks-name-toggle"><span class="ks-name">apiVersion</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="kind"><div class="ks-row-line" id="ks-widget-1-node-1" data-ks-node-id="ks-widget-1-node-1" data-ks-path="kind"><span class="ks-name-toggle"><span class="ks-name">kind</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="metadata"><div class="ks-row-line" id="ks-widget-1-node-2" data-ks-node-id="ks-widget-1-node-2" data-ks-path="metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec"><div class="ks-row-line" id="ks-widget-1-node-3" data-ks-node-id="ks-widget-1-node-3" data-ks-path="spec"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">spec</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-3-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-3-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.deployment"><div class="ks-row-line" id="ks-widget-1-node-4" data-ks-node-id="ks-widget-1-node-4" data-ks-path="spec.deployment"><span class="ks-name-toggle"><span class="ks-name">deployment</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-4-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-4-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.deployment.metadata"><div class="ks-row-line" id="ks-widget-1-node-5" data-ks-node-id="ks-widget-1-node-5" data-ks-path="spec.deployment.metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-5-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-5-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.deployment.metadata.annotations"><div class="ks-row-line" id="ks-widget-1-node-6" data-ks-node-id="ks-widget-1-node-6" data-ks-path="spec.deployment.metadata.annotations"><span class="ks-name-toggle"><span class="ks-name">annotations</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.deployment.metadata.labels"><div class="ks-row-line" id="ks-widget-1-node-7" data-ks-node-id="ks-widget-1-node-7" data-ks-path="spec.deployment.metadata.labels"><span class="ks-name-toggle"><span class="ks-name">labels</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.deployment.spec"><div class="ks-row-line" id="ks-widget-1-node-8" data-ks-node-id="ks-widget-1-node-8" data-ks-path="spec.deployment.spec"><span class="ks-name-toggle"><span class="ks-name">spec</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.env"><div class="ks-row-line" id="ks-widget-1-node-9" data-ks-node-id="ks-widget-1-node-9" data-ks-path="spec.env"><span class="ks-name-toggle"><span class="ks-name">env</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-9-children"><span class="ks-type ks-type-complex">object[]</span></button></div><div class="ks-children-container" id="ks-widget-1-node-9-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.env.name"><div class="ks-row-line" id="ks-widget-1-node-10" data-ks-node-id="ks-widget-1-node-10" data-ks-path="spec.env.name"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.value"><div class="ks-row-line" id="ks-widget-1-node-11" data-ks-node-id="ks-widget-1-node-11" data-ks-path="spec.env.value"><span class="ks-name-toggle"><span class="ks-name">value</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom"><div class="ks-row-line" id="ks-widget-1-node-12" data-ks-node-id="ks-widget-1-node-12" data-ks-path="spec.env.valueFrom"><span class="ks-name-toggle"><span class="ks-name">valueFrom</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-12-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-12-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.env.valueFrom.configMapKeyRef"><div class="ks-row-line" id="ks-widget-1-node-13" data-ks-node-id="ks-widget-1-node-13" data-ks-path="spec.env.valueFrom.configMapKeyRef"><span class="ks-name-toggle"><span class="ks-name">configMapKeyRef</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-13-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-13-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.env.valueFrom.configMapKeyRef.key"><div class="ks-row-line" id="ks-widget-1-node-14" data-ks-node-id="ks-widget-1-node-14" data-ks-path="spec.env.valueFrom.configMapKeyRef.key"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">key</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.configMapKeyRef.name"><div class="ks-row-line" id="ks-widget-1-node-15" data-ks-node-id="ks-widget-1-node-15" data-ks-path="spec.env.valueFrom.configMapKeyRef.name"><span class="ks-name-toggle"><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.configMapKeyRef.optional"><div class="ks-row-line" id="ks-widget-1-node-16" data-ks-node-id="ks-widget-1-node-16" data-ks-path="spec.env.valueFrom.configMapKeyRef.optional"><span class="ks-name-toggle"><span class="ks-name">optional</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-boolean">boolean</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fieldRef"><div class="ks-row-line" id="ks-widget-1-node-17" data-ks-node-id="ks-widget-1-node-17" data-ks-path="spec.env.valueFrom.fieldRef"><span class="ks-name-toggle"><span class="ks-name">fieldRef</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-17-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-17-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fieldRef.apiVersion"><div class="ks-row-line" id="ks-widget-1-node-18" data-ks-node-id="ks-widget-1-node-18" data-ks-path="spec.env.valueFrom.fieldRef.apiVersion"><span class="ks-name-toggle"><span class="ks-name">apiVersion</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fieldRef.fieldPath"><div class="ks-row-line" id="ks-widget-1-node-19" data-ks-node-id="ks-widget-1-node-19" data-ks-path="spec.env.valueFrom.fieldRef.fieldPath"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">fieldPath</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fileKeyRef"><div class="ks-row-line" id="ks-widget-1-node-20" data-ks-node-id="ks-widget-1-node-20" data-ks-path="spec.env.valueFrom.fileKeyRef"><span class="ks-name-toggle"><span class="ks-name">fileKeyRef</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-20-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-20-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fileKeyRef.key"><div class="ks-row-line" id="ks-widget-1-node-21" data-ks-node-id="ks-widget-1-node-21" data-ks-path="spec.env.valueFrom.fileKeyRef.key"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">key</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fileKeyRef.optional"><div class="ks-row-line" id="ks-widget-1-node-22" data-ks-node-id="ks-widget-1-node-22" data-ks-path="spec.env.valueFrom.fileKeyRef.optional"><span class="ks-name-toggle"><span class="ks-name">optional</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-boolean">boolean</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fileKeyRef.path"><div class="ks-row-line" id="ks-widget-1-node-23" data-ks-node-id="ks-widget-1-node-23" data-ks-path="spec.env.valueFrom.fileKeyRef.path"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">path</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.fileKeyRef.volumeName"><div class="ks-row-line" id="ks-widget-1-node-24" data-ks-node-id="ks-widget-1-node-24" data-ks-path="spec.env.valueFrom.fileKeyRef.volumeName"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">volumeName</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.resourceFieldRef"><div class="ks-row-line" id="ks-widget-1-node-25" data-ks-node-id="ks-widget-1-node-25" data-ks-path="spec.env.valueFrom.resourceFieldRef"><span class="ks-name-toggle"><span class="ks-name">resourceFieldRef</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-25-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-25-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.env.valueFrom.resourceFieldRef.containerName"><div class="ks-row-line" id="ks-widget-1-node-26" data-ks-node-id="ks-widget-1-node-26" data-ks-path="spec.env.valueFrom.resourceFieldRef.containerName"><span class="ks-name-toggle"><span class="ks-name">containerName</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.resourceFieldRef.divisor"><div class="ks-row-line" id="ks-widget-1-node-27" data-ks-node-id="ks-widget-1-node-27" data-ks-path="spec.env.valueFrom.resourceFieldRef.divisor"><span class="ks-name-toggle"><span class="ks-name">divisor</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-other"></span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.resourceFieldRef.resource"><div class="ks-row-line" id="ks-widget-1-node-28" data-ks-node-id="ks-widget-1-node-28" data-ks-path="spec.env.valueFrom.resourceFieldRef.resource"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">resource</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.secretKeyRef"><div class="ks-row-line" id="ks-widget-1-node-29" data-ks-node-id="ks-widget-1-node-29" data-ks-path="spec.env.valueFrom.secretKeyRef"><span class="ks-name-toggle"><span class="ks-name">secretKeyRef</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-29-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-29-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.env.valueFrom.secretKeyRef.key"><div class="ks-row-line" id="ks-widget-1-node-30" data-ks-node-id="ks-widget-1-node-30" data-ks-path="spec.env.valueFrom.secretKeyRef.key"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">key</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.secretKeyRef.name"><div class="ks-row-line" id="ks-widget-1-node-31" data-ks-node-id="ks-widget-1-node-31" data-ks-path="spec.env.valueFrom.secretKeyRef.name"><span class="ks-name-toggle"><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.env.valueFrom.secretKeyRef.optional"><div class="ks-row-line" id="ks-widget-1-node-32" data-ks-node-id="ks-widget-1-node-32" data-ks-path="spec.env.valueFrom.secretKeyRef.optional"><span class="ks-name-toggle"><span class="ks-name">optional</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-boolean">boolean</span></span></div></li>
+</ul></div></li>
+</ul></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.horizontalPodAutoscaler"><div class="ks-row-line" id="ks-widget-1-node-33" data-ks-node-id="ks-widget-1-node-33" data-ks-path="spec.horizontalPodAutoscaler"><span class="ks-name-toggle"><span class="ks-name">horizontalPodAutoscaler</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-33-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-33-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.horizontalPodAutoscaler.metadata"><div class="ks-row-line" id="ks-widget-1-node-34" data-ks-node-id="ks-widget-1-node-34" data-ks-path="spec.horizontalPodAutoscaler.metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-34-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-34-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.horizontalPodAutoscaler.metadata.annotations"><div class="ks-row-line" id="ks-widget-1-node-35" data-ks-node-id="ks-widget-1-node-35" data-ks-path="spec.horizontalPodAutoscaler.metadata.annotations"><span class="ks-name-toggle"><span class="ks-name">annotations</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.horizontalPodAutoscaler.metadata.labels"><div class="ks-row-line" id="ks-widget-1-node-36" data-ks-node-id="ks-widget-1-node-36" data-ks-path="spec.horizontalPodAutoscaler.metadata.labels"><span class="ks-name-toggle"><span class="ks-name">labels</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.horizontalPodAutoscaler.spec"><div class="ks-row-line" id="ks-widget-1-node-37" data-ks-node-id="ks-widget-1-node-37" data-ks-path="spec.horizontalPodAutoscaler.spec"><span class="ks-name-toggle"><span class="ks-name">spec</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.image"><div class="ks-row-line" id="ks-widget-1-node-38" data-ks-node-id="ks-widget-1-node-38" data-ks-path="spec.image"><span class="ks-name-toggle"><span class="ks-name">image</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-38-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-38-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.image.digest"><div class="ks-row-line" id="ks-widget-1-node-39" data-ks-node-id="ks-widget-1-node-39" data-ks-path="spec.image.digest"><span class="ks-name-toggle"><span class="ks-name">digest</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.image.pullPolicy"><div class="ks-row-line" id="ks-widget-1-node-40" data-ks-node-id="ks-widget-1-node-40" data-ks-path="spec.image.pullPolicy"><span class="ks-name-toggle"><span class="ks-name">pullPolicy</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.image.registry"><div class="ks-row-line" id="ks-widget-1-node-41" data-ks-node-id="ks-widget-1-node-41" data-ks-path="spec.image.registry"><span class="ks-name-toggle"><span class="ks-name">registry</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.image.repository"><div class="ks-row-line" id="ks-widget-1-node-42" data-ks-node-id="ks-widget-1-node-42" data-ks-path="spec.image.repository"><span class="ks-name-toggle"><span class="ks-name">repository</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.image.tag"><div class="ks-row-line" id="ks-widget-1-node-43" data-ks-node-id="ks-widget-1-node-43" data-ks-path="spec.image.tag"><span class="ks-name-toggle"><span class="ks-name">tag</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.istio"><div class="ks-row-line" id="ks-widget-1-node-44" data-ks-node-id="ks-widget-1-node-44" data-ks-path="spec.istio"><span class="ks-name-toggle"><span class="ks-name">istio</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-44-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-44-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.istio.caAddress"><div class="ks-row-line" id="ks-widget-1-node-45" data-ks-node-id="ks-widget-1-node-45" data-ks-path="spec.istio.caAddress"><span class="ks-name-toggle"><span class="ks-name">caAddress</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.istio.trustDomain"><div class="ks-row-line" id="ks-widget-1-node-46" data-ks-node-id="ks-widget-1-node-46" data-ks-path="spec.istio.trustDomain"><span class="ks-name-toggle"><span class="ks-name">trustDomain</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.logging"><div class="ks-row-line" id="ks-widget-1-node-47" data-ks-node-id="ks-widget-1-node-47" data-ks-path="spec.logging"><span class="ks-name-toggle"><span class="ks-name">logging</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-47-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-47-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.logging.format"><div class="ks-row-line" id="ks-widget-1-node-48" data-ks-node-id="ks-widget-1-node-48" data-ks-path="spec.logging.format"><span class="ks-name-toggle"><span class="ks-name">format</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.logging.level"><div class="ks-row-line" id="ks-widget-1-node-49" data-ks-node-id="ks-widget-1-node-49" data-ks-path="spec.logging.level"><span class="ks-name-toggle"><span class="ks-name">level</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.podDisruptionBudget"><div class="ks-row-line" id="ks-widget-1-node-50" data-ks-node-id="ks-widget-1-node-50" data-ks-path="spec.podDisruptionBudget"><span class="ks-name-toggle"><span class="ks-name">podDisruptionBudget</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-50-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-50-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.podDisruptionBudget.metadata"><div class="ks-row-line" id="ks-widget-1-node-51" data-ks-node-id="ks-widget-1-node-51" data-ks-path="spec.podDisruptionBudget.metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-51-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-51-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.podDisruptionBudget.metadata.annotations"><div class="ks-row-line" id="ks-widget-1-node-52" data-ks-node-id="ks-widget-1-node-52" data-ks-path="spec.podDisruptionBudget.metadata.annotations"><span class="ks-name-toggle"><span class="ks-name">annotations</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.podDisruptionBudget.metadata.labels"><div class="ks-row-line" id="ks-widget-1-node-53" data-ks-node-id="ks-widget-1-node-53" data-ks-path="spec.podDisruptionBudget.metadata.labels"><span class="ks-name-toggle"><span class="ks-name">labels</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.podDisruptionBudget.spec"><div class="ks-row-line" id="ks-widget-1-node-54" data-ks-node-id="ks-widget-1-node-54" data-ks-path="spec.podDisruptionBudget.spec"><span class="ks-name-toggle"><span class="ks-name">spec</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.rawConfig"><div class="ks-row-line" id="ks-widget-1-node-55" data-ks-node-id="ks-widget-1-node-55" data-ks-path="spec.rawConfig"><span class="ks-name-toggle"><span class="ks-name">rawConfig</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.resources"><div class="ks-row-line" id="ks-widget-1-node-56" data-ks-node-id="ks-widget-1-node-56" data-ks-path="spec.resources"><span class="ks-name-toggle"><span class="ks-name">resources</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-56-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-56-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.resources.claims"><div class="ks-row-line" id="ks-widget-1-node-57" data-ks-node-id="ks-widget-1-node-57" data-ks-path="spec.resources.claims"><span class="ks-name-toggle"><span class="ks-name">claims</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-57-children"><span class="ks-type ks-type-complex">object[]</span></button></div><div class="ks-children-container" id="ks-widget-1-node-57-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.resources.claims.name"><div class="ks-row-line" id="ks-widget-1-node-58" data-ks-node-id="ks-widget-1-node-58" data-ks-path="spec.resources.claims.name"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.resources.claims.request"><div class="ks-row-line" id="ks-widget-1-node-59" data-ks-node-id="ks-widget-1-node-59" data-ks-path="spec.resources.claims.request"><span class="ks-name-toggle"><span class="ks-name">request</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.resources.limits"><div class="ks-row-line" id="ks-widget-1-node-60" data-ks-node-id="ks-widget-1-node-60" data-ks-path="spec.resources.limits"><span class="ks-name-toggle"><span class="ks-name">limits</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.resources.requests"><div class="ks-row-line" id="ks-widget-1-node-61" data-ks-node-id="ks-widget-1-node-61" data-ks-path="spec.resources.requests"><span class="ks-name-toggle"><span class="ks-name">requests</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.service"><div class="ks-row-line" id="ks-widget-1-node-62" data-ks-node-id="ks-widget-1-node-62" data-ks-path="spec.service"><span class="ks-name-toggle"><span class="ks-name">service</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-62-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-62-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.service.metadata"><div class="ks-row-line" id="ks-widget-1-node-63" data-ks-node-id="ks-widget-1-node-63" data-ks-path="spec.service.metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-63-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-63-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.service.metadata.annotations"><div class="ks-row-line" id="ks-widget-1-node-64" data-ks-node-id="ks-widget-1-node-64" data-ks-path="spec.service.metadata.annotations"><span class="ks-name-toggle"><span class="ks-name">annotations</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.service.metadata.labels"><div class="ks-row-line" id="ks-widget-1-node-65" data-ks-node-id="ks-widget-1-node-65" data-ks-path="spec.service.metadata.labels"><span class="ks-name-toggle"><span class="ks-name">labels</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.service.spec"><div class="ks-row-line" id="ks-widget-1-node-66" data-ks-node-id="ks-widget-1-node-66" data-ks-path="spec.service.spec"><span class="ks-name-toggle"><span class="ks-name">spec</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.serviceAccount"><div class="ks-row-line" id="ks-widget-1-node-67" data-ks-node-id="ks-widget-1-node-67" data-ks-path="spec.serviceAccount"><span class="ks-name-toggle"><span class="ks-name">serviceAccount</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-67-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-67-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.serviceAccount.metadata"><div class="ks-row-line" id="ks-widget-1-node-68" data-ks-node-id="ks-widget-1-node-68" data-ks-path="spec.serviceAccount.metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-68-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-68-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.serviceAccount.metadata.annotations"><div class="ks-row-line" id="ks-widget-1-node-69" data-ks-node-id="ks-widget-1-node-69" data-ks-path="spec.serviceAccount.metadata.annotations"><span class="ks-name-toggle"><span class="ks-name">annotations</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.serviceAccount.metadata.labels"><div class="ks-row-line" id="ks-widget-1-node-70" data-ks-node-id="ks-widget-1-node-70" data-ks-path="spec.serviceAccount.metadata.labels"><span class="ks-name-toggle"><span class="ks-name">labels</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.serviceAccount.spec"><div class="ks-row-line" id="ks-widget-1-node-71" data-ks-node-id="ks-widget-1-node-71" data-ks-path="spec.serviceAccount.spec"><span class="ks-name-toggle"><span class="ks-name">spec</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="spec.shutdown"><div class="ks-row-line" id="ks-widget-1-node-72" data-ks-node-id="ks-widget-1-node-72" data-ks-path="spec.shutdown"><span class="ks-name-toggle"><span class="ks-name">shutdown</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-72-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-72-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="spec.shutdown.max"><div class="ks-row-line" id="ks-widget-1-node-73" data-ks-node-id="ks-widget-1-node-73" data-ks-path="spec.shutdown.max"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">max</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="spec.shutdown.min"><div class="ks-row-line" id="ks-widget-1-node-74" data-ks-node-id="ks-widget-1-node-74" data-ks-path="spec.shutdown.min"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">min</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+</ul></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="status"><div class="ks-row-line" id="ks-widget-1-node-75" data-ks-node-id="ks-widget-1-node-75" data-ks-path="status"><span class="ks-name-toggle"><span class="ks-name">status</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div>
+<aside class="ks-detail-pane"><div data-ks-active-panel></div></aside>
+</div>
+<template data-ks-field-panel="ks-widget-1-node-0"><div class="ks-detail-card"><div class="ks-detail-path">apiVersion</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-1"><div class="ks-detail-card"><div class="ks-detail-path">kind</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-2"><div class="ks-detail-card"><div class="ks-detail-path">metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-3"><div class="ks-detail-card"><div class="ks-detail-path">spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">spec defines the desired state of AgentgatewayParameters.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-4"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">deployment</code> allows specifying overrides for the generated<br /><code class="ks-inline-code">Deployment</code> resource.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/customize/index.html">docs/kubernetes/latest/setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-5"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-6"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-7"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-8"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/customize/index.html">docs/kubernetes/latest/setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-9"><div class="ks-detail-card"><div class="ks-detail-path">spec.env</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The container environment variables. These override any existing<br />values. If you want to delete an environment variable entirely, use<br /><code class="ks-inline-code">$patch: delete</code> with <code class="ks-inline-code">AgentgatewayParametersOverlays</code> instead. Note that<br />[variable<br />expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)<br />does apply, but is highly discouraged -- to set dependent environment<br />variables, you can use <code class="ks-inline-code">$(VAR_NAME)</code>, but it's highly discouraged.<br /><code class="ks-inline-code">$$(VAR_NAME)</code> avoids expansion and results in a literal<br /><code class="ks-inline-code">$(VAR_NAME)</code>.</div><div class="ks-rich-block">If <code class="ks-inline-code">SESSION_KEY</code> is specified, it takes precedence over the<br />controller-managed per-<code class="ks-inline-code">Gateway</code> session key <code class="ks-inline-code">Secret</code>.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (3)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/llm/guardrail-api/guardrails/index.html">docs/kubernetes/latest/llm/guardrail-api/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/llm/guardrails/webhook/guardrails/index.html">docs/kubernetes/latest/llm/guardrails/webhook/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-10"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name of the environment variable.<br />May consist of any printable ASCII characters except '='.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (3)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/llm/guardrail-api/guardrails/index.html">docs/kubernetes/latest/llm/guardrail-api/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/llm/guardrails/webhook/guardrails/index.html">docs/kubernetes/latest/llm/guardrails/webhook/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-11"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.value</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Variable references $(VAR_NAME) are expanded<br />using the previously defined environment variables in the container and<br />any service environment variables. If a variable cannot be resolved,<br />the reference in the input string will be unchanged. Double $$ are reduced<br />to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.<br />&quot;$$(VAR_NAME)&quot; will produce the string literal &quot;$(VAR_NAME)&quot;.<br />Escaped references will never be expanded, regardless of whether the variable<br />exists or not.<br />Defaults to &quot;&quot;.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (3)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/llm/guardrail-api/guardrails/index.html">docs/kubernetes/latest/llm/guardrail-api/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/llm/guardrails/webhook/guardrails/index.html">docs/kubernetes/latest/llm/guardrails/webhook/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-12"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Source for the environment variable's value. Cannot be used if value is not empty.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-13"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a key of a ConfigMap.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-14"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The key to select.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-15"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name of the referent.<br />This field is effectively required, but due to backwards compatibility is<br />allowed to be empty. Instances of this type with an empty value here are<br />almost certainly wrong.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-16"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specify whether the ConfigMap or its key must be defined</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-17"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a field of the pod: supports metadata.name, metadata.namespace, <code class="ks-inline-code">metadata.labels['&lt;KEY&gt;']</code>, <code class="ks-inline-code">metadata.annotations['&lt;KEY&gt;']</code>,<br />spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-18"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef.apiVersion</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Version of the schema the FieldPath is written in terms of, defaults to &quot;v1&quot;.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-19"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef.fieldPath</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Path of the field to select in the specified API version.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-20"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">FileKeyRef selects a key of the env file.<br />Requires the EnvFiles feature gate to be enabled.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-21"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The key within the env file. An invalid key will prevent the pod from starting.<br />The keys defined within a source may consist of any printable ASCII characters except '='.<br />During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-22"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specify whether the file or its key must be defined. If the file or key<br />does not exist, then the env var is not published.<br />If optional is set to true and the specified key does not exist,<br />the environment variable will not be set in the Pod's containers.</div><div class="ks-rich-block">If optional is set to false and the specified key does not exist,<br />an error will be returned during Pod creation.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">false</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-23"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.path</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The path within the volume from which to select the file.<br />Must be relative and may not contain the '..' path or start with '..'.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-24"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.volumeName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The name of the volume mount containing the env file.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-25"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a resource of the container: only resources limits and requests<br />(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-26"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.containerName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Container name: required for volumes, optional for env vars</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-27"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.divisor</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-other"></span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specifies the output format of the exposed resources, defaults to &quot;1&quot;</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Pattern</span><span class="ks-validation-value">^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$</span></div><div class="ks-validation-item"><span class="ks-validation-label">Int or string</span><span class="ks-validation-value">true</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-28"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.resource</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Required: resource to select</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-29"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a key of a secret in the pod's namespace</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-30"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The key of the secret to select from.  Must be a valid secret key.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-31"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name of the referent.<br />This field is effectively required, but due to backwards compatibility is<br />allowed to be empty. Instances of this type with an empty value here are<br />almost certainly wrong.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-32"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specify whether the Secret or its key must be defined</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-33"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">horizontalPodAutoscaler</code> allows creating a <code class="ks-inline-code">HorizontalPodAutoscaler</code><br />for the agentgateway proxy. If absent, no HPA is created. If present, an<br />HPA is created with its <code class="ks-inline-code">scaleTargetRef</code> automatically configured to<br />target the agentgateway proxy <code class="ks-inline-code">Deployment</code>. The <code class="ks-inline-code">metadata</code> and <code class="ks-inline-code">spec</code><br />fields from this overlay are applied to the generated HPA.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-34"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-35"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-36"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-37"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-38"><div class="ks-detail-card"><div class="ks-detail-path">spec.image</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The agentgateway container image. See<br />https://kubernetes.io/docs/concepts/containers/images<br />for details.</div><div class="ks-rich-block">Default values, which may be overridden individually:</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>registry: cr.agentgateway.dev
+repository: agentgateway
+tag: &lt;agentgateway version&gt;
+pullPolicy: &lt;omitted, relying on Kubernetes defaults which depend on the tag&gt;</code></pre></div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-39"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.digest</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The hash digest of the image, e.g. <code class="ks-inline-code">sha256:12345...</code></div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-40"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.pullPolicy</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-41"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.registry</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image registry.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-42"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.repository</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image repository (name).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-43"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.tag</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image tag.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-44"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Configure Istio integration. If enabled, Agentgateway can natively connect to Istio enabled pods with mTLS.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-45"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.caAddress</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The address of the Istio CA. If unset, defaults to <code class="ks-inline-code">https://istiod.istio-system.svc:15012</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-46"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.trustDomain</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The Istio trust domain. If not set, defaults to <code class="ks-inline-code">cluster.local</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-47"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">logging</code> configuration for Agentgateway. By default, all logs are set to<br /><code class="ks-inline-code">info</code> level.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/customize/index.html">docs/kubernetes/latest/setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-48"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging.format</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The default logging format is text.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Enum</span><span class="ks-validation-value">json, text</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/customize/index.html">docs/kubernetes/latest/setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-49"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging.level</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Logging level in standard <code class="ks-inline-code">RUST_LOG</code> syntax, for example <code class="ks-inline-code">info</code> (the<br />default), or a comma-separated per-module setting such as<br /><code class="ks-inline-code">rmcp=warn,hickory_server::server::server_future=off,typespec_client_core::http::policies::logging=warn</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-50"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">podDisruptionBudget</code> allows creating a <code class="ks-inline-code">PodDisruptionBudget</code> for the<br />agentgateway proxy. If absent, no PDB is created. If present, a PDB is<br />created with its selector automatically configured to target the<br />agentgateway proxy <code class="ks-inline-code">Deployment</code>. The <code class="ks-inline-code">metadata</code> and <code class="ks-inline-code">spec</code> fields from<br />this overlay are applied to the generated PDB.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-51"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-52"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-53"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-54"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-55"><div class="ks-detail-card"><div class="ks-detail-path">spec.rawConfig</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">rawConfig</code> provides an opaque mechanism to configure the <code class="ks-inline-code">agentgateway</code><br />config file. The <code class="ks-inline-code">agentgateway</code> binary has a <code class="ks-inline-code">-f</code> option to specify a<br />config file, and this field supplies that file. This will be merged with<br />configuration derived from typed fields like <code class="ks-inline-code">logging.format</code>, and those<br />typed fields will take precedence.</div><div class="ks-rich-block">Example:</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>rawConfig:
+  binds:
+  - port: 3000
+    listeners:
+    - routes:
+      - policies:
+          cors:
+            allowOrigins:
+            - &quot;*&quot;
+            allowHeaders:
+            - mcp-protocol-version
+            - content-type
+            - cache-control
+        backends:
+        - mcp:
+            targets:
+            - name: everything
+              stdio:
+                cmd: npx
+                args: [&quot;@modelcontextprotocol/server-everything&quot;]</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/customize/index.html">docs/kubernetes/latest/setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-56"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-57"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Claims lists the names of resources, defined in spec.resourceClaims,<br />that are used by this container.</div><div class="ks-rich-block">This field depends on the<br />DynamicResourceAllocation feature gate.</div><div class="ks-rich-block">This field is immutable. It can only be set for containers.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">List type</span><span class="ks-validation-value">map</span></div><div class="ks-validation-item"><span class="ks-validation-label">List map keys</span><span class="ks-validation-value">name</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-58"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name must match the name of one entry in pod.spec.resourceClaims of<br />the Pod where this field is used. It makes that resource available<br />inside a container.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-59"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims.request</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Request is the name chosen for a request in the referenced claim.<br />If empty, everything from the claim is made available, otherwise<br />only the result of this request.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-60"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.limits</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Limits describes the maximum amount of compute resources allowed.<br />More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-61"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.requests</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Requests describes the minimum amount of compute resources required.<br />If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,<br />otherwise to an implementation-defined value. Requests cannot exceed Limits.<br />More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-62"><div class="ks-detail-card"><div class="ks-detail-path">spec.service</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">service</code> allows specifying overrides for the generated <code class="ks-inline-code">Service</code><br />resource.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-63"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-64"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-65"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-66"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-67"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">serviceAccount</code> allows specifying overrides for the generated<br /><code class="ks-inline-code">ServiceAccount</code> resource.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-68"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-69"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-70"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-71"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-72"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your <code class="ks-inline-code">Gateway</code><br />resources.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Rule</span><div class="ks-validation-value ks-validation-value-block">The 'min' value must be less than or equal to the 'max' value.</div></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-73"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown.max</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Maximum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the <code class="ks-inline-code">TERMINATION_GRACE_PERIOD_SECONDS</code><br />environment variable for details.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">int64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">31536000</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-74"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown.min</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Minimum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the <code class="ks-inline-code">CONNECTION_MIN_TERMINATION_DEADLINE</code><br />environment variable for details.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">int64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">31536000</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="/docs/kubernetes/latest/setup/customize/configs/index.html">docs/kubernetes/latest/setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-75"><div class="ks-detail-card"><div class="ks-detail-path">status</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">status defines the current state of AgentgatewayParameters.</div></div></div></template>
+
+</div>
+</template>
+<script>
+(() => {
+  const host = document.getElementById("ks-widget-1");
+  const template = document.getElementById("ks-widget-1-template");
+  if (!host || !template || host.dataset.ksWidgetReady === "true") {
+    return;
+  }
+  host.dataset.ksWidgetReady = "true";
+
+  const shadow = host.shadowRoot || host.attachShadow({ mode: "open" });
+  shadow.innerHTML = "";
+  shadow.appendChild(template.content.cloneNode(true));
+
+  const root = shadow.querySelector(".ks-schema");
+  if (!root) {
+    return;
+  }
+
+  const entries = [
+  { nodeId: "ks-widget-1-node-0", path: "apiVersion", propType: "string" },
+  { nodeId: "ks-widget-1-node-1", path: "kind", propType: "string" },
+  { nodeId: "ks-widget-1-node-2", path: "metadata", propType: "object" },
+  { nodeId: "ks-widget-1-node-3", path: "spec", propType: "object" },
+  { nodeId: "ks-widget-1-node-4", path: "spec.deployment", propType: "object" },
+  { nodeId: "ks-widget-1-node-5", path: "spec.deployment.metadata", propType: "object" },
+  { nodeId: "ks-widget-1-node-6", path: "spec.deployment.metadata.annotations", propType: "object" },
+  { nodeId: "ks-widget-1-node-7", path: "spec.deployment.metadata.labels", propType: "object" },
+  { nodeId: "ks-widget-1-node-8", path: "spec.deployment.spec", propType: "object" },
+  { nodeId: "ks-widget-1-node-9", path: "spec.env", propType: "object[]" },
+  { nodeId: "ks-widget-1-node-10", path: "spec.env.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-11", path: "spec.env.value", propType: "string" },
+  { nodeId: "ks-widget-1-node-12", path: "spec.env.valueFrom", propType: "object" },
+  { nodeId: "ks-widget-1-node-13", path: "spec.env.valueFrom.configMapKeyRef", propType: "object" },
+  { nodeId: "ks-widget-1-node-14", path: "spec.env.valueFrom.configMapKeyRef.key", propType: "string" },
+  { nodeId: "ks-widget-1-node-15", path: "spec.env.valueFrom.configMapKeyRef.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-16", path: "spec.env.valueFrom.configMapKeyRef.optional", propType: "boolean" },
+  { nodeId: "ks-widget-1-node-17", path: "spec.env.valueFrom.fieldRef", propType: "object" },
+  { nodeId: "ks-widget-1-node-18", path: "spec.env.valueFrom.fieldRef.apiVersion", propType: "string" },
+  { nodeId: "ks-widget-1-node-19", path: "spec.env.valueFrom.fieldRef.fieldPath", propType: "string" },
+  { nodeId: "ks-widget-1-node-20", path: "spec.env.valueFrom.fileKeyRef", propType: "object" },
+  { nodeId: "ks-widget-1-node-21", path: "spec.env.valueFrom.fileKeyRef.key", propType: "string" },
+  { nodeId: "ks-widget-1-node-22", path: "spec.env.valueFrom.fileKeyRef.optional", propType: "boolean" },
+  { nodeId: "ks-widget-1-node-23", path: "spec.env.valueFrom.fileKeyRef.path", propType: "string" },
+  { nodeId: "ks-widget-1-node-24", path: "spec.env.valueFrom.fileKeyRef.volumeName", propType: "string" },
+  { nodeId: "ks-widget-1-node-25", path: "spec.env.valueFrom.resourceFieldRef", propType: "object" },
+  { nodeId: "ks-widget-1-node-26", path: "spec.env.valueFrom.resourceFieldRef.containerName", propType: "string" },
+  { nodeId: "ks-widget-1-node-27", path: "spec.env.valueFrom.resourceFieldRef.divisor", propType: "" },
+  { nodeId: "ks-widget-1-node-28", path: "spec.env.valueFrom.resourceFieldRef.resource", propType: "string" },
+  { nodeId: "ks-widget-1-node-29", path: "spec.env.valueFrom.secretKeyRef", propType: "object" },
+  { nodeId: "ks-widget-1-node-30", path: "spec.env.valueFrom.secretKeyRef.key", propType: "string" },
+  { nodeId: "ks-widget-1-node-31", path: "spec.env.valueFrom.secretKeyRef.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-32", path: "spec.env.valueFrom.secretKeyRef.optional", propType: "boolean" },
+  { nodeId: "ks-widget-1-node-33", path: "spec.horizontalPodAutoscaler", propType: "object" },
+  { nodeId: "ks-widget-1-node-34", path: "spec.horizontalPodAutoscaler.metadata", propType: "object" },
+  { nodeId: "ks-widget-1-node-35", path: "spec.horizontalPodAutoscaler.metadata.annotations", propType: "object" },
+  { nodeId: "ks-widget-1-node-36", path: "spec.horizontalPodAutoscaler.metadata.labels", propType: "object" },
+  { nodeId: "ks-widget-1-node-37", path: "spec.horizontalPodAutoscaler.spec", propType: "object" },
+  { nodeId: "ks-widget-1-node-38", path: "spec.image", propType: "object" },
+  { nodeId: "ks-widget-1-node-39", path: "spec.image.digest", propType: "string" },
+  { nodeId: "ks-widget-1-node-40", path: "spec.image.pullPolicy", propType: "string" },
+  { nodeId: "ks-widget-1-node-41", path: "spec.image.registry", propType: "string" },
+  { nodeId: "ks-widget-1-node-42", path: "spec.image.repository", propType: "string" },
+  { nodeId: "ks-widget-1-node-43", path: "spec.image.tag", propType: "string" },
+  { nodeId: "ks-widget-1-node-44", path: "spec.istio", propType: "object" },
+  { nodeId: "ks-widget-1-node-45", path: "spec.istio.caAddress", propType: "string" },
+  { nodeId: "ks-widget-1-node-46", path: "spec.istio.trustDomain", propType: "string" },
+  { nodeId: "ks-widget-1-node-47", path: "spec.logging", propType: "object" },
+  { nodeId: "ks-widget-1-node-48", path: "spec.logging.format", propType: "string" },
+  { nodeId: "ks-widget-1-node-49", path: "spec.logging.level", propType: "string" },
+  { nodeId: "ks-widget-1-node-50", path: "spec.podDisruptionBudget", propType: "object" },
+  { nodeId: "ks-widget-1-node-51", path: "spec.podDisruptionBudget.metadata", propType: "object" },
+  { nodeId: "ks-widget-1-node-52", path: "spec.podDisruptionBudget.metadata.annotations", propType: "object" },
+  { nodeId: "ks-widget-1-node-53", path: "spec.podDisruptionBudget.metadata.labels", propType: "object" },
+  { nodeId: "ks-widget-1-node-54", path: "spec.podDisruptionBudget.spec", propType: "object" },
+  { nodeId: "ks-widget-1-node-55", path: "spec.rawConfig", propType: "object" },
+  { nodeId: "ks-widget-1-node-56", path: "spec.resources", propType: "object" },
+  { nodeId: "ks-widget-1-node-57", path: "spec.resources.claims", propType: "object[]" },
+  { nodeId: "ks-widget-1-node-58", path: "spec.resources.claims.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-59", path: "spec.resources.claims.request", propType: "string" },
+  { nodeId: "ks-widget-1-node-60", path: "spec.resources.limits", propType: "object" },
+  { nodeId: "ks-widget-1-node-61", path: "spec.resources.requests", propType: "object" },
+  { nodeId: "ks-widget-1-node-62", path: "spec.service", propType: "object" },
+  { nodeId: "ks-widget-1-node-63", path: "spec.service.metadata", propType: "object" },
+  { nodeId: "ks-widget-1-node-64", path: "spec.service.metadata.annotations", propType: "object" },
+  { nodeId: "ks-widget-1-node-65", path: "spec.service.metadata.labels", propType: "object" },
+  { nodeId: "ks-widget-1-node-66", path: "spec.service.spec", propType: "object" },
+  { nodeId: "ks-widget-1-node-67", path: "spec.serviceAccount", propType: "object" },
+  { nodeId: "ks-widget-1-node-68", path: "spec.serviceAccount.metadata", propType: "object" },
+  { nodeId: "ks-widget-1-node-69", path: "spec.serviceAccount.metadata.annotations", propType: "object" },
+  { nodeId: "ks-widget-1-node-70", path: "spec.serviceAccount.metadata.labels", propType: "object" },
+  { nodeId: "ks-widget-1-node-71", path: "spec.serviceAccount.spec", propType: "object" },
+  { nodeId: "ks-widget-1-node-72", path: "spec.shutdown", propType: "object" },
+  { nodeId: "ks-widget-1-node-73", path: "spec.shutdown.max", propType: "integer" },
+  { nodeId: "ks-widget-1-node-74", path: "spec.shutdown.min", propType: "integer" },
+  { nodeId: "ks-widget-1-node-75", path: "status", propType: "object" }
+];
+  const input = shadow.querySelector("[data-ks-search-input]");
+  const results = shadow.querySelector("[data-ks-search-results]");
+  const detailPanel = shadow.querySelector("[data-ks-active-panel]");
+  if (!input || !results || entries.length === 0) {
+    return;
+  }
+  const nodeByID = new Map();
+  const childrenByID = new Map();
+  const panelTemplateByID = new Map();
+  shadow.querySelectorAll("[data-ks-node-id]").forEach((element) => {
+    nodeByID.set(element.getAttribute("data-ks-node-id"), element);
+  });
+  shadow.querySelectorAll("[data-ks-children-container]").forEach((element) => {
+    childrenByID.set(element.id, element);
+  });
+  shadow.querySelectorAll("[data-ks-field-panel]").forEach((element) => {
+    panelTemplateByID.set(element.getAttribute("data-ks-field-panel"), element);
+  });
+  const entryByPath = new Map(entries.map((entry) => [normalize(entry.path), entry]));
+  const typeButtons = shadow.querySelectorAll("[data-ks-children-target]");
+
+  let matches = [];
+  let activeIndex = -1;
+  let highlightTimer = 0;
+  let activeNodeId = "";
+
+  function normalize(value) {
+    return value.toLowerCase().trim().replace(/^\./, "");
+  }
+
+  function scoreSegment(query, target) {
+    if (!query) {
+      return 0;
+    }
+    let qi = 0;
+    let score = 0;
+    let streak = 0;
+    let lastIndex = -1;
+    for (let i = 0; i < target.length && qi < query.length; i += 1) {
+      if (target[i] !== query[qi]) {
+        continue;
+      }
+      score += 1;
+      if (i === 0) {
+        score += 12;
+      }
+      if (lastIndex === i - 1) {
+        streak += 1;
+        score += 8 + Math.min(streak, 4);
+      } else {
+        streak = 0;
+      }
+      lastIndex = i;
+      qi += 1;
+    }
+    if (qi !== query.length) {
+      return -1;
+    }
+    if (target.startsWith(query)) {
+      score += 18;
+    }
+    return score - (target.length - query.length);
+  }
+
+  function fuzzyScore(query, target) {
+    const queryParts = normalize(query).split(".").filter(Boolean);
+    const targetParts = normalize(target).split(".").filter(Boolean);
+    if (queryParts.length === 0) {
+      return -1;
+    }
+
+    let total = 0;
+    let searchFrom = 0;
+    for (const queryPart of queryParts) {
+      let bestIndex = -1;
+      let bestScore = -1;
+      for (let i = searchFrom; i < targetParts.length; i += 1) {
+        const partScore = scoreSegment(queryPart, targetParts[i]);
+        if (partScore > bestScore) {
+          bestIndex = i;
+          bestScore = partScore;
+        }
+        if (targetParts[i].startsWith(queryPart)) {
+          break;
+        }
+      }
+      if (bestIndex === -1 || bestScore < 0) {
+        return -1;
+      }
+      total += bestScore;
+      if (bestIndex === searchFrom) {
+        total += 6;
+      }
+      searchFrom = bestIndex + 1;
+    }
+
+    const normalizedTarget = normalize(target);
+    const normalizedQuery = normalize(query);
+    if (normalizedTarget.startsWith(normalizedQuery)) {
+      total += 24;
+    }
+    return total - Math.max(0, targetParts.length - queryParts.length);
+  }
+
+  function escapeHtml(value) {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function hideResults() {
+    results.hidden = true;
+    results.innerHTML = "";
+    matches = [];
+    activeIndex = -1;
+  }
+
+  function setActiveIndex(nextIndex) {
+    activeIndex = nextIndex;
+    const buttons = results.querySelectorAll("[data-ks-search-result]");
+    buttons.forEach((button, index) => {
+      button.classList.toggle("is-active", index === activeIndex);
+    });
+  }
+
+  function renderMatches() {
+    const query = input.value.trim();
+    if (!query) {
+      hideResults();
+      return;
+    }
+
+    matches = entries
+      .map((entry) => ({ ...entry, score: fuzzyScore(query, entry.path) }))
+      .filter((entry) => entry.score >= 0)
+      .sort((a, b) => b.score - a.score || a.path.length - b.path.length || a.path.localeCompare(b.path))
+      .slice(0, 8);
+
+    if (matches.length === 0) {
+      results.innerHTML = '<div class="ks-search-empty">No matching fields</div>';
+      results.hidden = false;
+      activeIndex = -1;
+      return;
+    }
+
+    results.innerHTML = matches.map((entry, index) => (
+      '<button type="button" class="ks-search-result' + (index === 0 ? ' is-active' : '') + '" data-ks-search-result data-node-id="' + escapeHtml(entry.nodeId) + '">' +
+        '<span class="ks-search-result-path">' + escapeHtml(entry.path) + '</span>' +
+        '<span class="ks-search-result-type">' + escapeHtml(entry.propType || "field") + '</span>' +
+      '</button>'
+    )).join("");
+    results.hidden = false;
+    activeIndex = 0;
+  }
+
+  function clearHighlight() {
+    shadow.querySelectorAll(".ks-search-hit").forEach((element) => {
+      element.classList.remove("ks-search-hit");
+    });
+  }
+
+  function setActiveNode(entry) {
+    if (!entry) {
+      return;
+    }
+    if (activeNodeId) {
+      const current = nodeByID.get(activeNodeId);
+      if (current) {
+        current.classList.remove("is-active");
+      }
+    }
+    const next = nodeByID.get(entry.nodeId);
+    if (!next) {
+      return;
+    }
+    next.classList.add("is-active");
+    activeNodeId = entry.nodeId;
+    if (detailPanel) {
+      const panelTemplate = panelTemplateByID.get(entry.nodeId);
+      detailPanel.innerHTML = panelTemplate ? panelTemplate.innerHTML : "";
+    }
+  }
+
+  function revealNode(node) {
+    let current = node;
+    while (current && current !== root) {
+      if (current.hasAttribute && current.hasAttribute("data-ks-children-container")) {
+        current.hidden = false;
+      }
+      current = current.parentElement;
+    }
+  }
+
+  function setHash(path) {
+    const nextHash = "#" + encodeURIComponent(path);
+    if (window.location.hash === nextHash) {
+      return;
+    }
+    if (window.history && typeof window.history.replaceState === "function") {
+      window.history.replaceState(null, "", nextHash);
+      return;
+    }
+    window.location.hash = path;
+  }
+
+  function selectEntry(entry, options = {}) {
+    const { updateHash = false, scroll = true } = options;
+    const node = nodeByID.get(entry.nodeId);
+    if (!node) {
+      return;
+    }
+    revealNode(node);
+    setActiveNode(entry);
+    clearHighlight();
+    node.classList.add("ks-search-hit");
+    window.clearTimeout(highlightTimer);
+    highlightTimer = window.setTimeout(clearHighlight, 1800);
+    if (scroll) {
+      node.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    input.value = entry.path;
+    hideResults();
+    if (updateHash) {
+      setHash(entry.path);
+    }
+  }
+
+  function selectHashTarget() {
+    const rawHash = window.location.hash.replace(/^#/, "");
+    if (!rawHash) {
+      if (entries.length > 0) {
+        selectEntry(entries[0], { scroll: false });
+      }
+      return;
+    }
+    const entry = entryByPath.get(normalize(decodeURIComponent(rawHash)));
+    if (entry) {
+      selectEntry(entry);
+      return;
+    }
+    if (entries.length > 0) {
+      selectEntry(entries[0], { scroll: false });
+    }
+  }
+
+  function toggleSubtree(control) {
+    const row = control.closest(".ks-row");
+    if (!row) {
+      return;
+    }
+    const childContainers = Array.from(row.querySelectorAll("[data-ks-children-container]"));
+    if (childContainers.length === 0) {
+      return;
+    }
+    const shouldOpen = childContainers.some((candidate) => candidate.hasAttribute("hidden"));
+    childContainers.forEach((candidate) => {
+      candidate.hidden = !shouldOpen;
+    });
+  }
+
+  input.addEventListener("input", renderMatches);
+  input.addEventListener("focus", () => {
+    if (input.value.trim()) {
+      renderMatches();
+    }
+  });
+  input.addEventListener("keydown", (event) => {
+    if (results.hidden || matches.length === 0) {
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveIndex((activeIndex + 1) % matches.length);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((activeIndex - 1 + matches.length) % matches.length);
+      return;
+    }
+    if (event.key === "Enter" && activeIndex >= 0) {
+      event.preventDefault();
+      selectEntry(matches[activeIndex]);
+      return;
+    }
+    if (event.key === "Escape") {
+      hideResults();
+    }
+  });
+
+  results.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+  });
+  results.addEventListener("click", (event) => {
+    const target = event.target;
+    const button = target instanceof Element ? target.closest("[data-node-id]") : null;
+    if (!button) {
+      return;
+    }
+    const entry = matches.find((candidate) => candidate.nodeId === button.getAttribute("data-node-id"));
+    if (entry) {
+      selectEntry(entry);
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!host.contains(event.target)) {
+      hideResults();
+    }
+  });
+  typeButtons.forEach((typeButton) => {
+    typeButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        toggleSubtree(typeButton);
+        return;
+      }
+      const children = childrenByID.get(typeButton.getAttribute("data-ks-children-target"));
+      if (children) {
+        children.hidden = !children.hidden;
+      }
+    });
+  });
+  root.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest("button")) {
+      return;
+    }
+    const selectable = target instanceof Element ? target.closest(".ks-row-line") : null;
+    if (!selectable || !root.contains(selectable)) {
+      return;
+    }
+    const path = selectable.getAttribute("data-ks-path");
+    if (!path) {
+      return;
+    }
+    if (event.ctrlKey || event.metaKey) {
+      return;
+    }
+    setHash(path);
+    const entry = entryByPath.get(normalize(path));
+    if (entry) {
+      selectEntry(entry, { scroll: false });
+    }
+  });
+  window.addEventListener("hashchange", selectHashTarget);
+  selectHashTarget();
+})();
+</script>
+
