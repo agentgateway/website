@@ -14,7 +14,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
 
    Because the `ReplacePrefixPath` path modifier is used, only the path prefix is replaced during the redirect. For example, requests to `http://path.redirect.example/get` result in the `https://path.redirect.example/status/200` redirect location. However, for longer paths, such as in `http://path.redirect.example/get/headers`, only the prefix is replaced and a redirect location of `https://path.redirect.example/status/200/headers` is returned.
 
-   ```yaml
+   ```yaml {paths="path-redirect-prefix"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -106,13 +106,48 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    content-length: 0
    ```
 
+{{< doc-test paths="path-redirect-prefix" >}}
+YAMLTest -f - <<'EOF'
+- name: path redirect prefix - /get returns 302 with location /status/200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200
+- name: path redirect prefix - /get/headers returns 302 with location /status/200/headers
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get/headers
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200/headers
+EOF
+{{< /doc-test >}}
+
 ### Replace full path
 
 1. Create an HTTPRoute for the httpbin app. In the following example, requests to the `/get` path are redirected to the `/status/200` path, and a 302 HTTP response code is returned to the user.
 
    Because the `ReplaceFullPath` path modifier is used, requests to `http://path.redirect.example/get` and `http://path.redirect.example/get/headers` both receive `https://path.redirect.example/status/200` as the redirect location.
 
-   ```yaml
+   ```yaml {paths="path-redirect-full"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -204,12 +239,47 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    content-length: 0
    ```
 
+{{< doc-test paths="path-redirect-full" >}}
+YAMLTest -f - <<'EOF'
+- name: path redirect full - /get returns 302 with location /status/200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200
+- name: path redirect full - /get/headers returns 302 with same location /status/200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get/headers
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
-  
+
 ```sh
-kubectl delete httproute httpbin-redirect -n httpbin
+kubectl delete httproute httpbin-redirect -n httpbin --ignore-not-found
 ```
 
 

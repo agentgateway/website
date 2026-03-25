@@ -437,7 +437,7 @@ def main():
                 continue  # Skip generated files
             types = parse_go_file(go_file, source="shared", is_enterprise=is_ent)
             all_types.extend(types)
-            print(f"Parsed shared/{go_file.name}: found {len(types)} types")
+            print(f"INFO: Parsed shared/{go_file.name}: found {len(types)} types")
     
     # Parse additional source directories for types
     # Include all types (structs and aliases) since for enterprise docs,
@@ -452,11 +452,11 @@ def main():
                 types = parse_go_file(go_file, source=dir_name, is_enterprise=is_ent)
                 all_types.extend(types)
                 if types:
-                    print(f"Parsed {dir_name}/{go_file.name}: found {len(types)} types")
+                    print(f"INFO: Parsed {dir_name}/{go_file.name}: found {len(types)} types")
     
     # Find all broken links in the document
     broken_links = find_all_broken_links(doc_file)
-    print(f"Found {len(broken_links)} broken links: {broken_links}")
+    print(f"INFO: Found {len(broken_links)} broken links: {broken_links}")
     
     # Find which types we can document
     type_names = {t.name for t in all_types}
@@ -481,10 +481,10 @@ def main():
     for name in list(referenced):
         add_nested_refs(name, visited)
     
-    print(f"Types to document: {referenced}")
+    print(f"INFO: Types to document: {referenced}")
     
     if not referenced:
-        print("No missing type references found that we can document")
+        print("INFO: No missing type references found that we can document")
         # Report any remaining broken links
         remaining = broken_links - type_names
         if remaining:
@@ -498,7 +498,7 @@ def main():
     with open(doc_file, "a") as f:
         f.write(markdown)
     
-    print(f"Successfully appended documentation for {len(referenced)} types")
+    print(f"INFO: Successfully appended documentation for {len(referenced)} types")
     
     # Report any remaining broken links
     remaining = broken_links - referenced

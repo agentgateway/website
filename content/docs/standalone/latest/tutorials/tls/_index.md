@@ -208,6 +208,6 @@ cd .. && rm -rf tls-tutorial
 ## Next steps
 
 {{< cards >}}
-  {{< card link="/docs/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
-  {{< card link="/docs/configuration/listeners" title="Listeners" subtitle="Listener configuration" >}}
+  {{< card path="/configuration/security/" title="Security Configuration" subtitle="Complete security options" >}}
+  {{< card path="/configuration/listeners" title="Listeners" subtitle="Listener configuration" >}}
 {{< /cards >}}

@@ -4,7 +4,7 @@ weight: 10
 ---
 
 Attach to:
-{{< badge content="Backend" link="/docs/configuration/backends/" >}}
+{{< badge content="Backend" path="/configuration/backends/" >}}
 
 When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 

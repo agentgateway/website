@@ -1,186 +1,249 @@
-Configure and manage HTTP connections to an upstream service. 
+You can use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to apply HTTP connection settings to the agentgateway proxy. These settings include idle connection timeouts, the maximum number of connections that an upstream service can receive, and more. Note that these options are applied to HTTP/1 or HTTP/2 requests only when indicated.
 
-## Supported HTTP connection settings
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-You can use a BackendConfigPolicy to apply HTTP connection settings to a service in your cluster. These settings include general settings, such as connection timeouts or the maximum number of connections that an upstream service can receive. You can also configure settings for HTTP/2 and HTTP/1 requests. 
+## Maximum buffer size {#buffer}
 
-* [General connection settings](#general-settings)
-* [HTTP protocol options](#http)
-* [Additional HTTP 1.0 protocol options](#http1)
+Fine-tune connection speeds for read and write operations by setting a connection buffer limit (`maxBufferSize`). You can use this setting for both HTTP/1 and HTTP/2 connections.
 
-### General connection settings {#general-settings}
-
-Configure the timeout and read/write buffer limits for a connection. 
-
-```yaml 
-kind: BackendConfigPolicy
-apiVersion: gateway.kgateway.dev/v1alpha1
-metadata:
-  name: httpbin-policy
-  namespace: gwtest
-spec:
-  targetRefs:
-    - name: httpbin
-      group: ""
-      kind: Service
-  connectTimeout: 5s
-  perConnectionBufferLimitBytes: 1024
-```
-
-| Setting | Description | 
-| -- | -- | 
-| `connectTimeout` | The timeout for new network connections to an upstream service. | 
-| `perConnectionBufferLimitBytes` | Set the size of the read and write buffer per connection. By default, the gateway has a maximum of 1MiB for the read and write buffer for each connection. For large requests that must be buffered and that exceed the default buffer limit, the gateway proxy either disconnects the connection to the downstream service if headers were already sent, or returns a 500 HTTP response code. To make sure that large requests can be sent and received, you can specify the maximum number of bytes that you want to allow to be buffered between the gateway and the downstream service. |
-
-### HTTP protocol options {#http}
-
-You can use a BackendConfigPolicy to configure additional connection options when handling upstream HTTP requests. Note that these options are applied to HTTP/1 and HTTP/2 requests. 
-
-```yaml
-kind: BackendConfigPolicy
-apiVersion: gateway.kgateway.dev/v1alpha1
-metadata:
-  name: httpbin-policy
-  namespace: gwtest
-spec:
-  targetRefs:
-    - name: httpbin
-      group: ""
-      kind: Service
-  commonHttpProtocolOptions:
-    idleTimeout: 10s  
-    maxHeadersCount: 15
-    maxStreamDuration: 30s
-    maxRequestsPerConnection: 100 
-```
-
-| Setting | Description | 
-| -- | -- | 
-| `idleTimeout` | The idle timeout for connections. The idle timeout is defined as the period in which there are no active requests. When the idle timeout is reached, the connection is closed. Note that request-based timeouts mean that HTTP/2 PINGs do not keep the connection alive. If not specified, the idle timeout defaults to 1 hour. To disable idle timeouts, explicitly set this field to 0. **Warning**: Disabling the timeout has a highly likelihood of yielding connection leaks, such as due to lost TCP FIN packets.| 
-| `maxHeadersCount` | The maximum number of headers that can be sent in a connection. If not specified, the number defaults to 100. Requests that exceed this limit receive a 431 response for HTTP/1 and cause a stream reset for HTTP/2. | 
-| `maxStreamDuration` | The total duration to keep alive an HTTP request/response stream. If the time limit is reached, the stream is reset independent of any other timeouts. If not specified, this value is not set. | 
-| `maxRequestsPerConnection` | The maximum number of requests that can be sent per connection. | 
- 
-
-#### Additional HTTP 1.0 protocol options {#http1}
-
-The BackendConfigPolicy allows you to apply additional configuration to HTTP/1 connections. 
-
-```yaml
-kind: BackendConfigPolicy
-apiVersion: gateway.kgateway.dev/v1alpha1
-metadata:
-  name: httpbin-policy
-  namespace: gwtest
-spec:
-  targetRefs:
-    - name: httpbin
-      group: ""
-      kind: Service
-  http1ProtocolOptions:
-    enableTrailers: true
-    overrideStreamErrorOnInvalidHttpMessage: true
-    preserveHttp1HeaderCase: true
-```
-
-| Setting | Description | 
-| -- | -- | 
-| `enableTrailers` | Enables trailers for HTTP/1 requests. Trailers are headers that are sent after the request body is sent. By default, the HTTP/1 codec drops proxied trailers. | 
-| `overrideStreamErrorOnInvalidHttpMessage` | When set to false, the proxy terminates HTTP/1.1 connections when an invalid HTTP message is received, such as malformatted headers. When set to true, the proxy leaves the HTTP/1.1 connection open where possible. | 
-| `headerFormat` | By default, the proxy normalizes header keys to lowercase. Set to `PreserveCaseHeaderKeyFormat` to preserve the original casing after the request is proxied. Set to `properCaseHeaderKeyFormat` to capitalize the first character and any character following a special character if it's an alpha character. For example, `content-type` becomes `Content-Type`, and `foo$b#$are` becomes `Foo$B#$Are`. |
+{{< cards >}}
+  {{< card path="/traffic-management/buffering" title="Buffering" subtitle="Configure a buffer size setting." >}}
+{{< /cards >}}
 
 
-## Before you begin
+## HTTP/1.1 settings {#http1}
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+Use these settings to control header limits and idle connection behavior for HTTP/1.1 connections.
 
-## Configure backend connections
+### Idle timeouts  {#http1-idle}
 
-1. Create a BackendConfigPolicy that applies connection configuration to the httpbin app. 
-   ```yaml 
+Set an idle timeout for HTTP/1 traffic to terminate the connection to a downstream or upstream service if there are no active streams.
+
+{{< cards >}}
+  {{< card path="/resiliency/timeouts/idle/" title="Idle timeouts" subtitle="Configure an idle timeout setting." >}}
+{{< /cards >}}
+
+### Max headers  {#http1-headers}
+
+Set the maximum number of headers allowed in HTTP/1.1 requests.
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies the HTTP/1.1 connection configuration to the proxy.
+
+   ```yaml {paths="connection-http1"}
    kubectl apply -f- <<EOF
-   kind: BackendConfigPolicy
-   apiVersion: gateway.kgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: httpbin-connection
-     namespace: httpbin   
+     name: http1
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-       - name: httpbin
-         group: ""
-         kind: Service
-     connectTimeout: 5s
-     perConnectionBufferLimitBytes: 1024
-     commonHttpProtocolOptions:
-       idleTimeout: 10s  
-       maxHeadersCount: 15
-       maxStreamDuration: 30s
-       maxRequestsPerConnection: 100 
-     http1ProtocolOptions:
-       enableTrailers: true
-       overrideStreamErrorOnInvalidHttpMessage: true
-       preserveHttp1HeaderCase: true
+     - kind: Gateway
+       name: agentgateway-proxy
+       group: gateway.networking.k8s.io
+     frontend:
+       http:
+         http1MaxHeaders: 15
    EOF
-   ```   
+   ```
 
-2. Port-forward the gateway proxy on port 19000. 
+   | Setting | Description |
+   | -- | -- |
+   | `http1MaxHeaders` | The maximum number of headers allowed in HTTP/1.1 requests. Requests that exceed the limit receive a 431 response. |
+
+
+2. Port-forward the gateway proxy on port 15000.
    ```sh
-   kubectl port-forward deployment/http -n {{< reuse "agw-docs/snippets/namespace.md" >}} 19000
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
    ```
-   
-3. Get the configuration of your gateway proxy as a config dump. 
+
+3. Get the config dump and verify that the policy is set as you configured it.
+
+   Example `jq` command:
    ```sh
-   curl -X POST 127.0.0.1:19000/config_dump\?include_eds > gateway-config.json
+   curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.frontend != null and .policy.frontend.hTTP != null and .policy.frontend.hTTP.http1IdleTimeout != null)] | .[0]'
    ```
-   
-4. Open the config dump and find the `kube_httpbin_httpbin_8000` cluster. Verify that you see all the connection settings that you enabled in your BackendConfigPolicy. 
-   
-   Example output
-   ```console
-   ...
-   "connect_timeout": "5s",
-      "per_connection_buffer_limit_bytes": 1024,
-      "metadata": {},
-      "upstream_connection_options": {
-      },
-      "typed_extension_protocol_options": {
-       "envoy.extensions.upstreams.http.v3.HttpProtocolOptions": {
-        "@type": "type.googleapis.com/envoy.extensions.upstreams.http.v3.HttpProtocolOptions",
-        "common_http_protocol_options": {
-         "idle_timeout": "10s",
-         "max_headers_count": 15,
-         "max_stream_duration": "30s",
-         "headers_with_underscores_action": "REJECT_REQUEST",
-         "max_requests_per_connection": 100
-        },
-        "explicit_http_config": {
-         "http_protocol_options": {
-          "header_key_format": {
-           "stateful_formatter": {
-            "name": "envoy.http.stateful_header_formatters.preserve_case",
-            "typed_config": {
-             "@type": "type.googleapis.com/envoy.extensions.http.header_formatters.preserve_case.v3.PreserveCaseFormatterConfig"
-            }
-           }
-          },
-          "enable_trailers": true,
-          "override_stream_error_on_invalid_http_message": true
-         }
-        }
-       }
+
+   Example output:
+   ```json {linenos=table,hl_lines=[19],filename="http://localhost:15000/config_dump"}
+   {
+     "key": "frontend/agentgateway-system/http1:frontend-http:agentgateway-system/agentgateway-proxy",
+     "name": {
+       "kind": "AgentgatewayPolicy",
+       "name": "http1",
+       "namespace": "agentgateway-system"
+     },
+     "target": {
+       "gateway": {
+        "gatewayName": "agentgateway-proxy",
+        "gatewayNamespace": "agentgateway-system",
+        "listenerName": null
       }
-   ...
+    },
+    "policy": {
+      "frontend": {
+        "hTTP": {
+          "maxBufferSize": null,
+          "http1MaxHeaders": 15,
+          "http1IdleTimeout": null,
+          "http2WindowSize": null,
+          "http2ConnectionWindowSize": null,
+          "http2FrameSize": null,
+          "http2KeepaliveInterval": null,
+          "http2KeepaliveTimeout": null
+        }
+      }
+    }
+   }
    ```
-    
-## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< doc-test paths="connection-http1" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for http1 policy in config dump
+  retries: 20
+  http:
+    url: http://localhost:15000
+    skipSslVerification: true
+    method: GET
+    path: /config_dump
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+  expect:
+    bodyContains:
+    - '"http1MaxHeaders"'
+EOF
+{{< /doc-test >}}
 
-```sh
-kubectl delete backendconfigpolicy httpbin-connection -n httpbin
-```
+4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
+  ```sh
+  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http1 -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  ```
 
+## HTTP/2 settings {#http2}
 
+Use these settings to tune HTTP/2 flow control, which governs how much data can be in-flight at the stream and connection levels.
+
+### Flow control {#http2-flow}
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP/2 flow control configuration to the proxy.
+
+   ```yaml {paths="connection-http2-flow"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: http2-flow
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - kind: Gateway
+       name: agentgateway-proxy
+       group: gateway.networking.k8s.io
+     frontend:
+       http:
+         http2WindowSize: 1048576
+         http2ConnectionWindowSize: 4194304
+         http2FrameSize: 65536
+   EOF
+   ```
+
+   | Setting | Description |
+   | -- | -- |
+   | `http2WindowSize` | Controls how many bytes can be in-flight on a single HTTP/2 stream before the sender must wait for a `WINDOW_UPDATE` acknowledgment. Setting this to 1 means the client can only send 1 byte at a time per stream, essentially halting all throughput. The default is 65,535 bytes (64KB). |
+   | `http2ConnectionWindowSize` | The initial window size for connection-level flow control for received data. This settings controls the total bytes in-flight across all streams on a single connection combined.  |
+   | `http2FrameSize` | The maximum size of a single HTTP/2 DATA frame the gateway accepts. The HTTP/2 protocol minimum (and default) is 16,384 bytes. 17000 is a modest bump above that default, allowing slightly larger frames and potentially fewer round-trips for larger payloads. |
+
+2. Port-forward the gateway proxy on port 15000.
+
+   ```sh
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+   ```
+
+3. Get the config dump and verify that the policy is set as you configured it.
+
+   Example `jq` command:
+   ```sh
+   curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.frontend != null and .policy.frontend.hTTP != null and .policy.frontend.hTTP.http2WindowSize != null)] | .[0]'
+   ```
+
+   Example output:
+   ```json {linenos=table,hl_lines=[21,22,23],filename="http://localhost:15000/config_dump"}
+   {
+     "key": "frontend/agentgateway-system/http2-flow:frontend-http:agentgateway-system/agentgateway-proxy",
+     "name": {
+       "kind": "AgentgatewayPolicy",
+       "name": "http2-flow",
+       "namespace": "agentgateway-system"
+     },
+     "target": {
+       "gateway": {
+        "gatewayName": "agentgateway-proxy",
+        "gatewayNamespace": "agentgateway-system",
+        "listenerName": null
+      }
+    },
+    "policy": {
+      "frontend": {
+        "hTTP": {
+          "maxBufferSize": null,
+          "http1MaxHeaders": null,
+          "http1IdleTimeout": null,
+          "http2WindowSize": 1048576,
+          "http2ConnectionWindowSize": 4194304,
+          "http2FrameSize": 65536,
+          "http2KeepaliveInterval": null,
+          "http2KeepaliveTimeout": null
+        }
+      }
+    }
+   }
+   ```
+
+{{< doc-test paths="connection-http2-flow" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for http2-flow policy in config dump
+  retries: 20
+  http:
+    url: http://localhost:15000
+    skipSslVerification: true
+    method: GET
+    path: /config_dump
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+  expect:
+    bodyContains:
+    - '"http2WindowSize"'
+    - '"http2ConnectionWindowSize"'
+    - '"http2FrameSize"'
+    - '65536'
+EOF
+{{< /doc-test >}}
+
+4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+
+  ```sh
+  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} http2-flow -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+  ```
+
+### Keepalive {#http2-keepalive}
+
+Manage idle and stale connections with HTTP/2 keepalive.
+
+{{< cards >}}
+  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="COnfigure keepalive connection settings." >}}
+{{< /cards >}}
 
 

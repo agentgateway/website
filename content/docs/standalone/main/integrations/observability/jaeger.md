@@ -117,6 +117,6 @@ spec:
 ## Learn more
 
 {{< cards >}}
-  {{< card link="../../observability/opentelemetry" title="OpenTelemetry" subtitle="Configure tracing in agentgateway" >}}
-  {{< card link="../../../tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step setup guide" >}}
+  {{< card path="/integrations/observability/opentelemetry" title="OpenTelemetry" subtitle="Configure tracing in agentgateway" >}}
+  {{< card path="/tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step setup guide" >}}
 {{< /cards >}}

@@ -1,0 +1,34 @@
+{{- $author := .Get "author" -}}
+{{- $title := .Get "title" -}}
+{{- $link := .Get "link" -}}
+<figure style="margin: 0; padding: 1.5rem; border-radius: 0.75rem; border: 1px solid; border-color: var(--testimonial-border); background: var(--testimonial-bg); display: flex; flex-direction: column; justify-content: space-between;">
+  <blockquote style="margin: 0; font-size: 0.95rem; line-height: 1.7; color: var(--testimonial-text);">
+    "{{ .Inner | plainify }}"
+  </blockquote>
+  <figcaption style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--testimonial-border);">
+    {{- if $link -}}
+      <a href="{{ $link }}" style="font-weight: 600; color: var(--testimonial-author); text-decoration: none;">{{ $author }}</a>
+    {{- else -}}
+      <span style="font-weight: 600; color: var(--testimonial-author);">{{ $author }}</span>
+    {{- end -}}
+    {{- with $title -}}
+      <div style="font-size: 0.85rem; color: var(--testimonial-title); margin-top: 0.2rem;">{{ . }}</div>
+    {{- end -}}
+  </figcaption>
+</figure>
+<style>
+  :root {
+    --testimonial-bg: #f9fafb;
+    --testimonial-border: #e5e7eb;
+    --testimonial-text: #374151;
+    --testimonial-author: #111827;
+    --testimonial-title: #6b7280;
+  }
+  :root.dark {
+    --testimonial-bg: #1f2937;
+    --testimonial-border: #374151;
+    --testimonial-text: #d1d5db;
+    --testimonial-author: #f3f4f6;
+    --testimonial-title: #9ca3af;
+  }
+</style>

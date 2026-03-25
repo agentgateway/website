@@ -42,7 +42,7 @@ This command:
 
 | Flag           | Default Value           | Required | Description                                                  |
 | -------------- | ----------------------- | -------- | ------------------------------------------------------------ |
-| all-namespaces | False                   | No       | If present, list the requested object(s) across all namespaces. Namespace in the current context is ignored even if specified with --namespace. |
+| all-namespaces | False                   | No       | If present, list the requested objects across all namespaces. Namespace in the current context is ignored even if specified with --namespace. |
 | input-file     |                         | No       | Path to the manifest file. When set, the tool reads ingresses from the file instead of from the cluster. Supported files are yaml and json. |
 | namespace      |                         | No       | If present, the namespace scope for the invocation.           |
 | output         | yaml                    | No       | The output format, either yaml or json.                       |
@@ -201,7 +201,7 @@ If a policy covers **all** backends of the generated HTTPRoute, it is attached u
 
 ## Notifications
 
-Some conversions require follow-up user action that cannot be expressed safely as emitted manifests. The agentgateway emitter emits **INFO** notifications on the CLI in those cases. For example, when projecting **Basic Authentication**, the emitter may notify that ingress-nginx expects htpasswd under Secret key `auth` while agentgateway expects key `.htaccess`.
+Some conversions require follow-up user action that cannot be expressed safely as emitted manifests. The agentgateway emitter emits **INFO** notifications on the CLI in those cases. For example, when projecting **Basic Authentication**, the emitter might notify that ingress-nginx expects htpasswd under Secret key `auth` while agentgateway expects key `.htaccess`.
 
 ## Limitations
 

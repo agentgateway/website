@@ -14,11 +14,4 @@
       - For example, openssl might be installed along the following path: `/usr/local/opt/openssl@3/bin/`
       - To run commands, you can append the path so that your terminal uses this installed version of OpenSSL, and not the default LibreSSL. `/usr/local/opt/openssl@3/bin/openssl req -new -newkey rsa:4096 -x509 -sha256 -days 3650...`
 
-3. {{% reuse "agw-docs/snippets/prereq-listenerset.md" %}}
-
-   **ListenerSets**: To use ListenerSets, you must install the experimental channel of the Kubernetes Gateway API. 
-   ```sh
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
-   ```
-
-   You must also ensure that you installed {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true` Helm flag to use experimental Kubernetes Gateway API features. For an example, see the [Get started guide]({{< link-hextra path="/quickstart" >}}).
+3. Decide whether to set up a listener inline on the Gateway resource or as a separate ListenerSet resource. For more information, see the [Listener overview]({{< link-hextra path="/setup/listeners/overview" >}}).

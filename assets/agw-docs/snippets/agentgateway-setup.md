@@ -1,5 +1,5 @@
 1. Create a Gateway that uses the `{{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}` GatewayClass. The following example sets up a Gateway that uses the [default agentgateway proxy template](https://github.com/agentgateway/agentgateway/blob/main/controller/pkg/kgateway/helm/agentgateway/templates/deployment.yaml).
-   ```sh,paths="all"
+   ```sh {paths="all"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -62,3 +62,41 @@
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+{{< doc-test paths="all" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-proxy deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: wait for agentgateway-proxy service LB address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
+EOF
+
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+{{< /doc-test >}}

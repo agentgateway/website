@@ -14,7 +14,7 @@ Set up an HTTPS listener on your Gateway.
 
 1. Create a Gateway resource with an HTTPS listener. The following Gateway listener terminates incoming TLS traffic on port 443 by using the TLS certificates that you created earlier. 
 
-   {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
@@ -29,7 +29,7 @@ Set up an HTTPS listener on your Gateway.
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTPS
-       port: 443
+       port: 8443
        name: https
        tls:
          mode: Terminate
@@ -52,7 +52,7 @@ Set up an HTTPS listener on your Gateway.
    |`spec.listeners.tls.certificateRefs`|The Kubernetes secret that holds the TLS certificate and key for the Gateway. The Gateway uses these credentials to establish the TLS connection with a client, and to decrypt incoming HTTPS requests.|
 
    {{% /tab %}}
-   {{% tab tabName="ListenerSets (experimental)" %}}
+   {{% tab tabName="ListenerSets" %}}
 
    1. Create a Gateway that enables the attachment of ListenerSets.
 
@@ -72,8 +72,8 @@ Set up an HTTPS listener on your Gateway.
             from: All        
         listeners:
         - protocol: HTTP
-          port: 80
-          name: http-dummy
+          port: 8443
+          name: http-mock
           allowedRoutes:
             namespaces:
               from: All
@@ -91,8 +91,8 @@ Set up an HTTPS listener on your Gateway.
    2. Create a ListenerSet that configures an HTTPS listener for the Gateway.
       ```yaml
       kubectl apply -f- <<EOF
-      apiVersion: gateway.networking.x-k8s.io/v1alpha1
-      kind: XListenerSet
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: ListenerSet
       metadata:
         name: my-https-listenerset
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -106,7 +106,7 @@ Set up an HTTPS listener on your Gateway.
           group: gateway.networking.k8s.io
         listeners:
         - protocol: HTTPS
-          port: 443
+          port: 8443
           hostname: https.example.com
           name: https-listener-set
           tls:
@@ -139,7 +139,7 @@ Set up an HTTPS listener on your Gateway.
 
 3. Create an HTTPRoute resource for the httpbin app that is served by the Gateway or ListenerSet that you created.
    
-   {{< tabs items="Gateway listeners,ListenerSets (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
@@ -163,7 +163,7 @@ Set up an HTTPS listener on your Gateway.
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="ListenerSets (experimental)" %}}
+   {{% tab tabName="ListenerSets" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -174,11 +174,13 @@ Set up an HTTPS listener on your Gateway.
      labels:
        example: httpbin-https
    spec:
+     hostnames: 
+       - https.example.com
      parentRefs:
        - name: my-https-listenerset
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         kind: XListenerSet
-         group: gateway.networking.x-k8s.io
+         kind: ListenerSet
+         group: gateway.networking.k8s.io
      rules:
        - backendRefs:
            - name: httpbin
@@ -208,7 +210,7 @@ Set up an HTTPS listener on your Gateway.
 
 5. Verify that the listener now has a route attached.
 
-   {{< tabs items="Gateway listeners,ListenerSet (experimental)" tabTotal="2" >}}
+   {{< tabs items="Gateway listeners,ListenerSet" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}   
 
    ```sh
@@ -223,10 +225,10 @@ Set up an HTTPS listener on your Gateway.
    - attachedRoutes: 1
    ```
    {{% /tab %}}
-   {{% tab tabName="ListenerSet (experimental)" %}}
+   {{% tab tabName="ListenerSet" %}}
 
    ```sh
-   kubectl get xlistenerset -n {{< reuse "agw-docs/snippets/namespace.md" >}} my-https-listenerset -o yaml
+   kubectl get listenerset -n {{< reuse "agw-docs/snippets/namespace.md" >}} my-https-listenerset -o yaml
    ```
 
    Example output:
@@ -266,7 +268,7 @@ Set up an HTTPS listener on your Gateway.
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   kubectl port-forward svc/https -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:443
+   kubectl port-forward svc/https -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8443:8443
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -275,12 +277,12 @@ Set up an HTTPS listener on your Gateway.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik --resolve "https.example.com:443:${INGRESS_GW_ADDRESS}" https://https.example.com:443/status/200
+   curl -vik --resolve "https.example.com:8443:${INGRESS_GW_ADDRESS}" https://https.example.com:8443/status/200
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vik --connect-to https.example.com:443:localhost:8443 https://https.example.com:443/status/200
+   curl -vik --connect-to https.example.com:8443:localhost:8443 https://https.example.com:8443/status/200
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -328,16 +330,16 @@ Set up an HTTPS listener on your Gateway.
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-{{< tabs items="Gateway listeners,ListenerSet (experimental)" tabTotal="2" >}}
+{{< tabs items="Gateway listeners,ListenerSet" tabTotal="2" >}}
 {{% tab tabName="Gateway listeners" %}}
 ```sh
 kubectl delete -A gateways,httproutes,secret -l example=httpbin-https
 rm -rf example_certs
 ```
 {{% /tab %}}
-{{% tab tabName="ListenerSet (experimental)" %}}
+{{% tab tabName="ListenerSet" %}}
 ```sh
-kubectl delete -A gateways,httproutes,xlistenersets,secret -l example=httpbin-https
+kubectl delete -A gateways,httproutes,listenersets,secret -l example=httpbin-https
 rm -rf example_certs
 ```
 {{% /tab %}}

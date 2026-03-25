@@ -8,6 +8,11 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
+try:
+    import yaml as _yaml  # type: ignore[import-not-found]
+except ModuleNotFoundError:
+    _yaml = None
+
 
 SHELL_LANGS = {"", "sh", "bash", "shell", "zsh", "yaml", "yml"}
 
@@ -39,6 +44,38 @@ class FileResult:
     links: List[str] = field(default_factory=list)
 
 
+def _load_link_version_map(repo_root: Path) -> Dict[str, str]:
+    """Build a {linkVersion: version} mapping from hugo.yaml's params.sections.
+
+    Hugo's version shortcode resolves URL tokens like "latest" or "main" to
+    their canonical version strings (e.g. "2.2.x", "1.0.x") via this mapping.
+    The Python extractor must perform the same lookup so that include-if
+    comparisons work correctly.
+
+    Returns an empty dict if hugo.yaml is missing or cannot be parsed.
+    """
+    if _yaml is None:
+        return {}
+    hugo_yaml = repo_root / "hugo.yaml"
+    if not hugo_yaml.exists():
+        hugo_yaml = repo_root / "config.yaml"
+    if not hugo_yaml.exists():
+        return {}
+    try:
+        data = _yaml.safe_load(hugo_yaml.read_text(encoding="utf-8")) or {}
+    except Exception:
+        return {}
+    mapping: Dict[str, str] = {}
+    sections = data.get("params", {}).get("sections", {})
+    for section_data in sections.values():
+        for entry in section_data.get("versions", []):
+            link_ver = entry.get("linkVersion")
+            ver = entry.get("version")
+            if link_ver and ver:
+                mapping[link_ver] = ver
+    return mapping
+
+
 class Extractor:
     def __init__(self, repo_root: Path, definition: dict):
         self.repo_root = repo_root
@@ -52,6 +89,14 @@ class Extractor:
         self.version = definition.get("context", {}).get("version")
         self.product = definition.get("context", {}).get("product")
 
+        # Map linkVersion tokens (e.g. "latest", "main") to canonical version
+        # strings (e.g. "2.2.x", "1.0.x") as defined in hugo.yaml.  This
+        # mirrors what Hugo's version.html shortcode does at build time so that
+        # include-if comparisons resolve correctly.
+        self._link_version_map = _load_link_version_map(repo_root)
+        # Resolve the context version token to its canonical version string once.
+        self._resolved_version = self._link_version_map.get(self.version, self.version) if self.version else self.version
+
         self.sources = definition.get("sources", [])
         self.main_file = self._resolve_workspace_path(definition["main_file"])
 
@@ -59,7 +104,10 @@ class Extractor:
         for source in self.sources:
             source_file = self._resolve_workspace_path(source["file"])
             selectors = set(source.get("paths", []))
-            self.path_selectors_by_file[source_file] = selectors
+            if source_file in self.path_selectors_by_file:
+                self.path_selectors_by_file[source_file].update(selectors)
+            else:
+                self.path_selectors_by_file[source_file] = selectors
 
         self.file_cache: Dict[Path, FileResult] = {}
         self.visited: Set[Path] = set()
@@ -89,9 +137,14 @@ class Extractor:
         kv = self._parse_shortcode_params(params)
         include_if = [x.strip() for x in kv.get("include-if", "").split(",") if x.strip()]
         exclude_if = [x.strip() for x in kv.get("exclude-if", "").split(",") if x.strip()]
-        if include_if and self.version not in include_if:
+        # Use the resolved canonical version string (e.g. "2.2.x") so that
+        # include-if values in asset files match regardless of whether the
+        # context.version was supplied as a linkVersion token ("latest") or
+        # directly as a version string ("2.2.x").
+        version = self._resolved_version
+        if include_if and version not in include_if:
             return False
-        if exclude_if and self.version in exclude_if:
+        if exclude_if and version in exclude_if:
             return False
         return True
 
@@ -418,6 +471,9 @@ class Extractor:
 
     def select_blocks(self) -> List[CodeBlock]:
         selected: List[CodeBlock] = []
+        # Preserve source order (helm -> gateway -> sample-app -> feature) so that
+        # e.g. the Gateway is created before the HTTPRoute that references it.
+        source_order = {p.resolve(): i for i, p in enumerate(self.path_selectors_by_file.keys())}
         for source_file, selectors in self.path_selectors_by_file.items():
             result = self.file_cache.get(source_file.resolve())
             if not result:
@@ -427,8 +483,16 @@ class Extractor:
                     continue
                 if block.language not in SHELL_LANGS:
                     continue
-                if selectors and set(block.paths).intersection(selectors):
+                if selectors and ("all" in selectors or "all" in block.paths or set(block.paths).intersection(selectors)):
                     selected.append(block)
+        # Emit blocks in source order (prereqs first), then by line within each file,
+        # so hidden blocks (e.g. start server in background) appear before dependent blocks.
+        def sort_key(b: CodeBlock) -> Tuple[int, int]:
+            idx = source_order.get(b.file_path.resolve(), 999)
+            return (idx, b.start_line)
+
+        selected.sort(key=sort_key)
+        #selected.sort(key=lambda b: (b.file_path, b.start_line))
         return selected
 
     def select_test_includes(self) -> List[TestInclude]:
@@ -440,7 +504,7 @@ class Extractor:
             for test_include in result.test_includes:
                 if self.skip_tabs_without_paths and not test_include.paths:
                     continue
-                if selectors and set(test_include.paths).intersection(selectors):
+                if selectors and ("all" in selectors or "all" in test_include.paths or set(test_include.paths).intersection(selectors)):
                     selected.append(test_include)
         return selected
 

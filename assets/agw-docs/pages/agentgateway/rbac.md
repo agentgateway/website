@@ -8,7 +8,7 @@ For an overview of supported CEL expressions, see the [agentgateway docs](https:
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Set up access to Gemini
 

@@ -1,1 +1,1 @@
-ghcr.io/kgateway-dev
+oci://cr.agentgateway.dev/charts/agentgateway

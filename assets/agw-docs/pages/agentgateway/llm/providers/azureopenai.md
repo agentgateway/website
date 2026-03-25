@@ -2,7 +2,7 @@ Configure [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/?vie
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Set up access to Azure OpenAI
 

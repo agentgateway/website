@@ -24,22 +24,21 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 
 ## Set up a Dynamic Forward Proxy
 
-1. Create a Backend for the Dynamic Forward Proxy. 
-   ```yaml
+1. Create a Backend for the Dynamic Forward Proxy.
+   ```yaml {paths="dfp"}
    kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: Backend
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: dfp-backend
      namespace: httpbin
    spec:
-     type: DynamicForwardProxy
      dynamicForwardProxy: {}
    EOF
    ```
 
-2. Create an HTTPRoute that routes incoming traffic to the DFP Backend. 
-   ```yaml
+2. Create an HTTPRoute that routes incoming traffic to the DFP Backend.
+   ```yaml {paths="dfp"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -48,21 +47,56 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
      name: dfp-httproute
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
        - backendRefs:
            - name: dfp-backend
-             group: gateway.kgateway.dev
-             kind: Backend
+             group: agentgateway.dev
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+
+{{< doc-test paths="dfp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for dfp-httproute HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: dfp-httproute
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="dfp" >}}
+YAMLTest -f - <<'EOF'
+- name: dfp - request with host httpbin.org returns 200
+  retries: 5
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    method: GET
+    headers:
+      host: httpbin.org
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 3. Send a request to a hostname of your choice, such as `httpbin.org`. Verify that your gateway proxy successfully resolves the `httpbin.org` host and returns its welcome page.
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:80 -H "host: httpbin.org" 
+   curl -vik http://$INGRESS_GW_ADDRESS:8080 -H "host: httpbin.org" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port forward for local testing" %}}
@@ -96,15 +130,10 @@ DFPs offer great flexibility for defining routing patterns for your upstream hos
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Remove the DFP Backend. 
-   ```sh
-   kubectl delete backend dfp-backend -n httpbin
-   ```
-
-2. Remove the HTTPRoute. 
-   ```sh
-   kubectl delete httproute dfp-httproute -n httpbin
-   ```
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} dfp-backend -n httpbin
+kubectl delete httproute dfp-httproute -n httpbin
+```
 
 
 

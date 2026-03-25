@@ -1,1 +1,1 @@
-[Install the `agentgateway` binary]({{< link-hextra path="/quickstart/#binary">}}).
+{{< conditional-text include-if="standalone" >}}[Install the `agentgateway` binary]({{< link-hextra path="/deployment/binary">}}).{{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Install and set up an agentgateway proxy]({{< link-hextra path="/quickstart/install">}}).{{< /conditional-text >}}

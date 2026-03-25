@@ -271,4 +271,307 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    }
    ```
 
+## Prompt caching
+
+Prompt Caching is a performance, cost-optimization, and cost-reduction feature that allows the model to "remember" frequently used parts of your prompt, including long system instructions, reference documents, or tool definitions. This way, the model does not need to reprocess these parts every time you send a new prompt. 
+
+For example, let's assume you have a 50-page manual and you want to ask your model different questions about the manual. Instead of re-reading the manual for each question, the model can read it once and save it in its internal cache. Then, the model can answer subsequent questions more quickly and more cost efficient. 
+
+Prompt caching is configured by using the `backend.ai.promptCaching` fields in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. 
+
+{{< callout type="info" >}}
+Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
+{{< /callout >}}
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your prompt cache settings. The following example enables caching for system prompts and conversation messages, but disables it for tool definitions. Bedrock requires you to set the minimum token count after which caching is enabled. By default, a minimum of 1024 tokens are required by Bedrock for caching to be effective. This is also referred to as a caching checkpoint. For more information, see the [API reference]({{< link-hextra path="/reference/api/#promptcachingconfig" >}}). 
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: bedrock-caching-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: HTTPRoute
+         name: bedrock
+     backend:
+       ai:
+         promptCaching:
+           cacheSystem: true
+           cacheMessages: true
+           cacheTools: false
+           minTokens: 1024
+   EOF
+   ```
+
+2. Port-forward the agentgateway proxy on port 15000. 
+   ```sh
+   kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+   ```
+
+3. Get the caching configuration and verify that you see the cache settings. 
+   ```sh
+   curl -s http://localhost:15000/config_dump | jq '.policies[] |                                    
+    select(.name.name == "bedrock-caching-policy" and 
+         .policy.backend.aI.promptCaching != null)'
+   ```
+
+   Example output: 
+   ```console {hl_lines=[20,21,22,23,24]}
+   {
+      "key": "backend/agentgateway-system/bedrock-caching-policy:ai:agentgateway-system/bedrock",
+      "name": {
+        "kind": "AgentgatewayPolicy",
+        "name": "bedrock-caching-policy",
+        "namespace": "agentgateway-system"
+      },
+      "target": {
+        "route": {
+          "name": "bedrock",
+          "namespace": "agentgateway-system",
+          "kind": "HTTPRoute"
+        }
+      },
+      "policy": {
+        "backend": {
+          "aI": {
+            "defaults": {},
+            "overrides": {},
+            "promptCaching": {
+              "cacheSystem": true,
+              "cacheMessages": true,
+              "cacheTools": false,
+              "minTokens": 1024
+            }
+          }
+        }
+      }
+   }
+   ```
+
+{{< version include-if="1.0.x" >}}
+
+## Extended thinking and reasoning
+
+Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
+
+**Note**: Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
+
+{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
+{{% tab tabName="Bedrock default" %}}
+
+Use the `reasoning.effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+
+| `reasoning.effort` value | Thinking budget |
+|---|---|
+| `minimal` or `low` | 1,024 tokens |
+| `medium` | 2,048 tokens |
+| `high` or `xhigh` | 4,096 tokens |
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 5000,
+  "input": "Explain the trade-offs between consistency and availability in distributed systems.",
+  "reasoning": {
+    "effort": "high"
+  }
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 5000,
+  "input": "Explain the trade-offs between consistency and availability in distributed systems.",
+  "reasoning": {
+    "effort": "high"
+  }
+}' | jq
+```
+
+{{% /tab %}}
+{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+
+Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+
+| `reasoning_effort` value | Thinking budget |
+|---|---|
+| `minimal` or `low` | 1,024 tokens |
+| `medium` | 2,048 tokens |
+| `high` or `xhigh` | 4,096 tokens |
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 6000,
+  "reasoning_effort": "high",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 6000,
+  "reasoning_effort": "high",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+{{% /tab %}}
+
+{{< /tabs >}}
+
+## Structured outputs
+
+Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request. 
+
+{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
+{{% tab tabName="Bedrock default" %}}
+
+Provide the JSON schema definition in the `text.format` field.
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 256,
+  "input": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1.",
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "answer_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "answer": { "type": "string" },
+            "confidence": { "type": "number" }
+          },
+          "required": ["answer", "confidence"],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 256,
+  "input": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1.",
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "answer_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "answer": { "type": "string" },
+            "confidence": { "type": "number" }
+          },
+          "required": ["answer", "confidence"],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}' | jq
+```
+
+{{% /tab %}}
+{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+
+Provide the schema definition in the `response_format` field. Agentgateway translates this to Bedrock's native format automatically.
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 256,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "answer_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 256,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "answer_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+
+{{% /tab %}}
+
+{{< /tabs >}}
+
+{{< /version >}}
+
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

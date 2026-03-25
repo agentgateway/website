@@ -1,145 +1,115 @@
-Fine-tune connection speeds for read and write operations by setting a connection buffer limit. 
+Fine-tune connection speeds for read and write operations by setting a connection buffer limit.
 
-{{< callout >}}
-{{< reuse "agw-docs/snippets/proxy-kgateway.md" >}}
-{{< /callout >}}
 
-## About read and write buffer limits
+## About buffer limits
 
-By default, {{< reuse "/agw-docs/snippets/kgateway.md" >}} is set up with 1MiB of request read and write buffer for each gateway. For large requests that must be buffered and that exceed the default buffer limit, {{< reuse "/agw-docs/snippets/kgateway.md" >}} either disconnects the connection to the downstream service if headers were already sent, or returns a 413 HTTP response code. To make sure that large requests can be sent and received, you can specify the maximum number of bytes that can be buffered between the gateway and the downstream service. Alternatively, when using {{< reuse "/agw-docs/snippets/kgateway.md" >}} as an edge proxy, configuring the buffer limit can be important when dealing with untrusted downstreams. By setting the limit to a small number, such as 32KiB, you can better guard against potential attacks or misconfigured downstreams that could excessively use the proxy's resources.
+By default, {{< reuse "/agw-docs/snippets/agentgateway.md" >}} allows up to 2mb of HTTP body to be buffered into memory for each gateway. For large requests that must be buffered and that exceed the default buffer limit, {{< reuse "/agw-docs/snippets/agentgateway.md" >}} either disconnects the connection to the downstream service if headers were already sent, or returns a 413 HTTP response code. To make sure that large requests can be sent and received, you can specify the maximum number of bytes that can be buffered between the gateway and the downstream service. Alternatively, when using {{< reuse "/agw-docs/snippets/agentgateway.md" >}} as an edge proxy, configuring the buffer limit can be important when dealing with untrusted downstreams. By setting the limit to a small number, such as 32768 bytes (32KiB), you can better guard against potential attacks or misconfigured downstreams that could excessively use the proxy's resources.
 
-The connection buffer limit can be configured on the Gateway level or on an individual route. 
+The buffer limit is configured at the Gateway level via a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 
-## Considerations when using httpbin
-
-When you use the httpbin sample app, keep in mind that httpbin limits the maximum body size to 1 mebibyte (1Mi). If you send a request to httpbin with a body size that is larger than that, httpbin automatically rejects the request with a 400 HTTP response code. 
-
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up buffer limits per gateway
 
-Use an annotation to set a per-connection buffer limit on your Gateway, which applies the buffer limit to all routes served by the Gateway. 
+Use a {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} to set a buffer limit on your Gateway, which applies to all routes served by the Gateway.
 
-1. Create a {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} called `transformation-buffer-body` that forces buffering by transforming the response from the httpbin sample app.
-   ```yaml
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that sets the maximum HTTP body buffer size.
+
+   ```yaml {paths="buffering"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "/agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
-     name: transformation-buffer-body
-     namespace: httpbin
+     name: maxbuffer
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbin
-     transformation:
-       response:
-         body:
-           parseAs: AsString
-           value: '{{ body() }}'
+     - kind: Gateway
+       name: agentgateway-proxy
+       group: gateway.networking.k8s.io
+     frontend:
+       http:
+         maxBufferSize: 2097152
    EOF
    ```
 
-2. Annotate the http Gateway resource to set a buffer limit of 1 kilobytes.
-   ```yaml
-   kubectl apply -f- <<EOF
-   kind: Gateway
-   apiVersion: gateway.networking.k8s.io/v1
-   metadata:
-     name: http
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     annotations:
-       kgateway.dev/per-connection-buffer-limit: '1Ki'
-   spec:
-     gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
-     listeners:
-     - protocol: HTTP
-       port: 80
-       name: http
-       allowedRoutes:
-         namespaces:
-           from: All
-   EOF
+   | Setting | Description |
+   | -- | -- |
+   | `maxBufferSize` | The maximum size of HTTP body that can be buffered into memory.|
+
+2. Port-forward the gateway proxy on port 15000.
+   ```sh
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
    ```
 
-3. To test the buffer limit, create a payload in a temp file that exceeds the 1Ki buffer limit.
-   ```sh
-   dd if=/dev/zero bs=2048 count=1 | base64 -w 0 > /tmp/large_payload_2k.txt
-   ```
+3. Get the config dump and verify that the policy is set as you configured it.
 
-4. Send a request to the `/anything` httpbin path with the large payload. Verify that the request fails with a connection error or timeout, indicating that the buffer limit was exceeded.
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing"  >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   Example `jq` command:
    ```sh
-   curl -vik -X POST http://$INGRESS_GW_ADDRESS:80/anything \
-   -H "host: www.example.com:80" \
-   -H "Content-Type: text/plain" \
-   -d "{\"payload\": \"$(< /tmp/large_payload_2k.txt)\"}"
+   curl -s http://localhost:15000/config_dump | jq '[.policies[] | select(.policy.frontend != null and .policy.frontend.hTTP != null and .policy.frontend.hTTP.maxBufferSize != null)] | .[0]'
    ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vik -X POST http://localhost:8080/anything \
-   -H "host: www.example.com:8080" \
-   -H "Content-Type: text/plain" \
-   -d "{\"payload\": \"$(< /tmp/large_payload_2k.txt)\"}"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-   
-   Example output: 
-   ```
-   * upload completely sent off: 2747 bytes
-   < HTTP/1.1 413 Payload Too Large
-   HTTP/1.1 413 Payload Too Large
-   < access-control-allow-credentials: true
-   access-control-allow-credentials: true
-   < access-control-allow-origin: *
-   access-control-allow-origin: *
-   < x-envoy-upstream-service-time: 1
-   x-envoy-upstream-service-time: 1
-   < content-length: 17
-   content-length: 17
-   < server: envoy
-   server: envoy
-   ```
-
-5. Test the buffer limit again by sending a request with a small payload, `"hello world"`. This request succeeds with a normal response from httpbin because the payload size is within the 1Ki limit.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vik -X POST http://$INGRESS_GW_ADDRESS:80/anything \
-      -H "host: www.example.com:8080" \
-      -H "Content-Type: application/json" \
-      -d "{\"payload\":  \"hello world\"}" 
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vik -X POST http://localhost:8080/anything \
-      -H "host: www.example.com:8080" \
-      -H "Content-Type: application/json" \
-      -d "{\"payload\":  \"hello world\"}" 
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
 
    Example output:
-
-   ```json
-   * upload completely sent off: 27 bytes
-   < HTTP/1.1 200 OK
-   HTTP/1.1 200 OK
-   ...
-     "url": "http://www.example.com:8080/anything",
-     "data": "{\"payload\":  \"hello world\"}",
-     "files": null,
-     "form": null,
-     "json": {
-       "payload": "hello world"
-     }
+   ```json {linenos=table,hl_lines=[18],filename="http://localhost:15000/config_dump"}
+   {
+     "key": "frontend/agentgateway-system/maxbuffer:frontend-http:agentgateway-system/agentgateway-proxy",
+     "name": {
+       "kind": "AgentgatewayPolicy",
+       "name": "maxbuffer",
+       "namespace": "agentgateway-system"
+     },
+     "target": {
+       "gateway": {
+        "gatewayName": "agentgateway-proxy",
+        "gatewayNamespace": "agentgateway-system",
+        "listenerName": null
+      }
+    },
+    "policy": {
+      "frontend": {
+        "hTTP": {
+          "maxBufferSize": 2097152,
+          "http1MaxHeaders": null,
+          "http1IdleTimeout": null,
+          "http2WindowSize": null,
+          "http2ConnectionWindowSize": null,
+          "http2FrameSize": null,
+          "http2KeepaliveInterval": null,
+          "http2KeepaliveTimeout": null
+        }
+      }
+    }
    }
    ```
+
+{{< doc-test paths="buffering" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for maxbuffer policy in config dump
+  retries: 20
+  http:
+    url: http://localhost:15000
+    skipSslVerification: true
+    method: GET
+    path: /config_dump
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+  expect:
+    bodyContains:
+    - '"maxBufferSize"'
+    - '2097152'
+EOF
+{{< /doc-test >}}
+
+### Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} maxbuffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```

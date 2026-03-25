@@ -158,7 +158,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
    EOF
    ```
 
-2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. Set the port to a dummy value like `3030` to avoid conflicts with the binds defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. Set the port to a mock value like `3030` to avoid conflicts with the binds defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 
    ```yaml
    kubectl apply --server-side -f- <<'EOF'

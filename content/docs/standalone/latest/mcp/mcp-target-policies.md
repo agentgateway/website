@@ -44,13 +44,11 @@ Target-level policies override backend-level policies for the same policy type.
 
 ## Before you begin
 
-[Set up MCP multiplexed backends]({{< link-hextra path="/mcp/connect/multiplex/" >}}).
+[Set up MCP multiplexed backends]({{< link-hextra path="/tutorials/multiplex/" >}}).
 
 ## Configuration examples
 
-Target-level policies are configured as part of an MCP backend. 
-
-The configuration path is: `binds[].listeners[].routes[].backends[].mcp.targets[].policies`, such as in the following examples.
+Target-level policies are configured under `binds[].listeners[].routes[].backends[].mcp.targets[].policies`.
 
 ### Authorization per target
 

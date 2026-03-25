@@ -1,6 +1,6 @@
 ---
-title: Call functions
-weight: 70
+title: Function calling
+weight: 50
 description:
 ---
 
