@@ -59,20 +59,27 @@ jobs:
             # Fetch the base branch tip so git diff can compare against it.
             git fetch origin ${{ github.base_ref }}
 
-            # Map changed content/*.md files to their built public/*.html paths.
-            # Asset file changes are surfaced through their content page, so only
-            # content/ files need direct mapping. If an asset-only PR is opened,
-            # the file list will be empty and we fall back to all HTML.
-            CHANGED=$(git diff --name-only \
-              origin/${{ github.base_ref }}...HEAD \
-              | grep '^content/.*\.md$' || true)
+            ALL_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
 
+            # Direct content file changes.
+            CONTENT=$(echo "$ALL_CHANGED" | grep '^content/.*\.md$' || true)
+
+            # Asset file changes: resolve to content pages via find-asset-users.py.
+            ASSETS=$(echo "$ALL_CHANGED" | grep '^assets/.*\.md$' || true)
+            if [ -n "$ASSETS" ]; then
+              CONTENT_FROM_ASSETS=$(echo "$ASSETS" \
+                | python3 docs-link-checking/find-asset-users.py \
+                    --repo-root "${{ github.workspace }}" \
+                    --content-only - || true)
+              CONTENT=$(printf '%s\n%s' "$CONTENT" "$CONTENT_FROM_ASSETS" \
+                | sort -u | grep . || true)
+            fi
+
+            # Map each content file to its built public/*.html path.
             FILES=""
             while IFS= read -r f; do
               [ -z "$f" ] && continue
-              # Strip content/ prefix
               rel="${f#content/}"
-              # _index.md -> section index; bar.md -> bar/index.html
               if [[ "$rel" == *"/_index.md" ]]; then
                 html="public/${rel%/_index.md}/index.html"
               elif [[ "$rel" == "_index.md" ]]; then
@@ -81,7 +88,7 @@ jobs:
                 html="public/${rel%.md}/index.html"
               fi
               [ -f "$html" ] && FILES="$FILES $html"
-            done <<< "$CHANGED"
+            done <<< "$CONTENT"
 
             if [ -z "${FILES// /}" ]; then
               echo "No content files changed or mapped; falling back to all HTML."
