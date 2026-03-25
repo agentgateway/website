@@ -23,6 +23,8 @@ jobs:
       ISSUE_TITLE: Link Checker Report - agentgateway OSS
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
 
       - name: Checkout shared link-checking scripts
         uses: actions/checkout@v4
@@ -55,7 +57,7 @@ jobs:
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
             # Fetch the base branch tip so git diff can compare against it.
-            git fetch origin ${{ github.base_ref }} --depth=1
+            git fetch origin ${{ github.base_ref }}
 
             # Map changed content/*.md files to their built public/*.html paths.
             # Asset file changes are surfaced through their content page, so only
