@@ -23,9 +23,6 @@ jobs:
       ISSUE_TITLE: Link Checker Report - agentgateway OSS
     steps:
       - uses: actions/checkout@v4
-        with:
-          # Full history needed on PRs to compare against the base SHA.
-          fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
 
       - name: Checkout shared link-checking scripts
         uses: actions/checkout@v4
@@ -57,12 +54,15 @@ jobs:
         id: files
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Fetch the base branch tip so git diff can compare against it.
+            git fetch origin ${{ github.base_ref }} --depth=1
+
             # Map changed content/*.md files to their built public/*.html paths.
             # Asset file changes are surfaced through their content page, so only
             # content/ files need direct mapping. If an asset-only PR is opened,
             # the file list will be empty and we fall back to all HTML.
             CHANGED=$(git diff --name-only \
-              ${{ github.event.pull_request.base.sha }} ${{ github.sha }} \
+              origin/${{ github.base_ref }}...HEAD \
               | grep '^content/.*\.md$' || true)
 
             FILES=""
@@ -99,38 +99,42 @@ jobs:
           shopt -s globstar
           set +e
 
-          # On PRs, skip external URLs so only internal (remapped) links are checked.
-          EXTRA_FLAGS=""
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            EXTRA_FLAGS="--exclude '^https?://(?!agentgateway\.dev)'"
-          else
-            EXTRA_FLAGS="--github-token ${{ secrets.GITHUB_TOKEN }}"
-          fi
+          LYCHEE_COMMON=(lychee
+            --verbose
+            --config docs-link-checking/lychee.toml
+            --root-dir "${{ github.workspace }}/public"
+            --index-files index.html
+            --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
+            --remap "public/docs/about public/docs/standalone/latest/about"
+            --remap "public/docs/agent public/docs/standalone/latest/agent"
+            --remap "public/docs/configuration public/docs/standalone/latest/configuration"
+            --remap "public/docs/deployment public/docs/standalone/latest/deployment"
+            --remap "public/docs/faqs public/docs/standalone/latest/faqs"
+            --remap "public/docs/inference public/docs/standalone/latest/inference"
+            --remap "public/docs/integrations public/docs/standalone/latest/integrations"
+            --remap "public/docs/llm public/docs/standalone/latest/llm"
+            --remap "public/docs/mcp public/docs/standalone/latest/mcp"
+            --remap "public/docs/operations public/docs/standalone/latest/operations"
+            --remap "public/docs/quickstart public/docs/standalone/latest/quickstart"
+            --remap "public/docs/reference public/docs/standalone/latest/reference"
+            --remap "public/docs/tutorials public/docs/standalone/latest/tutorials"
+            --format json
+            --user-agent curl/8.4.0
+            --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json"
+          )
 
-          lychee \
-            --verbose \
-            --config docs-link-checking/lychee.toml \
-            --root-dir "${{ github.workspace }}/public" \
-            --index-files index.html \
-            --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/" \
-            --remap "public/docs/about public/docs/standalone/latest/about" \
-            --remap "public/docs/agent public/docs/standalone/latest/agent" \
-            --remap "public/docs/configuration public/docs/standalone/latest/configuration" \
-            --remap "public/docs/deployment public/docs/standalone/latest/deployment" \
-            --remap "public/docs/faqs public/docs/standalone/latest/faqs" \
-            --remap "public/docs/inference public/docs/standalone/latest/inference" \
-            --remap "public/docs/integrations public/docs/standalone/latest/integrations" \
-            --remap "public/docs/llm public/docs/standalone/latest/llm" \
-            --remap "public/docs/mcp public/docs/standalone/latest/mcp" \
-            --remap "public/docs/operations public/docs/standalone/latest/operations" \
-            --remap "public/docs/quickstart public/docs/standalone/latest/quickstart" \
-            --remap "public/docs/reference public/docs/standalone/latest/reference" \
-            --remap "public/docs/tutorials public/docs/standalone/latest/tutorials" \
-            --format json \
-            --user-agent curl/8.4.0 \
-            --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
-            $EXTRA_FLAGS \
-            ${{ steps.files.outputs.files }} > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Skip external URLs; lychee applies remaps before exclusions so
+            # agentgateway.dev links are still resolved to local files and checked.
+            "${LYCHEE_COMMON[@]}" \
+              --exclude "^https://" \
+              ${{ steps.files.outputs.files }}
+          else
+            "${LYCHEE_COMMON[@]}" \
+              --github-token ${{ secrets.GITHUB_TOKEN }} \
+              public/**/*.html
+          fi > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
+
           EXIT=$?
           set -e
           echo "has_failures=$([ "$EXIT" != "0" ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
