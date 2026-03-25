@@ -80,13 +80,22 @@ def extract_yaml_from_html(html_text: str) -> List[str]:
     return parser.snippets
 
 
+def build_report_key(html_file: Path, input_dir: Path) -> str:
+    for candidate in (input_dir, *input_dir.parents):
+        if candidate.name != "public":
+            continue
+        return "/" + html_file.relative_to(candidate).as_posix()
+
+    return html_file.relative_to(input_dir).as_posix()
+
+
 def build_report(input_dir: Path) -> Dict[str, List[str]]:
     report: Dict[str, List[str]] = OrderedDict()
     for html_file in sorted(input_dir.rglob("*.html")):
         snippets = extract_yaml_from_html(html_file.read_text(encoding="utf-8"))
         if not snippets:
             continue
-        report[html_file.relative_to(input_dir).as_posix()] = snippets
+        report[build_report_key(html_file, input_dir)] = snippets
     return report
 
 
