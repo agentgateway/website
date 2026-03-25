@@ -4,7 +4,9 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject, mod
 
 ## Inject response headers
 
-In this example, you apply all three header operations in a single transformation:
+The gateway intercepts the upstream response and modifies its headers before returning it to the client. You can combine `set`, `add`, and `remove` in a single policy so that the gateway applies all three operations in one pass. This configuration is useful when you need to enrich responses with values from the original request, enforce header policies like CORS, or strip internal headers that should not reach the client.
+
+In this example, all three operations are applied together:
 
 * `set`: Extracts the `x-gateway-request` request header value and sets it as the `x-gateway-response` response header. Also injects a static `x-response-raw` header with the value `hello`. Use `set` to create a header or overwrite it if it already exists.
 * `add`: Appends `https://example.com` to the `access-control-allow-origin` header. Because httpbin already returns `access-control-allow-origin: *`, the response ends up with two entries for that header. Use `add` when you want to append a value without overwriting what is already present.
