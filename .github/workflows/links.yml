@@ -1,10 +1,15 @@
 name: Links
 
-# Each Monday at 4am UTC
+# Scheduled: full check on all files, creates issues, posts to Slack.
+# Pull request: local links only on changed files, no issue or Slack.
 on:
   workflow_dispatch:
   schedule:
     - cron: "00 04 * * MON"
+  pull_request:
+    paths:
+      - 'content/**'
+      - 'assets/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,6 +23,9 @@ jobs:
       ISSUE_TITLE: Link Checker Report - agentgateway OSS
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history needed on PRs to compare against the base SHA.
+          fetch-depth: ${{ github.event_name == 'pull_request' && 0 || 1 }}
 
       - name: Checkout shared link-checking scripts
         uses: actions/checkout@v4
@@ -45,6 +53,44 @@ jobs:
       - name: Prepare workspace
         run: mkdir -p artifacts
 
+      - name: Resolve files to check
+        id: files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Map changed content/*.md files to their built public/*.html paths.
+            # Asset file changes are surfaced through their content page, so only
+            # content/ files need direct mapping. If an asset-only PR is opened,
+            # the file list will be empty and we fall back to all HTML.
+            CHANGED=$(git diff --name-only \
+              ${{ github.event.pull_request.base.sha }} ${{ github.sha }} \
+              | grep '^content/.*\.md$' || true)
+
+            FILES=""
+            while IFS= read -r f; do
+              [ -z "$f" ] && continue
+              # Strip content/ prefix
+              rel="${f#content/}"
+              # _index.md -> section index; bar.md -> bar/index.html
+              if [[ "$rel" == *"/_index.md" ]]; then
+                html="public/${rel%/_index.md}/index.html"
+              elif [[ "$rel" == "_index.md" ]]; then
+                html="public/index.html"
+              else
+                html="public/${rel%.md}/index.html"
+              fi
+              [ -f "$html" ] && FILES="$FILES $html"
+            done <<< "$CHANGED"
+
+            if [ -z "${FILES// /}" ]; then
+              echo "No content files changed or mapped; falling back to all HTML."
+              FILES="public/**/*.html"
+            fi
+
+            echo "files=$FILES" >> "$GITHUB_OUTPUT"
+          else
+            echo "files=public/**/*.html" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check Links with Lychee
         id: lychee
         env:
@@ -52,6 +98,15 @@ jobs:
         run: |
           shopt -s globstar
           set +e
+
+          # On PRs, skip external URLs so only internal (remapped) links are checked.
+          EXTRA_FLAGS=""
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            EXTRA_FLAGS="--exclude '^https?://(?!agentgateway\.dev)'"
+          else
+            EXTRA_FLAGS="--github-token ${{ secrets.GITHUB_TOKEN }}"
+          fi
+
           lychee \
             --verbose \
             --config docs-link-checking/lychee.toml \
@@ -74,8 +129,8 @@ jobs:
             --format json \
             --user-agent curl/8.4.0 \
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
-            --github-token ${{ secrets.GITHUB_TOKEN }} \
-            public/**/*.html > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
+            $EXTRA_FLAGS \
+            ${{ steps.files.outputs.files }} > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
           EXIT=$?
           set -e
           echo "has_failures=$([ "$EXIT" != "0" ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
@@ -90,7 +145,7 @@ jobs:
             "${{ github.workspace }}/public"
 
       - name: Create issue from report
-        if: steps.lychee.outputs.has_failures == 'true'
+        if: steps.lychee.outputs.has_failures == 'true' && github.event_name != 'pull_request'
         id: create-issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -100,7 +155,7 @@ jobs:
           content-filepath: ./artifacts/agentgateway-oss-links.md
 
       - name: Set issue URL for Slack
-        if: steps.lychee.outputs.has_failures == 'true'
+        if: steps.lychee.outputs.has_failures == 'true' && github.event_name != 'pull_request'
         id: issue-url
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,6 +180,7 @@ jobs:
           docs-link-checking/read-link-stats.sh
 
       - name: Post results to Slack
+        if: github.event_name != 'pull_request'
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL: "#doctopus-tests"
