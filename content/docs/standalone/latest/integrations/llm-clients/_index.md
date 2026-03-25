@@ -1,6 +1,6 @@
 ---
 title: LLM clients
-weight: 75
+weight: 10
 description: Configure AI coding tools and applications to use agentgateway
 ---
 

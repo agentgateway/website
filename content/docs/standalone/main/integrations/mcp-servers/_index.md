@@ -1,6 +1,6 @@
 ---
 title: MCP servers
-weight: 60
+weight: 15
 description: Connect agentgateway to MCP servers using various transports
 ---
 
