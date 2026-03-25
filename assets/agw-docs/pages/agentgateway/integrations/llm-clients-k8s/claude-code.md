@@ -1,14 +1,10 @@
 Configure [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the AI coding CLI by Anthropic, to route LLM requests through your agentgateway proxy running in Kubernetes.
 
-## About
-
-Claude Code uses Anthropic's native `/v1/messages` endpoint instead of the OpenAI-compatible `/v1/chat/completions` endpoint that other LLM clients use. The agentgateway backend must include an explicit `/v1/messages` route mapping so that LLM policies such as prompt guards and rate limiting apply to Claude Code traffic.
-
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) installed (`npm install -g @anthropic-ai/claude-code`).
-3. An Anthropic API key from the [Anthropic Console](https://console.anthropic.com).
+2. Install the [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`).
+3. Get an Anthropic API key from the [Anthropic Console](https://console.anthropic.com).
 
 ## Get the gateway URL
 
@@ -98,35 +94,27 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
    {{< /tabs >}}
 
-   {{< callout type="warning" >}}
-   **Route mapping is required.** Without `'/v1/messages': Messages`, Claude Code traffic is treated as passthrough and LLM policies do not apply.
-   {{< /callout >}}
+   {{< doc-test paths="claude-code-k8s" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for anthropic backend to be accepted
+     wait:
+       target:
+         kind: AgentgatewayBackend
+         apiVersion: agentgateway.dev/v1alpha1
+         metadata:
+           namespace: agentgateway-system
+           name: anthropic
+       jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 60
+         intervalSeconds: 5
+   EOF
+   {{< /doc-test >}}
 
-   {{< callout type="warning" >}}
-   **Model selection matters.** If you specify a model in the backend but Claude Code uses a different model, you may get a `400` error. Use `anthropic: {}` to allow any model, or match the model exactly.
-   {{< /callout >}}
-
-{{< doc-test paths="claude-code-k8s" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for anthropic backend to be accepted
-  wait:
-    target:
-      kind: AgentgatewayBackend
-      apiVersion: agentgateway.dev/v1alpha1
-      metadata:
-        namespace: agentgateway-system
-        name: anthropic
-    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 60
-      intervalSeconds: 5
-EOF
-{{< /doc-test >}}
-
-3. Create an HTTPRoute to forward all traffic to the Anthropic backend.
+4. Create an HTTPRoute to forward all traffic to the Anthropic backend. This route uses a `/` path prefix so that all requests, including `/v1/messages` and `/v1/models`, are forwarded to the backend.
 
    ```bash {paths="claude-code-k8s"}
    kubectl apply -f- <<EOF
@@ -151,8 +139,6 @@ EOF
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-
-   This route uses a `/` path prefix so that all requests, including `/v1/messages` and `/v1/models`, are forwarded to the backend.
 
 {{< doc-test paths="claude-code-k8s" >}}
 YAMLTest -f - <<'EOF'
@@ -218,10 +204,6 @@ export ANTHROPIC_BASE_URL="http://localhost:8080"
 {{% /tab %}}
 
 {{< /tabs >}}
-
-{{< callout type="info" >}}
-You do not need to provide the Anthropic API key to Claude Code. The credentials are configured in agentgateway. Claude Code only needs `ANTHROPIC_BASE_URL` to redirect its traffic.
-{{< /callout >}}
 
 ## Verify the connection
 
