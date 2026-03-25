@@ -1,6 +1,6 @@
 ---
 title: Remove headers
-weight: 90
+weight: 50
 description: Remove sensitive or internal headers from requests before they reach the upstream.
 ---
 
