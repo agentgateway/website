@@ -4,7 +4,9 @@ Remove sensitive or internal headers from requests before they reach the upstrea
 
 ## Remove request headers
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. In the following example, you remove the `x-internal-token` request header before the request is forwarded to the upstream. This removal prevents internal credentials from being exposed to the backend service.
+In this example, you remove the `x-internal-token` request header before the request is forwarded to the upstream. This configuration prevents internal credentials from being exposed to the backend service.
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -69,7 +71,7 @@ Remove sensitive or internal headers from requests before they reach the upstrea
    }
    ```
 
-   Note that `x-internal-token` is absent from the headers, confirming it was removed before the request reached the upstream.
+   The `x-internal-token` header is absent from the echoed headers, confirming it was stripped before the request reached the upstream.
 
 ## Cleanup
 

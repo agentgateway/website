@@ -82,7 +82,7 @@ In this example, all three operations are applied together:
    
    ```
 
-   Note that `access-control-allow-origin` appears twice: the original `*` from httpbin and the appended `https://example.com` added by the transformation. `access-control-allow-credentials` does not appear because it was removed.
+   `access-control-allow-origin` appears twice: the original `*` from httpbin and the appended `https://example.com` added by the transformation. `access-control-allow-credentials` is absent because it was removed.
 
 ## Cleanup
 

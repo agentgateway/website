@@ -19,9 +19,7 @@ Common pseudo headers include:
 
 ## Update request paths and HTTP methods
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
-   * If the request contains the `foo:bar` header, the request path is rewritten to the `/post` path. In addition, the HTTP method is changed to the `POST` method.
-   * If the request does not contain the `foo:bar` header, the request path and method do not change.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. The policy rewrites the path to `/post` and the method to `POST` when the `foo: bar` request header is present. When the header is absent, the path and method are unchanged.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -46,7 +44,7 @@ Common pseudo headers include:
    EOF
    ```
 
-2. Send a request to the `/get` endpoint of the httpbin app. Include the `foo: bar` request header to trigger the request transformation. Verify that you get back a 200 HTTP response code and that your request path is rewritten to the `/post` endpoint. The `/post` endpoint accepts requests only if the HTTP `POST` method is used. The 200 HTTP response code therefore also indicates that the HTTP method was successfully changed from `GET` to `POST`.
+2. Send a request to the `/get` endpoint and include the `foo: bar` header to trigger the transformation. Verify that you get back a 200 HTTP response code. The httpbin `/post` endpoint only accepts `POST` requests, so a 200 response confirms both the path rewrite and the method change succeeded.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -98,7 +96,7 @@ Common pseudo headers include:
    }
    ```
 
-3. Send another request to the `/get` endpoint of the httpbin app. This time, you omit the `foo: bar` header. Verify that you get back a 200 HTTP response code and that the request path is not rewritten to the `/post` endpoint.
+3. Send another request to the `/get` endpoint. This time, omit the `foo: bar` header. Verify that you get back a 200 HTTP response code and that the request path is not rewritten.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}

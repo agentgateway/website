@@ -4,12 +4,9 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to construct a
 
 ## Forward the request URL upstream
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules:
-   * Build a URL by concatenating the scheme, hostname, and path from the request context.
-   * `request.scheme` contains the scheme of the request, such as `http` or `https`.
-   * `request.host` contains the hostname of the request.
-   * `request.path` contains the path of the request.
-   * The constructed URL is added to the `x-forwarded-uri` request header before forwarding to the upstream.
+In this example, you concatenate `request.scheme`, `request.host`, and `request.path` to build a full URL and inject it into the `x-forwarded-uri` request header before forwarding to the upstream.
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
    ```yaml
    kubectl apply -f- <<EOF
