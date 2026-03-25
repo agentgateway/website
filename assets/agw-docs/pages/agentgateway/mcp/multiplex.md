@@ -141,7 +141,11 @@ Route to the federated MCP servers with agentgateway.
        - backendRefs:
          - name: mcp
            group: agentgateway.dev
-           kind: {{< reuse "agw-docs/snippets/backend.md" >}} 
+           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+         matches:
+         - path:
+             type: PathPrefix
+             value: /mcp
    EOF
    ```
 
@@ -180,7 +184,7 @@ Route to the federated MCP servers with agentgateway.
        Matches:
          Path:
            Type:   PathPrefix
-           Value:  /
+           Value:  /mcp
    Status:
      Parents:
        Conditions:
