@@ -13,7 +13,7 @@ Run agentgateway on Azure to leverage Azure OpenAI, AKS, and Azure services.
 For AKS deployments, use [Agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/) which provides native Kubernetes Gateway API support, dynamic configuration, and MCP service discovery.
 
 {{< cards >}}
-  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Deploy on AKS with kgateway" icon="external-link" >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Deploy on AKS" icon="external-link" >}}
 {{< /cards >}}
 
 ### Azure Container Apps
