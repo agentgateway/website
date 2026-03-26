@@ -12,15 +12,6 @@ test:
     path: setup-httpbun-llm
   - file: content/docs/kubernetes/main/traffic-management/transformations/llm-model-headers.md
     path: llm-model-headers
-  llm-model-headers-body:
-  - file: content/docs/kubernetes/main/install/helm.md
-    path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
-    path: all
-  - file: content/docs/kubernetes/main/llm/providers/httpbun.md
-    path: setup-httpbun-llm
-  - file: content/docs/kubernetes/main/traffic-management/transformations/llm-model-headers.md
-    path: llm-model-headers-body
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/llm-model-headers.md" >}}

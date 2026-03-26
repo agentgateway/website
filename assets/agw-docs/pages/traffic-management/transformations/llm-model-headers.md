@@ -1,20 +1,17 @@
-Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject LLM model information as response headers. The examples use `llm.requestModel` and `llm.responseModel` to surface which model was requested and which model actually handled the response. This configuration is useful for detecting silent fallbacks, where a request is redirected to a different model without the client being notified.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject LLM model information as response headers. This is useful for detecting silent fallbacks, where a request is redirected to a different model without the client being notified.
 
 ## Before you begin
 
 [Set up httpbun as a mock LLM backend.]({{< link-hextra path="/llm/providers/httpbun/" >}})
 
-## Inject requested and actual model as response headers
+## Inject model headers from request and response bodies
 
-When a fallback model handles a request, the response body contains the actual model name, but nothing in the standard API response signals that a redirect occurred. By injecting `llm.requestModel` and `llm.responseModel` as response headers, you can compare the two values in the client or in an observability tool.
+Parse the `model` field from the incoming request body and the upstream response body using `json()`, then inject them as response headers. This lets you compare which model was requested against which model actually responded.
 
-This example injects three headers:
+* `json(request.body).model`: Reads the `model` field from the incoming request body.
+* `json(response.body).model`: Reads the `model` field from the upstream response body.
 
-* `x-requested-model`: The model name from the original request, extracted from `llm.requestModel`.
-* `x-actual-model`: The model name reported by the upstream LLM provider in the response, extracted from `llm.responseModel`.
-* `x-model-fallback`: Set to `"true"` when the requested and actual models differ, and `"false"` when they match.
-
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the httpbun HTTPRoute and injects model headers into every response.
+1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the httpbun HTTPRoute and injects the model fields as response headers.
 
    ```yaml {paths="llm-model-headers"}
    kubectl apply -f- <<EOF
@@ -33,17 +30,15 @@ This example injects three headers:
          response:
            set:
            - name: x-requested-model
-             value: 'llm.requestModel'
+             value: 'string(json(request.body).model)'
            - name: x-actual-model
-             value: 'llm.responseModel'
-           - name: x-model-fallback
-             value: 'llm.requestModel != llm.responseModel ? "true" : "false"'
+             value: 'string(json(response.body).model)'
    EOF
    ```
 
    {{< doc-test paths="llm-model-headers" >}}
    YAMLTest -f - <<'EOF'
-   - name: verify model headers are injected into the response
+   - name: verify model headers are injected from request and response bodies
      http:
        url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
@@ -61,9 +56,6 @@ This example injects three headers:
          - name: x-actual-model
            comparator: equals
            value: gpt-4
-         - name: x-model-fallback
-           comparator: equals
-           value: "false"
    EOF
    {{< /doc-test >}}
 
@@ -87,124 +79,54 @@ This example injects three headers:
    {{< /tabs >}}
 
    Example output:
-   ```console {hl_lines=[4,5,6]}
+   ```console {hl_lines=[1,2,7,8,9,10]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    < content-type: application/json
+   content-type: application/json
+   < x-powered-by: httpbun/8cb6c4f90cf49eb4509e7ae699c27b9f85f383c5
+   x-powered-by: httpbun/8cb6c4f90cf49eb4509e7ae699c27b9f85f383c5
    < x-requested-model: gpt-4
+   x-requested-model: gpt-4
    < x-actual-model: gpt-4
-   < x-model-fallback: false
+   x-actual-model: gpt-4
    ...
    ```
 
-   When a fallback model handles the request instead of the requested model, the headers would show the difference:
-   ```console {hl_lines=[4,5,6]}
-   < HTTP/1.1 200 OK
-   HTTP/1.1 200 OK
-   < content-type: application/json
+   When a fallback model handles the request, `x-actual-model` will differ from `x-requested-model`:
+   ```console {hl_lines=[4,5]}
    < x-requested-model: gpt-4o
    < x-actual-model: gpt-4o-mini
-   < x-model-fallback: true
-   ...
    ```
 
-## Access model from request and response body
+## Detect fallback with the llm context variables
 
-As an alternative to the `llm` context variables, you can extract the `model` field directly from the raw JSON request and response bodies using `json()`. Use this approach when you want to inspect the raw body fields directly, or when the `llm` context is not available for your route type.
+When agentgateway routes to an AI backend, the `llm` CEL context provides first-class variables that are parsed directly from the LLM protocol layer rather than from raw body strings:
 
-* `json(request.body).model`: Reads the `model` field from the incoming request body.
-* `json(response.body).model`: Reads the `model` field from the upstream response body.
+* `llm.requestModel`: The model name agentgateway parsed from the original request.
+* `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-1. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use body-based extraction instead.
+These are the preferred approach when available. Use `default()` to guard against cases where the `llm` context is not populated:
 
-   ```yaml {paths="llm-model-headers-body"}
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: llm-model-headers
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbun-llm
-     traffic:
-       transformation:
-         response:
-           set:
-           - name: x-requested-model
-             value: 'string(json(request.body).model)'
-           - name: x-actual-model
-             value: 'string(json(response.body).model)'
-   EOF
-   ```
+```yaml
+traffic:
+  transformation:
+    response:
+      set:
+      - name: x-requested-model
+        value: 'default(llm.requestModel, string(json(request.body).model))'
+      - name: x-actual-model
+        value: 'default(llm.responseModel, string(json(response.body).model))'
+      - name: x-model-fallback
+        value: 'default(llm.requestModel, string(json(request.body).model)) != default(llm.responseModel, string(json(response.body).model)) ? "true" : "false"'
+```
 
-   The expression breaks down as follows:
-   * `json(request.body)`: Parses the raw request body string into a map.
-   * `.model`: Accesses the `model` field from the parsed map.
-   * `string(...)`: Converts the value to a string for use as a header value.
-
-   {{< callout type="info" >}}
-   The `llm.requestModel` and `llm.responseModel` variables are the preferred approach for LLM routes because they are parsed by agentgateway from the LLM protocol layer. The `json()` body approach is useful when you need direct access to the raw body fields or when working with non-LLM JSON routes.
-   {{< /callout >}}
-
-   {{< doc-test paths="llm-model-headers-body" >}}
-   YAMLTest -f - <<'EOF'
-   - name: verify model headers are set from request and response body fields
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       headers:
-         - name: x-requested-model
-           comparator: equals
-           value: gpt-4
-         - name: x-actual-model
-           comparator: equals
-           value: gpt-4
-   EOF
-   {{< /doc-test >}}
-
-2. Send a chat completion request and verify the injected headers.
-
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vi "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
-    -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vi "http://localhost:8080/v1/chat/completions" \
-    -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-
-   Example output:
-   ```console {hl_lines=[4,5]}
-   < HTTP/1.1 200 OK
-   HTTP/1.1 200 OK
-   < content-type: application/json
-   < x-requested-model: gpt-4
-   < x-actual-model: gpt-4
-   ...
-   ```
+The `default()` function falls back to the `json()` body approach if the `llm` context variables are not available, so this expression works correctly regardless of whether the `llm` context is populated.
 
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh {paths="llm-model-headers,llm-model-headers-body"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+```sh {paths="llm-model-headers"}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
