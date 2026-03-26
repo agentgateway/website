@@ -56,8 +56,8 @@ Each policy section follows a different precedence order based on the specificit
 | Section | Precedence order (lowest to highest) |
 | -- | -- |
 | `frontend` | Field-level merge across policies that target the same Gateway. |
-| `traffic` | Gateway < Listener < Route < Route Rule |
-| `backend` | Gateway < Listener < Route < Route Rule < Backend/Service |
+| `traffic` | Gateway < Listener < Route < Route rule |
+| `backend` | Gateway < Listener < Route (targetRef) < Route rule (targetRef) < Backend (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
 
 For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and a Backend-level policy sets `backend.tls`, the effective policy uses `tcp` from the Gateway policy and `tls` from the Backend policy.
 

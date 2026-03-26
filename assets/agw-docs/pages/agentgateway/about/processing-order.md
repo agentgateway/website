@@ -30,18 +30,45 @@ graph LR
 ```
 
 1. **Frontend policies:** Control how the gateway accepts incoming connections, including TLS settings, TCP configuration, and access logging. Frontend policies apply at the gateway level before any routing decisions.
-2. **PreRouting traffic policies:** Run before route selection. Only a subset of traffic filters is available in the PreRouting phase. See [PreRouting filters](#prerouting-filters).
-3. **PostRouting traffic policies:** Run after route selection. PostRouting is the default phase for traffic policies and supports all traffic filters.
+2. **PreRouting traffic policies:** Run before route selection. Only a subset of traffic filters is available in the [PreRouting phase](#prerouting).
+3. **PostRouting traffic policies:** Run after route selection. [PostRouting](#postrouting) is the default phase for traffic policies and supports all traffic filters.
 4. **Backend policies:** Run when the gateway connects to the destination backend, including backend TLS, authentication, and health checking.
 
 Within each phase, agentgateway merges all applicable policies with a shallow field-level merge. If two policies configure different fields, both apply. For example, if one policy sets `transformation` and another sets `extAuth`, both filters run. If two policies configure the same field, the higher-precedence policy takes effect. For details, see [merge precedence](#merging).
 
-### Traffic filter execution order
+## Traffic filter execution order
 
 Within the traffic phase (both PreRouting and PostRouting), filters execute in a fixed order. You cannot change this order.
 
+### Supported PreRouting filters {#prerouting}
+
+The PreRouting phase supports only the following filters, in order of execution.
+
+To run a filter in the PreRouting phase, set `phase: PreRouting` on the traffic policy.
+
+{{< callout type="info">}}
+PreRouting policies can only target a Gateway or ListenerSet.
+{{< /callout >}}
+
 | Order | Filter | Field |
-| -- | -- | -- |
+| :--: | -- | -- |
+| 1 | JSON Web Token (JWT) authentication | `jwtAuthentication` |
+| 2 | Basic authentication | `basicAuthentication` |
+| 3 | API key authentication | `apiKeyAuthentication` |
+| 4 | External authorization | `extAuth` |
+| 5 | External processing | `extProc` |
+| 6 | Transformation | `transformation` |
+
+### Supported PostRouting filters {#postrouting}
+
+The PostRouting phase supports only the following filters, in order of execution.
+
+By default, filters run in the PostRouting phase. If you mix pre- and post-routing filters, you might want to explicitly configure the filter to run in the PreRouting phase by settting `phase: PostRouting` on the traffic policy.
+
+PostRouting filters can target any of the supported targets for traffic policies (Gateway, HTTPRoute, GRPCRoute, or ListenerSet).
+
+| Order | Filter | Field |
+| :--: | -- | -- |
 | 1 | Cross-Origin Resource Sharing (CORS) | `cors` |
 | 2 | JSON Web Token (JWT) authentication | `jwtAuthentication` |
 | 3 | Basic authentication | `basicAuthentication` |
@@ -56,19 +83,6 @@ Within the traffic phase (both PreRouting and PostRouting), filters execute in a
 | 12 | Header modifiers | `headerModifiers` |
 | 13 | Host rewrite | `hostRewrite` |
 | 14 | Direct response | `directResponse` |
-
-### PreRouting filters
-
-The PreRouting phase supports only the following filters, in order of execution:
-
-1. `jwtAuthentication`
-1. `basicAuthentication`
-1. `apiKeyAuthentication`
-1. `extAuth`
-1. `extProc`
-1. `transformation`
-
-To run a filter in the PreRouting phase, set `phase: PreRouting` on the traffic policy. PreRouting policies can only target a Gateway or ListenerSet.
 
 ### Adjusting execution order with phases
 
