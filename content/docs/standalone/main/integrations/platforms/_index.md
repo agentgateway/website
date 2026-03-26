@@ -18,7 +18,7 @@ Agentgateway runs anywhere—from local development to production cloud environm
 
 ## Kubernetes distributions
 
-Agentgateway runs on all Kubernetes distributions. See the [Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/) for more details.
+Agentgateway runs on all Kubernetes distributions. For more information, see the [Kubernetes section of the docs](https://agentgateway.dev/docs/kubernetes/).
 
 | Category | Distributions |
 |----------|---------------|

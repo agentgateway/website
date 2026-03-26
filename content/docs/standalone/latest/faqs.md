@@ -27,7 +27,7 @@ Check out frequently asked questions about agentgateway.
 
 ## How do I deploy agentgateway on Kubernetes?
 
-Agentgateway includes a built-in Kubernetes controller, which allows users to use [Gateway API](https://gateway-api.sigs.k8s.io/) to provision and configure agentgateway proxies.
+Agentgateway includes a built-in Kubernetes controller, which allows users to use the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) to provision and configure agentgateway proxies.
 
 For more information, see the [Agentgateway on Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/). 
 
