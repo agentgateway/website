@@ -4,7 +4,7 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject, mod
 
 ## Inject response headers
 
-The gateway intercepts the upstream response and modifies its headers before returning it to the client. You can combine `set`, `add`, and `remove` in a single policy so that the gateway applies all three operations in one pass. This configuration is useful when you need to enrich responses with values from the original request, enforce header policies like CORS, or strip internal headers that should not reach the client.
+The gateway intercepts the upstream response and modifies its headers before returning them to the client. You can combine `set`, `add`, and `remove` operations in a single policy so that the gateway applies all three operations in one pass. This configuration is useful when you need to enrich responses with values from the original request or strip internal headers that should not reach the client.
 
 In this example, all three operations are applied together:
 
