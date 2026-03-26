@@ -4,7 +4,7 @@ When building or debugging transformations, you can log CEL variables to inspect
 
 ## Log specific request data 
 
-Map individual attribute names to CEL expressions. The attribute names on the left (`request_path`, `request_method`, `client_ip`) are arbitrary and become the keys in the structured log output.
+Add access log attributes with CEL expressions.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets your Gateway and adds CEL variables as log attributes.
 

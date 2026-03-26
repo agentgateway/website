@@ -8,6 +8,25 @@ You can apply CEL transformations to routes for LLM providers, MCP servers, infe
 
 Transformations operate on three targets: request headers, response headers, and response bodies. Each target supports `set`, `add`, and `remove` operations, and you can combine them in a single policy.
 
+{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} structure for transformations:
+```yaml
+traffic:
+  transformation:
+    request:
+      set:
+      add: 
+      remove:
+      body:
+      metadata:
+    response: 
+      set:
+      add: 
+      remove:
+      body:
+      metadata:
+```
+
+
 ### Adjust request headers
 
 Use the `request` transformation to add, overwrite, or remove headers before the request reaches the upstream service. This transformation is useful for injecting routing hints, auth context, or tracing metadata that the upstream expects but the client does not send.
@@ -40,7 +59,7 @@ traffic:
       - access-control-allow-credentials
 ```
 
-For more information about this example, see [Encode and decode base64 headers]({{< link-hextra path="/traffic-management/transformations/encode/" >}}).
+For more information about this example, see [Inject response headers]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}).
 
 ### Adjust the response body
 
