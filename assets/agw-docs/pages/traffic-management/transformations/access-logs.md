@@ -2,7 +2,7 @@ When building or debugging transformations, you can log CEL variables to inspect
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## Log specific variables
+## Log specific request data 
 
 Map individual attribute names to CEL expressions. The attribute names on the left (`request_path`, `request_method`, `client_ip`) are arbitrary and become the keys in the structured log output.
 
