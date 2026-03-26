@@ -181,6 +181,12 @@ jobs:
           chmod +x docs-link-checking/post-slack-results.sh
           docs-link-checking/post-slack-results.sh
 
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: link-checker-assets
+          path: artifacts/*
+
       - name: Fail check if errors exist
         if: github.event_name == 'pull_request'
         env:
@@ -195,8 +201,4 @@ jobs:
           fi
 
 
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: link-checker-assets
-          path: artifacts/*
+      
