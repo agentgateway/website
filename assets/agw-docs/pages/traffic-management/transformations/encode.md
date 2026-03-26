@@ -1,4 +1,4 @@
-Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to encode and decode base64 values in request headers and add the results as response headers. The examples use the `base64.encode()`, `base64.decode()`, `bytes()`, and `string()` CEL functions, and the `request.headers[]` context variables.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to encode and decode base64 values in request headers and add the results as response headers. The examples use the `base64.encode()`, `base64.decode()`, and `string()` CEL functions, and the `request.headers[]` context variables.
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
@@ -28,7 +28,7 @@ In this example, you read a plain-text request header and add its base64-encoded
          response:
            set:
            - name: x-user-id-encoded
-             value: 'base64.encode(bytes(request.headers["x-user-id"]))'
+             value: 'base64.encode(request.headers["x-user-id"])'
    EOF
    ```
 

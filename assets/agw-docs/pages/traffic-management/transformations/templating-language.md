@@ -62,7 +62,7 @@ traffic:
     response:
       set:
       - name: x-user-id-encoded
-        value: 'base64.encode(bytes(request.headers["x-user-id"]))'
+        value: 'base64.encode(request.headers["x-user-id"])'
       - name: ":status"
         value: 'request.uri.contains("foo=bar") ? 401 : 403'
       remove:
@@ -166,7 +166,6 @@ These functions are used in the documentation examples in this section.
 |----------|---------------|
 | `base64.encode(bytes)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
 | `base64.decode(string)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
-| `bytes(string)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
 | `default(expression, fallback)` | [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}) |
 | `expression.with(variable, result)` | [Rewrite dynamic path segments]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}}) |
 | `fail()` | [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}) |
