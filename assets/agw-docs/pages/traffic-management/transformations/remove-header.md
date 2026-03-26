@@ -80,7 +80,7 @@ In this example, you remove the `x-debug-trace` request header before the reques
        method: GET
        headers:
          host: www.example.com
-         x-debug-trace: true
+         x-debug-trace: "true"
      source:
        type: local
      expect:
