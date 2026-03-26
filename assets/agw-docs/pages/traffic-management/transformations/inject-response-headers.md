@@ -14,7 +14,38 @@ In this example, all three operations are applied together:
 * `access-control-allow-credentials` (`remove`): Stripped from the response before it reaches the client.
 
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Send a request to the httpbin app. The `access-control-allow-origin` header exists before setting the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
+    -H "host: www.example.com:80"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers \
+   -H "host: www.example.com" 
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console {hl_lines=[3,4,5,6]}
+   ...
+   * Request completely sent off
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
+   < access-control-allow-origin: *
+   access-control-allow-origin: *
+   < content-type: application/json; encoding=utf-8
+   content-type: application/json; encoding=utf-8
+   < content-length: 3
+   content-length: 3
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="inject-response-headers"}
    kubectl apply -f- <<EOF
@@ -67,7 +98,11 @@ In this example, all three operations are applied together:
    EOF
    {{< /doc-test >}}
 
-2. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify that you get back a 200 HTTP response code and that the response includes the injected headers, contains two `access-control-allow-origin` values, and omits `access-control-allow-credentials`.
+3. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify the following:
+   * You get back a 200 HTTP response code.
+   * The response includes the injected headers.
+   * The response contains two `access-control-allow-origin` values.
+   * The response omits `access-control-allow-credentials`.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -104,7 +139,6 @@ In this example, all three operations are applied together:
    content-length: 3
    < x-gateway-response: my-custom-value
    x-gateway-response: my-custom-value
-   
    ```
 
    `access-control-allow-origin` appears twice: the original `*` from httpbin and the appended `https://example.com` added by the transformation. `access-control-allow-credentials` is absent because it was removed.
