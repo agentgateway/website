@@ -9,7 +9,7 @@ The gateway intercepts the upstream response and modifies its headers before ret
 In this example, all three operations are applied together:
 
 * `set`: Extracts the `x-gateway-request` request header value and sets it as the `x-gateway-response` response header. Also injects a static `x-response-raw` header with the value `hello`. Use `set` to create a header or overwrite it if it already exists.
-* `add`: Appends `https://example.com` to the `access-control-allow-origin` header. Because httpbin already returns `access-control-allow-origin: *`, the response ends up with two entries for that header. Use `add` when you want to append a value without overwriting what is already present.
+* `add`: Appends `https://example.com` to the `access-control-allow-origin` header. Because httpbin already returns `access-control-allow-origin: *`, the response ends up with two entries for that header. Use `add` when you want to append or add a value without overwriting what is already present.
 * `remove`: Strips the `access-control-allow-credentials` header from the response before it reaches the client.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
