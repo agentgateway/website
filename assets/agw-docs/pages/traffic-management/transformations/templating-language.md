@@ -6,7 +6,8 @@ You can apply CEL transformations to routes for LLM providers, MCP servers, infe
 
 ## Where can CEL be used?
 
-Transformations can be applied to transform the headers and body of a request or response. Review the following sections to learn more about each transformation type. 
+Transformations can modify the headers and body of a request or response. Each transformation is expressed as static values, built-in CEL functions, or context variables to extract and inject information.
+
 
 {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} structure for transformations:
 ```yaml
@@ -26,10 +27,19 @@ traffic:
       metadata:
 ```
 
+### Header transformations
 
-### Adjust request headers
+Use header transformations to add, overwrite, or remove headers on a request before it reaches the upstream, or on a response before it reaches the client. Three operations are supported:
 
-Use the `request` transformation to add, overwrite, or remove headers before the request reaches the upstream service. This transformation is useful for injecting routing hints, auth context, or tracing metadata that the upstream expects but the client does not send.
+* `set`: Creates a header or overwrites it if it already exists.
+* `add`: Appends a value to a header without removing existing values.
+* `remove`: Strips a header entirely.
+
+Each `set` or `add` entry takes a `name` and a `value`. The value is a CEL expression that can be a static string, a call to a built-in function, or a reference to a context variable such as `request.headers["x-foo"]`, `jwt.sub`, or `llm.requestModel`.
+
+You might use these transformations for injecting routing hints, auth context, or tracing metadata that the upstream expects but the client does not send.
+
+Request header example to build a forwarded URI from context variables:
 
 ```yaml
 traffic:
@@ -40,11 +50,11 @@ traffic:
         value: 'request.scheme + "://" + request.host + request.path'
 ```
 
-For more information about this example, see [Create redirect URLs]({{< link-hextra path="/traffic-management/transformations/forward/" >}}).
 
-### Adjust response headers
 
-Use the `response` transformation to add, overwrite, or remove headers before the response reaches the client. This transformation is useful for encoding sensitive values, setting custom status codes, or stripping internal headers that should not be exposed.
+For another request header example, see [Create redirect URLs]({{< link-hextra path="/traffic-management/transformations/forward/" >}}).
+
+Response header example to encode a header value with a CEL function, set a dynamic status code with a conditional expression, and remove a header:
 
 ```yaml
 traffic:
@@ -59,11 +69,15 @@ traffic:
       - access-control-allow-credentials
 ```
 
-For more information about this example, see [Inject response headers]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}).
 
-### Adjust the response body
 
-Use the `response.body` transformation to replace the entire response body with a CEL expression that evaluates to a string. This transformation is useful when the upstream response needs to be reformatted or enriched before it reaches the client. For example, you might want to build a structured JSON response from request data or inject values from request context into the body.
+For another response header example, see [Inject response headers]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}).
+
+### Body transformations
+
+Use body transformations to replace the entire body of a request or response with a new value. The `body` field takes a single CEL expression that must evaluate to a string. You can build the new body from static values, CEL functions such as `json()` and `toJson()`, or context variables such as `request.body` or `response.body`.
+
+Response body example to construct a JSON response body from request context variables:
 
 ```yaml
 traffic:
@@ -72,7 +86,18 @@ traffic:
       body: '"{\"path\": \"" + request.path + "\", \"method\": \"" + request.method + "\"}"'
 ```
 
-For more information about this example, see [Inject response bodies]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}).
+For more information, see [Inject response bodies]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}).
+
+Request body example to strip internal fields and merge in defaults before forwarding:
+
+```yaml
+traffic:
+  transformation:
+    request:
+      body: 'toJson(json(request.body).filterKeys(k, !k.startsWith("x_")).merge({"model": "gpt-4o", "max_tokens": 2048}))'
+```
+
+For more information, see [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}).
 
 ### Pre-compute values with metadata
 
