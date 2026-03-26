@@ -239,7 +239,7 @@ Agent Gateway is an open source proxy built on AI-native protocols (A2A & MCP) t
           </svg>
         </div>
         <h3 class="text-primary-text text-lg font-bold mb-2">Integrations</h3>
-        <p class="text-secondary-text text-sm">Connect with OpenAI, Anthropic, Azure, and MCP servers.</p>
+        <p class="text-secondary-text text-sm">Connect with OpenAI, Anthropic, Gemini, Bedrock, Azure OpenAI, and MCP servers.</p>
       </a>
     </div>
   </div>

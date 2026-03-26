@@ -7,7 +7,7 @@ description: Deploy agentgateway on any Kubernetes distribution
 agentgateway runs on any Kubernetes distribution through [Agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/), which provides native Kubernetes Gateway API support, dynamic configuration via CRDs, and MCP service discovery.
 
 {{< cards >}}
-  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Get Started with kgateway" icon="external-link" subtitle="Complete installation and configuration guide" >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Get Started" icon="external-link" subtitle="Complete installation and configuration guide" >}}
 {{< /cards >}}
 
 ## Supported distributions
@@ -48,7 +48,7 @@ Agentgateway works on all Kubernetes distributions, both in the cloud and on-pre
 | Rancher Desktop | Local development |
 | k3d | Local development |
 
-## Why kgateway for Kubernetes?
+## Why agentgateway on Kubernetes?
 
 | Feature | Benefit |
 |---------|---------|
@@ -61,6 +61,6 @@ Agentgateway works on all Kubernetes distributions, both in the cloud and on-pre
 ## Learn more
 
 {{< cards >}}
-  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="kgateway Documentation" icon="external-link" subtitle="Full agentgateway on Kubernetes guide" >}}
-  {{< card link="https://kgateway.dev/docs/agentgateway/latest/quickstart/" title="Quick Start" icon="external-link" subtitle="Deploy agentgateway in minutes" >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/" title="Documentation" icon="external-link" subtitle="Full agentgateway on Kubernetes guide" >}}
+  {{< card link="https://agentgateway.dev/docs/kubernetes/latest/quickstart/" title="Quick Start" icon="external-link" subtitle="Deploy agentgateway in minutes" >}}
 {{< /cards >}}
