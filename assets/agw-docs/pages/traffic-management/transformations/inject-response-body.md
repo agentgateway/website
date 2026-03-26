@@ -85,7 +85,7 @@ In this example, you set the response body to a JSON string built from request c
 
 ## Inject request body fields into a response body
 
-In this example, you parse a JSON request body using `json()` to extract a field and include it in the response body. Use `request.body` to access the raw incoming request body as a string.
+In this example, you parse a JSON request body by using the `json()` function to extract a field and include it in the response body. Use `request.body` to access the raw incoming request body as a string.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that reads the `name` field from the JSON request body and echoes it back in the response.
 
