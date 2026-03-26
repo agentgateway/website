@@ -2,8 +2,8 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to route requests t
 
 ## Before you begin
 
-- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
-- Cursor installed (version 0.30 or later).
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. [Install Cursor](https://cursor.com/).
 
 ## Example agentgateway configuration
 

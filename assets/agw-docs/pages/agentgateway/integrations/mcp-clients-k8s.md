@@ -117,7 +117,7 @@ The `agentgateway` server shows up as **Connected**.
    }
    ```
 
-2. Restart Cursor and verify that agentgateway tools appear in the MCP tools list.
+2. Restart Cursor and verify that the agentgateway tool appears in the MCP tools list.
 
 ### VS Code (GitHub Copilot)
 

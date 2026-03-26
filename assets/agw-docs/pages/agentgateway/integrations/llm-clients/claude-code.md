@@ -2,8 +2,9 @@ Configure [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the AI 
 
 ## Before you begin
 
-1. Install the [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`).
-2. Get an Anthropic API key from the [Anthropic Console](https://console.anthropic.com).
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. Install the [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`).
+3. Get an Anthropic API key from the [Anthropic Console](https://console.anthropic.com).
 
 ## Configure agentgateway
 
@@ -30,8 +31,14 @@ Start agentgateway with an Anthropic backend configuration.
    ```
 
    {{< doc-test paths="claude-code-validate" >}}
+   mkdir -p "$HOME/.local/bin"
+   export PATH="$HOME/.local/bin:$PATH"
+   VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+   BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+   curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+   chmod +x "$HOME/.local/bin/agentgateway"
    export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
-   agentgateway -f /tmp/test-claude-code.yaml --validate-only
+   agentgateway -f config.yaml --validate-only
    {{< /doc-test >}}
 
 3. Start agentgateway.
@@ -87,7 +94,7 @@ export ANTHROPIC_BASE_URL="http://localhost:4000"
    claude
    ```
 
-   Every request, including prompts, tool calls, and file reads, flows through agentgateway.
+   All requests, including prompts, tool calls, and file reads, flow through agentgateway.
 
 ## Next steps
 

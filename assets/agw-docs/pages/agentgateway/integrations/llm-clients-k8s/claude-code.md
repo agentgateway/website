@@ -66,7 +66,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    {{% /tab %}}
 
    {{% tab tabName="Fixed model" %}}
-   Pin the backend to a specific model. Make sure the model matches what Claude Code is configured to use.
+   Pin the backend to a specific model. The model must match what Claude Code is configured to use, because Claude Code sends the model name in API requests and agentgateway rejects mismatches.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -231,7 +231,7 @@ export ANTHROPIC_BASE_URL="http://localhost:8080"
    claude
    ```
 
-   Every request, including prompts, tool calls, and file reads, flows through agentgateway.
+   All requests, including prompts, tool calls, and file reads, flow through agentgateway.
 
 {{< doc-test paths="claude-code-k8s" >}}
 kubectl delete agentgatewaybackend anthropic -n agentgateway-system --ignore-not-found

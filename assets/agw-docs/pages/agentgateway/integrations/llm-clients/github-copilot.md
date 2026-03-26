@@ -6,9 +6,9 @@ Custom endpoint configuration for GitHub Copilot requires a GitHub Copilot Busin
 
 ## Before you begin
 
-- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
-- VS Code with the [GitHub Copilot extension](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot) installed.
-- A GitHub Copilot Business or Enterprise subscription.
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. Install VS Code with the [GitHub Copilot extension](https://marketplace.visualstudio.com/items?itemName=GitHub.copilot).
+3. Have a GitHub Copilot Business or Enterprise subscription.
 
 ## Example agentgateway configuration
 

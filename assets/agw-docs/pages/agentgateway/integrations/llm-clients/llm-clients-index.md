@@ -1,10 +1,5 @@
 Agentgateway exposes an OpenAI-compatible API that works with any tool or SDK built for OpenAI. Point your AI coding tool at the agentgateway address and it routes requests to your configured backend provider, applying any policies you have set up such as authentication, rate limiting, or observability.
 
-## Before you begin
-
-- Agentgateway running with at least one configured LLM backend.
-- The gateway address and model name from your backend configuration.
-
 ## Supported clients
 
 {{< cards >}}
