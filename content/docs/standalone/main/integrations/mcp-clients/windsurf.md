@@ -6,6 +6,10 @@ description: Connect Windsurf IDE to agentgateway
 
 Configure Windsurf, Codeium's AI-powered IDE, to use agentgateway as an MCP server.
 
+## Before you begin
+
+{{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
+
 ## Configuration
 
 Add agentgateway to your Windsurf MCP configuration. Create or edit `~/.windsurf/mcp.json`:

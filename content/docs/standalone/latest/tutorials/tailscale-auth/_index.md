@@ -1,5 +1,5 @@
 ---
-title: Tailscale Authentication
+title: Tailscale authentication
 weight: 11
 description: Authenticate users using Tailscale identity for zero-trust access
 ---

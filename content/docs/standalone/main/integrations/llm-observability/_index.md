@@ -1,5 +1,5 @@
 ---
-title: LLM Observability
+title: LLM observability
 weight: 25
 description: Send LLM telemetry for prompt logging, cost tracking, and audit trail.
 ---

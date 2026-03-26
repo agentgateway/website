@@ -1,5 +1,5 @@
 ---
-title: MCP Federation
+title: MCP federation
 weight: 3
 description: Learn how to federate tools from multiple MCP servers through a single endpoint
 ---

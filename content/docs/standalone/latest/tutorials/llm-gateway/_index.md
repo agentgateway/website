@@ -1,5 +1,5 @@
 ---
-title: LLM Gateway
+title: LLM gateway
 weight: 2
 description: Route requests to multiple LLM providers through a unified API
 ---

@@ -68,6 +68,14 @@ Integrate agentgateway with your existing infrastructure and tools.
   {{< card link="mcp-clients/vscode" title="VS Code" subtitle="GitHub Copilot MCP extension" >}}
 {{< /cards >}}
 
+## MCP Servers
+
+{{< cards >}}
+  {{< card link="mcp-servers/stdio" title="stdio" subtitle="Local process MCP servers" >}}
+  {{< card link="mcp-servers/sse" title="SSE" subtitle="Server-Sent Events transport" >}}
+  {{< card link="mcp-servers/streamable-http" title="Streamable HTTP" subtitle="HTTP with streaming support" >}}
+{{< /cards >}}
+
 ## Web UIs & Agent Frameworks
 
 {{< cards >}}
@@ -76,14 +84,6 @@ Integrate agentgateway with your existing infrastructure and tools.
   {{< card link="web-uis/kagent" title="Kagent" subtitle="Kubernetes-native AI agent framework" >}}
   {{< card link="web-uis/librechat" title="LibreChat" subtitle="Open source multi-model chat UI" >}}
   {{< card link="web-uis/chatbot-ui" title="Chatbot UI" subtitle="Open source ChatGPT interface" >}}
-{{< /cards >}}
-
-## MCP Servers
-
-{{< cards >}}
-  {{< card link="mcp-servers/stdio" title="stdio" subtitle="Local process MCP servers" >}}
-  {{< card link="mcp-servers/sse" title="SSE" subtitle="Server-Sent Events transport" >}}
-  {{< card link="mcp-servers/streamable-http" title="Streamable HTTP" subtitle="HTTP with streaming support" >}}
 {{< /cards >}}
 
 ## Platforms

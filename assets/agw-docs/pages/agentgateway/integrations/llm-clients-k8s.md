@@ -1,6 +1,7 @@
 Select a client below for configuration instructions.
 
 {{< cards >}}
+  {{< card link="claude-code" title="Claude Code" subtitle="AI coding CLI by Anthropic" >}}
   {{< card link="cursor" title="Cursor" subtitle="AI code editor with custom model support" >}}
   {{< card link="windsurf" title="Windsurf" subtitle="AI code editor by Codeium" >}}
   {{< card link="github-copilot" title="GitHub Copilot" subtitle="AI pair programmer" >}}

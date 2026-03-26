@@ -6,6 +6,10 @@ description: Connect Cursor IDE to agentgateway
 
 Configure Cursor, the AI-powered code editor, to use agentgateway as an MCP server.
 
+## Before you begin
+
+{{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
+
 ## Configuration
 
 Add agentgateway to your Cursor MCP settings. Create or edit `.cursor/mcp.json` in your project root:

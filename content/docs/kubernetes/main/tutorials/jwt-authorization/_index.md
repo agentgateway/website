@@ -1,5 +1,5 @@
 ---
-title: JWT Authorization
+title: JWT authorization
 weight: 5
 description: Secure agentgateway with JWT authentication and fine-grained access control on Kubernetes
 ---

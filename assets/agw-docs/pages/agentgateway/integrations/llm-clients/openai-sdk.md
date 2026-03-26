@@ -2,8 +2,7 @@ Use the OpenAI Python or Node.js SDK to send requests through agentgateway.
 
 ## Before you begin
 
-- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
-- The OpenAI SDK installed in your project.
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Example agentgateway configuration
 

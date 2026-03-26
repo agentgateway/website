@@ -1,5 +1,5 @@
 ---
-title: AI Prompt Guard
+title: AI prompt guard
 weight: 7
 description: Content safety and PII detection—block prompt injection and sensitive data on Kubernetes
 ---
