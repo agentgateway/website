@@ -74,6 +74,29 @@ traffic:
 
 For more information about this example, see [Inject response bodies]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}).
 
+### Pre-compute values with metadata
+
+Use the `metadata` field to evaluate a CEL expression once and make the result available as `metadata.<name>` in the `set`, `add`, and `body` fields of the same transformation. `metadata` keys are evaluated before any other fields in the transformation, so they can be referenced anywhere in the same block.
+
+This field is useful when the same complex expression would otherwise be repeated. For example, if you parse a JSON body field to inject it as a header and also use it in a condition, writing it twice creates noise and a maintenance risk. With `metadata`, you write it once.
+
+```yaml
+traffic:
+  transformation:
+    response:
+      metadata:
+        parsedModel: 'string(json(response.body).model)'
+      set:
+      - name: x-actual-model
+        value: metadata.parsedModel
+      - name: x-model-changed
+        value: 'metadata.parsedModel != string(json(request.body).model) ? "true" : "false"'
+```
+
+`metadata` values are only available within the same transformation block. They are not accessible in access log or tracing CEL expressions.
+
+For a full example, see [Inject LLM model headers]({{< link-hextra path="/traffic-management/transformations/llm-model-headers/" >}}).
+
 
 ## CEL syntax quick reference {#cel-syntax}
 
@@ -112,6 +135,7 @@ These functions are used in the documentation examples in this section.
 - [`json(string)`]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}})
 - [`map.filterKeys(k, predicate)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
 - [`map.merge(map2)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
+- [`metadata.<name>`]({{< link-hextra path="/traffic-management/transformations/llm-model-headers/" >}})
 - [`random()`]({{< link-hextra path="/traffic-management/transformations/tracing/" >}})
 - [`string(value)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
 - [`toJson(value)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})

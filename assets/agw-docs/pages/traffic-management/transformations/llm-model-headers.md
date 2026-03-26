@@ -106,22 +106,25 @@ When agentgateway routes to an AI backend, the `llm` CEL context provides first-
 * `llm.requestModel`: The model name agentgateway parsed from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-These are the preferred approach when available. Use `default()` to guard against cases where the `llm` context is not populated:
+Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#cel-functions" >}}) to compute each value once and reference it by name. This setup avoids repeating the `default()` fallback expression in every header and keeps the `x-model-fallback` condition readable:
 
 ```yaml
 traffic:
   transformation:
     response:
+      metadata:
+        requestedModel: 'default(llm.requestModel, string(json(request.body).model))'
+        actualModel: 'default(llm.responseModel, string(json(response.body).model))'
       set:
       - name: x-requested-model
-        value: 'default(llm.requestModel, string(json(request.body).model))'
+        value: metadata.requestedModel
       - name: x-actual-model
-        value: 'default(llm.responseModel, string(json(response.body).model))'
+        value: metadata.actualModel
       - name: x-model-fallback
-        value: 'default(llm.requestModel, string(json(request.body).model)) != default(llm.responseModel, string(json(response.body).model)) ? "true" : "false"'
+        value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
 ```
 
-The `default()` function falls back to the `json()` body approach if the `llm` context variables are not available, so this expression works correctly regardless of whether the `llm` context is populated.
+The `default()` fallback is written once per value rather than repeated in every header and in the comparison.
 
 ## Cleanup
 
