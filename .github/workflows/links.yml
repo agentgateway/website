@@ -56,45 +56,13 @@ jobs:
         id: files
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # Fetch the base branch tip so git diff can compare against it.
             git fetch origin ${{ github.base_ref }}
-
-            ALL_CHANGED=$(git diff --name-only origin/${{ github.base_ref }}...HEAD)
-
-            # Direct content file changes.
-            CONTENT=$(echo "$ALL_CHANGED" | grep '^content/.*\.md$' || true)
-
-            # Asset file changes: resolve to content pages via find-asset-users.py.
-            ASSETS=$(echo "$ALL_CHANGED" | grep '^assets/.*\.md$' || true)
-            if [ -n "$ASSETS" ]; then
-              CONTENT_FROM_ASSETS=$(echo "$ASSETS" \
-                | python3 docs-link-checking/find-asset-users.py \
-                    --repo-root "${{ github.workspace }}" \
-                    --content-only - || true)
-              CONTENT=$(printf '%s\n%s' "$CONTENT" "$CONTENT_FROM_ASSETS" \
-                | sort -u | grep . || true)
-            fi
-
-            # Map each content file to its built public/*.html path.
-            FILES=""
-            while IFS= read -r f; do
-              [ -z "$f" ] && continue
-              rel="${f#content/}"
-              if [[ "$rel" == *"/_index.md" ]]; then
-                html="public/${rel%/_index.md}/index.html"
-              elif [[ "$rel" == "_index.md" ]]; then
-                html="public/index.html"
-              else
-                html="public/${rel%.md}/index.html"
-              fi
-              [ -f "$html" ] && FILES="$FILES $html"
-            done <<< "$CONTENT"
-
-            if [ -z "${FILES// /}" ]; then
-              echo "No content files changed or mapped; falling back to all HTML."
-              FILES="public/**/*.html"
-            fi
-
+            FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+              | python3 docs-link-checking/find-asset-users.py \
+                  --repo-root "${{ github.workspace }}" \
+                  --html-paths \
+                  --public-prefix "public" \
+                  - || echo "public/**/*.html")
             echo "files=$FILES" >> "$GITHUB_OUTPUT"
           else
             echo "files=public/**/*.html" >> "$GITHUB_OUTPUT"
