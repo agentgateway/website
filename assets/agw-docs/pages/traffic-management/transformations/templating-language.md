@@ -25,7 +25,7 @@ For more information about this example, see [Create redirect URLs]({{< link-hex
 
 ### Adjust response headers
 
-Use the `response` transformation to add, overwrite, or remove headers before the response reaches the client. This transformation is useful for encoding sensitive values, enforcing CORS policies, setting custom status codes, or stripping internal headers that should not be exposed.
+Use the `response` transformation to add, overwrite, or remove headers before the response reaches the client. This transformation is useful for encoding sensitive values, setting custom status codes, or stripping internal headers that should not be exposed.
 
 ```yaml
 traffic:
