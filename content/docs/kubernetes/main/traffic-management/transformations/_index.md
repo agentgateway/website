@@ -14,7 +14,8 @@ Mutate and transform requests and responses before forwarding them to the destin
   {{< card link="forward" title="Forward the request URL" >}}
   {{< card link="change-response-body" title="Change response body" >}}
   {{< card link="remove-header" title="Remove headers" >}}
-  {{< card link="query" title="Extract query parameters" >}}
+  {{< card link="path-method" title="Change request path and method" >}}
+  {{< card link="query" title="Promote query parameters to request headers" >}}
   {{< card link="access-logs" title="Enrich access logs" >}}
   {{< card link="filter-request-body" title="Filter and merge request body fields" >}}
   {{< card link="validate" title="Validate and set request body defaults" >}}

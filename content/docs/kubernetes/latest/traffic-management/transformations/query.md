@@ -1,7 +1,7 @@
 ---
-title: Extract query parameters
-weight: 45
-description: Extract query parameters by using pseudo headers to change the request path and HTTP method when a request header is present.
+title: Promote query parameters to request headers
+weight: 46
+description: Read a query parameter from the request URI and inject it as a request header using a CEL conditional expression.
 test:
   query:
   - file: content/docs/kubernetes/latest/quickstart/install.md
