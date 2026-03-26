@@ -41,9 +41,9 @@ Helpful terms:
 
 * Transform: The process of the control plane converting high-level resources or intermediate representations (IR) into lower-level representations into the structure that the XDS API expects for a snapshot.
 
-{{< version include-if="2.2.x" >}}
-{{< reuse "agw-docs/snippets/metrics-control-plane-22x.md" >}}
+{{< version include-if="1.0.x" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-latest.md" >}}
 {{< /version >}}
-{{< version include-if="2.3.x" >}}
-{{< reuse "agw-docs/snippets/metrics-control-plane-23x.md" >}}
+{{< version include-if="1.1.x" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-main.md" >}}
 {{< /version >}}
