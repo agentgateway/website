@@ -1,6 +1,6 @@
 ---
 title: Extract query parameters
-weight: 50
+weight: 45
 description: Extract query parameters by using pseudo headers to change the request path and HTTP method when a request header is present.
 test:
   query:

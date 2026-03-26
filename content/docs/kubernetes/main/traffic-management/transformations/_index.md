@@ -19,4 +19,5 @@ Mutate and transform requests and responses before forwarding them to the destin
   {{< card link="filter-request-body" title="Filter and merge request body fields" >}}
   {{< card link="validate" title="Validate and set request body defaults" >}}
   {{< card link="tracing" title="Generate request tracing headers" >}}
+  {{< card link="llm-model-headers" title="Inject LLM model headers" >}}
 {{< /cards >}}
