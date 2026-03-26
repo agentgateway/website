@@ -61,7 +61,7 @@ Pillar Security scans for the following threat categories.
 
 The Pillar adapter is a small Rust service that you run alongside agentgateway. It receives webhook calls from agentgateway, forwards them to the Pillar Security API, and returns a pass or reject decision.
 
-The adapter source code is available at [github.com/pillar-security/agentgateway-guardrails](https://github.com/pillar-security/agentgateway-guardrails).
+The adapter source code is available at [github.com/guybalzam/agentgateway-guardrails](https://github.com/guybalzam/agentgateway-guardrails).
 
 1. Clone and build the adapter.
 
