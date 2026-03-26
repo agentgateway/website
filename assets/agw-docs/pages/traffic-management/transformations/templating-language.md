@@ -6,7 +6,7 @@ You can apply CEL transformations to routes for LLM providers, MCP servers, infe
 
 ## Where can CEL be used?
 
-Transformations operate on three targets: request headers, response headers, and response bodies. Each target supports `set`, `add`, and `remove` operations, and you can combine them in a single policy.
+Transformations can be applied to transform the headers and body of a request or response. Review the following sections to learn more about each transformation type. 
 
 {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} structure for transformations:
 ```yaml
