@@ -1,5 +1,5 @@
 ---
-title: Forward request URLs
+title: Create redirect URLs
 weight: 40
 description: Use CEL expressions to construct a redirect URL from context variables and forward it upstream as a request header.
 test:
