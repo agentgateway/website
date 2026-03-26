@@ -141,10 +141,20 @@ Use these patterns to build expressions for header values, body content, and con
 
 ## Context variables {#context-variables}
 
+Context variables give CEL expressions access to information about the current request, response, and connection. They are populated automatically by agentgateway at runtime so you do not need to declare or configure them. Use them to read values such as headers, path, method, JWT claims, or LLM model names and inject them into headers, bodies, or conditions.
+
+Variables are only populated when they are relevant to the current request. For example, `jwt` is only present when a JWT has been validated, and `llm` is only present when the route is backed by an LLM provider. Referencing an absent variable in a CEL expression produces an error. Use `default(expression, fallback)` to avoid this error.
+
+Not all variables are available in every policy type. The table below lists which variables are available depending on where the CEL expression is evaluated.
+
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel.md" section="CEL context Schema" %}}
 
 
 ## Built-in functions {#cel-functions}
+
+Built-in functions extend CEL with capabilities that go beyond simple variable access and arithmetic. Use them to parse and serialize data, encode values, generate identifiers, and manipulate strings and maps. For example, `json()` parses a raw request body string into a map so you can access individual fields, `base64.encode()` encodes a header value for safe transmission, and `default()` provides a fallback when a variable might not be present.
+
+The output of one function can be passed as the input of another. For example, `string(json(request.body).model)` parses the body, extracts the `model` field, and converts the result to a string in a single expression.
 
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel-functions.md" section="Functions" %}}
 
