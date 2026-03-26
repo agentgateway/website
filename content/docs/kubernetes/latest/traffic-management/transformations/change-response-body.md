@@ -1,5 +1,5 @@
 ---
-title: Change response bodies
+title: Update response status
 weight: 60
 description: Update the response status based on the headers in a response.
 test:
