@@ -62,7 +62,8 @@ jobs:
                   --repo-root "${{ github.workspace }}" \
                   --html-paths \
                   --public-prefix "public" \
-                  - || echo "public/**/*.html")
+                  -)
+            [ $? -ne 0 ] && FILES="public/**/*.html"
             echo "files=$FILES" >> "$GITHUB_OUTPUT"
           else
             echo "files=public/**/*.html" >> "$GITHUB_OUTPUT"
