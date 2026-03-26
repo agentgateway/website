@@ -161,23 +161,26 @@ The output of one function can be passed as the input of another. For example, `
 ### Function examples
 
 These functions are used in the documentation examples in this section.
-- [`base64.encode(bytes)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
-- [`base64.decode(string)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
-- [`bytes(string)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
-- [`default(expression, fallback)`]({{< link-hextra path="/traffic-management/transformations/validate/" >}})
-- [`expression.with(variable, result)`]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}})
-- [`fail()`]({{< link-hextra path="/traffic-management/transformations/validate/" >}})
-- [`json(string)`]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}})
-- [`map.filterKeys(k, predicate)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
-- [`map.merge(map2)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
-- [`metadata.<name>`]({{< link-hextra path="/traffic-management/transformations/llm-model-headers/" >}})
-- [`random()`]({{< link-hextra path="/traffic-management/transformations/tracing/" >}})
-- [`string(value)`]({{< link-hextra path="/traffic-management/transformations/encode/" >}})
-- [`toJson(value)`]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}})
-- [`string.contains(substring)`]({{< link-hextra path="/traffic-management/transformations/change-response-body/" >}})
-- [`string.regexReplace(pattern, replacement)`]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}})
-- [`uuid()`]({{< link-hextra path="/traffic-management/transformations/tracing/" >}})
-- [`variables()`]({{< link-hextra path="/traffic-management/transformations/access-logs/" >}})
+
+| Function | Example topic |
+|----------|---------------|
+| `base64.encode(bytes)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
+| `base64.decode(string)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
+| `bytes(string)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
+| `default(expression, fallback)` | [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}) |
+| `expression.with(variable, result)` | [Rewrite dynamic path segments]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}}) |
+| `fail()` | [Validate and set request body defaults]({{< link-hextra path="/traffic-management/transformations/validate/" >}}) |
+| `json(string)` | [Inject response bodies]({{< link-hextra path="/traffic-management/transformations/inject-response-body/" >}}) |
+| `map.filterKeys(k, predicate)` | [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}) |
+| `map.merge(map2)` | [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}) |
+| `metadata.<name>` | [Inject LLM model headers]({{< link-hextra path="/traffic-management/transformations/llm-model-headers/" >}}) |
+| `random()` | [Generate request tracing headers]({{< link-hextra path="/traffic-management/transformations/tracing/" >}}) |
+| `string(value)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
+| `string.contains(substring)` | [Change response body]({{< link-hextra path="/traffic-management/transformations/change-response-body/" >}}) |
+| `string.regexReplace(pattern, replacement)` | [Rewrite dynamic path segments]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}}) |
+| `toJson(value)` | [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}) |
+| `uuid()` | [Generate request tracing headers]({{< link-hextra path="/traffic-management/transformations/tracing/" >}}) |
+| `variables()` | [Enrich access logs]({{< link-hextra path="/traffic-management/transformations/access-logs/" >}}) |
 
 ## Transformation phases {#phases}
 
