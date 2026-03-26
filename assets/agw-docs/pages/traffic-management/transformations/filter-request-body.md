@@ -1,4 +1,4 @@
-Use the `filterKeys()` and `merge()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together with `json()` and `toJson()` to sanitize a JSON request body before it reaches the upstream. `filterKeys()` removes unwanted fields by testing each key against a predicate. `merge()` combines two maps, with the second map's values overwriting any matching keys in the first. `toJson()` serializes the resulting map back to a JSON string.
+Use the `filterKeys()` and `merge()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) together with `json()` and `toJson()` to sanitize a JSON request body before it reaches the upstream. `filterKeys()` removes unwanted fields by testing each key against a predicate. `merge()` combines two maps, with the second map's value overwriting any matching keys in the first. `toJson()` serializes the resulting map back to a JSON string.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
