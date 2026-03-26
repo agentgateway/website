@@ -135,7 +135,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
        headers:
          host: www.example.com
          content-type: application/json
-       body: '{"user_id": "alice123", "messages": [{"role": "user", "content": "hello"}]}'
+       body: '{"user_id": "user123", "messages": [{"role": "user", "content": "hello"}]}'
      source:
        type: local
      expect:
@@ -143,7 +143,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
        bodyJsonPath:
          - path: "$.headers.X-User-Id[0]"
            comparator: equals
-           value: "alice123"
+           value: "user123"
    EOF
    {{< /doc-test >}}
 
@@ -155,7 +155,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
    curl -vi http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:80" \
     -H "content-type: application/json" \
-    -d '{"user_id": "alice123", "messages": [{"role": "user", "content": "hello"}]}'
+    -d '{"user_id": "user123", "messages": [{"role": "user", "content": "hello"}]}'
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -163,7 +163,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
    curl -vi localhost:8080/post \
    -H "host: www.example.com" \
    -H "content-type: application/json" \
-   -d '{"user_id": "alice123", "messages": [{"role": "user", "content": "hello"}]}'
+   -d '{"user_id": "user123", "messages": [{"role": "user", "content": "hello"}]}'
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -179,7 +179,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
        "Content-Type": ["application/json"],
        "Host": ["www.example.com"],
        "User-Agent": ["curl/8.7.1"],
-       "X-User-Id": ["alice123"]
+       "X-User-Id": ["user123"]
      },
      ...
    }

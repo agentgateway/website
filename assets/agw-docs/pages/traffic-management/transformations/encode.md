@@ -40,7 +40,7 @@ In this example, you read a plain-text request header and add its base64-encoded
        method: GET
        headers:
          host: www.example.com
-         x-user-id: alice
+         x-user-id: user123
      source:
        type: local
      expect:
@@ -48,7 +48,7 @@ In this example, you read a plain-text request header and add its base64-encoded
        headers:
          - name: x-user-id-encoded
            comparator: equals
-           value: YWxpY2U=
+           value: dXNlcjEyMw==
    EOF
    {{< /doc-test >}}
 
@@ -59,14 +59,14 @@ In this example, you read a plain-text request header and add its base64-encoded
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
     -H "host: www.example.com:80" \
-    -H "x-user-id: alice"
+    -H "x-user-id: user123"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
    -H "host: www.example.com" \
-   -H "x-user-id: alice"
+   -H "x-user-id: user123"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -83,23 +83,23 @@ In this example, you read a plain-text request header and add its base64-encoded
    content-type: application/json; encoding=utf-8
    < content-length: 3
    content-length: 3
-   < x-user-id-encoded: YWxpY2U=
-   x-user-id-encoded: YWxpY2U=
+   < x-user-id-encoded: dXNlcjEyMw==
+   x-user-id-encoded: dXNlcjEyMw==
    ```
 
    You can verify the encoded value by decoding it locally:
    ```sh
-   echo "YWxpY2U=" | base64 --decode
+   echo "dXNlcjEyMw==" | base64 --decode
    ```
 
    Example output:
    ```
-   alice
+   user123
    ```
 
 ## Decode a base64 header value
 
-In this example, you take the encoded value from the encode example (`YWxpY2U=`) and decode it back to its original plain-text value.
+In this example, you take the encoded value from the encode example (`dXNlcjEyMw==`) and decode it back to its original plain-text value.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that reads the `x-user-id-encoded` request header, decodes it from base64, and adds the result as the `x-user-id-decoded` response header.
 
@@ -132,7 +132,7 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
        method: GET
        headers:
          host: www.example.com
-         x-user-id-encoded: YWxpY2U=
+         x-user-id-encoded: dXNlcjEyMw==
      source:
        type: local
      expect:
@@ -140,7 +140,7 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
        headers:
          - name: x-user-id-decoded
            comparator: equals
-           value: alice
+           value: user123
    EOF
    {{< /doc-test >}}
 
@@ -151,14 +151,14 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
     -H "host: www.example.com:80" \
-    -H "x-user-id-encoded: YWxpY2U="
+    -H "x-user-id-encoded: dXNlcjEyMw=="
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
    -H "host: www.example.com" \
-   -H "x-user-id-encoded: YWxpY2U="
+   -H "x-user-id-encoded: dXNlcjEyMw=="
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -175,8 +175,8 @@ In this example, you take the encoded value from the encode example (`YWxpY2U=`)
    content-type: application/json; encoding=utf-8
    < content-length: 3
    content-length: 3
-   < x-user-id-decoded: alice
-   x-user-id-decoded: alice
+   < x-user-id-decoded: user123
+   x-user-id-decoded: user123
    ```
    
 ## Cleanup

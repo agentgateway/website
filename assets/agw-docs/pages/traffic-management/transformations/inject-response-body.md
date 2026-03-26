@@ -37,7 +37,7 @@ In this example, you set the response body to a JSON string built from request c
        method: GET
        headers:
          host: www.example.com
-         x-request-id: alice
+         x-request-id: user123
      source:
        type: local
      expect:
@@ -48,7 +48,7 @@ In this example, you set the response body to a JSON string built from request c
            value: "/get"
          - path: "$.request-id"
            comparator: equals
-           value: "alice"
+           value: "user123"
    EOF
    {{< /doc-test >}}
 
@@ -59,14 +59,14 @@ In this example, you set the response body to a JSON string built from request c
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/get \
     -H "host: www.example.com:80" \
-    -H "x-request-id: alice"
+    -H "x-request-id: user123"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/get \
    -H "host: www.example.com" \
-   -H "x-request-id: alice"
+   -H "x-request-id: user123"
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -80,7 +80,7 @@ In this example, you set the response body to a JSON string built from request c
    < content-length: 49
    content-length: 49
 
-   {"path": "/get", "method": "GET", "request-id": "alice"}
+   {"path": "/get", "method": "GET", "request-id": "user123"}
    ```
 
 ## Inject request body fields into a response body
@@ -117,7 +117,7 @@ In this example, you parse a JSON request body by using the `json()` function to
        headers:
          host: www.example.com
          content-type: application/json
-       body: '{"name": "alice"}'
+       body: '{"name": "user123"}'
      source:
        type: local
      expect:
@@ -125,7 +125,7 @@ In this example, you parse a JSON request body by using the `json()` function to
        bodyJsonPath:
          - path: "$.hello"
            comparator: equals
-           value: "alice"
+           value: "user123"
    EOF
    {{< /doc-test >}}
 
@@ -137,7 +137,7 @@ In this example, you parse a JSON request body by using the `json()` function to
    curl -vi http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:80" \
     -H "content-type: application/json" \
-    -d '{"name": "alice"}'
+    -d '{"name": "user123"}'
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -145,7 +145,7 @@ In this example, you parse a JSON request body by using the `json()` function to
    curl -vi localhost:8080/post \
    -H "host: www.example.com" \
    -H "content-type: application/json" \
-   -d '{"name": "alice"}'
+   -d '{"name": "user123"}'
    ```
    {{% /tab %}}
    {{< /tabs >}}
@@ -159,7 +159,7 @@ In this example, you parse a JSON request body by using the `json()` function to
    < content-length: 17
    content-length: 17
 
-   {"hello": "alice"}
+   {"hello": "user123"}
    ```
 
 ## Cleanup
