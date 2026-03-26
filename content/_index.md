@@ -297,7 +297,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
               <span class="text-secondary-text text-xs uppercase tracking-wider">AGENTS</span>
               <div class="flex justify-center gap-2 mt-3">
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">Claude</span>
-                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">GPT-5</span>
+                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">LangGraph</span>
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">Custom</span>
               </div>
             </div>
@@ -316,7 +316,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
               <span class="text-secondary-text text-xs uppercase tracking-wider">BACKENDS</span>
               <div class="flex justify-center gap-2 mt-3">
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">MCP Servers</span>
-                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">LLM APIs</span>
+                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">LLMs</span>
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">A2A Agents</span>
               </div>
             </div>
