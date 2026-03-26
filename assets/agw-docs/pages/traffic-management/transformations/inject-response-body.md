@@ -6,7 +6,7 @@ Learn how to return a customized response body by using [CEL expressions]({{< li
 
 ## Inject request header fields into a request body
 
-In this example, you set the response body to a JSON string built from request context variables. The gateway intercepts the upstream response and replaces the body with the CEL expression result before returning it to the client. The upstream never sees the change — only the client receives the modified body. This is useful for tying responses back to request traces.
+In this example, you set the response body to a JSON string built from request context variables. The gateway intercepts the upstream response and replaces the body with the CEL expression result before returning it to the client. The upstream never sees the change — only the client receives the modified body. 
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that sets the response body to a JSON object containing the request path, method, and `x-request-id` header value.
 
