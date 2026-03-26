@@ -85,7 +85,7 @@ In this example, you concatenate `request.scheme`, `request.host`, and `request.
          "curl/8.7.1"
        ],
        "X-Forwarded-Uri": [
-         "http://www.example.com:80/get"
+         "http://www.example.com/get"
        ]
      },
      "origin": "10.244.0.6:59296",
