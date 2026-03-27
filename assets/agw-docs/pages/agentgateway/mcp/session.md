@@ -35,7 +35,7 @@ spec:
 The following configuration enables stateful session routing for a streamable HTTP endpoint. During the client-server handshake, the agentgateway proxy instance that handles the request sends back the `mcp-session-id` header with the session ID that was assigned. The client includes this header in subsequent requests to keep the session alive.
 
 {{% callout type="important" %}}
-Stateful session routing requires the use of `selector`-based targets. Session affinity does not work with `static` targets. If you use a `static` target with `sessionRouting: Stateful`, requests are not guaranteed to be routed to the same proxy instance.
+Stateful session routing and session affinity require the use of non-static, `selector`-based targets. If you use a `static` target with `sessionRouting: Stateful`, requests are not guaranteed to be routed to the same proxy instance.
 {{% /callout %}}
 
 ```yaml
