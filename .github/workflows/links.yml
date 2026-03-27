@@ -1,10 +1,15 @@
 name: Links
 
-# Each Monday at 4am UTC
+# Scheduled: full check on all files, creates issues, posts to Slack.
+# Pull request: local links only on changed files, no issue or Slack.
 on:
   workflow_dispatch:
   schedule:
     - cron: "00 04 * * MON"
+  pull_request:
+    paths:
+      - 'content/**'
+      - 'assets/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -18,6 +23,8 @@ jobs:
       ISSUE_TITLE: Link Checker Report - agentgateway OSS
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 100
 
       - name: Checkout shared link-checking scripts
         uses: actions/checkout@v4
@@ -45,6 +52,23 @@ jobs:
       - name: Prepare workspace
         run: mkdir -p artifacts
 
+      - name: Resolve files to check
+        id: files
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git fetch origin ${{ github.base_ref }}
+            FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
+              | python3 docs-link-checking/find-asset-users.py \
+                  --repo-root "${{ github.workspace }}" \
+                  --html-paths \
+                  --public-prefix "public" \
+                  -)
+            [ $? -ne 0 ] && FILES="public/**/*.html"
+            echo "files=$FILES" >> "$GITHUB_OUTPUT"
+          else
+            echo "files=public/**/*.html" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check Links with Lychee
         id: lychee
         env:
@@ -52,30 +76,47 @@ jobs:
         run: |
           shopt -s globstar
           set +e
-          lychee \
-            --verbose \
-            --config docs-link-checking/lychee.toml \
-            --root-dir "${{ github.workspace }}/public" \
-            --index-files index.html \
-            --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/" \
-            --remap "public/docs/about public/docs/standalone/latest/about" \
-            --remap "public/docs/agent public/docs/standalone/latest/agent" \
-            --remap "public/docs/configuration public/docs/standalone/latest/configuration" \
-            --remap "public/docs/deployment public/docs/standalone/latest/deployment" \
-            --remap "public/docs/faqs public/docs/standalone/latest/faqs" \
-            --remap "public/docs/inference public/docs/standalone/latest/inference" \
-            --remap "public/docs/integrations public/docs/standalone/latest/integrations" \
-            --remap "public/docs/llm public/docs/standalone/latest/llm" \
-            --remap "public/docs/mcp public/docs/standalone/latest/mcp" \
-            --remap "public/docs/operations public/docs/standalone/latest/operations" \
-            --remap "public/docs/quickstart public/docs/standalone/latest/quickstart" \
-            --remap "public/docs/reference public/docs/standalone/latest/reference" \
-            --remap "public/docs/tutorials public/docs/standalone/latest/tutorials" \
-            --format json \
-            --user-agent curl/8.4.0 \
-            --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
-            --github-token ${{ secrets.GITHUB_TOKEN }} \
-            public/**/*.html > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
+
+          LYCHEE_COMMON=(lychee
+            --verbose
+            --config docs-link-checking/lychee.toml
+            --root-dir "${{ github.workspace }}/public"
+            --index-files index.html
+            --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
+            --remap "public/docs/observability public/docs/kubernetes/latest/observability"
+            --remap "public/docs/resiliency public/docs/kubernetes/latest/resiliency"
+            --remap "public/docs/security public/docs/kubernetes/latest/security"
+            --remap "public/docs/traffic-management public/docs/kubernetes/latest/traffic-management"
+            --remap "public/docs/about public/docs/standalone/latest/about"
+            --remap "public/docs/agent public/docs/standalone/latest/agent"
+            --remap "public/docs/configuration public/docs/standalone/latest/configuration"
+            --remap "public/docs/deployment public/docs/standalone/latest/deployment"
+            --remap "public/docs/faqs public/docs/standalone/latest/faqs"
+            --remap "public/docs/inference public/docs/standalone/latest/inference"
+            --remap "public/docs/integrations public/docs/standalone/latest/integrations"
+            --remap "public/docs/llm public/docs/standalone/latest/llm"
+            --remap "public/docs/mcp public/docs/standalone/latest/mcp"
+            --remap "public/docs/operations public/docs/standalone/latest/operations"
+            --remap "public/docs/quickstart public/docs/standalone/latest/quickstart"
+            --remap "public/docs/reference public/docs/standalone/latest/reference"
+            --remap "public/docs/tutorials public/docs/standalone/latest/tutorials"
+            --format json
+            --user-agent curl/8.4.0
+            --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json"
+          )
+
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            # Skip external URLs; lychee applies remaps before exclusions so
+            # agentgateway.dev links are still resolved to local files and checked.
+            "${LYCHEE_COMMON[@]}" \
+              --exclude "^https://" \
+              ${{ steps.files.outputs.files }}
+          else
+            "${LYCHEE_COMMON[@]}" \
+              --github-token ${{ secrets.GITHUB_TOKEN }} \
+              public/**/*.html
+          fi > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
+
           EXIT=$?
           set -e
           echo "has_failures=$([ "$EXIT" != "0" ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
@@ -90,7 +131,7 @@ jobs:
             "${{ github.workspace }}/public"
 
       - name: Create issue from report
-        if: steps.lychee.outputs.has_failures == 'true'
+        if: steps.lychee.outputs.has_failures == 'true' && github.event_name != 'pull_request'
         id: create-issue
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -100,7 +141,7 @@ jobs:
           content-filepath: ./artifacts/agentgateway-oss-links.md
 
       - name: Set issue URL for Slack
-        if: steps.lychee.outputs.has_failures == 'true'
+        if: steps.lychee.outputs.has_failures == 'true' && github.event_name != 'pull_request'
         id: issue-url
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -125,6 +166,7 @@ jobs:
           docs-link-checking/read-link-stats.sh
 
       - name: Post results to Slack
+        if: github.event_name != 'pull_request'
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL: "#doctopus-tests"
@@ -144,3 +186,19 @@ jobs:
         with:
           name: link-checker-assets
           path: artifacts/*
+
+      - name: Fail check if errors exist
+        if: github.event_name == 'pull_request'
+        env:
+          ERRORS: ${{ steps.link-stats.outputs.errors }}
+        run: |
+          if [ "${ERRORS:-0}" -gt 0 ]; then
+            cat artifacts/agentgateway-oss-links.md >> "$GITHUB_STEP_SUMMARY"
+            echo "Link checker found ${ERRORS} error(s). See artifacts for details."
+            exit 1
+          else
+            echo "Link checker found ${ERRORS} errors."
+          fi
+
+
+      

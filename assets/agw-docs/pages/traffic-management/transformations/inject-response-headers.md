@@ -1,144 +1,152 @@
-Use an Inja template to extract a value from a request header and add it as a header to your responses. 
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject, modify, and remove response headers. The example uses the `request.headers[]` context variable to extract a request header value and injects the value into a response header. You also explore how to combine  `set`, `add`, and `remove` operations in a single transformation.
 
-## Before you begin
-
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Inject response headers
-   
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with the following transformation rules: 
-   * `x-gateway-response`: Use the value from the `x-gateway-request` request header and populate the value of that header into an `x-gateway-response` response header.
-   * `x-podname`: Retrieve the value of the `POD_NAME` environment variable and add the value to the `x-podname` response header. Because the transformation is processed in the gateway proxy, these environment variables refer to the variables that are set on the proxy. You can view supported environment variables when you run `kubectl get deployment http -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml and look at the `spec.containers.env` section.
-   * `x-season`: Adds a static string value of `summer` to the `x-season` response header.
-   * `x-response-raw`: Adds a static string values of `hello` with all escape characters intact.
-   * `x-replace`: Replaces the pattern-to-replace text in the `baz` header with a random string.
-   
-   {{< tabs items="Envoy-based kgateway,Agentgateway" tabTotal="2" >}}
-   {{% tab tabName="Envoy-based kgateway" %}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: transformation
-     namespace: httpbin
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbin
-     transformation:
-       response:
-         set:
-         - name: x-gateway-response
-           value: '{{ request_header("x-gateway-request") }}' 
-         - name: x-podname
-           value: '{{ env("POD_NAME") }}'
-         - name: x-season
-           value: 'summer'
-         - name: x-response-raw
-           value: '{{ raw_string("hello") }}'
-         - name: x-replace
-           value: '{{ replace_with_random(request_header("baz"), "pattern-to-replace") }}'
-   EOF
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Agentgateway" %}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: transformation
-     namespace: httpbin
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: HTTPRoute
-       name: httpbin
-     transformation:     
-       response:
-         set:
-         - name: x-gateway-response
-           value: 'request.headers["x-gateway-request"]'
-         - name: x-podname
-           value: 'request.headers["x-pod-name"]'
-         - name: x-season
-           value: '"summer"'
-         - name: x-response-raw
-           value: '"hello"'
-         - name: x-replace
-           value: 'request.headers["baz"].replace("pattern-to-replace", string(random()))'
-   EOF
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
 
-2. Send a request to the httpbin app and include the `x-gateway-request` and `baz` request headers. Verify that you get back a 200 HTTP response code and that the following response headers are included:
-   * `x-podname` that is set to the name of the gateway proxy pod.
-   * `x-season` that is set to `summer`.
-   * `x-gateway-response` that is set to the value of the `x-gateway-request` request header.
-   * `x-response-raw` that is set to `hello`.
-   * `x-replace` that is set to a random string.
-   
+The gateway intercepts the upstream response and modifies its headers before returning them to the client. You can combine `set`, `add`, and `remove` operations in a single policy so that the gateway applies all three operations in one pass. This configuration is useful when you need to enrich responses with values from the original request or strip internal headers that should not reach the client.
+
+In this example, all three operations are applied together:
+
+* `x-gateway-response` (`set`): Reads the value of the `x-gateway-request` request header and sets it as a response header.
+* `x-response-raw` (`set`): Set to the static value `hello`.
+* `access-control-allow-origin` (`add`): Appends `https://example.com`. Because httpbin already returns `access-control-allow-origin: *`, the response ends up with two entries for that header.
+* `access-control-allow-credentials` (`remove`): Stripped from the response before it reaches the client.
+
+
+1. Send a request to the httpbin app. The `access-control-allow-origin` header exists before setting the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
-    -H "host: www.example.com:80" \
-    -H "x-gateway-request: my custom request header" \
-    -H "baz: pattern-to-replace"
+    -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
-   -H "host: www.example.com" \
-   -H "x-gateway-request: my custom request header" \
-   -H "baz: pattern-to-replace"
+   -H "host: www.example.com" 
    ```
    {{% /tab %}}
    {{< /tabs >}}
-   
-   Example output: 
 
-   ```console {hl_lines=[3,4,20,21,22,23,24,25,26,27,28,29]}
+   Example output:
+   ```console {hl_lines=[3,4,5,6]}
    ...
    * Request completely sent off
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
-   < access-control-allow-credentials: true
-   access-control-allow-credentials: true
    < access-control-allow-origin: *
    access-control-allow-origin: *
    < content-type: application/json; encoding=utf-8
    content-type: application/json; encoding=utf-8
    < content-length: 3
    content-length: 3
-   < x-envoy-upstream-service-time: 2
-   x-envoy-upstream-service-time: 2
-   < server: envoy
-   server: envoy
-   < x-envoy-decorator-operation: httpbin.httpbin.svc.cluster.local:8000/*
-   x-envoy-decorator-operation: httpbin.httpbin.svc.cluster.local:8000/*
-   < x-envoy-upstream-service-time: 1
-   < x-podname: http-85d5775587-tkxmt
-   x-podname: http-85d5775587-tkxmt
-   < x-replace: zljPMhO86gJCFc69jZ0+kQ
-   x-replace: zljPMhO86gJCFc69jZ0+kQ
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+
+   ```yaml {paths="inject-response-headers"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: transformation
+     namespace: httpbin
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: httpbin
+     traffic:
+       transformation:
+         response:
+           set:
+           - name: x-gateway-response
+             value: 'request.headers["x-gateway-request"]'
+           - name: x-response-raw
+             value: '"hello"'
+           add:
+           - name: access-control-allow-origin
+             value: '"https://example.com"'
+           remove:
+           - access-control-allow-credentials
+   EOF
+   ```
+
+   {{< doc-test paths="inject-response-headers" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify injected response headers are present and removed header is absent
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/response-headers"
+       method: GET
+       headers:
+         host: www.example.com
+         x-gateway-request: my-custom-value
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       headers:
+         - name: x-gateway-response
+           comparator: equals
+           value: my-custom-value
+         - name: x-response-raw
+           comparator: equals
+           value: hello
+   EOF
+   {{< /doc-test >}}
+
+3. Send a request to the httpbin app and include the `x-gateway-request` request header. Verify the following:
+   * You get back a 200 HTTP response code.
+   * The response includes the injected headers.
+   * The response contains two `access-control-allow-origin` values.
+   * The response omits `access-control-allow-credentials`.
+
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
+    -H "host: www.example.com:80" \
+    -H "x-gateway-request: my-custom-value"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -vi localhost:8080/response-headers \
+   -H "host: www.example.com" \
+   -H "x-gateway-request: my-custom-value"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+   ```console {hl_lines=[3,4,5,6,9,10,15,16,16,16,19,20]}
+   ...
+   * Request completely sent off
+   < HTTP/1.1 200 OK
+   HTTP/1.1 200 OK
    < x-response-raw: hello
    x-response-raw: hello
-   < x-gateway-response: my custom request header
-   x-gateway-response: my custom request header
-   < x-season: summer
-   x-season: summer
+   < access-control-allow-origin: *
+   access-control-allow-origin: *
+   < access-control-allow-origin: https://example.com
+   access-control-allow-origin: https://example.com
+   < content-type: application/json; encoding=utf-8
+   content-type: application/json; encoding=utf-8
+   < content-length: 3
+   content-length: 3
+   < x-gateway-response: my-custom-value
+   x-gateway-response: my-custom-value
    ```
-   
+
+   `access-control-allow-origin` appears twice: the original `*` from httpbin and the appended `https://example.com` added by the transformation. `access-control-allow-credentials` is absent because it was removed.
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="inject-response-headers"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
 ```
-

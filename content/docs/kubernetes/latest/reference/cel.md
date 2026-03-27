@@ -138,7 +138,7 @@ Depending on the policy, different fields are accessible based on when in the re
 
 |Policy|Available Variables|
 |------|-------------------|
-|Transformation| `source`, `request`, `jwt`, `extauthz` |
+|Transformation| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm` |
 |Remote Rate Limit| `source`, `request`, `jwt` |
 |HTTP Authorization| `source`, `request`, `jwt` |
 |External Authorization| `source`, `request`, `jwt` |
