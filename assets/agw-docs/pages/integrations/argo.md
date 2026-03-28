@@ -2,7 +2,25 @@
 
 ## Before you begin 
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+1. Follow the [Get started guide]({{< link-hextra path="/quickstart/install/" >}}) to install agentgateway.
+
+2. Follow the [Sample MCP Server]({{< link-hextra path="/mcp/dynamic-mcp/" >}}) to create a gateway proxy with an HTTP listener and deploy the sample mcp sever.
+
+3. Get the external address of the gateway and save it in an environment variable.
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} http -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+   echo $INGRESS_GW_ADDRESS  
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing"  %}}
+   ```sh
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
 
 ## Install Argo Rollouts
 
@@ -12,7 +30,14 @@
    kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
    ```
 
-2. Change the config map for the Argo Rollouts pod to install the Argo Rollouts Gateway API plug-in as shown in the following example. Alternatively, you could install the Argo Rollouts Helm chart instead to use init containers to achieve the same thing. For more information about either method, refer to the [Argo Rollouts docs](https://rollouts-plugin-trafficrouter-gatewayapi.readthedocs.io/en/v0.8.0/installation/).
+2. Change the config map for the Argo Rollouts pod to install the Argo Rollouts Gateway API plug-in as shown in the following example. Alternatively, you could install the Argo Rollouts Helm chart instead to use init containers to achieve the same thing. For more information about either method, refer to the [Argo Rollouts docs](https://rollouts-plugin-trafficrouter-gatewayapi.readthedocs.io/en/v0.11.0/installation/).
+
+   {{< callout type="info" >}}
+   This configuration is only an example. Ensure you use the correct plugin binary for your platform, such as amd64 or arm64. For more platform and version options, refer to the [releases of the Argo rollouts traffic router plugin for the Gateway API](https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases).
+   {{< /callout >}}
+
+   {{< tabs items="Linux amd64, Linux arm64" tabTotal="2" >}}
+   {{% tab tabName="Linux amd64" %}}
    ```yaml
    cat <<EOF | kubectl apply -f -
    apiVersion: v1
@@ -23,12 +48,32 @@
    data:
      trafficRouterPlugins: |-
        - name: "argoproj-labs/gatewayAPI"
-	     # example uses amd64 and v0.8.0
+	     # example uses amd64 and v0.11.0
 	     # for other builds and versions,
-		 # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
-         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.8.0/gatewayapi-plugin-amd64"
+	     # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
+         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.11.0/gatewayapi-plugin-amd64"
    EOF
    ```
+   {{% /tab %}}
+   {{% tab tabName="Linux arm64" %}}
+   ```yaml
+   cat <<EOF | kubectl apply -f -
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: argo-rollouts-config
+     namespace: argo-rollouts
+   data:
+     trafficRouterPlugins: |-
+       - name: "argoproj-labs/gatewayAPI"
+	     # example uses arm64 and v0.11.0
+	     # for other builds and versions,
+	     # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
+         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.11.0/gatewayapi-plugin-linux-arm64"
+   EOF
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Restart the Argo Rollouts pod to pick up the latest configuration changes. 
    ```sh
@@ -84,110 +129,148 @@
    apiVersion: v1
    kind: Service
    metadata:
-     name: argo-rollouts-stable-service
-     namespace: default
+     name: mcp-stable-service
+     labels:
+       app: mcp-server-everything
+       version: v1
    spec:
-     ports:
-       - port: 80
-         targetPort: http
-         protocol: TCP
-         name: http
      selector:
-       app: rollouts-demo
+       app: mcp-server-everything
+     ports:
+       - port: 3001
+         targetPort: 3001
+         appProtocol: agentgateway.dev/mcp
    ---
    apiVersion: v1
    kind: Service
    metadata:
-     name: argo-rollouts-canary-service
-     namespace: default
+     name: mcp-canary-service
+     labels:
+       app: mcp-server-everything
+       version: v2
    spec:
+     selector:
+       app: mcp-server-everything
      ports:
-       - port: 80
-         targetPort: http
-         protocol: TCP
-         name: http
-     selector:
-       app: rollouts-demo
+       - port: 3001
+         targetPort: 3001
+         appProtocol: agentgateway.dev/mcp
    EOF
    ```
 
-2. Create an Argo Rollout that deploys the `rollouts-demo` pod. Add your stable and canary services to the `spec.strategy.canary` section. 
+
+2. Create a AgentgatewayBackend
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: argoproj.io/v1alpha1
-   kind: Rollout
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayBackend
    metadata:
-     name: rollouts-demo
-     namespace: default
+     name: mcp-backend-stable
    spec:
-     replicas: 3
-     strategy:
-       canary:
-         canaryService: argo-rollouts-canary-service # our created canary service
-         stableService: argo-rollouts-stable-service # our created stable service
-         trafficRouting:
-           plugins:
-             argoproj-labs/gatewayAPI:
-               httpRoute: argo-rollouts-http-route 
-               namespace: default
-         steps:
-         - setWeight: 30
-         - pause: { duration: 30s }
-         - setWeight: 60
-         - pause: { duration: 30s }
-         - setWeight: 100
-         - pause: { duration: 30s }
-     revisionHistoryLimit: 2
-     selector:
-       matchLabels:
-         app: rollouts-demo
-     template:
-       metadata:
-         labels:
-           app: rollouts-demo
-       spec:
-         containers:
-           - name: rollouts-demo
-             image: kostiscodefresh/summer-of-k8s-app:v1
-             ports:
-               - name: http
-                 containerPort: 8080
-                 protocol: TCP
-             resources:
-               requests:
-                 memory: 32Mi
-                 cpu: 5m
+     mcp:
+       targets:
+         - name: stable
+           selector:
+             services:
+               matchLabels:
+                 app: mcp-server-everything
+                 version: v1
+   ---
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: AgentgatewayBackend
+   metadata:
+     name: mcp-backend-canary
+   spec:
+     mcp:
+       targets:
+         - name: canary
+           selector:
+             services:
+               matchLabels:
+                 app: mcp-server-everything
+                 version: v2
    EOF
    ```
 
-2. Create an HTTPRoute resource to expose the `rollouts-demo` pod on the HTTP gateway that you created as part of the [Get started guide]({{< link-hextra path="/quickstart">}}). The HTTP resource can serve both the stable and canary versions of your app. 
+3. Create an Argo Rollout that deploys the `mcp-server-everything` pod. Add your stable and canary services to the `spec.strategy.canary` section. 
+
+
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: mcp-server-everything
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mcp-server-everything
+  template:
+    metadata:
+      labels:
+        app: mcp-server-everything
+    spec:
+      containers:
+        - name: mcp
+          image: node:20.1-alpine
+          command: ["npx"]
+          args:
+            - "-y"
+            - "@modelcontextprotocol/server-everything"
+            - "streamableHttp"
+          ports:
+            - containerPort: 3001
+          readinessProbe:
+            tcpSocket:
+              port: 3001
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 6
+  strategy:
+    canary:
+      stableService: mcp-stable-service
+      canaryService: mcp-canary-service
+      trafficRouting:
+        plugins:
+          argoproj-labs/gatewayAPI:
+            httpRoute: mcp-http-route
+            namespace: default
+      steps:
+        - setWeight: 30
+        - pause: {}
+        - setWeight: 60
+        - pause: { duration: 30s }
+        - setWeight: 100
+EOF
+```
+
+4. Create an HTTPRoute resource to expose the `mcp-server-everything` pod on the HTTP gateway that you created as part of the [Get started guide]({{< link-hextra path="/quickstart">}}). The HTTP resource can serve both the stable and canary versions of your app. 
    ```yaml
    kubectl apply -f- <<EOF
-   kind: HTTPRoute
    apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
    metadata:
-     name: argo-rollouts-http-route
+     name: mcp-http-route
      namespace: default
    spec:
      parentRefs:
-       - name: http
-         namespace: kgateway-system
-     hostnames:
-     - "demo.example.com"
+       - name: agentgateway-proxy
+         namespace: agentgateway-system
      rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /  
-       backendRefs:
-       - name: argo-rollouts-stable-service
-         kind: Service
-         port: 80
-       - name: argo-rollouts-canary-service
-         kind: Service
-         port: 80
+       - backendRefs:
+           - name: mcp-stable-service
+             kind: Service
+             port: 3001
+           - name: mcp-canary-service
+             kind: Service
+             port: 3001
    EOF
    ```
+
+
+XXXXX below this need to be done XXXXX
 
 3. Send a request to the `rollouts-demo` app and verify your CLI output.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
@@ -331,4 +414,3 @@ Congratulations, you successfully rolled out a new version of your app without d
    kubectl delete -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
    kubectl delete namespace argo-rollouts
    ```
-
