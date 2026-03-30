@@ -1,5 +1,5 @@
 ---
-title: LLM Gateway
+title: LLM gateway
 weight: 1
 description: Route requests to LLM providers through agentgateway on Kubernetes
 ---

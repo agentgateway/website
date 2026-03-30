@@ -102,6 +102,10 @@ spec:
       - name: mcp-backend
         group: agentgateway.dev
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+    matches:
+    - path:
+        type: PathPrefix
+        value: /mcp
 EOF
 ```
 

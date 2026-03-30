@@ -1,5 +1,5 @@
 ---
-title: Prompt Enrichment
+title: Prompt enrichment
 weight: 9
 description: Inject context at the gateway layer to improve LLM output accuracy on Kubernetes
 ---

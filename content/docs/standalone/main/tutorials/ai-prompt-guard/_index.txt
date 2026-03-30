@@ -1,5 +1,5 @@
 ---
-title: AI Prompt Guard
+title: AI prompt guard
 weight: 9
 description: Protect LLM requests from prompt injection and sensitive data exposure
 ---
@@ -249,6 +249,7 @@ cd .. && rm -rf prompt-guard-test
 ## Learn more
 
 {{< cards >}}
+  {{< card path="/integrations/llm-clients/claude-code" title="Claude Code" subtitle="Proxy Claude Code CLI traffic through agentgateway" >}}
   {{< card link="/docs/llm/" title="LLM Gateway" subtitle="LLM gateway features" >}}
   {{< card link="/docs/configuration/traffic-management/llm/" title="AI Policies" subtitle="AI policy configuration reference" >}}
 {{< /cards >}}

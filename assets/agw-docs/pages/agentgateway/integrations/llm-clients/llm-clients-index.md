@@ -1,13 +1,9 @@
 Agentgateway exposes an OpenAI-compatible API that works with any tool or SDK built for OpenAI. Point your AI coding tool at the agentgateway address and it routes requests to your configured backend provider, applying any policies you have set up such as authentication, rate limiting, or observability.
 
-## Before you begin
-
-- Agentgateway running with at least one configured LLM backend.
-- The gateway address and model name from your backend configuration.
-
 ## Supported clients
 
 {{< cards >}}
+  {{< card link="claude-code" title="Claude Code" subtitle="AI coding CLI by Anthropic" >}}
   {{< card link="cursor" title="Cursor" subtitle="AI code editor with custom model support" >}}
   {{< card link="windsurf" title="Windsurf" subtitle="AI code editor by Codeium" >}}
   {{< card link="continue" title="VS Code Continue" subtitle="Open source AI code assistant" >}}

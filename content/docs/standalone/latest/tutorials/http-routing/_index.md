@@ -1,5 +1,5 @@
 ---
-title: HTTP Routing & Policies
+title: HTTP routing & policies
 weight: 12
 description: Configure advanced HTTP routing with matching, policies, and traffic management
 ---

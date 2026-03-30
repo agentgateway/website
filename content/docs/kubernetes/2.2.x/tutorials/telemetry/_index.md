@@ -1,5 +1,5 @@
 ---
-title: Telemetry & Observability
+title: Telemetry & observability
 weight: 6
 description: Enable tracing, prompt logging, cost tracking, and metrics for agentgateway on Kubernetes
 ---

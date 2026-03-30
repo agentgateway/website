@@ -7,7 +7,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
 ## In-cluster service host rewrites
 
 1. Create an HTTPRoute resource for the httpbin app that uses the `URLRewrite` filter to rewrite the hostname of the request. In this example, all incoming requests on the `rewrite.example` domain are rewritten to the `www.example.com` host.
-   ```yaml
+   ```yaml {paths="host-rewrite"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -21,11 +21,15 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
      hostnames:
        - rewrite.example
      rules:
-        - filters:
-          - type: URLRewrite
-            urlRewrite:
-              hostname: "www.example.com"
-          backendRefs:
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /
+         filters:
+           - type: URLRewrite
+             urlRewrite:
+               hostname: "www.example.com"
+         backendRefs:
            - name: httpbin
              port: 8000
    EOF
@@ -57,7 +61,7 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    {{% /tab %}}
    {{< /tabs >}}
    
-   Example output: 
+   Example output:
    ```console {hl_lines=[7,8]}
    ...
    {
@@ -74,7 +78,54 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
     }
    }
    ```
-   
+
+{{< doc-test paths="host-rewrite" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbin-rewrite HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: httpbin-rewrite
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="host-rewrite" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: rewrite.example" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="host-rewrite" >}}
+YAMLTest -f - <<'EOF'
+- name: host rewrite - rewrite.example rewrites host header to www.example.com
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /headers
+    method: GET
+    headers:
+      host: "rewrite.example"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.headers.Host[0]"
+        comparator: equals
+        value: "www.example.com"
+EOF
+{{< /doc-test >}}
+
 ## External service host rewrites
 
 1. Create an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that represents your external service. The following example creates an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} for the `httpbin.org` domain. 

@@ -6,6 +6,10 @@ description: Connect OpenCode to agentgateway
 
 Configure OpenCode, the open source AI coding assistant, to use agentgateway as an MCP server.
 
+## Before you begin
+
+{{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
+
 ## Configuration
 
 Add agentgateway to your OpenCode configuration file `~/.opencode/config.json`:

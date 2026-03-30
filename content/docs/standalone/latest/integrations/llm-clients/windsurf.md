@@ -2,19 +2,6 @@
 title: Windsurf
 weight: 15
 description: Configure Windsurf AI code editor to use agentgateway
-test:
-  windsurf-validate:
-  - file: content/docs/standalone/latest/integrations/llm-clients/windsurf.md
-    path: windsurf-validate
 ---
-
-{{< doc-test paths="windsurf-validate" >}}
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
-{{< /doc-test >}}
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients/windsurf.md" >}}

@@ -1,5 +1,5 @@
 ---
-title: OAuth2 Proxy Integration
+title: OAuth2 proxy integration
 weight: 10
 description: Integrate with OAuth2 Proxy for GitHub, Google, and other OAuth providers
 ---

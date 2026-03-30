@@ -9,6 +9,7 @@ Extend agentgateway capabilities by integrating with external tools and platform
 ## Guides
 
 {{< cards >}}
-  {{< card link="llm-clients" title="LLM Client Configuration" subtitle="Configure Cursor, Continue, OpenAI SDK, and curl for Kubernetes" >}}
-  {{< card link="llm-observability" title="LLM Observability" subtitle="Prompt logging and cost tracking" >}}
+  {{< card link="llm-clients" title="LLM clients" subtitle="Configure Cursor, Claude Code, and other LLM clients" >}}
+  {{< card link="mcp-clients" title="MCP clients" subtitle="Connect Claude Code, Cursor, and other IDEs to MCP servers" >}}
+  {{< card link="llm-observability" title="LLM observability" subtitle="Prompt logging and cost tracking" >}}
 {{< /cards >}}

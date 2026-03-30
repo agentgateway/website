@@ -2,8 +2,8 @@ Configure [Continue](https://continue.dev/), the open-source AI code assistant f
 
 ## Before you begin
 
-- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
-- VS Code with the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue) installed.
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. Install VS Code with the [Continue extension](https://marketplace.visualstudio.com/items?itemName=Continue.continue).
 
 ## Example agentgateway configuration
 

@@ -8,10 +8,11 @@ Configure Visual Studio Code to use **agentgateway** via GitHub Copilot's native
 
 ## Before you begin
 
+{{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
+
 * Install **VS Code (1.92+)** with the **GitHub Copilot** extension.
 * Enable **GitHub Copilot Chat**.
 * In the GitHub Copilot Chat, make sure that **Agent Mode** is active (MCP tools are primarily utilized when Copilot is in "Agent" mode).
-* Set up an **MCP server in agentgateway**. For example, check out the [MCP connection guides]({{< link-hextra path="/mcp/connect/http/" >}}).
 
 ## Server configuration
 

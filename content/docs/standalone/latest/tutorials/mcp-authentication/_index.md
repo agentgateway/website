@@ -1,5 +1,5 @@
 ---
-title: MCP Authentication
+title: MCP authentication
 weight: 8
 description: Implement OAuth-based authentication for MCP connections using the MCP auth spec
 ---
