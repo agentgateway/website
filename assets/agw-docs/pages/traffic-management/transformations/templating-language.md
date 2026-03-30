@@ -52,7 +52,7 @@ traffic:
 
 
 
-For another request header example, see [Create redirect URLs]({{< link-hextra path="/traffic-management/transformations/forward/" >}}).
+For more information, see [Create redirect URLs]({{< link-hextra path="/traffic-management/transformations/forward/" >}}).
 
 Response header example to encode a header value with a CEL function, set a dynamic status code with a conditional expression, and remove a header:
 
