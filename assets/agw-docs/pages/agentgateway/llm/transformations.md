@@ -228,7 +228,7 @@ Parse the `model` field from the incoming request body and the upstream response
 
 ### Detect fallback with the llm context variables
 
-When agentgateway routes to an AI backend, the `llm` CEL context provides first-class variables that are parsed directly from the LLM protocol layer rather than from raw body strings:
+When the agentgateway proxy routes to an AI backend, the `llm` CEL context provides first-class variables that are parsed directly from the LLM protocol layer rather than from raw body strings:
 
 * `llm.requestModel`: The model name agentgateway parsed from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
