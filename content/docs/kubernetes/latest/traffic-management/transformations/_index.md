@@ -12,7 +12,7 @@ Mutate and transform requests and responses before forwarding them to the destin
   {{< card link="encode" title="Encode base64" >}}
   {{< card link="rewrite" title="Rewrite dynamic path segments" >}}
   {{< card link="forward" title="Forward the request URL" >}}
-  {{< card link="change-response-body" title="Change response body" >}}
+  {{< card link="status" title="Change response body" >}}
   {{< card link="remove-header" title="Remove headers" >}}
   {{< card link="path-method" title="Change request path and method" >}}
   {{< card link="query" title="Promote query parameters to request headers" >}}
