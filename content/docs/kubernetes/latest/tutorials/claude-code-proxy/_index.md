@@ -444,6 +444,5 @@ kind delete cluster --name agentgateway
 
 {{< cards >}}
   {{< card path="/llm/providers/anthropic" title="Anthropic Reference" subtitle="Complete Anthropic provider configuration" >}}
-  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Advanced prompt guard patterns" >}}
   {{< card path="/tutorials/prompt-enrichment" title="Prompt Enrichment" subtitle="Inject context at the gateway layer" >}}
 {{< /cards >}}

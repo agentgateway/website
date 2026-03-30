@@ -23,7 +23,7 @@ backendAuth:
     file: /path/to/my/key
 ```
 
-When using [JWT authentication](#jwt-authentication), the original token is removed by default.
+When using [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), the original token is removed by default.
 To add it back, the `passthrough` method can be used:
 
 ```yaml
