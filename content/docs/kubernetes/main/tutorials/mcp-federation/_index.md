@@ -306,6 +306,6 @@ kind delete cluster --name agentgateway
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
+  {{< card path="/tutorials/authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
   {{< card path="/mcp/" title="MCP Documentation" subtitle="Complete MCP configuration reference" >}}
 {{< /cards >}}

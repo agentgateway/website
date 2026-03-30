@@ -128,6 +128,7 @@ This way, agentgateway avoids expensive buffering of request bodies if no CEL ex
 
 Each policy execution consistently gets the current view of the request and response. For example, during logging, any manipulations from earlier policies (such as transformations or external processing) are observable in the CEL context.
 
+
 #### Table of variables
 
 {{% github-table url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel.md" section="CEL context Schema" %}}
@@ -138,7 +139,7 @@ Depending on the policy, different fields are accessible based on when in the re
 
 |Policy|Available Variables|
 |------|-------------------|
-|Transformation| `source`, `request`, `jwt`, `extauthz` |
+|Transformation| `source`, `request`, `jwt`, `mcp`, `extauthz`, `response`, `llm` |
 |Remote Rate Limit| `source`, `request`, `jwt` |
 |HTTP Authorization| `source`, `request`, `jwt` |
 |External Authorization| `source`, `request`, `jwt` |

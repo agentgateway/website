@@ -173,6 +173,6 @@ After you create routes, you might want to apply policies to them.
 {{< cards >}}
   {{< card path="/configuration/traffic-management/matching/" title="Request matching" >}}
   {{< card path="/configuration/traffic-management/" title="Traffic management" >}}
-  {{< card path="/resiliency/" title="Resiliency" >}}
-  {{< card path="/security/" title="Security" >}}
+  {{< card path="/configuration/resiliency/" title="Resiliency" >}}
+  {{< card path="/configuration/security/" title="Security" >}}
 {{< /cards >}}

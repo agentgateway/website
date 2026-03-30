@@ -640,7 +640,7 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 <span class="inline-block bg-blue-400/20 text-blue-400 text-xs font-medium px-2 py-0.5 rounded-full">Azure</span>
 </div>
 </a>
-<a href="/docs/kubernetes/latest/tutorials/jwt-authorization/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<a href="/docs/kubernetes/latest/tutorials/authorization/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
 <div class="flex items-center justify-between">
 <div>
 <h4 class="text-primary-text font-semibold text-sm">JWT Authorization</h4>
