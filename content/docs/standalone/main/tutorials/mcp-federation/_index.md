@@ -129,7 +129,7 @@ targets:
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/tutorials/jwt-authorization" title="Authorization" subtitle="Add JWT authentication" >}}
+  {{< card path="/tutorials/authorization" title="Authorization" subtitle="Add JWT authentication" >}}
   {{< card path="/tutorials/mcp-authentication" title="MCP Auth" subtitle="OAuth-based authentication" >}}
   {{< card path="/mcp/" title="MCP Overview" subtitle="Understanding MCP connectivity" >}}
 {{< /cards >}}
