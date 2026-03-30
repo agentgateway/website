@@ -71,7 +71,7 @@ traffic:
 
 
 
-For another response header example, see [Inject response headers]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}).
+For more information, see [Inject response headers]({{< link-hextra path="/traffic-management/transformations/inject-response-headers/" >}}).
 
 ### Body transformations
 
