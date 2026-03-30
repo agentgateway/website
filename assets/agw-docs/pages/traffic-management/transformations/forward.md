@@ -4,7 +4,7 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to construct a
 
 ## Forward the request URL upstream
 
-In this example, you concatenate `request.scheme`, `request.host`, and `request.path` to build a full URL and inject it into the `x-forwarded-uri` request header before forwarding to the upstream.
+In this example, you concatenate `request.scheme`, `request.host`, and `request.path` to build a full URL and inject it into the `x-forwarded-uri` request header before forwarding to the upstream service.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
 
