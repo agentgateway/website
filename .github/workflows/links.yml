@@ -109,7 +109,7 @@ jobs:
             # Skip external URLs; lychee applies remaps before exclusions so
             # agentgateway.dev links are still resolved to local files and checked.
             "${LYCHEE_COMMON[@]}" \
-              --exclude "^https://" \
+              --exclude "^https?://" \
               ${{ steps.files.outputs.files }}
           else
             "${LYCHEE_COMMON[@]}" \
