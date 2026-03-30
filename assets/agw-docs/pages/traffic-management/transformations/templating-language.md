@@ -32,7 +32,7 @@ traffic:
 Use header transformations to add, overwrite, or remove headers on a request before it reaches the upstream, or on a response before it reaches the client. Three operations are supported:
 
 * `set`: Creates a header or overwrites it if it already exists.
-* `add`: Appends a value to a header without removing existing values.
+* `add`: Adds a value to a header without removing existing values. If the header already exists, the header is not overwritten. Instead, another header with the same key is added and set to the value of your transformation.
 * `remove`: Strips a header entirely.
 
 Each `set` or `add` entry takes a `name` and a `value`. The value is a CEL expression that can be a static string, a call to a built-in function, or a reference to a context variable such as `request.headers["x-foo"]`, `jwt.sub`, or `llm.requestModel`.
