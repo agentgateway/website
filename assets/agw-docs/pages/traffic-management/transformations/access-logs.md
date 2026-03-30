@@ -85,7 +85,7 @@ Add access log attributes with CEL expressions.
 
 Add a `filter` CEL expression to log only requests that match a condition. This configuration is useful for reducing log volume by capturing only error responses or specific traffic patterns.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `filter` field that logs requests only if the response status code does not equal 400. 
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `filter` field that logs requests only if the response status code that is equal to or higher than 400. 
 
    ```yaml {paths="access-logs-filter"}
    kubectl apply -f- <<EOF
