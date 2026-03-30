@@ -175,7 +175,7 @@ These functions are used in the documentation examples in this section.
 | `metadata.<name>` | [Inject LLM model headers]({{< link-hextra path="/traffic-management/transformations/llm-model-headers/" >}}) |
 | `random()` | [Generate request tracing headers]({{< link-hextra path="/traffic-management/transformations/tracing/" >}}) |
 | `string(value)` | [Encode base64]({{< link-hextra path="/traffic-management/transformations/encode/" >}}) |
-| `string.contains(substring)` | [Change response body]({{< link-hextra path="/traffic-management/transformations/change-response-body/" >}}) |
+| `string.contains(substring)` | [Change the response status]({{< link-hextra path="/traffic-management/transformations/status/" >}}) |
 | `string.regexReplace(pattern, replacement)` | [Rewrite dynamic path segments]({{< link-hextra path="/traffic-management/transformations/rewrite/" >}}) |
 | `toJson(value)` | [Filter and merge request body fields]({{< link-hextra path="/traffic-management/transformations/filter-request-body/" >}}) |
 | `uuid()` | [Generate request tracing headers]({{< link-hextra path="/traffic-management/transformations/tracing/" >}}) |
