@@ -125,7 +125,7 @@ To learn more about CEL, see the following resources:
 
 ## Inject LLM model information as response headers
 
-Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject LLM model information as response headers. This strategy is useful for detecting silent fallbacks, where a request is redirected to a different model without the client being notified, however, might not be suitable for streaming responses.
+Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to inject LLM model information as response headers. This strategy is useful for detecting silent fallbacks, where a request is redirected to a different model without the client being notified. However, this setup might not be suitable for streaming responses.
 
 ### Inject model headers from request and response bodies
 
