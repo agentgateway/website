@@ -56,7 +56,7 @@ In this example, `model` and `max_tokens` are optional. If a client omits them, 
    The expression breaks down as follows:
    * `json(request.body)`: Parses the raw request body string into a map.
    * `default(json(request.body).model, "gpt-4o")`: If `model` is absent, adds the default value `"gpt-4o"`.
-   * `default(json(request.body).max_tokens, 2048)`: If `max_tokens` is absent, substitutes `2048`.
+   * `default(json(request.body).max_tokens, 2048)`: If `max_tokens` is absent, adds the default value `2048`.
    * `.merge({...})`: Applies the resolved values to the body, overwriting any existing keys.
    * `toJson(...)`: Serializes the resulting map back to a JSON string for the request body.
 
