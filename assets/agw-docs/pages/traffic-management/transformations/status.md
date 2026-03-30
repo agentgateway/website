@@ -139,6 +139,6 @@ In this example, the transformation applies after routing and targets a specific
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="change-response-status"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin --ignore-not-found
 ```
 

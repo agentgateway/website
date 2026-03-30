@@ -10,8 +10,8 @@ test:
     path: all
   - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/transformations/change-response-body.md
+  - file: content/docs/kubernetes/main/traffic-management/transformations/status.md
     path: change-response-status
 ---
 
-{{< reuse "agw-docs/pages/traffic-management/transformations/change-response-body.md" >}}
+{{< reuse "agw-docs/pages/traffic-management/transformations/status.md" >}}
