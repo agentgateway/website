@@ -60,7 +60,7 @@ binds:
 For more information about available policies, review the following guides:
 
 {{< cards >}}
-   {{< card path="/traffic-management" title="Traffic management" >}}
-   {{< card path="/resiliency" title="Resiliency" >}}
-   {{< card path="/security" title="Security" >}}
+   {{< card path="/configuration/traffic-management" title="Traffic management" >}}
+   {{< card path="/configuration/resiliency" title="Resiliency" >}}
+   {{< card path="/configuration/security" title="Security" >}}
 {{< /cards >}}
