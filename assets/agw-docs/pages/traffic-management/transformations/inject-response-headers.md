@@ -10,7 +10,7 @@ In this example, all three operations are applied together:
 
 * `x-gateway-response` (`set`): Reads the value of the `x-gateway-request` request header and sets it as a response header.
 * `x-response-raw` (`set`): Set to the static value `hello`.
-* `access-control-allow-origin` (`add`): Appends `https://example.com`. Because httpbin already returns `access-control-allow-origin: *`, the response ends up with two entries for that header.
+* `access-control-allow-origin` (`add`): Adds `https://example.com`. Because httpbin already returns the `access-control-allow-origin: *` header, another `access-control-allow-origin` header is added to the response with the `https://example.com` value. To not add multiple headers with the same key to a response, use the `set` operation instead. This operation overwrites the value of any existing headers that are sent in the response. 
 * `access-control-allow-credentials` (`remove`): Strips the header from the response before it reaches the client.
 
 
