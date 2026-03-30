@@ -6,7 +6,7 @@ Use the `with()` and `regexReplace()` [CEL functions]({{< link-hextra path="/ref
 
 ## Rewrite dynamic path segments
 
-In this example, you bind `request.path` to a temporary variable using `with()`, then use `regexReplace()` to replace any numeric path segments with `id`. Setting the result on the `:path` pseudo header rewrites the actual request path forwarded to the upstream.
+In this example, you bind `request.path` to a temporary variable using `with()`, then use `regexReplace()` to replace any numeric path segments with `id`. Setting the result on the `:path` pseudo header rewrites the actual request that is path forwarded to the upstream service.
 
 For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
 
