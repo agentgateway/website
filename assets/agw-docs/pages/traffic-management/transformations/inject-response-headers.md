@@ -11,7 +11,7 @@ In this example, all three operations are applied together:
 * `x-gateway-response` (`set`): Reads the value of the `x-gateway-request` request header and sets it as a response header.
 * `x-response-raw` (`set`): Set to the static value `hello`.
 * `access-control-allow-origin` (`add`): Appends `https://example.com`. Because httpbin already returns `access-control-allow-origin: *`, the response ends up with two entries for that header.
-* `access-control-allow-credentials` (`remove`): Stripped from the response before it reaches the client.
+* `access-control-allow-credentials` (`remove`): Strips the header from the response before it reaches the client.
 
 
 1. Send a request to the httpbin app. The `access-control-allow-origin` header exists before setting the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
