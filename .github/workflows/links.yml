@@ -24,8 +24,6 @@ jobs:
       ISSUE_TITLE: Link Checker Report - agentgateway OSS
     steps:
       - uses: actions/checkout@v4
-        with:
-          fetch-depth: 100
 
       - name: Checkout shared link-checking scripts
         uses: actions/checkout@v4
@@ -52,23 +50,6 @@ jobs:
 
       - name: Prepare workspace
         run: mkdir -p artifacts
-
-      - name: Resolve files to check
-        id: files
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            git fetch origin ${{ github.base_ref }}
-            FILES=$(git diff --name-only origin/${{ github.base_ref }}...HEAD \
-              | python3 docs-link-checking/find-asset-users.py \
-                  --repo-root "${{ github.workspace }}" \
-                  --html-paths \
-                  --public-prefix "public" \
-                  -)
-            [ $? -ne 0 ] && FILES="public/**/*.html"
-            echo "files=$FILES" >> "$GITHUB_OUTPUT"
-          else
-            echo "files=public/**/*.html" >> "$GITHUB_OUTPUT"
-          fi
 
       - name: Check Links with Lychee
         id: lychee
@@ -104,18 +85,15 @@ jobs:
             --format json
             --user-agent curl/8.4.0
             --output "${{ github.workspace }}/artifacts/agentgateway-oss-links.json"
+            public/**/*.html
           )
 
           if [ "${{ github.event_name }}" = "pull_request" ]; then
-            # Skip external URLs; lychee applies remaps before exclusions so
+            # Skip external URLs on PRs; lychee applies remaps before exclusions so
             # agentgateway.dev links are still resolved to local files and checked.
-            "${LYCHEE_COMMON[@]}" \
-              --exclude "^https?://" \
-              ${{ steps.files.outputs.files }}
+            "${LYCHEE_COMMON[@]}" --exclude "^https?://"
           else
-            "${LYCHEE_COMMON[@]}" \
-              --github-token ${{ secrets.GITHUB_TOKEN }} \
-              public/**/*.html
+            "${LYCHEE_COMMON[@]}" --github-token ${{ secrets.GITHUB_TOKEN }}
           fi > "${{ github.workspace }}/artifacts/agentgateway-oss-links-json.log" 2>&1
 
           EXIT=$?
