@@ -49,7 +49,7 @@ For more information, see [Policy processing order](#processing-order) and [PreR
 
 When multiple policies target the same resource, agentgateway merges the policy sections on a **field level** (shallow merge). If two policies set the same field, the more specific policy takes precedence.
 
-### Merge precedence
+### Merge precedence {#merging-precedence}
 
 Each policy section follows a different precedence order based on the specificity of the target. The more specific the target, the higher the precedence.
 

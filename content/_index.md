@@ -826,7 +826,7 @@ function showK8sOption(option) {
         Support for industry standard AI protocols for agent and tool connectivity including A2A and MCP with the ability to automatically expose existing REST APIs as MCP-native tools.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/quickstart/mcp/#step-4-explore-the-ui">
       <h3 class="font-bold  text-primary-text">
         <span class="text-tertiary-text">Developer Portal</span>
       </h3>
