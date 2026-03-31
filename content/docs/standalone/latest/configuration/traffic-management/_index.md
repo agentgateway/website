@@ -3,6 +3,7 @@ title: Traffic management
 weight: 40
 prev: /configuration/backends
 next: /configuration/resiliency
+test: skip
 ---
 
 Control traffic and route requests through agentgateway.

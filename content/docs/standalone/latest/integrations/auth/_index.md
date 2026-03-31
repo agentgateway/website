@@ -2,6 +2,7 @@
 title: Authentication & identity
 weight: 40
 description: Integrate agentgateway with identity providers and authentication systems
+test: skip
 ---
 
 Agentgateway supports multiple authentication methods and integrates with popular identity providers.

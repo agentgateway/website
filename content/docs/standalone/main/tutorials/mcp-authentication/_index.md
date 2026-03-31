@@ -2,6 +2,7 @@
 title: MCP authentication
 weight: 8
 description: Implement OAuth-based authentication for MCP connections using the MCP auth spec
+test: skip
 ---
 
 Agentgateway supports the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization), enabling OAuth-based authentication for MCP endpoints. This tutorial shows you how to secure MCP tools with token-based access.

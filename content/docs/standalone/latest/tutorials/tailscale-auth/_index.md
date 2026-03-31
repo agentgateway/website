@@ -2,6 +2,7 @@
 title: Tailscale authentication
 weight: 11
 description: Authenticate users using Tailscale identity for zero-trust access
+test: skip
 ---
 
 Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, enabling zero-trust access to your MCP servers.

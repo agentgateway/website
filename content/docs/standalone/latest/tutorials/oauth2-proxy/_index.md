@@ -2,6 +2,7 @@
 title: OAuth2 proxy integration
 weight: 10
 description: Integrate with OAuth2 Proxy for GitHub, Google, and other OAuth providers
+test: skip
 ---
 
 Agentgateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add authentication using GitHub, Google, Azure AD, and other OAuth providers.

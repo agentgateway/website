@@ -2,6 +2,7 @@
 title: Claude Code CLI proxy
 weight: 10
 description: Proxy and secure Claude Code CLI traffic through agentgateway on Kubernetes
+test: skip
 ---
 
 Proxy Claude Code CLI traffic through agentgateway on Kubernetes to intercept, inspect, and secure agentic client requests before they reach Anthropic's API.

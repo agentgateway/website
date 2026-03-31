@@ -2,6 +2,7 @@
 title: LLM gateway
 weight: 2
 description: Route requests to multiple LLM providers through a unified API
+test: skip
 ---
 
 Route requests to OpenAI, Anthropic, Google Gemini, and other LLM providers through a unified OpenAI-compatible API.

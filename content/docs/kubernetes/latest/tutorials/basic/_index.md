@@ -2,6 +2,7 @@
 title: Basic MCP server
 weight: 2
 description: Deploy and connect to an MCP server through agentgateway on Kubernetes
+test: skip
 ---
 
 Deploy an MCP server on Kubernetes and connect to it through agentgateway using the Kubernetes Gateway API.

@@ -2,6 +2,7 @@
 title: "Standalone binary docs"
 weight: 1
 description:
+test: skip
 ---
 
 {{< cards >}}

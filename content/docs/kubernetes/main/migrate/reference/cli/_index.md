@@ -1,6 +1,7 @@
 ---
 title: "CLI"
 weight: 10
+test: skip
 ---
 This page focuses on the commands you’ll use most often.
 

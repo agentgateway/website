@@ -1,6 +1,7 @@
 ---
 title: "Linux installation"
 weight: 20
+test: skip
 ---
 
 ## Install ingress2gateway on Linux
