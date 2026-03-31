@@ -43,13 +43,13 @@ Some `backend` sub-fields have additional targeting restrictions.
 
 The `traffic` section supports an optional `phase` field that controls when the policy runs. When you set the phase to `PreRouting`, the policy runs before route selection. Because of this timing, `PreRouting` policies can only target a Gateway or ListenerSet.
 
-For more information, see [Policy processing order](#processing-order) and [PreRouting filters](#prerouting-filters).
+For more information, see [Policy processing order](#processing-order) and [PreRouting filters](#prerouting).
 
 ## Policy merging {#merging}
 
 When multiple policies target the same resource, agentgateway merges the policy sections on a **field level** (shallow merge). If two policies set the same field, the more specific policy takes precedence.
 
-### Merge precedence
+### Merge precedence {#merging-precedence}
 
 Each policy section follows a different precedence order based on the specificity of the target. The more specific the target, the higher the precedence.
 

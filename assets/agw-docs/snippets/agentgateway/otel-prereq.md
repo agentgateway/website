@@ -8,7 +8,7 @@ Deploy an open source observability stack based on OpenTelemetry (OTel) that inc
 
 ## About
 
-Observability tools are essential to gain insight into the health and performance of your gateway proxies. [OpenTelemetry](https://opentelemetry.io/) (OTel) is a flexible, open source framework that provides a set of APIs, libraries, and instrumentation to help capture and export observability data. However, you can follow a similar process as this guide to use the tools that you prefer.
+Observability tools are essential to gain insight into the health and performance of your gateway proxies. [OpenTelemetry]() (OTel) is a flexible, open source framework that provides a set of APIs, libraries, and instrumentation to help capture and export observability data. However, you can follow a similar process as this guide to use the tools that you prefer.
 
 ### Observability data types {#data-types}
 
