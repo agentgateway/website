@@ -243,7 +243,7 @@ EOF
 Manage idle and stale connections with HTTP/2 keepalive.
 
 {{< cards >}}
-  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="COnfigure keepalive connection settings." >}}
+  {{< card path="/resiliency/keepalive/#http-keepalive" title="Keepalive" subtitle="Configure keepalive connection settings." >}}
 {{< /cards >}}
 
 

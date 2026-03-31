@@ -21,7 +21,6 @@ Consume services from LLM providers.
   {{< card link="prompt-templates" title="Use prompt templates" subtitle="Static and dynamic templating, variable injection" >}}
   {{< card link="functions" title="Call functions" subtitle="Extend LLMs with external APIs and tools" >}}
   {{< card link="transformations" title="Transform requests" subtitle="Dynamically transform LLM requests with CEL" >}}
-  {{< card link="guardrail-api" title="Guardrail Webhook API" subtitle="Custom guardrail controls via webhooks" >}}
   {{< card link="cost-tracking" title="Track LLM costs" subtitle="Cost tracking, spend monitoring, usage tracking" >}}
   {{< card link="observability" title="View metrics and logs" subtitle="Token usage, prompt logging, LLM-specific metrics" >}}
 {{< /cards >}}
