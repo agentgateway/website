@@ -4,7 +4,7 @@ weight: 10
 test:
   host-match:
   - file: content/docs/kubernetes/latest/quickstart/install.md
-    path: experimental
+    path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/latest/install/sample-app.md
