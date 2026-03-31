@@ -43,13 +43,14 @@ def _format_checks_count(n: int) -> str:
     return f"{n} check{'s' if n != 1 else ''} passed"
 
 
-def _coverage_line(tested_documents: list, total_markdown_files: int | None) -> str | None:
+def _coverage_line(tested_documents: list, total_markdown_files: int | None, slack: bool = False) -> str | None:
     """Return a coverage summary line, or None if total is not available."""
     if total_markdown_files is None:
         return None
     count = len(tested_documents)
     pct = count / total_markdown_files * 100 if total_markdown_files > 0 else 0
-    return f"**Test coverage:** {count} of {total_markdown_files} ({pct:.1f}%)"
+    bold = "*" if slack else "**"
+    return f"{bold}Test coverage:{bold} {count} of {total_markdown_files} ({pct:.1f}%)"
 
 
 def generate_summary(report: dict) -> str:
@@ -268,7 +269,7 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
             failed_tests.append((key, result))
 
     # Coverage stats (full-run only)
-    coverage = _coverage_line(tested_documents, total_markdown_files)
+    coverage = _coverage_line(tested_documents, total_markdown_files, slack=True)
     if coverage:
         blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": coverage}})
 
