@@ -157,10 +157,10 @@ kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
 
 {{< doc-test paths="a2a" >}}
 for i in $(seq 1 30); do
-  curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}:80/" \
+  STATUS=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/" \
     -H "Content-Type: application/json" \
-    -d '{"jsonrpc":"2.0","id":"test","method":"tasks/send","params":{"id":"test","message":{"role":"user","parts":[{"type":"text","text":"ping"}]}}}' \
-    && break
+    -d '{"jsonrpc":"2.0","id":"test","method":"tasks/send","params":{"id":"test","message":{"role":"user","parts":[{"type":"text","text":"ping"}]}}}')
+  [ "$STATUS" = "200" ] && break
   sleep 2
 done
 {{< /doc-test >}}
