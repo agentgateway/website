@@ -262,6 +262,6 @@ kind delete cluster --name agentgateway
 
 {{< cards >}}
   {{< card path="/tutorials/mcp-federation" title="MCP Federation" subtitle="Federate multiple MCP servers" >}}
-  {{< card path="/tutorials/authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
+  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Secure with JWT authentication" >}}
   {{< card path="/mcp/" title="MCP Documentation" subtitle="Complete MCP configuration reference" >}}
 {{< /cards >}}
