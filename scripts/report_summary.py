@@ -43,11 +43,21 @@ def _format_checks_count(n: int) -> str:
     return f"{n} check{'s' if n != 1 else ''} passed"
 
 
+def _coverage_line(tested_documents: list, total_markdown_files: int | None) -> str | None:
+    """Return a coverage summary line, or None if total is not available."""
+    if total_markdown_files is None:
+        return None
+    count = len(tested_documents)
+    pct = count / total_markdown_files * 100 if total_markdown_files > 0 else 0
+    return f"**Test coverage:** {count} of {total_markdown_files} ({pct:.1f}%)"
+
+
 def generate_summary(report: dict) -> str:
     lines: list[str] = []
 
     tests: dict = report.get("tests", {})
     tested_documents: list = report.get("tested_documents", [])
+    total_markdown_files: int | None = report.get("total_markdown_files")
 
     if not tests:
         lines.append("## Doc Test Results")
@@ -66,6 +76,11 @@ def generate_summary(report: dict) -> str:
     else:
         lines.append(f"## \u274c Doc Test Results \u2014 {passed} passed | {failed} failed | {total} total")
     lines.append("")
+
+    coverage = _coverage_line(tested_documents, total_markdown_files)
+    if coverage:
+        lines.append(coverage)
+        lines.append("")
 
     # Results table — one row per document
     lines.append("| Status | Test | Document | Checks |")
@@ -203,6 +218,7 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
     """
     tests: dict = report.get("tests", {})
     tested_documents: list = report.get("tested_documents", [])
+    total_markdown_files: int | None = report.get("total_markdown_files")
 
     # --- empty results ---
     if not tests:
@@ -250,6 +266,11 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
     for key, result in tests.items():
         if result.get("status") != "passed" and result.get("error"):
             failed_tests.append((key, result))
+
+    # Coverage stats (full-run only)
+    coverage = _coverage_line(tested_documents, total_markdown_files)
+    if coverage:
+        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": coverage}})
 
     # Main body: failed docs only (or all-passed note)
     if failed_lines:

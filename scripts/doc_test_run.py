@@ -93,6 +93,9 @@ def build_test_cases_from_file(
 
     metadata = parse_front_matter(md_file)
     tests = metadata.get("test")
+    if tests == "skip":
+        tested_documents.append(md_file.relative_to(repo_root).as_posix())
+        return test_cases, tested_documents
     if not isinstance(tests, dict) or not tests:
         return test_cases, tested_documents
 
@@ -459,7 +462,12 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
     return result
 
 
-def write_report(report_path: Path, tested_documents: List[str], test_results: Dict[str, Dict]) -> None:
+def write_report(
+    report_path: Path,
+    tested_documents: List[str],
+    test_results: Dict[str, Dict],
+    total_markdown_files: int | None = None,
+) -> None:
     if yaml is None:
         raise RuntimeError("PyYAML is required. Install it with: pip install pyyaml")
 
@@ -467,6 +475,8 @@ def write_report(report_path: Path, tested_documents: List[str], test_results: D
         "tested_documents": tested_documents,
         "tests": test_results,
     }
+    if total_markdown_files is not None:
+        report["total_markdown_files"] = total_markdown_files
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(yaml.safe_dump(report, sort_keys=False), encoding="utf-8")
 
@@ -510,6 +520,7 @@ def main() -> int:
     generated_dir = (repo_root / args.generated_dir).resolve()
     report_path = (repo_root / args.report_file).resolve()
 
+    total_markdown_files: int | None = None
     if args.file:
         filter_test_name = args.test if len(args.file) == 1 else None
         test_cases = []
@@ -530,6 +541,7 @@ def main() -> int:
             tested_docs.extend(docs)
         tested_documents = sorted(set(tested_docs))
     else:
+        total_markdown_files = len(list(repo_root.glob(args.docs_glob)))
         test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
 
     if args.list_tests:
@@ -542,7 +554,7 @@ def main() -> int:
 
     if not test_cases:
         logger.info("No docs with test metadata found.")
-        write_report(report_path, tested_documents, {})
+        write_report(report_path, tested_documents, {}, total_markdown_files)
         return 0
 
     for test_case in test_cases:
@@ -565,7 +577,7 @@ def main() -> int:
         generate_script_and_manifest(repo_root, definition, test_case.script_path, test_case.manifest_path)
 
     if args.generate_only:
-        write_report(report_path, tested_documents, {})
+        write_report(report_path, tested_documents, {}, total_markdown_files)
         logger.info("Generated %d scripts from metadata", len(test_cases))
         logger.info("Wrote report scaffold: %s", report_path.relative_to(repo_root))
         return 0
@@ -585,7 +597,7 @@ def main() -> int:
         if result.get("status") != "passed":
             exit_code = 1
 
-    write_report(report_path, tested_documents, test_results)
+    write_report(report_path, tested_documents, test_results, total_markdown_files)
     logger.info("================= Test Results =================")
     logger.info("Wrote report: %s", report_path.relative_to(repo_root))
     passed_count = sum(1 for r in test_results.values() if r['status'] == 'passed')
