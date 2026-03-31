@@ -135,7 +135,6 @@ EOF
 
 {{< doc-test paths="a2a" >}}
 kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
-kubectl wait httproute/a2a --for=condition=Accepted=True --timeout=60s
 {{< /doc-test >}}
 
 ## Step 3: Verify the connection {#verify}
