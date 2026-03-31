@@ -1,6 +1,23 @@
 MCP authentication ensures that only authorized MCP clients can access MCP servers and the tools that they expose. Without authentication, any MCP client can connect to your MCP servers and execute arbitrary tool calls, potentially accessing sensitive data or performing unauthorized actions.
 
-To secure your MCP server, you configure it with an authorization server. Typically, the authorization server is an identity provider (IdP), such as Keycloak, that you already use in your environment.
+## Identity providers (IdPs)
+
+To secure your MCP server, you configure it with an authorization server. Typically, the authorization server is an identity provider (IdP) that you already use in your environment.
+
+### Supported IdPs
+
+Agentgateway currently includes built-in support for the following identity providers.
+
+| Provider | Details |
+|----------|---------|
+| Keycloak | Adapts non-standard endpoints such as JWKS certificate paths. |
+| Auth0 | Uses standard well-known JWKS endpoint. |
+
+### Add other IdPs
+
+Because most IdPs do not fully comply with the MCP OAuth specification, each provider requires small traffic adaptations in the gateway code. Other IdPs that implement the OAuth 2.0 specs without modifications might also work, but are not tested. Adding support for a new provider requires minimal code changes. To contribute support for your IdP, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/src/types/agent.rs).
+
+### MCP OAuth compliance for MCP clients
 
 For MCP clients, such as the MCP inspector tool, Visual Studio Code, or Claude Code to successfully authenticate with the authorization server and obtain the tokens to access the MCP server, the authorization server must comply to the [MCP OAuth 2.0 specification](https://modelcontextprotocol.io/specification/2025-11-25/basic/authorization).
 

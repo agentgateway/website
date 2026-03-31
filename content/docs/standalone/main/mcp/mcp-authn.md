@@ -9,9 +9,15 @@ prev: /mcp/connect
 
 MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
 
-MCP authentication uses a connect-time model: the OAuth flow happens once when the client first connects, not on each tool call. This type of connection is sometimes called "eager auth." After the initial authentication, the access token is reused for all subsequent requests within the session. For more information, see [About MCP auth]({{< link-hextra path="/mcp/about/" >}}).
+## About
 
-There are three deployment scenarios.
+MCP authentication uses a connect-time model: the OAuth flow happens once when the client first connects, not on each tool call. This type of connection is sometimes called "eager auth." After the initial authentication, the access token is reused for all subsequent requests within the session.
+
+### Supported IdPs for MCP Auth {#idp}
+
+Agentgateway currently includes built-in support for Keycloak and Auth0 as identity providers. Other IdPs that fully comply with the OAuth 2.0 specs might also work but are not tested. For more information, see [Supported identity providers]({{< link-hextra path="/mcp/about/#supported-idps" >}}).
+
+Adding support for a new provider requires minimal code changes. To contribute support for your IdP, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/src/types/agent.rs).
 
 ## Authorization Server Proxy
 
@@ -24,6 +30,10 @@ In this mode, agentgateway:
 - Validates tokens using the authorization server's JWKS
 - Returns `401 Unauthorized` with appropriate `WWW-Authenticate` headers for unauthenticated requests
 
+The following examples show how to configure the authorization server proxy mode with Keycloak and Auth0.
+
+{{< tabs items="Keycloak,Auth0" >}}
+{{% tab tabName="Keycloak" %}}
 ```yaml
 mcpAuthentication:
   issuer: http://localhost:7080/realms/mcp
@@ -42,6 +52,26 @@ mcpAuthentication:
     resourceDocumentation: http://localhost:3000/stdio/docs
     resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
+{{% /tab %}}
+{{% tab tabName="Auth0" %}}
+```yaml
+mcpAuthentication:
+  issuer: https://<your-auth0-domain>/
+  jwks:
+    url: https://<your-auth0-domain>/.well-known/jwks.json
+  provider:
+    auth0: {}
+  resourceMetadata:
+    resource: http://localhost:3000/mcp
+    scopesSupported:
+    - read:all
+    bearerMethodsSupported:
+    - header
+    - body
+    - query
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Resource Server Only
 
