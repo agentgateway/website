@@ -50,7 +50,7 @@ def _coverage_line(tested_documents: list, total_markdown_files: int | None, sla
     count = len(tested_documents)
     pct = count / total_markdown_files * 100 if total_markdown_files > 0 else 0
     bold = "*" if slack else "**"
-    return f"{bold}Test coverage:{bold} {count} of {total_markdown_files} ({pct:.1f}%)"
+    return f"{bold}Test coverage:{bold} {count} of {total_markdown_files} files ({pct:.1f}%)"
 
 
 def generate_summary(report: dict) -> str:
