@@ -335,14 +335,22 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
 def main() -> int:
     slack_mode = "--slack" in sys.argv
     run_url: str | None = None
+    total_markdown_files: int | None = None
 
-    # Extract --run-url value
+    # Extract --run-url and --total-markdown-files values
     argv = list(sys.argv[1:])
     filtered: list[str] = []
     i = 0
     while i < len(argv):
         if argv[i] == "--run-url" and i + 1 < len(argv):
             run_url = argv[i + 1]
+            i += 2
+        elif argv[i] == "--total-markdown-files" and i + 1 < len(argv):
+            try:
+                total_markdown_files = int(argv[i + 1])
+            except ValueError:
+                print(f"Invalid value for --total-markdown-files: {argv[i + 1]}", file=sys.stderr)
+                return 1
             i += 2
         elif argv[i] == "--slack":
             i += 1
@@ -351,7 +359,7 @@ def main() -> int:
             i += 1
 
     if len(filtered) < 1:
-        print(f"Usage: {sys.argv[0]} [--slack] [--run-url URL] <test-results.yaml>", file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} [--slack] [--run-url URL] [--total-markdown-files N] <test-results.yaml>", file=sys.stderr)
         return 1
 
     results_path = Path(filtered[0])
@@ -361,6 +369,9 @@ def main() -> int:
 
     with open(results_path, encoding="utf-8") as f:
         report = yaml.safe_load(f) or {}
+
+    if total_markdown_files is not None:
+        report["total_markdown_files"] = total_markdown_files
 
     if slack_mode:
         main_payload, thread_payload = generate_slack_blocks(report, run_url=run_url)
