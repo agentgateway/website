@@ -151,6 +151,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL: "#doctopus-tests"
           ERRORS: ${{ steps.link-stats.outputs.errors }}
+          WARNINGS: ${{ steps.link-stats.outputs.warnings }}
           REDIRECTS: ${{ steps.link-stats.outputs.redirects }}
           ICON: ${{ steps.link-stats.outputs.icon }}
           REPOSITORY: ${{ github.repository }}
