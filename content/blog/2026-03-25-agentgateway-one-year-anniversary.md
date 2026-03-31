@@ -19,7 +19,8 @@ Since we donated the project to the Linux Foundation in August 2025, we have wit
 
 We have over 2,000 GitHub stars on [agentgateway’s main repository](https://github.com/agentgateway/agentgateway), with continuing growth. Thank you everyone who starred the agentgateway repo.
 
-![Star History Chart](https://api.star-history.com/image?repos=agentgateway/agentgateway&type=date&legend=top-left)
+{{< reuse-image src="img/blog/1year-anniversary/star-history-2026331.png" width="800px" >}}
+{{< reuse-image-dark srcDark="img/blog/1year-anniversary/star-history-2026331.png" width="800px" >}}
 
 Scroll through birthday wishes from some of our users and contributors.
 
