@@ -64,6 +64,7 @@ jobs:
             --config docs-link-checking/lychee.toml
             --root-dir "${{ github.workspace }}/public"
             --index-files index.html
+            --exclude public/docs/kubernetes/2.2.x
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
             --remap "public/docs/observability public/docs/kubernetes/latest/observability"
             --remap "public/docs/resiliency public/docs/kubernetes/latest/resiliency"
