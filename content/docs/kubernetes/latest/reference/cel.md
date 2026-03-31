@@ -2,6 +2,7 @@
 title: CEL expressions
 weight: 10
 description: 
+test: skip
 ---
 
 Agentgateway uses the {{< gloss "CEL (Common Expression Language)" >}}CEL (Common Expression Language){{< /gloss >}} throughout the project to enable flexibility.

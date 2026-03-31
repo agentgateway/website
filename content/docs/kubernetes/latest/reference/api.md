@@ -1,6 +1,7 @@
 ---
 title: API reference
 weight: 10
+test: skip
 ---
 
 {{< reuse "/agw-docs/snippets/api-ref-docs-intro.md" >}}
