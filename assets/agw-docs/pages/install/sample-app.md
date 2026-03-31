@@ -113,6 +113,29 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+{{< doc-test paths="install-httpbin" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="install-httpbin" >}}
+YAMLTest -f - <<'EOF'
+- name: verify httpbin returns 200 for www.example.com
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/headers"
+    method: GET
+    headers:
+      host: "www.example.com"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
 ### Step 3: Send a request to the httpbin app
 
 Send a request to the httpbin app through the agentgateway proxy.
