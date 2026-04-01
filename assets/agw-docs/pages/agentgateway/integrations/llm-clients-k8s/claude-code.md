@@ -244,5 +244,4 @@ kubectl delete secret anthropic-secret -n agentgateway-system --ignore-not-found
 {{< cards >}}
   {{< card path="/tutorials/claude-code-proxy" title="Claude Code Proxy Tutorial" subtitle="Full walkthrough with prompt guards and observability" >}}
   {{< card path="/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
-  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive content in prompts" >}}
 {{< /cards >}}

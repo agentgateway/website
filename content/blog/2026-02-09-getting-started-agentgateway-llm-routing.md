@@ -442,7 +442,7 @@ Now that you have path-based LLM routing working, there's a lot more you can do 
 * **Multiple providers on one route** — group backends for automatic load balancing and failover. Agentgateway picks two random providers and selects the healthiest one.
 * **Prompt guarding** — add `AgentgatewayPolicy` resources for regex-based prompt filtering or webhook-based validation before requests hit your LLM.
 * **Rate limiting** — protect your API keys and budgets with local or remote rate limiting policies.
-* **Observability** — enable full [OpenTelemetry](https://opentelemetry.io/) support for metrics, logs, and distributed tracing across all your LLM traffic.
+* **Observability** — enable full [OpenTelemetry](https://opentelemetry.io) support for metrics, logs, and distributed tracing across all your LLM traffic.
 
 Check out the [agentgateway docs](https://agentgateway.dev/docs/kubernetes/latest/quickstart/) for more, or come chat with us on [Discord](https://discord.com/invite/y9efgEmppm).
 

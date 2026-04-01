@@ -309,5 +309,5 @@ kind delete cluster --name agentgateway
 {{< cards >}}
   {{< card path="/observability/" title="Observability Reference" subtitle="Complete observability configuration" >}}
   {{< card path="/observability/otel-stack" title="OTel Stack" subtitle="Full OpenTelemetry stack setup" >}}
-  {{< card path="/tutorials/authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
+  {{< card path="/tutorials/jwt-authorization" title="JWT Authorization" subtitle="Add security to your deployment" >}}
 {{< /cards >}}

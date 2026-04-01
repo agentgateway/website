@@ -64,6 +64,7 @@ jobs:
             --config docs-link-checking/lychee.toml
             --root-dir "${{ github.workspace }}/public"
             --index-files index.html
+            --exclude-path public/docs/kubernetes/2.2.x
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
             --remap "public/docs/observability public/docs/kubernetes/latest/observability"
             --remap "public/docs/resiliency public/docs/kubernetes/latest/resiliency"
@@ -150,6 +151,7 @@ jobs:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
           SLACK_CHANNEL: "#doctopus-tests"
           ERRORS: ${{ steps.link-stats.outputs.errors }}
+          WARNINGS: ${{ steps.link-stats.outputs.warnings }}
           REDIRECTS: ${{ steps.link-stats.outputs.redirects }}
           ICON: ${{ steps.link-stats.outputs.icon }}
           REPOSITORY: ${{ github.repository }}

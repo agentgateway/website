@@ -31,7 +31,6 @@ Learn how to use agentgateway through hands-on tutorials. Start with the basics 
   {{< card link="tls" title="TLS / HTTPS" subtitle="Enable encrypted connections" icon="shield-check" >}}
   {{< card link="oauth2-proxy" title="OAuth2 Proxy" subtitle="GitHub, Google, Azure AD authentication" icon="user-circle" >}}
   {{< card link="tailscale-auth" title="Tailscale Authentication" subtitle="Zero-trust access with Tailscale" icon="globe-alt" >}}
-  {{< card link="ai-prompt-guard" title="AI Prompt Guard" subtitle="Block prompt injection and PII" icon="shield-exclamation" >}}
 {{< /cards >}}
 
 ## Operations

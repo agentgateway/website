@@ -84,7 +84,7 @@ Enable secure communication between AI agents using the [Agent-to-Agent (A2A)](h
 - **Authentication**: JWT, API keys, basic auth, MCP auth spec
 - **Authorization**: Fine-grained RBAC with [Cedar policy engine](https://www.cedarpolicy.com/)
 - **Traffic policies**: Rate limiting, CORS, TLS, external authz
-- **Observability**: Built-in [OpenTelemetry](https://opentelemetry.io/) metrics, logs, and distributed tracing
+- **Observability**: Built-in [OpenTelemetry](https://opentelemetry.io) metrics, logs, and distributed tracing
 
 ### Platform Agnostic
 

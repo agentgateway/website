@@ -26,7 +26,6 @@ Learn how to deploy and manage agentgateway on Kubernetes through hands-on tutor
 
 {{< cards >}}
   {{< card link="jwt-authorization" title="JWT Authorization" subtitle="Secure your gateway with JWT authentication" icon="lock-closed" >}}
-  {{< card link="ai-prompt-guard" title="AI Prompt Guard" subtitle="Protect LLM requests from sensitive data exposure" icon="shield-check" >}}
   {{< card link="claude-code-proxy" title="Claude Code CLI Proxy" subtitle="Proxy and secure Claude Code CLI traffic through the gateway" icon="terminal" >}}
 {{< /cards >}}
 

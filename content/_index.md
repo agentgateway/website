@@ -640,7 +640,7 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 <span class="inline-block bg-blue-400/20 text-blue-400 text-xs font-medium px-2 py-0.5 rounded-full">Azure</span>
 </div>
 </a>
-<a href="/docs/kubernetes/latest/tutorials/authorization/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<a href="/docs/kubernetes/latest/tutorials/jwt-authorization/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
 <div class="flex items-center justify-between">
 <div>
 <h4 class="text-primary-text font-semibold text-sm">JWT Authorization</h4>
@@ -649,7 +649,7 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 <span class="inline-block bg-amber-400/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full">Security</span>
 </div>
 </a>
-<a href="/docs/kubernetes/latest/tutorials/ai-prompt-guard/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<a href="/docs/kubernetes/latest/llm/guardrails/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
 <div class="flex items-center justify-between">
 <div>
 <h4 class="text-primary-text font-semibold text-sm">AI Prompt Guard</h4>
@@ -826,7 +826,7 @@ function showK8sOption(option) {
         Support for industry standard AI protocols for agent and tool connectivity including A2A and MCP with the ability to automatically expose existing REST APIs as MCP-native tools.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/mcp/#step-4-explore-the-ui">
       <h3 class="font-bold  text-primary-text">
         <span class="text-tertiary-text">Developer Portal</span>
       </h3>

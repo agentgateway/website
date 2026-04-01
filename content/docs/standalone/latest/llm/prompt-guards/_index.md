@@ -19,12 +19,12 @@ To set up guardrails, check out the following guides.
   {{< card link="moderation" title="OpenAI moderation" description="Use the OpenAI Moderation API to detect harmful content across categories including hate, harassment, and violence." >}}
   {{< card link="bedrock-guardrails" title="AWS Bedrock Guardrails" description="Apply AWS Bedrock Guardrails to filter LLM requests and responses for policy-violating content." >}}
   {{< card link="google-model-armor" title="Google Model Armor" description="Apply Google Cloud Model Armor templates to sanitize LLM requests and responses." >}}
-  {{< card path="/llm/prompt-guards/webhook" title="Custom webhooks" description="Integrate your own content safety logic by forwarding requests and responses to a custom webhook." >}}
+  {{< card path="/llm/prompt-guards/webhooks" title="Custom webhooks" description="Integrate your own content safety logic by forwarding requests and responses to a custom webhook." >}}
   {{< card link="multi-layer" title="Multi-layered guardrails" description="Run prompt guards in sequence, creating defense-in-depth protection." >}}
 {{< /cards >}}
 
 To track guardrails and content safety, see the following guide. 
 
 {{< cards >}}
-  {{< card path="/observability/" title="Observe LLM traffic" description="Track content safety metrics and blocked requests." >}}
+  {{< card path="/llm/observability/" title="Observe LLM traffic" description="Track content safety metrics and blocked requests." >}}
 {{< /cards >}}
