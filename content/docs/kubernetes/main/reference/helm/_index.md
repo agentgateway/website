@@ -2,7 +2,6 @@
 title: Helm value reference
 weight: 20
 description:
-test: skip
 ---
 
 ## Download the Helm chart {#download}

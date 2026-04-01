@@ -93,6 +93,9 @@ def build_test_cases_from_file(
 
     metadata = parse_front_matter(md_file)
     tests = metadata.get("test")
+    if tests == "skip":
+        tested_documents.append(md_file.relative_to(repo_root).as_posix())
+        return test_cases, tested_documents
     if not isinstance(tests, dict) or not tests:
         return test_cases, tested_documents
 
