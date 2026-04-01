@@ -1,7 +1,6 @@
 ---
 title: "Windows installation"
 weight: 30
-test: skip
 ---
 
 ## Install ingress2gateway on Windows

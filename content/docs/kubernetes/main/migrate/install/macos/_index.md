@@ -1,7 +1,6 @@
 ---
 title: "macOS installation"
 weight: 10
-test: skip
 ---
 
 ## Install ingress2gateway on macOS

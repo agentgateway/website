@@ -2,7 +2,6 @@
 title: Deploy with Docker
 weight: 20
 description: Overview of how to deploy agentgateway with Docker.
-test: skip
 ---
 
 To run agentgateway as a Docker container, agentgateway publishes official Docker images at `cr.agentgateway.dev/agentgateway`.
