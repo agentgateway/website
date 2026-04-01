@@ -2,7 +2,6 @@
 title: TLS / HTTPS
 weight: 7
 description: Enable HTTPS with TLS certificates for secure connections
-test: skip
 ---
 
 Agentgateway supports TLS termination for secure HTTPS connections. This tutorial shows you how to configure TLS with your own certificates.

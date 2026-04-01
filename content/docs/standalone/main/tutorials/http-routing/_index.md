@@ -2,7 +2,6 @@
 title: HTTP routing & policies
 weight: 12
 description: Configure advanced HTTP routing with matching, policies, and traffic management
-test: skip
 ---
 
 Agentgateway provides powerful HTTP routing capabilities including path matching, header-based routing, rate limiting, retries, and request/response modification.

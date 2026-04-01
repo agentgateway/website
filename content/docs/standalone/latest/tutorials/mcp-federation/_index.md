@@ -2,7 +2,6 @@
 title: MCP federation
 weight: 3
 description: Learn how to federate tools from multiple MCP servers through a single endpoint
-test: skip
 ---
 
 Expose a single MCP endpoint that aggregates tools from multiple backend servers with unified security.

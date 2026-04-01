@@ -2,7 +2,6 @@
 title: OpenAPI to MCP
 weight: 5
 description: Expose REST APIs as MCP tools using OpenAPI specifications
-test: skip
 ---
 
 Convert REST APIs into MCP tools using OpenAPI specifications. This allows LLMs to interact with your existing APIs without writing custom MCP servers.

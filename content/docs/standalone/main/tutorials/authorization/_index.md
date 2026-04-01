@@ -2,7 +2,6 @@
 title: JWT authorization
 weight: 4
 description: Secure your agentgateway with JWT authentication and fine-grained tool access control
-test: skip
 ---
 
 Secure your MCP endpoints with JWT authentication and fine-grained tool access control.

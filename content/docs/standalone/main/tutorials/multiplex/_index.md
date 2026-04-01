@@ -2,7 +2,6 @@
 title: Multiplex MCP servers
 weight: 2
 description: Combine multiple MCP servers behind a single endpoint
-test: skip
 ---
 
 Aggregate tools from multiple MCP servers into a single endpoint.

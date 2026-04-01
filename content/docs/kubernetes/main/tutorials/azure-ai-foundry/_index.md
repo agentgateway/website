@@ -2,7 +2,6 @@
 title: Azure AI Foundry
 weight: 8
 description: Route requests to Azure OpenAI through agentgateway on Kubernetes
-test: skip
 ---
 
 Route LLM requests to Azure AI Foundry (Azure OpenAI) through agentgateway on Kubernetes, using custom path routing and URL rewriting.

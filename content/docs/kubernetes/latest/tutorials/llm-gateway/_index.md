@@ -2,7 +2,6 @@
 title: LLM gateway
 weight: 1
 description: Route requests to LLM providers through agentgateway on Kubernetes
-test: skip
 ---
 
 Route requests to OpenAI, Anthropic, Google Gemini, and other LLM providers through a unified OpenAI-compatible API running on Kubernetes.

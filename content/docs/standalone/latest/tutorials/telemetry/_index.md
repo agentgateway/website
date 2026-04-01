@@ -2,7 +2,6 @@
 title: Telemetry & observability
 weight: 6
 description: Enable OpenTelemetry tracing and metrics for agentgateway
-test: skip
 ---
 
 Agentgateway has built-in OpenTelemetry support for distributed tracing, metrics, and logs. This tutorial shows you how to enable telemetry and visualize it with Jaeger.

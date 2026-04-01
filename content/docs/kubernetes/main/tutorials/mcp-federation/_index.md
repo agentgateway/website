@@ -2,7 +2,6 @@
 title: MCP federation
 weight: 3
 description: Federate tools from multiple MCP servers through a single endpoint on Kubernetes
-test: skip
 ---
 
 Expose a single MCP endpoint that aggregates tools from multiple backend MCP servers with unified routing on Kubernetes.

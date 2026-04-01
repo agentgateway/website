@@ -2,7 +2,6 @@
 title: Agent-to-Agent
 weight: 4
 description: Learn how to enable secure communication between AI agents using the A2A protocol
-test: skip
 ---
 
 Enable secure communication between AI agents using the A2A protocol.

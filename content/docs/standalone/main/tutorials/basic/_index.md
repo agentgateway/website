@@ -2,7 +2,6 @@
 title: Basic MCP server
 weight: 1
 description: Get started with agentgateway by exposing a single MCP server
-test: skip
 ---
 
 Get up and running with agentgateway in under 2 minutes.

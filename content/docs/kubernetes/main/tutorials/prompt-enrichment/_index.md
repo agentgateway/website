@@ -2,7 +2,6 @@
 title: Prompt enrichment
 weight: 9
 description: Inject context at the gateway layer to improve LLM output accuracy on Kubernetes
-test: skip
 ---
 
 Improve LLM output accuracy by injecting system and user prompts at the gateway layer using {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources on Kubernetes. This centralizes prompt management so every request gets the right context without changing application code.

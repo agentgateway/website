@@ -2,7 +2,6 @@
 title: JWT authorization
 weight: 5
 description: Secure agentgateway with JWT authentication and fine-grained access control on Kubernetes
-test: skip
 ---
 
 Secure your agentgateway LLM endpoints with JWT authentication using TrafficPolicy on Kubernetes.
