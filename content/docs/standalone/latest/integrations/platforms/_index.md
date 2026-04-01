@@ -2,6 +2,7 @@
 title: Platforms
 weight: 80
 description: Deploy agentgateway on various platforms and cloud providers
+test: skip
 ---
 
 Agentgateway runs anywhere—from local development to production cloud environments.

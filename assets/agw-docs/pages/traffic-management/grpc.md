@@ -24,7 +24,7 @@ Steps to set up the sample gRPC service:
 
 1. Deploy the gRPC echo server and client.
 
-   ```yaml
+   ```yaml {paths="grpc"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -97,6 +97,39 @@ Steps to set up the sample gRPC service:
    EOF
    ```
 
+{{< doc-test paths="grpc" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for grpc-echo deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: grpc-echo
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+- name: wait for grpcurl-client pod to be running
+  wait:
+    target:
+      kind: Pod
+      metadata:
+        namespace: agentgateway-system
+        name: grpcurl-client
+    jsonPath: "$.status.phase"
+    jsonPathExpectation:
+      comparator: equals
+      value: "Running"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 2. Verify that the sample app is up and running. 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep grpc
@@ -112,7 +145,7 @@ Steps to set up the sample gRPC service:
 ## Set up gRPC routing {#grpcroute}
 
 1. Create the GRPC Gateway. The following Gateway accepts routes from all namespaces. 
-   ```yaml
+   ```yaml {paths="grpc"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -133,7 +166,7 @@ Steps to set up the sample gRPC service:
 
 2. Create the GRPCRoute. The GRPCRoute includes a match for `grpc.reflection.v1alpha.ServerReflection` to enable dynamic API exploration and a match for the `Ping` method. For detailed information about GRPCRoute fields and configuration options, see the [Gateway API GRPCRoute documentation](https://gateway-api.sigs.k8s.io/reference/spec/#grpcroute).
 
-   ```yaml
+   ```yaml {paths="grpc"}
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: GRPCRoute
@@ -157,6 +190,25 @@ Steps to set up the sample gRPC service:
              port: 3000
    EOF
    ```
+
+{{< doc-test paths="grpc" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for GRPCRoute to be accepted
+  wait:
+    target:
+      kind: GRPCRoute
+      metadata:
+        namespace: agentgateway-system
+        name: example-route
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
 
 3. Verify that the GRPCRoute is applied successfully.
 
@@ -192,6 +244,19 @@ Steps to set up the sample gRPC service:
 ## Verify the gRPC route {#verify-grpcroute}
 
 Verify that the gRPC route to the echo service is working. The steps vary whether your Gateway is exposed with a LoadBalancer service or set up for local testing only. 
+
+{{< doc-test paths="grpc" >}}
+success=false
+for i in $(seq 1 30); do
+  if kubectl exec -n agentgateway-system grpcurl-client -c grpcurl -- \
+    grpcurl -plaintext -authority grpc.com grpc:80 yages.Echo/Ping 2>&1 | grep -q '"text": "pong"'; then
+    success=true
+    break
+  fi
+  sleep 5
+done
+$success
+{{< /doc-test >}}
 
 {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
 {{% tab tabName="Cloud Provider LoadBalancer" %}}

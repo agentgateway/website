@@ -222,6 +222,13 @@ jobs:
           channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
 
+      - name: List untested docs
+        if: always()
+        run: |
+          python3 scripts/list_untested_docs.py \
+            --docs-dir content/docs \
+            --output out/tests/generated/untested-docs.txt
+
       - name: Upload merged results
         if: always()
         uses: actions/upload-artifact@v7

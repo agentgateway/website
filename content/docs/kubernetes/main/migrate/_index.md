@@ -1,6 +1,7 @@
 ---
 title: "Migrate from Ingress"
 weight: 900
+test: skip
 ---
 
 ## Introduction
