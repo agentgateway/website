@@ -76,7 +76,7 @@ test:
 ---
 ```
 
-**Pages with no testable content** (no code blocks, index/landing pages, etc.) should be marked with `test: skip` instead of a scenario dict. This counts the page as covered in the test coverage report without generating any test cases:
+**Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) should be marked with `test: skip` instead of a scenario dict. This counts the page as covered in the test coverage report without generating any test cases:
 
 ```yaml
 ---
