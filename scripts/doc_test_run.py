@@ -553,8 +553,7 @@ def main() -> int:
             test_cases.extend(cases)
             tested_docs.extend(docs)
         tested_documents = sorted(set(tested_docs))
-        total_documents = 0
-        total_by_version: Dict[str, int] = {}
+        _, _, total_by_version, total_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
     else:
         test_cases, tested_documents, total_by_version, total_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
 
