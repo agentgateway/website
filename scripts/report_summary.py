@@ -64,19 +64,20 @@ def _coverage_section_md(tested_documents: list, total_by_version: dict, total_d
     """Build Markdown lines for a coverage section."""
     if total_documents == 0:
         return []
-    tested_total = len(set(tested_documents))
-    pct = int(tested_total / total_documents * 100)
     lines: list[str] = []
-    lines.append(f"### Coverage \u2014 {tested_total} / {total_documents} pages tested ({pct}%)")
-    lines.append("")
     rows = _coverage_rows(tested_documents, total_by_version, total_documents)
+    adjusted_total = sum(total for _, _, total in rows)
+    adjusted_tested = sum(tested for _, tested, _ in rows)
+    pct = int(adjusted_tested / adjusted_total * 100) if adjusted_total else 0
+    lines.append(f"### Coverage \u2014 {adjusted_tested} / {adjusted_total} pages tested ({pct}%)")
+    lines.append("")
     if rows:
         lines.append("| Product/Version | Tested | Total | Coverage |")
         lines.append("|:---|---:|---:|---:|")
         for version, tested, total in rows:
             row_pct = f"{int(tested / total * 100)}%" if total else "—"
             lines.append(f"| `{version}` | {tested} | {total} | {row_pct} |")
-        lines.append(f"| **Total** | **{tested_total}** | **{total_documents}** | **{pct}%** |")
+        lines.append(f"| **Total** | **{adjusted_tested}** | **{adjusted_total}** | **{pct}%** |")
     lines.append("")
     return lines
 
@@ -241,10 +242,11 @@ def _coverage_slack_text(tested_documents: list, total_by_version: dict, total_d
     """Build a compact Slack mrkdwn string for coverage, or None if no data."""
     if total_documents == 0:
         return None
-    tested_total = len(set(tested_documents))
-    pct = int(tested_total / total_documents * 100)
     rows = _coverage_rows(tested_documents, total_by_version, total_documents)
-    lines = [f"*Coverage \u2014 {tested_total} / {total_documents} pages tested ({pct}%)*"]
+    adjusted_total = sum(total for _, _, total in rows)
+    adjusted_tested = sum(tested for _, tested, _ in rows)
+    pct = int(adjusted_tested / adjusted_total * 100) if adjusted_total else 0
+    lines = [f"*Coverage \u2014 {adjusted_tested} / {adjusted_total} pages tested ({pct}%)*"]
     for version, tested, total in rows:
         row_pct = f"{int(tested / total * 100)}%" if total else "—"
         lines.append(f"  `{version}`: {tested}/{total} ({row_pct})")
