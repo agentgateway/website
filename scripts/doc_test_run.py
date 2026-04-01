@@ -160,6 +160,14 @@ def build_test_cases(
 
     for md_file in sorted(repo_root.glob(docs_glob)):
         rel = md_file.relative_to(repo_root).as_posix()
+        parts = rel.replace("\\", "/").split("/")
+        try:
+            idx = parts.index("docs")
+            version_segment = parts[idx + 2] if len(parts) > idx + 2 else ""
+        except ValueError:
+            version_segment = ""
+        if version_segment not in ("latest", "main"):
+            continue
         vk = _version_key(rel)
         total_by_version[vk] = total_by_version.get(vk, 0) + 1
         total_documents += 1
