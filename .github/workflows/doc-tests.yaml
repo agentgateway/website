@@ -96,7 +96,7 @@ jobs:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
   run-test:
-    name: "Shard ${{ matrix.shard_index }}"
+    name: "Worker ${{ matrix.shard_index }}"
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
@@ -142,9 +142,13 @@ jobs:
           PYTHONUNBUFFERED: '1'
         run: |
           FAILED=0
+          TEST_INDEX=0
           while IFS=$'\t' read -r file test; do
-            python3 scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" || FAILED=1
+            python3 scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" || FAILED=1
+            TEST_INDEX=$((TEST_INDEX + 1))
           done < <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
+          python3 scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
           exit $FAILED
 
       - name: Upload test results
