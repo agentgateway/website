@@ -89,21 +89,20 @@ jobs:
           else
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
-          MATRIX=$(echo "$TESTS" | jq -c '{include: .}')
+          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 20] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson)})]}')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT test case(s)"
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
   run-test:
-    name: "${{ matrix.test }} (${{ matrix.file }})"
+    name: "Worker ${{ matrix.shard_index }} (${{ matrix.test_count }} pages)"
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     strategy:
-      max-parallel: 100
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
       fail-fast: false
     steps:
@@ -135,16 +134,22 @@ jobs:
       - name: Install yamltest
         run: npm install -g yamltest@latest
 
-      - name: Run doc test
-        run: |
-          python3 scripts/doc_test_run.py \
-            --repo-root . \
-            --file "${{ matrix.file }}" \
-            --test "${{ matrix.test }}"
+      - name: Run doc tests
         env:
+          SHARD_TESTS: ${{ matrix.tests }}
           DEBUG_MODE: true
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PYTHONUNBUFFERED: '1'
+        run: |
+          FAILED=0
+          TEST_INDEX=0
+          while IFS=$'\t' read -r file test; do
+            python3 scripts/doc_test_run.py --repo-root . --file "$file" --test "$test" \
+              --report-file "out/tests/generated/shard/${TEST_INDEX}/test-results.yaml" || FAILED=1
+            TEST_INDEX=$((TEST_INDEX + 1))
+          done < <(echo "$SHARD_TESTS" | jq -r '.[] | "\(.file)\t\(.test)"')
+          python3 scripts/merge_test_results.py out/tests/generated/shard/ out/tests/generated/test-results.yaml
+          exit $FAILED
 
       - name: Upload test results
         if: always()
@@ -193,14 +198,13 @@ jobs:
         id: summary
         run: |
           RESULTS_FILE=out/tests/generated/test-results.yaml
-          TOTAL_MD=$(find content/docs -name '*.md' -not -path 'content/docs/kubernetes/2.2.x/*' | wc -l | tr -d ' ')
 
           # GitHub Step Summary (Markdown)
-          python3 scripts/report_summary.py --total-markdown-files "$TOTAL_MD" "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
+          python3 scripts/report_summary.py "$RESULTS_FILE" >> "$GITHUB_STEP_SUMMARY"
 
           # Slack Block Kit payload
           RUN_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}"
-          SLACK_PAYLOAD=$(python3 scripts/report_summary.py --slack --run-url "$RUN_URL" --total-markdown-files "$TOTAL_MD" "$RESULTS_FILE")
+          SLACK_PAYLOAD=$(python3 scripts/report_summary.py --slack --run-url "$RUN_URL" "$RESULTS_FILE")
           echo "slack_blocks<<EOF" >> "$GITHUB_OUTPUT"
           echo "$SLACK_PAYLOAD" | jq '.main' >> "$GITHUB_OUTPUT"
           echo "EOF" >> "$GITHUB_OUTPUT"
@@ -217,14 +221,6 @@ jobs:
           thread_blocks: ${{ steps.summary.outputs.slack_thread_blocks }}
           channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
-
-      - name: List untested docs
-        if: always()
-        run: |
-          python3 scripts/list_untested_docs.py \
-            --docs-dir content/docs \
-            --exclude content/docs/kubernetes/2.2.x \
-            --output out/tests/generated/untested-docs.txt
 
       - name: Upload merged results
         if: always()

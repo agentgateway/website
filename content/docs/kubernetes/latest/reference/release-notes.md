@@ -1,7 +1,6 @@
 ---
 title: Release notes
 weight: 20
-test: skip
 ---
 
 Review the release notes for agentgateway.

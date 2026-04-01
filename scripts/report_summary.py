@@ -43,14 +43,43 @@ def _format_checks_count(n: int) -> str:
     return f"{n} check{'s' if n != 1 else ''} passed"
 
 
-def _coverage_line(tested_documents: list, total_markdown_files: int | None, slack: bool = False) -> str | None:
-    """Return a coverage summary line, or None if total is not available."""
-    if total_markdown_files is None:
-        return None
-    count = len(tested_documents)
-    pct = count / total_markdown_files * 100 if total_markdown_files > 0 else 0
-    bold = "*" if slack else "**"
-    return f"{bold}Test coverage:{bold} {count} of {total_markdown_files} files ({pct:.1f}%)"
+def _coverage_rows(tested_documents: list, total_by_version: dict, total_documents: int) -> list[tuple[str, int, int]]:
+    """Return sorted rows of (version, tested_count, total_count) for coverage table."""
+    tested_by_version: dict[str, int] = {}
+    for doc in tested_documents:
+        vk = _extract_version(doc)
+        tested_by_version[vk] = tested_by_version.get(vk, 0) + 1
+
+    versions = sorted(set(list(total_by_version.keys()) + list(tested_by_version.keys())))
+    rows = []
+    for v in versions:
+        total = total_by_version.get(v, 0)
+        if v.endswith("_index.md") and total == 1:
+            continue
+        rows.append((v, tested_by_version.get(v, 0), total))
+    return rows
+
+
+def _coverage_section_md(tested_documents: list, total_by_version: dict, total_documents: int) -> list[str]:
+    """Build Markdown lines for a coverage section."""
+    if total_documents == 0:
+        return []
+    lines: list[str] = []
+    rows = _coverage_rows(tested_documents, total_by_version, total_documents)
+    adjusted_total = sum(total for _, _, total in rows)
+    adjusted_tested = sum(tested for _, tested, _ in rows)
+    pct = int(adjusted_tested / adjusted_total * 100) if adjusted_total else 0
+    lines.append(f"### Coverage \u2014 {adjusted_tested} / {adjusted_total} pages tested ({pct}%)")
+    lines.append("")
+    if rows:
+        lines.append("| Product/Version | Tested | Total | Coverage |")
+        lines.append("|:---|---:|---:|---:|")
+        for version, tested, total in rows:
+            row_pct = f"{int(tested / total * 100)}%" if total else "—"
+            lines.append(f"| `{version}` | {tested} | {total} | {row_pct} |")
+        lines.append(f"| **Total** | **{adjusted_tested}** | **{adjusted_total}** | **{pct}%** |")
+    lines.append("")
+    return lines
 
 
 def generate_summary(report: dict) -> str:
@@ -58,7 +87,8 @@ def generate_summary(report: dict) -> str:
 
     tests: dict = report.get("tests", {})
     tested_documents: list = report.get("tested_documents", [])
-    total_markdown_files: int | None = report.get("total_markdown_files")
+    total_documents: int = report.get("total_documents", 0)
+    total_by_version: dict = report.get("total_documents_by_version", {})
 
     if not tests:
         lines.append("## Doc Test Results")
@@ -78,10 +108,8 @@ def generate_summary(report: dict) -> str:
         lines.append(f"## \u274c Doc Test Results \u2014 {passed} passed | {failed} failed | {total} total")
     lines.append("")
 
-    coverage = _coverage_line(tested_documents, total_markdown_files)
-    if coverage:
-        lines.append(coverage)
-        lines.append("")
+    # Coverage section
+    lines.extend(_coverage_section_md(tested_documents, total_by_version, total_documents))
 
     # Results table — one row per document
     lines.append("| Status | Test | Document | Checks |")
@@ -210,6 +238,21 @@ def _run_url_block(run_url: str) -> dict:
     }
 
 
+def _coverage_slack_text(tested_documents: list, total_by_version: dict, total_documents: int) -> str | None:
+    """Build a compact Slack mrkdwn string for coverage, or None if no data."""
+    if total_documents == 0:
+        return None
+    rows = _coverage_rows(tested_documents, total_by_version, total_documents)
+    adjusted_total = sum(total for _, _, total in rows)
+    adjusted_tested = sum(tested for _, tested, _ in rows)
+    pct = int(adjusted_tested / adjusted_total * 100) if adjusted_total else 0
+    lines = [f"*Coverage \u2014 {adjusted_tested} / {adjusted_total} pages tested ({pct}%)*"]
+    for version, tested, total in rows:
+        row_pct = f"{int(tested / total * 100)}%" if total else "—"
+        lines.append(f"  `{version}`: {tested}/{total} ({row_pct})")
+    return "\n".join(lines)
+
+
 def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dict, dict | None]:
     """Generate a Slack Block Kit payload from test results.
 
@@ -219,7 +262,8 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
     """
     tests: dict = report.get("tests", {})
     tested_documents: list = report.get("tested_documents", [])
-    total_markdown_files: int | None = report.get("total_markdown_files")
+    total_documents: int = report.get("total_documents", 0)
+    total_by_version: dict = report.get("total_documents_by_version", {})
 
     # --- empty results ---
     if not tests:
@@ -248,6 +292,11 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
         {"type": "header", "text": {"type": "plain_text", "text": header_text[:150]}},
     ]
 
+    # --- coverage block ---
+    coverage_text = _coverage_slack_text(tested_documents, total_by_version, total_documents)
+    if coverage_text:
+        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": _truncate(coverage_text)}})
+
     # --- split results into failed and passed lists ---
     failed_lines: list[str] = []
     passed_lines: list[str] = []
@@ -267,11 +316,6 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
     for key, result in tests.items():
         if result.get("status") != "passed" and result.get("error"):
             failed_tests.append((key, result))
-
-    # Coverage stats (full-run only)
-    coverage = _coverage_line(tested_documents, total_markdown_files, slack=True)
-    if coverage:
-        blocks.append({"type": "section", "text": {"type": "mrkdwn", "text": coverage}})
 
     # Main body: failed docs only (or all-passed note)
     if failed_lines:
@@ -336,22 +380,14 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
 def main() -> int:
     slack_mode = "--slack" in sys.argv
     run_url: str | None = None
-    total_markdown_files: int | None = None
 
-    # Extract --run-url and --total-markdown-files values
+    # Extract --run-url value
     argv = list(sys.argv[1:])
     filtered: list[str] = []
     i = 0
     while i < len(argv):
         if argv[i] == "--run-url" and i + 1 < len(argv):
             run_url = argv[i + 1]
-            i += 2
-        elif argv[i] == "--total-markdown-files" and i + 1 < len(argv):
-            try:
-                total_markdown_files = int(argv[i + 1])
-            except ValueError:
-                print(f"Invalid value for --total-markdown-files: {argv[i + 1]}", file=sys.stderr)
-                return 1
             i += 2
         elif argv[i] == "--slack":
             i += 1
@@ -360,7 +396,7 @@ def main() -> int:
             i += 1
 
     if len(filtered) < 1:
-        print(f"Usage: {sys.argv[0]} [--slack] [--run-url URL] [--total-markdown-files N] <test-results.yaml>", file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} [--slack] [--run-url URL] <test-results.yaml>", file=sys.stderr)
         return 1
 
     results_path = Path(filtered[0])
@@ -370,9 +406,6 @@ def main() -> int:
 
     with open(results_path, encoding="utf-8") as f:
         report = yaml.safe_load(f) or {}
-
-    if total_markdown_files is not None:
-        report["total_markdown_files"] = total_markdown_files
 
     if slack_mode:
         main_payload, thread_payload = generate_slack_blocks(report, run_url=run_url)

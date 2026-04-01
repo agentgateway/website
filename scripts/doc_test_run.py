@@ -93,9 +93,6 @@ def build_test_cases_from_file(
 
     metadata = parse_front_matter(md_file)
     tests = metadata.get("test")
-    if tests == "skip":
-        tested_documents.append(md_file.relative_to(repo_root).as_posix())
-        return test_cases, tested_documents
     if not isinstance(tests, dict) or not tests:
         return test_cases, tested_documents
 
@@ -141,20 +138,44 @@ def build_test_cases_from_file(
     return test_cases, sorted(set(tested_documents))
 
 
+def _version_key(doc_path: str) -> str:
+    """Extract 'product/version' from a path like content/docs/kubernetes/main/..."""
+    parts = doc_path.replace("\\", "/").split("/")
+    try:
+        idx = parts.index("docs")
+        return "/".join(parts[idx + 1 : idx + 3])
+    except (ValueError, IndexError):
+        return "unknown"
+
+
 def build_test_cases(
     repo_root: Path,
     docs_glob: str,
     generated_dir: Path,
-) -> Tuple[List[TestCase], List[str]]:
+) -> Tuple[List[TestCase], List[str], Dict[str, int], int]:
     test_cases: List[TestCase] = []
     tested_documents: List[str] = []
+    total_by_version: Dict[str, int] = {}
+    total_documents = 0
 
     for md_file in sorted(repo_root.glob(docs_glob)):
+        rel = md_file.relative_to(repo_root).as_posix()
+        parts = rel.replace("\\", "/").split("/")
+        try:
+            idx = parts.index("docs")
+            version_segment = parts[idx + 2] if len(parts) > idx + 2 else ""
+        except ValueError:
+            version_segment = ""
+        if version_segment not in ("latest", "main"):
+            continue
+        vk = _version_key(rel)
+        total_by_version[vk] = total_by_version.get(vk, 0) + 1
+        total_documents += 1
         cases, docs = build_test_cases_from_file(repo_root, md_file, generated_dir)
         test_cases.extend(cases)
         tested_documents.extend(docs)
 
-    return test_cases, sorted(set(tested_documents))
+    return test_cases, sorted(set(tested_documents)), total_by_version, total_documents
 
 
 def generate_script_and_manifest(repo_root: Path, definition: Dict, script_path: Path, manifest_path: Path) -> None:
@@ -466,17 +487,18 @@ def write_report(
     report_path: Path,
     tested_documents: List[str],
     test_results: Dict[str, Dict],
-    total_markdown_files: int | None = None,
+    total_documents: int = 0,
+    total_by_version: Optional[Dict[str, int]] = None,
 ) -> None:
     if yaml is None:
         raise RuntimeError("PyYAML is required. Install it with: pip install pyyaml")
 
     report = {
         "tested_documents": tested_documents,
+        "total_documents": total_documents,
+        "total_documents_by_version": total_by_version or {},
         "tests": test_results,
     }
-    if total_markdown_files is not None:
-        report["total_markdown_files"] = total_markdown_files
     report_path.parent.mkdir(parents=True, exist_ok=True)
     report_path.write_text(yaml.safe_dump(report, sort_keys=False), encoding="utf-8")
 
@@ -520,7 +542,6 @@ def main() -> int:
     generated_dir = (repo_root / args.generated_dir).resolve()
     report_path = (repo_root / args.report_file).resolve()
 
-    total_markdown_files: int | None = None
     if args.file:
         filter_test_name = args.test if len(args.file) == 1 else None
         test_cases = []
@@ -540,9 +561,9 @@ def main() -> int:
             test_cases.extend(cases)
             tested_docs.extend(docs)
         tested_documents = sorted(set(tested_docs))
+        _, _, total_by_version, total_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
     else:
-        total_markdown_files = len(list(repo_root.glob(args.docs_glob)))
-        test_cases, tested_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
+        test_cases, tested_documents, total_by_version, total_documents = build_test_cases(repo_root, args.docs_glob, generated_dir)
 
     if args.list_tests:
         entries = [
@@ -554,7 +575,7 @@ def main() -> int:
 
     if not test_cases:
         logger.info("No docs with test metadata found.")
-        write_report(report_path, tested_documents, {}, total_markdown_files)
+        write_report(report_path, tested_documents, {}, total_documents, total_by_version)
         return 0
 
     for test_case in test_cases:
@@ -577,7 +598,7 @@ def main() -> int:
         generate_script_and_manifest(repo_root, definition, test_case.script_path, test_case.manifest_path)
 
     if args.generate_only:
-        write_report(report_path, tested_documents, {}, total_markdown_files)
+        write_report(report_path, tested_documents, {}, total_documents, total_by_version)
         logger.info("Generated %d scripts from metadata", len(test_cases))
         logger.info("Wrote report scaffold: %s", report_path.relative_to(repo_root))
         return 0
@@ -597,7 +618,7 @@ def main() -> int:
         if result.get("status") != "passed":
             exit_code = 1
 
-    write_report(report_path, tested_documents, test_results, total_markdown_files)
+    write_report(report_path, tested_documents, test_results, total_documents, total_by_version)
     logger.info("================= Test Results =================")
     logger.info("Wrote report: %s", report_path.relative_to(repo_root))
     passed_count = sum(1 for r in test_results.values() if r['status'] == 'passed')
