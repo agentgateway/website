@@ -101,7 +101,7 @@ jobs:
           echo "has_failures=$([ "$EXIT" != "0" ] && echo 'true' || echo 'false')" >> "$GITHUB_OUTPUT"
 
       - name: Generate markdown report from JSON
-        if: steps.lychee.outputs.has_failures == 'true' && hashFiles('artifacts/agentgateway-oss-links.json') != ''
+        if: hashFiles('artifacts/agentgateway-oss-links.json') != ''
         run: |
           chmod +x docs-link-checking/generate-link-report.sh
           docs-link-checking/generate-link-report.sh \
