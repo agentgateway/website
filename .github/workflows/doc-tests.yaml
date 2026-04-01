@@ -89,14 +89,14 @@ jobs:
           else
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
-          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 20] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | {shard_index: $i, tests: ([$tests | to_entries[] | select(.key % $shards == $i) | .value] | tojson)}]}')
+          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 20] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson)})]}')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT test case(s)"
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
   run-test:
-    name: "Worker ${{ matrix.shard_index }} (${{ fromJson(matrix.tests).length }} pages)"
+    name: "Worker ${{ matrix.shard_index }} (${{ matrix.test_count }} pages)"
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
