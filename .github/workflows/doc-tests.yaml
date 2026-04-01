@@ -96,7 +96,7 @@ jobs:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
   run-test:
-    name: "Worker ${{ matrix.shard_index }}"
+    name: "Worker ${{ matrix.shard_index }} (${{ fromJson(matrix.tests).length }} pages)"
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
