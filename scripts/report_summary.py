@@ -54,8 +54,6 @@ def _coverage_rows(tested_documents: list, total_by_version: dict, total_documen
     rows = []
     for v in versions:
         total = total_by_version.get(v, 0)
-        if v.endswith("_index.md") and total == 1:
-            continue
         rows.append((v, tested_by_version.get(v, 0), total))
     return rows
 
