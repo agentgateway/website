@@ -97,9 +97,11 @@ def generate_summary(report: dict) -> str:
         return "\n".join(lines)
 
     doc_groups = _group_by_document(tests)
-    total = len(doc_groups)
-    passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
-    failed = total - passed
+    skipped = len([d for d in tested_documents if d not in doc_groups])
+    actual_passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
+    failed = len(doc_groups) - actual_passed
+    passed = actual_passed + skipped
+    total = len(doc_groups) + skipped
 
     # Header
     if failed == 0:
@@ -277,9 +279,11 @@ def generate_slack_blocks(report: dict, run_url: str | None = None) -> tuple[dic
         return {"text": fallback, "blocks": blocks}, None
 
     doc_groups = _group_by_document(tests)
-    total = len(doc_groups)
-    passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
-    failed = total - passed
+    skipped = len([d for d in tested_documents if d not in doc_groups])
+    actual_passed = sum(1 for g in doc_groups.values() if g["status"] == "passed")
+    failed = len(doc_groups) - actual_passed
+    passed = actual_passed + skipped
+    total = len(doc_groups) + skipped
 
     # --- header ---
     if failed == 0:
