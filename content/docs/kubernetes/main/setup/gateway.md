@@ -1,5 +1,5 @@
 ---
-title: Set up an agentgateway
+title: Set up an agentgateway proxy
 weight: 10
 description:
 test:
