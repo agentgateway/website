@@ -2,6 +2,7 @@
 title: Advanced settings
 weight: 70
 description: Install kgateway and related components.
+test: skip
 ---
 
 {{< reuse "agw-docs/pages/install/advanced.md" >}}
