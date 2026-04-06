@@ -9,6 +9,115 @@ Review the release notes for agentgateway standalone.
 For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases)
 {{< /callout >}}
 
+## Version 1.1.x
+
+### 🔥 Breaking changes {#v11-breaking-changes}
+
+#### MCP authentication is now route-level
+
+The preferred location for `mcpAuthentication` is now the route rather than the backend. This aligns MCP authentication with other frontend policies and makes it easier to apply authorization, rate limiting, and transformations based on validated claims.
+
+_Before_: MCP authentication was configured on the backend.
+
+```yaml
+backends:
+- name: my-mcp-backend
+  mcp:
+    mcpAuthentication:
+      issuer: http://localhost:9000
+      jwks:
+        url: http://localhost:9000/.well-known/jwks.json
+```
+
+_After_: MCP authentication is configured on the route.
+
+```yaml
+routes:
+- backends:
+  - mcp:
+      name: my-mcp-backend
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:9000
+      jwks:
+        url: http://localhost:9000/.well-known/jwks.json
+```
+
+The backend-level form remains available for compatibility but is deprecated. New configurations should attach MCP authentication at the route level, and existing configurations should plan to migrate.
+
+For more information, see [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn/" >}}).
+
+### 🌟 New features {#v11-new-features}
+
+The following features were introduced in 1.1.x.
+
+#### Built-in OIDC browser authentication
+
+Agentgateway now includes a built-in OpenID Connect (OIDC) browser authentication flow for standalone deployments. The gateway can initiate the authorization code flow with Proof Key for Code Exchange (PKCE), handle the callback directly, validate the returned ID token, and persist an encrypted browser session cookie. This provides a first-party browser auth path without requiring an external `oauth2-proxy` sidecar.
+
+#### Stronger policy controls
+
+This release adds a new Layer 4 (L4) network authorization policy, allowing policy enforcement for non-HTTP traffic and layered L4+Layer 7 (L7) controls. Authorization policies also gain a new `Require` mode, which provides clearer "must match" semantics than deny-based double negatives.
+
+CEL validation is tightened and new hash helpers are now available:
+* `sha256`
+* `sha1`
+* `md5`
+
+For more information, see the [CEL expression]({{< link-hextra path="/reference/cel/" >}}) reference.
+
+#### MCP improvements
+
+This release includes several improvements to Model Context Protocol (MCP) support.
+
+* **Stateless sessions**: OpenAPI and Server-Sent Events (SSE) upstreams can now use stateless sessions.
+* **Explicit service reference lists**: MCP backends can use explicit service reference lists.
+* **Tool payloads in CEL**: Tool payloads are exposed in the MCP CEL context, enabling more expressive authorization and transformation policies.
+* **Merged upstream instructions**: Multiplexed MCP upstream instructions are now merged more cleanly.
+* **Bug fixes**: This release fixes several MCP edge cases, including Keycloak auth handling and upstream stdio failure behavior.
+
+#### LLM gateway enhancements
+
+LLM routing and provider support continue to improve.
+
+* **Provider path prefixes**: You can now configure provider path prefixes for custom API endpoints.
+* **Azure default authentication**: Azure providers can now use default authentication.
+* **Vertex region defaults**: Vertex region configuration is now optional, with a global default.
+* **New response fields**: You can now route or observe newer response fields including `serviceTier`, image, and audio token usage.
+* **Bedrock improvements**: Better handling for Claude-style traffic and buffer limits.
+
+For more information, see the provider setup guides such as [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}}), [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}}), and [Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}).
+
+#### Gateway and routing improvements
+
+* **Automatic protocol detection**: Agentgateway now supports automatic protocol detection with the `auto` bind protocol, which simplifies configuration for mixed-protocol environments.
+* **Routes on Services**: You can now attach routes directly to Services.
+* **Readiness improvements**: The gateway waits for binds to become ready before reporting readiness.
+* **Service SANs for TLS**: Upstream TLS now respects Subject Alternative Names (SANs) from Services.
+* **TLSRoute v1 status**: Status is now written by using `TLSRoute v1`.
+
+#### Better observability
+
+This release adds retry metrics and support for the standard `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` OpenTelemetry environment variables. These changes make it easier to integrate with existing OpenTelemetry conventions without additional gateway-specific configuration.
+
+### 🛠️ Fixes and quality improvements {#v11-fixes}
+
+This release also includes important correctness and usability fixes.
+
+* Better handling for invalid route backends.
+* Improved failure modes for translation, external auth, and remote rate limiting.
+* Better routing of non-success streaming responses through buffered error paths.
+* Improved listener selection for misdirected requests and HTTP-Based Overlay Network (HBONE) paths.
+* General dependency cleanup and refactoring across the controller and runtime.
+
+### 🗑️ Deprecated or removed features {#v11-removed-features}
+
+* **Backend-level MCP authentication**: The `mcpAuthentication` field on backends is deprecated. Use route-level MCP authentication instead. See [Breaking changes](#v11-breaking-changes).
+
+---
+
+## Version 1.0.0
+
 ## 🔥 Breaking changes {#v10-breaking-changes}
 
 ### New release version pattern
