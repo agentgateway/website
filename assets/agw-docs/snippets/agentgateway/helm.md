@@ -121,3 +121,36 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
    ```sh
    kubectl get gatewayclass {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
    ```
+
+{{< doc-test paths="standard,experimental" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: verify agentgateway GatewayClass exists
+  wait:
+    target:
+      kind: GatewayClass
+      metadata:
+        name: agentgateway
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}

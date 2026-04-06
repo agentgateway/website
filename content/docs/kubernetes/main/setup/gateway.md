@@ -1,7 +1,13 @@
 ---
-title: Set up an agentgateway
+title: Set up an agentgateway proxy
 weight: 10
 description:
+test:
+  setup-gateway:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
 ---
 
 Set up an agentgateway proxy. 
