@@ -1,7 +1,7 @@
 ---
 title: Advanced settings
 weight: 70
-description: Install kgateway and related components.
+description: Install agentgateway and related components.
 test: skip
 ---
 
