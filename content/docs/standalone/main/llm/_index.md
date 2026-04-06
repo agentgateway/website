@@ -14,7 +14,6 @@ Consume LLM services by setting up AI backends for your LLM providers.
   {{< card link="providers" title="Providers" subtitle="Configure backends for supported LLM providers" >}}
   {{< card link="api-keys" title="Manage API keys" subtitle="Secure LLM provider authentication" >}}
   {{< card link="prompt-templates" title="Use prompt templates" subtitle="Static and dynamic templating, variable injection" >}}
-  {{< card link="realtime" title="OpenAI Realtime" subtitle="WebSocket proxy with token usage tracking" >}}
   {{< card link="observability" title="Observe traffic" subtitle="Metrics, logs, token usage, prompt logging" >}}
   {{< card link="spending" title="Control spend" subtitle="Token budgets, spend limits, cost control" >}}
   {{< card link="prompt-guards" title="Prompt guards" subtitle="Detect and block policy-violating content before it reaches the LLM" >}}
