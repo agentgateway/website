@@ -1,6 +1,6 @@
 ---
 title: OIDC browser authentication
-weight: 35
+weight: 40
 ---
 
 Attach to:
@@ -9,6 +9,46 @@ Attach to:
 OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. Unauthenticated requests are automatically redirected to the identity provider's login page. After successful authentication, the user's session is maintained with encrypted cookies.
 
 The OIDC policy uses the OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange) for secure browser-based authentication without requiring a separate proxy like oauth2-proxy.
+
+## About
+
+The following diagram shows the OIDC browser authentication flow between the browser, agentgateway, and identity provider.
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant Browser
+    participant AGW as Agentgateway
+    participant IdP as Identity Provider
+
+    Browser->>AGW: Request protected resource
+    AGW->>AGW: No valid session cookie found
+    AGW->>Browser: 302 Redirect to IdP login<br/>(with PKCE code_challenge)
+    Browser->>IdP: Follow redirect to login page
+    IdP->>Browser: Display login form
+    Browser->>IdP: Submit credentials
+    IdP->>Browser: 302 Redirect to redirectURI<br/>(with authorization code)
+    Browser->>AGW: GET /oauth/callback?code=...
+    AGW->>IdP: Exchange code for ID token<br/>(with PKCE code_verifier)
+    IdP->>AGW: Return ID token
+    AGW->>AGW: Validate ID token with JWKS
+    AGW->>Browser: Set encrypted session cookie<br/>and redirect to original resource
+    Browser->>AGW: Request with session cookie
+    AGW->>AGW: Decrypt and validate cookie
+    AGW->>Browser: Return protected resource
+```
+
+1. **Unauthenticated request**: When a browser request arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
+2. **Login**: The user authenticates with the identity provider.
+3. **Callback**: After login, the identity provider redirects back to the `redirectURI` with an authorization code.
+4. **Token exchange**: The gateway exchanges the authorization code for an ID token using PKCE.
+5. **Session cookie**: The gateway sets an encrypted session cookie containing the ID token claims. Subsequent requests use this cookie.
+
+## Session management
+
+- Session cookies are encrypted and tamper-proof.
+- The gateway always requests the `openid` scope to obtain an ID token.
+- The gateway uses PKCE automatically to protect against authorization code interception.
 
 ## Configuration
 
@@ -38,6 +78,8 @@ binds:
 
 ## Fields
 
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
 | Field | Required | Description |
 |-------|----------|-------------|
 | `issuer` | Yes | OIDC provider issuer URL. Used for discovery and ID token validation. |
@@ -50,20 +92,6 @@ binds:
 | `tokenEndpoint` | No | Explicit token endpoint. Overrides the value from discovery. |
 | `tokenEndpointAuth` | No | Client authentication method for the token endpoint. Discovery mode derives this from provider metadata. Explicit mode defaults to `clientSecretBasic`. |
 | `jwks` | No | JWKS source for ID token validation. If omitted, uses the `jwks_uri` from discovery. |
-
-## How it works
-
-1. **Unauthenticated request**: When a browser request arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
-2. **Login**: The user authenticates with the identity provider.
-3. **Callback**: After login, the identity provider redirects back to the `redirectURI` with an authorization code.
-4. **Token exchange**: The gateway exchanges the authorization code for an ID token using PKCE.
-5. **Session cookie**: The gateway sets an encrypted session cookie containing the ID token claims. Subsequent requests use this cookie.
-
-## Session management
-
-- Session cookies are encrypted and tamper-proof.
-- The gateway always requests the `openid` scope to obtain an ID token.
-- The gateway uses PKCE automatically to protect against authorization code interception.
 
 ## Keycloak example
 
