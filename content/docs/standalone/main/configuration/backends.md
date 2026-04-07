@@ -45,6 +45,21 @@ backends:
         host: https://example.com/mcp
 ```
 
+### Session routing
+
+By default, MCP backends use stateful session routing, where the gateway tracks session IDs and routes subsequent requests to the same upstream. For OpenAPI and SSE upstreams that do not maintain server-side session state, you can set `statefulMode: Stateless`. In stateless mode, the gateway automatically wraps each request with an initialization sequence, so the upstream server processes every request independently.
+
+```yaml
+backends:
+- mcp:
+    statefulMode: Stateless
+    targets:
+    - name: openapi-server
+      openapi:
+        schema:
+          url: https://petstore3.swagger.io/api/v3/openapi.json
+```
+
 ## LLM Providers
 
 Agentgateway natively supports connecting to LLM providers, such as OpenAI and Anthropic.
