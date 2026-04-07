@@ -19,9 +19,14 @@ Agentgateway supports multiple authentication methods and integrates with popula
 
 Agentgateway supports several authentication approaches.
 
-| Method | Use Case | Tutorial |
-|--------|----------|----------|
+| Method | Use Case | Reference |
+|--------|----------|-----------|
 | JWT validation | API authentication | [MCP Authentication]({{< link-hextra path="/tutorials/mcp-authentication" >}}) |
-| OAuth2/OIDC | User authentication | [OAuth2 Proxy]({{< link-hextra path="/tutorials/oauth2-proxy" >}}) |
+| OIDC browser auth | Browser-based user authentication | [OIDC browser authentication]({{< link-hextra path="/configuration/security/oidc" >}}) |
+| OAuth2/OIDC (external) | User authentication via proxy | [OAuth2 Proxy]({{< link-hextra path="/tutorials/oauth2-proxy" >}}) |
 | External authz | Custom auth services | [Authorization]({{< link-hextra path="/tutorials/authorization" >}}) |
 | Tailscale | Zero-trust networks | [Tailscale Auth]({{< link-hextra path="/tutorials/tailscale-auth" >}}) |
+
+{{< callout type="info" >}}
+For browser-based OIDC, agentgateway includes a [built-in OIDC policy]({{< link-hextra path="/configuration/security/oidc" >}}) that handles the full login flow natively, without requiring an external proxy like oauth2-proxy.
+{{< /callout >}}
