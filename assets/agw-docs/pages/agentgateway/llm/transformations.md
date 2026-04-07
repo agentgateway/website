@@ -174,6 +174,49 @@ Parse the `model` field from the incoming request body and the upstream response
 * `json(request.body).model`: Reads the `model` field from the incoming request body.
 * `json(response.body).model`: Reads the `model` field from the upstream response body.
 
+{{< doc-test paths="llm-model-headers" >}}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agentgateway-system
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /openai
+      backendRefs:
+        - name: httpbun-llm
+          namespace: agentgateway-system
+          group: agentgateway.dev
+          kind: AgentgatewayBackend
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-model-headers" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the OpenAI provider's HTTPRoute and injects the model fields as response headers.
 
    ```yaml {paths="llm-model-headers"}
