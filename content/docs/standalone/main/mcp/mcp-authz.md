@@ -1,6 +1,10 @@
 ---
 title: MCP authorization
 weight: 40
+test:
+  mcp-authz-tools:
+  - file: content/docs/standalone/main/mcp/mcp-authz.md
+    path: mcp-authz-tools
 ---
 
 > [!NOTE]
@@ -11,6 +15,16 @@ The MCP authorization policy works similarly to [HTTP authorization]({{< link-he
 If a tool or other resource is not allowed, agentgateway automatically filters the resource from `list` responses so that unauthorized clients never see it.
 
 The `mcpAuthorization` policy can be attached at the backend level (applying to all MCP targets) or at the individual target level. For more on how policies inherit and override at different levels, see [MCP target policies]({{< link-hextra path="/mcp/mcp-target-policies" >}}).
+
+{{< doc-test paths="mcp-authz-tools" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
 
 ## Allow specific tools
 
@@ -34,6 +48,53 @@ binds:
                 rules:
                 - 'mcp.tool.name == "echo"'
 ```
+
+{{< doc-test paths="mcp-authz-tools" >}}
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: everything
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+            policies:
+              mcpAuthorization:
+                rules:
+                - 'mcp.tool.name == "echo"'
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="mcp-authz-tools" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
+{{< doc-test paths="mcp-authz-tools" >}}
+YAMLTest -f - <<'EOF'
+- name: MCP endpoint accepts initialize request
+  http:
+    url: "http://localhost:3000"
+    path: /mcp
+    method: POST
+    headers:
+      content-type: application/json
+      accept: "application/json, text/event-stream"
+    body: |
+      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 ## Role-based access with JWT claims
 
