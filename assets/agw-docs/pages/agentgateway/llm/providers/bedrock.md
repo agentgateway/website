@@ -2,7 +2,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/" >}}). 
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}). 
 2. Make sure that your [Amazon credentials](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html) have access to the Bedrock models that you want to use. You can alternatively use an [AWS Bedrock API key](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html). 
 
 ## Set up access to Amazon Bedrock {#setup}
@@ -11,7 +11,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    {{< tabs tabTotal="2" items="AWS credentials,AWS Bedrock API key" >}}
    {{% tab tabName="AWS credentials" %}}
 
-   1. Log in to the [AWS console](https://console.aws.amazon.com) and store your access credentials as environment variables.
+   1. Log in to the [AWS console](https://console.aws.amazon.com/console/home) and store your access credentials as environment variables.
       ```bash
       export AWS_ACCESS_KEY_ID="<aws-access-key-id>"
       export AWS_SECRET_ACCESS_KEY="<aws-secret-access-key>"
@@ -65,7 +65,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
      ai:
        provider:
          bedrock:
-           model: "amazon.titan-text-lite-v1"
+           model: "amazon.nova-micro-v1:0"
            region: "us-east-1"
      policies:
        auth:
@@ -80,16 +80,65 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.bedrock` | Define the LLM provider that you want to use. The example uses Amazon Bedrock. |
-   | `bedrock.model`     | The model to use to generate responses. In this example, you use the `amazon.titan-text-lite-v1` model. Keep in mind that some models support cross-region inference. These models begin with a `us.` prefix, such as `us.anthropic.claude-sonnet-4-20250514-v1:0`. For more models, see the [AWS Bedrock docs](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). |
+   | `bedrock.model`     | The model to use to generate responses. In this example, you use the `amazon.nova-micro-v1:0` model. Keep in mind that some models support cross-region inference. These models begin with a `us.` prefix, such as `us.anthropic.claude-sonnet-4-20250514-v1:0`. For more models, see the [AWS Bedrock docs](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). |
    | `bedrock.region`    | The AWS region where your Bedrock model is deployed. Multiple regions are not supported. |
    | `policies.auth` | Provide the credentials to use to access the Amazon Bedrock API. The example refers to the secret that you previously created. To use IRSA, omit the `auth` settings.|
 
-3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint that you set up (such as `/bedrock`) to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
+3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. The default Bedrock route is `/model/${MODEL}/converse`, such as `/model/amazon.nova-micro-v1:0/converse`.
+
+   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Bedrock default" %}}
    ```yaml
-   kubectl apply -f- <<EOF                                             
+   kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
-   metadata:       
+   metadata:
+     name: bedrock
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: bedrock
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: bedrock
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /v1/chat/completions
+       backendRefs:
+       - name: bedrock
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
      name: bedrock
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
@@ -108,12 +157,69 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 
-4. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
+4. Send a request to the LLM provider API along the route that you previously created, such as `/bedrock` or `/v1/chat/completions` depending on your route configuration. Verify that the request succeeds and that you get back a response from the chat completion API.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Bedrock default" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/model/amazon.nova-micro-v1:0/converse" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/model/amazon.nova-micro-v1:0/converse" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+       "model": "",
+       "messages": [
+         {
+           "role": "user",
+           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
+         }
+       ]
+     }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/bedrock" -H content-type:application/json -d '{
        "model": "",
@@ -124,10 +230,11 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
          }
        ]
      }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
-   curl "localhost:8080/bedrock" -H content-type:application/json  -d '{
+   curl "localhost:8080/bedrock" -H content-type:application/json -d '{
        "model": "",
        "messages": [
          {
@@ -164,5 +271,308 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
      }
    }
    ```
+
+## Prompt caching
+
+Prompt Caching is a performance, cost-optimization, and cost-reduction feature that allows the model to "remember" frequently used parts of your prompt, including long system instructions, reference documents, or tool definitions. This way, the model does not need to reprocess these parts every time you send a new prompt. 
+
+For example, let's assume you have a 50-page manual and you want to ask your model different questions about the manual. Instead of re-reading the manual for each question, the model can read it once and save it in its internal cache. Then, the model can answer subsequent questions more quickly and more cost efficient. 
+
+Prompt caching is configured by using the `backend.ai.promptCaching` fields in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. 
+
+{{< callout type="info" >}}
+Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
+{{< /callout >}}
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your prompt cache settings. The following example enables caching for system prompts and conversation messages, but disables it for tool definitions. Bedrock requires you to set the minimum token count after which caching is enabled. By default, a minimum of 1024 tokens are required by Bedrock for caching to be effective. This is also referred to as a caching checkpoint. For more information, see the [API reference]({{< link-hextra path="/reference/api/#promptcachingconfig" >}}). 
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: bedrock-caching-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: HTTPRoute
+         name: bedrock
+     backend:
+       ai:
+         promptCaching:
+           cacheSystem: true
+           cacheMessages: true
+           cacheTools: false
+           minTokens: 1024
+   EOF
+   ```
+
+2. Port-forward the agentgateway proxy on port 15000. 
+   ```sh
+   kubectl port-forward deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
+   ```
+
+3. Get the caching configuration and verify that you see the cache settings. 
+   ```sh
+   curl -s http://localhost:15000/config_dump | jq '.policies[] |                                    
+    select(.name.name == "bedrock-caching-policy" and 
+         .policy.backend.aI.promptCaching != null)'
+   ```
+
+   Example output: 
+   ```console {hl_lines=[20,21,22,23,24]}
+   {
+      "key": "backend/agentgateway-system/bedrock-caching-policy:ai:agentgateway-system/bedrock",
+      "name": {
+        "kind": "AgentgatewayPolicy",
+        "name": "bedrock-caching-policy",
+        "namespace": "agentgateway-system"
+      },
+      "target": {
+        "route": {
+          "name": "bedrock",
+          "namespace": "agentgateway-system",
+          "kind": "HTTPRoute"
+        }
+      },
+      "policy": {
+        "backend": {
+          "aI": {
+            "defaults": {},
+            "overrides": {},
+            "promptCaching": {
+              "cacheSystem": true,
+              "cacheMessages": true,
+              "cacheTools": false,
+              "minTokens": 1024
+            }
+          }
+        }
+      }
+   }
+   ```
+
+{{< version include-if="1.0.x" >}}
+
+## Extended thinking and reasoning
+
+Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
+
+**Note**: Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
+
+{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
+{{% tab tabName="Bedrock default" %}}
+
+Use the `reasoning.effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+
+| `reasoning.effort` value | Thinking budget |
+|---|---|
+| `minimal` or `low` | 1,024 tokens |
+| `medium` | 2,048 tokens |
+| `high` or `xhigh` | 4,096 tokens |
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 5000,
+  "input": "Explain the trade-offs between consistency and availability in distributed systems.",
+  "reasoning": {
+    "effort": "high"
+  }
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 5000,
+  "input": "Explain the trade-offs between consistency and availability in distributed systems.",
+  "reasoning": {
+    "effort": "high"
+  }
+}' | jq
+```
+
+{{% /tab %}}
+{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+
+Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+
+| `reasoning_effort` value | Thinking budget |
+|---|---|
+| `minimal` or `low` | 1,024 tokens |
+| `medium` | 2,048 tokens |
+| `high` or `xhigh` | 4,096 tokens |
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 6000,
+  "reasoning_effort": "high",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 6000,
+  "reasoning_effort": "high",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+{{% /tab %}}
+
+{{< /tabs >}}
+
+## Structured outputs
+
+Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request. 
+
+{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
+{{% tab tabName="Bedrock default" %}}
+
+Provide the JSON schema definition in the `text.format` field.
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 256,
+  "input": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1.",
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "answer_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "answer": { "type": "string" },
+            "confidence": { "type": "number" }
+          },
+          "required": ["answer", "confidence"],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
+  -H content-type:application/json -d '{
+  "model": "",
+  "max_output_tokens": 256,
+  "input": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1.",
+  "text": {
+    "format": {
+      "type": "json_schema",
+      "json_schema": {
+        "name": "answer_schema",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "answer": { "type": "string" },
+            "confidence": { "type": "number" }
+          },
+          "required": ["answer", "confidence"],
+          "additionalProperties": false
+        }
+      }
+    }
+  }
+}' | jq
+```
+
+{{% /tab %}}
+{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+
+Provide the schema definition in the `response_format` field. Agentgateway translates this to Bedrock's native format automatically.
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 256,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "answer_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 256,
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "answer_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+
+{{% /tab %}}
+
+{{< /tabs >}}
+
+{{< /version >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

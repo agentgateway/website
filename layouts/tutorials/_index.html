@@ -1,0 +1,91 @@
+{{ define "main" }}
+  <style>
+    /* Hide sidebar on tutorials landing page */
+    .sidebar-container,
+    aside.sidebar-container,
+    aside.hx-order-first,
+    .hx-order-first {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Hide Hextra theme navbar on tutorials pages - we use custom nav.html instead */
+    .nav-container,
+    .hx-sticky.hx-top-0 {
+      display: none !important;
+    }
+
+    /* Full width for landing page - override theme's flex layout */
+    .hx-mx-auto.hx-flex {
+      max-width: 100% !important;
+      justify-content: center !important;
+    }
+
+    /* Hide TOC on landing page - must override xl:hx-block */
+    .toc-container,
+    .hextra-toc,
+    nav.hextra-toc,
+    nav[aria-label="table of contents"] {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Override Tailwind responsive classes */
+    @media (min-width: 1280px) {
+      .hextra-toc,
+      nav.hextra-toc,
+      nav[aria-label="table of contents"] {
+        display: none !important;
+      }
+    }
+
+    /* Center title on tutorials landing page */
+    .hx-w-full .content h1 {
+      text-align: center !important;
+    }
+
+    /* Left-align description text */
+    .hx-w-full .content p {
+      text-align: left !important;
+    }
+
+    /* Center cards on tutorials landing page - use text-align on wrapper, don't change display */
+    .hx-w-full .content > div[class*="hx-block"] {
+      text-align: center !important;
+    }
+
+    /* Center the cards grid container */
+    .hx-w-full .content .hextra-cards {
+      margin-left: auto !important;
+      margin-right: auto !important;
+      width: fit-content !important;
+    }
+
+    /* Left-align card subtitles */
+    .hx-w-full .content .hextra-card p,
+    .hx-w-full .content .hextra-card .hextra-card-subtitle {
+      text-align: left !important;
+    }
+  </style>
+
+  {{ partial "nav.html" . }}
+
+  <div class="w-full z-10 pt-10 lg:pt-20">
+    {{ partial "announcement.html" .}}
+  </div>
+
+  <!-- Explicitly structure without sidebar wrapper -->
+  <div class="hx-mx-auto hx-flex hx-justify-center hx-px-6 md:hx-px-12" style="padding-top: 3rem; margin-top: 0;">
+    <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center">
+      <main class="hx-w-full hx-min-w-0 hx-max-w-6xl">
+        <div class="hx-text-center hx-mb-12">
+          <h1 class="hx-text-4xl hx-font-bold hx-mb-4">{{ .Title | default "Tutorials" }}</h1>
+        </div>
+
+        <div class="content">
+          {{ .Content }}
+        </div>
+      </main>
+    </article>
+  </div>
+{{ end }}

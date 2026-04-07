@@ -199,7 +199,7 @@ Create an HTTPS listener so that the gateway can route gRPC traffic. GRPCRoute r
 
 ## Create a GRPCRoute {#create-grpcroute}
 
-1. Create the GRPCRoute resource. Include the `grpc.reflection.v1alpha.ServerReflection` method to enable dynamic API exploration. For detailed information about GRPCRoute fields and configuration options, see the [Gateway API GRPCRoute documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.GRPCRoute).
+1. Create the GRPCRoute resource. Include the `grpc.reflection.v1alpha.ServerReflection` method to enable dynamic API exploration. For detailed information about GRPCRoute fields and configuration options, see the [Gateway API GRPCRoute documentation](https://gateway-api.sigs.k8s.io/reference/spec/#grpcroute).
 
    ```yaml
    kubectl apply -f - <<EOF
@@ -346,9 +346,9 @@ Verify that the gRPC route to the echo service is working.
 Explore the traffic management, resiliency, and security policies that you can apply to make your gRPC services more robust and secure.
 
 {{< cards >}}
-  {{< card link="../../../../traffic-management/" title="Traffic management" >}}
-  {{< card link="../../../../resiliency/" title="Resiliency" >}}
-  {{< card link="../../../../security/" title="Security" >}}
+  {{< card path="/traffic-management/" title="Traffic management" >}}
+  {{< card path="/resiliency/" title="Resiliency" >}}
+  {{< card path="/security/" title="Security" >}}
 {{< /cards >}}
 
 ## Cleanup

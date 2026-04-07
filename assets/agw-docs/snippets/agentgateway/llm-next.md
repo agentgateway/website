@@ -1,3 +1,7 @@
 ## Next steps
-- Want to use other endpoints than chat completions, such as embeddings or models? Check out the [multiple endpoints]({{< link-hextra path="/llm/providers/multiple-endpoints/" >}}) guide.
-- Explore [other guides for LLM consumption]({{< link-hextra path="/llm/" >}}), such as function calling, model failover, and prompt guards.
+
+{{< cards >}}
+  {{< card path="/llm/providers/multiple-endpoints/" title="Multiple endpoints" subtitle="Set up other API endpoints such as embeddings or models." >}}
+  {{< card path="/llm/guardrails/overview/" title="Prompt guards" subtitle="Set up prompt guards for your LLM traffic." >}}
+  {{< card path="/observability/" title="LLM observability" subtitle="View metrics and logs for LLM traffic." >}}
+{{< /cards >}}

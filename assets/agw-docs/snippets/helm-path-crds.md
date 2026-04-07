@@ -1,0 +1,1 @@
+oci://cr.agentgateway.dev/charts/agentgateway-crds

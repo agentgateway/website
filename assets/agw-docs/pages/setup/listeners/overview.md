@@ -1,4 +1,4 @@
-Set up listeners on your API Gateway. A listener configures how your API Gateway accepts and processes incoming requests.
+Set up listeners on your agentgateway proxy. A listener configures how your proxy accepts and processes incoming requests.
 
 In the Kubernetes Gateway API, you can create listeners in two main ways:
 
@@ -11,11 +11,7 @@ A common, simple approach is to write the listener inline on the Gateway resourc
 
 Most examples in both the {{< reuse "agw-docs/snippets/kgateway.md" >}} and Kubernetes Gateway API docs use the inline approach.
 
-## ListenerSets (experimental) {#listenersets}
-
-{{< callout type="warning" >}}
-{{< reuse "agw-docs/versions/warn-2-1-only.md" >}} {{< reuse "agw-docs/versions/warn-experimental.md" >}} As such, the ListenerSet CRD is prefixed with `X` to indicate that it is experimental.
-{{< /callout >}}
+## ListenerSets {#listenersets}
 
 With ListenerSets, you can group together listeners that have their own unique configuration, such as different protocols, ports, hostnames, or TLS settings. Then, the ListenerSet refers to a Gateway, which can be in a different namespace than the ListenerSet. The same Gateway can also have multiple ListenerSets.
 
@@ -64,24 +60,6 @@ flowchart TD
   LS2 -- "parentRef" --> GW
   HR2 -- "backendRef" --> SVC2
 ```
-
-### Prerequisites {#prerequisites}
-
-To use ListenerSets, you must have the following environment:
-
-1. Install the Kubernetes Gateway API v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}} or later experimental channel, which includes the `XListenerSet` CRD.
-   
-   ```sh
-   kubectl apply --server-side --kustomize "https://github.com/kubernetes-sigs/gateway-api/config/crd/experimental?ref=v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}"
-   ```
-
-2. Follow the [Get Started guide]({{< link-hextra path="/quickstart/" >}}) to install {{< reuse "agw-docs/snippets/kgateway.md" >}}.
-
-3. If you already have a {{< reuse "agw-docs/snippets/kgateway.md" >}} installation, restart the `{{< reuse "agw-docs/snippets/pod-name.md" >}}` deployment to pick up the new CRDs.
-
-   ```sh
-   kubectl rollout restart deployment/{{< reuse "agw-docs/snippets/pod-name.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
 
 ### More information {#more-info}
 

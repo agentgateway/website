@@ -1,1 +1,0 @@
-[Install the `agentgateway` binary]({{< link-hextra path="/quickstart/#binary" >}}).

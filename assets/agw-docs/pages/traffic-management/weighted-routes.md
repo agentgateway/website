@@ -92,7 +92,7 @@ Review route precedence in action:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/a -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/a -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"%}}
@@ -126,7 +126,7 @@ Review route precedence in action:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"%}}
@@ -274,7 +274,7 @@ Steps to weight routes:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/a -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/a -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"%}}
@@ -316,7 +316,7 @@ Steps to weight routes:
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/a -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/a -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing"%}}

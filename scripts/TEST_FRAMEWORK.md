@@ -1,0 +1,519 @@
+# Doc Test Framework
+
+This framework generates and runs end-to-end tests directly from documentation markdown files. Tests are assembled from code blocks tagged with path selectors, chained across prerequisite files, and executed against a real Kubernetes cluster.
+
+### Dependencies
+
+Install yamltest and cloud-provider-kind to run the tests:
+
+```bash
+npm i -y -g yamltest@latest
+pip3 install PyYAML
+go install sigs.k8s.io/cloud-provider-kind@latest
+```
+
+---
+
+## How it works
+
+1. A doc page declares a `test:` block in its YAML front matter, listing one or more named test scenarios.
+2. Each scenario lists source files and path selectors — the pieces of shell/YAML to include.
+3. `doc_test_run.py` reads this metadata, chains the sources together, and produces a standalone bash script.
+4. The script is run inside a fresh `kind` cluster (with `cloud-provider-kind` for load balancer support).
+
+---
+
+## Path selectors
+
+A **path** is a string label attached to a fenced code block or hidden command block. It controls which blocks are included in which test scenario.
+
+### Tagging visible code blocks
+
+Add `,{paths="<name>}"` to the fenced code language line:
+
+````md
+```sh,{paths="install-httpbin"}
+kubectl apply -f https://raw.githubusercontent.com/.../httpbin.yaml
+```
+````
+
+A block may belong to multiple paths:
+
+````md
+```sh,{paths="standard,experimental"}
+helm upgrade -i --create-namespace ...
+```
+````
+
+Only `sh`/`bash`/`shell`/`yaml`/`yml` blocks are extracted.
+
+### Tagging hidden command blocks
+
+Use the `{{< doc-test >}}` Hugo shortcode for commands that must run during tests but must **not** appear in the website HTML (waits, retries, cleanup). The shortcode template outputs nothing, so the content is completely absent from rendered pages:
+
+```md
+{{< doc-test paths="install-httpbin" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbin deployment
+  wait:
+    ...
+EOF
+{{< /doc-test >}}
+```
+
+The `paths=` attribute works identically to fenced blocks.
+
+---
+
+## Front matter test metadata
+
+On the page being tested, add a `test:` key to the YAML front matter. Each child key is a named test scenario. Each entry in the list is a `file`+`path` pair — a source file and the path selector to pull from it.
+
+```yaml
+---
+title: CORS
+test:
+  cors-in-httproute:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/security/cors.md
+    path: cors-in-httproute
+
+  cors-in-agentgatewaypolicy:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/main/security/cors.md
+    path: cors-in-agentgatewaypolicy
+---
+```
+
+Multiple scenarios on the same page each get their own kind cluster and generated script.
+
+---
+
+## Tracing prerequisites
+
+Every guide has a **Before you begin** section that lists prerequisites. Follow the chain from the feature guide back to the install guide:
+
+```
+feature page (e.g. cors.md)
+  └── sample-app.md           (httpbin installed + HTTPRoute ready)
+        └── gateway.md        (Gateway created + LB address exported)
+              └── helm.md     (CRDs + controller installed)
+```
+
+For each hop:
+
+1. Open the file and find its `## Before you begin` section.
+2. Follow the linked page.
+3. Identify which code blocks are relevant and what path label they carry (or add one if missing).
+4. Add that file+path as a source entry above the current one in the `test:` front matter.
+
+The extractor follows `{{< reuse "..." >}}` and internal links automatically, so you don't need to inline snippet contents — just reference the top-level content file.
+
+---
+
+## Choosing the right path
+
+- Use an **existing** path label if one already exists on the blocks you need.
+- The path `all` is a conventional catch-all for blocks that are included in every scenario from that file.
+- For tabbed content (Standard / Experimental installs), separate paths (`standard`, `experimental`) let you pick the right tab per scenario.
+- A code block with **no** `paths=` is skipped by default (`skip_tabs_without_paths: true`).
+
+### Adding a path to an existing block
+
+If a block you need has no path, add one:
+
+````md
+```sh {paths="install-httpbin"}
+kubectl apply -f ...
+```
+````
+
+If the same block already belongs to another path and you need to add yours:
+
+````md
+```sh {paths="standard,my-new-path"}
+...
+```
+````
+
+---
+
+## Waiting for resources with YAMLTest
+
+Use `YAMLTest -f - <<'EOF' ... EOF` inside a `{{< doc-test >}}` shortcode block immediately after the `kubectl apply` it depends on. The `wait` test type polls a Kubernetes resource until a JSONPath condition is met.
+
+### Wait for a Deployment to be ready
+
+```md
+{{< doc-test paths="all" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-proxy deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+```
+
+### Wait for a Service to get a load balancer address and export it
+
+```md
+{{< doc-test paths="all" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-proxy service LB address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
+EOF
+{{< /doc-test >}}
+```
+
+`setVars` exports the `jsonPath`-matched value as an environment variable for downstream steps. It is a sibling of `wait:` (not nested inside it).
+
+### Wait for an HTTPRoute condition
+
+```md
+{{< doc-test paths="install-httpbin" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbin HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: httpbin
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+```
+
+### Comparators
+
+| Comparator | Meaning |
+|---|---|
+| `equals` | Exact string/number match |
+| `greaterThan` | Numeric greater-than |
+| `exists` | Field is present and non-empty |
+| `contains` | String contains substring |
+
+---
+
+## Testing a feature with YAMLTest HTTP assertions
+
+After all resources are ready and `INGRESS_GW_ADDRESS` is exported, add an HTTP test inside a hidden block on the feature page itself:
+
+```md
+{{< doc-test paths="cors-in-httproute,cors-in-agentgatewaypolicy" >}}
+YAMLTest -f - <<'EOF'
+- name: CORS preflight returns expected headers
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/get"
+    method: OPTIONS
+    headers:
+      host: www.example.com
+      Origin: https://example.com
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    headers:
+      - name: access-control-allow-origin
+        comparator: equals
+        value: https://example.com
+      - name: access-control-allow-methods
+        comparator: contains
+        value: GET
+      - name: access-control-max-age
+        comparator: equals
+        value: "86400"
+EOF
+{{< /doc-test >}}
+```
+
+- `source.type: local` sends the request from the local machine (default).
+- Use `source.type: pod` with a pod selector to send the request from inside the cluster.
+- The `headers` list under `expect` checks response headers (case-insensitive name matching).
+- Use `retries:` on a test entry to retry on transient failures (e.g. a race condition where a response code flips briefly). **Do not use `retries:` to work around a new-hostname ECONNRESET** — see the Troubleshooting section.
+
+---
+
+## Running the tests
+
+### Generate scripts only (no cluster)
+
+```sh
+python3 scripts/doc_test_run.py --generate-only
+```
+
+Scripts are written to `out/tests/generated/`.
+
+### Run all tests
+
+Requires `kind` and `cloud-provider-kind` in PATH.
+
+```sh
+python3 scripts/doc_test_run.py
+```
+
+Each test scenario:
+1. Creates a `kind` cluster named `doc-test-<scenario>`.
+2. Starts `cloud-provider-kind` in the background (provides LoadBalancer IPs).
+3. Runs the generated bash script.
+4. Deletes the cluster.
+5. Writes results to `out/tests/generated/test-results.yaml`.
+
+### Run a single test scenario
+
+Point directly to a file and (optionally) a named scenario. This generates the script, creates a `kind` cluster, starts `cloud-provider-kind`, runs the test, and cleans up — all in one command:
+
+```sh
+# Run one specific scenario
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md \
+  --test cors-in-httproute
+
+# Run all scenarios defined in a single file
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md
+```
+
+To only generate the script without running (useful for inspection):
+
+```sh
+python3 scripts/doc_test_run.py \
+  --file content/docs/kubernetes/main/security/cors.md \
+  --test cors-in-httproute \
+  --generate-only
+bash out/tests/generated/<script-name>.sh
+```
+
+### Key CLI options
+
+| Flag | Default | Description |
+|---|---|---|
+| `--file` | — | Path to a single markdown file to generate/run tests for |
+| `--test` | — | Name of a specific test scenario within `--file` |
+| `--docs-glob` | `content/docs/**/*.md` | Glob to discover pages with `test:` metadata (ignored when `--file` is set) |
+| `--product` | `kubernetes` | Context product used for `conditional-text` resolution |
+| `--generated-dir` | `out/tests/generated` | Output directory for scripts and manifests |
+| `--generate-only` | false | Skip cluster creation and execution |
+| `--verbose` | true | Stream all command output |
+
+The `version` context (used to resolve `{{< version include-if="..." >}}` blocks) is inferred automatically from the source file paths — e.g. a source under `kubernetes/latest/` resolves to version token `latest`, and `kubernetes/main/` to `main`.
+
+---
+
+## Extractor rules
+
+`doc_test_extract.py` processes source files before emitting the script:
+
+- **`{{< reuse "..." >}}`** — inlined recursively from `assets/`.
+- **`{{< version include-if="..." >}}`** — resolved against the inferred version token; non-matching blocks are dropped.
+- **`{{< conditional-text include-if="..." >}}`** — resolved against the `product` context; non-matching blocks are dropped.
+- **Indentation is stripped** from fenced block content so heredocs work correctly in bash.
+- **Duplicate blocks** (same content) are emitted only once.
+- Blocks without a `paths=` attribute are skipped.
+
+---
+
+## Checklist for adding a test to a new page
+
+1. **Trace prerequisites** — follow "Before you begin" links back to `helm.md`.
+2. **Verify path labels** on all prerequisite code blocks; add `paths="..."` where missing.
+3. **Add wait blocks** after each `kubectl apply` that creates something tests depend on.
+4. **Export `INGRESS_GW_ADDRESS`** — it flows from `gateway.md` via `setVars`.
+5. **Add the feature assertion** as a `{{< doc-test >}}` shortcode block on the feature page.
+6. **Write the `test:` front matter** on the feature page, listing sources in dependency order (install → setup → prereqs → feature).
+7. **Regenerate** with `--generate-only` and inspect the script for unresolved shortcodes or missing commands.
+8. **Run locally** with `bash out/tests/generated/<script>.sh` against an existing cluster to verify before committing.
+
+---
+
+## Displaying test status on doc pages
+
+Doc pages with passing tests display a "Verified" badge below the page title.
+
+### How it works
+
+1. **Test results** are written to `out/tests/generated/test-results.yaml` after tests run.
+2. **`doc_test_inject_status.py`** reads the results and adds a `test_status` field to each tested document's front matter:
+   - `test_status: passed` — all tests for the page passed
+   - `test_status: failed` — one or more tests failed (no badge displayed)
+3. **Hugo templates** check for `test_status: passed` and render a green "Verified" badge.
+
+### Makefile targets
+
+The Makefile provides convenient targets for working with test status:
+
+| Target | Description |
+|---|---|
+| `make deps` | Install Python dependencies (PyYAML) |
+| `make test-generate` | Generate doc test scripts without running them |
+| `make test-run` | Run all doc tests |
+| `make test-artifacts-fetch` | Fetch test artifacts from the latest main branch workflow run |
+| `make test-status` | Inject test status into markdown files |
+| `make fetch-test-artifacts-build` | Fetch artifacts, inject status, and build Hugo site |
+| `make fetch-test-artifacts-serve` | Fetch artifacts, inject status, and serve Hugo site locally |
+| `make test-run-build` | Run tests, inject status, and build Hugo site |
+| `make test-run-serve` | Run tests, inject status, and serve Hugo site locally |
+
+### Running locally
+
+To preview the "Verified" badges locally:
+
+```sh
+# Option 1: Fetch results from CI and serve
+make fetch-test-artifacts-serve
+
+# Option 2: Run tests locally and serve
+make test-run-serve
+```
+
+To manually inject test status after running tests:
+
+```sh
+make test-status
+```
+
+This updates the markdown files in `content/docs/` with the test status. The badge will appear when you run Hugo.
+
+### Fetching test artifacts
+
+The `test-artifacts-fetch` target downloads test results from the most recent completed workflow run on the `main` branch. This requires a `GITHUB_TOKEN` environment variable with `actions:read` scope:
+
+```sh
+export GITHUB_TOKEN=<your-token>
+make test-artifacts-fetch
+```
+
+### CLI options for inject script
+
+| Flag | Default | Description |
+|---|---|---|
+| `--repo-root` | `.` | Repository root directory |
+| `--results-file` | `out/tests/generated/test-results.yaml` | Path to test results file |
+| `--dry-run` | false | Preview changes without modifying files |
+| `--quiet` | false | Suppress verbose output |
+
+---
+
+## Troubleshooting
+
+If you run into issues with installing yamltest, include the `--force` flag.
+
+On macOS, you might need to run either the `python3 scripts/doc_test_run.py` command with `sudo`, or run `sudo cloud-provider-kind --gateway-channel=disabled` in a separate tab before running the tests. In macOS, the cloud-provider-kind tool to get a LoadBalancer IP requires elevated permissions.
+
+### Common issues
+
+**File paths differ between `latest` and `main`**
+
+When copying a test chain from `main` to `latest` (or vice versa), update every `file:` path in the front matter. A `main` chain references files under `content/docs/kubernetes/main/`, while `latest` uses `content/docs/kubernetes/latest/`. Using the wrong version directory causes the extractor to pull blocks from a different version's content, or fail silently if the file doesn't exist.
+
+**Wrong prerequisite file paths**
+
+The install prerequisite should point to `content/docs/kubernetes/<version>/quickstart/install.md`, not `content/docs/kubernetes/<version>/install/helm.md` or similar. Check the "Before you begin" section of the guide you're testing and follow the links to confirm the exact paths rather than guessing from memory.
+
+**Test fails immediately with "kubectl port-forward" error**
+
+Tests that contain `kubectl port-forward` in the generated script are automatically failed without running. Port-forwarding requires a persistent background process that doesn't work in the automated test environment. Replace any port-forward-based verification with a `YAMLTest` HTTP assertion using `${INGRESS_GW_ADDRESS}` instead.
+
+**Wait assertions pass but HTTP test hangs then fails with `read ECONNRESET`**
+
+When a test creates a new HTTPRoute with a hostname that was not previously registered, agentgateway-proxy (Rust/hyper) goes through two phases before it can serve the new route. `Accepted=True` and `ResolvedRefs=True` on the HTTPRoute only reflect control plane state (~50ms) — they do not guarantee the data plane is ready.
+
+- **Phase 1 (~120s)**: Proxy is unaware of the new hostname; every connection is immediately reset (< 1ms). `curl --max-time 5` iterations cost ~2s each (instant failure + 2s sleep).
+- **Phase 2 (last few seconds)**: Proxy receives xDS update and holds connections while applying it (4–26s per connection), then resets them.
+
+Adding `retries: 3` alone (without a warmup loop) multiplies the Phase 2 hang — observed total: 4 × 107s ≈ 429s.
+
+Fix: use **both** a curl warmup loop (covers Phase 1) and `retries: 1` on the first HTTP test entry (covers Phase 2):
+
+```
+{{< doc-test paths="<scenario-name>" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/get" -H "host: <new-hostname>" && break
+  sleep 2
+done
+{{< /doc-test >}}
+```
+
+Then on the first YAMLTest HTTP assertion entry, add `retries: 1`. Once curl gets any HTTP response (even 404), Phase 1 is over. `retries: 1` absorbs Phase 2. Max poll window: ~420 seconds.
+
+This only applies when the feature page creates an HTTPRoute with a **new hostname** not in the prereq chain. Tests that update an existing prereq-chain HTTPRoute (same name/namespace) are not affected.
+
+**`read ECONNRESET` persists beyond the warmup window (cloud-provider-kind LB failure)**
+
+If the test already has the warmup loop + `retries: 1` pattern but the HTTP assertion still fails with `read ECONNRESET` after 200+ seconds (the warmup curl loop never breaks out), the issue is likely a cloud-provider-kind LoadBalancer networking failure — not a data-plane warmup problem.
+
+**How to distinguish from the data-plane warmup issue:** Check the controller logs in the diagnostic artifacts at `out/tests/generated/context/<scenario>/pods/<controller-pod>-controller-logs.log`. Look for `XDS: Pushing` entries with `clients:1` and `RDS` push responses for your routes:
+
+```
+{"msg":"XDS: Pushing","component":"krtxds","clients":1,"version":"..."}
+{"msg":"push response","component":"krtxds","type":"RDS","resources":1,...}
+```
+
+If the controller pushed routes to the proxy successfully, the proxy IS configured — the problem is at the network level between the LB IP and the pod.
+
+**Root cause:** cloud-provider-kind assigns a LoadBalancer IP to the Service, but traffic from that IP is not properly forwarded to the pod through the Kind Docker network. The LB IP is reachable (TCP connect succeeds) but the proxy resets the connection because it never receives the forwarded packets.
+
+**Typical diagnostic evidence:**
+- All pods Running with 0 restarts
+- LB IP assigned (e.g. `172.18.0.x`) and Service shows `80:<nodePort>/TCP`
+- HTTPRoutes show `Accepted=True`
+- Controller logs show successful xDS pushes with `clients:1`
+- Proxy log shows `started bind bind="80/agentgateway-system/agentgateway-proxy"`
+- curl gets `ECONNRESET` for the entire test duration (200+ seconds)
+
+**Resolution:** This is a transient infrastructure issue. Re-running the test typically resolves it. On macOS, ensure `cloud-provider-kind` has proper permissions (`sudo`). If it recurs frequently, check Docker resource allocation (memory/CPU) for the Kind cluster.
+
+**`/expect: unknown property "bodyJsonPath"` errors**
+
+This error almost always means the `expect` block has bad indentation. `bodyJsonPath` must be a direct child of `expect:`, not nested under `statusCode` or `headers`. Double-check that all keys under `expect:` are at the same indentation level:
+
+```yaml
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.choices[0].message.content"
+        comparator: contains
+        value: "hello"
+```
+

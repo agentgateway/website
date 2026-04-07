@@ -2,7 +2,7 @@ With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can route to agent-t
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 <!-- Steps to build image locally from kgateway repo
 ## Step 1: Deploy an A2A server {#a2a-server}
@@ -18,13 +18,13 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
 2. From the root directory, build the sample A2A server.
 
    ```sh
-   VERSION={{< reuse "agw-docs/versions/patch-dev.md" >}} make test-a2a-agent-docker
+   VERSION={{< reuse "agw-docs/versions/n-patch.md" >}} make test-a2a-agent-docker
    ```
 
 3. Load the image into your cluster. The following `make` command assumes that you are using a local Kind cluster.
 
    ```sh
-   CLUSTER_NAME=<your-cluster-name> VERSION={{< reuse "agw-docs/versions/patch-dev.md" >}} make kind-load-test-a2a-agent
+   CLUSTER_NAME=<your-cluster-name> VERSION={{< reuse "agw-docs/versions/n-patch.md" >}} make kind-load-test-a2a-agent
    ```
 
 4. Deploy the A2A server. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting. This way, kgateway configures the agentgateway proxy to use  the A2A protocol.
@@ -48,7 +48,7 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
        spec:
          containers:
            - name: a2a-agent
-             image: ghcr.io/kgateway-dev/test-a2a-agent:{{< reuse "agw-docs/versions/patch-dev.md" >}}
+             image: ghcr.io/kgateway-dev/test-a2a-agent:{{< reuse "agw-docs/versions/n-patch.md" >}}
              ports:
                - containerPort: 9090
    ---
@@ -73,7 +73,7 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
 
 Deploy an A2A server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy to use the A2A protocol.
 
-```yaml
+```yaml {paths="a2a"}
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -116,7 +116,7 @@ EOF
 
 Create an HTTPRoute resource that routes incoming traffic to the A2A server.
 
-```yaml
+```yaml {paths="a2a"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -133,13 +133,17 @@ spec:
 EOF
 ```
 
+{{< doc-test paths="a2a" >}}
+kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
+{{< /doc-test >}}
+
 ## Step 3: Verify the connection {#verify}
 
 1. Get the agentgateway address.
    
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
+   ```sh {paths="a2a"}
    export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o=jsonpath="{.status.addresses[0].value}")
    echo $INGRESS_GW_ADDRESS
    ```
@@ -151,11 +155,21 @@ EOF
    {{% /tab %}}
    {{< /tabs >}}
 
+{{< doc-test paths="a2a" >}}
+for i in $(seq 1 30); do
+  STATUS=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/" \
+    -H "Content-Type: application/json" \
+    -d '{"jsonrpc":"2.0","id":"test","method":"tasks/send","params":{"id":"test","message":{"role":"user","parts":[{"type":"text","text":"ping"}]}}}')
+  [ "$STATUS" = "200" ] && break
+  sleep 2
+done
+{{< /doc-test >}}
+
 2. As a user, send a request to the A2A server. As an assistant, the agent echoes back the message that you sent.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
+   ```sh {paths="a2a"}
    curl -X POST http://$INGRESS_GW_ADDRESS/ \
      -H "Content-Type: application/json" \
        -v \
@@ -229,8 +243,8 @@ EOF
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
-kubectl delete Deployment a2a-agent
-kubectl delete Service a2a-agent
-kubectl delete HTTPRoute a2a
+```sh {paths="a2a"}
+kubectl delete Deployment a2a-agent --ignore-not-found
+kubectl delete Service a2a-agent --ignore-not-found
+kubectl delete HTTPRoute a2a --ignore-not-found
 ```

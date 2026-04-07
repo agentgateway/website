@@ -2,7 +2,7 @@ Use the Guardrail Webhook API to set up your own custom guardrail controls for {
 
 ## About guardrails {#about}
 
-Guardrails are control mechanisms that help ensure safe, consistent, and compliant interactions with large language models (LLMs) by validating both input and output content.
+Guardrails provide content safety and PII detection. They are control mechanisms that help ensure safe, consistent, and compliant interactions with large language models (LLMs) by validating both input and output content.
 
 ### Benefits of guardrails {#about-benefits}
 
@@ -26,7 +26,7 @@ By applying guardrails to both input and output, you can:
 
 ### Support for guardrails {#about-guardrail-support}
 
-{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards]({{< link-hextra path="/prompt-guards/">}}) to reject, mask, or pass prompt data through a moderation endpoint.
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} includes built-in [prompt guards]({{< link-hextra path="/llm/guardrails/">}}) to reject, mask, or pass prompt data through a moderation endpoint.
 
 However, you might want to bring your own guardrails for situations such as:
 
@@ -110,7 +110,7 @@ EOF
 ### More information
 
 * [Example scenario](#example-scenario) of a simple Python webhook server that integrates with the Guardrail Webhook API.
-* [Guardrail Webhook API reference docs]({{< link-hextra path="/openapi-spec/">}}).
+* [Guardrail Webhook API reference docs]({{< link-hextra path="/llm/guardrails/webhook/openapi-spec/">}}).
 
 ## Example scenario
 
@@ -220,7 +220,7 @@ The webhook server is configured to take the following actions:
 
 ### Step 2: Configure the gateway proxy to use the webhook server {#ai-gateway}
 
-Configure a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
+Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
 
 
 ```yaml
@@ -271,7 +271,7 @@ EOF
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}   
    ```sh
-   curl -vi "$INGRESS_GW_ADDRESS:8080/openai" -H content-type:application/json  -d '{
+   curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",
       "messages": [
         {
@@ -318,7 +318,7 @@ EOF
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal= "2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi "$INGRESS_GW_ADDRESS:8080/openai" -H content-type:application/json  -d '{
+   curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
       "model": "gpt-3.5-turbo",
       "messages": [
         {

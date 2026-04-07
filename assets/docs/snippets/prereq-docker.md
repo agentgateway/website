@@ -1,1 +1,0 @@
-Make sure that you have `docker`, such as by installing [Docker Desktop](https://docs.docker.com/desktop/).

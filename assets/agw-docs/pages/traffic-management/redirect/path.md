@@ -1,10 +1,9 @@
 Redirect requests to a different path prefix. 
 
-For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPRequestRedirectFilter).
+For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#httprequestredirectfilter).
 
-## Before you begin
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
 ## Set up path redirects
 
 Path redirects use the HTTP path modifier to replace either an entire path or path prefixes. 
@@ -15,7 +14,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
 
    Because the `ReplacePrefixPath` path modifier is used, only the path prefix is replaced during the redirect. For example, requests to `http://path.redirect.example/get` result in the `https://path.redirect.example/status/200` redirect location. However, for longer paths, such as in `http://path.redirect.example/get/headers`, only the prefix is replaced and a redirect location of `https://path.redirect.example/status/200/headers` is returned.
 
-   ```yaml
+   ```yaml {paths="path-redirect-prefix"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -24,7 +23,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - path.redirect.example
@@ -57,7 +56,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -84,7 +83,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get/headers -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get/headers -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -107,13 +106,48 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    content-length: 0
    ```
 
+{{< doc-test paths="path-redirect-prefix" >}}
+YAMLTest -f - <<'EOF'
+- name: path redirect prefix - /get returns 302 with location /status/200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200
+- name: path redirect prefix - /get/headers returns 302 with location /status/200/headers
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get/headers
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200/headers
+EOF
+{{< /doc-test >}}
+
 ### Replace full path
 
 1. Create an HTTPRoute for the httpbin app. In the following example, requests to the `/get` path are redirected to the `/status/200` path, and a 302 HTTP response code is returned to the user.
 
    Because the `ReplaceFullPath` path modifier is used, requests to `http://path.redirect.example/get` and `http://path.redirect.example/get/headers` both receive `https://path.redirect.example/status/200` as the redirect location.
 
-   ```yaml
+   ```yaml {paths="path-redirect-full"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -122,7 +156,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
      namespace: httpbin
    spec:
      parentRefs:
-       - name: http
+       - name: agentgateway-proxy
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      hostnames:
        - path.redirect.example
@@ -155,7 +189,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -182,7 +216,7 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/get/headers -H "host: path.redirect.example:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/get/headers -H "host: path.redirect.example:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -205,12 +239,47 @@ Path redirects use the HTTP path modifier to replace either an entire path or pa
    content-length: 0
    ```
 
+{{< doc-test paths="path-redirect-full" >}}
+YAMLTest -f - <<'EOF'
+- name: path redirect full - /get returns 302 with location /status/200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200
+- name: path redirect full - /get/headers returns 302 with same location /status/200
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /get/headers
+    method: GET
+    headers:
+      host: "path.redirect.example:80"
+  source:
+    type: local
+  expect:
+    statusCode: 302
+    headers:
+      - name: location
+        comparator: contains
+        value: /status/200
+EOF
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
-  
+
 ```sh
-kubectl delete httproute httpbin-redirect -n httpbin
+kubectl delete httproute httpbin-redirect -n httpbin --ignore-not-found
 ```
 
 

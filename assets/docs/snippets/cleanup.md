@@ -1,1 +1,0 @@
-You can remove the resources that you created in this guide.

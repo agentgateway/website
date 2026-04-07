@@ -1,0 +1,352 @@
+Route traffic to gRPC services by using the GRPCRoute resource for protocol-aware routing.
+
+## About gRPC routing
+
+The GRPCRoute resource provides protocol-aware routing for gRPC traffic within the Kubernetes Gateway API. Unlike the HTTPRoute, which requires matching on HTTP paths and methods, the GRPCRoute allows you to define routing rules by using gRPC-native concepts, such as service and method names.
+
+Consider the difference:
+- **HTTPRoute Match**: `path:/com.example.User/Login`, `method: POST`
+- **GRPCRoute Match**: `service: yages.Echo`, `method: Ping`
+
+The GRPCRoute approach is more readable, less error-prone, and aligns with the Gateway API's role-oriented philosophy.
+
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
+3. [Install `grpcurl`](https://github.com/fullstorydev/grpcurl) for testing on your computer.
+
+## Deploy a sample gRPC service {#sample-grpc}
+
+Deploy a sample gRPC service for testing purposes. The sample service has two APIs:
+
+- `yages.Echo.Ping`: Takes no input (empty message) and returns a `pong` message.
+- `yages.Echo.Reverse`: Takes input content and returns the content in reverse order, such as `hello world` becomes `dlrow olleh`.
+
+Steps to set up the sample gRPC service:
+
+1. Deploy the gRPC echo server and client.
+
+   ```yaml {paths="grpc"}
+   kubectl apply -f- <<EOF
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: grpc-echo
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app.kubernetes.io/name: grpc-echo
+   spec:
+     selector:
+       matchLabels:
+         app.kubernetes.io/name: grpc-echo
+     replicas: 1
+     template:
+       metadata:
+         labels:
+          app.kubernetes.io/name: grpc-echo
+       spec:
+         containers:
+           - name: grpc-echo
+             image: ghcr.io/projectcontour/yages:v0.1.0
+             ports:
+               - containerPort: 9000
+                 protocol: TCP
+             env:
+               - name: POD_NAME
+                 valueFrom:
+                   fieldRef:
+                     fieldPath: metadata.name
+               - name: NAMESPACE
+                 valueFrom:
+                   fieldRef:
+                     fieldPath: metadata.namespace
+               - name: GRPC_ECHO_SERVER
+                 value: "true"
+               - name: SERVICE_NAME
+                 value: grpc-echo
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: grpc-echo-svc
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app.kubernetes.io/name: grpc-echo
+   spec:
+     type: ClusterIP
+     ports:
+       - port: 3000
+         protocol: TCP
+         targetPort: 9000
+         appProtocol: kubernetes.io/h2c
+     selector:
+       app.kubernetes.io/name: grpc-echo
+   ---
+   apiVersion: v1
+   kind: Pod
+   metadata:
+     name: grpcurl-client
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       app.kubernetes.io/name: grpcurl-client
+   spec:
+    containers:
+       - name: grpcurl
+         image: docker.io/fullstorydev/grpcurl:v1.8.7-alpine
+         command:
+           - sleep
+           - "infinity"
+   EOF
+   ```
+
+{{< doc-test paths="grpc" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for grpc-echo deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: grpc-echo
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+- name: wait for grpcurl-client pod to be running
+  wait:
+    target:
+      kind: Pod
+      metadata:
+        namespace: agentgateway-system
+        name: grpcurl-client
+    jsonPath: "$.status.phase"
+    jsonPathExpectation:
+      comparator: equals
+      value: "Running"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+2. Verify that the sample app is up and running. 
+   ```sh
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} | grep grpc
+   ```
+
+   Example output: 
+   ```console
+   grpc-echo-5fc549b5fc-tdlzw            1/1     Running            0                39s
+   grpcurl-client                        1/1     Running            0                6s
+   ```
+
+
+## Set up gRPC routing {#grpcroute}
+
+1. Create the GRPC Gateway. The following Gateway accepts routes from all namespaces. 
+   ```yaml {paths="grpc"}
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: grpc              
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     listeners:
+     - protocol: HTTP
+       port: 80
+       name: http
+       allowedRoutes:
+         namespaces:
+          from: All
+   EOF
+   ```
+
+2. Create the GRPCRoute. The GRPCRoute includes a match for `grpc.reflection.v1alpha.ServerReflection` to enable dynamic API exploration and a match for the `Ping` method. For detailed information about GRPCRoute fields and configuration options, see the [Gateway API GRPCRoute documentation](https://gateway-api.sigs.k8s.io/reference/spec/#grpcroute).
+
+   ```yaml {paths="grpc"}
+   kubectl apply -f - <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: GRPCRoute
+   metadata:
+     name: example-route
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: grpc
+     hostnames:
+       - "grpc.com"
+     rules:
+       - matches:
+           - method:
+               method: ServerReflectionInfo
+               service: grpc.reflection.v1alpha.ServerReflection
+           - method:
+               method: Ping
+         backendRefs:
+           - name: grpc-echo-svc
+             port: 3000
+   EOF
+   ```
+
+{{< doc-test paths="grpc" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for GRPCRoute to be accepted
+  wait:
+    target:
+      kind: GRPCRoute
+      metadata:
+        namespace: agentgateway-system
+        name: example-route
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+3. Verify that the GRPCRoute is applied successfully.
+
+   ```bash
+   kubectl get grpcroute example-route -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+   ```
+
+   Example output:
+   ```console
+   status:
+     parents:
+     - conditions:
+       - lastTransitionTime: "2026-01-21T16:22:52Z"
+         message: ""
+         observedGeneration: 1
+         reason: Accepted
+         status: "True"
+         type: Accepted
+       - lastTransitionTime: "2026-01-21T16:22:52Z"
+         message: ""
+         observedGeneration: 1
+         reason: ResolvedRefs
+         status: "True"
+         type: ResolvedRefs
+       controllerName: agentgateway.dev/agentgateway
+       parentRef:
+         group: gateway.networking.k8s.io
+         kind: Gateway
+         name: grpc
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+## Verify the gRPC route {#verify-grpcroute}
+
+Verify that the gRPC route to the echo service is working. The steps vary whether your Gateway is exposed with a LoadBalancer service or set up for local testing only. 
+
+{{< doc-test paths="grpc" >}}
+success=false
+for i in $(seq 1 30); do
+  if kubectl exec -n agentgateway-system grpcurl-client -c grpcurl -- \
+    grpcurl -plaintext -authority grpc.com grpc:80 yages.Echo/Ping 2>&1 | grep -q '"text": "pong"'; then
+    success=true
+    break
+  fi
+  sleep 5
+done
+$success
+{{< /doc-test >}}
+
+{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+{{% tab tabName="Cloud Provider LoadBalancer" %}}
+1. Send a request to the gRPC echo service by using the gRPC client app. Verify that you see the `Pong` message in your response. 
+   ```sh
+   kubectl exec -n agentgateway-system grpcurl-client -c grpcurl -- \
+     grpcurl -plaintext -authority grpc.com -vv grpc:80 yages.Echo/Ping
+   ```
+
+   Example output: 
+   ```console
+   {
+      "text": "pong"
+   }
+   ```
+
+2. Optional: Explore other gRPC endpoints. 
+   ```sh
+   kubectl exec -n agentgateway-system grpcurl-client -c grpcurl -- \
+     grpcurl -plaintext -authority grpc.com -vv grpc:80 list
+
+   kubectl exec -n agentgateway-system grpcurl-client -c grpcurl -- \
+     grpcurl -plaintext -authority grpc.com -vv grpc:80 describe yages.Echo
+   ```
+
+   Example output: 
+   ```console
+   grpc.health.v1.Health
+   grpc.reflection.v1alpha.ServerReflection
+   yages.Echo
+
+   yages.Echo is a service:
+   service Echo {
+     rpc Ping ( .yages.Empty ) returns ( .yages.Content );
+     rpc Reverse ( .yages.Content ) returns ( .yages.Content );
+   }
+   ```
+   
+{{% /tab %}}
+{{% tab tabName="Port-forward for local testing" %}}
+1. Port-forward the gateway proxy pod on port 8080.
+   ```sh
+   kubectl port-forward svc/grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
+   ```
+
+2. Send a request to the gRPC echo service. Verify that you see the `Pong` message in your response. 
+   ```sh
+   grpcurl -plaintext -authority grpc.com -vv localhost:8080 yages.Echo/Ping
+   ```
+
+   Example output: 
+
+   ```console
+   {
+     "text": "pong"
+   }
+   ```
+
+3. Optional: Explore other gRPC endpoints. 
+   ```sh
+   grpcurl -plaintext -authority grpc.com localhost:8080 list
+   grpcurl -plaintext -authority grpc.com localhost:8080 describe yages.Echo
+   ```
+
+   Example output: 
+   ```console
+   grpc.health.v1.Health
+   grpc.reflection.v1alpha.ServerReflection
+   yages.Echo
+
+   yages.Echo is a service:
+   service Echo {
+     rpc Ping ( .yages.Empty ) returns ( .yages.Content );
+     rpc Reverse ( .yages.Content ) returns ( .yages.Content );
+   }
+   ```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+  
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```bash
+kubectl delete grpcroute example-route -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete deployment grpc-echo -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete service grpc-echo-svc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete pod grpcurl-client -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete gateway grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+

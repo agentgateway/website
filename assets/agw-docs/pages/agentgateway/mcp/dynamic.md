@@ -1,20 +1,20 @@
 Route to a Model Context Protocol (MCP) server dynamically by using a label selector. This way, unlike a static backend, you can update the backing MCP server without having to update the Backend resource. For more information, see the [About MCP]({{< link-hextra path="/mcp/about" >}}) topic.
 
 {{< callout type="warning" >}}
-Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend]({{< link-hextra path="/static-mcp/">}}).
+Note that only streamable HTTP is currently supported for label selectors. If you need to use an SSE listener, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
 {{< /callout >}}
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Step 1: Deploy an MCP server {#mcp-server}
 
 Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The following example sets up an MCP server that provides various utility tools.
 
 1. Create an MCP server (`mcp-server`) that provides various utility tools. Notice the following details about the Service:
-   * `appProtocol: kgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the agentgateway proxy uses the MCP protocol when connecting to the service.
-   * `kgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
+   * `appProtocol: agentgateway.dev/mcp` (required): Configure your service to use the MCP protocol. This way, the agentgateway proxy uses the MCP protocol when connecting to the service.
+   * `agentgateway.dev/mcp-path` annotation (optional): The default values are `/sse` for the SSE protocol or `/mcp` for the Streamable HTTP protocol. If you need to change the path of the MCP target endpoint, set this annotation on the Service.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -55,7 +55,7 @@ Deploy an MCP server that you want {{< reuse "agw-docs/snippets/agentgateway.md"
        - protocol: TCP
          port: 3001
          targetPort: 3001
-         appProtocol: kgateway.dev/mcp
+         appProtocol: agentgateway.dev/mcp
      type: ClusterIP
    EOF
    ```
@@ -102,6 +102,10 @@ spec:
       - name: mcp-backend
         group: agentgateway.dev
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+    matches:
+    - path:
+        type: PathPrefix
+        value: /mcp
 EOF
 ```
 

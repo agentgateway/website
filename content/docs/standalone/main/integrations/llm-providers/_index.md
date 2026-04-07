@@ -1,0 +1,42 @@
+---
+title: LLM providers
+weight: 10
+description: Connect agentgateway to LLM providers for AI-powered applications
+test: skip
+---
+
+Agentgateway supports multiple LLM providers, allowing you to route requests to different AI models and manage API keys centrally.
+
+{{< cards >}}
+  {{< card path="/llm/providers/openai" title="OpenAI" subtitle="GPT-4, GPT-4o, and more" >}}
+  {{< card path="/llm/providers/anthropic" title="Anthropic" subtitle="Claude models" >}}
+  {{< card path="/llm/providers/azure" title="Azure OpenAI" subtitle="Azure-hosted OpenAI models" >}}
+  {{< card path="/llm/providers/bedrock" title="Amazon Bedrock" subtitle="AWS foundation models" >}}
+  {{< card path="/llm/providers/gemini" title="Google Gemini" subtitle="Gemini models" >}}
+  {{< card path="/llm/providers/vertex" title="Vertex AI" subtitle="Google Cloud AI platform" >}}
+  {{< card path="/llm/providers/openai-compatible" title="OpenAI-Compatible" subtitle="xAI, Cohere, and other compatible APIs" >}}
+  {{< card path="/llm/providers/multiple-llms" title="Multiple Providers" subtitle="Route to multiple LLMs" >}}
+{{< /cards >}}
+
+## Quick start
+
+To use an LLM provider with agentgateway, configure an `ai` backend.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: my-llm
+          provider:
+            openAI:
+              model: gpt-4o-mini
+      policies:
+        backendAuth:
+          key: "$OPENAI_API_KEY"
+```
+
+See [LLM Consumption]({{< link-hextra path="/llm/" >}}) for complete documentation on working with LLM providers.

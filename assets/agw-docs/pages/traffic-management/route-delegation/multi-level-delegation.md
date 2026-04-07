@@ -130,7 +130,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/foo \
    -H "host: delegation.example"
    ```
    {{% /tab %}}
@@ -158,7 +158,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/bar \
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/bar \
    -H "host: delegation.example"
    ```
    {{% /tab %}}
@@ -182,7 +182,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/grandchild/bar \
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team2/grandchild/bar \
    -H "host: delegation.example"
    ```
    {{% /tab %}}
@@ -210,7 +210,7 @@ In this guide you walk through a route delegation example that demonstrates rout
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/grandchild/foo \
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team2/grandchild/foo \
    -H "host: delegation.example"
    ```
    {{% /tab %}}

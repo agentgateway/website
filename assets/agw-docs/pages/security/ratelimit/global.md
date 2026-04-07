@@ -3,7 +3,7 @@ Configure global rate limiting rules across all of your Gateways to protect the 
 
 ## About {#about}
 
-Global rate limiting in {{< reuse "agw-docs/snippets/kgateway.md" >}} is powered by [Envoy's rate limiting service protocol](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter). With global rate limiting, you can apply distributed, consistent rate limits across multiple Gateways. Unlike local rate limiting, which operates per Gateway instance, global rate limiting uses a central service to coordinate rate limits. Therefore, to use global rate limiting, you must bring your own rate limit service that implements the Envoy protocol.
+Global rate limiting in {{< reuse "agw-docs/snippets/kgateway.md" >}} is powered by [Envoy's rate limiting service protocol](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/rate_limit_filter). When used with token-based limits keyed by user or API key, use it to enforce budget limits or spend limits per key. With global rate limiting, you can apply distributed, consistent rate limits across multiple Gateways. Unlike local rate limiting, which operates per Gateway instance, global rate limiting uses a central service to coordinate rate limits. Therefore, to use global rate limiting, you must bring your own rate limit service that implements the Envoy protocol.
 
 With your own rate limit service in place, you get benefits such as:
 
@@ -48,7 +48,7 @@ sequenceDiagram
 
 The global rate limiting feature consists of three components:
 
-1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with rateLimit.global**: Configure your rate limit policy in a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The rate limit policy includes the descriptors to extract from requests for the Gateway to send to the Rate Limit Service.
+1. **{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with rateLimit.global**: Configure your rate limit policy in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The rate limit policy includes the descriptors to extract from requests for the Gateway to send to the Rate Limit Service.
 2. **GatewayExtension**: Connect {{< reuse "/agw-docs/snippets/kgateway.md" >}} with the Rate Limit Service by using a kgateway GatewayExtension.
 3. **Rate Limit Service** - An external service that you set up to implement the Envoy Rate Limit protocol. The Rate Limit Service has the actual rate limit values to enforce on requests, based on the descriptors that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} includes.
 
@@ -71,7 +71,7 @@ When rate limiting is enabled, {{< reuse "agw-docs/snippets/kgateway.md" >}} add
 
 You can bring your own rate limit service that implements the Envoy Rate Limit gRPC protocol. 
 
-To get started, you can try out a demo rate limit service from the kgateway project. For more information, see the [GitHub repo](https://github.com/kgateway-dev/kgateway/tree/main/test/kubernetes/e2e/features/rate_limit/testdata).
+To get started, you can try out a demo rate limit service from the kgateway project. For more information, see the [GitHub repo](https://github.com/kgateway-dev/kgateway/tree/main/test/e2e/features/rate_limit/global/testdata).
 
 1. Create the `kgateway-test-extensions` namespace.
 
@@ -206,9 +206,9 @@ Create a GatewayExtension resource that points to your Rate Limit Service.
    EOF
    ```
 
-## Step 4: Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} {#traffic-policy}
+## Step 4: Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} {#traffic-policy}
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that applies rate limits to your routes. Note that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} must be in the same namespace as the GatewayExtension to select it.
+Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that applies rate limits to your routes. Note that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} must be in the same namespace as the GatewayExtension to select it.
 
 The {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} configures the descriptors that define the dimensions for rate limiting. Each descriptor consists of one or more entries that help categorize and count requests. The descriptor entries match on the descriptor keys that you defined previously in the Rate Limit Service.
 
@@ -221,7 +221,7 @@ Entries can be of one of the following types: `RemoteAddress`, `Path`, `Header`,
 | Path | Use the request path as the descriptor value. The `Path` entry type is mapped to the `path` descriptor key in the Rate Limit Service. | None |
 | RemoteAddress | Use the client's IP address as the descriptor value. The `RemoteAddress` entry type is mapped to the `remote_address` descriptor key in the Rate Limit Service. | None |
 
-Flip through the tabs for different example rate limit policies. Note that the examples apply to the Gateway that you created before you began, but you can also apply a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to an HTTPRoute or specific route.
+Flip through the tabs for different example rate limit policies. Note that the examples apply to the Gateway that you created before you began, but you can also apply an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to an HTTPRoute or specific route.
 
 {{< tabs tabTotal="5" items="Client IP address, Request path, User ID, Nested global rate limits, Local and global rate limits" >}}
 
@@ -405,7 +405,7 @@ Test the rate limits by sending requests to the Gateway. The following steps ass
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -427,7 +427,7 @@ Test the rate limits by sending requests to the Gateway. The following steps ass
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/headers -H "host: www.example.com:8080"
+   curl -i http://$INGRESS_GW_ADDRESS:80/headers -H "host: www.example.com:80"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

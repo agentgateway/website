@@ -188,8 +188,8 @@ The following image illustrates the route delegation hierarchy and policy inheri
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
-   -H "host: delegation-parent1.example:8080" 
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/foo \
+   -H "host: delegation-parent1.example:80" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -241,8 +241,8 @@ The following image illustrates the route delegation hierarchy and policy inheri
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
-   -H "host: delegation-parent1.example:8080" 
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/foo \
+   -H "host: delegation-parent1.example:80" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -270,8 +270,8 @@ The following image illustrates the route delegation hierarchy and policy inheri
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
-   -H "host: delegation-parent2.example:8080" 
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/foo \
+   -H "host: delegation-parent2.example:80" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
@@ -321,8 +321,8 @@ The following image illustrates the route delegation hierarchy and policy inheri
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
-   -H "host: delegation-parent2.example:8080" 
+   curl -i http://$INGRESS_GW_ADDRESS:80/anything/team1/foo \
+   -H "host: delegation-parent2.example:80" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}

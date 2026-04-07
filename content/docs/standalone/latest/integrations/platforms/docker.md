@@ -1,0 +1,292 @@
+---
+title: Docker
+weight: 20
+description: Run agentgateway as a Docker container
+---
+
+Run agentgateway as a Docker container for local development or small deployments.
+
+## Quick start
+
+Get started in under a minute with your preferred LLM provider.
+
+{{< tabs items="OpenAI,Anthropic,xAI (Grok),Ollama,Azure OpenAI,Amazon Bedrock,Google Gemini" >}}
+
+{{% tab %}}
+
+```bash
+# Set your API key
+export OPENAI_API_KEY=your-api-key
+
+# Create config for OpenAI
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: $OPENAI_API_KEY
+EOF
+
+# Run agentgateway
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  -e OPENAI_API_KEY=$OPENAI_API_KEY \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+
+# Test with a chat completion
+curl http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+{{% /tab %}}
+
+{{% tab %}}
+
+```bash
+# Set your API key
+export ANTHROPIC_API_KEY=your-api-key
+
+# Create config for Anthropic
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: anthropic
+    params:
+      apiKey: $ANTHROPIC_API_KEY
+EOF
+
+# Run agentgateway
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+
+# Test with a chat completion
+curl http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"claude-sonnet-4-20250514","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+{{% /tab %}}
+
+{{% tab %}}
+
+```bash
+# Set your xAI API key
+export XAI_API_KEY=your-api-key
+
+# Create config for xAI
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: $XAI_API_KEY
+      baseUrl: "https://api.x.ai"
+EOF
+
+# Run agentgateway
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  -e XAI_API_KEY=$XAI_API_KEY \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+
+# Test with a chat completion
+curl http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"grok-2-latest","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+{{% /tab %}}
+
+{{% tab %}}
+
+```bash
+# Start Ollama (if not already running)
+ollama serve &
+
+# Pull a model
+ollama pull llama3.2
+
+# Create config for Ollama
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      baseUrl: "http://host.docker.internal:11434"
+EOF
+
+# Run agentgateway (use host.docker.internal to reach Ollama on the host)
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  --add-host=host.docker.internal:host-gateway \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+
+# Test with a chat completion
+curl http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"llama3.2","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+{{% /tab %}}
+
+{{% tab %}}
+
+```bash
+# Set your Azure OpenAI credentials
+export AZURE_OPENAI_API_KEY=your-api-key
+export AZURE_DEPLOYMENT=your-deployment-name
+export AZURE_ENDPOINT=your-resource.openai.azure.com
+
+# Create config for Azure OpenAI
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: azure
+    params:
+      model: $AZURE_DEPLOYMENT
+      azureEndpoint: "https://$AZURE_ENDPOINT"
+      azureApiKey: $AZURE_OPENAI_API_KEY
+EOF
+
+# Run agentgateway
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
+  -e AZURE_DEPLOYMENT=$AZURE_DEPLOYMENT \
+  -e AZURE_ENDPOINT=$AZURE_ENDPOINT \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+
+# Test with a chat completion
+curl http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gpt-4o","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+{{% /tab %}}
+
+{{% tab %}}
+
+```bash
+# Set your AWS credentials
+export AWS_ACCESS_KEY_ID=your-access-key
+export AWS_SECRET_ACCESS_KEY=your-secret-key
+export AWS_REGION=us-east-1
+
+# Create config for Amazon Bedrock
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      region: $AWS_REGION
+EOF
+
+# Run agentgateway
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
+  -e AWS_REGION=$AWS_REGION \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+
+# Test with a chat completion
+curl http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"anthropic.claude-3-5-sonnet-20241022-v2:0","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+{{% /tab %}}
+
+{{% tab %}}
+
+```bash
+# Set your API key
+export GEMINI_API_KEY=your-api-key
+
+# Create config for Google Gemini
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: gemini
+    params:
+      apiKey: $GEMINI_API_KEY
+EOF
+
+# Run agentgateway
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  -e GEMINI_API_KEY=$GEMINI_API_KEY \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+
+# Test with a chat completion
+curl http://localhost:3000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"model":"gemini-2.0-flash","messages":[{"role":"user","content":"Hello!"}]}'
+```
+
+{{% /tab %}}
+
+{{< /tabs >}}
+
+## Access the Admin UI
+
+By default, the agentgateway admin UI listens on localhost. To access it from your host machine:
+
+```bash
+docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
+  -p 127.0.0.1:15000:15000 -e ADMIN_ADDR=0.0.0.0:15000 \
+  -e OPENAI_API_KEY=$OPENAI_API_KEY \
+  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+```
+
+Then open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
+
+## Docker Compose
+
+For more complex setups, use Docker Compose:
+
+```yaml
+services:
+  agentgateway:
+    container_name: agentgateway
+    restart: unless-stopped
+    image: cr.agentgateway.dev/agentgateway:0.11.1
+    ports:
+      - "3000:3000"
+      - "127.0.0.1:15000:15000"
+    volumes:
+      - ./config.yaml:/config.yaml
+    environment:
+      - ADMIN_ADDR=0.0.0.0:15000
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+    command: ["-f", "/config.yaml"]
+```
+
+Run with:
+
+```bash
+docker compose up -d
+```
+
+## Learn more
+
+- [Deployment Guide]({{< link-hextra path="/deployment/docker/" >}})
+- [Configuration Reference]({{< link-hextra path="/configuration/" >}})
+- [LLM Providers]({{< link-hextra path="/llm/providers/" >}})

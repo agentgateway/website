@@ -47,8 +47,10 @@
    | `gemini.model`     | The model to use to generate responses. In this example, you use the `gemini-2.5-flash-lite` model. For more models, see the [Google AI docs](https://ai.google.dev/gemini-api/docs/models).                                             |
    | `policies.auth` | The authentication token to use to authenticate to the LLM provider. The example refers to the secret that you created in the previous step.   |
 
-4. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
+4. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
+   {{< tabs tabTotal="3" items="Gemini default, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Gemini default" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -59,6 +61,53 @@
    spec:
      parentRefs:
        - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: google
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: google
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /v1/chat/completions
+       backendRefs:
+       - name: google
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: google
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
      rules:
      - matches:
        - path:
@@ -66,35 +115,80 @@
            value: /gemini
        backendRefs:
        - name: google
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          group: agentgateway.dev
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
+   {{% /tab %}}
+   {{< /tabs >}}
    
 
-5. Send a request to the LLM provider API. Verify that the request succeeds and that you get back a response from the chat completion API.
+5. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the API.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-
-   ````sh
-   curl -vik "$INGRESS_GW_ADDRESS/gemini" -H content-type:application/json  -d '{
-     "model": "",
-     "messages": [
-      {"role": "user", "content": "Explain how AI works in simple terms."}
-    ]
-   }'
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{< tabs tabTotal="3" items="Gemini default, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Gemini default" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
-   curl -vik "localhost:8080/gemini" -H content-type:application/json  -d '{
+   curl "$INGRESS_GW_ADDRESS/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
      "model": "",
      "messages": [
       {"role": "user", "content": "Explain how AI works in simple terms."}
     ]
-   }'
-   ````
+   }' | jq
+   ```
 
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/gemini" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/gemini" -H content-type:application/json  -d '{
+     "model": "",
+     "messages": [
+      {"role": "user", "content": "Explain how AI works in simple terms."}
+    ]
+   }' | jq
+   ```
    {{% /tab %}}
    {{< /tabs >}}
 

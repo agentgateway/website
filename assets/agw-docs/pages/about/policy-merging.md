@@ -61,7 +61,7 @@ Resulting merged policy: The parent's `x-season` header is not included in the m
 | `x-season` | `winter` | Child |
 | `x-holiday` | `christmas` | Child |
 
-**Deep merging** means that values from both parent and child policies can be combined. Currently, only [Transformation rules of a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}]({{< link-hextra path="/traffic-management/transformations">}}) can be deep merged. Consider the following deep merge scenario:
+**Deep merging** means that values from both parent and child policies can be combined. Currently, only [Transformation rules of an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}]({{< link-hextra path="/traffic-management/transformations">}}) can be deep merged. Consider the following deep merge scenario:
 
 * Parent policy adds an `x-season=summer` header.
 * Child policy adds `x-season=winter` and `x-holiday=christmas` headers.

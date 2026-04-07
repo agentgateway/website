@@ -2,20 +2,26 @@ Prioritize the failover of requests across different models from an LLM provider
 
 ## About failover {#about}
 
-Failover is a way to keep services running smoothly by automatically switching to a backup system when the main one fails or becomes unavailable.
+Use failover (automatic fallback) to keep services running by switching to a backup when the main system fails or becomes unavailable.
 
 For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover for the models of the LLM providers that you want to prioritize. If the main model from one provider goes down, slows, or has any issue, the system quickly switches to a backup model from that same provider. This keeps the service running without interruptions.
+
+**Failover vs. traffic splitting:** Failover uses **priority groups** to automatically switch between backends when failures occur. For **weight-based traffic distribution** (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
 ## Before you begin
 
-1. Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use. The example in this guide uses OpenAI.
 
 ## Fail over to other models {#model-failover}
 
-You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority. Models within the same priority group are load balanced (round-robin), not prioritized.
+You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority.
+
+Models within the same priority group are [load balanced]({{< link-hextra path="/llm/load-balancing/" >}}) using the Power of Two Choices (P2C) algorithm, which intelligently routes requests based on health, latency, and current load, not just simple round-robin. This pattern of P2C load balancing within a tier with failover across tiers provides superior performance compared to named strategies.
+
+For weight-based traffic distribution within a priority group (such as 80/20 splits for A/B testing or canary rollouts), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
 
 1. Create or update the {{< reuse "agw-docs/snippets/backend.md" >}} for your LLM providers.
 
@@ -241,6 +247,18 @@ You can configure failover across multiple models and providers by using priorit
    {{% /tab %}}
    {{< /tabs >}}
 
+## Known limitations
+
+{{< callout type="warning" >}}
+**429-only failover**: Failover to lower-priority groups currently only triggers on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Failover does NOT trigger on:
+- 503 Service Unavailable responses
+- Connection refused or timeout errors
+- DNS resolution failures
+- Other error codes (404, 500, etc.)
+
+Providers that return non-429 errors receive degraded health scores but remain in their priority group. Traffic continues to route to these providers (though at reduced rates due to lower health scores) rather than failing over to the next priority group.
+{{< /callout >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
@@ -254,6 +272,7 @@ kubectl delete httproute model-failover -n {{< reuse "agw-docs/snippets/namespac
 
 Explore other agentgateway features.
 
-* Pass in [functions]({{< link-hextra path="/functions/">}}) to an LLM to request as a step towards agentic AI.
-* Set up [prompt guards]({{< link-hextra path="/prompt-guards/">}}) to block unwanted requests and mask sensitive data.
-* [Enrich your prompts]({{< link-hextra path="/prompt-enrichment/">}}) with system prompts to improve LLM outputs.
+* Learn more about [load balancing strategies]({{< link-hextra path="/llm/load-balancing/" >}}) and the P2C algorithm.
+* Pass in [functions]({{< link-hextra path="/llm/functions/">}}) to an LLM to request as a step towards agentic AI.
+* Set up [prompt guards]({{< link-hextra path="/llm/guardrails/overview/">}}) to block unwanted requests and mask sensitive data.
+* [Enrich your prompts]({{< link-hextra path="/llm/prompt-enrichment/">}}) with system prompts to improve LLM outputs.

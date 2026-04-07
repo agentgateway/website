@@ -1,159 +1,137 @@
-Use the {{< gloss "DirectResponse" >}}DirectResponse{{< /gloss >}} API to directly respond to incoming requests without forwarding them to services. Instead, you return a pre-defined body and HTTP status code to the client.
+Use the `directResponse` API to directly respond to incoming requests without forwarding them to services. Instead, you return a pre-defined body and HTTP status code to the client.
 
 ## About direct responses
 
-When you configure a DirectResponse, the gateway proxy intercepts requests to specific routes and directly sends back a predefined response. Common use cases include: 
+When you configure a direct response, the gateway proxy intercepts requests to specific routes and directly sends back a predefined response. Common use cases include: 
 
 * **Static responses**: You might have endpoints for which sending back static responses is sufficient.
-* **Health checks**: You might use direct responses when configuring health checks for the gateway. 
-* **Redirects**: You can use direct responses to redirect users to new locations, such as when an endpoint is now available at a different address. 
-* **Test responses**: You can use direct responses to simulate responses from backend services without forwarding the request to the actual service. 
+* **Health checks**: You might configure health checks for the gateway. 
+* **Redirects**: You might redirect users to new locations, such as when an endpoint is now available at a different address. 
+* **Test responses**: You can simulate responses from backend services without forwarding the request to the actual service. 
 
-### Limitations
+### Limitation
 
-Consider the following limitations before creating DirectResponse resources in your cluster: 
-* You cannot configure multiple DirectResponse resources on the same route.
-* You cannot combine a DirectResponse with other route actions on the same route. For example, you cannot configure a DirectResponse and a `RequestRedirect` filter or `backendRefs` rule at the same time. If multiple route actions are defined, the route is replaced with a 500 HTTP response code and an error message is shown on the HTTPRoute. 
-* DirectResponse resources can be referenced by using an `ExtensionRef` filter only. If specified in a `backendRef` filter, the DirectResponse configuration is ignored. 
-* No status information is currently populated to the DirectResponse resource.
-* The DirectResponse CRD currently does not show a description when you run `kubectl explain directresponse`. 
+You cannot configure multiple direct response resources on the same route. If you configure multiple direct responses, only the oldest is applied.  
+
 
 ### Schema validation
-The following rules are applied during schema validation: 
-* The `spec.body` field can have a size of up to 4KB. 
-* The `spec.status` field can define a valid HTTP status code in the 200-599 range. 
+The following rule is applied during schema validation: 
+* The `status` field can define a valid HTTP status code in the 200-599 range. 
 
-## Before you begin
 
-{{< reuse "agw-docs/snippets/prereq.md" >}}
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Set up direct responses 
 
-1. Create a DirectResponse resource that sends back a 510 HTTP response code and a custom message to incoming requests. 
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: DirectResponse
-   metadata:
-     name: direct-response
-     namespace: httpbin
-   spec:
-     status: 510
-     body: "User-agent: *\nDisallow: /direct-response\n"
-   EOF
-   ```
-   
-2. Create an HTTPRoute resource. All traffic on the `/` path is routed to the httpbin app. However, traffic along the `/direct-response` path is not forwarded. Instead, the direct response that you configured earlier is returned to the user.
-   ```yaml
+1. Create an HTTPRoute resource that routes traffic with the `/` path.
+   ```yaml {paths="direct-response"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
-     name: httpbin-direct-response
-     namespace: httpbin
+     name: direct-response
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
-     hostnames:
-     - direct-response.com
      parentRefs:
-     - name: http
-       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+       - name: agentgateway-proxy
+         namespace: agentgateway-system
      rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /
-       backendRefs:
-       - name: httpbin
-         port: 8000
-     - matches:
-       - path:
-           type: Exact
-           value: /direct-response
-       filters:
-       - type: ExtensionRef
-         extensionRef:
-          name: direct-response
-          group: gateway.kgateway.dev
-          kind: DirectResponse
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /
    EOF
    ```
+
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `directResponse` configuration. The policy is applied on the HTTPRoute that you created earlier and returns a 200 HTTP response code with a custom message body.
+   ```yaml {paths="direct-response"}
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: direct-response
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: HTTPRoute
+         name: direct-response
+     traffic:
+       directResponse:
+         status: 200
+         body: "Status: Healthy"
+   EOF
+   ```
+
    
-3. Send a request to the httpbin app along the `/status/200` path on the `direct-response.com` domain. Verify that your request succeeds and that you get back a 200 HTTP response code.  
+{{< doc-test paths="direct-response" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for direct-response HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: direct-response
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="direct-response" >}}
+YAMLTest -f - <<'EOF'
+- name: direct-response - /status/404 returns 200 with custom body
+  retries: 5
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/status/404"
+    method: GET
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyContains:
+    - "Status: Healthy"
+EOF
+{{< /doc-test >}}
+
+3. Send a request along the `/status/404` path of the httpbin app. Typically, this path returns a 404 HTTP response code. However, because you apply a direct response to this route, the request returns a 200 HTTP response code with a custom message instead as defined in your policy. Verify that you see the 200 HTTP response code with your custom message.  
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/status/200 \
-   -H "host: direct-response.com:8080"
+   curl -vi http://$INGRESS_GW_ADDRESS:80/status/404
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi localhost:8080/status/200 \
-   -H "host: direct-response.com:8080"
+   curl -vi localhost:8080/status/404
    ```
    {{% /tab %}}
    {{< /tabs >}}
    
    Example output: 
    ```
-   * Mark bundle as not supporting multiuse
+   ...
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
-   < access-control-allow-credentials: true
-   access-control-allow-credentials: true
-   < access-control-allow-origin: *
-   access-control-allow-origin: *
-   < date: Mon, 23 Sep 2024 17:47:37 GMT
-   date: Mon, 23 Sep 2024 17:47:37 GMT
-   < content-length: 0
-   content-length: 0
-   < x-envoy-upstream-service-time: 3
-   x-envoy-upstream-service-time: 3
-   < server: envoy
-   server: envoy
-   ```
-   
-4. Send another request along the `/direct-response` path. Verify that you get back the direct response message that you defined in the DirectResponse resource. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
-   ```sh
-   curl -vi http://$INGRESS_GW_ADDRESS:8080/direct-response \
-   -H "host: direct-response.com:8080"
-   ```
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
-   ```sh
-   curl -vi localhost:8080/direct-response \
-   -H "host: direct-response.com:8080"
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
-   
-   Example output: 
-   ```
-   * Request completely sent off
-   < HTTP/1.1 510 Not Extended
-   HTTP/1.1 510 Not Extended
-   < content-length: 41
-   content-length: 41
-   < content-type: text/plain
-   content-type: text/plain
-   < date: Wed, 12 Mar 2025 18:33:45 GMT
-   date: Wed, 12 Mar 2025 18:33:45 GMT
-   < server: envoy
-   server: envoy
+   < content-length: 15
+   content-length: 15
    < 
 
-   User-agent: *
-   Disallow: /direct-response
+   * Connection #0 to host localhost left intact
+   Status: Healthy% 
    ```
    
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
 
 ```sh
-kubectl delete directresponse direct-response -n httpbin
-kubectl delete httproute httpbin-direct-response -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} health-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete httproute direct-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 

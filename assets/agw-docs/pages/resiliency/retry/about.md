@@ -2,7 +2,7 @@ A retry is the number of times a request is retried if it fails. This setting ca
 
 ## Configuration options
 
-You can configure retries by using a Kubernetes Gateway API-native configuration or a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} as shown in the following table
+You can configure retries by using a Kubernetes Gateway API-native configuration or an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} as shown in the following table
 
 
 | Type of timeout| Description | Configured via | Attach to | 

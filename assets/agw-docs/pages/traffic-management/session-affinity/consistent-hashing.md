@@ -116,7 +116,7 @@ Ringhash allows you to tune the ring size to balance memory usage vs load distri
    | `cookie.name` | The expected cookie name to create the hash with. In this example, the cookie is named `session-id`. |
    | `cookie.path` | The name of the path for the cookie, such as `/api` in this example. |
    | `cookie.ttl` | If the cookie is not present, a cookie with this duration of time for validity is generated, such as 30 minutes in this example. |
-   | `cookie.attributes` | Define additional attributes for an HTTP cookie. This example sets three additional attirbutes: `httpOnly: true`, `secure: true`, and `sameSite: Strict`. |
+   | `cookie.attributes` | Define additional attributes for an HTTP cookie. This example sets three additional attributes: `httpOnly: true`, `secure: true`, and `sameSite: Strict`. |
    | `terminal` | If you define multiple `hashPolicies` in one BackendConfigPolicy, you can use the `terminal: true` setting to indicate the priority policy. |
 
 
@@ -240,7 +240,7 @@ With Maglev, you use a fixed lookup table of 65,357 entries that is optimized fo
    | `cookie.name` | The expected cookie name to create the hash with. In this example, the cookie is named `session-id`. |
    | `cookie.path` | The name of the path for the cookie, such as `/api` in this example. |
    | `cookie.ttl` | If the cookie is not present, a cookie with this duration of time for validity is generated, such as 30 minutes in this example. |
-   | `cookie.attributes` | Define additional attributes for an HTTP cookie. This example sets three additional attirbutes: `httpOnly: true`, `secure: true`, and `sameSite: Strict`. |
+   | `cookie.attributes` | Define additional attributes for an HTTP cookie. This example sets three additional attributes: `httpOnly: true`, `secure: true`, and `sameSite: Strict`. |
    | `terminal` | If you define multiple `hashPolicies` in one BackendConfigPolicy, you can use the `terminal: true` setting to indicate the priority policy. |
 
    {{% /tab %}}
@@ -304,21 +304,21 @@ Send a few requests to the httpbin app and verify that the request is served by 
    
    * **Headers**: 
      ```sh
-     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:8080/headers \
+     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:80/headers \
       -H "x-user-id: me" \
       -H "host: www.example.com"; done
      ```
      
    * **Source IP address**: 
      ```sh
-     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:8080/headers \
+     for i in {1..10}; do curl -vik http://$INGRESS_GW_ADDRESS:80/headers \
       -H "host: www.example.com"; done
      ```
      
    * **Cookies**: 
      1. Send a request to the httpbin app and verify that you get back a `set-cookie` header with a `session-id`. 
         ```sh
-        curl -i -c cookie-jar -k http://$INGRESS_GW_ADDRESS:8080/headers \
+        curl -i -c cookie-jar -k http://$INGRESS_GW_ADDRESS:80/headers \
         -H "host: www.example.com"
         ```
         
@@ -330,7 +330,7 @@ Send a few requests to the httpbin app and verify that the request is served by 
      2. Send a few more requests to the httpbin app and include the session ID from the previous step. 
         ```sh
         for i in {1..10}; do
-        curl -i -b session-id="<sessionID>" -k http://$INGRESS_GW_ADDRESS:8080/headers \
+        curl -i -b session-id="<sessionID>" -k http://$INGRESS_GW_ADDRESS:80/headers \
         -H "host: www.example.com"; done
         ```
    {{% /tab %}}

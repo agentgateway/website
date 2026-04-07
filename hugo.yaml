@@ -33,6 +33,11 @@ build:
     - source: "assets/.*\\.(.*)$"
       target: "$1"
 
+caches:
+  getresource:
+    dir: ":cacheDir/:project"
+    maxAge: 1h  # Cache remote resources for 1 hour to balance freshness and build speed
+
 markup:
   goldmark:
     renderer:
@@ -51,19 +56,19 @@ menu:
       url: /docs
       weight: 2
     - name: Tutorials
-      url: /docs/local/latest/tutorials
+      url: /tutorials
       weight: 3
-    - name: Integrations
-      url: /docs/local/latest/integrations
-      weight: 4
-    - name: Blog
+    - name: Models
       weight: 5
+      url: /models
+    - name: Blog
+      weight: 6
       url: /blog
     - name: Enterprise
-      weight: 6
+      weight: 7
       url: /enterprise
     - name: Search
-      weight: 7
+      weight: 8
       params:
         type: search
     - name: GitHub
@@ -127,36 +132,36 @@ params:
 
     giscus:
       repo: imfing/hextra
-      repoId: 
+      repoId:
       category: General
-      categoryId: 
+      categoryId:
 
   searchbot:
     urls:
       websites: https://searchbot.tryhelix.ai/
       bots: https://searchbot.tryhelix.ai/bots
-  
+
   # Section-specific configurations
   sections:
-    local:
+    standalone:
       versions:
-        - version: "0.12.x"
+        - version: "1.1.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "0.11.x"
-          dropdown: "0.11 (latest)"
+        - version: "1.0.x"
+          dropdown: "1.0 (latest)"
           linkVersion: "latest"
           url: "/latest"
     kubernetes:
       versions:
-        - version: "2.3.x"
+        - version: "1.1.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "2.2.x"
-          dropdown: "2.2 beta (latest)"
+        - version: "1.0.x"
+          dropdown: "1.0 (latest)"
           linkVersion: "latest"
           url: "/latest"
-  
+
   gtmContainerID: "GTM-MDMTFJQC"

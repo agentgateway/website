@@ -2,6 +2,7 @@
 title: Install
 weight: 14
 icon: settings
+test: skip
 ---
 
 Learn how to install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} {{< gloss "Control Plane" >}}control plane{{< /gloss >}} to use with {{< reuse "/agw-docs/snippets/agentgateway.md" >}} {{< gloss "Data Plane" >}}data plane{{< /gloss >}} proxies.
@@ -9,6 +10,7 @@ Learn how to install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} {{< glos
 {{< cards >}}
   {{< card link="helm" title="Helm" >}}
   {{< card link="argocd" title="Argo CD" >}}
+  {{< card link="sample-app" title="Sample app" >}}
   {{< card link="advanced" title="Advanced settings" >}}
   {{< card link="tls" title="TLS encryption" >}}
 {{< /cards >}}

@@ -1,7 +1,7 @@
 {{- $path := .RelPermalink -}}
 {{- $segments := split $path "/" -}}
 {{- $section := index $segments 1 -}}  {{- /* "docs" */ -}}
-{{- $subSection := index $segments 2 -}}  {{- /* "local" or "kubernetes" */ -}}
+{{- $subSection := index $segments 2 -}}  {{- /* "standalone" or "kubernetes" */ -}}
 {{- $currentVersion := "" -}}
 {{- $versionDisplay := "" -}}
 
@@ -26,8 +26,8 @@
 
 {{- /* Set product name based on subsection */ -}}
 {{- $productName := "" -}}
-{{- if eq $subSection "local" -}}
-  {{- $productName = "Agentgateway (Local binary)" -}}
+{{- if eq $subSection "standalone" -}}
+  {{- $productName = "Agentgateway (Standalone)" -}}
 {{- else if eq $subSection "kubernetes" -}}
   {{- $productName = "Agentgateway on Kubernetes" -}}
 {{- end -}}

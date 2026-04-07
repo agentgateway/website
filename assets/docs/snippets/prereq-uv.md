@@ -1,1 +1,0 @@
-[Install the `uv` Python package manager](https://docs.astral.sh/uv/getting-started/installation/).

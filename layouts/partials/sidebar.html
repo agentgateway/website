@@ -3,9 +3,9 @@
 
 {{- /* Check if this is a docs landing page - don't show sidebar */ -}}
 {{- $isDocsIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/") -}}
-{{- $isLocalIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/local/") -}}
+{{- $isStandaloneIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/standalone/") -}}
 {{- $isKubernetesIndex := and (eq $context.Section "docs") (eq $context.RelPermalink "/docs/kubernetes/") -}}
-{{- $isLandingPage := or $isDocsIndex $isLocalIndex $isKubernetesIndex -}}
+{{- $isLandingPage := or $isDocsIndex $isStandaloneIndex $isKubernetesIndex -}}
 
 {{- if or $disableSidebar $isLandingPage -}}
   <aside class="hx-hidden"></aside>
@@ -16,7 +16,7 @@
   {{- $currentVersion := "" -}}
   {{- $section := "" -}}
   {{- $isVersionedDocs := false -}}
-  
+
   {{- /* Check if we're in a versioned docs section */ -}}
   {{- if and (ge (len $segments) 4) (eq (index $segments 1) "docs") -}}
     {{- $section = index $segments 2 -}}
@@ -27,15 +27,103 @@
     {{- end -}}
   {{- end -}}
 
+  <style>
+    /* Mobile sidebar: slide-in panel below xl breakpoint */
+    @media (max-width: 1279.99px) {
+      .sidebar-mobile-panel {
+        position: fixed !important;
+        top: 0 !important;
+        left: 0 !important;
+        bottom: 0 !important;
+        width: 280px !important;
+        z-index: 90 !important;
+        transform: translateX(-100%);
+        transition: transform 300ms ease-in-out;
+        background: white;
+        padding-top: 64px;
+        visibility: hidden;
+        overflow-y: auto;
+        display: flex !important;
+        flex-direction: column !important;
+      }
+      .dark .sidebar-mobile-panel {
+        background: rgb(17, 24, 39);
+      }
+      .sidebar-mobile-panel.mobile-sidebar-open {
+        transform: translateX(0);
+        visibility: visible;
+      }
+    }
+    .sidebar-mobile-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 89;
+    }
+    .sidebar-mobile-overlay.active {
+      display: block;
+    }
+    /* Hide mobile-only header on desktop */
+    @media (min-width: 1280px) {
+      .sidebar-mobile-only {
+        display: none !important;
+      }
+    }
+  </style>
+
+  <!-- Mobile sidebar overlay -->
+  <div class="sidebar-mobile-overlay" onclick="closeMobileSidebar()"></div>
+
   {{- if $isVersionedDocs -}}
     {{- /* Get the docs section page for the current version */ -}}
     {{- $versionPrefix := printf "/docs/%s/%s/" $section $currentVersion -}}
     {{- $docsSectionPath := printf "/docs/%s/%s/" $section $currentVersion -}}
     {{- $docsSection := $context.Site.GetPage $docsSectionPath -}}
-    
+
     {{- if $docsSection -}}
-      {{- /* Render sidebar starting from the versioned docs section */ -}}
-      <aside class="sidebar-container hx-order-first hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-flex hx-flex-col">
+      {{- /* Render sidebar with mobile slide-in support */ -}}
+      <aside class="sidebar-container sidebar-mobile-panel hx-order-first hx-w-64 hx-shrink-0 hx-hidden xl:hx-block print:hx-hidden hx-flex hx-flex-col">
+
+        {{- /* Mobile-only: Section selector + version picker */ -}}
+        <div class="sidebar-mobile-only" style="border-bottom: 1px solid; border-color: inherit;">
+          {{- /* Section selector: Standalone / Kubernetes */ -}}
+          <div style="display: flex; gap: 0.5rem; padding: 0.75rem;">
+            {{- $otherSection := cond (eq $section "standalone") "kubernetes" "standalone" -}}
+            <a href="/docs/{{ $section }}/{{ $currentVersion }}/"
+               style="flex: 1; text-align: center; padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; background: rgb(219 234 254); color: rgb(30 64 175);"
+               class="dark:hx-bg-primary-400/10 dark:hx-text-primary-600">
+              {{ $section | title }}
+            </a>
+            <a href="/docs/{{ $otherSection }}/{{ $currentVersion }}/"
+               style="flex: 1; text-align: center; padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: rgb(75 85 99);"
+               class="hover:hx-bg-gray-100 dark:hx-text-gray-400 dark:hover:hx-bg-gray-800">
+              {{ $otherSection | title }}
+            </a>
+          </div>
+          {{- /* Version picker */ -}}
+          {{- $versions := slice -}}
+          {{- if and $section (isset site.Params.sections $section) -}}
+            {{- $versions = (index site.Params.sections $section).versions -}}
+          {{- end -}}
+          {{- if $versions -}}
+            <div style="padding: 0 0.75rem 0.75rem;">
+              <div style="display: flex; gap: 0.25rem; flex-wrap: wrap;">
+                {{- $filtered := after 4 $segments -}}
+                {{- $newPath := printf "/%s" (delimit $filtered "/") -}}
+                {{- range $versions -}}
+                  {{- $isActive := eq $currentVersion .linkVersion -}}
+                  <a href="/docs/{{ $section }}/{{ .linkVersion }}{{ $newPath }}"
+                     style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; {{ if $isActive }}background: rgb(229 231 235); color: rgb(17 24 39);{{ else }}color: rgb(107 114 128);{{ end }}"
+                     class="{{ if $isActive }}dark:hx-bg-gray-700 dark:hx-text-white{{ else }}hover:hx-bg-gray-100 dark:hx-text-gray-400 dark:hover:hx-bg-gray-800{{ end }}">
+                    {{ .dropdown }}
+                  </a>
+                {{- end -}}
+              </div>
+            </div>
+          {{- end -}}
+        </div>
+
         <div class="hextra-scrollbar hx-overflow-y-auto hx-overflow-x-hidden hx-p-4 hx-grow md:hx-h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
           <nav class="hx-flex hx-flex-col hx-gap-2 hx-text-sm hx-text-gray-600 dark:hx-text-gray-400">
             {{- template "render-sidebar-tree" (dict "page" $docsSection "current" $context "versionPrefix" $versionPrefix "depth" 0) -}}
@@ -75,7 +163,7 @@
     {{- if templates.Exists "partials/hextra/sidebar.html" -}}
       {{- partial "hextra/sidebar.html" (dict "context" $context) -}}
     {{- else -}}
-      <aside class="sidebar-container hx-order-first hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-flex hx-flex-col">
+      <aside class="sidebar-container sidebar-mobile-panel hx-order-first hx-w-64 hx-shrink-0 hx-hidden xl:hx-block print:hx-hidden hx-flex hx-flex-col">
         <div class="hextra-scrollbar hx-overflow-y-auto hx-overflow-x-hidden hx-p-4 hx-grow md:hx-h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
           <nav class="hx-flex hx-flex-col hx-gap-2 hx-text-sm hx-text-gray-600 dark:hx-text-gray-400">
             {{- template "render-sidebar-tree" (dict "page" $context "current" $context "versionPrefix" "" "depth" 0) -}}
@@ -117,11 +205,11 @@
   {{- $versionPrefix := .versionPrefix -}}
   {{- $depth := .depth | default 0 -}}
   {{- $maxDepth := 4 -}}
-  
+
   {{- if gt $depth $maxDepth -}}
     {{- return -}}
   {{- end -}}
-  
+
   {{- /* Get children pages that match the version prefix (if specified) */ -}}
   {{- /* Hugo's .Pages is already sorted by weight, so we maintain that order */ -}}
   {{- $children := slice -}}
@@ -134,17 +222,17 @@
       {{- $children = $children | append . -}}
     {{- end -}}
   {{- end -}}
-  
+
   {{- /* Hugo's .Pages is already sorted by weight, maintain that order */ -}}
   {{- $sortedChildren := $children -}}
-  
+
   {{- if gt (len $sortedChildren) 0 -}}
     <ul class="{{ if eq $depth 0 }}hx-mt-2{{ else }}hx-ml-4 hx-mt-1{{ end }} hx-space-y-1">
       {{- range $sortedChildren -}}
         {{- $childIsActive := eq .RelPermalink $current.RelPermalink -}}
         {{- $childIsAncestor := $current.IsDescendant . -}}
         {{- $childIsExpanded := or $childIsActive $childIsAncestor -}}
-        
+
         {{- /* Get grandchildren that match version prefix */ -}}
         {{- $grandchildren := slice -}}
         {{- range .Pages -}}
@@ -156,7 +244,7 @@
             {{- $grandchildren = $grandchildren | append . -}}
           {{- end -}}
         {{- end -}}
-        
+
         <li class="hx-relative">
           <a
             href="{{ .RelPermalink }}"
@@ -170,7 +258,7 @@
               </svg>
             {{- end -}}
           </a>
-          
+
           {{- if and (gt (len $grandchildren) 0) $childIsExpanded -}}
             {{- template "render-sidebar-tree" (dict "page" . "current" $current "versionPrefix" $versionPrefix "depth" (add $depth 1)) -}}
           {{- end -}}

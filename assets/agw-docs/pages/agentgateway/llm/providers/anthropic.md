@@ -1,12 +1,12 @@
-Configure [Anthropic (Claude)](https://claude.ai/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 ## Before you begin
 
-Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}). 
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Set up access to Anthropic
 
-1. Get an API key to access the [Anthropic API](https://console.anthropic.com/). 
+1. Get an API key to access the [Anthropic API](https://platform.claude.com/). 
 
 2. Save the API key in an environment variable.
    
@@ -42,7 +42,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
      ai:
        provider:
          anthropic:
-           model: "claude-3-opus-20240229"
+           model: "claude-opus-4-6"
      policies:
        auth:
          secretRef:
@@ -55,11 +55,59 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.anthropic` | Define the LLM provider that you want to use. The example uses Anthropic. |
-   | `anthropic.model`     | The model to use to generate responses. In this example, you use the `claude-3-opus-20240229` model. |
+   | `anthropic.model`     | The model to use to generate responses. In this example, you use the `claude-opus-4-6` model. |
    | `policies.auth` | Provide the credentials to use to access the Anthropic API. The example refers to the secret that you previously created. The token is automatically sent in the `x-api-key` header.|
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/anthropic` path. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the Anthropic `/v1/messages` endpoint.
 
+   {{< tabs tabTotal="3" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Anthropic v1/messages" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: anthropic
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - backendRefs:
+       - name: anthropic
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: anthropic
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /v1/chat/completions
+       backendRefs:
+       - name: anthropic
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+         group: agentgateway.dev
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -83,12 +131,68 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
-   
+   {{% /tab %}}
+   {{< /tabs >}}
 
-6. Send a request to the LLM provider API. Note that Anthropic uses the `/v1/messages` endpoint format instead of `/v1/chat/completions`. Verify that the request succeeds and that you get back a response from the API.
+6. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the API.
    
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs tabTotal="3" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions, Custom route" >}}
+   {{% tab tabName="Anthropic v1/messages" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/messages" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/messages" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+      "model": "",
+      "messages": [
+        {
+          "role": "user",
+          "content": "Explain how AI works in simple terms."
+        }
+      ]
+    }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/anthropic" -H content-type:application/json  -d '{
       "model": "",
@@ -99,8 +203,9 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
         }
       ]
     }' | jq
-   {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   ```
+
+   **Localhost**:
    ```sh
    curl "localhost:8080/anthropic" -H content-type:application/json  -d '{
       "model": "",
@@ -118,7 +223,7 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
    Example output: 
    ```json
    {
-     "model": "claude-3-opus-20240229",
+     "model": "claude-opus-4-6",
      "usage": {
        "prompt_tokens": 16,
        "completion_tokens": 318,
@@ -139,5 +244,369 @@ Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
      "object": "chat.completion"
    }
    ```
+
+{{< version include-if="1.0.x" >}}
+
+## Extended thinking and reasoing
+
+Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
+
+{{< callout type="info" >}}
+Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
+{{< /callout >}}
+
+{{< tabs tabTotal="2" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions" >}}
+{{% tab tabName="Anthropic v1/messages" %}}
+
+To opt in to extended thinking, include the `thinking.type` field in your request. You can also set the `output_config.effort` field to control how much reasoning the model applies.
+
+The following values are supported: 
+
+**`thinking` field**
+| `type` value | Additional fields | Behavior |
+|---|---|---|
+| `adaptive` | `output_config.effort` | The model decides whether to think and how much. Requires `output_config.effort` to be set. |
+| `enabled` | `budget_tokens: <number>` | Explicitly enables thinking with a fixed token budget. Works standalone without `output_config`. |
+| `disabled` | none | Explicitly disables thinking. |
+
+**`output_config` field**
+
+`output_config` has two independent sub-fields. You can use either or both.
+
+| Sub-field | Description |
+|---|---|
+| `effort` | Controls the reasoning effort level. Accepted values: `low`, `medium`, `high`, `max`. |
+| `format` | Constrains the response to a JSON schema. Set `type` to `json_schema` and provide a `schema` object. For more information, see [Structured outputs](#structured-outputs). |
+
+
+The following example request uses adaptive extended thinking. Note that this setting requires the `output_config.effort` field to be set too. 
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/messages" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 1024,
+  "thinking": {
+    "type": "adaptive"
+  },
+  "output_config": {
+    "effort": "high"
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/messages" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 1024,
+  "thinking": {
+    "type": "adaptive"
+  },
+  "output_config": {
+    "effort": "high"
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+Example output:
+```console
+{
+  "id": "msg_01HVEzWf4NJrsKyVeEUDnHNW",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-opus-4-6",
+  "content": [
+    {
+      "type": "thinking",
+      "thinking": "Let me think through the trade-offs between consistency and availability..."
+    },
+    {
+      "type": "text",
+      "text": "# Consistency vs. Availability in Distributed Systems\n\n..."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 21,
+    "output_tokens": 1024
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+
+Use the `reasoning_effort` field in your request to enable extended thinking. The value that you set is automatically mapped to a specific thinking budget as shown in the following table.
+
+| `reasoning_effort` value | Thinking budget |
+|---|---|
+| `minimal` or `low` | 1,024 tokens |
+| `medium` | 2,048 tokens |
+| `high` or `xhigh` | 4,096 tokens |
+
+Note that the `max_tokens` value must be greater than the tokens in the thinking budget for the request to succeed. 
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 6000,
+  "reasoning_effort": "high",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 6000,
+  "reasoning_effort": "high",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
+Example output: 
+```console
+{
+  "model": "claude-opus-4-6",
+  "usage": {
+    "prompt_tokens": 50,
+    "completion_tokens": 2549,
+    "total_tokens": 2599,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0
+  },
+  "choices": [
+    {
+      "message": {
+        "content": "# Consistency vs. Availability in Distributed ..."
+      },
+      "index": 0,
+      "finish_reason": "stop"
+    }
+  ],
+  "id": "msg_01CVnXAQYeWkUjeaDceBRk3e",
+  "created": 1773251049,
+  "object": "chat.completion"
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+## Structured outputs
+
+Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request. 
+
+{{< tabs tabTotal="2" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions" >}}
+{{% tab tabName="Anthropic v1/messages" %}}
+
+Provide the JSON schema definition in the `output_config.format` field. 
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/messages" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 256,
+  "output_config": {
+    "format": {
+      "type": "json_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/messages" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 256,
+  "output_config": {
+    "format": {
+      "type": "json_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+Example output:
+```console
+{
+  "id": "msg_01PsCxtLN1vftAKZgvWXhCan",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-opus-4-6",
+  "content": [
+    {
+      "type": "text",
+      "text": "{\"answer\":\"Yes, the sky is blue during clear daytime conditions.\",\"confidence\":0.98}"
+    }
+  ],
+  "stop_reason": "end_turn",
+  "stop_sequence": null,
+  "usage": {
+    "input_tokens": 29,
+    "output_tokens": 28
+  }
+}
+```
+
+{{% /tab %}}
+{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+
+Provide the schema definition in the `response_format` field. 
+
+**Cloud Provider LoadBalancer**:
+```sh
+curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "answer_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+**Localhost**:
+```sh
+curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "response_format": {
+    "type": "json_schema",
+    "json_schema": {
+      "name": "answer_schema",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "answer": { "type": "string" },
+          "confidence": { "type": "number" }
+        },
+        "required": ["answer", "confidence"],
+        "additionalProperties": false
+      }
+    }
+  },
+  "messages": [
+    {
+      "role": "user",
+      "content": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1."
+    }
+  ]
+}' | jq
+```
+
+Example output: 
+```console
+{
+  "model": "claude-opus-4-6",
+  "usage": {
+    "prompt_tokens": 192,
+    "completion_tokens": 68,
+    "total_tokens": 260,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "cache_read_input_tokens": 0,
+    "cache_creation_input_tokens": 0
+  },
+  "choices": [
+    {
+      "message": {
+        "content": "{\"answer\":\"Yes, the sky is blue...",
+        "role": "assistant"
+      },
+      "index": 0,
+      "finish_reason": "stop"
+    }
+  ],
+  "id": "msg_01BLohqXbvfZHQnnXxmviCcg",
+  "created": 1773251560,
+  "object": "chat.completion"
+}
+```
+
+{{% /tab %}}
+{{< /tabs >}}
+
+{{< /version >}}
+
+## Connect to Claude Code
+
+To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).{{% conditional-text include-if="kubernetes" %}} For a full tutorial with prompt guards and observability, see the [Claude Code CLI proxy tutorial]({{< link-hextra path="/tutorials/claude-code-proxy" >}}).{{% /conditional-text %}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

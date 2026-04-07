@@ -168,11 +168,11 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
 
 ## Annotate the gateway proxy service account {#annotate}
 
-1. Create a GatewayParameters resource to specify the `eks.amazonaws.com/role-arn` IRSA annotation for the gateway proxy service account.
+1. Create a {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to specify the `eks.amazonaws.com/role-arn` IRSA annotation for the gateway proxy service account.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
-   kind: GatewayParameters
+   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: http-lambda
      namespace: {{< reuse "/agw-docs/snippets/namespace.md" >}}
@@ -184,7 +184,7 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
    EOF
    ```
 
-2. Create the following `http` Gateway resource, which includes a reference to the `http-lambda` GatewayParameters.
+2. Create the following `http` Gateway resource, which includes a reference to the `http-lambda` {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}.
    ```yaml
    kubectl apply -f- <<EOF
    kind: Gateway
@@ -198,11 +198,11 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
      infrastructure:
        parametersRef:
          name: http-lambda
-         group: gateway.kgateway.dev
-         kind: GatewayParameters        
+         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}        
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:
@@ -251,7 +251,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
 1. Create a Backend resource that references the AWS region, ID of the account that contains the IAM role, and `echo` function that you created.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: gateway.kgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
    kind: Backend
    metadata:
      name: lambda
@@ -287,7 +287,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
        backendRefs:
        - name: lambda
          namespace: {{< reuse "/agw-docs/snippets/namespace.md" >}}
-         group: gateway.kgateway.dev
+         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
          kind: Backend
    EOF
    ```
@@ -313,7 +313,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -H "Host: lambda.${AWS_LAMBDA_REGION}.amazonaws.com" \
-     $INGRESS_GW_ADDRESS:8080/echo \
+     $INGRESS_GW_ADDRESS:80/echo \
      -d '{"key1":"value1", "key2":"value2"}' -X POST
    ```
    {{% /tab %}}
@@ -351,12 +351,12 @@ At this point, {{< reuse "/agw-docs/snippets/kgateway.md" >}} is routing directl
 
 If you no longer need to access Lambda functions from {{< reuse "/agw-docs/snippets/kgateway.md" >}}:
 
-1. Delete the GatewayParameters resources.
+1. Delete the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resources.
    ```sh
-   kubectl delete GatewayParameters http-lambda -n {{< reuse "/agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} http-lambda -n {{< reuse "/agw-docs/snippets/namespace.md" >}}
    ```
 
-2. Remove the reference to the `http-lambda` GatewayParameters from the `http` Gateway.
+2. Remove the reference to the `http-lambda` {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} from the `http` Gateway.
    ```yaml
    kubectl apply -f- <<EOF
    kind: Gateway
@@ -368,7 +368,7 @@ If you no longer need to access Lambda functions from {{< reuse "/agw-docs/snipp
      gatewayClassName: {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
      listeners:
      - protocol: HTTP
-       port: 8080
+       port: 80
        name: http
        allowedRoutes:
          namespaces:

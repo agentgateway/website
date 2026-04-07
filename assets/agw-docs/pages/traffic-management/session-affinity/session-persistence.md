@@ -22,7 +22,7 @@ However, note that session persistence and session affinity can functionally wor
 - If the request contains a session persistence identity in a cookie or header, route the request directly to the backend that it previously established a session with.
 - If no session persistence identity is present, load balance the request according to the defined session affinity configuration, along with any [load balancing configuration]({{< link-hextra path="/loadbalancing">}}).
 
-For more information about session peristence, see the [Kubernetes Gateway API enhancement doc](https://gateway-api.sigs.k8s.io/geps/gep-1619/).
+For more information about session persistence, see the [Kubernetes Gateway API enhancement doc](https://gateway-api.sigs.k8s.io/geps/gep-1619/).
 
 ## Before you begin 
 
@@ -228,8 +228,8 @@ To try out session persistence, you can follow these steps to define cookie-base
       {{% tab tabName="LoadBalancer IP address or hostname" %}}
    ```sh
    for i in {1..10}; do
-   curl -i -b cookie-jar -k http://$INGRESS_GW_ADDRESS:8080/headers \
-   -H "host: www.example.com:8080"; done
+   curl -i -b cookie-jar -k http://$INGRESS_GW_ADDRESS:80/headers \
+   -H "host: www.example.com:80"; done
    ```
       {{% /tab %}}
       {{% tab tabName="Port-forward for local testing" %}}
