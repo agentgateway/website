@@ -145,7 +145,7 @@ Authorization rules use [Common Expression Language (CEL)]({{< link-hextra path=
 |----------|-------------|
 | `mcp.tool.name` | The name of the tool being called |
 | `jwt.sub` | The `sub` (subject) claim from the JWT |
-| `jwt.<claim>` | Any top-level or nested JWT claim (e.g. `jwt.roles`, `jwt.nested.key`) |
+| `jwt.<claim>` | Any top-level or nested JWT claim (such as `jwt.roles`, `jwt.nested.key`) |
 | `has(jwt.<claim>)` | Check whether a JWT claim exists |
 
 Rules are evaluated as an OR: if any rule matches, the request is allowed.
