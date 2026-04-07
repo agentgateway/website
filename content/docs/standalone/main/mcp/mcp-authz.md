@@ -40,6 +40,7 @@ binds:
 When you combine MCP authorization with [MCP authentication]({{< link-hextra path="/mcp/mcp-authn" >}}), you can write rules that reference JWT claims. The following configuration restricts tools based on the authenticated user's identity and role.
 
 In this example:
+- The MCP authentication policy validates JWTs against a local authorization server, such as Keycloak, running on port 9000.
 - Any authenticated user can call the `echo` tool.
 - Only the user `test-user` can call the `add` tool.
 - Only users with the nested claim `nested.key == "value"` can call the `printEnv` tool.
