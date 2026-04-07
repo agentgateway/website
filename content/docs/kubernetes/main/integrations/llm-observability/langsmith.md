@@ -2,6 +2,7 @@
 title: LangSmith
 weight: 20
 description: Integrate agentgateway with LangSmith for LLM debugging and monitoring
+test: skip
 ---
 
 [LangSmith](https://smith.langchain.com/) is LangChain's platform for debugging, testing, evaluating, and monitoring LLM applications.
