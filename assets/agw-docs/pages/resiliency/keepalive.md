@@ -230,7 +230,7 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="http-keepalive"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin --ignore-not-found
 ```
 
 
