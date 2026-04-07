@@ -24,6 +24,8 @@ jobs:
       ISSUE_TITLE: Link Checker Report - agentgateway OSS
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Checkout shared link-checking scripts
         uses: actions/checkout@v4
@@ -108,7 +110,8 @@ jobs:
           docs-link-checking/generate-link-report.sh \
             "${{ github.workspace }}/artifacts/agentgateway-oss-links.json" \
             "${{ github.workspace }}/artifacts/agentgateway-oss-links.md" \
-            "${{ github.workspace }}/public"
+            "${{ github.workspace }}/public" \
+            "${{ github.event_name == 'pull_request' && 'pr' || '' }}"
 
       - name: Create issue from report
         if: steps.lychee.outputs.has_failures == 'true' && github.event_name != 'pull_request'
