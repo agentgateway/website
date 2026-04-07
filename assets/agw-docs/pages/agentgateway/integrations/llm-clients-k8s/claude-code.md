@@ -104,7 +104,6 @@ if [ -z "${ANTHROPIC_API_KEY+x}" ]; then export ANTHROPIC_API_KEY="sk-ant-placeh
      wait:
        target:
          kind: AgentgatewayBackend
-         apiVersion: agentgateway.dev/v1alpha1
          metadata:
            namespace: agentgateway-system
            name: anthropic

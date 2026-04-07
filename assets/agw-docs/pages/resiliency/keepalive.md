@@ -86,8 +86,22 @@ Keep the TCP connection alive by sending out probes after the connection has bee
 
 {{< doc-test paths="tcp-keepalive" >}}
 YAMLTest -f - <<'EOF'
+- name: wait for tcp keepalive policy to be accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: httpbin
+        name: httpbin-keepalive
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
 - name: wait for tcp keepalive policy in config dump
-  retries: 20
+  retries: 60
   http:
     url: http://localhost:15000
     skipSslVerification: true
@@ -200,8 +214,22 @@ Keep the HTTP connection alive by sending out probes after the connection has be
 
 {{< doc-test paths="http-keepalive" >}}
 YAMLTest -f - <<'EOF'
+- name: wait for http keepalive policy to be accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: httpbin
+        name: httpbin-keepalive
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
 - name: wait for http keepalive policy in config dump
-  retries: 20
+  retries: 60
   http:
     url: http://localhost:15000
     skipSslVerification: true

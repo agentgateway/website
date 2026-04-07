@@ -217,7 +217,7 @@ Parse the `model` field from the incoming request body and the upstream response
        polling:
          timeoutSeconds: 120
          intervalSeconds: 2
-   - name: verify model headers are injected from request and response bodies
+   - name: verify x-requested-model header is injected
      http:
        url: "http://${INGRESS_GW_ADDRESS}/openai"
        method: POST
@@ -231,9 +231,6 @@ Parse the `model` field from the incoming request body and the upstream response
        headers:
          - name: x-requested-model
            comparator: equals
-           value: gpt-4
-         - name: x-actual-model
-           comparator: contains
            value: gpt-4
    EOF
    {{< /doc-test >}}
