@@ -20,6 +20,10 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
 
+{{< doc-test paths="claude-code-k8s" >}}
+if [ -z "${ANTHROPIC_API_KEY+x}" ]; then export ANTHROPIC_API_KEY="sk-ant-placeholder"; fi
+{{< /doc-test >}}
+
 2. Create a Kubernetes secret for your API key. For other authentication methods, see [API keys]({{< link-hextra path="/llm/api-keys/" >}}).
 
    ```bash {paths="claude-code-k8s"}

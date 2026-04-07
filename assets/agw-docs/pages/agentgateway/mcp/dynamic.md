@@ -148,8 +148,9 @@ EOF
 {{< /doc-test >}}
 
 {{< doc-test paths="dynamic-mcp" >}}
-for i in $(seq 1 60); do
-  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/mcp" && break
+for i in $(seq 1 90); do
+  STATUS=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}' 2>/dev/null)
+  if [ "$STATUS" = "200" ]; then break; fi
   sleep 2
 done
 {{< /doc-test >}}
@@ -157,7 +158,7 @@ done
 {{< doc-test paths="dynamic-mcp" >}}
 YAMLTest -f - <<'EOF'
 - name: MCP endpoint accepts initialize request
-  retries: 1
+  retries: 3
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80"
     path: /mcp
