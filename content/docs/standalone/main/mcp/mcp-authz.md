@@ -81,7 +81,12 @@ binds:
 
 ## Different rules per target
 
-When you multiplex several MCP servers behind a single agentgateway listener, you can apply different authorization rules to each target. The following configuration allows open access to a public server while restricting an admin server to authenticated admins.
+When you multiplex several MCP servers behind a single agentgateway listener, you can apply different authorization rules to each target. 
+
+In this example:
+- Any user can access public tools.
+- Only users with `admin` in the JWT roles can access admin tools.
+- The JWT is validated against a local authorization server running on port 9000.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
