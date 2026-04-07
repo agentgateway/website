@@ -221,6 +221,36 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
+### 10. When a test fails: fix the test or fix the content?
+
+When a test fails, determine **where the bug lives** before changing anything. There are two distinct cases:
+
+#### Case 1: Test bug, content is correct
+
+The hidden `{{< doc-test >}}` block has a mistake — wrong assertion, missing retry, bad YAMLTest schema property, missing env var setup — but the visible documentation accurately describes what the product does. **Fix only the test.** The customer-facing content stays as-is.
+
+Examples:
+- YAMLTest `wait.target` includes an unsupported property like `apiVersion` → remove the invalid property from the hidden block.
+- A shell variable (e.g. `ANTHROPIC_API_KEY`) is referenced in a tagged block but set in an untagged visible block → add a hidden `{{< doc-test >}}` block that exports the variable with a placeholder default.
+- A config_dump assertion needs more retries because the data plane takes time to propagate → increase `retries` in the hidden block.
+
+#### Case 2: Content bug, test is revealing it
+
+The visible documentation — `kubectl apply` blocks, example output, curl commands, or explanatory text — shows something that **does not actually work** as described. The test is correctly catching a real problem. **Fix the content first, then update the test to match the corrected content.** Do not silently weaken or remove test assertions to hide content bugs.
+
+Examples:
+- A documented CEL expression (e.g. `json(response.body).model`) silently fails, so a response header the docs promise never appears → the visible `kubectl apply` block and example output are misleading readers. Flag this for a content fix. Don't just remove the assertion.
+- An example YAML block has a wrong `apiVersion` or misindented field that causes the resource to behave differently than described → fix the visible YAML, then update the test.
+- An example curl command shows a response that the product doesn't actually return → fix the example output.
+
+#### How to tell the difference
+
+Ask: **"If a customer follows the visible instructions exactly, will they get the documented result?"**
+- **Yes** → Case 1. The test setup is wrong.
+- **No** → Case 2. The content needs to be corrected. Raise the issue with the content owner if you can't determine the correct fix yourself.
+
+When in doubt, flag the failure to the user rather than silently adjusting the test. A weakened assertion that hides a content bug is worse than a failing test.
+
 ---
 
 ## Checklist (quick)
@@ -243,6 +273,7 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - [ ] Examples that depend on external services (auth servers, rate limit services) that can't be stood up in the test are skipped — only self-contained examples are tested.
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
+- [ ] When fixing a failing test, verified whether the bug is in the test or in the customer-facing content. If the content is wrong, fix the content first — don't silently weaken assertions.
 
 ---
 
