@@ -17,9 +17,8 @@ For more details, review the [GitHub release notes in the agentgateway repositor
 
 MCP authentication is configured at the route level under `policies.mcpAuthentication`. The route-level placement aligns MCP auth with other route-level policies and allows JWT claims to be used in authorization, rate limiting, and transformation policies.
 
-_Before_: MCP authentication was configured as a backend-level policy.
-
-_After_: MCP authentication is configured under `routes[].policies.mcpAuthentication`.
+* **Before**: MCP authentication was configured as a backend-level policy.
+* **After**: MCP authentication is configured under `routes[].policies.mcpAuthentication`.
 
 No YAML structure changes are required for standalone users, as standalone configuration already placed `mcpAuthentication` under route policies. However, if you have automation or tooling that references MCP authentication as a backend-level concept, update it accordingly.
 
@@ -77,18 +76,18 @@ For more information, see [HTTP authorization]({{< link-hextra path="/configurat
 
 ### MCP improvements
 
-- **Stateless sessions**: OpenAPI and SSE upstreams can now use stateless sessions, avoiding state persistence for backends that don't need it.
+- **Stateless sessions**: OpenAPI and SSE upstreams can now use stateless sessions, avoiding state persistence for backends that don't need it. For more information, see [OpenAPI connectivity]({{< link-hextra path="/mcp/connect/openapi/" >}}) and [Backends]({{< link-hextra path="/configuration/backends/" >}}).
 - **Explicit service reference lists**: MCP backends can specify targets with explicit service references.
-- **Tool payloads in CEL context**: Tool names and payloads are available in MCP authorization CEL expressions via `mcp.tool.name` and other `mcp.tool.*` fields.
+- **Tool payloads in CEL context**: Tool names and payloads are available in MCP authorization CEL expressions via `mcp.tool.name` and other `mcp.tool.*` fields. For more information, see [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz/" >}}).
 
 ### LLM gateway enhancements
 
-- **Path prefixes**: LLM providers now support `pathPrefix` for custom API base paths.
-- **Azure default authentication**: Azure OpenAI providers can use platform-default authentication.
-- **Vertex region optional**: Vertex AI region configuration is now optional with a global default.
+- **Path prefixes**: LLM providers now support `pathPrefix` for custom API base paths. For more information, see [Providers]({{< link-hextra path="/llm/providers/" >}}).
+- **Azure default authentication**: Azure OpenAI providers can use platform-default authentication. For more information, see [Azure]({{< link-hextra path="/llm/providers/azure/" >}}).
+- **Vertex region optional**: Vertex AI region configuration is now optional with a global default. For more information, see [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}).
 
 ### Gateway and routing improvements
 
-- **Automatic protocol detection**: A new `auto` bind protocol peeks at the first connection byte to determine TLS vs HTTP, simplifying mixed-protocol environments.
-- **Service SANs for upstream TLS**: Upstream TLS now respects Subject Alternative Names from Kubernetes Services.
-- **CEL hash functions**: New `sha1.encode`, `sha256.encode`, and `md5.encode` functions are available in CEL expressions.
+- **Automatic protocol detection**: A new `auto` bind protocol peeks at the first connection byte to determine TLS vs HTTP, simplifying mixed-protocol environments. For more information, see [Listeners]({{< link-hextra path="/configuration/listeners/" >}}).
+- **Service SANs for upstream TLS**: Upstream TLS now respects Subject Alternative Names from Kubernetes Services. For more information, see [Backend TLS]({{< link-hextra path="/configuration/security/backend-tls/" >}}).
+- **CEL hash functions**: New `sha1.encode`, `sha256.encode`, and `md5.encode` functions are available in CEL expressions. For more information, see [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).

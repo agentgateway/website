@@ -9,7 +9,7 @@ Configure [Vertex AI](https://cloud.google.com/vertex-ai) as an LLM provider in 
 1. [Set up authentication for Vertex AI](https://docs.cloud.google.com/vertex-ai/docs/authentication). Make sure to have your:
    
    - Google Cloud Project ID
-   - Project location, such as `us-central1` (optional — defaults to `global` if not specified)
+   - Project location, such as `us-central1` (defaults to `global` if not specified)
    - API key or service account credentials
 
 2. Save your Vertex AI API key as an environment variable.
