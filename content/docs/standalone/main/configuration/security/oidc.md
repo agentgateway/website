@@ -38,13 +38,15 @@ sequenceDiagram
     AGW->>Browser: Return protected resource
 ```
 
-1. **Unauthenticated request**: When a browser request arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
-2. **Login**: The user authenticates with the identity provider.
-3. **Callback**: After login, the identity provider redirects back to the `redirectURI` with an authorization code.
-4. **Token exchange**: The gateway exchanges the authorization code for an ID token using PKCE.
-5. **Session cookie**: The gateway sets an encrypted session cookie containing the ID token claims. Subsequent requests use this cookie.
+* **Steps 1-3: Unauthenticated request**. When a browser request arrives without a valid session cookie, the gateway redirects the user to the identity provider's login page.
+* **Steps 4-6: Login**. The user authenticates with the identity provider.
+* **Steps 7-8: Callback**. After login, the identity provider redirects back to the `redirectURI` with an authorization code.
+* **Steps 9-11: Token exchange**. The gateway exchanges the authorization code for an ID token using PKCE.
+* **Steps 12-15: Session cookie**. The gateway sets an encrypted session cookie containing the ID token claims. Subsequent requests use this cookie.
 
-## Session management
+### Session management
+
+Review the following details about session management.
 
 - Session cookies are encrypted and tamper-proof.
 - The gateway always requests the `openid` scope to obtain an ID token.
@@ -76,6 +78,22 @@ binds:
           - email
 ```
 
+### Keycloak example
+
+Review the following example for a Keycloak IdP.
+
+```yaml
+policies:
+  oidc:
+    issuer: http://keycloak.example.com/realms/myrealm
+    clientId: agentgateway-browser
+    clientSecret: my-client-secret
+    redirectURI: http://localhost:3000/oauth/callback
+    scopes:
+    - profile
+    - email
+```
+
 ## Fields
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
@@ -93,23 +111,9 @@ binds:
 | `tokenEndpointAuth` | No | Client authentication method for the token endpoint. Discovery mode derives this from provider metadata. Explicit mode defaults to `clientSecretBasic`. |
 | `jwks` | No | JWKS source for ID token validation. If omitted, uses the `jwks_uri` from discovery. |
 
-## Keycloak example
-
-```yaml
-policies:
-  oidc:
-    issuer: http://keycloak.example.com/realms/myrealm
-    clientId: agentgateway-browser
-    clientSecret: my-client-secret
-    redirectURI: http://localhost:3000/oauth/callback
-    scopes:
-    - profile
-    - email
-```
-
 ## Access log enrichment
 
-You can use JWT claims from the OIDC session in access logs by configuring `frontendPolicies`:
+After setting up OIDC browser authentication, you can use JWT claims from the OIDC session in access logs. Add a frontend policy such as the following example.
 
 ```yaml
 frontendPolicies:
