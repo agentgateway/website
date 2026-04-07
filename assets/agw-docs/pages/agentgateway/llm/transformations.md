@@ -219,7 +219,7 @@ Parse the `model` field from the incoming request body and the upstream response
          intervalSeconds: 2
    - name: verify model headers are injected from request and response bodies
      http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       url: "http://${INGRESS_GW_ADDRESS}/openai"
        method: POST
        headers:
          Content-Type: application/json
