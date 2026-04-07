@@ -139,7 +139,9 @@ binds:
 
 ## CEL expression reference
 
-Authorization rules use [Common Expression Language (CEL)]({{< link-hextra path="/reference/cel" >}}) expressions. The following variables are available in MCP authorization rules:
+Authorization rules use [Common Expression Language (CEL)]({{< link-hextra path="/reference/cel" >}}) expressions. Rules are evaluated as an `OR` expression: if any rule matches, the request is allowed.
+
+Review the following table of common variables in MCP authorization rules. For the full list of supported variables and functions, refer to the [CEL reference]({{< link-hextra path="/reference/cel" >}}).
 
 | Variable | Description |
 |----------|-------------|
@@ -148,6 +150,6 @@ Authorization rules use [Common Expression Language (CEL)]({{< link-hextra path=
 | `jwt.<claim>` | Any top-level or nested JWT claim (such as `jwt.roles`, `jwt.nested.key`) |
 | `has(jwt.<claim>)` | Check whether a JWT claim exists |
 
-Rules are evaluated as an OR: if any rule matches, the request is allowed.
 
-Refer to the [CEL reference]({{< link-hextra path="/reference/cel" >}}) for the full list of supported variables and functions.
+
+
