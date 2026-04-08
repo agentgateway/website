@@ -1,4 +1,4 @@
-[Argo Rollouts](https://argoproj.github.io/rollouts/) is a Kubernetes controller that provides advanced deployment capabilities such as blue-green, canary, canary analysis, experimentation, and progressive delivery features to Kubernetes. Because Argo Rollouts supports the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, you can use Argo Rollouts to control how traffic is split and forwarded from the proxies that kgateway v2 manages to the apps in your cluster. 
+[Argo Rollouts](https://argoproj.github.io/rollouts/) is a Kubernetes controller that provides advanced deployment capabilities such as blue-green, canary, canary analysis, experimentation, and progressive delivery features to Kubernetes. Because Argo Rollouts supports the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, you can use Argo Rollouts to control how traffic is split and forwarded from the proxies that agentgateway manages to the apps in your cluster. 
 
 ## Before you begin 
 
@@ -343,7 +343,7 @@
    image: docker.io/sharat87/httpbun:latest
    ```
 
-Congratulations, you successfully rolled out a new version of your app without downtime by using the HTTP gateway that is managed by kgateway v2. After a rollout, you typically perform tasks such as the following: 
+Congratulations, you successfully rolled out a new version of your app without downtime by using the HTTP gateway that is managed by agentgateway. After a rollout, you typically perform tasks such as the following: 
 
 - **Testing**: Conduct thorough testing of your app to ensure that it functions correctly after the rollout.
 - **Monitoring**: Monitor your application to detect any issues that may arise after the rollout. 
