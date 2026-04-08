@@ -4,16 +4,48 @@ Prioritize the failover of requests across different models from an LLM provider
 
 Use failover (automatic fallback) to keep services running by switching to a backup when the main system fails or becomes unavailable.
 
-For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover for the models of the LLM providers that you want to prioritize. If the main model from one provider goes down, slows, or has any issue, the system quickly switches to a backup model from that same provider. This keeps the service running without interruptions.
+For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover across models and LLM providers. When a provider becomes unhealthy (such as returning errors or getting rate-limited), the system automatically switches to a backup provider. This keeps the service running without interruptions.
 
-**Failover vs. traffic splitting:** Failover uses **priority groups** to automatically switch between backends when failures occur. For **weight-based traffic distribution** (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
+Failover in {{< reuse "agw-docs/snippets/agentgateway.md" >}} has two parts:
+
+- **Priority groups** in the {{< reuse "agw-docs/snippets/backend.md" >}} define the failover order. Each group is a tier. Models within the same group are load balanced equally. When all models in a group are evicted, requests fail over to the next group.
+- **A health policy** in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
+
+### Example flow
+
+Failover works through backend eviction, as described in the following diagram.
+
+```mermaid
+flowchart LR
+  A[Response arrives from provider] --> B{Unhealthy backends?}
+  B -->|"Yes (e.g. 5xx, 429)"| C[Evict backend from priority group]
+  B -->|No| H[Complete request]
+  C --> D{All backends in group evicted?}
+  D -->|Yes| F[Fail over to next priority group]
+  D -->|No| G[Route to remaining backends in group]
+  C --> J["Restore backend after eviction duration"]
+```
+
+1. A response arrives from a provider.
+2. The `unhealthyCondition` CEL expression is evaluated. If `true`, the response is marked unhealthy.
+3. If eviction thresholds are met (such as `consecutiveFailures`), the backend is evicted from its priority group for the configured `duration`.
+4. When all backends in a priority group are evicted, the load balancer automatically routes to the next available group.
+5. Evicted backends are restored after their eviction duration expires. The eviction duration uses multiplicative backoff on repeated evictions.
+
+**Rate-limit handling:** When a 429 response includes a `Retry-After` header, agentgateway uses that duration as the eviction time (overriding the configured `duration`). However, 429 responses only trigger eviction if your `unhealthyCondition` includes them (for example, `response.code >= 500 || response.code == 429`).
+
+### Failover vs. traffic splitting {#traffic-splitting}
+
+Failover uses priority groups to automatically switch between backends when failures occur. 
+
+For weight-based traffic distribution (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
 
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use. The example in this guide uses OpenAI.
+2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use. The examples in this guide use OpenAI and Anthropic.
 
 ## Fail over to other models {#model-failover}
 
@@ -28,7 +60,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{< tabs tabTotal="2" items="OpenAI model priority,Cost-based priority across providers" >}}
    {{% tab tabName="OpenAI model priority" %}}
    
-   In this example, you configure separate priority groups for failover across multiple models from the same LLM provider, OpenAI. The priority order of the models is as follows:
+   In this example, you configure separate priority groups for failover across multiple models from the same LLM provider, OpenAI. Each model is in its own priority group. The order of the groups determines the failover priority. If the first model is evicted, requests fail over to the second group, and so on.
    
    1. OpenAI `gpt-4.1` model (highest priority)
    2. OpenAI `gpt-5.1` model (fallback)
@@ -53,14 +85,16 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
                  auth:
                    secretRef:
                      name: openai-secret
-             - name: openai-gpt-5.1
+         - providers: 
+             - name: openai-gpt-51
                openai: 
                  model: gpt-5.1
                policies:
                  auth:
                    secretRef:
                      name: openai-secret
-             - name: openai-gpt-3.5-turbo
+         - providers: 
+             - name: openai-gpt-3-5-turbo
                openai: 
                  model: gpt-3.5-turbo
                policies:
@@ -76,8 +110,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{% tab tabName="Cost-based priority across providers" %}}
    
    In this example, you configure failover across multiple providers with cost-based priority. The first priority group contains cheaper models. Responses are load-balanced across these models. In the event that both models are unavailable, requests fall back to the second priority group of more premium models.
-   - Highest priority: Load balance across cheaper OpenAI `gpt-3.5-turbo` and Anthropic `claude-3-5-haiku-latest` models.
-   - Fallback: Load balance across more premium OpenAI `gpt-4.1` and Anthropic `claude-opus-4-1` models.
+   - Highest priority: Load balance across cheaper OpenAI `gpt-3.5-turbo` and Anthropic `claude-haiku-4-5-20251001` models.
+   - Fallback: Load balance across more premium OpenAI `gpt-4.1` and Anthropic `claude-opus-4-6` models.
 
    Make sure that you configured both Anthropic and OpenAI providers.
 
@@ -102,7 +136,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
                      name: openai-secret
              - name: claude-haiku
                anthropic:
-                 model: claude-3-5-haiku-latest
+                 model: claude-haiku-4-5-20251001
                policies:
                  auth:
                    secretRef:
@@ -117,7 +151,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
                      name: openai-secret
              - name: claude-opus
                anthropic:
-                 model: claude-opus-4-1
+                 model: claude-opus-4-6
                policies:
                  auth:
                    secretRef:
@@ -158,7 +192,74 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    ```
    
 
-3. Send a request to observe the failover. In your request, do not specify a model. Instead, the {{< reuse "agw-docs/snippets/backend.md" >}} automatically uses the model from the first priority group (highest priority).
+3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
+
+   The `unhealthyCondition` field is a [CEL expression](https://github.com/google/cel-spec) that evaluates each response. When the expression returns `true`, the response is treated as unhealthy. The `eviction` settings control when and how long an unhealthy backend is removed from its priority group.
+
+   {{< tabs tabTotal="2" items="5xx and rate-limit failover,5xx-only failover" >}}
+   {{% tab tabName="5xx and rate-limit failover" %}}
+
+   This configuration evicts backends on both server errors (5xx) and rate-limit responses (429). This way, when you get throttled by one LLM provider, agentgateway automatically fails over to another.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: model-failover-health
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: agentgateway.dev
+       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       name: model-failover
+     backend:
+       health:
+         unhealthyCondition: "response.code >= 500 || response.code == 429"
+         eviction:
+           duration: 10s
+           consecutiveFailures: 1
+   EOF
+   ```
+
+   {{% /tab %}}
+   {{% tab tabName="5xx-only failover" %}}
+
+   This configuration evicts backends only on server errors (5xx) or connection failures. Rate-limited (429) responses lower the backend's health score but do not trigger eviction.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: model-failover-health
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: agentgateway.dev
+       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       name: model-failover
+     backend:
+       health:
+         unhealthyCondition: "response.code >= 500"
+         eviction:
+           duration: 10s
+           consecutiveFailures: 3
+   EOF
+   ```
+
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   {{< reuse "agw-docs/snippets/review-table.md" >}}
+
+   | Setting | Description |
+   | --- | --- |
+   | `unhealthyCondition` | CEL expression evaluated for each response. `true` means unhealthy. The default (when unset) treats 5xx and connection failures as unhealthy but does not trigger eviction on its own. |
+   | `eviction.duration` | Base time to remove an unhealthy backend from its priority group. Increases with multiplicative backoff on repeated evictions. When a 429 response includes `Retry-After`, that value is used instead. |
+   | `eviction.consecutiveFailures` | Number of consecutive unhealthy responses required before evicting. When set to `1`, a single unhealthy response triggers eviction. |
+
+4. Send a request to observe the failover. In your request, do not specify a model. Instead, the {{< reuse "agw-docs/snippets/backend.md" >}} automatically uses the model from the first priority group (highest priority).
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
@@ -190,7 +291,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{< tabs tabTotal="2" items="OpenAI model priority,Cost-based priority across providers" >}}
    {{% tab tabName="OpenAI model priority" %}}
    
-   Note the response is from the `gpt-4o` model, which is the first model in the priority order from the {{< reuse "agw-docs/snippets/backend.md" >}}.
+   Note the response is from the `gpt-4.1` model, which is the first model in the priority order from the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
    ```json {linenos=table,hl_lines=[5],linenostart=1,filename="model-response.json"}
    {
@@ -218,11 +319,11 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{% /tab %}}
    {{% tab tabName="Cost-based priority across providers" %}}
    
-   Note the response is from the `claude-3-5-haiku-20241022` model. With the cost-based priority configuration, requests are load balanced across the cheaper models (OpenAI `gpt-3.5-turbo` and Anthropic `claude-3-5-haiku-latest`) in the first priority group.
+   Note the response is from the `claude-haiku-4-5-20251001` model. With the cost-based priority configuration, requests are load balanced across the cheaper models (OpenAI `gpt-3.5-turbo` and Anthropic `claude-haiku-4-5-20251001`) in the first priority group.
 
    ```json {linenos=table,hl_lines=[2],linenostart=1,filename="model-response.json"}
    {
-     "model": "claude-3-5-haiku-20241022",
+     "model": "claude-haiku-4-5-20251001",
      "usage": {
        "prompt_tokens": 11,
        "completion_tokens": 299,
@@ -247,24 +348,13 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{% /tab %}}
    {{< /tabs >}}
 
-## Known limitations
-
-{{< callout type="warning" >}}
-**429-only failover**: Failover to lower-priority groups currently only triggers on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Failover does NOT trigger on:
-- 503 Service Unavailable responses
-- Connection refused or timeout errors
-- DNS resolution failures
-- Other error codes (404, 500, etc.)
-
-Providers that return non-429 errors receive degraded health scores but remain in their priority group. Traffic continues to route to these providers (though at reduced rates due to lower health scores) rather than failing over to the next priority group.
-{{< /callout >}}
-
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```shell
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} model-failover-health -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
