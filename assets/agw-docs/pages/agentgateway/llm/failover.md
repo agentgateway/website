@@ -1,4 +1,4 @@
-Prioritize the failover of requests across different models from an LLM provider.
+Prioritize the failover of requests across different models from an LLM provider. Include outlier detection of unhealthy LLM backends to automatically fail over when getting throttled by an unperformant model.
 
 ## About failover {#about}
 
