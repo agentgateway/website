@@ -10,6 +10,7 @@ Configure Microsoft Azure AI as an LLM provider in agentgateway. Through Azure A
 
 Azure authentication supports several credential sources:
 
+- **Default (implicit)**: Automatically detects authentication based on your environment. Uses Workload Identity on Kubernetes, Managed Identity on Azure VMs, or developer tools locally. Used by default when no `backendAuth` is specified.
 - **Client secret**: Use Azure service principal credentials
 - **Managed identity**: Use Azure managed identity for system- or user-assigned identities
 - **Workload Identity**: Use Azure identity for Kubernetes workloads
@@ -56,7 +57,31 @@ For advanced Azure authentication methods (managed identity, workload identity, 
 
 For advanced Azure AI scenarios, use the traditional configuration format. The following tabs show examples for different authentication methods.
 
-{{< tabs items="Foundry,Client secret,System-assigned managed identity,User-assigned managed identity,Workload identity" >}}
+{{< tabs items="Default (implicit),Foundry,Client secret,System-assigned managed identity,User-assigned managed identity,Workload identity" >}}
+
+{{% tab %}}
+**Default authentication**: When no `backendAuth` is specified, agentgateway automatically detects the appropriate Azure credential based on the environment. The gateway uses Workload Identity on Kubernetes, Managed Identity on Azure VMs, or developer tools (Azure CLI, environment variables) locally.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: azure
+          hostOverride: "your-azure-endpoint.com:443"
+          provider:
+            openAI:
+              model: gpt-4
+      policies:
+        backendTLS: {}
+```
+
+No `backendAuth` configuration is needed. Agentgateway automatically resolves credentials from the environment.
+
+{{% /tab %}}
 
 {{% tab %}}
 **Azure AI Foundry**: Set the host and path to the Foundry endpoint. For the credentials, you can use one of the authentication methods, such as user-assigned managed identity in the following example.

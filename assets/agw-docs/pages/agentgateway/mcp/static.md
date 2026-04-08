@@ -75,6 +75,8 @@ EOF
 
 Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse "agw-docs/snippets/agentgateway.md" >}} target details for the MCP server.
 
+{{< tabs tabTotal="2" items="Static host, Service" >}}
+{{% tab tabName="Static host" %}}
 ```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
@@ -91,7 +93,26 @@ spec:
         protocol: SSE   
 EOF
 ```
-   
+{{% /tab %}}
+{{% tab tabName="Service" %}}
+Instead of specifying the full hostname with `static.host`, you can use `backendRef` to reference a `Service` by name. The `backendRef` approach is simpler and avoids hardcoding the full cluster DNS name.
+
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: mcp-backend
+spec:
+  mcp:
+    targets:
+    - name: mcp-target
+      backendRef:
+        name: mcp-website-fetcher
+      port: 80
+      protocol: SSE
+```
+{{% /tab %}}
+{{< /tabs >}}
 
 ### Step 3: Route to the backend
 
