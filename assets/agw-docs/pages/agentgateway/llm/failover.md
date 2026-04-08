@@ -49,8 +49,8 @@ For weight-based traffic distribution (A/B testing, traffic splitting, or canary
 
 {{< doc-test paths="failover" >}}
 # Create an AgentgatewayBackend with 2 priority groups using httpbun as mock LLM.
-# Group 1 (highest priority): single httpbun provider.
-# Group 2 (fallback): second httpbun provider with a different name.
+# Group 1 (highest priority): httpbun /status/500 — always returns 500 to trigger eviction.
+# Group 2 (fallback): httpbun /llm/chat/completions — returns normal 200 responses.
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
@@ -66,7 +66,7 @@ spec:
               model: gpt-4
             host: httpbun.default.svc.cluster.local
             port: 3090
-            path: "/llm/chat/completions"
+            path: "/status/500"
       - providers:
           - name: fallback-llm
             openai:
@@ -196,11 +196,21 @@ EOF
 {{< /doc-test >}}
 
 {{< doc-test paths="failover" >}}
-# Get the gateway address and verify a request through the failover backend succeeds.
+# Get the gateway address.
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 
+# First request hits the primary group (/status/500) — triggers eviction.
+# The client receives a 500 for this request.
+curl -s -o /dev/null -w "%{http_code}" "http://${INGRESS_GW_ADDRESS}/model" \
+  -H "Content-Type: application/json" \
+  -d '{"messages": [{"role": "user", "content": "Hello"}]}'
+
+# Brief pause for eviction to take effect.
+sleep 2
+
+# Second request: primary is evicted, so it routes to the fallback group (/llm/chat/completions) — should return 200.
 YAMLTest -f - <<'EOF'
-- name: verify request through failover backend succeeds
+- name: verify failover to fallback group returns 200
   http:
     url: "http://${INGRESS_GW_ADDRESS}/model"
     method: POST
@@ -212,6 +222,7 @@ YAMLTest -f - <<'EOF'
       }
   source:
     type: local
+  retries: 3
   expect:
     statusCode: 200
     bodyJsonPath:
@@ -440,94 +451,94 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    | `eviction.duration` | Base time to remove an unhealthy backend from its priority group. Increases with multiplicative backoff on repeated evictions. When a 429 response includes `Retry-After`, that value is used instead. |
    | `eviction.consecutiveFailures` | Number of consecutive unhealthy responses required before evicting. When set to `1`, a single unhealthy response triggers eviction. |
 
-4. Send a request to observe the failover. In your request, do not specify a model. Instead, the {{< reuse "agw-docs/snippets/backend.md" >}} automatically uses the model from the first priority group (highest priority).
+4. Verify that failover works by temporarily configuring the health policy to treat all responses as unhealthy. This forces each backend to be evicted after its first response, so you can watch requests progress through the priority groups.
+
+   Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to set `unhealthyCondition` to `"true"`:
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: model-failover-health
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: agentgateway.dev
+       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       name: model-failover
+     backend:
+       health:
+         unhealthyCondition: "true"
+         eviction:
+           duration: 30s
+           consecutiveFailures: 1
+   EOF
+   ```
+
+   Send multiple requests in sequence. Check the `model` field in each response to confirm that requests progress through the priority groups as each backend is evicted.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```bash
-   curl -v "$INGRESS_GW_ADDRESS/model" -H content-type:application/json -d '{
-     "messages": [
-       {
-         "role": "user",
-         "content": "What is kubernetes?"
-       }
-   ]}' | jq
+   for i in 1 2 3; do
+     echo "=== Request $i ==="
+     curl -s "$INGRESS_GW_ADDRESS/model" -H content-type:application/json -d '{
+       "messages": [{"role": "user", "content": "Say hello in one word."}]
+     }' | jq '{model, status: .choices[0].finish_reason}'
+     echo
+   done
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```bash
-   curl -v "localhost:8080/model" -H content-type:application/json -d '{
-     "messages": [
-       {
-         "role": "user",
-         "content": "What is kubernetes?"
-       }
-   ]}' | jq
+   for i in 1 2 3; do
+     echo "=== Request $i ==="
+     curl -s "localhost:8080/model" -H content-type:application/json -d '{
+       "messages": [{"role": "user", "content": "Say hello in one word."}]
+     }' | jq '{model, status: .choices[0].finish_reason}'
+     echo
+   done
    ```
    {{< /tab >}}
    {{< /tabs >}}
-   
-   Example output:
 
    {{< tabs tabTotal="2" items="OpenAI model priority,Cost-based priority across providers" >}}
    {{% tab tabName="OpenAI model priority" %}}
-   
-   Note the response is from the `gpt-4.1` model, which is the first model in the priority order from the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   ```json {linenos=table,hl_lines=[5],linenostart=1,filename="model-response.json"}
-   {
-     "id": "chatcmpl-BFQ8Lldo9kLC56S1DFVbIonOQll9t",
-     "object": "chat.completion",
-     "created": 1743015077,
-     "model": "gpt-4.1-2025-04-14",
-     "choices": [
-       {
-         "index": 0,
-         "message": {
-           "role": "assistant",
-           "content": "Kubernetes is an open-source container orchestration platform designed to automate the deployment, scaling, and management of containerized applications. Originally developed by Google, it is now maintained by the Cloud Native Computing Foundation (CNCF).\n\nKubernetes provides a framework to run distributed systems resiliently. It manages containerized applications across a cluster of machines, offering features such as:\n\n1. **Automatic Bin Packing**: It can optimize resource usage by automatically placing containers based on their resource requirements and constraints while not sacrificing availability.\n\n2. **Self-Healing**: Restarts failed containers, replaces and reschedules containers when nodes die, and kills and reschedules containers that are unresponsive to user-defined health checks.\n\n3. **Horizontal Scaling**: Scales applications and resources up or down automatically, manually, or based on CPU usage.\n\n4. **Service Discovery and Load Balancing**: Exposes containers using DNS names or their own IP addresses and balances the load across them.\n\n5. **Automated Rollouts and Rollbacks**: Automatically manages updates to applications or configurations and can rollback changes if necessary.\n\n6. **Secret and Configuration Management**: Enables you to deploy and update secrets and application configuration without rebuilding your container images and without exposing secrets in your stack configuration and environment variables.\n\n7. **Storage Orchestration**: Allows you to automatically mount the storage system of your choice, whether from local storage, a public cloud provider, or a network storage system.\n\nBy providing these functionalities, Kubernetes enables developers to focus more on creating applications, while the platform handles the complexities of deployment and scaling. It has become a de facto standard for container orchestration, supporting a wide range of cloud platforms and minimizing dependencies on any specific infrastructure.",
-           "refusal": null,
-           "annotations": []
-         },
-         "logprobs": null,
-         "finish_reason": "stop"
-       }
-     ],
-     ...
-   }
+   With the OpenAI model priority configuration, each request evicts the current group's backend and the next request routes to the next group. You can see the `model` field change with each request:
+
+   ```text
+   === Request 1 ===
+   { "model": "gpt-4.1-2025-04-14", "status": "stop" }
+
+   === Request 2 ===
+   { "model": "gpt-5.1-2025-04-14", "status": "stop" }
+
+   === Request 3 ===
+   { "model": "gpt-3.5-turbo-0125", "status": "stop" }
    ```
    
    {{% /tab %}}
    {{% tab tabName="Cost-based priority across providers" %}}
-   
-   Note the response is from the `claude-haiku-4-5-20251001` model. With the cost-based priority configuration, requests are load balanced across the cheaper models (OpenAI `gpt-3.5-turbo` and Anthropic `claude-haiku-4-5-20251001`) in the first priority group.
 
-   ```json {linenos=table,hl_lines=[2],linenostart=1,filename="model-response.json"}
-   {
-     "model": "claude-haiku-4-5-20251001",
-     "usage": {
-       "prompt_tokens": 11,
-       "completion_tokens": 299,
-       "total_tokens": 310
-     },
-     "choices": [
-       {
-         "message": {
-           "content": "Kubernetes (often abbreviated as K8s) is an open-source container orchestration platform designed to automate the deployment, scaling, and management of containerized applications. Here's a comprehensive overview:\n\nKey Features:\n1. Container Orchestration\n- Manages containerized applications\n- Handles deployment and scaling\n- Ensures high availability\n\n2. Core Components\n- Cluster: Group of machines (nodes)\n- Master Node: Controls the cluster\n- Worker Nodes: Run containerized applications\n- Pods: Smallest deployable units\n- Containers: Isolated application environments\n\n3. Main Capabilities\n- Automatic scaling\n- Self-healing\n- Load balancing\n- Rolling updates\n- Service discovery\n- Configuration management\n\n4. Key Concepts\n- Deployments: Define desired application state\n- Services: Network communication between components\n- Namespaces: Logical separation of resources\n- ConfigMaps: Configuration management\n- Secrets: Sensitive data management\n\n5. Benefits\n- Portability across different environments\n- Efficient resource utilization\n- Improved scalability\n- Enhanced reliability\n- Simplified management of complex applications\n\n6. Popular Use Cases\n- Microservices architecture\n- Cloud-native applications\n- Continuous deployment\n- Distributed systems\n\nKubernetes has become the standard for container orchestration in modern cloud-native application development.",
-           "role": "assistant"
-         },
-         "index": 0,
-         "finish_reason": "stop"
-       }
-     ],
-     "id": "msg_016PLweC4jgJnpwH7V1tZaqj",
-     "created": 1762790436,
-     "object": "chat.completion"
-   }
+   With the cost-based configuration, the first two requests are load balanced across the two providers in the first priority group. After both are evicted, the third request fails over to the second priority group:
+
+   ```text
+   === Request 1 ===
+   { "model": "gpt-3.5-turbo-0125", "status": "stop" }
+
+   === Request 2 ===
+   { "model": "claude-haiku-4-5-20251001", "status": "stop" }
+
+   === Request 3 ===
+   { "model": "gpt-4.1-2025-04-14", "status": "stop" }
    ```
    
    {{% /tab %}}
    {{< /tabs >}}
+
+5. Restore the health policy to your production configuration. Reapply the policy from step 3 with your actual `unhealthyCondition` (such as `response.code >= 500 || response.code == 429`).
 
 ## Cleanup
 
