@@ -304,6 +304,10 @@
 
 ## Test the promotion
 
+{{< callout type="info" >}}
+Make sure you have installed the [argo-rollouts](https://argo-rollouts.readthedocs.io/en/stable/installation/#kubectl-plugin-installation) extension for kubectl.
+{{< /callout >}}
+
 1. Verify `httpbun` image.
    ```bash
    k get pod httpbun -o yaml | grep image:
@@ -318,7 +322,7 @@
    ```shell
    kubectl get httproute httpbun-http-route -o yaml
    ```
-   Or use the following command to watch the promotion progress in real time. Make sure you have installed the [argo-rollouts](https://argo-rollouts.readthedocs.io/en/stable/installation/#kubectl-plugin-installation) extension for kubectl.
+   Or use the following command to watch the promotion progress in real time.
    ```shell
    kubectl argo rollouts get rollout httpbun-rollout --watch
    ```
@@ -328,7 +332,7 @@
    kubectl argo rollouts set image httpbun-rollout httpbun=sharat87/httpbun:latest
    ```
 
-4. Promote the rollout. Make sure you have installed the [argo-rollouts](https://argo-rollouts.readthedocs.io/en/stable/installation/#kubectl-plugin-installation) extension for kubectl.
+4. Promote the rollout.
    ```sh
    kubectl argo rollouts promote httpbun-rollout
    ```
