@@ -167,3 +167,45 @@ llm:
 
 Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translates these to the corresponding provider models.
 
+### Route priority
+
+When multiple models match a request, agentgateway selects the best match by using the following priority order:
+
+1. **Match specificity**: Routes with more match criteria take priority. For example, a route with two header matchers ranks higher than a route with one.
+2. **Config order**: When two routes have equal specificity, the route listed first in the configuration file takes priority.
+
+This means you can control tie-breaking behavior by ordering your models in the config. Place more specific routes before generic or wildcard routes to ensure they match first.
+
+```yaml
+llm:
+  models:
+  # Specific route — listed first, wins ties against the wildcard
+  - name: "accounts/fireworks/*"
+    provider: openAI
+    matches:
+    - headers:
+      - name: "x-org"
+        value:
+          exact: "eng"
+    params:
+      apiKey: "$FIREWORKS_API_KEY"
+      hostOverride: api.fireworks.ai:443
+    backendTLS: {}
+  # Catch-all route — matches anything, but lower priority
+  - name: "*"
+    provider: openAI
+    matches:
+    - headers:
+      - name: "x-org"
+        value:
+          exact: "engineering"
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
+In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
+
+{{< callout type="info" >}}
+For advanced routing based on request body fields like the `model` name, see [Content-based routing]({{< link-hextra path="/llm/content-routing/" >}}).
+{{< /callout >}}
+
