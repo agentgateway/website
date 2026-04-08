@@ -112,7 +112,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
    Example output:
 
    ```txt
-   NAME                                  READY   STATUS    RESTARTS   AGE
+   NAME                                      READY   STATUS    RESTARTS   AGE
    {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-78658959cd-cz6jt             1/1     Running   0          12s
    ```
 
@@ -120,4 +120,11 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
    ```sh
    kubectl get gatewayclass {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
+   ```
+
+   Example output: 
+   
+   ```txt
+   NAME             CONTROLLER                       ACCEPTED   AGE   
+   {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}     agentgateway.dev/{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}    True       6m36s
    ```
