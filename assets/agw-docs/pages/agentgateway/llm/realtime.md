@@ -50,7 +50,6 @@ YAMLTest -f - <<'EOF'
 - name: wait for openai backend with realtime route to be ready
   wait:
     target:
-      apiVersion: agentgateway.dev/v1alpha1
       kind: AgentgatewayBackend
       metadata:
         namespace: agentgateway-system
