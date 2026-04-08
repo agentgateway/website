@@ -47,6 +47,187 @@ For weight-based traffic distribution (A/B testing, traffic splitting, or canary
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to use. The examples in this guide use OpenAI and Anthropic.
 
+{{< doc-test paths="failover" >}}
+# Create an AgentgatewayBackend with 2 priority groups using httpbun as mock LLM.
+# Group 1 (highest priority): single httpbun provider.
+# Group 2 (fallback): second httpbun provider with a different name.
+kubectl apply -f- <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: model-failover
+  namespace: agentgateway-system
+spec:
+  ai:
+    groups:
+      - providers:
+          - name: primary-llm
+            openai:
+              model: gpt-4
+            host: httpbun.default.svc.cluster.local
+            port: 3090
+            path: "/llm/chat/completions"
+      - providers:
+          - name: fallback-llm
+            openai:
+              model: gpt-4
+            host: httpbun.default.svc.cluster.local
+            port: 3090
+            path: "/llm/chat/completions"
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="failover" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for model-failover backend to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: model-failover
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="failover" >}}
+# Create the HTTPRoute for the failover backend.
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: model-failover
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agentgateway-system
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /model
+    backendRefs:
+    - name: model-failover
+      namespace: agentgateway-system
+      group: agentgateway.dev
+      kind: AgentgatewayBackend
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="failover" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for model-failover HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: model-failover
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+- name: wait for model-failover HTTPRoute refs to be resolved
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: model-failover
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='ResolvedRefs')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="failover" >}}
+# Create the AgentgatewayPolicy with health/eviction settings.
+kubectl apply -f- <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: model-failover-health
+  namespace: agentgateway-system
+spec:
+  targetRefs:
+  - group: agentgateway.dev
+    kind: AgentgatewayBackend
+    name: model-failover
+  backend:
+    health:
+      unhealthyCondition: "response.code >= 500 || response.code == 429"
+      eviction:
+        duration: 10s
+        consecutiveFailures: 1
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="failover" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for model-failover-health policy to be accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: agentgateway-system
+        name: model-failover-health
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="failover" >}}
+# Get the gateway address and verify a request through the failover backend succeeds.
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+
+YAMLTest -f - <<'EOF'
+- name: verify request through failover backend succeeds
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/model"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body: |
+      {
+        "messages": [{"role": "user", "content": "Hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.usage.total_tokens"
+        comparator: greaterThan
+        value: 0
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="failover" >}}
+# Cleanup test resources
+kubectl delete AgentgatewayBackend model-failover -n agentgateway-system --ignore-not-found
+kubectl delete AgentgatewayPolicy model-failover-health -n agentgateway-system --ignore-not-found
+kubectl delete httproute model-failover -n agentgateway-system --ignore-not-found
+{{< /doc-test >}}
+
 ## Fail over to other models {#model-failover}
 
 You can configure failover across multiple models and providers by using priority groups. Each priority group represents a set of providers that share the same priority level. Failover priority is determined by the order in which the priority groups are listed in the {{< reuse "agw-docs/snippets/backend.md" >}}. The priority group that is listed first is assigned the highest priority.
