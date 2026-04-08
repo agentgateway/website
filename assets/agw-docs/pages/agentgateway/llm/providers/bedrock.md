@@ -69,8 +69,9 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
            region: "us-east-1"
      policies:
        auth:
-         secretRef:
-           name: bedrock-secret
+         aws:
+           secretRef:
+             name: bedrock-secret
    EOF
    ```
 
