@@ -19,6 +19,8 @@ Policies that are attached at multiple levels are applied at all levels.
 |Route|All Policies|Runs after route selection, before backend selection|
 |Backend|Backend TLS, Backend Authentication, Backend HTTP, Backend TCP, AI/LLM, MCP Authorization, MCP Authentication, Header modification|Runs after backend selection|
 
+{{< reuse "agw-docs/pages/agentgateway/about/processing-order.md" >}}
+
 ## Example policy configuration
 
 Review the following example configuration that uses one of each policy type.
@@ -60,7 +62,7 @@ binds:
 For more information about available policies, review the following guides:
 
 {{< cards >}}
-   {{< card path="/traffic-management" title="Traffic management" >}}
-   {{< card path="/resiliency" title="Resiliency" >}}
-   {{< card path="/security" title="Security" >}}
+   {{< card path="/configuration/traffic-management" title="Traffic management" >}}
+   {{< card path="/configuration/resiliency" title="Resiliency" >}}
+   {{< card path="/configuration/security" title="Security" >}}
 {{< /cards >}}

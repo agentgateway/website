@@ -47,7 +47,7 @@ In real enterprise deployments, security and reliability aren't optional. That's
 * Local and remote rate limiting
 * JWT authentication and external auth, (ie, extAuthz) hooks
 * Upstream auth (cloud identity, TLS, etc)
-* Full [OpenTelemetry](https://opentelemetry.io/) support for metrics, logs, and distributed tracing
+* Full [OpenTelemetry](https://opentelemetry.io) support for metrics, logs, and distributed tracing
 
 These controls allow you to run production-grade agent infrastructure that meets enterprise security and observability requirements.
 

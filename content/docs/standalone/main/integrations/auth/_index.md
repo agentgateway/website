@@ -1,7 +1,8 @@
 ---
-title: Authentication & Identity
+title: Authentication & identity
 weight: 40
 description: Integrate agentgateway with identity providers and authentication systems
+test: skip
 ---
 
 Agentgateway supports multiple authentication methods and integrates with popular identity providers.
@@ -22,5 +23,5 @@ Agentgateway supports several authentication approaches.
 |--------|----------|----------|
 | JWT validation | API authentication | [MCP Authentication]({{< link-hextra path="/tutorials/mcp-authentication" >}}) |
 | OAuth2/OIDC | User authentication | [OAuth2 Proxy]({{< link-hextra path="/tutorials/oauth2-proxy" >}}) |
-| External authz | Custom auth services | [Authorization]({{< link-hextra path="/tutorials/jwt-authorization" >}}) |
+| External authz | Custom auth services | [Authorization]({{< link-hextra path="/tutorials/authorization" >}}) |
 | Tailscale | Zero-trust networks | [Tailscale Auth]({{< link-hextra path="/tutorials/tailscale-auth" >}}) |

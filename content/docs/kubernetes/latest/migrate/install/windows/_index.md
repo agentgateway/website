@@ -1,5 +1,5 @@
 ---
-title: "Windows Installation"
+title: "Windows installation"
 weight: 30
 ---
 

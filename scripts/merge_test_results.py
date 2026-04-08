@@ -14,6 +14,8 @@ except ModuleNotFoundError:
 def merge(input_dir: Path, output_path: Path) -> None:
     tested_documents: set[str] = set()
     tests: dict = {}
+    total_documents: int = 0
+    total_by_version: dict = {}
 
     result_files = sorted(input_dir.rglob("test-results.yaml"))
     for results_file in result_files:
@@ -23,9 +25,18 @@ def merge(input_dir: Path, output_path: Path) -> None:
             tested_documents.add(doc)
         for key, result in report.get("tests", {}).items():
             tests[key] = result
+        # Take the max total_documents seen across shards (all shards scan the same glob)
+        shard_total = report.get("total_documents", 0)
+        if shard_total > total_documents:
+            total_documents = shard_total
+        for version, count in report.get("total_documents_by_version", {}).items():
+            if count > total_by_version.get(version, 0):
+                total_by_version[version] = count
 
     merged = {
         "tested_documents": sorted(tested_documents),
+        "total_documents": total_documents,
+        "total_documents_by_version": total_by_version,
         "tests": tests,
     }
     output_path.parent.mkdir(parents=True, exist_ok=True)

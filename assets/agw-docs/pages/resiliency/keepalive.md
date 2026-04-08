@@ -6,7 +6,7 @@ With keepalive, the kernel sends probe packets with only an acknowledgement flag
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
-## TCP keepalive
+## TCP keepalive {#tcp-keepalive}
 
 Keep the TCP connection alive by sending out probes after the connection has been idle for a specific amount of time.
 
@@ -93,7 +93,7 @@ Keep the TCP connection alive by sending out probes after the connection has bee
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin
 ```
 
-## HTTP keepalive
+## HTTP keepalive {#http-keepalive}
 
 Keep the HTTP connection alive by sending out probes after the connection has been idle for a specific amount of time.
 

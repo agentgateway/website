@@ -42,7 +42,7 @@ words.style.transform = `translateY(-${current * 25}%)`;
 })();
 </script>
 <p class="text-xl max-w-2xl font-semibold mt-6 lg:mt-10 font-heading text-secondary-text">
-Agent Gateway is an open source data plane built on AI-native protocols (A2A & MCP) to connect, secure, and observe agent-to-agent and agent-to-tool communication across any framework and environment.
+Agent Gateway is an open source proxy built on AI-native protocols (A2A & MCP) to connect, secure, and observe agent-to-LLM, agent-to-tool, and agent-to-agent communication across any framework and environment.
 </p>
 <div class="flex flex-wrap justify-center gap-4 pt-10">
 {{< button style="primary" href="/docs/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}
@@ -239,7 +239,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
           </svg>
         </div>
         <h3 class="text-primary-text text-lg font-bold mb-2">Integrations</h3>
-        <p class="text-secondary-text text-sm">Connect with OpenAI, Anthropic, Azure, and MCP servers.</p>
+        <p class="text-secondary-text text-sm">Connect with OpenAI, Anthropic, Gemini, Bedrock, Azure OpenAI, and MCP servers.</p>
       </a>
     </div>
   </div>
@@ -252,7 +252,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
       <div>
         <h2 class="text-primary-text text-3xl lg:text-4xl font-bold mb-6">What is Agent Gateway?</h2>
         <p class="text-secondary-text text-lg mb-4">
-          Agent Gateway is a next-generation proxy designed for the agentic AI ecosystem. It provides drop-in security, observability, and governance for agent-to-agent (A2A) and agent-to-tool (MCP) communication.
+          Agent Gateway is a next-generation proxy designed for the agentic AI ecosystem. It provides drop-in security, observability, and governance for agent-to-LLM, agent-to-tool (MCP), and agent-to-agent (A2A) communication.
         </p>
         <p class="text-secondary-text mb-8">
           Built to tackle enterprise challenges, Agent Gateway enables teams to connect, secure, and audit all AI agent communications from a single control point.
@@ -297,7 +297,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
               <span class="text-secondary-text text-xs uppercase tracking-wider">AGENTS</span>
               <div class="flex justify-center gap-2 mt-3">
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">Claude</span>
-                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">GPT-5</span>
+                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">LangGraph</span>
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-4 py-2 text-primary-text text-sm">Custom</span>
               </div>
             </div>
@@ -316,7 +316,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
               <span class="text-secondary-text text-xs uppercase tracking-wider">BACKENDS</span>
               <div class="flex justify-center gap-2 mt-3">
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">MCP Servers</span>
-                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">LLM APIs</span>
+                <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">LLMs</span>
                 <span class="bg-tertiary-bg border border-secondary-border rounded-lg px-3 py-2 text-primary-text text-xs">A2A Agents</span>
               </div>
             </div>
@@ -475,7 +475,7 @@ Agent Gateway is an open source data plane built on AI-native protocols (A2A & M
 </div>
 <div class="bg-tertiary-bg/50 rounded-lg p-3">
 <p class="text-primary-text text-sm font-medium mb-2">Authorization</p>
-<p class="text-secondary-text text-xs">Fine-grained RBAC with Cedar policy engine</p>
+<p class="text-secondary-text text-xs">Fine-grained RBAC with CEL policy engine</p>
 </div>
 <div class="bg-tertiary-bg/50 rounded-lg p-3">
 <p class="text-primary-text text-sm font-medium mb-2">Traffic Policies</p>
@@ -649,7 +649,7 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 <span class="inline-block bg-amber-400/20 text-amber-400 text-xs font-medium px-2 py-0.5 rounded-full">Security</span>
 </div>
 </a>
-<a href="/docs/kubernetes/latest/tutorials/ai-prompt-guard/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
+<a href="/docs/kubernetes/latest/llm/guardrails/" class="bg-secondary-bg rounded-xl border border-secondary-border p-4 hover:border-tertiary-text/50 transition-colors block">
 <div class="flex items-center justify-between">
 <div>
 <h4 class="text-primary-text font-semibold text-sm">AI Prompt Guard</h4>
@@ -719,7 +719,7 @@ setTimeout(function() { btn.textContent = 'Copy'; }, 2000);
 <svg class="w-5 h-5 text-tertiary-text" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
 <h3 class="text-primary-text font-bold">Kubernetes Gateway API</h3>
 </div>
-<p class="text-secondary-text text-sm">Deploy with kgateway for dynamic provisioning using Kubernetes Gateway API.</p>
+<p class="text-secondary-text text-sm">Deploy and dynamically configure agentgateway on Kubernetes using a built-in control plane.</p>
 </a>
 <a href="/docs/integrations/observability/" class="bg-primary-bg rounded-xl border border-secondary-border p-5 hover:border-tertiary-text/50 transition-colors">
 <div class="flex items-center gap-3 mb-2">
@@ -826,7 +826,7 @@ function showK8sOption(option) {
         Support for industry standard AI protocols for agent and tool connectivity including A2A and MCP with the ability to automatically expose existing REST APIs as MCP-native tools.
       </p>
     </a>
-    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/#step-3-explore-the-ui">
+    <a class="bg-secondary-bg rounded-xl md:max-w-96 p-4 border-secondary-border border-[1px] hover:border-primary-border" href="/docs/quickstart/mcp/#step-4-explore-the-ui">
       <h3 class="font-bold  text-primary-text">
         <span class="text-tertiary-text">Developer Portal</span>
       </h3>

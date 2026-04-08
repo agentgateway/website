@@ -1,6 +1,7 @@
 ---
 title: agentgateway-crds
 weight: 30
+test: skip
 ---
 
 Review Helm values for the agentgateway-crds Helm chart.

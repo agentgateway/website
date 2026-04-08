@@ -2,6 +2,7 @@
 title: Reference
 weight: 110
 prev: /docs/reference/observability
+test: skip
 ---
 
 Operate and run agentgateway.

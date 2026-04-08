@@ -317,7 +317,7 @@ mcpAuthentication:
       - sub
 ```
 
-For more information, see [JWT claim validation]({{< link-hextra path="/configuration/security/mcp-authn/#jwt-claim-validation" >}}).
+For more information, see [JWT claim validation]({{< link-hextra path="/mcp/mcp-authn/#jwt-claim-validation" >}}).
 
 ## 🪲 Bug fixes {#v10-bug-fixes}
 

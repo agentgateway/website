@@ -1,5 +1,5 @@
 ---
-title: LLM Observability
+title: LLM observability
 weight: 10
 description: Prompt logging, cost tracking, and audit trail via Langfuse, LangSmith, and more
 ---

@@ -48,6 +48,8 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 - Only `sh`/`bash`/`shell`/`yaml`/`yml` are extracted. Blocks without `paths=` are skipped when `skip_tabs_without_paths` is true.
 - **Tabbed content**: Use different paths per tab (e.g. `{paths="httpbin,httpbin-linux"}` and `{paths="httpbin-macos"}`) so the scenario can pick one.
 - **Multiple paths must be comma-separated** — both in fenced block info strings (`{paths="a,b"}`) and in `{{< doc-test paths="a,b" >}}` shortcodes. The extractor splits on `,`, so space-separated values (e.g. `paths="a b"`) are treated as a single path name and will never match — causing the block to be silently excluded from the generated script. This is especially dangerous for shared setup blocks (e.g. "install binary") that need to run for multiple scenarios.
+- **Display-only YAML blocks**: Some pages show YAML configs as plain display blocks (no `cat <<'EOF'` shell wrapper), unlike LLM guides that wrap configs in shell commands. You can't tag a display-only YAML block with `paths=` because it isn't a runnable shell command. Instead, add a **hidden** `{{< doc-test >}}` block that writes the config with `cat <<'EOF' > config.yaml`. See `content/docs/standalone/main/mcp/mcp-authz.md` for an example.
+- **External service dependencies**: When a config example depends on an external service that can't be trivially stood up in the test (e.g. Keycloak on port 9000, a custom OIDC provider), skip that example and only test self-contained ones. It's better to test one example well than to skip the entire page.
 
 ### 4. Long-running processes (standalone binary)
 
@@ -73,6 +75,15 @@ test:
   <scenario-name>:
   - file: content/docs/standalone/main/quickstart/<page>.md
     path: <path-name>
+---
+```
+
+**Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) should be marked with `test: skip` instead of a scenario dict. This counts the page as covered in the test coverage report without generating any test cases:
+
+```yaml
+---
+title: About
+test: skip
 ---
 ```
 
@@ -118,6 +129,31 @@ Example with all three:
 ```
 
 > **Do not use `jsonPath`** — the correct property name is `bodyJsonPath`. Using `jsonPath` causes `/expect: unknown property "jsonPath"` schema validation errors.
+
+#### MCP endpoint testing
+
+MCP uses JSON-RPC over HTTP, so YAMLTest works for MCP endpoints, but the request format differs from REST. To test that an MCP endpoint is up and accepting connections, send an `initialize` request:
+
+```yaml
+YAMLTest -f - <<'EOF'
+- name: MCP endpoint accepts initialize request
+  http:
+    url: "http://localhost:3000"
+    path: /mcp
+    method: POST
+    headers:
+      content-type: application/json
+      accept: "application/json, text/event-stream"
+    body: |
+      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+```
+
+For deeper assertions (e.g. verifying `tools/list` returns only authorized tools), you would need to capture the `mcp-session-id` from the initialize response and pass it as a header in subsequent requests. The authorization tutorial (`content/docs/standalone/main/tutorials/authorization/_index.md`) shows the full curl-based MCP session flow.
 
 - For Kubernetes tests, use `${INGRESS_GW_ADDRESS}` as the host in the URL (e.g. `url: "http://${INGRESS_GW_ADDRESS}:80/get"`). **Never use `kubectl port-forward`** in visible blocks — tests containing `kubectl port-forward` are automatically failed without running.
 - **Host headers must not include a port** — use `host: "example.com"`, not `host: "example.com:80"`. The gateway's hostname matching is strict: including the port causes no route match, and agentgateway resets the TCP connection (`ECONNRESET`) rather than returning an HTTP error response.
@@ -193,7 +229,7 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
-- [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse).
+- [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse). For pages with no testable content (index pages, no code blocks), use `test: skip` instead — counts toward coverage without generating test cases.
 - [ ] When copying a test chain between `main` and `latest`, **update every `file:` path** in front matter to match the target version directory.
 - [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
 - [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.
@@ -202,6 +238,9 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - [ ] Cleanup blocks tagged with a path use `--ignore-not-found` on all `kubectl delete` commands.
 - [ ] YAMLTest `expect:` uses `bodyJsonPath` (not `jsonPath`) for response body assertions; all keys under `expect:` are at the same indentation level.
 - [ ] YAML code blocks tagged with `paths=` have correct indentation — list items nested under a mapping key (e.g. `filters`, `matches`, `rules`) must be indented 2+ spaces past the key, not at the same level.
+- [ ] Display-only YAML blocks (no shell wrapper) are **not** tagged with `paths=` — use a hidden `{{< doc-test >}}` block with `cat <<'EOF' > config.yaml` instead.
+- [ ] For MCP endpoint tests, use a JSON-RPC `initialize` request (not a simple GET) — see the MCP endpoint testing section above.
+- [ ] Examples that depend on external services (auth servers, rate limit services) that can't be stood up in the test are skipped — only self-contained examples are tested.
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
 

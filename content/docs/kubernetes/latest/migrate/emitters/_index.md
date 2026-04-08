@@ -1,6 +1,7 @@
 ---
 title: "Emitters"
 weight: 20
+test: skip
 ---
 
 This page is the [upstream design](https://github.com/kubernetes-sigs/ingress2gateway/blob/main/docs/emitters.md) for ingress2gateway’s **provider/emitter** architecture.

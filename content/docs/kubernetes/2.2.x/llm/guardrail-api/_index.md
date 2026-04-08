@@ -1,5 +1,5 @@
 ---
-title: Guardrail Webhook API
+title: Guardrail webhook API
 weight: 70
 description:
 ---

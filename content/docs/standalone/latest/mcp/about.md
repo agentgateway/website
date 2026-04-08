@@ -3,6 +3,7 @@ title: About
 weight: 10 
 description:
 next: /mcp/connect
+test: skip
 ---
 
 Learn more about MCP and common challenges when adopting MCP in enterprise environments. 

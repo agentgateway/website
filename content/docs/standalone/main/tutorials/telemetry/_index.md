@@ -1,5 +1,5 @@
 ---
-title: Telemetry & Observability
+title: Telemetry & observability
 weight: 6
 description: Enable OpenTelemetry tracing and metrics for agentgateway
 ---

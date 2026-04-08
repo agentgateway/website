@@ -12,7 +12,7 @@ Set up an HTTP listener on your Gateway.
    
    {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
-   ```yaml
+   ```yaml {paths="http-listener"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -117,7 +117,7 @@ Set up an HTTP listener on your Gateway.
    
    {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
-   ```yaml
+   ```yaml {paths="http-listener"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -159,6 +159,83 @@ Set up an HTTP listener on your Gateway.
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+{{< doc-test paths="http-listener" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-proxy-http deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy-http
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: wait for agentgateway-proxy-http service LB address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy-http
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+
+export INGRESS_GW_ADDRESS_HTTP=$(kubectl get svc -n agentgateway-system agentgateway-proxy-http -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+{{< /doc-test >}}
+
+{{< doc-test paths="http-listener" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbin-route HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: httpbin-route
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="http-listener" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS_HTTP}:80/status/200" -H "host: listener.example" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="http-listener" >}}
+YAMLTest -f - <<'EOF'
+- name: verify http listener returns 200 for listener.example
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS_HTTP}:80/status/200"
+    method: GET
+    headers:
+      host: "listener.example"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 4. Verify that the HTTPRoute is applied successfully. 
    ```sh

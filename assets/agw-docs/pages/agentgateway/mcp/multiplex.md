@@ -122,6 +122,21 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
    EOF
    ```
 
+   {{< callout type="info" >}}
+   **Failure mode**: By default, agentgateway uses `FailClosed` behavior, which means that if any MCP target fails to initialize or becomes unavailable during a fanout, the entire session fails. To allow the gateway to skip failed targets and continue serving from the healthy ones, set the `failureMode` field to `FailOpen` on the {{< reuse "agw-docs/snippets/backend.md" >}}:
+
+   ```yaml
+   
+   spec:
+     mcp:
+       failureMode: FailOpen
+       targets:
+         ...
+   ```
+
+   With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
+   {{< /callout >}}
+
 ## Step 2: Route with agentgateway {#agentgateway}
 
 Route to the federated MCP servers with agentgateway.
@@ -141,7 +156,11 @@ Route to the federated MCP servers with agentgateway.
        - backendRefs:
          - name: mcp
            group: agentgateway.dev
-           kind: {{< reuse "agw-docs/snippets/backend.md" >}} 
+           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+         matches:
+         - path:
+             type: PathPrefix
+             value: /mcp
    EOF
    ```
 
@@ -180,7 +199,7 @@ Route to the federated MCP servers with agentgateway.
        Matches:
          Path:
            Type:   PathPrefix
-           Value:  /
+           Value:  /mcp
    Status:
      Parents:
        Conditions:

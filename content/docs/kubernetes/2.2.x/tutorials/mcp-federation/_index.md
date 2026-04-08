@@ -1,5 +1,5 @@
 ---
-title: MCP Federation
+title: MCP federation
 weight: 3
 description: Federate tools from multiple MCP servers through a single endpoint on Kubernetes
 ---

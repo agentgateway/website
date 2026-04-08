@@ -2,6 +2,7 @@
 title: Security
 weight: 75
 icon: secure
+test: skip
 ---
 
 {{< cards >}}

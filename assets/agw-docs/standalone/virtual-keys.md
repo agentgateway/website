@@ -274,7 +274,7 @@ Track token usage and spending for each virtual key using Prometheus metrics exp
    )
    ```
 
-For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
+For more information on cost tracking, see the [Control spend guide]({{< link-hextra path="/llm/spending/" >}}).
 
 ## What's next
 

@@ -3,13 +3,13 @@
 {{- if $path }}
   {{- $pathTrimmed := strings.TrimPrefix "/" $path -}}
   {{- $section := "" -}}
-  {{- with findRE `^/docs/(?:kubernetes|standalone)/(?:latest|main)` .Page.RelPermalink }}{{ $section = index . 0 }}{{ end -}}
+  {{- with findRE `^/docs/(?:kubernetes|standalone)/(?:latest|main|\d+\.\d+\.[x\d]+)` .Page.RelPermalink }}{{ $section = index . 0 }}{{ end -}}
   {{- if not $section }}{{ $section = strings.TrimSuffix "/" .Page.FirstSection.RelPermalink }}{{ end -}}
   {{- $section = replaceRE `^https?://[^/]+` "" $section -}}
   {{- $section = replaceRE `^/localhost:[^/]+` "" $section -}}
   {{- if not (hasPrefix $section "/") }}{{ $section = printf "/%s" $section }}{{ end -}}
   {{- $link = printf "%s/%s" $section $pathTrimmed -}}
-  {{- if not (strings.HasSuffix $link "/") }}{{ $link = printf "%s/" $link }}{{ end -}}
+  {{- if and (not (strings.HasSuffix $link "/")) (not (in $link "#")) }}{{ $link = printf "%s/" $link }}{{ end -}}
   {{- range (seq 10) }}{{ $link = replace $link "//" "/" }}{{ end -}}
 {{- end -}}
 
