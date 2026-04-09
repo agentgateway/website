@@ -312,7 +312,7 @@ Make sure you have installed the [argo-rollouts](https://argo-rollouts.readthedo
    ```bash
    k get pod httpbun -o yaml | grep image:
    ```
-   Exapmle output:
+   Example output:
    ```shell
    image: sharat87/httpbun
    image: docker.io/sharat87/httpbun
