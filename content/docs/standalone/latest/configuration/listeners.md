@@ -68,6 +68,19 @@ listeners:
 
 Additionally, note the use of `tcpRoutes` instead of `routes` (which are HTTP routes) in the example.
 
+## Auto-detect protocol
+
+Set `protocol: auto` to automatically detect the protocol for each incoming connection. The gateway peeks at the first byte of the connection. If the byte is `0x16` (a TLS ClientHello), the gateway dispatches the connection as TLS. Otherwise, the gateway dispatches it as HTTP. Use auto-detection in mixed-protocol environments where the same port accepts both TLS and plaintext traffic.
+
+```yaml
+listeners:
+- protocol: auto
+  routes: []
+  tls:
+    cert: examples/tls/certs/cert.pem
+    key: examples/tls/certs/key.pem
+```
+
 ## TLS Listeners
 
 For serving TLS traffic, the `protocol: TLS` can be used.

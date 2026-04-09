@@ -40,6 +40,7 @@ Many providers offer OpenAI-compatible endpoints that work seamlessly with agent
 ### Self-hosted solutions
 
 Run models locally or in your own infrastructure:
+- [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}})
 - [vLLM]({{< link-hextra path="/llm/providers/openai-compatible/#vllm" >}})
 - [LM Studio]({{< link-hextra path="/llm/providers/openai-compatible/#lm-studio" >}})
 

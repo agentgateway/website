@@ -29,11 +29,30 @@ Popular OpenAI-compatible providers include xAI (Grok), Cohere, Together AI, Gro
 ## Self-hosted solutions
 
 {{< cards >}}
-  {{< card link="openai-compatible" title="OpenAI-compatible providers" subtitle="Includes vLLM and LM Studio self-hosted options" >}}
+  {{< card link="ollama" title="Ollama" >}}
 {{< /cards >}}
+
+Additional self-hosted solutions like vLLM and LM Studio are also supported through the [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) configuration.
 
 ## Advanced configurations
 
 {{< cards >}}
   {{< card link="multiple-llms" title="Multiple LLM providers" >}}
 {{< /cards >}}
+
+### Path prefix
+
+When using the advanced `binds/listeners/routes` configuration, you can set `pathPrefix` on an AI provider to prepend a custom path to all API requests. Use `pathPrefix` when routing through a proxy or custom API endpoint that requires a different base path.
+
+```yaml
+backends:
+- ai:
+    name: openai
+    pathPrefix: /custom/v1
+    provider:
+      openAI:
+        model: gpt-4o-mini
+  policies:
+    backendAuth:
+      key: "$OPENAI_API_KEY"
+```
