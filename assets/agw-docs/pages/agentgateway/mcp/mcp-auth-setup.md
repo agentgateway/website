@@ -22,7 +22,7 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 
 With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces authentication for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with MCP authentication configuration.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with MCP authentication configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and allows you to use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations.
    ```yaml {paths="mcp-auth-setup"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -30,61 +30,61 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
    metadata:
      name: mcp-echo-authn
    spec:
-     # Target the MCP backend to apply this authentication policy
+     # Target the HTTPRoute to apply authentication at the route level
      targetRefs:
-     - group: agentgateway.dev
-       kind: AgentgatewayBackend
-       name: mcp-backend
-     # Configure MCP authentication
-     backend:
-       mcp:
-         authentication:
-           # Issuer URL - must match the 'iss' claim in JWT tokens
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: mcp
+     # Configure MCP authentication at the traffic (route) level
+     traffic:
+       jwtAuthentication:
+         # Validation mode: Strict requires all claims to be valid
+         mode: Strict
+         providers:
+         - # Issuer URL - must match the 'iss' claim in JWT tokens
            issuer: "${KEYCLOAK_ISSUER}"
-           # JWKS configuration for token validation
-           jwks:
-             # Reference to the Keycloak service for fetching public keys
-             backendRef:
-               name: keycloak
-               kind: Service
-               namespace: keycloak
-               port: 8080
-             # Path to the JWKS endpoint on the issuer
-             jwksPath: "${KEYCLOAK_JWKS_PATH}"
            # Expected audience in JWT tokens
            audiences:
            - http://localhost:8080/mcp
-           # Validation mode: Strict requires all claims to be valid
-           mode: Strict
+           # JWKS configuration for token validation
+           jwks:
+             remote:
+               # Reference to the Keycloak service for fetching public keys
+               backendRef:
+                 name: keycloak
+                 kind: Service
+                 namespace: keycloak
+                 port: 8080
+               # Path to the JWKS endpoint on the issuer
+               jwksPath: "${KEYCLOAK_JWKS_PATH}"
+         # MCP-specific extensions for OAuth discovery
+         mcp:
            # Identity provider type
            provider: Keycloak
            # MCP resource metadata for OAuth discovery
            resourceMetadata:
-             resourceMetadata:
-               # Resource identifier for this MCP server
-               resource: http://localhost:8080/mcp
-               # Scopes supported by this MCP server
-               scopesSupported:
-               - email
-               # Methods for providing bearer tokens
-               bearerMethodsSupported:
-               - header
-               - body
-               - query
+             # Resource identifier for this MCP server
+             resource: http://localhost:8080/mcp
+             # Scopes supported by this MCP server
+             scopesSupported:
+             - email
+             # Methods for providing bearer tokens
+             bearerMethodsSupported:
+             - header
+             - body
+             - query
    EOF
    ```
 
    | Setting | Description |
    | -- | -- |
-   | `issuer` | The OAuth 2.0 issuer URL from your identity provider. This must exactly match the `iss` claim in JWT tokens. Agentgateway validates this claim to ensure tokens come from the expected identity provider. |
-   | `jwks.backendRef` | The Keycloak service. |
-   | `jwks.jwksPath` | The path to the JWKS endpoint to obtain public keys. |
-   | `audiences` | The purpose of the JWT token. This value must match the `aud` claim in JWT tokens. |
-   | `mode` | The JWT validation mode. In this example, strict validation is enforced. This mode requires all claims to be valid for agentgateway to proceed with the OAth flow. |
-   | `provider` | The identity provider that you use. In this example, Keycloak is used. |
-   | `resourceMetadata.resource` | The identifier for the resource. In this example, the MCP server address is used.  |
-   | `resourceMetadata.scopesSupported` | The scopes that the client can request for accessing the MCP server. |
-   | `resourceMetadat.bearerMethodsSupported` | Methods to provide the bearer token when authenticating with the server. In this example, the bearer token can be provided as a header, query parameter, or as part of the body. |
+   | `traffic.jwtAuthentication.providers[].issuer` | The OAuth 2.0 issuer URL from your identity provider. This must exactly match the `iss` claim in JWT tokens. Agentgateway validates this claim to ensure tokens come from the expected identity provider. |
+   | `traffic.jwtAuthentication.providers[].jwks.remote.backendRef` | The Keycloak service for fetching JWKS public keys. |
+   | `traffic.jwtAuthentication.providers[].jwks.remote.jwksPath` | The path to the JWKS endpoint to obtain public keys. |
+   | `traffic.jwtAuthentication.providers[].audiences` | The purpose of the JWT token. This value must match the `aud` claim in JWT tokens. |
+   | `traffic.jwtAuthentication.mode` | The JWT validation mode. In this example, strict validation is enforced. This mode requires all claims to be valid for agentgateway to proceed with the OAuth flow. |
+   | `traffic.jwtAuthentication.mcp.provider` | The identity provider that you use. In this example, Keycloak is used. |
+   | `traffic.jwtAuthentication.mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
 
 2. Verify that the policy was accepted.
    ```sh {paths="mcp-auth-setup"}

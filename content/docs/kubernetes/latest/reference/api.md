@@ -8,4 +8,4 @@ test: skip
 
 ## Packages
 
-{{< reuse "/agw-docs/pages/reference/api/api-latest.md" >}}
+{{< reuse "/agw-docs/pages/reference/api/api-main.md" >}}

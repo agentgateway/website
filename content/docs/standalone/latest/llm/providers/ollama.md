@@ -4,7 +4,7 @@ weight: 15
 description: Configure agentgateway to route LLM traffic to Ollama for local model inference
 test:
   ollama-standalone-validate:
-  - file: content/docs/standalone/latest/llm/providers/ollama.md
+  - file: content/docs/standalone/main/llm/providers/ollama.md
     path: ollama-standalone-validate
 ---
 

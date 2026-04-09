@@ -4,9 +4,9 @@ weight: 10
 description:
 test:
   setup-gateway:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
 ---
 

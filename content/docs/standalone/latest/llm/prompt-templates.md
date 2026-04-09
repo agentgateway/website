@@ -4,7 +4,7 @@ weight: 55
 description: Use static and dynamic prompt templates to customize LLM requests.
 test:
   prompt-templates:
-  - file: content/docs/standalone/latest/llm/prompt-templates.md
+  - file: content/docs/standalone/main/llm/prompt-templates.md
     path: prompt-templates
 ---
 
@@ -57,46 +57,9 @@ llm:
 EOF
 ```
 
-The response follows the prepended and appended guidelines even though they were not in the original request.
-
-## Dynamic prompt templates
-
-Dynamic templates use CEL transformations to inject variables from the request context into prompts. This is ideal for personalizing prompts with user identity, adding request metadata, or applying conditional prompt modification based on headers or claims.
-
-{{< callout type="info" >}}
-JWT claims in transformations require JWT authentication to be configured. See the [authentication documentation](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) for setup instructions.
-{{< /callout >}}
-
-### Inject user identity from headers
-
-Configure transformations to inject user identity from request headers into the prompt.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
-        transformations:
-          request:
-            body: |
-              json(request.body).with(body,
-                {
-                  "model": body.model,
-                  "messages": [{"role": "system", "content": "You are assisting user: " + default(request.headers["x-user-id"], "anonymous")}]
-                    + body.messages
-                }
-              ).toJson()
-```
+| Setting | Description |
+| -- | -- |
+| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
 
 {{< doc-test paths="prompt-templates" >}}
 agentgateway -f config.yaml &
@@ -104,6 +67,18 @@ AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
+
+Send a request as an admin user and verify the response uses the higher token limit.
+
+```sh {paths="prompt-templates"}
+curl -s http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-user-id: admin" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Tell me a story"}]
+  }' | jq .
+```
 
 Send a request as a regular user and verify the response is capped at the lower token limit.
 
@@ -231,6 +206,6 @@ llm:
 
 ## Next steps
 
-- Learn about [CEL expressions]({{< link-hextra path="/reference/cel/">}}) for advanced expression logic.
+- Learn about [CEL expressions](/docs/reference/cel/) for advanced expression logic.
 - Explore [transformations]({{< link-hextra path="/llm/transformations/" >}}) for more LLM request transformation examples.
-- Set up [authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) to use JWT claims in transformations.
+- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) to use JWT claims in transformations.

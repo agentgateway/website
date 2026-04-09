@@ -1,7 +1,7 @@
 ---
 title: CEL expressions
 weight: 10
-description: 
+description:
 test: skip
 ---
 
@@ -128,6 +128,7 @@ Additionally, fields are populated only if they are referenced in a CEL expressi
 This way, agentgateway avoids expensive buffering of request bodies if no CEL expression depends on the `body`.
 
 Each policy execution consistently gets the current view of the request and response. For example, during logging, any manipulations from earlier policies (such as transformations or external processing) are observable in the CEL context.
+
 
 #### Table of variables
 
