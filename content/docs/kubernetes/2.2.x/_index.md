@@ -1,7 +1,9 @@
 ---
 title: Latest
 weight: 460
-description: Use kgateway with agentgateway. 
+description: Use kgateway with agentgateway.
+cascade:
+  excludeSearch: true
 ---
 
 Welcome to the documentation for using agentgateway on Kubernetes!
