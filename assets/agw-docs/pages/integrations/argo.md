@@ -153,7 +153,7 @@
      labels:
        app: httpbun
    spec:
-     replicas: 1
+     replicas: 2
      selector:
        matchLabels:
          app: httpbun
