@@ -70,7 +70,7 @@ Authorization policies now support `Require` as an action in addition to `Allow`
 
 - **Stateless sessions**: OpenAPI and SSE upstreams can now use stateless sessions. For more information, see [Stateful MCP]({{< link-hextra path="/mcp/session/" >}}).
 - **Explicit service reference lists**: MCP backends can specify targets with explicit service references. For more information, see [Static MCP]({{< link-hextra path="/mcp/static-mcp/" >}}).
-- **Tool payloads in CEL context**: Tool names and payloads are available in MCP authorization CEL expressions. For more information, see [Tool access]({{< link-hextra path="/mcp/tool-access/" >}}).
+- **Tool payloads in CEL context**: Tool names and payloads are available in logging CEL expressions.
 
 ### LLM gateway enhancements
 
@@ -84,3 +84,25 @@ Authorization policies now support `Require` as an action in addition to `Allow`
 - **Service SANs for upstream TLS**: Upstream TLS now respects Subject Alternative Names from Kubernetes Services. For more information, see [BackendTLS]({{< link-hextra path="/security/backendtls/" >}}).
 - **TLSRoute v1 status**: Status is now written using the `TLSRoute v1` API version.
 - **CEL hash functions**: New `sha1.encode`, `sha256.encode`, and `md5.encode` functions are available in CEL expressions.
+
+## 🗑️ Deprecated or removed features
+
+### MCP authentication on backend AgentgatewayPolicy
+
+As described in the breaking changes section, MCP authentication is now configured at the route level using `traffic.jwtAuthentication` with the `mcp` extension field, instead of the previous `backend.mcp.authentication` field.
+
+The `backend.mcp.authentication` field on the AgentgatewayPolicy resource is deprecated and will be removed in a future release.
+
+### MCP policy on AgentgatewayBackend
+
+<!-- PR https://github.com/agentgateway/agentgateway/pull/1437 -->
+
+Previously, AgentgatewayBackend resources had fields for `spec.mcp.targets.static.policies.mcp.{authentication,authorization}`.
+
+These fields were not intended to be set, and had no impact on the behavior of the proxy.
+
+As such, these fields are now removed.
+
+If you previously set these fields which had no behavioral impact and were ignored, the configuration now fails to be applied.
+
+Instead, use the `jwtAuthentication.mcp` field on the AgentgatewayPolicy resource, which ensures authentication runs before other policies such as transformation and rate limiting.

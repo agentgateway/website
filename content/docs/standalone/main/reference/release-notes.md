@@ -78,7 +78,7 @@ For more information, see [HTTP authorization]({{< link-hextra path="/configurat
 
 - **Stateless sessions**: OpenAPI and SSE upstreams can now use stateless sessions, avoiding state persistence for backends that don't need it. For more information, see [OpenAPI connectivity]({{< link-hextra path="/mcp/connect/openapi/" >}}) and [Backends]({{< link-hextra path="/configuration/backends/" >}}).
 - **Explicit service reference lists**: MCP backends can specify targets with explicit service references.
-- **Tool payloads in CEL context**: Tool names and payloads are available in MCP authorization CEL expressions via `mcp.tool.name` and other `mcp.tool.*` fields. For more information, see [MCP authorization]({{< link-hextra path="/configuration/security/mcp-authz/" >}}).
+- **Tool payloads in CEL context**: Tool names and payloads are available in logging CEL expressions via `mcp.tool.name` and other `mcp.tool.*` fields.
 
 ### LLM gateway enhancements
 
