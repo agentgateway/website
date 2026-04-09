@@ -115,6 +115,7 @@
      namespace: default
      labels:
        app: httpbun
+       version: v1
    spec:
      selector:
        app: httpbun
@@ -337,7 +338,31 @@ Make sure you have installed the [argo-rollouts](https://argo-rollouts.readthedo
    kubectl argo rollouts promote httpbun-rollout
    ```
 
-5. Check that the `httpbun` Pod is running the `latest` image.
+5. Check the weight difference between the stable and canary services again to verify the traffic split.
+   ```shell
+   kubectl get httproute httpbun-http-route -o jsonpath='{.spec.rules[0].backendRefs}' | jq
+   ```
+   Example Output:
+   ```shell
+   [
+     {
+       "group": "",
+       "kind": "Service",
+       "name": "httpbun-stable-service",
+       "port": 3090,
+       "weight": 70
+     },
+     {
+       "group": "",
+       "kind": "Service",
+       "name": "httpbun-canary-service",
+       "port": 3090,
+       "weight": 30
+     }
+   ]
+   ```
+
+6. Check that the `httpbun` Pod is running the `latest` image.
    ```bash
    k get pod httpbun -o yaml | grep image:
    ```
