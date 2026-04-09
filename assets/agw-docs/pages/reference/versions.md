@@ -8,9 +8,9 @@ Review the following information about supported release versions for the [agent
 | 1.0.x | 16 Mar 2026 | 1.31 - 1.35 | 1.3 - 1.5`‡` | >= 3.12 | 1.23 - 1.29 |
 | 2.2.x | 09 Feb 2026 | 1.31 - 1.35 | 1.2 - 1.4 | >= 3.12 | 1.23 - 1.27 |
 
-`*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/implementations/#agent-gateway-with-kgateway) and agentgateway conformance report per version, such as Gateway API [v1.5.0](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.5.0/agentgateway-agentgateway).
+`*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/implementations/#agentgateway) and agentgateway conformance report per version, such as Gateway API [v1.5.0](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.5.0/agentgateway-agentgateway).
 
-`†` Istio versions: Istio must run on a compatible version of Kubernetes. For example, Istio 1.27 is tested, but not supported, on Kubernetes 1.28. For more information, see the [Istio docs](https://istio.io/latest/docs/releases/supported-releases/).
+`†` Istio versions: Istio must run on a compatible version of Kubernetes. For example, Istio 1.29 is tested, but not supported, on Kubernetes 1.30. For more information, see the [Istio docs](https://istio.io/latest/docs/releases/supported-releases/).
 
 `‡` To use the experimental version of the Gateway API, you must use Gateway API v1.5.0 or later.
 
