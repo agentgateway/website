@@ -1163,6 +1163,24 @@ _Appears in:_
 | `backendRef` _[BackendObjectReference](#backendobjectreference)_ | backendRef references the External Processor server to reach.<br />Supported types: Service and Backend. |  | Required: \{\} <br /> |
 
 
+#### FailureMode
+
+_Underlying type:_ _string_
+
+
+
+_Validation:_
+- Enum: [FailOpen FailClosed]
+
+_Appears in:_
+- [MCPBackend](#mcpbackend)
+
+| Field | Description |
+| --- | --- |
+| `FailClosed` | FailClosed fails the entire MCP session if any target fails.<br /> |
+| `FailOpen` | FailOpen skips failed targets and continues serving from healthy ones.<br /> |
+
+
 #### FieldDefault
 
 
@@ -1779,6 +1797,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `targets` _[McpTargetSelector](#mcptargetselector) array_ | Targets is a list of MCPBackend targets to use for this backend.<br />Policies targeting MCPBackend targets must use targetRefs[].sectionName<br />to select the target by name. |  | ExactlyOneOf: [selector static] <br />MaxItems: 32 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `sessionRouting` _[SessionRouting](#sessionrouting)_ | SessionRouting configures MCP session behavior for requests.<br />Defaults to Stateful if not set. |  | Enum: [Stateful Stateless] <br />Optional: \{\} <br /> |
+| `failureMode` _[FailureMode](#failuremode)_ | FailureMode controls behavior when MCP targets fail to initialize or<br />become unavailable at runtime. "FailOpen" skips failed targets and<br />continues serving from healthy ones. "FailClosed" (default) fails the<br />entire session if any target fails. |  | Enum: [FailOpen FailClosed] <br />Optional: \{\} <br /> |
 
 
 #### MCPProtocol
