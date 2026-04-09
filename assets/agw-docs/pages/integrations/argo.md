@@ -310,7 +310,7 @@ Make sure you have installed the [argo-rollouts](https://argo-rollouts.readthedo
 
 1. Verify `httpbun` image.
    ```bash
-   k get pod httpbun -o yaml | grep image:
+   kubectl get pod httpbun -o yaml | grep image:
    ```
    Example output:
    ```shell
