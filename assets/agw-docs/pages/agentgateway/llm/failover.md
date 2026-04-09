@@ -4,7 +4,7 @@ Prioritize the failover of requests across different models from an LLM provider
 
 Use failover (automatic fallback) to keep services running by switching to a backup when the main system fails or becomes unavailable.
 
-For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover across models and LLM providers. When a provider becomes unhealthy (such as returning errors or getting rate-limited), the system automatically switches to a backup provider. This keeps the service running without interruptions.
+For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover across models and LLM providers. When a provider becomes unhealthy (such as returning errors or getting rate-limited), the system automatically switches to a backup provider. This configuration keeps the service running without interruptions.
 
 Failover in {{< reuse "agw-docs/snippets/agentgateway.md" >}} has two parts:
 
@@ -386,7 +386,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
 3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
 
-   The `unhealthyCondition` field is a [CEL expression](https://github.com/google/cel-spec) that evaluates each response. When the expression returns `true`, the response is treated as unhealthy. The `eviction` settings control when and how long an unhealthy backend is removed from its priority group.
+   The `unhealthyCondition` field is an optional [CEL expression](https://github.com/google/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
    {{< tabs tabTotal="2" items="5xx and rate-limit failover,5xx-only failover" >}}
    {{% tab tabName="5xx and rate-limit failover" %}}
@@ -447,11 +447,11 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    | Setting | Description |
    | --- | --- |
-   | `unhealthyCondition` | CEL expression evaluated for each response. `true` means unhealthy. The default (when unset) treats 5xx and connection failures as unhealthy but does not trigger eviction on its own. |
-   | `eviction.duration` | Base time to remove an unhealthy backend from its priority group. Increases with multiplicative backoff on repeated evictions. When a 429 response includes `Retry-After`, that value is used instead. |
-   | `eviction.consecutiveFailures` | Number of consecutive unhealthy responses required before evicting. When set to `1`, a single unhealthy response triggers eviction. |
+   | `unhealthyCondition` | Optional CEL expression that classifies each response as healthy or unhealthy. When you set this field, `true` means the response counts as unhealthy toward eviction (together with `eviction`). When you omit this field, 5xx responses and connection failures still lower the backend health score for load balancing, but that built-in behavior does not trigger eviction by itself. |
+   | `eviction.duration` | Base time to remove an unhealthy backend from its priority group. Increases with multiplicative backoff on repeated evictions. When a 429 response includes `Retry-After`, that value is used instead. You might try `10s`–`60s` depending on how quickly you want failover versus avoiding flapping on brief errors. Shorter durations fail over faster. If you omit this field, the default is `3s`. |
+   | `eviction.consecutiveFailures` | Number of consecutive unhealthy responses required before evicting. You might start with `3` so that a single transient error does not evict the backend. For tests, use `1` for immediate eviction. |
 
-4. Verify that failover works by temporarily configuring the health policy to treat all responses as unhealthy. This forces each backend to be evicted after its first response, so you can watch requests progress through the priority groups.
+4. Verify that failover works by temporarily configuring the health policy to treat all responses as unhealthy. This policy forces each backend to be evicted after its first response, so you can watch requests progress through the priority groups.
 
    Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to set `unhealthyCondition` to `"true"`:
 
@@ -538,7 +538,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{% /tab %}}
    {{< /tabs >}}
 
-5. Restore the health policy to your production configuration. Reapply the policy from step 3 with your actual `unhealthyCondition` (such as `response.code >= 500 || response.code == 429`).
+Now that you tested failover, restore the health policy to your production configuration. Reapply the policy from step 3 with your `unhealthyCondition` settings (such as `response.code >= 500 || response.code == 429`, where `>= 500` matches HTTP 5xx server errors).
 
 ## Cleanup
 
