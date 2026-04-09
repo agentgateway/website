@@ -4,7 +4,7 @@ weight: 10
 description: Configure agentgateway to route traffic to any LLM provider that implements the OpenAI API format.
 test:
   openai-compatible-validate:
-  - file: content/docs/standalone/latest/llm/providers/openai-compatible.md
+  - file: content/docs/standalone/main/llm/providers/openai-compatible.md
     path: openai-compat-validate
 ---
 

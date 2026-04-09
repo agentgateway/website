@@ -5,4 +5,3 @@ description: Detect model fallback by injecting the requested and actual LLM mod
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/transformations.md" >}}
-
