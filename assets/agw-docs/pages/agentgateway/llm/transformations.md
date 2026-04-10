@@ -362,6 +362,34 @@ EOF
    x-actual-model: gpt-4o-mini
    ```
 
+{{< doc-test paths="llm-context-vars" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-context-vars" >}}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/chat/completions
+      backendRefs:
+        - name: httpbun-llm
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
+{{< /doc-test >}}
+
 ### Detect fallback with the llm context variables
 
 When the agentgateway proxy routes to an AI backend, the `llm` CEL context provides first-class variables that are parsed directly from the LLM protocol layer rather than from raw body strings:
@@ -371,12 +399,12 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 
 Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#cel-functions" >}}) to compute each value once and reference it by name. This setup avoids repeating the `default()` fallback expression in every header and keeps the `x-model-fallback` condition readable:
 
-```yaml
+```yaml {paths="llm-context-vars"}
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
 metadata:
-  name: default
+  name: llm-context-vars
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   labels:
     app: agentgateway
@@ -385,21 +413,61 @@ spec:
   - group: gateway.networking.k8s.io
     kind: HTTPRoute
     name: openai
-traffic:
-  transformation:
-    response:
-      metadata:
-        requestedModel: 'default(llm.requestModel, string(json(request.body).model))'
-        actualModel: 'default(llm.responseModel, string(json(response.body).model))'
-      set:
-      - name: x-requested-model
-        value: metadata.requestedModel
-      - name: x-actual-model
-        value: metadata.actualModel
-      - name: x-model-fallback
-        value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
+  traffic:
+    transformation:
+      response:
+        metadata:
+          requestedModel: 'default(llm.requestModel, string(json(request.body).model))'
+          actualModel: 'default(llm.responseModel, string(json(response.body).model))'
+        set:
+        - name: x-requested-model
+          value: metadata.requestedModel
+        - name: x-actual-model
+          value: metadata.actualModel
+        - name: x-model-fallback
+          value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
 EOF
 ```
+
+{{< doc-test paths="llm-context-vars" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for llm-context-vars policy to be accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: agentgateway-system
+        name: llm-context-vars
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+- name: verify llm context variable headers are injected
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    headers:
+      - name: x-requested-model
+        comparator: equals
+        value: gpt-4
+      - name: x-actual-model
+        comparator: contains
+        value: gpt-4
+      - name: x-model-fallback
+        comparator: equals
+        value: "false"
+EOF
+{{< /doc-test >}}
 
 The `default()` fallback is written once per value rather than repeated in every header and in the comparison.
 
@@ -407,6 +475,6 @@ The `default()` fallback is written once per value rather than repeated in every
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```shell {paths="llm-transformations,llm-model-headers"}
+```shell {paths="llm-transformations,llm-model-headers,llm-context-vars"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=agentgateway
 ```
