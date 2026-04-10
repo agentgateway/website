@@ -262,7 +262,7 @@ EOF
          intervalSeconds: 2
    - name: verify model headers are injected from request and response bodies
      http:
-       url: "http://${INGRESS_GW_ADDRESS}/openai"
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
        headers:
          Content-Type: application/json
@@ -286,14 +286,14 @@ EOF
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi "http://$INGRESS_GW_ADDRESS/openai" \
+   curl -vi "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
     -H "Content-Type: application/json" \
     -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi "http://localhost:8080/openai" \
+   curl -vi "http://localhost:8080/v1/chat/completions" \
     -H "Content-Type: application/json" \
     -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
