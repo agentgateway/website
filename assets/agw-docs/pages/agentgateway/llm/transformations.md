@@ -11,9 +11,52 @@ To learn more about CEL, see the following resources:
 
 ## Configure LLM request transformations
 
+{{< doc-test paths="llm-transformations" >}}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/chat/completions
+      backendRefs:
+        - name: httpbun-llm
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-transformations" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example caps `max_tokens` to 10, regardless of what the client requests.
 
-   ```yaml
+   ```yaml {paths="llm-transformations"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -35,6 +78,25 @@ To learn more about CEL, see the following resources:
    EOF
    ```
 
+   {{< doc-test paths="llm-transformations" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for cap-max-tokens policy to be accepted
+     wait:
+       target:
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: agentgateway-system
+           name: cap-max-tokens
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
+   EOF
+   {{< /doc-test >}}
+
    | Setting | Description |
    | -- | -- |
    | `backend.ai.transformations` | A list of LLM request field transformations. |
@@ -53,7 +115,7 @@ To learn more about CEL, see the following resources:
 
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl "$INGRESS_GW_ADDRESS/openai" \
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
@@ -70,7 +132,7 @@ To learn more about CEL, see the following resources:
 
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl "localhost:8080/openai" \
+   curl "localhost:8080/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
@@ -86,6 +148,23 @@ To learn more about CEL, see the following resources:
    {{% /tab %}}
 
    {{< /tabs >}}
+
+   {{< doc-test paths="llm-transformations" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify request succeeds with max_tokens transformation applied
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         content-type: application/json
+       body: |
+         {"model": "gpt-4", "max_tokens": 5000, "messages": [{"role": "user", "content": "Tell me a short story"}]}
+     source:
+       type: local
+     expect:
+       statusCode: 200
+   EOF
+   {{< /doc-test >}}
 
    Example output: 
    ```console {hl_lines=[5,28]}
@@ -134,6 +213,49 @@ Parse the `model` field from the incoming request body and the upstream response
 * `json(request.body).model`: Reads the `model` field from the incoming request body.
 * `json(response.body).model`: Reads the `model` field from the upstream response body.
 
+{{< doc-test paths="llm-model-headers" >}}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/chat/completions
+      backendRefs:
+        - name: httpbun-llm
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-model-headers" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the OpenAI provider's HTTPRoute and injects the model fields as response headers.
 
    ```yaml {paths="llm-model-headers"}
@@ -163,6 +285,20 @@ Parse the `model` field from the incoming request body and the upstream response
 
    {{< doc-test paths="llm-model-headers" >}}
    YAMLTest -f - <<'EOF'
+   - name: wait for llm-model-headers policy to be accepted
+     wait:
+       target:
+         kind: AgentgatewayPolicy
+         metadata:
+           namespace: agentgateway-system
+           name: llm-model-headers
+       jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+       jsonPathExpectation:
+         comparator: equals
+         value: "True"
+       polling:
+         timeoutSeconds: 120
+         intervalSeconds: 2
    - name: verify model headers are injected from request and response bodies
      http:
        url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
@@ -179,7 +315,7 @@ Parse the `model` field from the incoming request body and the upstream response
            comparator: equals
            value: gpt-4
          - name: x-actual-model
-           comparator: equals
+           comparator: contains
            value: gpt-4
    EOF
    {{< /doc-test >}}
@@ -226,6 +362,34 @@ Parse the `model` field from the incoming request body and the upstream response
    x-actual-model: gpt-4o-mini
    ```
 
+{{< doc-test paths="llm-context-vars" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-context-vars" >}}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/chat/completions
+      backendRefs:
+        - name: httpbun-llm
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
+{{< /doc-test >}}
+
 ### Detect fallback with the llm context variables
 
 When the agentgateway proxy routes to an AI backend, the `llm` CEL context provides first-class variables that are parsed directly from the LLM protocol layer rather than from raw body strings:
@@ -235,21 +399,75 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 
 Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#cel-functions" >}}) to compute each value once and reference it by name. This setup avoids repeating the `default()` fallback expression in every header and keeps the `x-model-fallback` condition readable:
 
-```yaml
-traffic:
-  transformation:
-    response:
-      metadata:
-        requestedModel: 'default(llm.requestModel, string(json(request.body).model))'
-        actualModel: 'default(llm.responseModel, string(json(response.body).model))'
-      set:
-      - name: x-requested-model
-        value: metadata.requestedModel
-      - name: x-actual-model
-        value: metadata.actualModel
-      - name: x-model-fallback
-        value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
+```yaml {paths="llm-context-vars"}
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: llm-context-vars
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    app: agentgateway
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  traffic:
+    transformation:
+      response:
+        metadata:
+          requestedModel: 'default(llm.requestModel, string(json(request.body).model))'
+          actualModel: 'default(llm.responseModel, string(json(response.body).model))'
+        set:
+        - name: x-requested-model
+          value: metadata.requestedModel
+        - name: x-actual-model
+          value: metadata.actualModel
+        - name: x-model-fallback
+          value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
+EOF
 ```
+
+{{< doc-test paths="llm-context-vars" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for llm-context-vars policy to be accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: agentgateway-system
+        name: llm-context-vars
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+- name: verify llm context variable headers are injected
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    headers:
+      - name: x-requested-model
+        comparator: equals
+        value: gpt-4
+      - name: x-actual-model
+        comparator: contains
+        value: gpt-4
+      - name: x-model-fallback
+        comparator: equals
+        value: "false"
+EOF
+{{< /doc-test >}}
 
 The `default()` fallback is written once per value rather than repeated in every header and in the comparison.
 
@@ -257,6 +475,9 @@ The `default()` fallback is written once per value rather than repeated in every
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```shell
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=agentgateway
+```shell {paths="llm-transformations,llm-model-headers,llm-context-vars"}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-context-vars -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```

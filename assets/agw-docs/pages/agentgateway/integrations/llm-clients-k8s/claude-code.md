@@ -16,7 +16,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
 1. Export your Anthropic API key.
 
-   ```bash
+   ```bash {paths="claude-code-k8s"}
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
 
@@ -100,7 +100,6 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
      wait:
        target:
          kind: AgentgatewayBackend
-         apiVersion: agentgateway.dev/v1alpha1
          metadata:
            namespace: agentgateway-system
            name: anthropic

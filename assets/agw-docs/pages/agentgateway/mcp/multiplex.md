@@ -16,7 +16,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
 
 1. Create an MCP server (`mcp-server-everything`) that provides various utility tools. Notice that the Service uses the `appProtocol: agentgateway.dev/mcp` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the agentgateway proxy to look for an equivalent {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
-   ```yaml
+   ```yaml {paths="virtual-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -62,7 +62,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
 
 2. Create another MCP server workload with a website fetcher tool.
 
-   ```yaml
+   ```yaml {paths="virtual-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -98,9 +98,42 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
    EOF
    ```
 
+{{< doc-test paths="virtual-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp-server-everything deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: default
+        name: mcp-server-everything
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+- name: wait for mcp-website-fetcher deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: default
+        name: mcp-website-fetcher
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} that selects both MCP servers that you created.
 
-   ```yaml
+   ```yaml {paths="virtual-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -142,7 +175,7 @@ Deploy multiple Model Context Protocol (MCP) servers that you want agentgateway 
 Route to the federated MCP servers with agentgateway.
 
 1. Create an HTTPRoute resource that routes to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step.
-   ```yaml
+   ```yaml {paths="virtual-mcp"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -163,6 +196,52 @@ Route to the federated MCP servers with agentgateway.
              value: /mcp
    EOF
    ```
+
+{{< doc-test paths="virtual-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: default
+        name: mcp
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="virtual-mcp" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/mcp" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="virtual-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: MCP endpoint accepts initialize request
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /mcp
+    method: POST
+    headers:
+      content-type: application/json
+      accept: "application/json, text/event-stream"
+    body: |
+      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 2. Check that the HTTPRoute is `Accepted`, selects the Gateway, and includes backend rules for the {{< reuse "agw-docs/snippets/backend.md" >}} that you created.
 
@@ -271,9 +350,9 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```sh
+```sh {paths="virtual-mcp"}
 kubectl delete Deployment mcp-server-everything mcp-website-fetcher
-kubectl delete Service mcp-server-everything mcp-website-fetcher 
+kubectl delete Service mcp-server-everything mcp-website-fetcher
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} mcp
-kubectl delete HTTPRoute mcp 
+kubectl delete HTTPRoute mcp
 ```
