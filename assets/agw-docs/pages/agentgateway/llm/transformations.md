@@ -122,7 +122,7 @@ To learn more about CEL, see the following resources:
        statusCode: 200
        bodyJsonPath:
          - path: "$.usage.completion_tokens"
-           comparator: equals
+           comparator: lessThanOrEqual
            value: 10
    EOF
    {{< /doc-test >}}
@@ -286,14 +286,14 @@ EOF
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
+   curl -vi "http://$INGRESS_GW_ADDRESS/openai" \
     -H "Content-Type: application/json" \
     -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -vi "http://localhost:8080/v1/chat/completions" \
+   curl -vi "http://localhost:8080/openai" \
     -H "Content-Type: application/json" \
     -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
