@@ -14,8 +14,8 @@ Before you can use Azure as an LLM provider, you must authenticate by using one 
 
 Azure supports two endpoint types:
 
-- **Azure AI Foundry** (`foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}-resource.services.ai.azure.com`.
-- **Azure OpenAI** (`openAI`): Connect directly to Azure OpenAI Service deployments at `{resourceName}.openai.azure.com`.
+- **Azure AI Foundry** (`Foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}-resource.services.ai.azure.com`.
+- **Azure OpenAI** (`OpenAI`): Connect directly to Azure OpenAI Service deployments at `{resourceName}.openai.azure.com`.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
@@ -31,7 +31,7 @@ llm:
     provider: azure
     params:
       azureResourceName: "your-resource-name"
-      azureResourceType: foundry
+      azureResourceType: Foundry
       azureProjectName: "your-project-name"
 ```
 
@@ -46,7 +46,7 @@ llm:
     provider: azure
     params:
       azureResourceName: "your-resource-name"
-      azureResourceType: foundry
+      azureResourceType: Foundry
       azureProjectName: "your-project-name"
       apiKey: "$AZURE_API_KEY"
 ```
@@ -62,7 +62,7 @@ llm:
     provider: azure
     params:
       azureResourceName: "your-resource-name"
-      azureResourceType: openAI
+      azureResourceType: OpenAI
 ```
 
 {{% /tab %}}
@@ -75,8 +75,8 @@ llm:
 | `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `azure` for Azure AI models. |
 | `params.azureResourceName` | The Azure resource name used to construct the endpoint hostname. |
-| `params.azureResourceType` | The endpoint type: `foundry` for Azure AI Foundry, or `openAI` for Azure OpenAI Service. |
-| `params.azureProjectName` | The Foundry project name. Required for `foundry` type. If omitted, defaults to `azureResourceName`. |
+| `params.azureResourceType` | The endpoint type: `Foundry` for Azure AI Foundry, or `OpenAI` for Azure OpenAI Service. |
+| `params.azureProjectName` | The Foundry project name. Required for `Foundry` type. If omitted, defaults to `azureResourceName`. |
 | `params.azureApiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2024-04-01-preview`. |
 | `params.model` | The specific Azure model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The Azure API key for authentication. If unset, implicit Entra ID authentication is used. You can reference environment variables using the `$VAR_NAME` syntax. |
@@ -113,7 +113,7 @@ binds:
             azure:
               resourceName: "your-resource-name"
               projectName: "your-project-name"
-              resourceType: foundry
+              resourceType: Foundry
               model: gpt-4.1
 ```
 
@@ -153,7 +153,7 @@ binds:
             azure:
               resourceName: "your-resource-name"
               projectName: "your-project-name"
-              resourceType: foundry
+              resourceType: Foundry
               model: gpt-4.1
 ```
 
@@ -177,7 +177,7 @@ binds:
           provider:
             azure:
               resourceName: "your-resource-name"
-              resourceType: openAI
+              resourceType: OpenAI
               model: gpt-4.1
       policies:
         backendAuth:
@@ -217,7 +217,7 @@ binds:
           provider:
             azure:
               resourceName: "your-resource-name"
-              resourceType: openAI
+              resourceType: OpenAI
               model: gpt-4.1
       policies:
         backendAuth:
@@ -255,7 +255,7 @@ binds:
           provider:
             azure:
               resourceName: "your-resource-name"
-              resourceType: openAI
+              resourceType: OpenAI
               model: gpt-4.1
       policies:
         backendAuth:
@@ -296,7 +296,7 @@ binds:
           provider:
             azure:
               resourceName: "your-resource-name"
-              resourceType: openAI
+              resourceType: OpenAI
               model: gpt-4.1
       policies:
         backendAuth:
