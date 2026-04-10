@@ -122,8 +122,8 @@ To learn more about CEL, see the following resources:
        statusCode: 200
        bodyJsonPath:
          - path: "$.usage.completion_tokens"
-           comparator: lessThanOrEqual
-           value: 10
+           comparator: lessThan
+           value: 11
    EOF
    {{< /doc-test >}}
 
