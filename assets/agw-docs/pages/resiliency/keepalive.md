@@ -138,7 +138,7 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="tcp-keepalive"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin
 ```
 
 ## HTTP keepalive {#http-keepalive}
@@ -274,7 +274,7 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="http-keepalive"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin
 ```
 
 
