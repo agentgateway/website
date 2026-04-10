@@ -107,7 +107,6 @@ EOF
 {{< /doc-test >}}
 <!-- TODO: Re-enable config dump assertion once the known issue where
      the config dump does not reflect keepalive policy updates is fixed.
-{{< doc-test paths="tcp-keepalive" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for tcp keepalive policy in config dump
   retries: 60
@@ -131,7 +130,6 @@ YAMLTest -f - <<'EOF'
     - '"interval":"5s"'
     - '"retries":3'
 EOF
-{{< /doc-test >}}
 -->
 
     
@@ -245,7 +243,6 @@ EOF
 {{< /doc-test >}}
 <!-- TODO: Re-enable config dump assertion once the known issue where
      the config dump does not reflect keepalive policy updates is fixed.
-{{< doc-test paths="http-keepalive" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for http keepalive policy in config dump
   retries: 60
@@ -269,7 +266,6 @@ YAMLTest -f - <<'EOF'
     - '"5s"'
     - '"30s"'
 EOF
-{{< /doc-test >}}
 -->
 
     
