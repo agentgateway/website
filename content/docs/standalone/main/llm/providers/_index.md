@@ -15,7 +15,7 @@ Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}
   {{< card link="gemini" title="Google Gemini" >}}
   {{< card link="vertex" title="Google Vertex AI" >}}
   {{< card link="bedrock" title="Amazon Bedrock" >}}
-  {{< card link="azure" title="Azure OpenAI" >}}
+  {{< card link="azure" title="Azure" >}}
 {{< /cards >}}
 
 ## OpenAI-compatible providers
