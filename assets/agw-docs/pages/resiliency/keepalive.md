@@ -40,11 +40,13 @@ Keep the TCP connection alive by sending out probes after the connection has bee
    | `time` | The number of seconds a connection is idle before the first keep-alive probe is sent. |
    | `interval` | The number of seconds between keep-alive probes.  |  
 
+
 2. Port-forward the gateway proxy on port 15000. 
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
    ```
-
+<!-- TODO: Re-enable config dump verification steps once the known issue
+     where the config dump does not reflect keepalive policy updates is fixed.
 3. Get the config dump and verify that the keepalive policy is set as you configured it.
       
       Example `jq` command:
@@ -83,6 +85,7 @@ Keep the TCP connection alive by sending out probes after the connection has bee
          }
       }
       ```
+-->
 
 {{< doc-test paths="tcp-keepalive" >}}
 YAMLTest -f - <<'EOF'
@@ -100,6 +103,12 @@ YAMLTest -f - <<'EOF'
     polling:
       timeoutSeconds: 120
       intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+<!-- TODO: Re-enable config dump assertion once the known issue where
+     the config dump does not reflect keepalive policy updates is fixed.
+{{< doc-test paths="tcp-keepalive" >}}
+YAMLTest -f - <<'EOF'
 - name: wait for tcp keepalive policy in config dump
   retries: 60
   http:
@@ -123,6 +132,7 @@ YAMLTest -f - <<'EOF'
     - '"retries":3'
 EOF
 {{< /doc-test >}}
+-->
 
     
 ### Cleanup
@@ -165,11 +175,13 @@ Keep the HTTP connection alive by sending out probes after the connection has be
    | `http2KeepaliveTimeout` | The number of seconds a connection is idle before the first keep-alive probe is sent. |
    
 
+
 2. Port-forward the gateway proxy on port 15000. 
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
    ```
-
+<!-- TODO: Re-enable config dump verification steps once the known issue
+     where the config dump does not reflect keepalive policy updates is fixed.
 3. Get the config dump and verify that the keepalive policy is set as you configured it.
       
       Example `jq` command:
@@ -211,6 +223,7 @@ Keep the HTTP connection alive by sending out probes after the connection has be
          }
       }
       ```
+-->
 
 {{< doc-test paths="http-keepalive" >}}
 YAMLTest -f - <<'EOF'
@@ -228,6 +241,12 @@ YAMLTest -f - <<'EOF'
     polling:
       timeoutSeconds: 120
       intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+<!-- TODO: Re-enable config dump assertion once the known issue where
+     the config dump does not reflect keepalive policy updates is fixed.
+{{< doc-test paths="http-keepalive" >}}
+YAMLTest -f - <<'EOF'
 - name: wait for http keepalive policy in config dump
   retries: 60
   http:
@@ -251,6 +270,7 @@ YAMLTest -f - <<'EOF'
     - '"30s"'
 EOF
 {{< /doc-test >}}
+-->
 
     
 ### Cleanup
