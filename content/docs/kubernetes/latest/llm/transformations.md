@@ -8,8 +8,8 @@ test:
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/llm/providers/openai.md
-    path: openai-setup
+  - file: content/docs/kubernetes/latest/llm/providers/httpbun.md
+    path: setup-httpbun-llm
   - file: content/docs/kubernetes/latest/llm/transformations.md
     path: llm-transformations
   llm-model-headers:

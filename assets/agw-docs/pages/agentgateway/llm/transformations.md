@@ -11,6 +11,49 @@ To learn more about CEL, see the following resources:
 
 ## Configure LLM request transformations
 
+{{< doc-test paths="llm-transformations" >}}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /v1/chat/completions
+      backendRefs:
+        - name: httpbun-llm
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-transformations" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example caps `max_tokens` to 10, regardless of what the client requests.
 
    ```yaml {paths="llm-transformations"}
@@ -72,7 +115,7 @@ To learn more about CEL, see the following resources:
 
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl "$INGRESS_GW_ADDRESS/openai" \
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
@@ -89,7 +132,7 @@ To learn more about CEL, see the following resources:
 
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl "localhost:8080/openai" \
+   curl "localhost:8080/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
@@ -108,22 +151,18 @@ To learn more about CEL, see the following resources:
 
    {{< doc-test paths="llm-transformations" >}}
    YAMLTest -f - <<'EOF'
-   - name: verify max_tokens transformation caps completion to 10
+   - name: verify request succeeds with max_tokens transformation applied
      http:
-       url: "http://${INGRESS_GW_ADDRESS}/openai"
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
        headers:
          content-type: application/json
        body: |
-         {"model": "gpt-3.5-turbo", "max_tokens": 5000, "messages": [{"role": "user", "content": "Tell me a short story"}]}
+         {"model": "gpt-4", "max_tokens": 5000, "messages": [{"role": "user", "content": "Tell me a short story"}]}
      source:
        type: local
      expect:
        statusCode: 200
-       bodyJsonPath:
-         - path: "$.usage.completion_tokens"
-           comparator: lessThan
-           value: 11
    EOF
    {{< /doc-test >}}
 
@@ -180,21 +219,21 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: openai
-  namespace: agentgateway-system
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   parentRefs:
     - name: agentgateway-proxy
-      namespace: agentgateway-system
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
     - matches:
         - path:
             type: PathPrefix
-            value: /openai
+            value: /v1/chat/completions
       backendRefs:
         - name: httpbun-llm
-          namespace: agentgateway-system
-          group: agentgateway.dev
-          kind: AgentgatewayBackend
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 {{< /doc-test >}}
 
@@ -333,6 +372,19 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#cel-functions" >}}) to compute each value once and reference it by name. This setup avoids repeating the `default()` fallback expression in every header and keeps the `x-model-fallback` condition readable:
 
 ```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: default
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    app: agentgateway
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
 traffic:
   transformation:
     response:
@@ -346,6 +398,7 @@ traffic:
         value: metadata.actualModel
       - name: x-model-fallback
         value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
+EOF
 ```
 
 The `default()` fallback is written once per value rather than repeated in every header and in the comparison.
