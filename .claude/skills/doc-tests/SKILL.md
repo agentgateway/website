@@ -98,7 +98,7 @@ test: skip
 | Conceptual/about pages (pure prose, no code) | No code to run | Add a minimal "try it" example at the bottom that demonstrates the concept with a working config + assertion. This is a content strategy decision — if the page's purpose is purely explanatory, `test: skip` is appropriate | Content decision |
 | Index/hub pages (`_index.md` with card links) | No code, only navigation | These are legitimately `test: skip`. The only possible validation is confirming card link targets exist, which would be a separate link-checking CI job (not a doc test) | Script change (separate job) |
 
-**Key principle:** The existing framework already supports every content type except pure link validation. Most "non-runnable" pages can become testable through content changes alone — adding hidden `{{< doc-test >}}` blocks that write configs, start services in the background, and run lightweight assertions. The question is usually whether the test is worth the CI time, not whether the framework can handle it.
+**Key principle:** The existing framework already supports every content type except pure link validation. Most "non-runnable" pages can become testable through content changes alone — adding hidden `{{< doc-test >}}` blocks that write configs, start services in the background, and run lightweight assertions. 
 
 Or for the latest (stable) version:
 
