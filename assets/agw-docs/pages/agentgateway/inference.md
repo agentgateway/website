@@ -61,16 +61,16 @@ kubectl apply -f - <<EOF
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: vllm-qwen2.5-1.5b-instruct
+  name: vllm-qwen25-15b-instruct
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: vllm-qwen2.5-1.5b-instruct
+      app: vllm-qwen25-15b-instruct
   template:
     metadata:
       labels:
-        app: vllm-qwen2.5-1.5b-instruct
+        app: vllm-qwen25-15b-instruct
     spec:
       containers:
         - name: vllm
@@ -171,7 +171,7 @@ export IGW_CHART_VERSION=v1.1.0
 export GATEWAY_PROVIDER=none
 
 helm install vllm-qwen25-15b-instruct \
---set inferencePool.modelServers.matchLabels.app=vllm-qwen2.5-1.5b-instruct \
+--set inferencePool.modelServers.matchLabels.app=vllm-qwen25-15b-instruct \
 --set provider.name=$GATEWAY_PROVIDER \
 --version $IGW_CHART_VERSION \
 oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
@@ -179,7 +179,7 @@ oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
 
 If you run `kubectl get inferencepool`, you'll see that the Helm Chart deployed an `InferencePool`.
 
-5. Deploy a `Gateway` and `HTTPRoute` object for Inference. This will route to the `InferencePool` that was created in the previous step via the Helm Chart. Thie (`inferencePool.modelServers.matchLabels.app) part matches any app running the `vllm-qwen2.5-1.5b-instruct` label, which was deployed in step 1 (the `Deployment` object)
+5. Deploy a `Gateway` and `HTTPRoute` object for Inference. This will route to the `InferencePool` that was created in the previous step via the Helm Chart. Thie (`inferencePool.modelServers.matchLabels.app) part matches any app running the `vllm-qwen25-15b-instruct` label, which was deployed in step 1 (the `Deployment` object)
 ```
 kubectl apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
