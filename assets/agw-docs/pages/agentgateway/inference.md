@@ -7,6 +7,16 @@ For more information, see the following resources.
   {{< card link="https://kgateway.dev/blog/deep-dive-inference-extensions/" title="Kgateway deep-dive blog on Inference Extension" icon="external-link">}}
 {{< /cards >}}
 
+## Prerequisite
+
+To use the Inference Extension with agentgateway, you will need to set the `inferenceExtension.enabled=true` value in the helm chart. For example, if you're installing agentgateway, it would look like the following:
+
+```
+helm upgrade -i -n agentgateway-system agentgateway oci://cr.agentgateway.dev/charts/agentgateway \
+--version $AGENTGATEWAY_VERSION \
+--set inferenceExtension.enabled=true
+```
+
 ## About Inference Extension {#about}
 
 The Inference Extension project extends the Gateway API with two key resources, an InferencePool and an InferenceModel, as shown in the following diagram.
