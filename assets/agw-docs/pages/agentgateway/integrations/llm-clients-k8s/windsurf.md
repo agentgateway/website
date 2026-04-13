@@ -1,4 +1,4 @@
-Configure [Windsurf](https://codeium.com/windsurf), the AI code editor by Codeium, to route requests to your LLM through your agentgateway proxy.
+Configure [Windsurf](https://windsurf.com/editor), the AI code editor by Codeium, to route requests to your LLM through your agentgateway proxy.
 
 ## Before you begin
 

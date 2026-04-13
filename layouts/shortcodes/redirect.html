@@ -14,7 +14,7 @@
 {{- if $path -}}
   {{- $pathTrimmed := strings.TrimPrefix "/" $path -}}
   {{- $section := "" -}}
-  {{- with findRE `^/docs/(?:kubernetes|standalone)/(?:latest|main)` .Page.RelPermalink }}{{ $section = index . 0 }}{{ end -}}
+  {{- with findRE `^/docs/(?:kubernetes|standalone)/(?:latest|main|\d+\.\d+\.x)` .Page.RelPermalink }}{{ $section = index . 0 }}{{ end -}}
   {{- if not $section }}{{ $section = strings.TrimSuffix "/" .Page.FirstSection.RelPermalink }}{{ end -}}
   {{- $section = replaceRE `^https?://[^/]+` "" $section -}}
   {{- $section = replaceRE `^/localhost:[^/]+` "" $section -}}

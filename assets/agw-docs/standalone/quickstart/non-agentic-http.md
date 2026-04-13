@@ -28,7 +28,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
    curl -sL https://agentgateway.dev/install | bash
    ```
 
-2. Install [Docker](https://docs.docker.com/get-docker/) to run httpbin.
+2. Install [Docker](https://docs.docker.com/get-started/get-docker/) to run httpbin.
 
 ## Steps
 

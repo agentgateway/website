@@ -23,7 +23,7 @@ Static tracing is configured globally and applies to all routes.
 1. Download a telemetry configuration for your agentgateway.
 
    ```yaml
-   curl -L https://agentgateway.dev/examples/telemetry/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/telemetry/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file. 
@@ -32,7 +32,7 @@ Static tracing is configured globally and applies to all routes.
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://agentgateway.dev/examples/telemetry/config.yaml" %}}
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/telemetry/config.yaml" %}}
 
    * **Listener**: An HTTP listener that listens for incoming traffic on port 3000. 
    * **Traces**: The agentgateway is configured to send traces to the OpenTelemetry collector that you exposed on `http://localhost:4317`. 

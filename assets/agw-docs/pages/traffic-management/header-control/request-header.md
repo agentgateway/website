@@ -1,7 +1,7 @@
 
 Use the `RequestHeaderModifier` filter to add, append, overwrite, or remove request headers for a specific route. 
 
-For more information, see the [HTTPHeaderFilter specification](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPHeaderFilter).
+For more information, see the [HTTPHeaderFilter specification](https://gateway-api.sigs.k8s.io/reference/spec/#httpheaderfilter).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

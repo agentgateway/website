@@ -65,10 +65,10 @@ Example output with the latest version, {{< reuse "agw-docs/versions/n-patch.md"
 
 ### Step 3: Create a configuration file
 
-Create a [configuration file]({{< link-hextra path="/configuration/" >}}) for agentgateway. In this example, `config.yaml` is used. You might start with [this simple example configuration file](https://agentgateway.dev/examples/basic/config.yaml).
+Create a [configuration file]({{< link-hextra path="/configuration/" >}}) for agentgateway. In this example, `config.yaml` is used. You might start with [this simple example configuration file](https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml).
 
 ```yaml
-{{< github url="https://agentgateway.dev/examples/basic/config.yaml" >}}
+{{< github url="https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml" >}}
 ```
 
 ### Step 4: Run agentgateway
