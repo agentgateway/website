@@ -67,9 +67,9 @@ Work through the report top-down: Errors first, then Warnings, then Redirects. F
 Broken links (non-anchor, or anchors where the page itself is gone).
 
 1. **Check for false positives first.** Fetch the URL (WebFetch) to see if it actually loads. If it does, note it as a false positive and suggest a likely reason:
-   - Lychee user-agent blocked (common for anchor checks on sites like kubernetes.io — the page loads but the `#fragment` check fails from CI).
-   - Rate limiting.
-   - URL-encoding Lychee mishandles (e.g. trailing `%29` from a stray `)` in markdown).
+   - **JS-rendered anchors** (common for kubernetes.io tabs, AWS console, Azure Learn, Google AI docs, and other modern docs sites). Lychee parses static HTML and looks for `id="..."`. Pages that build anchors with JavaScript at runtime have no matching IDs in the static HTML, so lychee reports them broken even though they work in browsers. There is no lychee config to fix this short of running JS. To verify: curl the page, grep for `id=` near the expected anchor name. If the page's static HTML has *no* IDs that match the expected pattern *and* the page loads in a browser to the right section, it's JS-rendered. **Important**: a missing static `id=` could also mean the anchor is genuinely broken (the section was renamed) — always confirm in a browser before calling it a false positive.
+   - Lychee user-agent blocked or rate limiting.
+   - URL-encoding Lychee mishandles (for example trailing `%29` from a stray `)` in markdown).
    - Link is inside a tab / collapsible / conditional-render that Lychee parses differently.
 2. **Try to find the new location.** Read the source file and look at the text surrounding the link. If the link is clearly meant to point somewhere specific (for example, a markdown link like `[install guide](URL)`), check whether the target content moved. Browse the target site (WebFetch the parent directory listing or use a site search) to locate the current URL.
 3. **Apply the fix** in the mapped source file (shared/asset file if the content wrapper is a reuse, otherwise the content file). If you cannot confidently determine the new URL, record it as "needs human review" and do not edit.
@@ -89,7 +89,11 @@ The page exists but the `#fragment` does not resolve.
 Lychee reports each as `original → final`.
 
 1. **Skip auth/login redirects.** If `final` is a sign-in / SSO / login page, the original URL is fine — users will authenticate and reach the right place. Don't edit. Report it back though.
-2. **Otherwise, update the source** to the `final` URL. Common cases are vendor doc restructures (Microsoft Learn, Google Cloud, Anthropic, AWS) and project rebrands or host moves.
+2. **Skip canonical short-form / always-redirecting URLs.** Some URLs are intentionally short forms that always redirect to the current target. Don't update these — instead, suggest adding them to `lychee.toml`'s exclude list so they stop appearing in future reports. Examples:
+   - `github.com/<owner>/<repo>/releases/latest` → versioned tag (the `/latest` URL is intentional — it auto-tracks the newest release).
+   - `discord.gg/<code>` → `discord.com/invite/<code>` (the short form is canonical).
+   - `github.com/user-attachments/assets/<id>` → time-limited S3 signed URL (the short form is the only stable URL).
+3. **Otherwise, update the source** to the `final` URL. Common cases are vendor doc restructures (Microsoft Learn, Google Cloud, Anthropic, AWS) and project rebrands or host moves.
 
 ---
 
@@ -99,6 +103,21 @@ Lychee reports each as `original → final`.
 - Edit **content files** only when the content is version-specific and not a reuse.
 - If the same broken link appears in multiple source files that all trace back to the same shared file, edit the shared file once.
 - Use the `Edit` tool with enough surrounding context to make the match unique.
+- For repeated identical replacements across many files (typical for redirect fixes), batch with `sed -i ''` over a `find` of the relevant directories. Always quote URLs and escape `.` and `/` carefully. After a batch, grep to confirm the old pattern is gone.
+
+### Conditional content for cross-variant link breakage
+
+If a link works for one product variant (for example, the Kubernetes docs) but the target doesn't exist in another variant (for example, the standalone docs) because the content is organized differently, wrap the offending sentence in a build-condition shortcode rather than removing it. Check the repo for an existing conditional shortcode (often called `conditional-text`, `if-product`, or similar) and use it like:
+
+```
+{{< conditional-text include-if="kubernetes" >}}For more information, see [...](...).{{< /conditional-text >}}
+```
+
+This keeps the link visible where it works and silently drops it where it doesn't.
+
+### Updating lychee config for false positives
+
+When you confirm a class of false positives, update the shared `lychee.toml` exclude list so they don't reappear. Group the patterns with a comment explaining *why* (JS-rendered anchors, intentional short-form URLs, etc.) so future maintainers don't strip them as noise.
 
 ---
 
@@ -108,16 +127,19 @@ After processing the report, give the user a structured summary. Group findings 
 
 ```
 ## False positives
-- <link> — <why it's actually working>
+- <link> — <why it's actually working> (added to lychee.toml exclude / suggest adding to lychee.toml exclude)
+
+## Skipped — kept as redirect-as-intended
+- <link> — <why the redirect is intentional> (added to lychee.toml exclude / suggest adding)
 
 ## Needs human review
-- <link> in <file> — <why: couldn't determine new URL / content removed / etc.>
+- <link> in <file> — <why: couldn't determine new URL / content removed / cross-variant content gap / shortcode bug / etc.>
 
 ## Skipped — generated reference content
 - <N> links under reference/ directories
 ```
 
-Keep the summary concise. Do not include long lists of identical reference/ skips. Fixed links do not need to be reported here.
+Keep the summary concise. Do not include long lists of identical reference/ skips. Fixed links do not need to be reported individually unless the user specifically asks. If you spot a root-cause bug (for example a shortcode that produces broken URLs for certain inputs), call it out in "Needs human review" with a pointer to the file and the suggested fix.
 
 ---
 
