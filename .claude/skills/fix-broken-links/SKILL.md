@@ -49,6 +49,19 @@ Example mapping:
 - **Reference docs**: Skip any source path under a `reference/` directory (for example `public/docs/kubernetes/*/reference/api/index.html`, `reference/helm/*`, `reference/cel/*`). These are typically generated from external code repos and shouldn't be hand-edited in the docs repo. Report them as "skipped — generated reference content" and move on.
 - **Other generated content**: Apply the same rule for any other directory the repo treats as build output of external sources. Check the repo's README or CONTRIBUTING guide if unsure.
 
+### Auto-generated content sources (for future reference)
+
+Reference topics are still skipped during normal triage (see above). But when you do want to chase a broken link upstream — or report which upstream repo a broken reference link traces to — use this map of where each `reference/` output gets generated from. The agentgateway workflow that produces these is [reference-docs.yaml](../../../.github/workflows/reference-docs.yaml).
+
+| Generated output (in this repo) | Upstream source repo | Upstream source path | Generator |
+|---|---|---|---|
+| `assets/agw-docs/pages/reference/api/api-{version}.md` (API CRD reference) | `agentgateway/agentgateway` | `controller/api/v1alpha1/agentgateway/` | `github.com/elastic/crd-ref-docs` |
+| `assets/agw-docs/pages/reference/api/api-{version}.md` (shared types appended, includes CEL) | `agentgateway/agentgateway` | `controller/api/v1alpha1/shared/` | `scripts/generate-shared-types.py` |
+| `assets/agw-docs/pages/reference/helm/{version}/agentgateway.md` and `agentgateway-crds.md` | `agentgateway/agentgateway` | `install/helm/agentgateway/` and `install/helm/agentgateway-crds/` | `github.com/norwoodj/helm-docs` via `scripts/generate-ref-docs.py` |
+| `assets/agw-docs/snippets/metrics-control-plane-{version}.md` | `agentgateway/agentgateway` | control plane metrics output | `scripts/generate-ref-docs.py` |
+
+When you report a `reference/` link as skipped, include the upstream repo if you can identify it from the table above — that helps the user know whether the underlying fix needs an upstream PR or a regeneration of the docs.
+
 ---
 
 ## Triage workflow
