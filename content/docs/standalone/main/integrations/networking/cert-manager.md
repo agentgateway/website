@@ -4,7 +4,7 @@ weight: 10
 description: Automatic TLS certificate management for agentgateway
 ---
 
-[cert-manager](https://cert-manager.io/) automates TLS certificate management in Kubernetes. Use it to automatically provision and renew certificates for agentgateway.
+[cert-manager]() automates TLS certificate management in Kubernetes. Use it to automatically provision and renew certificates for agentgateway.
 
 ## Why use cert-manager with agentgateway?
 
