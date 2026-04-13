@@ -171,12 +171,15 @@ jobs:
           name: link-checker-assets
           path: artifacts/*
 
+      - name: Write report to job summary
+        if: hashFiles('artifacts/agentgateway-oss-links.md') != ''
+        run: cat artifacts/agentgateway-oss-links.md >> "$GITHUB_STEP_SUMMARY"
+
       - name: Fail check if errors exist
         if: github.event_name == 'pull_request'
         env:
           ERRORS: ${{ steps.link-stats.outputs.errors }}
         run: |
-          cat artifacts/agentgateway-oss-links.md >> "$GITHUB_STEP_SUMMARY"
           if [ "${ERRORS:-0}" -gt 0 ]; then
             echo "Link checker found ${ERRORS} error(s). See artifacts for details."
             exit 1
