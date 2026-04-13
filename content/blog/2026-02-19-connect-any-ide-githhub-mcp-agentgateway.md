@@ -28,7 +28,7 @@ This guide shows you how to route MCP traffic from **any IDE** — Cursor, VS Co
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) installed and running
+- [Docker](https://docs.docker.com/get-started/get-docker/) installed and running
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) installed
 - `kubectl` and `helm` installed
 - A [GitHub Personal Access Token](https://github.com/settings/tokens) (PAT)

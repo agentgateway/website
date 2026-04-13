@@ -115,7 +115,7 @@ spec:
 
 For more information, see the LLM provider docs:
 
-- [Gemini](https://ai.google.dev/gemini-api/docs/text-generation#streaming-output)
+- [Gemini](https://ai.google.dev/gemini-api/docs/text-generation#streaming-responses)
 - [Vertex](https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1/projects.locations.endpoints/serverStreamingPredict)
 
 ## Streaming example {#example}

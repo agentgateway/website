@@ -3,7 +3,7 @@ title: Goose
 description: Secure and observe Goose autonomous agent with agentgateway for enterprise governance
 ---
 
-[Goose](https://github.com/block/goose) is an autonomous AI agent developed by Block that can perform complex tasks by combining LLM reasoning with tool execution. It uses MCP (Model Context Protocol) for tool interactions, making it ideal for agentgateway integration.
+[Goose](https://github.com/aaif-goose/goose) is an autonomous AI agent developed by Block that can perform complex tasks by combining LLM reasoning with tool execution. It uses MCP (Model Context Protocol) for tool interactions, making it ideal for agentgateway integration.
 
 ## What is Goose?
 

@@ -29,7 +29,7 @@ We'll deploy two MCP servers (`mcp-server-everything` for utility tools and `mcp
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) installed and running
+- [Docker](https://docs.docker.com/get-started/get-docker/) installed and running
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) installed
 - `kubectl` and `helm` installed
 - At least one MCP client: Cursor, VS Code, Claude Code, Windsurf, or OpenCode
