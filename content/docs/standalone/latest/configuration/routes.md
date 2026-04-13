@@ -73,7 +73,7 @@ Set up a route on your listener.
 
 1. Download a configuration file for your agentgateway.
    ```yaml
-   curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file.
@@ -82,7 +82,7 @@ Set up a route on your listener.
    cat config.yaml
    ```
 
-   {{% github-yaml url="https://agentgateway.dev/examples/basic/config.yaml" %}}
+   {{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml" %}}
 
 3. Run the agentgateway. 
    ```sh
@@ -110,7 +110,7 @@ Set up a route on your listener.
 1. Download a configuration file that contains your route configuration.
 
    ```sh
-   curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
+   curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml
    ```
 
 2. Review the configuration file. The example sets up an HTTP listener on port 3000 that matches on all hosts. For more options, see the [Request matching]({{< link-hextra path="/configuration/traffic-management/matching/" >}}) guide.
@@ -119,7 +119,7 @@ Set up a route on your listener.
    cat config.yaml
    ```
 
-   {{% github-yaml  url="https://agentgateway.dev/examples/basic/config.yaml" %}}
+   {{% github-yaml  url="https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml" %}}
 
 3. Run the agentgateway. 
    ```sh

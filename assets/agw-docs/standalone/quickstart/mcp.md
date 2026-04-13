@@ -29,7 +29,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
 Download the basic MCP example configuration.
 
 ```sh {paths="mcp"}
-curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
+curl -L https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml
 ```
 
 ### Step 2: Review the configuration
@@ -40,7 +40,7 @@ Inspect the file to see how the listener, route, and MCP backend are defined.
 cat config.yaml
 ```
 
-{{% github-yaml url="https://agentgateway.dev/examples/basic/config.yaml" %}}
+{{% github-yaml url="https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml" %}}
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
