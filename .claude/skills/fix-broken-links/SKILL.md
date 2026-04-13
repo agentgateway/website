@@ -104,6 +104,7 @@ Lychee reports each as `original → final`.
 - If the same broken link appears in multiple source files that all trace back to the same shared file, edit the shared file once.
 - Use the `Edit` tool with enough surrounding context to make the match unique.
 - For repeated identical replacements across many files (typical for redirect fixes), batch with `sed -i ''` over a `find` of the relevant directories. Always quote URLs and escape `.` and `/` carefully. After a batch, grep to confirm the old pattern is gone.
+- **Watch for trailing-slash variants.** A URL like `https://jwt.io/` appears in the report, but docs often also contain `https://jwt.io` (no slash) in other files. A sed pattern of `jwt\.io/` won't match the no-slash form. Either run two sed passes (with and without the trailing slash), or use a pattern that tolerates both (for example, matching inside markdown link parentheses: `(https://jwt\.io)` and `(https://jwt\.io/)`). After the batch, grep for the base hostname (without slash) to catch any stragglers.
 
 ### Conditional content for cross-variant link breakage
 
