@@ -266,6 +266,11 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+{{< doc-test paths="llm-model-headers" >}}
+# Wait for the data plane to fully program the updated route
+sleep 5
+{{< /doc-test >}}
+
 1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the OpenAI provider's HTTPRoute and injects the model fields as response headers.
 
    ```yaml {paths="llm-model-headers"}
@@ -399,6 +404,11 @@ spec:
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="llm-context-vars" >}}
+# Wait for the data plane to fully program the updated route
+sleep 5
 {{< /doc-test >}}
 
 ### Detect fallback with the llm context variables
