@@ -28,7 +28,7 @@ spec:
             type: PathPrefix
             value: /v1/chat/completions
       backendRefs:
-        - name: httpbun-llm
+        - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -54,7 +54,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example caps `max_tokens` to 10, regardless of what the client requests.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example limits `max_completion_tokens` to no more than 10 by taking the smaller of the client's requested value and 10, regardless of what the client requests.
 
    ```yaml {paths="llm-transformations"}
    kubectl apply -f- <<EOF
@@ -73,8 +73,8 @@ EOF
      backend:
        ai:
          transformations:
-         - field: max_tokens
-           expression: "min(llmRequest.max_tokens, 10)"
+         - field: max_completion_tokens
+           expression: "min(llmRequest.max_completion_tokens, 10)"
    EOF
    ```
 
@@ -109,7 +109,17 @@ EOF
    Thinking budget fields, such as `reasoning_effort` and `thinking_budget_tokens` can also be set or capped by using transformations. This way, operators can enforce reasoning limits centrally without requiring client changes. For example, use `"field": "reasoning_effort"` with the expression `"medium"` to cap all requests to medium reasoning efforts regardless of what the client sends.
    {{< /callout >}}
 
-2. Send a request with `max_tokens` set to a value greater than 10. The transformation caps it to 10 before the request reaches the LLM provider. Verify that the `completion_tokens` value in the response is 10 or fewer, the response is capped and the `finish_reason` is set to `length`. 
+2. Verify that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} is accepted.
+
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[0].conditions[?(@.type=="Accepted")].status}'
+   ```
+
+3. Send a request with `max_completion_tokens` set to a value greater than 10. The transformation limits it to 10 before the request reaches the LLM provider. Verify that the `completion_tokens` value in the response is 10 or fewer and the `finish_reason` is set to `length`.
+
+   {{< callout type="info" >}}
+   Some older OpenAI models use `max_tokens` instead of `max_completion_tokens`. If the transformation does not appear to take effect, check the model's API documentation for the correct field name and update the transformation's `field` value accordingly.
+   {{< /callout >}}
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
 
@@ -119,7 +129,7 @@ EOF
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
-     "max_tokens": 5000,
+     "max_completion_tokens": 5000,
      "messages": [
        {
          "role": "user",
@@ -136,7 +146,7 @@ EOF
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
-     "max_tokens": 5000,
+     "max_completion_tokens": 5000,
      "messages": [
        {
          "role": "user",
@@ -151,14 +161,14 @@ EOF
 
    {{< doc-test paths="llm-transformations" >}}
    YAMLTest -f - <<'EOF'
-   - name: verify request succeeds with max_tokens transformation applied
+   - name: verify request succeeds with max_completion_tokens transformation applied
      http:
        url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
        headers:
          content-type: application/json
        body: |
-         {"model": "gpt-4", "max_tokens": 5000, "messages": [{"role": "user", "content": "Tell me a short story"}]}
+         {"model": "gpt-4", "max_completion_tokens": 5000, "messages": [{"role": "user", "content": "Tell me a short story"}]}
      source:
        type: local
      expect:
@@ -230,7 +240,7 @@ spec:
             type: PathPrefix
             value: /v1/chat/completions
       backendRefs:
-        - name: httpbun-llm
+        - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -383,7 +393,7 @@ spec:
             type: PathPrefix
             value: /v1/chat/completions
       backendRefs:
-        - name: httpbun-llm
+        - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
