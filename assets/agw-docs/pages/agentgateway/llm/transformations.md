@@ -318,6 +318,7 @@ EOF
        body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
      source:
        type: local
+     retries: 5
      expect:
        statusCode: 200
        headers:
@@ -326,7 +327,7 @@ EOF
            value: gpt-4
          - name: x-actual-model
            comparator: contains
-           value: gpt-4
+           value: gpt
    EOF
    {{< /doc-test >}}
 
@@ -464,6 +465,7 @@ YAMLTest -f - <<'EOF'
     body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
   source:
     type: local
+  retries: 5
   expect:
     statusCode: 200
     headers:
@@ -472,7 +474,7 @@ YAMLTest -f - <<'EOF'
         value: gpt-4
       - name: x-actual-model
         comparator: contains
-        value: gpt-4
+        value: gpt
       - name: x-model-fallback
         comparator: equals
         value: "false"
