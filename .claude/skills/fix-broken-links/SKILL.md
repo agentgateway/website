@@ -121,7 +121,7 @@ Lychee reports each as `original → final`.
 
 ### Conditional content for cross-variant link breakage
 
-If a link works for one product variant (for example, the Kubernetes docs) but the target doesn't exist in another variant (for example, the standalone docs) because the content is organized differently, wrap the offending sentence in a build-condition shortcode rather than removing it. Check the repo for an existing conditional shortcode (often called `conditional-text`, `if-product`, or similar) and use it like:
+If a link works for one product variant (for example, the Kubernetes docs) but the target doesn't exist in another variant (for example, the standalone docs) because the content is organized differently, wrap the offending sentence in a build-condition shortcode rather than removing it. Check the repo for an existing `conditional-text` shortcode and use it like:
 
 ```
 {{< conditional-text include-if="kubernetes" >}}For more information, see [...](...).{{< /conditional-text >}}
