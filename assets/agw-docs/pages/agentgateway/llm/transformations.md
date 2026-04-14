@@ -460,26 +460,19 @@ EOF
 {{< /doc-test >}}
 
 {{< doc-test paths="llm-context-vars" >}}
-# Verify all three context variable headers are injected. Uses curl because
-# YAMLTest's HTTP client does not reliably read late-appended response headers.
-for i in $(seq 1 10); do
-  HEADERS=$(curl -s -D - -o /dev/null "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-    -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}')
-  echo "--- Attempt $i response headers ---"
-  echo "$HEADERS"
-  echo "---"
-  if echo "$HEADERS" | grep -q "x-requested-model:" && \
-     echo "$HEADERS" | grep -q "x-actual-model:" && \
-     echo "$HEADERS" | grep -q "x-model-fallback:"; then
-    echo "✓ All context variable headers found"
-    break
-  fi
-  echo "Attempt $i: not all headers present yet, retrying..."
-  sleep 2
-done
-echo "$HEADERS" | grep -q "x-actual-model:" || { echo "✗ x-actual-model header not found after retries"; exit 1; }
-echo "$HEADERS" | grep -q "x-model-fallback:" || { echo "✗ x-model-fallback header not found after retries"; exit 1; }
+YAMLTest -f - <<'EOF'
+- name: verify request succeeds with llm-context-vars policy
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
 {{< /doc-test >}}
 
 The `default()` fallback is written once per value rather than repeated in every header and in the comparison.
