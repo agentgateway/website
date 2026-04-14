@@ -524,7 +524,7 @@ chevron.classList.remove('rotate-180');
 </div>
 <div class="p-4 space-y-3 text-xs font-mono">
 <div class="flex gap-3"><span class="text-tertiary-text">$</span><code class="text-primary-text">curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash</code></div>
-<div class="flex gap-3"><span class="text-tertiary-text">$</span><code class="text-primary-text">curl -sL https://agentgateway.dev/examples/basic/config.yaml -o config.yaml</code></div>
+<div class="flex gap-3"><span class="text-tertiary-text">$</span><code class="text-primary-text">curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml</code></div>
 <div class="flex gap-3"><span class="text-tertiary-text">$</span><code class="text-primary-text">agentgateway -f config.yaml</code></div>
 <div class="text-secondary-text pt-1"># Open UI at localhost:15000</div>
 </div>
@@ -550,7 +550,7 @@ chevron.classList.remove('rotate-180');
 
 <script>
 function copyGettingStarted() {
-var commands = 'curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash\ncurl -sL https://agentgateway.dev/examples/basic/config.yaml -o config.yaml\nagentgateway -f config.yaml';
+var commands = 'curl https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/common/scripts/get-agentgateway | bash\ncurl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml\nagentgateway -f config.yaml';
 navigator.clipboard.writeText(commands);
 var btn = document.getElementById('copy-btn');
 btn.textContent = 'Copied!';
