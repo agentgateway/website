@@ -1,4 +1,4 @@
-Use agentgateway proxies with the Kubernetes Gateway API Inference Extension project. This project extends the Gateway API so that you can route to AI inference workloads such as local Large Language Models (LLMs) that run in your Kubernetes environment.
+Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the Kubernetes Gateway API Inference Extension to route requests to AI inference workloads, such as Large Language Models (LLMs) that run in your Kubernetes environment.
 
 For more information, see the following resources.
 
@@ -7,19 +7,20 @@ For more information, see the following resources.
   {{< card link="https://kgateway.dev/blog/deep-dive-inference-extensions/" title="Kgateway deep-dive blog on Inference Extension" icon="external-link">}}
 {{< /cards >}}
 
-## Prerequisite
+## Before you begin
 
-To use the Inference Extension with agentgateway, you will need to set the `inferenceExtension.enabled=true` value in the helm chart. For example, if you're installing agentgateway, it would look like the following:
+To use the Inference Extension with {{< reuse "agw-docs/snippets/kgateway.md" >}}, [upgrade your Helm installation]({{< link-hextra path="/operations/upgrade/" >}}) with the `inferenceExtension.enabled=true` value. 
 
+```bash
+helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+  --version $AGENTGATEWAY_VERSION \
+  --set inferenceExtension.enabled=true \
+  --reuse-values
 ```
-helm upgrade -i -n agentgateway-system agentgateway oci://cr.agentgateway.dev/charts/agentgateway \
---version $AGENTGATEWAY_VERSION \
---set inferenceExtension.enabled=true
-```
 
-## About Inference Extension {#about}
+## About {#about}
 
-The Inference Extension project extends the Gateway API with two key resources, an InferencePool and an InferenceModel, as shown in the following diagram.
+The Inference Extension extends the Gateway API with two key resources, an InferencePool and an InferenceModel, as shown in the following diagram.
 
 ```mermaid
 graph TD
@@ -28,17 +29,17 @@ graph TD
     InferencePool --> InferenceModel_v3["InferenceModel v3"]
 ```
 
-The InferencePool groups together InferenceModels of LLM workloads into a routable backend resource that the Gateway API can route inference requests to. An InferenceModel represents not just a single LLM model, but a specific configuration including information such as the version and criticality. The InferencePool uses this information to ensure fair consumption of compute resources across competing LLM workloads and share routing decisions to the Gateway API.
+The InferencePool groups together InferenceModels of LLM workloads into a routable backend resource that the Gateway API can route inference requests to. An InferenceModel represents not just a single LLM model, but a specific configuration that includes information such as the version and criticality. The InferencePool uses this information to ensure fair consumption of compute resources across competing LLM workloads and share routing decisions with the Gateway API.
 
 ### {{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} with Inference Extension {#integration}
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} integrates with the Inference Extension as a supported Gateway API provider. This way, a Gateway can route requests to InferencePools, as shown in the following diagram.
+{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} integrates with the Inference Extension as a supported Gateway API provider. A Gateway can route requests to InferencePools, as shown in the following diagram.
 
 {{< reuse "agw-docs/snippets/inference-diagram.md" >}}
 
-The Client sends an inference request to get a response from a local LLM workload. The Gateway receives the request and routes to the InferencePool as a backend. Then, the InferencePool selects a specific InferenceModel to route the request to, based on criteria such as the least-loaded model or highest criticality. The Gateway can then return the response to the Client.
+The client sends an inference request to get a response from a local LLM workload. The Gateway receives the request and routes to the InferencePool as a backend. Then, the InferencePool selects a specific InferenceModel to route the request to, based on criteria such as the least-loaded model or highest criticality. The Gateway returns the response to the client.
 
-## Setup steps {#setup}
+## Set up Inference Extension {#setup}
 
 Refer to the **Kgateway** tabs in the **Getting started** guide in the Inference Extension docs.
 
@@ -48,210 +49,222 @@ Refer to the **Kgateway** tabs in the **Getting started** guide in the Inference
 
 ### Quickstart
 
-This quickstart goes through deploying:
-- vLLM (needed for Model serving)
-- Local Model configuration (qwen is used in this example)
-- Kubernetes Gateway API inference extension installed
-- Agentgateway installed with inference enabled
-- llmd/InferencePool installed via Helm specifically for the qwen configuration
+In this quickstart, you deploy the following components.
 
-1. Deploy the qwen `Deployment` object. This vLLM container image uses CPU instead of GPU, which makes for easier local/small cluster testing.
-```
-kubectl apply -f - <<EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: vllm-qwen25-15b-instruct
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: vllm-qwen25-15b-instruct
-  template:
-    metadata:
-      labels:
-        app: vllm-qwen25-15b-instruct
-    spec:
-      containers:
-        - name: vllm
-          image: "vllm/vllm-openai-cpu:v0.18.0" # official vLLM CPU image from Docker Hub; pin a concrete tag to avoid drift from latest
-          imagePullPolicy: IfNotPresent
-          command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
-          args:
-          - "--model"
-          - "Qwen/Qwen2.5-1.5B-Instruct"
-          - "--port"
-          - "8000"
-          env:
-            - name: PORT
-              value: "8000"
-            - name: VLLM_CPU_KVCACHE_SPACE
-              value: "4"
-          ports:
-            - containerPort: 8000
-              name: http
-              protocol: TCP
-          livenessProbe:
-            failureThreshold: 240
-            httpGet:
-              path: /health
-              port: http
-              scheme: HTTP
-            initialDelaySeconds: 180
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 1
-          readinessProbe:
-            failureThreshold: 600
-            httpGet:
-              path: /health
-              port: http
-              scheme: HTTP
-            initialDelaySeconds: 180
-            periodSeconds: 5
-            successThreshold: 1
-            timeoutSeconds: 1
-          resources:
-             limits:
-               cpu: "11"
-               memory: "10Gi"
-             requests:
-               cpu: "11"
-               memory: "10Gi"
-          volumeMounts:
-            - mountPath: /data
-              name: data
-            - mountPath: /dev/shm
-              name: shm
-      restartPolicy: Always
-      schedulerName: default-scheduler
-      terminationGracePeriodSeconds: 30
-      volumes:
-        - name: data
-          emptyDir: {}
-        - name: shm
-          emptyDir:
-            medium: Memory
-EOF
-```
+- vLLM for model serving.
+- A local model configuration. Qwen is used in this example.
+- Kubernetes Gateway API Inference Extension.
+- {{< reuse "agw-docs/snippets/kgateway-capital.md" >}} with inference enabled.
+- The llm-d InferencePool via Helm, configured for Qwen.
 
-Give the vLLM Pods about 2-3 minutes for the local qwen Model to download. You can then confirm the Pod is running with the following command:
-```
-kubectl get pods -w
-```
+Steps:
 
-2. Install the CRDs for the Kubernetes Gateway API Inference extension.
-```
-kubectl apply -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.4.0/manifests.yaml
-```
+1. Deploy the Qwen vLLM instance. The container image uses CPU instead of GPU, which makes for easier local or small cluster testing.
 
-3. Install Kubernetes Gateway API CRDs, agentgateway, and the agentgateway CRDs. In this case, you'll use agentgateway:
-```
-kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
-```
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: vllm-qwen25-15b-instruct
+   spec:
+     replicas: 1
+     selector:
+       matchLabels:
+         app: vllm-qwen25-15b-instruct
+     template:
+       metadata:
+         labels:
+           app: vllm-qwen25-15b-instruct
+       spec:
+         containers:
+           - name: vllm
+             image: "vllm/vllm-openai-cpu:v0.18.0" # CPU image for local testing; pin tag to avoid drift
+             imagePullPolicy: IfNotPresent
+             command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+             args:
+             - "--model"
+             - "Qwen/Qwen2.5-1.5B-Instruct"
+             - "--port"
+             - "8000"
+             env:
+               - name: PORT
+                 value: "8000"
+               - name: VLLM_CPU_KVCACHE_SPACE
+                 value: "4"
+             ports:
+               - containerPort: 8000
+                 name: http
+                 protocol: TCP
+             livenessProbe:
+               failureThreshold: 240
+               httpGet:
+                 path: /health
+                 port: http
+                 scheme: HTTP
+               initialDelaySeconds: 180
+               periodSeconds: 5
+               successThreshold: 1
+               timeoutSeconds: 1
+             readinessProbe:
+               failureThreshold: 600
+               httpGet:
+                 path: /health
+                 port: http
+                 scheme: HTTP
+               initialDelaySeconds: 180
+               periodSeconds: 5
+               successThreshold: 1
+               timeoutSeconds: 1
+             resources:
+                limits:
+                  cpu: "11"
+                  memory: "10Gi"
+                requests:
+                  cpu: "11"
+                  memory: "10Gi"
+             volumeMounts:
+               - mountPath: /data
+                 name: data
+               - mountPath: /dev/shm
+                 name: shm
+         restartPolicy: Always
+         schedulerName: default-scheduler
+         terminationGracePeriodSeconds: 30
+         volumes:
+           - name: data
+             emptyDir: {}
+           - name: shm
+             emptyDir:
+               medium: Memory
+   EOF
+   ```
 
-```
-helm upgrade -i --create-namespace \
-  --namespace agentgateway-system \
-  --version v1.1.0 agentgateway-crds oci://cr.agentgateway.dev/charts/agentgateway-crds
+   Wait about 2-3 minutes for the Qwen model to download. Verify that the pod is running.
 
-helm upgrade -i -n agentgateway-system agentgateway oci://cr.agentgateway.dev/charts/agentgateway \
---version v1.1.0 \
---set inferenceExtension.enabled=true
-```
+   ```bash
+   kubectl get pods -w
+   ```
 
-4. Deploy the following Helm Chart which does the following:
-- Installs an `InferencePool` resource/object that acts as a logical grouping of AI model servers for load balancing and routing inference requests.
-- Installs the Endpoint-picker extension (epp/llm-d), which is an intelligent selection among available model servers for load balancing.
+2. Install the CRDs for the Kubernetes Gateway API Inference Extension.
 
-**Note:** The reason why `GATEWAY_PROVIDER` is set to `none` is because you're installing/using your own gateway provider (agentgatewy)
+   ```bash
+   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.4.0/manifests.yaml
+   ```
 
-```
-export IGW_CHART_VERSION=v1.1.0
-export GATEWAY_PROVIDER=none
+3. Install the Kubernetes Gateway API CRDs, {{< reuse "agw-docs/snippets/kgateway.md" >}}, and the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs.
 
-helm install vllm-qwen25-15b-instruct \
---set inferencePool.modelServers.matchLabels.app=vllm-qwen25-15b-instruct \
---set provider.name=$GATEWAY_PROVIDER \
---version $IGW_CHART_VERSION \
-oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
-```
+   ```bash
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
+   ```
 
-If you run `kubectl get inferencepool`, you'll see that the Helm Chart deployed an `InferencePool`.
+   ```bash
+   helm upgrade -i --create-namespace \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
+   ```
 
-5. Deploy a `Gateway` and `HTTPRoute` object for Inference. This will route to the `InferencePool` that was created in the previous step via the Helm Chart. Thie (`inferencePool.modelServers.matchLabels.app) part matches any app running the `vllm-qwen25-15b-instruct` label, which was deployed in step 1 (the `Deployment` object)
-```
-kubectl apply -f - <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: Gateway
-metadata:
-  name: inference-gateway
-spec:
-  gatewayClassName: agentgateway
-  listeners:
-  - name: http
-    port: 80
-    protocol: HTTP
----
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: llm-route
-spec:
-  parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: inference-gateway
-  rules:
-  - backendRefs:
-    - group: inference.networking.k8s.io
-      kind: InferencePool
-      name: vllm-qwen25-15b-instruct
-    matches:
-    - path:
-        type: PathPrefix
-        value: /
-    timeouts:
-      request: 300s
-EOF
-```
+   ```bash
+   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --set inferenceExtension.enabled=true
+   ```
 
-6. Test and confirm, which confirms the following:
-```
+4. Deploy the InferencePool and the Endpoint Picker extension (EPP/llm-d) via Helm. The InferencePool acts as a logical grouping of AI model servers for load balancing and routing inference requests. The EPP provides intelligent selection among available model servers.
 
-User/Curl Request
-    ↓
-Gateway (port 80) ← External entry point
-    ↓
-HTTPRoute ← Routes based on path prefix "/"
-    ↓
-InferencePool ← Selects available model server
-    ↓
-vLLM Pod (port 8000) ← Runs the actual model inference
-    ↓
-Response back through the stack
-```
+   {{< callout type="info" >}}
+   The `GATEWAY_PROVIDER` is set to `none` because you install your own gateway provider, {{< reuse "agw-docs/snippets/kgateway.md" >}}.
+   {{< /callout >}}
 
-```
-IP=$(kubectl get gateway/inference-gateway -o jsonpath='{.status.addresses[0].value}')
-PORT=80
+   ```bash
+   export IGW_CHART_VERSION=v1.1.0
+   export GATEWAY_PROVIDER=none
 
-curl -i ${IP}:${PORT}/v1/completions -H 'Content-Type: application/json' -d '{
-"model": "Qwen/Qwen2.5-1.5B-Instruct",
-"prompt": "What is the warmest city in the USA?",
-"max_tokens": 100,
-"temperature": 0.5
-}'
-```
+   helm install vllm-qwen25-15b-instruct \
+     --set inferencePool.modelServers.matchLabels.app=vllm-qwen25-15b-instruct \
+     --set provider.name=$GATEWAY_PROVIDER \
+     --version $IGW_CHART_VERSION \
+     oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
+   ```
 
-You should see an output similar to the below:
-```
-HTTP/1.1 200 OK
-date: Sat, 11 April 2026 19:54:07 GMT
-server: uvicorn
-content-type: application/json
-x-went-into-resp-headers: true
-transfer-encoding: chunked
+   Verify that the InferencePool is deployed.
 
-{"choices":[{"finish_reason":"length","index":0,"logprobs":null,"prompt_logprobs":null,"prompt_token_ids":null,"stop_reason":null,"text":" The warmest city in the United States is Phoenix, Arizona. It has an average high temperature of 85 degrees Fahrenheit (29 degrees Celsius) and a low of 60 degrees Fahrenheit (15 degrees Celsius). However, it's important to note that temperatures can vary greatly depending on location within the city, so it's always best to check local weather forecasts for specific areas before planning any outdoor activities. Additionally, Phoenix experiences extreme heat during summer months, with temperatures often exceeding 1","token_ids":null}],"created":1763322848,"id":"cmpl-2e381ca7-62ae-4479-ae64-fdd18f005a1e","kv_transfer_params":null,"model":"Qwen/Qwen2.5-1.5B-Instruct","object":"text_completion","service_tier":null,"system_fingerprint":null,"usage":{"completion_tokens":100,"prompt_tokens":10,"prompt_tokens_details":null,"total_tokens":110}}% 
-```
+   ```bash
+   kubectl get inferencepool
+   ```
+
+5. Deploy a Gateway and HTTPRoute for inference routing. The HTTPRoute routes to the InferencePool that you created in the previous step. The `inferencePool.modelServers.matchLabels.app` selector matches any pod with the `vllm-qwen25-15b-instruct` label from step 1.
+
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: Gateway
+   metadata:
+     name: inference-gateway
+   spec:
+     gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+     listeners:
+     - name: http
+       port: 80
+       protocol: HTTP
+   ---
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: llm-route
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: inference-gateway
+     rules:
+     - backendRefs:
+       - group: inference.networking.k8s.io
+         kind: InferencePool
+         name: vllm-qwen25-15b-instruct
+       matches:
+       - path:
+           type: PathPrefix
+           value: /
+       timeouts:
+         request: 300s
+   EOF
+   ```
+
+6. Verify the end-to-end flow. A request flows through the following path.
+
+   ```mermaid
+   graph LR
+       Client -->|curl| Gateway
+       Gateway -->|path prefix /| HTTPRoute
+       HTTPRoute --> InferencePool
+       InferencePool -->|selects model server| vLLM["vLLM pod"]
+       vLLM -->|response| Client
+   ```
+
+   Send a test request to the inference gateway.
+
+   ```bash
+   IP=$(kubectl get gateway/inference-gateway -o jsonpath='{.status.addresses[0].value}')
+   PORT=80
+
+   curl -i ${IP}:${PORT}/v1/completions -H 'Content-Type: application/json' -d '{
+     "model": "Qwen/Qwen2.5-1.5B-Instruct",
+     "prompt": "What is the warmest city in the USA?",
+     "max_tokens": 100,
+     "temperature": 0.5
+   }'
+   ```
+
+   Example output:
+
+   ```
+   HTTP/1.1 200 OK
+   date: Sat, 11 April 2026 19:54:07 GMT
+   server: uvicorn
+   content-type: application/json
+   transfer-encoding: chunked
+
+   {"choices":[{"finish_reason":"length","index":0,"text":" The warmest city in the United States is Phoenix, Arizona..."}],"model":"Qwen/Qwen2.5-1.5B-Instruct","object":"text_completion","usage":{"completion_tokens":100,"prompt_tokens":10,"total_tokens":110}}
+   ```
