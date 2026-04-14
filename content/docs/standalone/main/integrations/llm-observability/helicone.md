@@ -4,7 +4,7 @@ weight: 40
 description: Integrate agentgateway with Helicone for LLM monitoring and caching
 ---
 
-[Helicone](https://helicone.ai/) is an LLM observability platform with built-in caching, rate limiting, and cost tracking.
+[Helicone](https://www.helicone.ai/) is an LLM observability platform with built-in caching, rate limiting, and cost tracking.
 
 ## Features
 
@@ -59,5 +59,5 @@ Using agentgateway with Helicone provides:
 
 ## Learn more
 
-- [Helicone Documentation](https://docs.helicone.ai/)
+- [Helicone Documentation](https://docs.helicone.ai/getting-started/quick-start)
 - [LLM Gateway]({{< link-hextra path="/llm/" >}})

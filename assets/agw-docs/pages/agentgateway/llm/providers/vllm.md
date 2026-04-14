@@ -13,7 +13,7 @@ Choose your deployment option and follow the corresponding steps to set up the v
 
 ### Option 1: External vLLM
 
-1. Install vLLM on a GPU-enabled machine. See the [vLLM installation guide](https://docs.vllm.ai/en/latest/getting_started/installation.html).
+1. Install vLLM on a GPU-enabled machine. See the [vLLM installation guide](https://docs.vllm.ai/en/latest/getting_started/installation/).
 
 2. Start the vLLM OpenAI-compatible server.
 

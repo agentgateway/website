@@ -44,35 +44,41 @@ Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? S
    kubectl delete -n <namespace> gateway <gateway-name>
    ```
 
+{{< doc-test paths="uninstall" >}}
+kubectl delete gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete httproutes --all -A --ignore-not-found
+kubectl delete referencegrants --all -A --ignore-not-found
+{{< /doc-test >}}
+
 7. Uninstall the control plane.
    
    1. Uninstall the {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} Helm release.
       
-      ```sh
+      ```sh {paths="uninstall"}
       helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    2. Delete the CRDs.
 
-      ```sh
+      ```sh {paths="uninstall"}
       helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    3. Remove the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace. 
       
-      ```sh
+      ```sh {paths="uninstall"}
       kubectl delete namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    4. Confirm that the CRDs are deleted.
 
-      ```sh
-      kubectl get crds | grep {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+      ```sh {paths="uninstall"}
+      kubectl get crds | grep {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} || true
       ```
 
 8. Remove the Kubernetes Gateway API CRDs. If you installed a different version or channel of the Kubernetes Gateway API, update the following command accordingly.
    
-   ```sh
+   ```sh {paths="uninstall"}
    kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
 

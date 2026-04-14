@@ -129,7 +129,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `mode` _[APIKeyAuthenticationMode](#apikeyauthenticationmode)_ | `mode` is the validation mode for API key authentication. | Strict | Enum: [Strict Optional] <br />Optional: \{\} <br /> |
-| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` storing a set of API keys.<br />If there are many keys, `secretSelector` can be used instead.<br />Each entry in the `Secret` represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with two fields, `key` and `metadata`. `key` contains<br />  the API key. `metadata` contains arbitrary JSON metadata associated<br />  with the key, which may be used by other policies. For example, you<br />  may write an authorization policy allowing `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456" |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` storing a set of API keys.<br />If there are many keys, `secretSelector` can be used instead.<br />Each entry in the `Secret` represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with two fields, `key` and `metadata`. `key` contains<br />  the API key. `metadata` contains arbitrary JSON metadata associated<br />  with the key, which may be used by other policies. For example, you<br />  may write an authorization policy allowing `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456" |  | Optional: \{\} <br /> |
 | `secretSelector` _[SecretSelector](#secretselector)_ | `secretSelector` selects multiple `Secret` resources containing API<br />keys. If the same key is defined in multiple secrets, the behavior is<br />undefined.<br />Each entry in the `Secret` represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with two fields, `key` and `metadata`. `key` contains<br />  the API key. `metadata` contains arbitrary JSON metadata associated<br />  with the key, which may be used by other policies. For example, you<br />  may write an authorization policy allowing `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456" |  | Optional: \{\} <br /> |
 
 
@@ -260,7 +260,7 @@ _Appears in:_
 | `kind` _string_ | `AgentgatewayBackend` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayBackendSpec](#agentgatewaybackendspec)_ | spec defines the desired state of AgentgatewayBackend. |  | ExactlyOneOf: [ai static dynamicForwardProxy mcp aws] <br />Required: \{\} <br /> |
 | `status` _[AgentgatewayBackendStatus](#agentgatewaybackendstatus)_ | status defines the current state of AgentgatewayBackend. |  | Optional: \{\} <br /> |
 
@@ -300,7 +300,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#condition-v1-meta) array_ | Conditions is the list of conditions for the backend. |  | MaxItems: 8 <br />Optional: \{\} <br /> |
+| `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#condition-v1-meta) array_ | Conditions is the list of conditions for the backend. |  | MaxItems: 8 <br />Optional: \{\} <br /> |
 
 
 #### AgentgatewayParameters
@@ -322,7 +322,7 @@ https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure
 | `kind` _string_ | `AgentgatewayParameters` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayParametersSpec](#agentgatewayparametersspec)_ | spec defines the desired state of AgentgatewayParameters. |  | Required: \{\} <br /> |
 | `status` _[AgentgatewayParametersStatus](#agentgatewayparametersstatus)_ | status defines the current state of AgentgatewayParameters. |  | Optional: \{\} <br /> |
 
@@ -341,10 +341,10 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `logging` _[AgentgatewayParametersLogging](#agentgatewayparameterslogging)_ | `logging` configuration for Agentgateway. By default, all logs are set to<br />`info` level. |  | Optional: \{\} <br /> |
-| `rawConfig` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_ | `rawConfig` provides an opaque mechanism to configure the `agentgateway`<br />config file. The `agentgateway` binary has a `-f` option to specify a<br />config file, and this field supplies that file. This will be merged with<br />configuration derived from typed fields like `logging.format`, and those<br />typed fields will take precedence.<br />Example:<br />	rawConfig:<br />	  binds:<br />	  - port: 3000<br />	    listeners:<br />	    - routes:<br />	      - policies:<br />	          cors:<br />	            allowOrigins:<br />	            - "*"<br />	            allowHeaders:<br />	            - mcp-protocol-version<br />	            - content-type<br />	            - cache-control<br />	        backends:<br />	        - mcp:<br />	            targets:<br />	            - name: everything<br />	              stdio:<br />	                cmd: npx<br />	                args: ["@modelcontextprotocol/server-everything"] |  | Type: object <br />Optional: \{\} <br /> |
+| `rawConfig` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io)_ | `rawConfig` provides an opaque mechanism to configure the `agentgateway`<br />config file. The `agentgateway` binary has a `-f` option to specify a<br />config file, and this field supplies that file. This will be merged with<br />configuration derived from typed fields like `logging.format`, and those<br />typed fields will take precedence.<br />Example:<br />	rawConfig:<br />	  binds:<br />	  - port: 3000<br />	    listeners:<br />	    - routes:<br />	      - policies:<br />	          cors:<br />	            allowOrigins:<br />	            - "*"<br />	            allowHeaders:<br />	            - mcp-protocol-version<br />	            - content-type<br />	            - cache-control<br />	        backends:<br />	        - mcp:<br />	            targets:<br />	            - name: everything<br />	              stdio:<br />	                cmd: npx<br />	                args: ["@modelcontextprotocol/server-everything"] |  | Type: object <br />Optional: \{\} <br /> |
 | `image` _[Image](#image)_ | The agentgateway container image. See<br />https://kubernetes.io/docs/concepts/containers/images<br />for details.<br />Default values, which may be overridden individually:<br />	registry: cr.agentgateway.dev<br />	repository: agentgateway<br />	tag: <agentgateway version><br />	pullPolicy: <omitted, relying on Kubernetes defaults which depend on the tag> |  | Optional: \{\} <br /> |
-| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#envvar-v1-core) array_ | The container environment variables. These override any existing<br />values. If you want to delete an environment variable entirely, use<br />`$patch: delete` with `AgentgatewayParametersOverlays` instead. Note that<br />[variable<br />expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)<br />does apply, but is highly discouraged -- to set dependent environment<br />variables, you can use `$(VAR_NAME)`, but it's highly discouraged.<br />`$$(VAR_NAME)` avoids expansion and results in a literal<br />`$(VAR_NAME)`.<br />If `SESSION_KEY` is specified, it takes precedence over the<br />controller-managed per-`Gateway` session key `Secret`. |  | Optional: \{\} <br /> |
-| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#resourcerequirements-v1-core)_ | The compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
+| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#envvar-v1-core) array_ | The container environment variables. These override any existing<br />values. If you want to delete an environment variable entirely, use<br />`$patch: delete` with `AgentgatewayParametersOverlays` instead. Note that<br />[variable<br />expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)<br />does apply, but is highly discouraged -- to set dependent environment<br />variables, you can use `$(VAR_NAME)`, but it's highly discouraged.<br />`$$(VAR_NAME)` avoids expansion and results in a literal<br />`$(VAR_NAME)`.<br />If `SESSION_KEY` is specified, it takes precedence over the<br />controller-managed per-`Gateway` session key `Secret`. |  | Optional: \{\} <br /> |
+| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | The compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Configure Istio integration. If enabled, Agentgateway can natively connect to Istio enabled pods with mTLS. |  | Optional: \{\} <br /> |
 
@@ -419,10 +419,10 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `logging` _[AgentgatewayParametersLogging](#agentgatewayparameterslogging)_ | `logging` configuration for Agentgateway. By default, all logs are set to<br />`info` level. |  | Optional: \{\} <br /> |
-| `rawConfig` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_ | `rawConfig` provides an opaque mechanism to configure the `agentgateway`<br />config file. The `agentgateway` binary has a `-f` option to specify a<br />config file, and this field supplies that file. This will be merged with<br />configuration derived from typed fields like `logging.format`, and those<br />typed fields will take precedence.<br />Example:<br />	rawConfig:<br />	  binds:<br />	  - port: 3000<br />	    listeners:<br />	    - routes:<br />	      - policies:<br />	          cors:<br />	            allowOrigins:<br />	            - "*"<br />	            allowHeaders:<br />	            - mcp-protocol-version<br />	            - content-type<br />	            - cache-control<br />	        backends:<br />	        - mcp:<br />	            targets:<br />	            - name: everything<br />	              stdio:<br />	                cmd: npx<br />	                args: ["@modelcontextprotocol/server-everything"] |  | Type: object <br />Optional: \{\} <br /> |
+| `rawConfig` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io)_ | `rawConfig` provides an opaque mechanism to configure the `agentgateway`<br />config file. The `agentgateway` binary has a `-f` option to specify a<br />config file, and this field supplies that file. This will be merged with<br />configuration derived from typed fields like `logging.format`, and those<br />typed fields will take precedence.<br />Example:<br />	rawConfig:<br />	  binds:<br />	  - port: 3000<br />	    listeners:<br />	    - routes:<br />	      - policies:<br />	          cors:<br />	            allowOrigins:<br />	            - "*"<br />	            allowHeaders:<br />	            - mcp-protocol-version<br />	            - content-type<br />	            - cache-control<br />	        backends:<br />	        - mcp:<br />	            targets:<br />	            - name: everything<br />	              stdio:<br />	                cmd: npx<br />	                args: ["@modelcontextprotocol/server-everything"] |  | Type: object <br />Optional: \{\} <br /> |
 | `image` _[Image](#image)_ | The agentgateway container image. See<br />https://kubernetes.io/docs/concepts/containers/images<br />for details.<br />Default values, which may be overridden individually:<br />	registry: cr.agentgateway.dev<br />	repository: agentgateway<br />	tag: <agentgateway version><br />	pullPolicy: <omitted, relying on Kubernetes defaults which depend on the tag> |  | Optional: \{\} <br /> |
-| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#envvar-v1-core) array_ | The container environment variables. These override any existing<br />values. If you want to delete an environment variable entirely, use<br />`$patch: delete` with `AgentgatewayParametersOverlays` instead. Note that<br />[variable<br />expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)<br />does apply, but is highly discouraged -- to set dependent environment<br />variables, you can use `$(VAR_NAME)`, but it's highly discouraged.<br />`$$(VAR_NAME)` avoids expansion and results in a literal<br />`$(VAR_NAME)`.<br />If `SESSION_KEY` is specified, it takes precedence over the<br />controller-managed per-`Gateway` session key `Secret`. |  | Optional: \{\} <br /> |
-| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#resourcerequirements-v1-core)_ | The compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
+| `env` _[EnvVar](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#envvar-v1-core) array_ | The container environment variables. These override any existing<br />values. If you want to delete an environment variable entirely, use<br />`$patch: delete` with `AgentgatewayParametersOverlays` instead. Note that<br />[variable<br />expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)<br />does apply, but is highly discouraged -- to set dependent environment<br />variables, you can use `$(VAR_NAME)`, but it's highly discouraged.<br />`$$(VAR_NAME)` avoids expansion and results in a literal<br />`$(VAR_NAME)`.<br />If `SESSION_KEY` is specified, it takes precedence over the<br />controller-managed per-`Gateway` session key `Secret`. |  | Optional: \{\} <br /> |
+| `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | The compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Configure Istio integration. If enabled, Agentgateway can natively connect to Istio enabled pods with mTLS. |  | Optional: \{\} <br /> |
 | `deployment` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | `deployment` allows specifying overrides for the generated<br />`Deployment` resource. |  | Optional: \{\} <br /> |
@@ -461,7 +461,7 @@ _Appears in:_
 | `kind` _string_ | `AgentgatewayPolicy` | | |
 | `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
 | `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
-| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
+| `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayPolicySpec](#agentgatewaypolicyspec)_ | spec defines the desired state of AgentgatewayPolicy. |  | ExactlyOneOf: [targetRefs targetSelectors] <br />Required: \{\} <br /> |
 | `status` _[PolicyStatus](#policystatus)_ | status defines the current state of AgentgatewayPolicy. |  | Optional: \{\} <br /> |
 
@@ -551,7 +551,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` containing the AWS<br />credentials. The `Secret` must have keys `accessKey`, `secretKey`, and<br />optionally `sessionToken`. |  | Required: \{\} <br /> |
+| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` containing the AWS<br />credentials. The `Secret` must have keys `accessKey`, `secretKey`, and<br />optionally `sessionToken`. |  | Required: \{\} <br /> |
 
 
 #### AwsBackend
@@ -584,7 +584,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` containing the Azure<br />credentials. The `Secret` must have keys `clientId`, `tenantId`, and<br />`clientSecret`. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` containing the Azure<br />credentials. The `Secret` must have keys `clientId`, `tenantId`, and<br />`clientSecret`. |  | Optional: \{\} <br /> |
 | `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Details for managed identity authentication |  | Optional: \{\} <br /> |
 
 
@@ -666,7 +666,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `key` _string_ | `key` provides an inline key to use as the value of the<br />`Authorization` header. This option is the least secure; usage of a<br />`Secret` is preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
-| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` storing the key to use as<br />the authorization value. This must be stored in the `Authorization` key. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` storing the key to use as<br />the authorization value. This must be stored in the `Authorization` key. |  | Optional: \{\} <br /> |
 | `passthrough` _[BackendAuthPassthrough](#backendauthpassthrough)_ | `passthrough` passes through an existing token that has been sent by the<br />client and validated. Other policies, like JWT and API key<br />authentication, will strip the original client credentials. Passthrough backend authentication<br />causes the original token to be added back into the request. If there are no client authentication policies on the<br />request, the original token would be unchanged, so this would have no effect. |  | Optional: \{\} <br /> |
 | `aws` _[AwsAuth](#awsauth)_ | Auth specifies an explicit AWS authentication method for the backend.<br />When omitted, we will try to use the default AWS SDK authentication methods. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure specifies an Azure authentication method for the backend. |  | Optional: \{\} <br /> |
@@ -699,7 +699,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `duration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | Duration specifies the base time a backend should be evicted after being marked unhealthy.<br />Subsequent evictions use multiplicative backoff (duration * times_evicted).<br />If all endpoints are evicted, the load balancer falls back to returning evicted endpoints<br />rather than failing entirely.<br />If unset, defaults to `3s`. | 3s | Optional: \{\} <br /> |
+| `duration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Duration specifies the base time a backend should be evicted after being marked unhealthy.<br />Subsequent evictions use multiplicative backoff (duration * times_evicted).<br />If all endpoints are evicted, the load balancer falls back to returning evicted endpoints<br />rather than failing entirely.<br />If unset, defaults to `3s`. | 3s | Optional: \{\} <br /> |
 | `restoreHealth` _integer_ | RestoreHealth is the health score (0–100) assigned to a backend when it returns from eviction.<br />For gradual recovery, set below 100; for full recovery immediately, set 100.<br />If unset, the backend resumes with the health it had when evicted. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
 | `consecutiveFailures` _integer_ | ConsecutiveFailures is the number of consecutive unhealthy responses required before the backend is evicted.<br />For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.<br />When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.<br />When neither is set, a single unhealthy response can trigger eviction. |  | Minimum: 0 <br />Optional: \{\} <br /> |
 | `healthThreshold` _integer_ | HealthThreshold is the EWMA (exponentially-weighted moving average) health score threshold, expressed as 0–100.<br />When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.<br />For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.<br />Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average<br />so a single success in a stream of failures can delay eviction.<br />When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.<br />When neither is set, a single unhealthy response triggers eviction. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
@@ -746,7 +746,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _[HTTPVersion](#httpversion)_ | `version` specifies the HTTP protocol version to use when connecting to<br />the backend.<br />If not specified, the version is automatically determined:<br />* `Service` types can specify it with `appProtocol` on the `Service`<br />  port.<br />* If traffic is identified as gRPC, `HTTP2` is used.<br />* If the incoming traffic was plaintext HTTP, the original protocol will<br />  be used.<br />* If the incoming traffic was HTTPS, `HTTP1` will be used. This is<br />  because most clients will transparently upgrade HTTPS traffic to<br />  `HTTP2`, even if the backend doesn't support it. |  | Enum: [HTTP1 HTTP2] <br />Optional: \{\} <br /> |
-| `requestTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | requestTimeout specifies the deadline for receiving a response from the backend. |  | Optional: \{\} <br /> |
+| `requestTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | requestTimeout specifies the deadline for receiving a response from the backend. |  | Optional: \{\} <br /> |
 
 
 #### BackendMCP
@@ -809,7 +809,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `keepalive` _[Keepalive](#keepalive)_ | `keepAlive` defines settings for enabling TCP keepalives on the<br />connection. |  | Optional: \{\} <br /> |
-| `connectTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | `connectTimeout` defines the deadline for establishing a connection to<br />the destination. |  | Optional: \{\} <br /> |
+| `connectTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | `connectTimeout` defines the deadline for establishing a connection to<br />the destination. |  | Optional: \{\} <br /> |
 
 
 #### BackendTLS
@@ -828,8 +828,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mtlsCertificateRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core) array_ | `mtlsCertificateRef` enables mutual TLS to the backend, using the<br />specified key (`tls.key`) and cert (`tls.crt`) from the referenced<br />`Secret`.<br />An optional `ca.cert` field, if present, will be used to verify the<br />server certificate. If `caCertificateRefs` is also specified, the<br />`caCertificateRefs` field takes priority.<br />If unspecified, no client certificate will be used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
-| `caCertificateRefs` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core) array_ | `caCertificateRefs` defines the CA certificate `ConfigMap` to use to<br />verify the server certificate.<br />If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `mtlsCertificateRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core) array_ | `mtlsCertificateRef` enables mutual TLS to the backend, using the<br />specified key (`tls.key`) and cert (`tls.crt`) from the referenced<br />`Secret`.<br />An optional `ca.cert` field, if present, will be used to verify the<br />server certificate. If `caCertificateRefs` is also specified, the<br />`caCertificateRefs` field takes priority.<br />If unspecified, no client certificate will be used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `caCertificateRefs` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core) array_ | `caCertificateRefs` defines the CA certificate `ConfigMap` to use to<br />verify the server certificate.<br />If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | insecureSkipVerify originates TLS but skips verification of the backend's certificate.<br />WARNING: This is an insecure option that should only be used if the risks are understood.<br />There are two modes:<br />* `All` disables all TLS verification.<br />* `Hostname` verifies the CA certificate is trusted, but ignores any<br />  mismatch of hostname or SANs. Note that this method is still insecure;<br />  prefer setting `verifySubjectAltNames` to customize the valid hostnames<br />  if possible. |  | Enum: [All Hostname] <br />Optional: \{\} <br /> |
 | `sni` _[SNI](#sni)_ | `sni` specifies the Server Name Indicator (`SNI`) to be used in the TLS<br />handshake. If unset, the `SNI` is automatically set based on the<br />destination hostname. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | `verifySubjectAltNames` specifies the Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
@@ -851,7 +851,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the proxy server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the proxy server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 
 
 #### BackendWithAI
@@ -894,7 +894,7 @@ _Appears in:_
 | `mode` _[BasicAuthenticationMode](#basicauthenticationmode)_ | `mode` is the validation mode for basic auth authentication. | Strict | Enum: [Strict Optional] <br />Optional: \{\} <br /> |
 | `realm` _string_ | `realm` specifies the `realm` to return in the `WWW-Authenticate`<br />header for failed authentication requests. If unset, `Restricted` will<br />be used. |  | Optional: \{\} <br /> |
 | `users` _string array_ | `users` provides an inline list of username and password pairs that will<br />be accepted. Each entry represents one line of the `htpasswd` format:<br />https://httpd.apache.org/docs/2.4/programs/htpasswd.html.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	users:<br />	- "user1:$apr1$ivPt0D4C$DmRhnewfHRSrb3DQC.WHC."<br />	- "user2:$2y$05$r3J4d3VepzFkedkd/q1vI.pBYIpSqjfN0qOARV3ScUHysatnS0cL2" |  | MaxItems: 256 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` storing the `.htaccess`<br />file. The `Secret` must have a key named `.htaccess`, and should contain<br />the complete `.htaccess` file.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: basic-auth<br />	stringData:<br />	  .htaccess: \|<br />	    alice:$apr1$3zSE0Abt$IuETi4l5yO87MuOrbSE4V.<br />	    bob:$apr1$Ukb5LgRD$EPY2lIfY.A54jzLELNIId/ |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | `secretRef` references a Kubernetes `Secret` storing the `.htaccess`<br />file. The `Secret` must have a key named `.htaccess`, and should contain<br />the complete `.htaccess` file.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: basic-auth<br />	stringData:<br />	  .htaccess: \|<br />	    alice:$apr1$3zSE0Abt$IuETi4l5yO87MuOrbSE4V.<br />	    bob:$apr1$Ukb5LgRD$EPY2lIfY.A54jzLELNIId/ |  | Optional: \{\} <br /> |
 
 
 #### BasicAuthenticationMode
@@ -1094,7 +1094,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the External Authorization server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the External Authorization server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | FailureMode controls behavior when the external authorization service is<br />unavailable or returns an error. "FailOpen" allows the request to continue.<br />"FailClosed" (default) denies the request. |  | Enum: [FailOpen FailClosed] <br />Optional: \{\} <br /> |
 | `grpc` _[AgentExtAuthGRPC](#agentextauthgrpc)_ | grpc specifies that the gRPC External Authorization<br />[protocol](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) should be used. |  | Optional: \{\} <br /> |
 | `http` _[AgentExtAuthHTTP](#agentextauthhttp)_ | `http` specifies that the HTTP protocol should be used for connecting to<br />the authorization server. The authorization server must return a `200`<br />status code, otherwise the request is considered an authorization<br />failure. |  | Optional: \{\} <br /> |
@@ -1130,7 +1130,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 
 
 #### FailureMode
@@ -1198,7 +1198,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `field` _[ShortString](#shortstring)_ | The name of the field. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `value` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io)_ | The field default value, which can be any JSON Data Type. |  | Required: \{\} <br /> |
+| `value` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io)_ | The field default value, which can be any JSON Data Type. |  | Required: \{\} <br /> |
 
 
 #### FieldTransformation
@@ -1256,12 +1256,12 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `maxBufferSize` _integer_ | `maxBufferSize` defines the maximum HTTP body size that will be buffered<br />into memory.<br />Bodies will only be buffered for policies which require buffering.<br />If unset, this defaults to `2mb`. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `http1MaxHeaders` _integer_ | `http1MaxHeaders` defines the maximum number of headers that are allowed<br />in `HTTP/1.1` requests.<br />If unset, this defaults to 100. |  | Maximum: 4096 <br />Minimum: 1 <br />Optional: \{\} <br /> |
-| `http1IdleTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | `http1IdleTimeout` defines the timeout before an unused connection is<br />closed.<br />If unset, this defaults to 10 minutes. |  | Optional: \{\} <br /> |
+| `http1IdleTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | `http1IdleTimeout` defines the timeout before an unused connection is<br />closed.<br />If unset, this defaults to 10 minutes. |  | Optional: \{\} <br /> |
 | `http2WindowSize` _integer_ | `http2WindowSize` indicates the initial window size for stream-level flow<br />control for received data. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `http2ConnectionWindowSize` _integer_ | `http2ConnectionWindowSize` indicates the initial window size for<br />connection-level flow control for received data. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `http2FrameSize` _integer_ | `http2FrameSize` sets the maximum frame size to use.<br />If unset, this defaults to `16kb`. |  | Maximum: 1.677215e+06 <br />Minimum: 16384 <br />Optional: \{\} <br /> |
-| `http2KeepaliveInterval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ |  |  | Optional: \{\} <br /> |
-| `http2KeepaliveTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ |  |  | Optional: \{\} <br /> |
+| `http2KeepaliveInterval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  |  | Optional: \{\} <br /> |
+| `http2KeepaliveTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  |  | Optional: \{\} <br /> |
 
 
 #### FrontendTCP
@@ -1293,7 +1293,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `handshakeTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | `handshakeTimeout` specifies the deadline for a TLS handshake to<br />complete. If unset, this defaults to `15s`. |  | Optional: \{\} <br /> |
+| `handshakeTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | `handshakeTimeout` specifies the deadline for a TLS handshake to<br />complete. If unset, this defaults to `15s`. |  | Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | `alpnProtocols` sets the Application-Layer Protocol Negotiation (`ALPN`)<br />value to use in the TLS handshake.<br />If not present, defaults to `["h2", "http/1.1"]`. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `minProtocolVersion` _[TLSVersion](#tlsversion)_ | MinTLSVersion configures the minimum TLS version to support. |  | Enum: [1.2 1.3] <br />Optional: \{\} <br /> |
 | `maxProtocolVersion` _[TLSVersion](#tlsversion)_ | MaxTLSVersion configures the maximum TLS version to support. |  | Enum: [1.2 1.3] <br />Optional: \{\} <br /> |
@@ -1365,7 +1365,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the rate limit server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the rate limit server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | `failureMode` controls behavior when the remote rate limit service is<br />unavailable or returns an error. `FailOpen` allows the request to continue.<br />`FailClosed` (default) denies the request. |  | Enum: [FailOpen FailClosed] <br />Optional: \{\} <br /> |
 | `domain` _[ShortString](#shortstring)_ | `domain` specifies the domain under which this limit should apply.<br />This is an arbitrary string that enables a rate limit server to distinguish between different applications. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `descriptors` _[RateLimitDescriptor](#ratelimitdescriptor) array_ | `descriptors` define the dimensions for rate limiting. These values are<br />passed to the rate limit service which applies configured limits based<br />on them. Each descriptor represents a single rate limit rule with one or<br />more entries. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
@@ -1513,7 +1513,7 @@ _Appears in:_
 | `repository` _string_ | The image repository (name). |  | Optional: \{\} <br /> |
 | `tag` _string_ | The image tag. |  | Optional: \{\} <br /> |
 | `digest` _string_ | The hash digest of the image, e.g. `sha256:12345...` |  | Optional: \{\} <br /> |
-| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#pullpolicy-v1-core)_ | The image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
+| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#pullpolicy-v1-core)_ | The image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
 
 
 #### InsecureTLSMode
@@ -1620,7 +1620,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io))_ | `resourceMetadata` defines the metadata to use for MCP resources,<br />served at the MCP OAuth metadata endpoints. |  | Optional: \{\} <br /> |
+| `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | `resourceMetadata` defines the metadata to use for MCP resources,<br />served at the MCP OAuth metadata endpoints. |  | Optional: \{\} <br /> |
 | `provider` _[McpIDP](#mcpidp)_ | `provider` specifies the identity provider to use for MCP authentication flows. |  | Enum: [Auth0 Keycloak] <br />Optional: \{\} <br /> |
 
 
@@ -1657,8 +1657,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `retries` _integer_ | retries specifies the maximum number of keep-alive probes to send before dropping the connection.<br />If unset, this defaults to 9. |  | Maximum: 64 <br />Minimum: 1 <br />Optional: \{\} <br /> |
-| `time` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | time specifies the number of seconds a connection needs to be idle before keep-alive probes start being sent.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
-| `interval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | interval specifies the number of seconds between keep-alive probes.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
+| `time` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | time specifies the number of seconds a connection needs to be idle before keep-alive probes start being sent.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
+| `interval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | interval specifies the number of seconds between keep-alive probes.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
 
 
 #### LLMProvider
@@ -1760,7 +1760,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#json-v1-apiextensions-k8s-io))_ | ResourceMetadata defines the metadata to use for MCP resources. |  | Optional: \{\} <br /> |
+| `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | ResourceMetadata defines the metadata to use for MCP resources. |  | Optional: \{\} <br /> |
 | `provider` _[McpIDP](#mcpidp)_ | `provider` specifies the identity provider to use for authentication. |  | Enum: [Auth0 Keycloak] <br />Optional: \{\} <br /> |
 | `issuer` _[ShortString](#shortstring)_ | `issuer` identifies the IdP that issued the JWT. This corresponds to the<br />`iss` claim (https://tools.ietf.org/html/rfc7519#section-4.1.1). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `audiences` _string array_ | `audiences` specifies the list of allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />(https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
@@ -1835,8 +1835,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `namespaces` _[LabelSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#labelselector-v1-meta)_ | `namespace` is the label selector for namespaces that `Service`<br />resources should be selected from. If unset, only the namespace of the<br />`AgentgatewayBackend` is searched. |  | Optional: \{\} <br /> |
-| `services` _[LabelSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#labelselector-v1-meta)_ | `services` is the label selector for which `Service` resources should be<br />selected. |  | Optional: \{\} <br /> |
+| `namespaces` _[LabelSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselector-v1-meta)_ | `namespace` is the label selector for namespaces that `Service`<br />resources should be selected from. If unset, only the namespace of the<br />`AgentgatewayBackend` is searched. |  | Optional: \{\} <br /> |
+| `services` _[LabelSelector](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#labelselector-v1-meta)_ | `services` is the label selector for which `Service` resources should be<br />selected. |  | Optional: \{\} <br /> |
 
 
 #### McpTarget
@@ -1854,7 +1854,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `host` _[ShortString](#shortstring)_ | Host is the hostname or IP address of the MCP target. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `backendRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#localobjectreference-v1-core)_ | `backendRef` references a namespace-local `Service` resource by name.<br />When set, this replaces `host` only; `port`, `path`, and `protocol`<br />remain configured on this target. |  | Optional: \{\} <br /> |
+| `backendRef` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core)_ | `backendRef` references a namespace-local `Service` resource by name.<br />When set, this replaces `host` only; `port`, `path`, and `protocol`<br />remain configured on this target. |  | Optional: \{\} <br /> |
 | `port` _integer_ | Port is the port number of the MCP target. |  | Maximum: 65535 <br />Minimum: 1 <br />Required: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | Path is the URL path of the MCP target endpoint.<br />Defaults to `"/sse"` for the `SSE` protocol or `"/mcp"` for the<br />`StreamableHTTP` protocol if not specified. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `protocol` _[MCPProtocol](#mcpprotocol)_ | Protocol is the protocol to use for the connection to the MCP<br />target. |  | Enum: [StreamableHTTP SSE] <br />Optional: \{\} <br /> |
@@ -1875,7 +1875,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[SectionName](#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
+| `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/spec/#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
 | `selector` _[McpSelector](#mcpselector)_ | `selector` is the label selector used to select `Service` resources.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
 | `static` _[McpTarget](#mcptarget)_ | `static` configures a static MCP destination. When connecting to<br />in-cluster `Service` resources, it is recommended to use `selector`<br />instead. |  | ExactlyOneOf: [host backendRef] <br />Optional: \{\} <br /> |
 
@@ -1910,7 +1910,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[SectionName](#sectionname)_ | Name of the provider. Policies can target this provider by name. |  | Required: \{\} <br /> |
+| `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/spec/#sectionname)_ | Name of the provider. Policies can target this provider by name. |  | Required: \{\} <br /> |
 | `policies` _[BackendWithAI](#backendwithai)_ | `policies` controls policies for communicating with this backend.<br />Policies may also be set in `AgentgatewayPolicy`, or in the top-level<br />`AgentgatewayBackend`. Policies are merged on a field-level basis, with<br />order: `AgentgatewayPolicy` < `AgentgatewayBackend` < `AgentgatewayBackend`<br />LLM provider (this field). |  | Optional: \{\} <br /> |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider |  | Optional: \{\} <br /> |
@@ -1990,7 +1990,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the OTLP server to send access logs to.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the OTLP server to send access logs to.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
 | `protocol` _[OTLPProtocol](#otlpprotocol)_ | `protocol` specifies the OTLP protocol variant to use. | GRPC | Enum: [HTTP GRPC] <br />Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | `path` specifies the OTLP/HTTP path to use. This is only applicable<br />when `protocol` is `HTTP`. If unset, this defaults to `/v1/logs`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -2209,8 +2209,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `jwksPath` _string_ | Path to the IdP `jwks` endpoint, relative to the root, commonly<br />`".well-known/jwks.json"`. |  | MaxLength: 2000 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `cacheDuration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ |  | 5m | Optional: \{\} <br /> |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the remote JWKS server to reach.<br />Supported types are `Service` and static `Backend`. An<br />`AgentgatewayPolicy` containing backend TLS config can then be attached<br />to the `Service` or `Backend` in order to set TLS options for a<br />connection to the remote `jwks` source. |  | Required: \{\} <br /> |
+| `cacheDuration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  | 5m | Optional: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the remote JWKS server to reach.<br />Supported types are `Service` and static `Backend`. An<br />`AgentgatewayPolicy` containing backend TLS config can then be attached<br />to the `Service` or `Backend` in order to set TLS options for a<br />connection to the remote `jwks` source. |  | Required: \{\} <br /> |
 
 
 #### ResourceAdd
@@ -2373,7 +2373,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `request` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v/#duration-v1-meta)_ | request specifies a timeout for an individual request from the gateway to a backend. This covers the time from when<br />the request first starts being sent from the gateway to when the full response has been received from the backend. |  | Optional: \{\} <br /> |
+| `request` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | request specifies a timeout for an individual request from the gateway to a backend. This covers the time from when<br />the request first starts being sent from the gateway to when the full response has been received from the backend. |  | Optional: \{\} <br /> |
 
 
 
@@ -2391,7 +2391,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the OTLP server to reach.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the OTLP server to reach.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
 | `protocol` _[OTLPProtocol](#otlpprotocol)_ | `protocol` specifies the OTLP protocol variant to use. | GRPC | Enum: [HTTP GRPC] <br />Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | `path` specifies the OTLP path to use. This is only applicable when<br />`protocol` is `HTTP`. If unset, this defaults to `/v1/traces`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | `attributes` specifies customizations to the key-value pairs that are<br />included in the trace. |  | Optional: \{\} <br /> |
@@ -2504,7 +2504,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | backendRef references the webhook server to reach.<br />Supported types: Service and Backend. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | backendRef references the webhook server to reach.<br />Supported types: Service and Backend. |  | Required: \{\} <br /> |
 | `forwardHeaderMatches` _HTTPHeaderMatch array_ | ForwardHeaderMatches defines a list of HTTP header matches that will be<br />used to select the headers to forward to the webhook.<br />Request headers are used when forwarding requests and response headers<br />are used when forwarding responses.<br />By default, no headers are forwarded. |  | Optional: \{\} <br /> |
 
 

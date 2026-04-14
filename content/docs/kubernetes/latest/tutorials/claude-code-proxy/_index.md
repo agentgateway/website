@@ -23,8 +23,8 @@ Make sure you have the following tools installed:
 - [kubectl](https://kubernetes.io/docs/tasks/tools/)
 - [kind](https://kind.sigs.k8s.io/)
 - [Helm](https://helm.sh/docs/intro/install/)
-- [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`)
-- An Anthropic API key (get one at [console.anthropic.com](https://console.anthropic.com))
+- [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`)
+- An Anthropic API key (get one at [platform.claude.com](https://platform.claude.com))
 
 For detailed tool installation instructions, see the [LLM Gateway tutorial](../llm-gateway/).
 

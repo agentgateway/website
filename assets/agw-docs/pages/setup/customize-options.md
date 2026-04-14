@@ -34,7 +34,7 @@ To find common configuration examples, [Example configs]({{< link-hextra path="/
 
 ## Overlays
 
-For advanced customization of the Kubernetes resources that the agentgateway control plane generates, such as Deployments, Services, and ServiceAccounts, you can configure overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. Overlays use [Kubernetes strategic merge patch (SMP)](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics to modify the generated resources after they are rendered. For additional examples, see the [kubectl patch documentation](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/update-api-object-kubectl-patch/#use-a-strategic-merge-patch-to-update-a-deployment).
+For advanced customization of the Kubernetes resources that the agentgateway control plane generates, such as Deployments, Services, and ServiceAccounts, you can configure overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. Overlays use [Kubernetes strategic merge patch (SMP)](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics to modify the generated resources after they are rendered. For additional examples, see the [kubectl patch documentation](https://kubernetes.io/docs/tasks/manage-kubernetes-objects/update-api-object-kubectl-patch/#use-a-strategic-merge-patch-to-update-a-deployment).
 
 Review the following table for the resource types that you can overlay in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} spec.
 
