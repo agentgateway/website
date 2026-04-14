@@ -851,7 +851,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the proxy server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the proxy server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 
 
 #### BackendWithAI
@@ -1094,7 +1094,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the External Authorization server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the External Authorization server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | FailureMode controls behavior when the external authorization service is<br />unavailable or returns an error. "FailOpen" allows the request to continue.<br />"FailClosed" (default) denies the request. |  | Enum: [FailOpen FailClosed] <br />Optional: \{\} <br /> |
 | `grpc` _[AgentExtAuthGRPC](#agentextauthgrpc)_ | grpc specifies that the gRPC External Authorization<br />[protocol](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/auth/v3/external_auth.proto) should be used. |  | Optional: \{\} <br /> |
 | `http` _[AgentExtAuthHTTP](#agentextauthhttp)_ | `http` specifies that the HTTP protocol should be used for connecting to<br />the authorization server. The authorization server must return a `200`<br />status code, otherwise the request is considered an authorization<br />failure. |  | Optional: \{\} <br /> |
@@ -1130,7 +1130,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 
 
 #### FailureMode
@@ -1365,7 +1365,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the rate limit server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the rate limit server to reach.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | `failureMode` controls behavior when the remote rate limit service is<br />unavailable or returns an error. `FailOpen` allows the request to continue.<br />`FailClosed` (default) denies the request. |  | Enum: [FailOpen FailClosed] <br />Optional: \{\} <br /> |
 | `domain` _[ShortString](#shortstring)_ | `domain` specifies the domain under which this limit should apply.<br />This is an arbitrary string that enables a rate limit server to distinguish between different applications. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `descriptors` _[RateLimitDescriptor](#ratelimitdescriptor) array_ | `descriptors` define the dimensions for rate limiting. These values are<br />passed to the rate limit service which applies configured limits based<br />on them. Each descriptor represents a single rate limit rule with one or<br />more entries. |  | MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
@@ -1875,7 +1875,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[SectionName](#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
+| `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/spec/#sectionname)_ | Name of the MCP target. |  | Required: \{\} <br /> |
 | `selector` _[McpSelector](#mcpselector)_ | `selector` is the label selector used to select `Service` resources.<br />If policies are needed on a per-service basis, `AgentgatewayPolicy` can<br />target the desired `Service`. |  | Optional: \{\} <br /> |
 | `static` _[McpTarget](#mcptarget)_ | `static` configures a static MCP destination. When connecting to<br />in-cluster `Service` resources, it is recommended to use `selector`<br />instead. |  | ExactlyOneOf: [host backendRef] <br />Optional: \{\} <br /> |
 
@@ -1910,7 +1910,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[SectionName](#sectionname)_ | Name of the provider. Policies can target this provider by name. |  | Required: \{\} <br /> |
+| `name` _[SectionName](https://gateway-api.sigs.k8s.io/reference/spec/#sectionname)_ | Name of the provider. Policies can target this provider by name. |  | Required: \{\} <br /> |
 | `policies` _[BackendWithAI](#backendwithai)_ | `policies` controls policies for communicating with this backend.<br />Policies may also be set in `AgentgatewayPolicy`, or in the top-level<br />`AgentgatewayBackend`. Policies are merged on a field-level basis, with<br />order: `AgentgatewayPolicy` < `AgentgatewayBackend` < `AgentgatewayBackend`<br />LLM provider (this field). |  | Optional: \{\} <br /> |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider |  | Optional: \{\} <br /> |
@@ -1990,7 +1990,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the OTLP server to send access logs to.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the OTLP server to send access logs to.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
 | `protocol` _[OTLPProtocol](#otlpprotocol)_ | `protocol` specifies the OTLP protocol variant to use. | GRPC | Enum: [HTTP GRPC] <br />Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | `path` specifies the OTLP/HTTP path to use. This is only applicable<br />when `protocol` is `HTTP`. If unset, this defaults to `/v1/logs`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -2210,7 +2210,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `jwksPath` _string_ | Path to the IdP `jwks` endpoint, relative to the root, commonly<br />`".well-known/jwks.json"`. |  | MaxLength: 2000 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `cacheDuration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ |  | 5m | Optional: \{\} <br /> |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the remote JWKS server to reach.<br />Supported types are `Service` and static `Backend`. An<br />`AgentgatewayPolicy` containing backend TLS config can then be attached<br />to the `Service` or `Backend` in order to set TLS options for a<br />connection to the remote `jwks` source. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the remote JWKS server to reach.<br />Supported types are `Service` and static `Backend`. An<br />`AgentgatewayPolicy` containing backend TLS config can then be attached<br />to the `Service` or `Backend` in order to set TLS options for a<br />connection to the remote `jwks` source. |  | Required: \{\} <br /> |
 
 
 #### ResourceAdd
@@ -2391,7 +2391,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | `backendRef` references the OTLP server to reach.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | `backendRef` references the OTLP server to reach.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
 | `protocol` _[OTLPProtocol](#otlpprotocol)_ | `protocol` specifies the OTLP protocol variant to use. | GRPC | Enum: [HTTP GRPC] <br />Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | `path` specifies the OTLP path to use. This is only applicable when<br />`protocol` is `HTTP`. If unset, this defaults to `/v1/traces`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `attributes` _[LogTracingAttributes](#logtracingattributes)_ | `attributes` specifies customizations to the key-value pairs that are<br />included in the trace. |  | Optional: \{\} <br /> |
@@ -2504,7 +2504,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](#backendobjectreference)_ | backendRef references the webhook server to reach.<br />Supported types: Service and Backend. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | backendRef references the webhook server to reach.<br />Supported types: Service and Backend. |  | Required: \{\} <br /> |
 | `forwardHeaderMatches` _HTTPHeaderMatch array_ | ForwardHeaderMatches defines a list of HTTP header matches that will be<br />used to select the headers to forward to the webhook.<br />Request headers are used when forwarding requests and response headers<br />are used when forwarding responses.<br />By default, no headers are forwarded. |  | Optional: \{\} <br /> |
 
 
