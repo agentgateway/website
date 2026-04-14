@@ -1,4 +1,4 @@
-Configure [Continue](https://continue.dev/), the open-source AI code assistant for VS Code, to route requests through agentgateway.
+Configure [Continue](https://www.continue.dev/), the open-source AI code assistant for VS Code, to route requests through agentgateway.
 
 ## Before you begin
 

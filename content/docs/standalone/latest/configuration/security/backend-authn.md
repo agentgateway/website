@@ -31,7 +31,7 @@ backendAuth:
   passthrough: {}
 ```
 
-Google [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
+Google [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
 
 ```yaml
 backendAuth:

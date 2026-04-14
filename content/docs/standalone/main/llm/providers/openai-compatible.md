@@ -90,7 +90,7 @@ agentgateway -f /tmp/test-cohere.yaml --validate-only
 
 ### Together AI
 
-[Together AI](https://together.ai/) provides access to open-source models via OpenAI-compatible endpoints.
+[Together AI](https://www.together.ai/) provides access to open-source models via OpenAI-compatible endpoints.
 
 ```yaml {paths="openai-compat-validate"}
 cat > /tmp/test-together.yaml << 'EOF'
@@ -238,7 +238,7 @@ agentgateway -f /tmp/test-perplexity.yaml --validate-only
 
 ### Ollama
 
-[Ollama](https://ollama.ai/) runs models locally and provides an OpenAI-compatible API. For a dedicated setup guide, see [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}).
+[Ollama](https://ollama.com/) runs models locally and provides an OpenAI-compatible API. For a dedicated setup guide, see [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}).
 
 ```yaml {paths="openai-compat-validate"}
 cat > /tmp/test-ollama.yaml << 'EOF'

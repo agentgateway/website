@@ -429,7 +429,7 @@ Set up OpenAI-compatible provider access to [Groq](https://groq.com/) for fast i
 
 ### Together AI example {#together-ai}
 
-Set up OpenAI-compatible provider access to [Together AI](https://together.ai/) for open-source models.
+Set up OpenAI-compatible provider access to [Together AI](https://www.together.ai/) for open-source models.
 
 1. Get a [Together AI API key](https://api.together.ai/settings/api-keys).
 
@@ -645,7 +645,7 @@ Set up OpenAI-compatible provider access to [Perplexity](https://www.perplexity.
 
 Set up OpenAI-compatible provider access to [Fireworks AI](https://fireworks.ai/) for fast inference on open-source models.
 
-1. Get a [Fireworks AI API key](https://fireworks.ai/api-keys).
+1. Get a [Fireworks AI API key](https://app.fireworks.ai/settings/users/api-keys).
 
 2. Save the API key in an environment variable.
 

@@ -8,7 +8,7 @@ Configure Google Cloud Vertex AI as an LLM provider in agentgateway.
 
 ## Authentication
 
-Before you can use Vertex AI as an LLM provider, you must authenticate by using Google Cloud's [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials). Choose from one of the three methods:
+Before you can use Vertex AI as an LLM provider, you must authenticate by using Google Cloud's [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials). Choose from one of the three methods:
 
 - `GOOGLE_APPLICATION_CREDENTIALS`
 - `application_default_credentials.json`

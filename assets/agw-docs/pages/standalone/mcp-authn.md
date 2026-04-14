@@ -10,7 +10,7 @@ MCP authentication uses a connect-time model: the OAuth flow happens once when t
 
 ### Supported IdPs for MCP Auth {#idp}
 
-Agentgateway currently includes built-in support for Keycloak and Auth0 as identity providers. Other IdPs that fully comply with the OAuth 2.0 specs might also work but are not tested. For more information, see [Supported identity providers]({{< link-hextra path="/mcp/about/#supported-idps" >}}).
+Agentgateway currently includes built-in support for Keycloak and Auth0 as identity providers. Other IdPs that fully comply with the OAuth 2.0 specs might also work but are not tested.{{< conditional-text include-if="kubernetes" >}} For more information, see [Supported identity providers]({{< link-hextra path="/mcp/about/#supported-idps" >}}).{{< /conditional-text >}}
 
 Adding support for a new provider requires minimal code changes. To contribute support for your IdP, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/src/types/agent.rs).
 

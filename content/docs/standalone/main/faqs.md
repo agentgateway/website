@@ -57,7 +57,7 @@ The changelog is part of each [GitHub release](https://github.com/agentgateway/a
 ## Is there enterprise software that is based on agentgateway?
 
 {{< cards >}}
-  {{< card link="https://www.solo.io/products/agentgateway-enterprise" title="Solo.io" icon="external-link">}}
+  {{< card link="https://www.solo.io/products/agentgateway" title="Solo.io" icon="external-link">}}
 {{< /cards >}}
 
 ## What if I have more questions about agentgateway? 

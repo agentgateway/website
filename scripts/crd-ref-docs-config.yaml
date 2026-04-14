@@ -13,3 +13,19 @@ processor:
 
 render:
   kubernetesVersion: "1.31"
+  # External Gateway API types referenced from agentgateway CRDs. Without these,
+  # crd-ref-docs emits intra-page links to anchors that don't exist on the page,
+  # which surface as broken anchors in the link checker.
+  knownTypes:
+    - name: SectionName
+      package: sigs.k8s.io/gateway-api/apis/v1
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#sectionname
+    - name: BackendObjectReference
+      package: sigs.k8s.io/gateway-api/apis/v1
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference
+    - name: LocalPolicyTargetReferenceWithSectionName
+      package: sigs.k8s.io/gateway-api/apis/v1alpha2
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#localpolicytargetreferencewithsectionname
+    - name: LocalPolicyTargetSelectorWithSectionName
+      package: sigs.k8s.io/gateway-api/apis/v1alpha2
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#localpolicytargetselectorwithsectionname

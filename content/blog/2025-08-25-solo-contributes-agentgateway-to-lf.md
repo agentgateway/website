@@ -63,7 +63,7 @@ Agentgateway is designed to tackle these enterprise challenges—security, gover
 “The rapid evolution of the AI landscape demands robust, vendor-neutral infrastructure for how agents communicate with each other and with external tools. Without it, we risk stifling innovation and adoption. The agentgateway project, hosted by the Linux Foundation, is a crucial step in creating that common ground. We are excited to partner with Solo.io and support a community-driven foundation for the future of interoperable AI."  
 **– Jim Bugwadia, creator, Kyverno and CEO, Nirmata**
 
-This is a critical time in our industry as organizations seek to gain compelling benefits from AI agents. The acceptance of agentgateway as an open source project by The Linux Foundation fills a vital need in the ecosystem of AI open standards. The leadership demonstrated by [Solo.io](http://solo.io/) enables tech vendors to continue delivering AI innovations at an unprecedented pace."  
+This is a critical time in our industry as organizations seek to gain compelling benefits from AI agents. The acceptance of agentgateway as an open source project by The Linux Foundation fills a vital need in the ecosystem of AI open standards. The leadership demonstrated by [Solo.io](https://www.solo.io/) enables tech vendors to continue delivering AI innovations at an unprecedented pace."  
 **— Mitch Ashley, vice president and practice lead, software lifecycle engineering, The Futurum Group**
 
 ### **The Next Chapter Under the Linux Foundation**  

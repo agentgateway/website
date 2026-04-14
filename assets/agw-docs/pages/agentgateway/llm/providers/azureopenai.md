@@ -6,7 +6,7 @@ Configure [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/?vie
 
 ## Set up access to Azure OpenAI
 
-1. [Deploy a Microsoft Foundry Model](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/how-to/deploy-foundry-models?view=foundry) in the Foundry portal.  
+1. [Deploy a Microsoft Foundry Model](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/deploy-foundry-models?view=foundry) in the Foundry portal.  
 2. Go to the Foundry portal to access your model deployment. From the **Details** tab, retrieve the endpoint and key to access your model deployment. Later, you use this endpoint information to configure your Azure OpenAI backend, including the base URL, your deployment model name, and API version.
 
    For example, the following URL `https://my-endpoint.cognitiveservices.azure.com/openai/deployments/gpt-4.1-mini/chat/completions?api-version=2025-01-01-preview` is composed of the following details: 
@@ -63,7 +63,7 @@ Configure [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/?vie
    |-------------|-------------|
    | `ai.provider.azureopenai` | Define the Azure OpenAI provider. |
    | `azureopenai.endpoint`     | The endpoint of the Azure OpenAI deployment that you created, such as `my-endpoint.cognitiveservices.azure.com`. |
-   | `azureopenai.deployment`    | The name of the Azure OpenAI model deployment that you created earlier. For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/how-to/deploy-foundry-models?view=foundry).|
+   | `azureopenai.deployment`    | The name of the Azure OpenAI model deployment that you created earlier. For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/deploy-foundry-models?view=foundry).|
    | `azureopenai.apiVersion`    | The version of the Azure OpenAI API to use. For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/foundry/?view=foundry-classicreference#api-specs).|
    | `policies.auth` | Configure the authentication token for Azure OpenAI API. The example refers to the secret that you previously created. The token is automatically sent in the `api-key` header.|
 
