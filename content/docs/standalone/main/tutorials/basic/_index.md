@@ -28,7 +28,7 @@ curl -sL https://agentgateway.dev/install | bash
 ## Step 2: Download the example config
 
 ```bash
-curl -sL https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
+curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml
 ```
 
 ## Step 3: Start agentgateway
