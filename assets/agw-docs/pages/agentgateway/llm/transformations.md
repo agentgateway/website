@@ -408,7 +408,7 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 * `llm.requestModel`: The model name from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#cel-functions" >}}) to compute each value once and reference it by name. This setup avoids repeating the `default()` fallback expression in every header and keeps the `x-model-fallback` condition readable:
+Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) to pre-compute the `llm` context values, and `default()` in the `set` expressions to fall back to parsing the raw body if the variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
 
 ```yaml {paths="llm-context-vars"}
 kubectl apply -f- <<EOF
@@ -428,15 +428,15 @@ spec:
     transformation:
       response:
         metadata:
-          requestedModel: 'default(llm.requestModel, string(json(request.body).model))'
-          actualModel: 'default(llm.responseModel, string(json(response.body).model))'
+          requestedModel: 'llm.requestModel'
+          actualModel: 'llm.responseModel'
         set:
         - name: x-requested-model
-          value: metadata.requestedModel
+          value: 'default(metadata.requestedModel, string(json(request.body).model))'
         - name: x-actual-model
-          value: metadata.actualModel
+          value: 'default(metadata.actualModel, string(json(response.body).model))'
         - name: x-model-fallback
-          value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
+          value: 'default(metadata.requestedModel, string(json(request.body).model)) != default(metadata.actualModel, string(json(response.body).model)) ? "true" : "false"'
 EOF
 ```
 
@@ -460,22 +460,25 @@ EOF
 {{< /doc-test >}}
 
 {{< doc-test paths="llm-context-vars" >}}
-YAMLTest -f - <<'EOF'
-- name: verify request succeeds with llm-context-vars policy
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
-  source:
-    type: local
-  expect:
-    statusCode: 200
-EOF
+# Verify all three headers are injected, including x-model-fallback.
+for i in $(seq 1 10); do
+  HEADERS=$(curl -s -D - -o /dev/null "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}')
+  if echo "$HEADERS" | grep -q "x-requested-model:" && \
+     echo "$HEADERS" | grep -q "x-actual-model:" && \
+     echo "$HEADERS" | grep -q "x-model-fallback:"; then
+    echo "✓ All context variable headers found"
+    echo "$HEADERS" | grep -E "x-requested-model|x-actual-model|x-model-fallback"
+    break
+  fi
+  echo "Attempt $i: not all headers present yet, retrying..."
+  sleep 2
+done
+echo "$HEADERS" | grep -q "x-model-fallback:" || { echo "✗ x-model-fallback header not found after retries"; exit 1; }
 {{< /doc-test >}}
 
-The `default()` fallback is written once per value rather than repeated in every header and in the comparison.
+The `metadata` field pre-computes the `llm` context values once. The `default()` fallback in each `set` expression ensures the header is still populated even if the `llm` context variable is unavailable.
 
 ## Cleanup
 
