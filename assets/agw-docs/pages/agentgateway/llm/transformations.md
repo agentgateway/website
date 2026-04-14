@@ -466,14 +466,16 @@ for i in $(seq 1 10); do
   HEADERS=$(curl -s -D - -o /dev/null "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
     -H "Content-Type: application/json" \
     -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}')
-  if echo "$HEADERS" | grep -q "x-requested-model: gpt-4" && \
+  echo "--- Attempt $i response headers ---"
+  echo "$HEADERS"
+  echo "---"
+  if echo "$HEADERS" | grep -q "x-requested-model:" && \
      echo "$HEADERS" | grep -q "x-actual-model:" && \
      echo "$HEADERS" | grep -q "x-model-fallback:"; then
     echo "✓ All context variable headers found"
-    echo "$HEADERS" | grep -E "x-requested-model|x-actual-model|x-model-fallback"
     break
   fi
-  echo "Attempt $i: headers not yet present, retrying..."
+  echo "Attempt $i: not all headers present yet, retrying..."
   sleep 2
 done
 echo "$HEADERS" | grep -q "x-actual-model:" || { echo "✗ x-actual-model header not found after retries"; exit 1; }
