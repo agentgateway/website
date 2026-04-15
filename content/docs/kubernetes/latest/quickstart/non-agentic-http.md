@@ -4,9 +4,9 @@ weight: 13
 description: Route HTTP traffic to a backend such as httpbin with agentgateway on Kubernetes.
 test:
   httpbin:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/quickstart/non-agentic-http.md
+  - file: content/docs/kubernetes/latest/quickstart/non-agentic-http.md
     path: install-httpbin
 ---
 
