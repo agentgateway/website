@@ -9,6 +9,7 @@ To learn more about CEL, see the following resources:
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
+
 ## Configure LLM request transformations
 
 {{< doc-test paths="llm-transformations" >}}
@@ -23,11 +24,7 @@ spec:
     - name: agentgateway-proxy
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /v1/chat/completions
-      backendRefs:
+    - backendRefs:
         - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
@@ -235,11 +232,7 @@ spec:
     - name: agentgateway-proxy
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /v1/chat/completions
-      backendRefs:
+    - backendRefs:
         - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
@@ -312,25 +305,6 @@ EOF
    EOF
    {{< /doc-test >}}
 
-   {{< doc-test paths="llm-model-headers" >}}
-   # Verify both model headers are injected. Uses curl -D to capture headers
-   # because YAMLTest's HTTP client does not reliably read late-appended
-   # response headers such as x-actual-model (computed from response body).
-   for i in $(seq 1 10); do
-     HEADERS=$(curl -s -D - -o /dev/null "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}')
-     if echo "$HEADERS" | grep -q "x-requested-model: gpt-4" && echo "$HEADERS" | grep -q "x-actual-model:"; then
-       echo "✓ Both model headers found"
-       echo "$HEADERS" | grep -E "x-requested-model|x-actual-model"
-       break
-     fi
-     echo "Attempt $i: headers not yet present, retrying..."
-     sleep 2
-   done
-   echo "$HEADERS" | grep -q "x-actual-model:" || { echo "✗ x-actual-model header not found after retries"; exit 1; }
-   {{< /doc-test >}}
-
 2. Send a chat completion request through the gateway and inspect the response headers.
 
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
@@ -349,6 +323,30 @@ EOF
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+   {{< doc-test paths="llm-model-headers" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify model headers are injected
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         content-type: application/json
+       body: |
+         {"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       headers:
+         - name: x-requested-model
+           comparator: contains
+           value: gpt-4
+         - name: x-actual-model
+           comparator: contains
+           value: gpt-4
+   EOF
+   {{< /doc-test >}}
 
    Example output:
    ```console {hl_lines=[1,2,5,6,7,8]}
@@ -372,34 +370,9 @@ EOF
    < x-actual-model: gpt-4o-mini
    x-actual-model: gpt-4o-mini
    ```
-
-{{< doc-test paths="llm-context-vars" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-{{< /doc-test >}}
-
-{{< doc-test paths="llm-context-vars" >}}
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: openai
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  parentRefs:
-    - name: agentgateway-proxy
-      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /v1/chat/completions
-      backendRefs:
-        - name: openai
-          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-          group: {{< reuse "agw-docs/snippets/group.md" >}}
-          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-EOF
-{{< /doc-test >}}
+   
+<!-- metadata not working issue: https://github.com/agentgateway/agentgateway/issues/1554 -->
+<!--
 
 ### Detect fallback with the llm context variables
 
@@ -410,7 +383,7 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 
 Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) to pre-compute the `llm` context values, and `default()` in the `set` expressions to fall back to parsing the raw body if the variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
 
-```yaml {paths="llm-context-vars"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -440,53 +413,18 @@ spec:
 EOF
 ```
 
-{{< doc-test paths="llm-context-vars" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for llm-context-vars policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: llm-context-vars
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
-{{< doc-test paths="llm-context-vars" >}}
-# Verify all three headers are injected, including x-model-fallback.
-for i in $(seq 1 10); do
-  HEADERS=$(curl -s -D - -o /dev/null "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-    -H "Content-Type: application/json" \
-    -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}')
-  if echo "$HEADERS" | grep -q "x-requested-model:" && \
-     echo "$HEADERS" | grep -q "x-actual-model:" && \
-     echo "$HEADERS" | grep -q "x-model-fallback:"; then
-    echo "✓ All context variable headers found"
-    echo "$HEADERS" | grep -E "x-requested-model|x-actual-model|x-model-fallback"
-    break
-  fi
-  echo "Attempt $i: not all headers present yet, retrying..."
-  sleep 2
-done
-echo "$HEADERS" | grep -q "x-model-fallback:" || { echo "✗ x-model-fallback header not found after retries"; exit 1; }
-{{< /doc-test >}}
 
 The `metadata` field pre-computes the `llm` context values once. The `default()` fallback in each `set` expression ensures the header is still populated even if the `llm` context variable is unavailable.
-
+-->
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```shell {paths="llm-transformations,llm-model-headers,llm-context-vars"}
+```shell {paths="llm-transformations,llm-model-headers"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-context-vars -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
+
+{{< doc-test paths="llm-transformations,llm-model-headers" >}}
+kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+{{< /doc-test >}}
