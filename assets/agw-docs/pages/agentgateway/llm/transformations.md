@@ -325,14 +325,18 @@ EOF
    {{< /tabs >}}
 
    {{< doc-test paths="llm-model-headers" >}}
+   # accept-encoding: identity prevents the upstream from compressing the
+   # response body. Without this header, axios (used by YAMLTest) requests
+   # gzip/br encoding by default, and the compressed body cannot be parsed
+   # by the json(response.body) CEL expression, so x-actual-model is never set.
    YAMLTest -f - <<'EOF'
    - name: verify model headers are injected
-     retries: 2
      http:
        url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
        headers:
          content-type: application/json
+         accept-encoding: identity
        body: |
          {"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}
      source:
