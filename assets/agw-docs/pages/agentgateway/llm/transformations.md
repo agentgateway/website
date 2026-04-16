@@ -368,6 +368,7 @@ EOF
 
    Actual model values might differ slightly from the requested model, even if the same model is used. Some responses might include a unique identifier as part of the model name. In these circumstances, you might use the `contains()` function to verify.
 
+  
    When a fallback model handles the request, `x-actual-model` differs from `x-requested-model`:
    ```console {hl_lines=[2,4]}
    < x-requested-model: gpt-4o
@@ -375,6 +376,10 @@ EOF
    < x-actual-model: gpt-4o-mini
    x-actual-model: gpt-4o-mini
    ```
+
+   {{< callout type="info" >}}
+   If the `x-actual-model` header is missing from the response, check whether the client sends an `Accept-Encoding` header (such as `gzip` or `br`). When the upstream returns a compressed response, the proxy receives compressed bytes that the `json(response.body)` CEL expression cannot parse as JSON. The expression fails silently and the header is not set. To avoid this issue, send `Accept-Encoding: identity` to request an uncompressed response. Most clients (including `curl` without the `--compressed` flag) do not request compression by default.
+   {{< /callout >}}
    
 <!-- metadata not working issue: https://github.com/agentgateway/agentgateway/issues/1554 -->
 <!--
