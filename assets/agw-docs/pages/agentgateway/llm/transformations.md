@@ -325,11 +325,9 @@ EOF
    {{< /tabs >}}
 
    {{< doc-test paths="llm-model-headers" >}}
-   # YAMLTest cannot read x-actual-model because it is computed from the
-   # response body and appended after YAMLTest's HTTP client reads headers.
-   # Use YAMLTest for x-requested-model, then curl for x-actual-model.
    YAMLTest -f - <<'EOF'
-   - name: verify x-requested-model header is injected
+   - name: verify model headers are injected
+     retries: 2
      http:
        url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
@@ -345,35 +343,22 @@ EOF
          - name: x-requested-model
            comparator: contains
            value: gpt-4
+         - name: x-actual-model
+           comparator: contains
+           value: gpt
    EOF
    {{< /doc-test >}}
 
-   {{< doc-test paths="llm-model-headers" >}}
-   # Verify x-actual-model via curl since it is derived from the response body.
-   for i in $(seq 1 10); do
-     HEADERS=$(curl -s -D - -o /dev/null "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
-       -H "Content-Type: application/json" \
-       -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}')
-     if echo "$HEADERS" | grep -qi "x-actual-model:"; then
-       echo "x-actual-model header found"
-       echo "$HEADERS" | grep -iE "x-requested-model|x-actual-model"
-       break
-     fi
-     sleep 2
-   done
-   echo "$HEADERS" | grep -qi "x-actual-model:" || { echo "x-actual-model header not found after retries"; exit 1; }
-   {{< /doc-test >}}
-
    Example output:
-   ```console {hl_lines=[1,2,5,6,7,8]}
+   ```console {hl_lines=[5,6,7,8]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    < content-type: application/json
    content-type: application/json
    < x-requested-model: gpt-4
    x-requested-model: gpt-4
-   < x-actual-model: gpt-4
-   x-actual-model: gpt-4
+   < x-actual-model: gpt-3.5-turbo-0125
+   x-actual-model: gpt-3.5-turbo-0125
    ...
    ```
 
