@@ -4,13 +4,13 @@ weight: 15
 description: Connect AI coding assistants to MCP servers exposed through agentgateway on Kubernetes
 test:
   mcp-clients-k8s:
-  - file: content/docs/kubernetes/main/install/helm.md
+  - file: content/docs/kubernetes/latest/install/helm.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/mcp/static-mcp.md
+  - file: content/docs/kubernetes/latest/mcp/static-mcp.md
     path: setup-mcp-server
-  - file: content/docs/kubernetes/main/integrations/mcp-clients/_index.md
+  - file: content/docs/kubernetes/latest/integrations/mcp-clients/_index.md
     path: mcp-clients-k8s
 ---
 
