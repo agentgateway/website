@@ -205,3 +205,22 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
      -> host: Str(www.example.com)
 
    ```
+
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+1. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+2. Uninstall the OpenTelemetry collector.
+   ```sh
+   helm uninstall opentelemetry-collector-traces -n telemetry
+   ```
+
+3. Remove the `telemetry` namespace.
+   ```sh
+   kubectl delete namespace telemetry
+   ```
