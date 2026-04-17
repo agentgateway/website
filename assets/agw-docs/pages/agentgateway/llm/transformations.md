@@ -391,7 +391,7 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 * `llm.requestModel`: The model name from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) to pre-compute the `llm` context values, and `default()` in the `set` expressions to fall back to parsing the raw body if the variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
+Use the [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
 
 ```yaml
 kubectl apply -f- <<EOF
