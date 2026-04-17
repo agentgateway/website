@@ -51,7 +51,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example limits `max_completion_tokens` to no more than 10 by taking the smaller of the client's requested value and 10, regardless of what the client requests.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example limits `max_completion_tokens` to no more than 10. If the client requests less than 10 tokens, this number is applied. If the client requests more than 10 tokens, the maximum number of 10 is applied.  
 
    ```yaml {paths="llm-transformations"}
    kubectl apply -f- <<EOF
