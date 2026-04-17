@@ -378,7 +378,7 @@ EOF
    ```
 
    {{< callout type="info" >}}
-   When sending traffic to the gateway with traffic compression enabled, such as gzip or br,  the CEL expression could fail. If a header is missing from a response, try a different accept encoding in your request.
+   When sending traffic to the gateway with traffic compression enabled, such as `gzip` or `br`, the CEL expression could fail. If a header is missing from a response, try a different `accept-encoding` header in your request.
    {{< /callout >}}
    
 <!-- metadata not working issue: https://github.com/agentgateway/agentgateway/issues/1554 -->
