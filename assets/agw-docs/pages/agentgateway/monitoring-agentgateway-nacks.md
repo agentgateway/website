@@ -22,6 +22,10 @@ When a NACK occurs, {{< reuse "/agw-docs/snippets/kgateway.md" >}} provides two 
 
 You can access the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane metrics endpoint to view NACK metrics that track configuration rejections from {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxies.
 
+### Before you begin
+
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
+
 ### View the NACK metric {#view-nack-metric}
 
 1. Port-forward the control plane deployment on port 9092.
@@ -45,6 +49,26 @@ You can access the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane 
    kgateway_agentgateway_xds_rejects_total 3
    ```
 
+{{< doc-test paths="nacks" >}}
+YAMLTest -f - <<'EOF'
+- name: Control plane metrics endpoint is accessible
+  retries: 3
+  http:
+    url: "http://localhost:9092/metrics"
+    method: GET
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
 You can use this metric to configure alerts to notify you when NACKs occur so you can quickly investigate and resolve configuration issues.
 
 For guidance on setting up the observability stack, which allows for configurable alerting, see the [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/">}}).
@@ -57,10 +81,10 @@ When a NACK occurs for an {{< reuse "agw-docs/snippets/agentgateway.md" >}} prox
 
 Use the following commands to view NACK events for your agentgateway deployment.
 
-1. List NACK events in the namespace where your Gateway is deployed.  If you have multiple Gateways across different namespaces, you can search across all namespaces with `--all-namespaces` instead of `-n <namespace>`.
+1. List NACK events in the namespace where your Gateway is deployed. If you have multiple Gateways across different namespaces, you can search across all namespaces with `--all-namespaces` instead of `-n {{< reuse "agw-docs/snippets/namespace.md" >}}`.
 
-   ```sh
-   kubectl get events -n <namespace> --field-selector=reason=AgentGatewayNackError
+   ```sh {paths="nacks"}
+   kubectl get events -n {{< reuse "agw-docs/snippets/namespace.md" >}} --field-selector=reason=AgentGatewayNackError
    ```
 
    Example output:
@@ -71,10 +95,10 @@ Use the following commands to view NACK events for your agentgateway deployment.
    83s         Warning   AgentGatewayNackError   deployment/agentgateway   policy/traffic/default/example-agw-policy-for-body:transformation:default/example-route-for-body: error: parse: ERROR: <input>:1:20: invalid argument has(request.headers['x-priority-level']) ? 'level_' + request.headers['x-priority-level'] : 'level_unknown'
    ```
 
-2. View events for a specific Gateway.
+2. View events for the Gateway.
 
-   ```sh
-   kubectl describe gateway <gateway-name> -n <namespace>
+   ```sh {paths="nacks"}
+   kubectl describe gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
    Look for events in the output similar to the following.
@@ -88,6 +112,6 @@ Use the following commands to view NACK events for your agentgateway deployment.
 
 3. View events for the associated Deployment in the same name and namespace as the Gateway.
 
-   ```sh
-   kubectl describe deployment <gateway-name> -n <namespace>
+   ```sh {paths="nacks"}
+   kubectl describe deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
