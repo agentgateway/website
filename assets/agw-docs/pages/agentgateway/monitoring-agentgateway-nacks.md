@@ -18,13 +18,14 @@ When a NACK occurs, {{< reuse "/agw-docs/snippets/kgateway.md" >}} provides two 
 * **Prometheus metric**: A counter metric tracks the total number of NACKs across all {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxies that {{< reuse "/agw-docs/snippets/kgateway.md" >}} manages.
 * **Kubernetes events**: {{< reuse "/agw-docs/snippets/kgateway.md" >}} creates Warning events on both the `Gateway` and its corresponding `Deployment` with details about the error.
 
+
+{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
+
 ## Monitor NACKs with control plane metrics {#nack-metrics}
 
 You can access the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane metrics endpoint to view NACK metrics that track configuration rejections from {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxies.
 
-### Before you begin
 
-{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ### View the NACK metric {#view-nack-metric}
 
