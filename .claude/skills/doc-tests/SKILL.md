@@ -168,6 +168,7 @@ For deeper assertions (e.g. verifying `tools/list` returns only authorized tools
 
 - For Kubernetes tests, use `${INGRESS_GW_ADDRESS}` as the host in the URL (e.g. `url: "http://${INGRESS_GW_ADDRESS}:80/get"`). **Never use `kubectl port-forward`** in visible blocks — tests containing `kubectl port-forward` are automatically failed without running.
 - **Host headers must not include a port** — use `host: "example.com"`, not `host: "example.com:80"`. The gateway's hostname matching is strict: including the port causes no route match, and agentgateway resets the TCP connection (`ECONNRESET`) rather than returning an HTTP error response.
+- **Response body CEL expressions require uncompressed responses.** YAMLTest uses axios, which sends `Accept-Encoding: gzip, deflate, br` by default. If a test asserts on a response header computed from a `json(response.body)` CEL expression (e.g. `string(json(response.body).model)`), the upstream may return a compressed body that agentgateway cannot parse, causing the CEL expression to fail silently and the header to never be set. Fix by adding `accept-encoding: identity` to the YAMLTest `http.headers` to force an uncompressed response. This only affects test requests — `curl` and most API clients do not request compression by default, so user-facing examples work without the header.
 
 #### Data plane warmup for new hostnames
 

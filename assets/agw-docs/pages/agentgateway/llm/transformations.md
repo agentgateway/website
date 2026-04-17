@@ -9,6 +9,7 @@ To learn more about CEL, see the following resources:
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
+
 ## Configure LLM request transformations
 
 {{< doc-test paths="llm-transformations" >}}
@@ -23,12 +24,8 @@ spec:
     - name: agentgateway-proxy
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /v1/chat/completions
-      backendRefs:
-        - name: httpbun-llm
+    - backendRefs:
+        - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -54,7 +51,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example caps `max_tokens` to 10, regardless of what the client requests.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply an LLM request transformation. The following example limits `max_completion_tokens` to no more than 10. If the client requests less than 10 tokens, this number is applied. If the client requests more than 10 tokens, the maximum number of 10 is applied.  
 
    ```yaml {paths="llm-transformations"}
    kubectl apply -f- <<EOF
@@ -73,8 +70,8 @@ EOF
      backend:
        ai:
          transformations:
-         - field: max_tokens
-           expression: "min(llmRequest.max_tokens, 10)"
+         - field: max_completion_tokens
+           expression: "min(llmRequest.max_completion_tokens, 10)"
    EOF
    ```
 
@@ -109,7 +106,17 @@ EOF
    Thinking budget fields, such as `reasoning_effort` and `thinking_budget_tokens` can also be set or capped by using transformations. This way, operators can enforce reasoning limits centrally without requiring client changes. For example, use `"field": "reasoning_effort"` with the expression `"medium"` to cap all requests to medium reasoning efforts regardless of what the client sends.
    {{< /callout >}}
 
-2. Send a request with `max_tokens` set to a value greater than 10. The transformation caps it to 10 before the request reaches the LLM provider. Verify that the `completion_tokens` value in the response is 10 or fewer, the response is capped and the `finish_reason` is set to `length`. 
+2. Verify that the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} is accepted.
+
+   ```sh
+   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.ancestors[0].conditions[?(@.type=="Accepted")].status}'
+   ```
+
+3. Send a request with `max_completion_tokens` set to a value greater than 10. The transformation limits it to 10 before the request reaches the LLM provider. Verify that the `completion_tokens` value in the response is 10 or fewer and the `finish_reason` is set to `length`.
+
+   {{< callout type="info" >}}
+   Some older OpenAI models use `max_tokens` instead of `max_completion_tokens`. If the transformation does not appear to take effect, check the model's API documentation for the correct field name and update the transformation's `field` value accordingly.
+   {{< /callout >}}
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
 
@@ -119,7 +126,7 @@ EOF
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
-     "max_tokens": 5000,
+     "max_completion_tokens": 5000,
      "messages": [
        {
          "role": "user",
@@ -136,7 +143,7 @@ EOF
    -H "content-type: application/json" \
    -d '{
      "model": "gpt-3.5-turbo",
-     "max_tokens": 5000,
+     "max_completion_tokens": 5000,
      "messages": [
        {
          "role": "user",
@@ -151,14 +158,14 @@ EOF
 
    {{< doc-test paths="llm-transformations" >}}
    YAMLTest -f - <<'EOF'
-   - name: verify request succeeds with max_tokens transformation applied
+   - name: verify request succeeds with max_completion_tokens transformation applied
      http:
        url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
        method: POST
        headers:
          content-type: application/json
        body: |
-         {"model": "gpt-4", "max_tokens": 5000, "messages": [{"role": "user", "content": "Tell me a short story"}]}
+         {"model": "gpt-4", "max_completion_tokens": 5000, "messages": [{"role": "user", "content": "Tell me a short story"}]}
      source:
        type: local
      expect:
@@ -225,12 +232,8 @@ spec:
     - name: agentgateway-proxy
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /v1/chat/completions
-      backendRefs:
-        - name: httpbun-llm
+    - backendRefs:
+        - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -299,24 +302,6 @@ EOF
        polling:
          timeoutSeconds: 120
          intervalSeconds: 2
-   - name: verify model headers are injected from request and response bodies
-     http:
-       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-       method: POST
-       headers:
-         Content-Type: application/json
-       body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       headers:
-         - name: x-requested-model
-           comparator: equals
-           value: gpt-4
-         - name: x-actual-model
-           comparator: contains
-           value: gpt-4
    EOF
    {{< /doc-test >}}
 
@@ -339,21 +324,51 @@ EOF
    {{% /tab %}}
    {{< /tabs >}}
 
+   {{< doc-test paths="llm-model-headers" >}}
+   # accept-encoding: identity prevents the upstream from compressing the
+   # response body. Without this header, axios (used by YAMLTest) requests
+   # gzip/br encoding by default, and the compressed body cannot be parsed
+   # by the json(response.body) CEL expression, so x-actual-model is never set.
+   YAMLTest -f - <<'EOF'
+   - name: verify model headers are injected
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         content-type: application/json
+         accept-encoding: identity
+       body: |
+         {"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       headers:
+         - name: x-requested-model
+           comparator: contains
+           value: gpt-4
+         - name: x-actual-model
+           comparator: contains
+           value: gpt
+   EOF
+   {{< /doc-test >}}
+
    Example output:
-   ```console {hl_lines=[1,2,5,6,7,8]}
+   ```console {hl_lines=[5,6,7,8]}
    < HTTP/1.1 200 OK
    HTTP/1.1 200 OK
    < content-type: application/json
    content-type: application/json
    < x-requested-model: gpt-4
    x-requested-model: gpt-4
-   < x-actual-model: gpt-4
-   x-actual-model: gpt-4
+   < x-actual-model: gpt-3.5-turbo-0125
+   x-actual-model: gpt-3.5-turbo-0125
    ...
    ```
 
    Actual model values might differ slightly from the requested model, even if the same model is used. Some responses might include a unique identifier as part of the model name. In these circumstances, you might use the `contains()` function to verify.
 
+  
    When a fallback model handles the request, `x-actual-model` differs from `x-requested-model`:
    ```console {hl_lines=[2,4]}
    < x-requested-model: gpt-4o
@@ -362,33 +377,12 @@ EOF
    x-actual-model: gpt-4o-mini
    ```
 
-{{< doc-test paths="llm-context-vars" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-{{< /doc-test >}}
-
-{{< doc-test paths="llm-context-vars" >}}
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: openai
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  parentRefs:
-    - name: agentgateway-proxy
-      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /v1/chat/completions
-      backendRefs:
-        - name: httpbun-llm
-          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-          group: {{< reuse "agw-docs/snippets/group.md" >}}
-          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-EOF
-{{< /doc-test >}}
+   {{< callout type="info" >}}
+   When sending traffic to the gateway with traffic compression enabled, such as `gzip` or `br`, the CEL expression could fail. If a header is missing from a response, try a different `accept-encoding` header in your request.
+   {{< /callout >}}
+   
+<!-- metadata not working issue: https://github.com/agentgateway/agentgateway/issues/1554 -->
+<!--
 
 ### Detect fallback with the llm context variables
 
@@ -397,9 +391,9 @@ When the agentgateway proxy routes to an AI backend, the `llm` CEL context provi
 * `llm.requestModel`: The model name from the original request.
 * `llm.responseModel`: The model name the upstream LLM provider reported in the response.
 
-Use [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#cel-functions" >}}) to compute each value once and reference it by name. This setup avoids repeating the `default()` fallback expression in every header and keeps the `x-model-fallback` condition readable:
+Use the [`metadata`]({{< link-hextra path="/traffic-management/transformations/templating-language/#pre-compute-values-with-metadata" >}}) context variable to pre-compute LLM model data, and the `default()` function in the `set` expressions to fall back to parsing the raw body if the metadata context variable is unavailable. This approach computes each value once and keeps the `x-model-fallback` comparison readable:
 
-```yaml {paths="llm-context-vars"}
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -417,67 +411,30 @@ spec:
     transformation:
       response:
         metadata:
-          requestedModel: 'default(llm.requestModel, string(json(request.body).model))'
-          actualModel: 'default(llm.responseModel, string(json(response.body).model))'
+          requestedModel: 'llm.requestModel'
+          actualModel: 'llm.responseModel'
         set:
         - name: x-requested-model
-          value: metadata.requestedModel
+          value: 'default(metadata.requestedModel, string(json(request.body).model))'
         - name: x-actual-model
-          value: metadata.actualModel
+          value: 'default(metadata.actualModel, string(json(response.body).model))'
         - name: x-model-fallback
-          value: 'metadata.requestedModel != metadata.actualModel ? "true" : "false"'
+          value: 'default(metadata.requestedModel, string(json(request.body).model)) != default(metadata.actualModel, string(json(response.body).model)) ? "true" : "false"'
 EOF
 ```
 
-{{< doc-test paths="llm-context-vars" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for llm-context-vars policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: llm-context-vars
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-- name: verify llm context variable headers are injected
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    headers:
-      - name: x-requested-model
-        comparator: equals
-        value: gpt-4
-      - name: x-actual-model
-        comparator: contains
-        value: gpt-4
-      - name: x-model-fallback
-        comparator: equals
-        value: "false"
-EOF
-{{< /doc-test >}}
 
-The `default()` fallback is written once per value rather than repeated in every header and in the comparison.
-
+The `metadata` field pre-computes the `llm` context values once. The `default()` fallback in each `set` expression ensures the header is still populated even if the `llm` context variable is unavailable.
+-->
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-```shell {paths="llm-transformations,llm-model-headers,llm-context-vars"}
+```shell {paths="llm-transformations,llm-model-headers"}
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} cap-max-tokens -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-model-headers -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-context-vars -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
+
+{{< doc-test paths="llm-transformations,llm-model-headers" >}}
+kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+{{< /doc-test >}}
