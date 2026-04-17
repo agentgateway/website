@@ -2,12 +2,12 @@ You can use the pre-built Grafana dashboards to observe the control and data pla
 
 1. Create a Grafana dashboard for the control metrics. You can download the following sample Grafana dashboard configuration: 
    * [Agentgateway dashboard](https://github.com/agentgateway/website/blob/main/content/docs/kubernetes/main/observability/agentgateway.json)
-     ```sh
+     ```sh {paths="otel-stack"}
      curl -L "http://kgateway.dev/docs/main/agentgateway/observability/agentgateway.json" >> agentgateway.json 
      ```
 
 2. Import the Grafana dashboard.
-   ```sh
+   ```sh {paths="otel-stack"}
    kubectl -n telemetry create cm agentgateway-dashboard \
    --from-file=agentgateway.json
    kubectl label -n telemetry cm agentgateway-dashboard grafana_dashboard=1

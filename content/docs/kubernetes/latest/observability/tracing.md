@@ -1,6 +1,16 @@
 ---
 title: Tracing
 weight: 90
+test:
+  tracing:
+  - file: content/docs/kubernetes/latest/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/latest/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/observability/tracing.md
+    path: tracing
 ---
 
 Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
@@ -12,7 +22,7 @@ Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and con
 Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy can send traces to. Depending on your environment, you can further configure your OpenTelemetry to export these traces to your preferred tracing platform, such as Jaeger. 
 
 1. Install the OTel collector.
-   ```sh
+   ```sh {paths="tracing"}
    helm upgrade --install opentelemetry-collector-traces opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
    --version 0.127.2 \
@@ -45,6 +55,25 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
            exporters: [debug, otlp/tempo]
    EOF
    ```
+
+   {{< doc-test paths="tracing" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for OTel collector deployment to be ready
+     wait:
+       target:
+         kind: Deployment
+         metadata:
+           namespace: telemetry
+           name: opentelemetry-collector-traces
+       jsonPath: "$.status.availableReplicas"
+       jsonPathExpectation:
+         comparator: greaterThan
+         value: 0
+       polling:
+         timeoutSeconds: 300
+         intervalSeconds: 5
+   EOF
+   {{< /doc-test >}}
    
 2. Verify that the collector is up and running. 
    ```sh
@@ -60,7 +89,7 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 ## Set up tracing
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your tracing configuration. 
-   ```yaml
+   ```yaml {paths="tracing"}
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
@@ -101,8 +130,8 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vi -X POST http://$INGRESS_GW_ADDRESS:8080/post \
-    -H "host: www.example.com:8080" \
+   curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post \
+    -H "host: www.example.com" \
     -H "x-header-tag: custom-tracing"
    ```
    {{% /tab %}}
@@ -115,15 +144,33 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
    {{% /tab %}}
    {{< /tabs >}}
 
+   {{< doc-test paths="tracing" >}}
+   YAMLTest -f - <<'EOF'
+   - name: verify tracing setup - POST returns 200
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80"
+       path: /post
+       method: POST
+       headers:
+         host: "www.example.com"
+         x-header-tag: custom-tracing
+     source:
+       type: local
+     expect:
+       statusCode: 200
+   EOF
+   {{< /doc-test >}}
+
 2. Get the trace ID from your request from the agentgateway proxy logs. 
    ```sh
-   kubectl logs deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl logs deploy/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   | grep -o 'trace\.id=[^ ]*' | tail -1
    ```
 
 3. Get the logs of the collector and search for the trace ID. Verify that you see the additional tracing attributes that you configured initially.
    ```sh
    kubectl logs deploy/opentelemetry-collector-traces -n telemetry \
-   | grep -A 25 "Trace ID\s\+: <trace_id>"
+   | grep -A 27 "Trace ID\s\+: <trace_id>"
    ```
 
    Example output: 
@@ -157,4 +204,23 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
      -> request: Str(custom-tracing)
      -> host: Str(www.example.com)
 
+   ```
+
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+1. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+2. Uninstall the OpenTelemetry collector.
+   ```sh
+   helm uninstall opentelemetry-collector-traces -n telemetry
+   ```
+
+3. Remove the `telemetry` namespace.
+   ```sh
+   kubectl delete namespace telemetry
    ```
