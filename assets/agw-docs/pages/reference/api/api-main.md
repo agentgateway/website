@@ -25,7 +25,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `provider` _[LLMProvider](#llmprovider)_ | `provider` specifies configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai anthropic gemini vertexai bedrock] <br />Optional: \{\} <br /> |
+| `provider` _[LLMProvider](#llmprovider)_ | `provider` specifies configuration for how to reach the configured LLM<br />provider. |  | ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock] <br />Optional: \{\} <br /> |
 | `groups` _[PriorityGroup](#prioritygroup) array_ | `groups` specifies a list of groups in priority order where each group<br />defines a set of LLM providers. The priority determines the priority of<br />the backend endpoints chosen.<br />Note: provider names must be unique across all providers in all priority<br />groups. Backend policies may target a specific provider by name using<br />`targetRefs[].sectionName`.<br />Example configuration with two priority groups:<br />	groups:<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway.openai.azure.com<br />	- providers:<br />	  - azureopenai:<br />	      deploymentName: gpt-4o-mini-2<br />	      apiVersion: 2024-02-15-preview<br />	      endpoint: ai-gateway-2.openai.azure.com<br />	     policies:<br />	       auth:<br />	         secretRef:<br />	           name: azure-secret |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
@@ -588,6 +588,27 @@ _Appears in:_
 | `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Details for managed identity authentication |  | Optional: \{\} <br /> |
 
 
+#### AzureConfig
+
+
+
+AzureConfig settings for Azure AI backends, supporting both Azure OpenAI and Azure AI Foundry.
+
+
+
+_Appears in:_
+- [LLMProvider](#llmprovider)
+- [NamedLLMProvider](#namedllmprovider)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `resourceName` _[ShortString](#shortstring)_ | The Azure resource name used to construct the endpoint host.<br />For OpenAI: \{resourceName\}.openai.azure.com<br />For Foundry: \{resourceName\}-resource.services.ai.azure.com |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `resourceType` _[AzureResourceType](#azureresourcetype)_ | The type of Azure endpoint. Determines the host suffix. |  | Enum: [OpenAI Foundry] <br />Required: \{\} <br /> |
+| `model` _[ShortString](#shortstring)_ | Optional: Override the model name, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `apiVersion` _[TinyString](#tinystring)_ | The version of the Azure OpenAI API to use.<br />If unset, defaults to `v1`. |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `projectName` _[ShortString](#shortstring)_ | The Foundry project name, required when `resourceType` is `Foundry`.<br />Used to construct paths: /api/projects/\{projectName\}/openai/v1/... |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
 #### AzureManagedIdentity
 
 
@@ -610,7 +631,7 @@ _Appears in:_
 
 
 
-AzureOpenAIConfig settings for the [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/?view=foundry-classic) LLM provider.
+AzureOpenAIConfig settings for the [Azure OpenAI](https://learn.microsoft.com/en-us/azure/foundry/?view=foundry-classic) LLM provider.
 
 
 
@@ -621,8 +642,26 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `endpoint` _[ShortString](#shortstring)_ | The endpoint for the Azure OpenAI API to use, such as `my-endpoint.openai.azure.com`.<br />If the scheme is included, it is stripped. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `deploymentName` _[ShortString](#shortstring)_ | The name of the Azure OpenAI model deployment to use.<br />For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/models-sold-directly-by-azure?view=foundry-classic).<br />This is required if `apiVersion` is not `v1`. For `v1`, the model can be<br />set in the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `apiVersion` _[TinyString](#tinystring)_ | The version of the Azure OpenAI API to use.<br />For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/ai-foundry/?view=foundry-classicreference#api-specs).<br />If unset, defaults to `v1`. |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `deploymentName` _[ShortString](#shortstring)_ | The name of the Azure OpenAI model deployment to use.<br />For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure?view=foundry-classic).<br />This is required if `apiVersion` is not `v1`. For `v1`, the model can be<br />set in the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `apiVersion` _[TinyString](#tinystring)_ | The version of the Azure OpenAI API to use.<br />For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/foundry/openai/reference).<br />If unset, defaults to `v1`. |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### AzureResourceType
+
+_Underlying type:_ _string_
+
+AzureResourceType specifies the type of Azure endpoint.
+
+_Validation:_
+- Enum: [OpenAI Foundry]
+
+_Appears in:_
+- [AzureConfig](#azureconfig)
+
+| Field | Description |
+| --- | --- |
+| `OpenAI` | AzureResourceTypeOpenAI uses the Azure OpenAI endpoint: \{resourceName\}.openai.azure.com<br /> |
+| `Foundry` | AzureResourceTypeFoundry uses the Azure AI Foundry endpoint: \{resourceName\}-resource.services.ai.azure.com<br /> |
 
 
 #### BackendAI
@@ -1637,8 +1676,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `issuer` _[ShortString](#shortstring)_ | `issuer` identifies the IdP that issued the JWT. This corresponds to the<br />`iss` claim (https://tools.ietf.org/html/rfc7519#section-4.1.1). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `audiences` _string array_ | `audiences` specifies the list of allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />(https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `issuer` _[ShortString](#shortstring)_ | `issuer` identifies the IdP that issued the JWT. This corresponds to the<br />`iss` claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `audiences` _string array_ | `audiences` specifies the list of allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[JWKS](#jwks)_ | `jwks` defines the JSON Web Key Set used to validate the signature of the<br />JWT. |  | ExactlyOneOf: [remote inline] <br />Required: \{\} <br /> |
 
 
@@ -1668,7 +1707,7 @@ _Appears in:_
 LLMProvider specifies the target large language model provider that the backend should route requests to.
 
 _Validation:_
-- ExactlyOneOf: [openai azureopenai anthropic gemini vertexai bedrock]
+- ExactlyOneOf: [openai azureopenai azure anthropic gemini vertexai bedrock]
 
 _Appears in:_
 - [AIBackend](#aibackend)
@@ -1678,6 +1717,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider |  | Optional: \{\} <br /> |
+| `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider |  | Optional: \{\} <br /> |
 | `gemini` _[GeminiConfig](#geminiconfig)_ | Gemini provider |  | Optional: \{\} <br /> |
 | `vertexai` _[VertexAIConfig](#vertexaiconfig)_ | Vertex AI provider |  | Optional: \{\} <br /> |
@@ -1762,8 +1802,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | ResourceMetadata defines the metadata to use for MCP resources. |  | Optional: \{\} <br /> |
 | `provider` _[McpIDP](#mcpidp)_ | `provider` specifies the identity provider to use for authentication. |  | Enum: [Auth0 Keycloak] <br />Optional: \{\} <br /> |
-| `issuer` _[ShortString](#shortstring)_ | `issuer` identifies the IdP that issued the JWT. This corresponds to the<br />`iss` claim (https://tools.ietf.org/html/rfc7519#section-4.1.1). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `audiences` _string array_ | `audiences` specifies the list of allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />(https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `issuer` _[ShortString](#shortstring)_ | `issuer` identifies the IdP that issued the JWT. This corresponds to the<br />`iss` claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `audiences` _string array_ | `audiences` specifies the list of allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[RemoteJWKS](#remotejwks)_ | `jwks` defines the remote JSON Web Key used to validate the signature of<br />the JWT. |  | Required: \{\} <br /> |
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | `mode` is the validation mode for JWT authentication. | Strict | Enum: [Strict Optional Permissive] <br />Optional: \{\} <br /> |
 
@@ -1914,6 +1954,7 @@ _Appears in:_
 | `policies` _[BackendWithAI](#backendwithai)_ | `policies` controls policies for communicating with this backend.<br />Policies may also be set in `AgentgatewayPolicy`, or in the top-level<br />`AgentgatewayBackend`. Policies are merged on a field-level basis, with<br />order: `AgentgatewayPolicy` < `AgentgatewayBackend` < `AgentgatewayBackend`<br />LLM provider (this field). |  | Optional: \{\} <br /> |
 | `openai` _[OpenAIConfig](#openaiconfig)_ | OpenAI provider |  | Optional: \{\} <br /> |
 | `azureopenai` _[AzureOpenAIConfig](#azureopenaiconfig)_ | Azure OpenAI provider |  | Optional: \{\} <br /> |
+| `azure` _[AzureConfig](#azureconfig)_ | Azure provider with resource-based configuration.<br />Supports both Azure OpenAI and Azure AI Foundry resource types. |  | Optional: \{\} <br /> |
 | `anthropic` _[AnthropicConfig](#anthropicconfig)_ | Anthropic provider |  | Optional: \{\} <br /> |
 | `gemini` _[GeminiConfig](#geminiconfig)_ | Gemini provider |  | Optional: \{\} <br /> |
 | `vertexai` _[VertexAIConfig](#vertexaiconfig)_ | Vertex AI provider |  | Optional: \{\} <br /> |
@@ -2329,7 +2370,7 @@ _Appears in:_
 
 
 
-
+StaticBackend specifies a static backend endpoint — either TCP (host + port) or Unix Domain Socket.
 
 
 
@@ -2338,8 +2379,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `host` _[ShortString](#shortstring)_ | host to connect to. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `port` _integer_ | port to connect to. |  | Maximum: 65535 <br />Minimum: 1 <br />Required: \{\} <br /> |
+| `host` _[ShortString](#shortstring)_ | host to connect to (for TCP backends). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `port` _integer_ | port to connect to (for TCP backends). |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `unixPath` _string_ | unixPath is the filesystem path to a Unix Domain Socket. The gateway pod<br />must share a volume with the target (e.g., via emptyDir sidecar pattern).<br />Mutually exclusive with host/port. |  | MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### TLSVersion
@@ -2560,7 +2602,7 @@ HeaderModifiers can be used to define the policy to modify request and response 
 
 #### KubernetesResourceOverlay
 
-KubernetesResourceOverlay provides a mechanism to customize generated Kubernetes resources using [Strategic Merge Patch](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics.  # Overlay Application Order  Overlays are applied **after** all typed configuration fields have been processed. The full merge order is:  1. `GatewayClass` typed configuration fields, for example replicas or image settings from `parametersRef` 2. `Gateway` typed configuration fields from `infrastructure.parametersRef` 3. `GatewayClass` overlays are applied 4. `Gateway` overlays are applied  This ordering means `Gateway`-level configuration overrides `GatewayClass`-level configuration at each stage. For example, if both levels set the same label, the Gateway value wins.
+KubernetesResourceOverlay provides a mechanism to customize generated Kubernetes resources using [Strategic Merge Patch](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics.  # Overlay Application Order  Overlays are applied **after** all typed configuration fields have been processed. The full merge order is:  1. `GatewayClass` typed configuration fields, for example replicas or image settings from `parametersRef` 2. `Gateway` typed configuration fields from `infrastructure.parametersRef` 3. `GatewayClass` overlays are applied 4. `Gateway` overlays are applied  This ordering means `Gateway`-level configuration overrides `GatewayClass`-level configuration at each stage. For example, if both levels set the same label, the Gateway value wins.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -2589,7 +2631,7 @@ ObjectMetadata contains labels and annotations for metadata overlays.
 | Field | Type | Description |
 |-------|------|-------------|
 | `ancestorRef` | gwv1.ParentReference | AncestorRef corresponds with a ParentRef in the spec that this PolicyAncestorStatus struct describes the status of. **Required.** |
-| `controllerName` | string | ControllerName is a domain/path string that indicates the name of the controller that wrote this status. This corresponds with the `controllerName` field on `GatewayClass`.  Example: `example.net/gateway-controller`.  The format of this field is `DOMAIN "/" PATH`, where `DOMAIN` and `PATH` are valid Kubernetes names (https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).  Controllers MUST populate this field when writing status. Controllers should ensure that entries in status populated with their `ControllerName` are cleaned up when they are no longer necessary. **Required.** |
+| `controllerName` | string | ControllerName is a domain/path string that indicates the name of the controller that wrote this status. This corresponds with the `controllerName` field on `GatewayClass`.  Example: `example.net/gateway-controller`.  The format of this field is `DOMAIN "/" PATH`, where `DOMAIN` and `PATH` are valid ([Kubernetes names](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)).  Controllers MUST populate this field when writing status. Controllers should ensure that entries in status populated with their `ControllerName` are cleaned up when they are no longer necessary. **Required.** |
 | `conditions` | []metav1.Condition | Conditions describes the status of the Policy with respect to the given Ancestor.  |
 
 #### PolicyStatus
