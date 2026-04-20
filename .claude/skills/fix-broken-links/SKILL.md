@@ -100,6 +100,22 @@ When you find a broken link on a reference page, trace it upstream and fix it at
 
 4. **Boilerplate k8s descriptions** (e.g. `git.k8s.io/community/.../api-conventions.md#types-kinds`): These come from upstream Kubernetes API machinery type definitions that `crd-ref-docs` injects. They cannot be fixed in Go source or config — note them as unfixable upstream boilerplate.
 
+#### Enterprise repo (`solo-io/agentgateway-enterprise`) — OSS vs enterprise-owned files
+
+The enterprise repo syncs OSS code from `agentgateway/agentgateway` via a `Sync Upstream OSS` workflow. A `Protect Upstream` workflow enforces that synced paths can only be changed through `sync/` branches, not direct PRs. This means:
+
+- **OSS-synced (fix in `agentgateway/agentgateway`, not in the enterprise repo)**:
+  - `controller/` — entire directory, including `controller/api/v1alpha1/agentgateway/` and `controller/api/v1alpha1/shared/`. These are copies of the OSS CRD types. Fixes to Go doc comments here must be made in the OSS repo first, then synced.
+  - `go.mod`, `go.sum`
+
+- **Enterprise-owned (fix directly in the enterprise repo)**:
+  - `ent-controller/` — enterprise-specific code, including `ent-controller/api/v1alpha1/enterpriseagentgateway/` (the `EnterpriseAgentgateway*` CRD types) and `ent-controller/api/v1alpha1/shared/`
+  - Everything outside `controller/` that isn't in the exclude list
+
+The exclude list (`.github/enterprise.exclude-defaults.txt`) defines paths that are expected to diverge and are skipped during drift reports: `ent-controller/**`, `.gitignore`, `Cargo.lock`, `*.pb.go`, `*.gen.go`, `schema/**`, and dependency files.
+
+**Rule of thumb**: If the broken link traces to a file under `controller/` in the enterprise repo, fix it in `agentgateway/agentgateway` instead. If it traces to `ent-controller/`, fix it directly in the enterprise repo.
+
 After fixing upstream, the generated files in this repo will update on the next workflow run. For older versions pinned to release tags, either re-run the workflow manually or accept that the fix only applies going forward.
 
 When reporting, include the upstream file path and line number so the user knows exactly where to apply the fix or open a PR.
