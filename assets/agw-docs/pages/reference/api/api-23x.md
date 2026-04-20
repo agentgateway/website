@@ -261,8 +261,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayBackend` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayBackendSpec](#agentgatewaybackendspec)_ | spec defines the desired state of AgentgatewayBackend. |  | ExactlyOneOf: [ai static dynamicForwardProxy mcp] <br />Required: \{\} <br /> |
 | `status` _[AgentgatewayBackendStatus](#agentgatewaybackendstatus)_ | status defines the current state of AgentgatewayBackend. |  | Optional: \{\} <br /> |
@@ -322,8 +322,8 @@ https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayParameters` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayParametersSpec](#agentgatewayparametersspec)_ | spec defines the desired state of AgentgatewayParameters. |  | Required: \{\} <br /> |
 | `status` _[AgentgatewayParametersStatus](#agentgatewayparametersstatus)_ | status defines the current state of AgentgatewayParameters. |  | Optional: \{\} <br /> |
@@ -461,8 +461,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `apiVersion` _string_ | `agentgateway.dev/v1alpha1` | | |
 | `kind` _string_ | `AgentgatewayPolicy` | | |
-| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
-| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#types-kinds |  | Optional: \{\} <br /> |
+| `apiVersion` _string_ | APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://github.com/kubernetes/community/blob/main/contributors/devel/sig-architecture/api-conventions.md#resources |  | Optional: \{\} <br /> |
 | `metadata` _[ObjectMeta](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#objectmeta-v1-meta)_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | Optional: \{\} <br /> |
 | `spec` _[AgentgatewayPolicySpec](#agentgatewaypolicyspec)_ | spec defines the desired state of AgentgatewayPolicy. |  | ExactlyOneOf: [targetRefs targetSelectors] <br />Required: \{\} <br /> |
 | `status` _[PolicyStatus](#policystatus)_ | status defines the current state of AgentgatewayPolicy. |  | Optional: \{\} <br /> |
@@ -543,7 +543,7 @@ _Appears in:_
 
 
 
-AzureOpenAIConfig settings for the [Azure OpenAI](https://learn.microsoft.com/en-us/azure/ai-foundry/?view=foundry-classic) LLM provider.
+AzureOpenAIConfig settings for the [Azure OpenAI](https://learn.microsoft.com/en-us/azure/foundry/?view=foundry-classic) LLM provider.
 
 
 
@@ -554,8 +554,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `endpoint` _[ShortString](#shortstring)_ | The endpoint for the Azure OpenAI API to use, such as `my-endpoint.openai.azure.com`.<br />If the scheme is included, it is stripped. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `deploymentName` _[ShortString](#shortstring)_ | The name of the Azure OpenAI model deployment to use.<br />For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/ai-foundry/foundry-models/concepts/models-sold-directly-by-azure?view=foundry-classic).<br />This is required if ApiVersion is not 'v1'. For v1, the model can be set in the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `apiVersion` _[TinyString](#tinystring)_ | The version of the Azure OpenAI API to use.<br />For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/ai-foundry/?view=foundry-classicreference#api-specs).<br />If unset, defaults to "v1" |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `deploymentName` _[ShortString](#shortstring)_ | The name of the Azure OpenAI model deployment to use.<br />For more information, see the [Azure OpenAI model docs](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/concepts/models-sold-directly-by-azure?view=foundry-classic).<br />This is required if ApiVersion is not 'v1'. For v1, the model can be set in the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `apiVersion` _[TinyString](#tinystring)_ | The version of the Azure OpenAI API to use.<br />For more information, see the [Azure OpenAI API version reference](https://learn.microsoft.com/en-us/azure/foundry/openai/reference).<br />If unset, defaults to "v1" |  | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### BackendAI
@@ -659,7 +659,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `version` _[HTTPVersion](#httpversion)_ | version specifies the HTTP protocol version to use when connecting to the backend.<br />If not specified, the version is automatically determined:<br />* Service types can specify it with 'appProtocol' on the Service port.<br />* If traffic is identified as gRPC, HTTP2 is used.<br />* If the incoming traffic was plaintext HTTP, the original protocol will be used.<br />* If the incoming traffic was HTTPS, HTTP1 will be used. This is because most clients will<br />  transparently upgrade HTTPS traffic to HTTP2, even if the backend doesn't support it |  | Enum: [HTTP1 HTTP2] <br />Optional: \{\} <br /> |
-| `requestTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | requestTimeout specifies the deadline for receiving a response from the backend. |  | Optional: \{\} <br /> |
+| `requestTimeout` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ | requestTimeout specifies the deadline for receiving a response from the backend. |  | Optional: \{\} <br /> |
 
 
 #### BackendMCP
@@ -720,7 +720,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `keepalive` _[Keepalive](#keepalive)_ | keepAlive defines settings for enabling TCP keepalives on the connection. |  | Optional: \{\} <br /> |
-| `connectTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | connectTimeout defines the deadline for establishing a connection to the destination. |  | Optional: \{\} <br /> |
+| `connectTimeout` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ | connectTimeout defines the deadline for establishing a connection to the destination. |  | Optional: \{\} <br /> |
 
 
 #### BackendTLS
@@ -1116,12 +1116,12 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `maxBufferSize` _integer_ | maxBufferSize defines the maximum size HTTP body that will be buffered into memory.<br />Bodies will only be buffered for policies which require buffering.<br />If unset, this defaults to 2mb. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `http1MaxHeaders` _integer_ | http1MaxHeaders defines the maximum number of headers that are allowed in HTTP/1.1 requests.<br />If unset, this defaults to 100. |  | Maximum: 4096 <br />Minimum: 1 <br />Optional: \{\} <br /> |
-| `http1IdleTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | http1IdleTimeout defines the timeout before an unused connection is closed.<br />If unset, this defaults to 10 minutes. |  | Optional: \{\} <br /> |
+| `http1IdleTimeout` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ | http1IdleTimeout defines the timeout before an unused connection is closed.<br />If unset, this defaults to 10 minutes. |  | Optional: \{\} <br /> |
 | `http2WindowSize` _integer_ | http2WindowSize indicates the initial window size for stream-level flow control for received data. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `http2ConnectionWindowSize` _integer_ | http2ConnectionWindowSize indicates the initial window size for connection-level flow control for received data. |  | Minimum: 1 <br />Optional: \{\} <br /> |
 | `http2FrameSize` _integer_ | http2FrameSize sets the maximum frame size to use.<br />If unset, this defaults to 16kb |  | Maximum: 1.677215e+06 <br />Minimum: 16384 <br />Optional: \{\} <br /> |
-| `http2KeepaliveInterval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ |  |  | Optional: \{\} <br /> |
-| `http2KeepaliveTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ |  |  | Optional: \{\} <br /> |
+| `http2KeepaliveInterval` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ |  |  | Optional: \{\} <br /> |
+| `http2KeepaliveTimeout` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ |  |  | Optional: \{\} <br /> |
 
 
 #### FrontendTCP
@@ -1155,7 +1155,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `handshakeTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | handshakeTimeout specifies the deadline for a TLS handshake to complete.<br />If unset, this defaults to 15s. |  | Optional: \{\} <br /> |
+| `handshakeTimeout` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ | handshakeTimeout specifies the deadline for a TLS handshake to complete.<br />If unset, this defaults to 15s. |  | Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | alpnProtocols sets the Application Level Protocol Negotiation (ALPN) value to use in the TLS handshake.<br />If not present, defaults to ["h2", "http/1.1"]. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `minProtocolVersion` _[TLSVersion](#tlsversion)_ | MinTLSVersion configures the minimum TLS version to support. |  | Enum: [1.2 1.3] <br />Optional: \{\} <br /> |
 | `maxProtocolVersion` _[TLSVersion](#tlsversion)_ | MaxTLSVersion configures the maximum TLS version to support. |  | Enum: [1.2 1.3] <br />Optional: \{\} <br /> |
@@ -1335,7 +1335,7 @@ _Appears in:_
 | `repository` _string_ | The image repository (name). |  | Optional: \{\} <br /> |
 | `tag` _string_ | The image tag. |  | Optional: \{\} <br /> |
 | `digest` _string_ | The hash digest of the image, e.g. `sha256:12345...` |  | Optional: \{\} <br /> |
-| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#pullpolicy-v1-core)_ | The image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images//#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
+| `pullPolicy` _[PullPolicy](https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy)_ | The image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images//#image-pull-policy<br />for details. |  | Optional: \{\} <br /> |
 
 
 #### InsecureTLSMode
@@ -1441,8 +1441,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `issuer` _[ShortString](#shortstring)_ | issuer identifies the IdP that issued the JWT. This corresponds to the 'iss' claim (https://tools.ietf.org/html/rfc7519#section-4.1.1). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `audiences` _string array_ | audiences specifies the list of allowed audiences that are allowed access. This corresponds to the 'aud' claim (https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `issuer` _[ShortString](#shortstring)_ | issuer identifies the IdP that issued the JWT. This corresponds to the 'iss' claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `audiences` _string array_ | audiences specifies the list of allowed audiences that are allowed access. This corresponds to the 'aud' claim ([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[JWKS](#jwks)_ | jwks defines the JSON Web Key Set used to validate the signature of the JWT. |  | ExactlyOneOf: [remote inline] <br />Required: \{\} <br /> |
 
 
@@ -1461,8 +1461,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `retries` _integer_ | retries specifies the maximum number of keep-alive probes to send before dropping the connection.<br />If unset, this defaults to 9. |  | Maximum: 64 <br />Minimum: 1 <br />Optional: \{\} <br /> |
-| `time` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | time specifies the number of seconds a connection needs to be idle before keep-alive probes start being sent.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
-| `interval` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | interval specifies the number of seconds between keep-alive probes.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
+| `time` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ | time specifies the number of seconds a connection needs to be idle before keep-alive probes start being sent.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
+| `interval` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ | interval specifies the number of seconds between keep-alive probes.<br />If unset, this defaults to 180s. |  | Optional: \{\} <br /> |
 
 
 #### LLMProvider
@@ -1566,8 +1566,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#json-v1-apiextensions-k8s-io))_ | ResourceMetadata defines the metadata to use for MCP resources. |  | Optional: \{\} <br /> |
 | `provider` _[McpIDP](#mcpidp)_ | McpIDP specifies the identity provider to use for authentication |  | Enum: [Auth0 Keycloak] <br />Optional: \{\} <br /> |
-| `issuer` _[ShortString](#shortstring)_ | Issuer identifies the IdP that issued the JWT. This corresponds to the 'iss' claim (https://tools.ietf.org/html/rfc7519#section-4.1.1). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `audiences` _string array_ | audiences specify the list of allowed audiences that are allowed access. This corresponds to the 'aud' claim (https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `issuer` _[ShortString](#shortstring)_ | Issuer identifies the IdP that issued the JWT. This corresponds to the 'iss' claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `audiences` _string array_ | audiences specify the list of allowed audiences that are allowed access. This corresponds to the 'aud' claim ([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[RemoteJWKS](#remotejwks)_ | jwks defines the remote JSON Web Key used to validate the signature of the JWT. |  | Required: \{\} <br /> |
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | validation mode for JWT authentication. |  | Enum: [Strict Optional Permissive] <br />Optional: \{\} <br /> |
 
@@ -1969,7 +1969,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `jwksPath` _string_ | Path to IdP jwks endpoint, relative to the root, commonly ".well-known/jwks.json". |  | MaxLength: 2000 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `cacheDuration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ |  | 5m | Optional: \{\} <br /> |
+| `cacheDuration` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ |  | 5m | Optional: \{\} <br /> |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference)_ | backendRef references the remote JWKS server to reach.<br />Supported types are Service and (static) Backend. An AgentgatewayPolicy containing backend tls config<br />can then be attached to the service/backend in order to set tls options for a connection to the remote jwks source. |  | Required: \{\} <br /> |
 
 
@@ -2132,7 +2132,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `request` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.34/#duration-v1-meta)_ | request specifies a timeout for an individual request from the gateway to a backend. This covers the time from when<br />the request first starts being sent from the gateway to when the full response has been received from the backend. |  | Optional: \{\} <br /> |
+| `request` _[Duration](https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration)_ | request specifies a timeout for an individual request from the gateway to a backend. This covers the time from when<br />the request first starts being sent from the gateway to when the full response has been received from the backend. |  | Optional: \{\} <br /> |
 
 
 
@@ -2333,7 +2333,7 @@ HeaderModifiers can be used to define the policy to modify request and response 
 
 #### KubernetesResourceOverlay
 
-KubernetesResourceOverlay provides a mechanism to customize generated Kubernetes resources using [Strategic Merge Patch](https://github.com/kubernetes/community/blob/master/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics.  # Overlay Application Order  Overlays are applied **after** all typed configuration fields have been processed. The full merge order is:  1. GatewayClass typed configuration fields (e.g., replicas, image settings from parametersRef) 2. Gateway typed configuration fields (from infrastructure.parametersRef) 3. GatewayClass overlays are applied 4. Gateway overlays are applied  This ordering means Gateway-level configuration overrides GatewayClass-level configuration at each stage. For example, if both levels set the same label, the Gateway value wins.
+KubernetesResourceOverlay provides a mechanism to customize generated Kubernetes resources using [Strategic Merge Patch](https://github.com/kubernetes/community/blob/main/contributors/devel/sig-api-machinery/strategic-merge-patch.md) semantics.  # Overlay Application Order  Overlays are applied **after** all typed configuration fields have been processed. The full merge order is:  1. GatewayClass typed configuration fields (e.g., replicas, image settings from parametersRef) 2. Gateway typed configuration fields (from infrastructure.parametersRef) 3. GatewayClass overlays are applied 4. Gateway overlays are applied  This ordering means Gateway-level configuration overrides GatewayClass-level configuration at each stage. For example, if both levels set the same label, the Gateway value wins.
 
 | Field | Type | Description |
 |-------|------|-------------|
@@ -2362,7 +2362,7 @@ ObjectMetadata contains labels and annotations for metadata overlays.
 | Field | Type | Description |
 |-------|------|-------------|
 | `ancestorRef` | gwv1.ParentReference | AncestorRef corresponds with a ParentRef in the spec that this PolicyAncestorStatus struct describes the status of. **Required.** |
-| `controllerName` | string | ControllerName is a domain/path string that indicates the name of the controller that wrote this status. This corresponds with the controllerName field on GatewayClass.  Example: "example.net/gateway-controller".  The format of this field is DOMAIN "/" PATH, where DOMAIN and PATH are valid Kubernetes names (https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names).  Controllers MUST populate this field when writing status. Controllers should ensure that entries to status populated with their ControllerName are cleaned up when they are no longer necessary. **Required.** |
+| `controllerName` | string | ControllerName is a domain/path string that indicates the name of the controller that wrote this status. This corresponds with the controllerName field on GatewayClass.  Example: "example.net/gateway-controller".  The format of this field is DOMAIN "/" PATH, where DOMAIN and PATH are valid Kubernetes names ([Kubernetes names](https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names)).  Controllers MUST populate this field when writing status. Controllers should ensure that entries to status populated with their ControllerName are cleaned up when they are no longer necessary. **Required.** |
 | `conditions` | []metav1.Condition | Conditions describes the status of the Policy with respect to the given Ancestor.  |
 
 #### PolicyStatus
