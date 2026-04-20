@@ -44,23 +44,65 @@ Example mapping:
 
 ---
 
-## Scope — what to skip
+## Scope — Content updated via automation
 
-- **Reference docs**: Skip any source path under a `reference/` directory (for example `public/docs/kubernetes/*/reference/api/index.html`, `reference/helm/*`, `reference/cel/*`). These are typically generated from external code repos and shouldn't be hand-edited in the docs repo. Report them as "skipped — generated reference content" and move on.
+- **Reference docs**: Any source path under a `reference/` directory (for example `public/docs/kubernetes/*/reference/api/index.html`, `reference/helm/*`, `reference/cel/*`) is generated from upstream code repos. **Do not hand-edit the generated markdown files in this docs repo.** Instead, trace the broken link to its upstream source (Go comments, Helm chart values, or `crd-ref-docs` config) and fix it there. Use the mapping below to identify the right upstream file. Report both the upstream fix location and a note that the generated file in this repo will update on the next regeneration.
 - **Other generated content**: Apply the same rule for any other directory the repo treats as build output of external sources. Check the repo's README or CONTRIBUTING guide if unsure.
 
-### Auto-generated content sources (for future reference)
+### Auto-generated content sources — tracing broken links upstream
 
-Reference topics are still skipped during normal triage (see above). But when you do want to chase a broken link upstream — or report which upstream repo a broken reference link traces to — use this map of where each `reference/` output gets generated from. The agentgateway workflow that produces these is [reference-docs.yaml](../../../.github/workflows/reference-docs.yaml).
+When a broken link appears on a `reference/` page, use this map to trace it to the upstream source that needs fixing. The agentgateway workflow that produces these is [reference-docs.yaml](../../../.github/workflows/reference-docs.yaml).
 
-| Generated output (in this repo) | Upstream source repo | Upstream source path | Generator |
+#### Generation pipeline
+
+The workflow reads version entries from `hugo.yaml` (`params.sections.standalone.versions` and `params.sections.kubernetes.versions`). Each entry has a `version` (e.g. `1.1.x`), a `linkVersion` (e.g. `latest`), and a `url`. The `linkVersion` determines the generated filename (`api-{linkVersion}.md`) and the git ref used:
+
+- `linkVersion: "main"` → checks out the `main` branch of `agentgateway/agentgateway`
+- Any other `linkVersion` → resolves the latest git tag matching `v{version-prefix}*` (e.g. `1.1.x` → latest `v1.1.*` tag)
+
+The generator is `github.com/elastic/crd-ref-docs` configured by `scripts/crd-ref-docs-config.yaml`. That config controls `kubernetesVersion` (for k8s type links) and `knownTypes` (for overriding type links like PullPolicy, Duration).
+
+#### Generated file → upstream source mapping
+
+| Generated file (in this repo) | Upstream source repo | Upstream source path | Generator |
 |---|---|---|---|
-| `assets/agw-docs/pages/reference/api/api-{version}.md` (API CRD reference) | `agentgateway/agentgateway` | `controller/api/v1alpha1/agentgateway/` | `github.com/elastic/crd-ref-docs` |
-| `assets/agw-docs/pages/reference/api/api-{version}.md` (shared types appended, includes CEL) | `agentgateway/agentgateway` | `controller/api/v1alpha1/shared/` | `scripts/generate-shared-types.py` |
-| `assets/agw-docs/pages/reference/helm/{version}/agentgateway.md` and `agentgateway-crds.md` | `agentgateway/agentgateway` | `install/helm/agentgateway/` and `install/helm/agentgateway-crds/` | `github.com/norwoodj/helm-docs` via `scripts/generate-ref-docs.py` |
-| `assets/agw-docs/snippets/metrics-control-plane-{version}.md` | `agentgateway/agentgateway` | control plane metrics output | `scripts/generate-ref-docs.py` |
+| `assets/agw-docs/pages/reference/api/api-{linkVersion}.md` (API CRD reference) | `agentgateway/agentgateway` | `controller/api/v1alpha1/agentgateway/` | `crd-ref-docs` + `scripts/crd-ref-docs-config.yaml` |
+| `assets/agw-docs/pages/reference/api/api-{linkVersion}.md` (shared types appended, includes CEL) | `agentgateway/agentgateway` | `controller/api/v1alpha1/shared/` | `scripts/generate-shared-types.py` |
+| `assets/agw-docs/pages/reference/helm/{linkVersion}/agentgateway.md` and `agentgateway-crds.md` | `agentgateway/agentgateway` | `install/helm/agentgateway/` and `install/helm/agentgateway-crds/` | `helm-docs` via `scripts/generate-ref-docs.py` |
+| `assets/agw-docs/snippets/metrics-control-plane-{linkVersion}.md` | `agentgateway/agentgateway` | control plane metrics output | `scripts/generate-ref-docs.py` |
 
-When you report a `reference/` link as skipped, include the upstream repo if you can identify it from the table above — that helps the user know whether the underlying fix needs an upstream PR or a regeneration of the docs.
+#### Generated file → content wrapper → published URL mapping
+
+This shows which content page includes each generated reference file, and the published URL it appears at:
+
+| Content wrapper | Reuses generated file | Published URL |
+|---|---|---|
+| `content/docs/kubernetes/main/reference/api.md` | `api-main.md` | `/docs/kubernetes/main/reference/api/` |
+| `content/docs/kubernetes/latest/reference/api.md` | `api-main.md` | `/docs/kubernetes/latest/reference/api/` |
+| `content/docs/kubernetes/1.0.x/reference/api.md` | `api-latest.md` | `/docs/kubernetes/1.0.x/reference/api/` |
+| `content/docs/kubernetes/2.2.x/reference/api.md` | `api-22x.md` | `/docs/kubernetes/2.2.x/reference/api/` |
+| `content/docs/kubernetes/main/reference/helm/agentgateway.md` | `helm/main/agentgateway.md` | `/docs/kubernetes/main/reference/helm/agentgateway/` |
+| `content/docs/kubernetes/latest/reference/helm/agentgateway.md` | `helm/main/agentgateway.md` | `/docs/kubernetes/latest/reference/helm/agentgateway/` |
+| `content/docs/kubernetes/1.0.x/reference/helm/agentgateway.md` | `helm/latest/agentgateway.md` | `/docs/kubernetes/1.0.x/reference/helm/agentgateway/` |
+| `content/docs/kubernetes/2.2.x/reference/helm/agentgateway.md` | `helm/2.2.x/agentgateway.md` | `/docs/kubernetes/2.2.x/reference/helm/agentgateway/` |
+
+**Key implication**: Older doc versions (like `1.0.x`) use `api-latest.md` / `helm/latest/`, which are generated from the latest *release tag* of `agentgateway/agentgateway`. These files are only regenerated when the workflow runs — fixes merged to the upstream `main` branch won't appear in `api-latest.md` until a new tag is cut or the workflow is manually re-run for that version.
+
+#### How to fix broken links in reference content
+
+When you find a broken link on a reference page, trace it upstream and fix it at the source:
+
+1. **URLs in Go doc comments** (API CRD reference): The broken URL is in a Go struct field comment in `agentgateway/agentgateway` under `controller/api/v1alpha1/`. Fix the comment in the Go source. If the user has a local clone/fork (e.g. at `agentgateway.dev-fork`), make the fix there.
+
+2. **URLs in Helm chart values** (Helm reference): The broken URL is in a `values.yaml` description in `agentgateway/agentgateway` under `install/helm/`. Fix the description in the Helm chart source.
+
+3. **Type links generated by `crd-ref-docs`** (e.g. broken `#pullpolicy-v1-core` or `#duration-v1-meta` anchors on kubernetes.io): These aren't in Go source — they're generated by the `crd-ref-docs` tool based on Go type references. Fix by adding `knownTypes` entries in `scripts/crd-ref-docs-config.yaml` in this repo to override the generated URLs.
+
+4. **Boilerplate k8s descriptions** (e.g. `git.k8s.io/community/.../api-conventions.md#types-kinds`): These come from upstream Kubernetes API machinery type definitions that `crd-ref-docs` injects. They cannot be fixed in Go source or config — note them as unfixable upstream boilerplate.
+
+After fixing upstream, the generated files in this repo will update on the next workflow run. For older versions pinned to release tags, either re-run the workflow manually or accept that the fix only applies going forward.
+
+When reporting, include the upstream file path and line number so the user knows exactly where to apply the fix or open a PR.
 
 ---
 
@@ -149,8 +191,8 @@ After processing the report, give the user a structured summary. Group findings 
 ## Needs human review
 - <link> in <file> — <why: couldn't determine new URL / content removed / cross-variant content gap / shortcode bug / etc.>
 
-## Skipped — generated reference content
-- <N> links under reference/ directories
+## Generated reference content — upstream fixes needed
+- <link> — fix in <upstream file:line> (<Go comment / Helm values / crd-ref-docs config / unfixable k8s boilerplate>)
 ```
 
 Keep the summary concise. Do not include long lists of identical reference/ skips. Fixed links do not need to be reported individually unless the user specifically asks. If you spot a root-cause bug (for example a shortcode that produces broken URLs for certain inputs), call it out in "Needs human review" with a pointer to the file and the suggested fix.
@@ -161,6 +203,6 @@ Keep the summary concise. Do not include long lists of identical reference/ skip
 
 - Don't open a PR or push. Local edits only.
 - Don't edit files under `public/` — those are build output.
-- Don't edit generated reference pages even if you think you know the fix.
+- Don't hand-edit generated reference markdown in this repo — fix upstream in the Go source, Helm chart, or `crd-ref-docs-config.yaml` instead.
 - Don't guess new URLs. If you can't verify, flag for review.
 - Don't edit the thin content wrapper when the body is a reuse — edit the shared file.
