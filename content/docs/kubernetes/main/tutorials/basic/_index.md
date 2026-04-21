@@ -65,7 +65,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
 Verify the control plane is running:
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
@@ -94,7 +94,7 @@ EOF
 
 Wait for the proxy to be ready:
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
