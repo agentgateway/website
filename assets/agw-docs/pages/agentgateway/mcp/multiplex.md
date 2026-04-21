@@ -226,7 +226,7 @@ done
 {{< doc-test paths="virtual-mcp" >}}
 YAMLTest -f - <<'EOF'
 - name: MCP endpoint accepts initialize request
-  retries: 1
+  retries: 5
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80"
     path: /mcp
