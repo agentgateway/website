@@ -8,9 +8,11 @@
 
 ## Why agentgateway?
 
-Traditional API gateways and reverse proxies aren't built for MCP and A2A, and adapting them isn't straightforward. These systems are optimized for **stateless REST-style interactions**—one request in, pick a backend, one response out—with no session context or ongoing connection state.
+Agentgateway is an open source, agentic-native full HTTP and gRPC proxy, not just an “AI sidecar.” You can put microservice APIs and agentic traffic behind one gateway with shared policies, security, and observability.
 
-MCP and A2A are fundamentally different:
+Traditional API gateways and reverse proxies route HTTP/gRPC well for many cases, but they are not purpose-built for MCP and A2A, and adapting them is not straightforward. These systems are often optimized for stateless, REST-style interactions—one request in, pick a backend, one response out—with no session context or ongoing connection state.
+
+MCP and A2A are fundamentally different, as discussed in the following table.
 
 | Traditional API Gateway | Agentgateway |
 |------------------------|--------------|
@@ -34,7 +36,7 @@ Agentgateway is built in **Rust** because performance and memory safety are non-
 
 ## Features
 
-Agentgateway is a unified data plane for managing agent connectivity, built in Rust for high performance and reliability. It supports agent protocols including MCP and A2A, and provides a unified interface for LLM consumption.
+Agentgateway is a unified data plane built in Rust for high performance and reliability. It handles HTTP and gRPC routing and policies for everyday APIs, adds first-class support for agent protocols including MCP and A2A, and provides a unified interface for LLM consumption—all in one deployment.
 
 ### LLM Gateway
 
