@@ -13,4 +13,5 @@ Extend agentgateway capabilities by integrating with external tools and platform
   {{< card link="llm-clients" title="LLM clients" subtitle="Configure Cursor, Claude Code, and other LLM clients" >}}
   {{< card link="mcp-clients" title="MCP clients" subtitle="Connect Claude Code, Cursor, and other IDEs to MCP servers" >}}
   {{< card link="llm-observability" title="LLM observability" subtitle="Prompt logging and cost tracking" >}}
+  {{< card link="argo" title="Argo Rollouts" subtitle="Control traffic splitting for safe Kubernetes rollouts" >}}
 {{< /cards >}}
