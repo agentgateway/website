@@ -119,6 +119,9 @@ params:
       # index page by: content | summary | heading | title
       index: summary
 
+  feedback:
+    enable: true
+
   editURL:
     enable: false
 
