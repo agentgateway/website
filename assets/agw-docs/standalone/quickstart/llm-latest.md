@@ -30,8 +30,8 @@ Route to an OpenAI backend through agentgateway.
 
 Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
 
-```sh {paths="llm"}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
+```sh
+export OPENAI_API_KEY='<your-api-key>'
 ```
 
 ### Step 2: Create the configuration
