@@ -28,7 +28,7 @@ curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-
 # For CI/tests: install dev version to local bin without sudo
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
 BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
 curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"
@@ -46,8 +46,8 @@ Route to an OpenAI backend through agentgateway.
 
 Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
 
-```sh {paths="llm"}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
+```sh
+export OPENAI_API_KEY='<your-api-key>'
 ```
 
 ### Step 2: Create the configuration
