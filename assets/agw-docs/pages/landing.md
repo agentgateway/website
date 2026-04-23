@@ -12,7 +12,7 @@ Agentgateway is an open source, agentic-native full HTTP and gRPC proxy, not jus
 
 Traditional API gateways and reverse proxies route HTTP/gRPC well for many cases, but they are not purpose-built for MCP and A2A, and adapting them is not straightforward. These systems are often optimized for stateless, REST-style interactions—one request in, pick a backend, one response out—with no session context or ongoing connection state.
 
-MCP and A2A are fundamentally different, as discussed in the following table.
+MCP and A2A are fundamentally different, as outlined in the following table.
 
 | Traditional API Gateway | Agentgateway |
 |------------------------|--------------|

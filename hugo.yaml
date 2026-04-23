@@ -79,7 +79,7 @@ menu:
 
 params:
   title: agentgateway
-  description: Agentgateway is an open source HTTP and gRPC proxy and gateway that unifies everyday API traffic with LLM, MCP, and A2A workloads in one data plane—connecting, securing, and observing agent-to-agent, agent-to-tool, and agent-to-LLM communication across any agent framework and environment.
+  description: Agentgateway is an open source HTTP and gRPC proxy and gateway that unifies everyday API traffic with LLM, MCP, and A2A workloads in one data plane — connecting, securing, and observing agent-to-agent, agent-to-tool, and agent-to-LLM communication across any agent framework and environment.
   navbar:
     displayTitle: false
     displayLogo: true
