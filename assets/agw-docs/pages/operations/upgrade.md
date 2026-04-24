@@ -51,11 +51,11 @@ helm get values {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse
      open {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml
      ```
 
-6. Make any changes that you want by editing your `values.yaml` Helm values file or preparing the `--set` flags. For development v{{< reuse "agw-docs/versions/patch-dev.md" >}} builds, include the `controller.image.pullPolicy=Always` setting or refer to the exact image digest to avoid using cached images.
+6. Make any changes that you want by editing your `values.yaml` Helm values file or preparing the `--set` flags. For development {{< reuse "agw-docs/versions/patch-dev.md" >}} builds, include the `controller.image.pullPolicy=Always` setting or refer to the exact image digest to avoid using cached images.
 
 7. Upgrade the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane Helm installation.
    * Make sure to include your Helm values when you upgrade either as a configuration file or with `--set` flags. Otherwise, any previous custom values that you set might be overwritten.
-   * When using the development build v{{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
+   * When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
    * To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
    
    ```sh {paths="upgrade"}

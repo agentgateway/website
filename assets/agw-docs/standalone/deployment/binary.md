@@ -20,10 +20,10 @@ curl -sL https://agentgateway.dev/install | bash
 {{% /tab %}}
 {{% tab tabName="Specific version" %}}
 
-To install a specific version, pass the `--version` flag. Use any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), such as the development version, `{{< reuse "agw-docs/versions/patch-dev.md" >}}`. The version must start with `v` (the script adds it if you omit it).
+To install a specific version, pass the `--version` flag. Use any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), `{{< reuse "agw-docs/versions/n-patch.md" >}}`. The version must start with `v` (the script adds it if you omit it).
 
 ```sh
-curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-docs/versions/patch-dev.md" >}}
+curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 
 {{% /tab %}}
