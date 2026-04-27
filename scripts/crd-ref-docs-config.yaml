@@ -29,3 +29,11 @@ render:
     - name: LocalPolicyTargetSelectorWithSectionName
       package: sigs.k8s.io/gateway-api/apis/v1alpha2
       link: https://gateway-api.sigs.k8s.io/reference/spec/#localpolicytargetselectorwithsectionname
+    # Kubernetes core/meta types whose generated anchors don't exist on the
+    # k8s API reference page.
+    - name: PullPolicy
+      package: k8s.io/api/core/v1
+      link: https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+    - name: Duration
+      package: k8s.io/apimachinery/pkg/apis/meta/v1
+      link: https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration

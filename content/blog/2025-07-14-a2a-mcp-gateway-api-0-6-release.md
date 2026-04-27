@@ -87,7 +87,7 @@ This gives AI platform operators more efficient and cost-conscious routing. This
 
 We're thrilled to see the community interest grow around this project. If you're building agent infrastructure, dealing with LLM routing, or trying to enforce policy in AI-native environments, we'd love your feedback and contributions:
 
-* [Project website](https://agentgateway.io/)
+* [Project website](https://agentgateway.dev/)
 * [GitHub repo](https://github.com/agentgateway/agentgateway)
 * [Discord community](https://discord.com/invite/y9efgEmppm)
 

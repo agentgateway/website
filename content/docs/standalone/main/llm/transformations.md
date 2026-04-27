@@ -27,11 +27,10 @@ Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/
 # Install agentgateway binary
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
 BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
 curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"
-export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
 {{< /doc-test >}}
 
 ## Configure LLM request transformations

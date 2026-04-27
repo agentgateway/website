@@ -12,7 +12,7 @@ Steps to install:
 
 1. Deploy Grafana Loki to your cluster.
 
-   ```yaml
+   ```yaml {paths="otel-stack"}
    helm upgrade --install loki loki \
    --repo https://grafana.github.io/helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-loki.md" >}} \
@@ -82,7 +82,7 @@ Steps to install:
 
 2. Deploy Grafana Tempo to your cluster.
 
-   ```yaml
+   ```yaml {paths="otel-stack"}
    helm upgrade --install tempo tempo \
    --repo https://grafana.github.io/helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-tempo.md" >}} \
@@ -115,6 +115,39 @@ Steps to install:
    tempo-0                1/1     Running   0          2m10s
    ```
 
+{{< doc-test paths="otel-stack" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for Loki StatefulSet to be ready
+  wait:
+    target:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: loki
+    jsonPath: "$.status.readyReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 400
+      intervalSeconds: 5
+- name: wait for Tempo StatefulSet to be ready
+  wait:
+    target:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: tempo
+    jsonPath: "$.status.readyReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 400
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 ## Step 2: Install the OTel Collector {#otel-collector}
 
 The OpenTelemetry collector acts as a centralized agent that scrapes metrics from the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and data plane gateway proxies. Then, the OTel collector exposes these metrics in Prometheus format so that other tools in your observability stack, such as Grafana, can in turn scrape the OTel collector and visualize the data.
@@ -129,7 +162,7 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
 
 1. Deploy the metrics collector to handle numerical measurements and time-series data. Note that you can also use the `promexporter` endpoint with Prometheus to scrape metrics from the collector pod, if you prefer the `pull` model to the `push` model.
 
-   ```yaml
+   ```yaml {paths="otel-stack"}
    helm upgrade --install opentelemetry-collector-metrics opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-collector.md" >}} \
@@ -254,7 +287,7 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
 
 2. Deploy the logs collector to process and forward application logs.
 
-   ```yaml
+   ```yaml {paths="otel-stack"}
    helm upgrade --install opentelemetry-collector-logs opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-collector.md" >}} \
@@ -290,7 +323,7 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
 
 3. Deploy the traces collector to handle distributed tracing data.
 
-   ```yaml
+   ```yaml {paths="otel-stack"}
    helm upgrade --install opentelemetry-collector-traces opentelemetry-collector \
    --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-collector.md" >}} \
@@ -338,13 +371,60 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
    opentelemetry-collector-traces-7696858cf9-tjllx    1/1     Running   0          51s
    ```
 
+{{< doc-test paths="otel-stack" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for metrics collector deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: telemetry
+        name: opentelemetry-collector-metrics
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+- name: wait for logs collector deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: telemetry
+        name: opentelemetry-collector-logs
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+- name: wait for traces collector deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: telemetry
+        name: opentelemetry-collector-traces
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 ## Step 3: Set up Prometheus {#prometheus}
 
 Prometheus is a monitoring system and time-series database that collects metrics from configured targets at given intervals. It's the de facto standard for metrics collection in cloud-native environments. You can use the PromQL query language to set up flexible queries and alerts based on the metrics.
 
 1. Deploy Prometheus in your cluster.
 
-   ```yaml
+   ```yaml {paths="otel-stack"}
    helm upgrade --install kube-prometheus-stack kube-prometheus-stack \
    --repo https://prometheus-community.github.io/helm-charts \
    --version {{< reuse "agw-docs/versions/otel-stack-prometheus.md" >}} \
@@ -416,3 +496,22 @@ Prometheus is a monitoring system and time-series database that collects metrics
    kube-prometheus-stack-operator-6dc9c666c5-pwzkb             1/1     Running   0          72s
    kube-prometheus-stack-prometheus-node-exporter-z7csm        1/1     Running   0          72s
    ```
+
+{{< doc-test paths="otel-stack" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for Grafana deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: telemetry
+        name: kube-prometheus-stack-grafana
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 400
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}

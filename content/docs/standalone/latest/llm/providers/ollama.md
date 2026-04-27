@@ -4,7 +4,7 @@ weight: 15
 description: Configure agentgateway to route LLM traffic to Ollama for local model inference
 test:
   ollama-standalone-validate:
-  - file: content/docs/standalone/main/llm/providers/ollama.md
+  - file: content/docs/standalone/latest/llm/providers/ollama.md
     path: ollama-standalone-validate
 ---
 
@@ -14,7 +14,7 @@ test:
 # Install agentgateway binary for testing
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
 BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
 curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"

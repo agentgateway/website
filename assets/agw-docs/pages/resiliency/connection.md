@@ -206,31 +206,31 @@ Use these settings to tune HTTP/2 flow control, which governs how much data can 
    }
    ```
 
-{{< doc-test paths="connection-http2-flow" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for http2-flow policy in config dump
-  retries: 20
-  http:
-    url: http://localhost:15000
-    skipSslVerification: true
-    method: GET
-    path: /config_dump
-  source:
-    type: pod
-    usePortForward: true
-    selector:
-      kind: Deployment
-      metadata:
-        namespace: agentgateway-system
-        name: agentgateway-proxy
-  expect:
-    bodyContains:
-    - '"http2WindowSize"'
-    - '"http2ConnectionWindowSize"'
-    - '"http2FrameSize"'
-    - '65536'
-EOF
-{{< /doc-test >}}
+   {{< doc-test paths="connection-http2-flow" >}}
+   YAMLTest -f - <<'EOF'
+   - name: wait for http2-flow policy in config dump
+     retries: 20
+     http:
+       url: http://localhost:15000
+       skipSslVerification: true
+       method: GET
+       path: /config_dump
+     source:
+       type: pod
+       usePortForward: true
+       selector:
+         kind: Deployment
+         metadata:
+           namespace: agentgateway-system
+           name: agentgateway-proxy
+     expect:
+       bodyContains:
+       - '"http2WindowSize"'
+       - '"http2ConnectionWindowSize"'
+       - '"http2FrameSize"'
+       - '65536'
+   EOF
+   {{< /doc-test >}}
 
 4. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
 

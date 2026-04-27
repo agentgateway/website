@@ -42,7 +42,7 @@ words.style.transform = `translateY(-${current * 25}%)`;
 })();
 </script>
 <p class="text-xl max-w-2xl font-semibold mt-6 lg:mt-10 font-heading text-secondary-text">
-Agent Gateway is an open source proxy built on AI-native protocols (A2A & MCP) to connect, secure, and observe agent-to-LLM, agent-to-tool, and agent-to-agent communication across any framework and environment.
+Agent Gateway is an open source HTTP and gRPC proxy that handles standard API traffic and AI-native protocols (A2A & MCP) in one place — connecting, securing, and observing agent-to-LLM, agent-to-tool, and agent-to-agent communication across any framework and environment.
 </p>
 <div class="flex flex-wrap justify-center gap-4 pt-10">
 {{< button style="primary" href="/docs/quickstart/" iconRight="true" text="Get Started" icon="arrow-right" >}}

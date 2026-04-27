@@ -4,7 +4,7 @@ weight: 10
 description: Configure agentgateway to route traffic to any LLM provider that implements the OpenAI API format.
 test:
   openai-compatible-validate:
-  - file: content/docs/standalone/main/llm/providers/openai-compatible.md
+  - file: content/docs/standalone/latest/llm/providers/openai-compatible.md
     path: openai-compat-validate
 ---
 
@@ -22,7 +22,7 @@ You also need the following prerequisites.
 # Install agentgateway binary for testing
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
 BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
 curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"

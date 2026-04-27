@@ -26,9 +26,9 @@ None of those numbers alone tell the story. All of them arriving together do.
 
 <img width="1304" height="613" alt="Screenshot 2026-03-12 at 12 28 40 PM" src="https://github.com/user-attachments/assets/6c8f6ed9-d03f-4900-859e-fbdc7e4dfbf7" />
 
-Agentgateway is an open-source LLM, MCP, and A2A gateway hosted under the Linux Foundation. It's a connectivity data plane for agentic AI — designed for the traffic patterns that traditional API gateways were never built to handle.
+Agentgateway is an open-source gateway and proxy hosted under the Linux Foundation. It routes **HTTP and gRPC** with the capabilities you expect from a mature data plane, and layers on first-class support for **LLM inference, MCP tool servers, and A2A** agent-to-agent communication—so teams can unify “normal” API traffic and agentic workloads instead of running parallel gateways.
 
-Where a conventional gateway routes HTTP requests, agentgateway is purpose-built for LLM inference traffic, MCP tool servers, and A2A agent-to-agent communication. It focuses on the gaps that show up the moment you try to run these workloads in production: governance, observability, multi-tenancy, and protocol-aware routing.
+It is built for the traffic patterns that traditional API gateways struggle with once MCP and A2A enter the picture, and it focuses on the gaps that show up the moment you run those workloads in production: governance, observability, multi-tenancy, and protocol-aware routing.
 
 A few things that define the project:
 

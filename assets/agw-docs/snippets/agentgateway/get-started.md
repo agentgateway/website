@@ -17,15 +17,32 @@
    {{< /tabs >}}
 
 2. Deploy the CRDs for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane by using Helm.
-   ```sh {paths="standard,experimental"}
+
+   {{< tabs items="Release, Nightly build" tabTotal="2" >}}
+   {{% tab tabName="Release" %}}
+   ```sh {paths="standard"}
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
    --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
    --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
    --set controller.image.pullPolicy=Always
    ```
+   {{% /tab %}}
+   {{% tab tabName="Nightly build" %}}
+   For testing and development purposes, you can use the nightly build of the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs.
+   ```sh {paths="experimental"}
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}} \
+   --create-namespace --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
+   --set controller.image.pullPolicy=Always
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Install the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane by using Helm. To use experimental Gateway API features, include the experimental feature gate, `--set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true`.
-   ```sh {paths="standard,experimental"}
+
+   {{< tabs items="Release, Nightly build" tabTotal="2" >}}
+   {{% tab tabName="Release" %}}
+   ```sh {paths="standard"}
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
      --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
@@ -33,7 +50,20 @@
      --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \
      --wait
    ```
-   
+   {{% /tab %}}
+   {{% tab tabName="Nightly build" %}}
+   For testing and development purposes, you can use the nightly build of the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane.
+   ```sh {paths="experimental"}
+   helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
+   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
+   --set controller.image.pullPolicy=Always \
+   --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \
+   --wait
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
 4. Make sure that the `{{< reuse "agw-docs/snippets/pod-name.md" >}}` control plane is running.
 
    ```sh
