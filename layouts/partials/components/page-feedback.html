@@ -58,7 +58,28 @@
     if (type === 'up') {
       thanksMsg.innerHTML = 'Thanks for the feedback!';
     } else {
-      thanksMsg.innerHTML = 'Sorry to hear that. Please <a href="https://github.com/agentgateway/website/issues/new" class="text-violet-600 dark:text-violet-400 hover:underline" target="_blank" rel="noopener noreferrer">open an issue</a> to let us know how we can improve this page.';
+      var pageUrl = window.location.href;
+      var pagePath = window.location.pathname;
+      var issueTitle = encodeURIComponent('Docs feedback: ' + pagePath);
+      var bodyTemplate = [
+        '## Summary',
+        '',
+        '{Briefly describe what is wrong, missing, or confusing on the page. Can include screenshots, log output, or malformed examples that demonstrate the issue.}',
+        '',
+        '## Environment',
+        '',
+        '- Page URL: ' + pageUrl,
+        '- Browser: {Browser}',
+        '- Operating system: {Operating system}',
+        '',
+        '## Additional comments (optional)',
+        '',
+        '{Anything else you want to share.}',
+        ''
+      ].join('\n');
+      var issueBody = encodeURIComponent(bodyTemplate);
+      var issueUrl = 'https://github.com/agentgateway/website/issues/new?title=' + issueTitle + '&body=' + issueBody;
+      thanksMsg.innerHTML = 'Sorry to hear that. Please <a href="' + issueUrl + '" class="text-violet-600 dark:text-violet-400 hover:underline" target="_blank" rel="noopener noreferrer">open an issue</a> to let us know how we can improve this page.';
     }
   }
 </script>
