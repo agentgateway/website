@@ -59,6 +59,10 @@
     transition-duration: 500ms;
     transition-timing-function: linear;
   }
+
+  .navbar.landing-navbar.scrolled {
+    background-color: #030712;
+  }
   
   .dark .navbar.scrolled {
     background-color: #111; /* matches hextra dark mode bg */
@@ -450,9 +454,9 @@
   </div>
 {{- else -}}
   {{- /* Docs/blog navbar with dropdown - use dark navbar (and dark logo) on blog */ -}}
-  <nav class="navbar py-[1.875rem] px-6 xl:px-12 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
-    <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
-      <div class="flex items-center gap-8">
+  <nav class="navbar desktop-navbar {{ if $isBlogPage }}navbar-dark-bg{{ end }}" style="padding: 1.875rem 0.5rem; position: fixed; top: 0; width: 100%; z-index: 20; border-bottom: 1px solid #e5e7eb;">
+    <div style="display: flex; max-width: 1440px; margin: 0 auto; align-items: center; justify-content: space-between; gap: 1rem;">
+      <div style="display: flex; align-items: center;">
         {{- $page := . -}}
         {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\" height=\"50\"" -}}
         {{- if $isBlogPage -}}
@@ -460,7 +464,7 @@
         {{- end -}}
         <a href="/">{{ partial "utils/logo.html" $logoParams }}</a>
       </div>
-      <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between gap-4">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
         {{- /* Extract version and section for version dropdown */ -}}
         {{- $path := .RelPermalink -}}
         {{- $segments := split $path "/" -}}
@@ -510,13 +514,11 @@
         {{- $currentPage := . -}}
         {{- $docsRendered := false -}}
         {{- range .Site.Menus.main -}}
-          {{- if eq .Params.type "search" -}}
-            {{- /* Search menu item - use Hextra search if available */ -}}
-            {{- if templates.Exists "partials/hextra/search.html" -}}
-              {{- partial "hextra/search.html" (dict "params" .Params) -}}
-            {{- else if templates.Exists "partials/search.html" -}}
-              {{- partial "search.html" (dict "params" .Params) -}}
-            {{- end -}}
+          {{- if eq .Name "Home" -}}
+            {{- /* Skip Home — logo already links to / */ -}}
+          {{- else if eq .Params.type "search" -}}
+            {{- /* Search — call hextra's search partial directly */ -}}
+            {{- partial "search.html" (dict "params" .Params "location" "navbar") -}}
           {{- else if and (eq .Name "Docs") (not $docsRendered) -}}
             {{- /* Docs dropdown - only render once */ -}}
             {{- $docsRendered = true -}}
