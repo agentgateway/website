@@ -1,3 +1,18 @@
+{{- /*
+  Shortcode: card
+  Renders a styled card link with an optional icon or image, title, and subtitle, with section-aware URL resolution via the "path" parameter.
+
+  Parameters:
+    - link: (optional) A direct URL for the card link (used as-is).
+    - path: (optional) A section-relative path resolved to the current docs section (e.g., "/tutorials/basic/").
+    - title: The card title (aliased as "header").
+    - subtitle: (optional) A short description below the title (aliased as "description"); supports Markdown.
+    - icon: (optional) The name of an icon to display (rendered via the utils/icon partial).
+    - image: (optional) An image URL to display at the top of the card.
+    - alt: (optional) Alt text for the image; defaults to the title.
+
+  Example: {{< card title="Getting Started" subtitle="Learn the basics" path="/getting-started/" icon="rocket" >}}
+*/ -}}
 {{- $link := .Get "link" -}}
 {{- $path := .Get "path" -}}
 {{- if $path }}

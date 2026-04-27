@@ -1,3 +1,15 @@
+{{- /*
+  Shortcode: reuse-image-dark
+  Renders an image from the /assets directory for dark mode only, with optional width, alt text, and caption.
+
+  Parameters:
+    - srcDark: The path to the dark-mode image in the /assets directory.
+    - width: (optional) The display width of the image in pixels.
+    - alt: (optional) Alt text for the image.
+    - caption: (optional) A caption displayed below the image in italics.
+
+  Example: {{< reuse-image-dark srcDark="images/architecture-dark.png" width="600" alt="Architecture diagram" caption="System architecture overview" >}}
+*/ -}}
 {{ $srcDark := .Get "srcDark"}}
 {{ $width := .Get "width" }}
 {{ $alt := .Get "alt" }}
