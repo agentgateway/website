@@ -1,3 +1,8 @@
+/* Hide Hextra theme navbar globally - all pages use custom nav.html instead */
+.hextra-nav-container {
+    display: none !important;
+}
+
 h1,
 h2,
 h3,
