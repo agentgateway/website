@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: community-meeting
+  Renders a community meeting widget with a live status indicator, countdown timer, join button, and links to meeting notes and calendar, driven by data/community.meeting.
+
+  Parameters:
+    (none -- reads from .Site.Data.community.meeting)
+
+  Example: {{< community-meeting >}}
+*/ -}}
 {{ $meeting := .Site.Data.community.meeting }}
 
 <div class="community-meeting-container my-8">

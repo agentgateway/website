@@ -1,3 +1,14 @@
+{{- /*
+  Shortcode: github-table
+  Fetches a remote Markdown file by URL and extracts a specific section by heading, optionally excluding lines that match a regex pattern.
+
+  Parameters:
+    - url: The remote URL of the Markdown file to fetch.
+    - section: The heading name of the section to extract.
+    - exclude: (optional) A regex pattern for lines to remove from the extracted section.
+
+  Example: {{< github-table url="https://raw.githubusercontent.com/org/repo/main/README.md" section="Compatibility" exclude="^\\|.*draft.*" >}}
+*/ -}}
 {{- $url := .Get "url" -}}
 {{ $exclude := .Get "exclude" }}
 {{- $section := .Get "section" -}}

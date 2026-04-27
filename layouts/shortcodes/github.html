@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: github
+  Fetches a remote file by URL and renders the raw content as safe HTML.
+
+  Parameters:
+    - url: The remote URL of the file to fetch and display.
+
+  Example: {{< github url="https://raw.githubusercontent.com/org/repo/main/example.yaml" >}}
+*/ -}}
 {{- $url := .Get "url" -}}
 
 {{- with resources.GetRemote $url -}}

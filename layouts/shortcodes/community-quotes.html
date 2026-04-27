@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: community-quotes
+  Renders a section of community quote cards from the site's data/quotes data file, each showing a quote, avatar, name, and role.
+
+  Parameters:
+    (none -- reads from .Site.Data.quotes)
+
+  Example: {{< community-quotes >}}
+*/ -}}
 {{ $data := .Site.Data.quotes }}
 
 {{ if $data }}
