@@ -23,32 +23,23 @@
     {{- break -}}
   {{- end -}}
 {{- end -}}
-
-{{- /* Set product name based on subsection */ -}}
-{{- $productName := "" -}}
-{{- if eq $subSection "standalone" -}}
-  {{- $productName = "Agentgateway (Standalone)" -}}
-{{- else if eq $subSection "kubernetes" -}}
-  {{- $productName = "Agentgateway on Kubernetes" -}}
+{{- if not $versionDisplay -}}
+  {{- $versionDisplay = $currentVersion -}}
 {{- end -}}
 
 {{- /* Only show breadcrumb if we're in a docs section with version */ -}}
-{{- if and (eq $section "docs") $subSection $currentVersion $productName -}}
-  {{- /* Check if this is the version index page (e.g., /docs/kubernetes/latest/) */ -}}
-  {{- $isVersionIndex := false -}}
+{{- if and (eq $section "docs") $subSection $currentVersion -}}
+  {{- /* Check if this is the version index page */ -}}
   {{- $pathAfterVersion := after 4 $segments -}}
-  {{- /* Filter out empty segments */ -}}
   {{- $pathSegments := slice -}}
   {{- range $pathAfterVersion -}}
     {{- if ne . "" -}}
       {{- $pathSegments = $pathSegments | append . -}}
     {{- end -}}
   {{- end -}}
-  {{- if eq (len $pathSegments) 0 -}}
-    {{- $isVersionIndex = true -}}
-  {{- end -}}
-  
-  {{- /* Build breadcrumb items for intermediate paths */ -}}
+  {{- $isVersionIndex := eq (len $pathSegments) 0 -}}
+
+  {{- /* Build breadcrumb items for paths after version */ -}}
   {{- $breadcrumbItems := slice -}}
   {{- if not $isVersionIndex -}}
     {{- $basePath := printf "/docs/%s/%s/" $subSection $currentVersion -}}
@@ -57,35 +48,40 @@
       {{- $currentPath = printf "%s%s/" $currentPath $segment -}}
       {{- $page := $.Site.GetPage $currentPath -}}
       {{- if $page -}}
-        {{- $title := $page.Title -}}
-        {{- if eq $title "" -}}
-          {{- $title = $page.LinkTitle -}}
-        {{- end -}}
-        {{- if eq $title "" -}}
-          {{- $title = $segment -}}
-        {{- end -}}
+        {{- $title := $page.Title | default $page.LinkTitle | default $segment -}}
         {{- $isLast := eq $index (sub (len $pathSegments) 1) -}}
         {{- $breadcrumbItems = $breadcrumbItems | append (dict "title" $title "url" $currentPath "isLast" $isLast) -}}
       {{- end -}}
     {{- end -}}
   {{- end -}}
-  
-  <nav class="hx-mb-4 hx-flex hx-items-center hx-gap-2 hx-text-sm hx-text-gray-600 dark:hx-text-gray-400">
-    <a href="/docs/{{ $subSection }}/{{ $currentVersion }}/" class="hover:hx-text-gray-900 dark:hover:hx-text-gray-100">
-      {{ $productName }}
+
+  <nav style="margin-bottom: 1rem; display: flex; align-items: center; gap: 0.375rem; font-size: 0.875rem; color: #6b7280; flex-wrap: wrap;">
+    {{- /* Home icon */ -}}
+    <a href="/" style="display: flex; align-items: center; color: #6b7280; text-decoration: none;" title="Home">
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-4 0a1 1 0 01-1-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 01-1 1h-2z"/></svg>
     </a>
-    {{- /* Add intermediate breadcrumb items */ -}}
+    <span style="color: #d1d5db;">/</span>
+    {{- /* Subsection (Kubernetes or Standalone) */ -}}
+    <a href="/docs/{{ $subSection }}/{{ $currentVersion }}/" style="color: #6b7280; text-decoration: none;">{{ $subSection | title }}</a>
+    <span style="color: #d1d5db;">/</span>
+    {{- /* Version */ -}}
+    <a href="/docs/{{ $subSection }}/{{ $currentVersion }}/" style="color: #6b7280; text-decoration: none;">{{ $versionDisplay }}</a>
+    {{- /* Intermediate + current page items */ -}}
     {{- range $breadcrumbItems -}}
-      <span class="hx-text-gray-400 dark:hx-text-gray-500">/</span>
+      <span style="color: #d1d5db;">/</span>
       {{- if .isLast -}}
-        <span class="hx-text-gray-900 dark:hx-text-gray-100">
-          {{ .title }}
-        </span>
+        <span class="breadcrumb-current">{{ .title }}</span>
       {{- else -}}
-        <a href="{{ .url }}" class="hover:hx-text-gray-900 dark:hover:hx-text-gray-100">
-          {{ .title }}
-        </a>
+        <a href="{{ .url }}" style="color: #6b7280; text-decoration: none;">{{ .title }}</a>
       {{- end -}}
     {{- end -}}
   </nav>
+  <style>
+    .breadcrumb-current { color: #6b7280; }
+    .dark nav a[href] { color: #9ca3af !important; }
+    .dark nav span { color: #4b5563 !important; }
+    .dark nav .breadcrumb-current { color: #9ca3af !important; }
+    .dark nav a[href]:hover { color: #e5e7eb !important; }
+    .dark nav a[href] svg { stroke: #9ca3af; }
+  </style>
 {{- end -}}

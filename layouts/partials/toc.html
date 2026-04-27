@@ -31,7 +31,7 @@
 
 {{/* ---------- recursive renderer (consumes list so no duplicates) ---------- */}}
 {{- define "render-list" -}}
-  <ul class="hx-ml-4 hx-mt-1">
+  <ul style="margin-left: 1rem; margin-top: 0.25rem;">
     {{- template "render-items" . -}}
   </ul>
 {{- end }}
@@ -42,10 +42,10 @@
   {{- $n := len $headings -}}
   {{- if gt $n 0 -}}
     {{- $h := index $headings 0 -}}
-    <li class="hx-my-2 hx-scroll-my-6 hx-scroll-py-6">
+    <li class="toc-item" style="margin: 0.5rem 0;">
       <a
         href="#{{ $h.id }}"
-        class="hx-font-semibold hx-inline-block hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-300 contrast-more:hx-text-gray-900 contrast-more:hx-underline contrast-more:dark:hx-text-gray-50 hx-w-full hx-break-words">
+        class="toc-link" style="display: inline-block; color: #6b7280; text-decoration: none; width: 100%; word-break: break-word; font-size: 0.875rem;">
         {{ $h.text }}
       </a>
 
@@ -80,45 +80,27 @@
 
 {{/* ---------- TOC container ---------- */}}
 {{- if and $toc (ge (len $headings) $minNumHeadings) }}
-<nav class="hextra-toc hx-order-last hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden hx-px-4" aria-label="table of contents">
-  <div class="hextra-scrollbar hx-sticky hx-top-16 hx-overflow-y-auto hx-pr-4 hx-pt-6 hx-text-sm [hyphens:auto] hx-max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4">
-    <p class="hx-mb-4 hx-font-semibold hx-tracking-tight">{{ $onThisPage }}</p>
+<nav class="hextra-toc hx:order-last hx:hidden hx:w-64 hx:shrink-0 hx:xl:block hx:print:hidden hx:px-4" aria-label="table of contents">
+  <div class="hextra-scrollbar hx:sticky hx:top-16 hx:overflow-y-auto hx:pr-4 hx:pt-6 hx:text-sm [hyphens:auto] hx:max-h-[calc(100vh-var(--navbar-height)-env(safe-area-inset-bottom))] ltr:hx--mr-4 rtl:hx--ml-4">
+    <p class="hx:mb-4 hx:font-semibold hx:tracking-tight">{{ $onThisPage }}</p>
 
     {{ template "render-list" (dict "headings" $headings "parentLevel" $startLevel) }}
 
-    <div class="hx-mt-8 hx-border-t hx-bg-white hx-pt-8 hx-shadow-[0_-12px_16px_white] dark:hx-bg-dark dark:hx-shadow-[0_-12px_16px_#111] hx-sticky hx-bottom-0 hx-flex hx-flex-col hx-items-start hx-gap-2 hx-pb-8 dark:hx-border-neutral-800 contrast-more:hx-border-t contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-border-neutral-400">
-
-      {{- if and site.Params.toc.displayTags .Params.tags -}}
-        <div class="hx:flex hx:items-start hx:gap-x-2 hx:font-medium hx-text-xs">
-          <div class="hx:text-gray-500 hx:dark:text-gray-400 hx:contrast-more:text-gray-800 hx:contrast-more:dark:text-gray-50">{{ $tags }}</div>
-            <div class="hx:flex hx:flex-wrap hx:gap-y-1">
-              {{ partial "tags.html" (dict "context" .) }}
-            </div>
-        </div>
-      {{- end }}
-
-      {{- if site.Params.editURL.enable -}}
-        {{- $editURL := site.Params.editURL.base | default "" -}}
-        {{- with .Params.editURL -}}
-          {{- $editURL = . -}}
-        {{- else -}}
-          {{- with .File -}}
-            {{- $sourceDir := replace (strings.TrimPrefix .FileInfo.Meta.BaseDir .FileInfo.Meta.SourceRoot) "\\" "/" -}}
-            {{- $sourceDir = strings.TrimPrefix "/content" $sourceDir -}}
-            {{- $path := replace .Path "\\" "/" -}}
-            {{- $editURL = urls.JoinPath $editURL $sourceDir $path -}}
-          {{- end -}}
-        {{- end }}
-        <a class="hx:text-xs hx-font-medium hx-text-gray-500 hx:hover:text-gray-900 hx:dark:text-gray-400 hx:dark:hover:text-gray-100 hx:contrast-more:text-gray-800 hx:contrast-more:dark:text-gray-50" href="{{ $editURL }}" target="_blank" rel="noreferrer">{{ $editThisPage }}</a>
-      {{- end }}
-
-      <button aria-hidden="true" id="backToTop" onClick="scrollUp();" class="hx-transition-all hx-duration-75 hx-text-xs hx-font-medium hx-text-gray-500 hover:hx-text-gray-900 dark:hx-text-gray-400 dark:hover:hx-text-gray-100 contrast-more:hx-text-gray-800 contrast-more:dark:hx-text-gray-50">
+    <div class="toc-bottom" style="margin-top: 2rem; border-top: 1px solid #e5e7eb; padding-top: 2rem; position: sticky; bottom: 0; display: flex; flex-direction: column; align-items: start; gap: 0.5rem; padding-bottom: 2rem; background: white; box-shadow: 0 -12px 16px white;">
+      <button aria-hidden="true" id="backToTop" onClick="scrollUp();" class="toc-back-to-top" style="font-size: 0.75rem; font-weight: 500; color: #6b7280; background: none; border: none; cursor: pointer; padding: 0; display: inline-flex; align-items: center; gap: 0.25rem; transition: color 0.15s;">
         <span>{{ $backToTop }}</span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="hx-inline ltr:hx-ml-1 rtl:hx-mr-1 hx-h-3.5 hx-w-3.5 hx-border hx-rounded-full hx-border-gray-500 hover:hx-border-gray-900 dark:hx-border-gray-400 dark:hover:hx-border-gray-100 contrast-more:hx-border-gray-800 contrast-more:dark:hx-border-gray-50">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="display: inline; height: 0.875rem; width: 0.875rem; border: 1px solid #9ca3af; border-radius: 9999px; margin-left: 0.25rem;">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
         </svg>
       </button>
     </div>
+    <style>
+      .dark .toc-bottom { background: #111 !important; box-shadow: 0 -12px 16px #111 !important; border-top-color: #374151 !important; }
+      .dark .toc-back-to-top { color: #9ca3af !important; }
+      .dark .toc-back-to-top:hover { color: #e5e7eb !important; }
+      .toc-back-to-top:hover { color: #111827; }
+      .dark .toc-back-to-top svg { border-color: #6b7280 !important; }
+    </style>
   </div>
 </nav>
 {{- end }}
