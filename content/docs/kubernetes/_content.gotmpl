@@ -1,0 +1,238 @@
+{{/*
+  Kubernetes content adapter: generates API reference pages from CRD
+  OpenAPI v3 schemas + CEL schema, fetched from GitHub at build time.
+
+  CONFIGURATION — edit the sections below to change sources, outputs, or targets.
+  RENDERING     — the logic below the config sections should not need editing.
+*/}}
+
+{{/* =================================================================== */}}
+{{/* SOURCES — where to fetch structured data                            */}}
+{{/* =================================================================== */}}
+{{ $sources := dict
+  "crdBase"   "https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/controller/install/helm/agentgateway-crds/templates"
+  "celSchema" "https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/cel.json"
+}}
+
+{{/* =================================================================== */}}
+{{/* TARGETS — version prefixes to generate pages into                    */}}
+{{/* =================================================================== */}}
+{{ $targets := slice "latest/reference" "main/reference" }}
+
+{{/* =================================================================== */}}
+{{/* PAGES — source file → output path, one line per generated page      */}}
+{{/*                                                                     */}}
+{{/*   CRD pages: file is fetched from crdBase; kind/shortNames parsed   */}}
+{{/*   from the YAML. Path and title are explicit.                       */}}
+{{/* =================================================================== */}}
+{{ $crdPages := slice
+  (dict "file" "agentgateway.dev_agentgatewaybackends.yaml"    "path" "by-resource/agentgatewaybackend"    "title" "AgentgatewayBackend"    "weight" 10)
+  (dict "file" "agentgateway.dev_agentgatewaypolicies.yaml"    "path" "by-resource/agentgatewaypolicy"     "title" "AgentgatewayPolicy"     "weight" 20)
+  (dict "file" "agentgateway.dev_agentgatewayparameters.yaml"  "path" "by-resource/agentgatewayparameters" "title" "AgentgatewayParameters" "weight" 30)
+}}
+
+{{/* =================================================================== */}}
+{{/* RENDERING — fetch data, generate pages. No config below this line.  */}}
+{{/* =================================================================== */}}
+
+{{/* --- Fetch and parse CEL schema --- */}}
+{{ $celRaw := "" }}
+{{ with try (resources.GetRemote (index $sources "celSchema")) }}
+  {{ with .Err }}
+    {{ errorf "Failed to fetch CEL schema: %s" . }}
+  {{ else with .Value }}
+    {{ $celRaw = .Content }}
+  {{ end }}
+{{ end }}
+{{ $celSchema := $celRaw | transform.Unmarshal }}
+
+{{/* --- Fetch and parse each CRD --- */}}
+{{ $crdBase := index $sources "crdBase" }}
+{{ $parsedCrds := slice }}
+{{ range $crdPages }}
+  {{ $pagePath := .path }}
+  {{ $pageTitle := .title }}
+  {{ $pageWeight := .weight }}
+  {{ $url := printf "%s/%s" $crdBase .file }}
+  {{ with try (resources.GetRemote $url) }}
+    {{ with .Err }}
+      {{ errorf "Failed to fetch CRD %s: %s" $url . }}
+    {{ else with .Value }}
+      {{ $crd := .Content | transform.Unmarshal }}
+      {{ $shortNames := $crd.spec.names.shortNames }}
+      {{ $schema := (index $crd.spec.versions 0).schema.openAPIV3Schema }}
+      {{ $spec := index $schema.properties "spec" }}
+      {{ $parsedCrds = $parsedCrds | append (dict "spec" $spec "shortNames" $shortNames "path" $pagePath "title" $pageTitle "weight" $pageWeight) }}
+    {{ end }}
+  {{ end }}
+{{ end }}
+
+{{/* --- Generate pages for each target --- */}}
+{{ range $prefix := $targets }}
+
+  {{/* --- By-resource index page with cards --- */}}
+  {{ $indexMd := "<p class=\"hx:mb-6\">Browse the API reference by resource type.</p>\n\n" }}
+  {{ $indexMd = printf "%s<div class=\"hextra-cards hx:mt-4 hx:gap-4 hx:grid not-prose\" style=\"--hextra-cards-grid-cols: 3;\">\n" $indexMd }}
+  {{ range $crdPages }}
+    {{ $slug := .path | path.Base }}
+    {{ $indexMd = printf "%s<a class=\"hextra-card hx:group hx:flex hx:flex-col hx:justify-start hx:overflow-hidden hx:rounded-lg hx:border hx:border-gray-200 hx:text-current hx:no-underline hx:dark:shadow-none hx:hover:border-gray-300 hx:bg-transparent hx:shadow-xs hx:dark:border-neutral-800 hx:hover:bg-slate-50 hx:hover:shadow-md hx:dark:hover:border-neutral-700 hx:dark:hover:bg-neutral-900 hx:transition-all hx:duration-200\" href=\"%s/\">" $indexMd $slug }}
+    {{ $indexMd = printf "%s<div class=\"hx:mt-auto\"><span class=\"hextra-card-icon hx:flex hx:font-semibold hx:items-start hx:gap-2 hx:p-4 hx:text-gray-700 hx:hover:text-gray-900 hx:dark:text-neutral-200 hx:dark:hover:text-neutral-50\">%s</span></div></a>\n" $indexMd .title }}
+  {{ end }}
+  {{ $indexMd = printf "%s</div>\n" $indexMd }}
+  {{ $.AddPage (dict
+    "content" (dict "mediaType" "text/html" "value" $indexMd)
+    "kind" "section"
+    "params" (dict "generated" true)
+    "path" (printf "%s/by-resource" $prefix)
+    "title" "API reference (by resource)"
+    "weight" 2
+  ) }}
+
+  {{/* --- Per-CRD resource pages --- */}}
+  {{ range $i, $page := $crdPages }}
+    {{ $crd := index $parsedCrds $i }}
+    {{ $spec := $crd.spec }}
+    {{ $md := "" }}
+
+    {{ with $spec.description }}
+      {{ $md = printf "%s%s\n" $md . }}
+    {{ end }}
+    {{ with $crd.shortNames }}
+      {{ $md = printf "%s\nShort name: `%s`\n" $md (delimit . "`, `") }}
+    {{ end }}
+
+    {{/* Render spec fields + one level of nesting */}}
+    {{ with $spec.properties }}
+      {{ $md = printf "%s\n## Spec fields\n\n| Field | Type | Description |\n|-------|------|-------------|\n" $md }}
+      {{ range $fname, $fprop := . }}
+        {{ $ftype := $fprop.type | default "object" }}
+        {{ if eq $ftype "array" }}
+          {{ with $fprop.items }}
+            {{ $ftype = printf "array of %s" (.type | default "object") }}
+          {{ end }}
+        {{ end }}
+        {{ $fdesc := $fprop.description | default "" }}
+        {{ $fdesc = replace $fdesc "|" "\\|" }}
+        {{ $fdesc = replace $fdesc "\n" " " }}
+        {{ if gt (len $fdesc) 200 }}
+          {{ $fdesc = printf "%s..." (substr $fdesc 0 200) }}
+        {{ end }}
+        {{ $md = printf "%s| `%s` | %s | %s |\n" $md $fname $ftype $fdesc }}
+
+        {{ with $fprop.properties }}
+          {{ range $subname, $subprop := . }}
+            {{ $subtype := $subprop.type | default "object" }}
+            {{ if eq $subtype "array" }}
+              {{ with $subprop.items }}
+                {{ $subtype = printf "array of %s" (.type | default "object") }}
+              {{ end }}
+            {{ end }}
+            {{ $subdesc := $subprop.description | default "" }}
+            {{ $subdesc = replace $subdesc "|" "\\|" }}
+            {{ $subdesc = replace $subdesc "\n" " " }}
+            {{ if gt (len $subdesc) 200 }}
+              {{ $subdesc = printf "%s..." (substr $subdesc 0 200) }}
+            {{ end }}
+            {{ $md = printf "%s| `%s.%s` | %s | %s |\n" $md $fname $subname $subtype $subdesc }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+
+    {{ $.AddPage (dict
+      "content" (dict "mediaType" "text/markdown" "value" $md)
+      "kind" "page"
+      "params" (dict "crdKind" $page.title "generated" true)
+      "path" (printf "%s/%s" $prefix $page.path)
+      "title" $page.title
+      "weight" $page.weight
+    ) }}
+  {{ end }}
+
+  {{/* --- Full API single page --- */}}
+  {{ $fullMd := "Complete Kubernetes API reference generated from the agentgateway CRD schemas. All resource types on one page.\n" }}
+  {{ range $i, $page := $crdPages }}
+    {{ $crd := index $parsedCrds $i }}
+    {{ $spec := $crd.spec }}
+    {{ $fullMd = printf "%s\n---\n\n## %s\n" $fullMd $page.title }}
+    {{ with $spec.description }}
+      {{ $fullMd = printf "%s\n%s\n" $fullMd . }}
+    {{ end }}
+    {{ with $crd.shortNames }}
+      {{ $fullMd = printf "%s\nShort name: `%s`\n" $fullMd (delimit . "`, `") }}
+    {{ end }}
+    {{ with $spec.properties }}
+      {{ $fullMd = printf "%s\n| Field | Type | Description |\n|-------|------|-------------|\n" $fullMd }}
+      {{ range $fname, $fprop := . }}
+        {{ $ftype := $fprop.type | default "object" }}
+        {{ if eq $ftype "array" }}
+          {{ with $fprop.items }}{{ $ftype = printf "array of %s" (.type | default "object") }}{{ end }}
+        {{ end }}
+        {{ $fdesc := $fprop.description | default "" }}
+        {{ $fdesc = replace $fdesc "|" "\\|" }}
+        {{ $fdesc = replace $fdesc "\n" " " }}
+        {{ if gt (len $fdesc) 200 }}{{ $fdesc = printf "%s..." (substr $fdesc 0 200) }}{{ end }}
+        {{ $fullMd = printf "%s| `%s` | %s | %s |\n" $fullMd $fname $ftype $fdesc }}
+        {{ with $fprop.properties }}
+          {{ range $subname, $subprop := . }}
+            {{ $subtype := $subprop.type | default "object" }}
+            {{ if eq $subtype "array" }}
+              {{ with $subprop.items }}{{ $subtype = printf "array of %s" (.type | default "object") }}{{ end }}
+            {{ end }}
+            {{ $subdesc := $subprop.description | default "" }}
+            {{ $subdesc = replace $subdesc "|" "\\|" }}
+            {{ $subdesc = replace $subdesc "\n" " " }}
+            {{ if gt (len $subdesc) 200 }}{{ $subdesc = printf "%s..." (substr $subdesc 0 200) }}{{ end }}
+            {{ $fullMd = printf "%s| `%s.%s` | %s | %s |\n" $fullMd $fname $subname $subtype $subdesc }}
+          {{ end }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+  {{ end }}
+  {{ $.AddPage (dict
+    "content" (dict "mediaType" "text/markdown" "value" $fullMd)
+    "kind" "page"
+    "params" (dict "generated" true)
+    "path" (printf "%s/full-api" $prefix)
+    "title" "API reference (full page)"
+    "weight" 1
+  ) }}
+
+  {{/* --- CEL context page --- */}}
+  {{ with $celSchema }}
+    {{ $md := "The CEL expression context provides the following objects, which you can use in CEL expressions throughout agentgateway configuration.\n" }}
+    {{ range $name, $prop := .properties }}
+      {{ $md = printf "%s\n## `%s`\n" $md $name }}
+      {{ with $prop.description }}{{ $md = printf "%s\n%s\n" $md . }}{{ end }}
+      {{ with $prop.properties }}
+        {{ $md = printf "%s\n| Field | Type | Default | Description |\n|-------|------|---------|-------------|\n" $md }}
+        {{ range $fname, $fprop := . }}
+          {{ $ftype := "" }}
+          {{ with $fprop.type }}
+            {{ if reflect.IsSlice . }}
+              {{ $filtered := slice }}
+              {{ range . }}{{ if ne . "null" }}{{ $filtered = $filtered | append . }}{{ end }}{{ end }}
+              {{ $ftype = delimit $filtered ", " }}
+            {{ else }}{{ $ftype = . }}{{ end }}
+          {{ end }}
+          {{ if not $ftype }}{{ $ftype = "object" }}{{ end }}
+          {{ $fdefault := "" }}
+          {{ if isset $fprop "default" }}{{ with $fprop.default }}{{ $fdefault = printf "`%v`" . }}{{ end }}{{ end }}
+          {{ $fdesc := $fprop.description | default "" }}
+          {{ $fdesc = replace $fdesc "|" "\\|" }}
+          {{ $fdesc = replace $fdesc "\n" " " }}
+          {{ $md = printf "%s| `%s` | %s | %s | %s |\n" $md $fname $ftype $fdefault $fdesc }}
+        {{ end }}
+      {{ end }}
+    {{ end }}
+    {{ $.AddPage (dict
+      "content" (dict "mediaType" "text/markdown" "value" $md)
+      "kind" "page"
+      "params" (dict "schemaType" "CEL" "generated" true)
+      "path" (printf "%s/cel/cel-context" $prefix)
+      "title" "CEL Expression Context"
+      "weight" 90
+    ) }}
+  {{ end }}
+
+{{ end }}
