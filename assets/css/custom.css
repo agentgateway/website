@@ -346,6 +346,12 @@ h6 {
     margin-bottom: 0.75rem !important;
 }
 
+/* Space between text and code blocks inside list items and after bare text */
+.content li > .hextra-code-block,
+.content li > pre {
+    margin-top: 0.75rem;
+}
+
 /* Sidebar child indent border - dark mode */
 .dark .sidebar-container ul[style*="border-left"] {
     border-left-color: #374151 !important;
