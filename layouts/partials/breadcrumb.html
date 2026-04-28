@@ -66,12 +66,10 @@
     <span style="color: #d1d5db;">/</span>
     {{- /* Version */ -}}
     <a href="/docs/{{ $subSection }}/{{ $currentVersion }}/" style="color: #6b7280; text-decoration: none;">{{ $versionDisplay }}</a>
-    {{- /* Intermediate + current page items */ -}}
+    {{- /* Intermediate items (exclude current page — title is already in the h1) */ -}}
     {{- range $breadcrumbItems -}}
-      <span style="color: #d1d5db;">/</span>
-      {{- if .isLast -}}
-        <span class="breadcrumb-current">{{ .title }}</span>
-      {{- else -}}
+      {{- if not .isLast -}}
+        <span style="color: #d1d5db;">/</span>
         <a href="{{ .url }}" style="color: #6b7280; text-decoration: none;">{{ .title }}</a>
       {{- end -}}
     {{- end -}}
