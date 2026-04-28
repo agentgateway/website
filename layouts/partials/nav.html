@@ -172,9 +172,9 @@
   .navbar #logo,
   .navbar a[href="/"] svg,
   .navbar a[href="/"] img {
-    height: 50px !important;
+    height: 60px !important;
     width: auto !important;
-    max-width: 200px !important;
+    max-width: 250px !important;
   }
   
   /* Ensure logo dark mode classes work correctly */
@@ -454,17 +454,17 @@
   </div>
 {{- else -}}
   {{- /* Docs/blog navbar with dropdown - use dark navbar (and dark logo) on blog */ -}}
-  <nav class="navbar desktop-navbar {{ if $isBlogPage }}navbar-dark-bg{{ end }}" style="padding: 1.875rem 0.5rem; position: fixed; top: 0; width: 100%; z-index: 20; border-bottom: 1px solid #e5e7eb;">
-    <div style="display: flex; max-width: 1440px; margin: 0 auto; align-items: center; justify-content: space-between; gap: 1rem;">
-      <div style="display: flex; align-items: center;">
+  <nav class="navbar desktop-navbar py-4 px-2 xl:px-4 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
+    <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
+      <div class="flex items-center gap-8">
         {{- $page := . -}}
-        {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\" height=\"50\"" -}}
+        {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\"" -}}
         {{- if $isBlogPage -}}
           {{- $logoParams = merge $logoParams (dict "forceDark" true) -}}
         {{- end -}}
         <a href="/">{{ partial "utils/logo.html" $logoParams }}</a>
       </div>
-      <div style="display: flex; align-items: center; gap: 1.25rem;">
+      <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between gap-4">
         {{- /* Extract version and section for version dropdown */ -}}
         {{- $path := .RelPermalink -}}
         {{- $segments := split $path "/" -}}
