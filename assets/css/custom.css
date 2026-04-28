@@ -299,7 +299,7 @@ h6 {
     align-items: center !important;
 }
 
-/* Responsive tables — prevent icon/text wrapping in cells */
+/* Responsive tables — scrollable container and prevent icon/text wrapping */
 .table-wrapper {
     margin: 1.5rem 0;
 }
