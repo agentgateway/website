@@ -10,6 +10,7 @@ Control traffic with external processing, request matching, redirects, transform
 {{< cards >}}
   {{< card link="direct-response" title="Direct response" >}}
   {{< card link="extproc" title="External processing" >}}
+  {{< card link="locality-aware-routing" title="Locality-aware routing" >}}
   {{< card link="match" title="Matching" >}}
   {{< card link="redirect" title="Redirects" >}}
   {{< card link="rewrite" title="Rewrites" >}}
