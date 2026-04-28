@@ -299,6 +299,25 @@ h6 {
     align-items: center !important;
 }
 
+/* Responsive tables — prevent icon/text wrapping in cells */
+.table-wrapper {
+    margin: 1.5rem 0;
+}
+.table-wrapper table {
+    min-width: 100%;
+    border-collapse: collapse;
+}
+.table-wrapper th,
+.table-wrapper td {
+    white-space: nowrap;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+.dark .table-wrapper th,
+.dark .table-wrapper td {
+    border-color: #374151;
+}
+
 /* Sidebar child indent border - dark mode */
 .dark .sidebar-container ul[style*="border-left"] {
     border-left-color: #374151 !important;
