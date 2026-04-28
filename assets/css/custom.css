@@ -283,6 +283,18 @@ h6 {
 .dark .light-only { display: none; }
 .dark .dark-only { display: block; }
 
+/* Center all footer content on all screen sizes */
+.hextra-custom-footer {
+    margin-left: auto;
+    margin-right: auto;
+}
+.hextra-footer > .hextra-max-footer-width:not(.hextra-custom-footer) {
+    justify-content: center !important;
+}
+.hextra-footer > .hextra-max-footer-width:not(.hextra-custom-footer) > div {
+    align-items: center !important;
+}
+
 /* Sidebar child indent border - dark mode */
 .dark .sidebar-container ul[style*="border-left"] {
     border-left-color: #374151 !important;
