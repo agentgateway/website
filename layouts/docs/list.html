@@ -70,12 +70,12 @@
 
     {{ partial "nav.html" . }}
 
-    <div class="w-full z-10 pt-10 lg:pt-20" style="padding-top: 3.5rem;">
+    <div class="w-full z-10 pt-10 lg:pt-20" style="padding-top: 2.5rem;">
       {{ partial "announcement.html" .}}
     </div>
 
     <!-- Explicitly structure without sidebar wrapper -->
-    <div class="hx:mx-auto hx:flex hx:justify-center hx:px-6 hx:md:px-12" style="padding-top: 3.5rem; margin-top: 0;">
+    <div class="hx:mx-auto hx:flex hx:justify-center hx:px-6 hx:md:px-12" style="padding-top: 2.5rem; margin-top: 0;">
       <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center">
         <main class="hx:w-full hx:min-w-0 hx:max-w-6xl">
           <div class="hx:text-center hx:mb-12">
@@ -103,7 +103,7 @@
     <div class="w-full z-10 pt-10 lg:pt-20">
       {{ partial "announcement.html" .}}
     </div>
-    <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: 3.5rem;">
+    <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: 2.5rem;">
       {{ partial "sidebar.html" (dict "context" .) }}
       {{ partial "toc.html" . }}
       <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8 hx:pr-[calc(env(safe-area-inset-right)-1.5rem)]">
