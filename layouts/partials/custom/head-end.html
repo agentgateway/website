@@ -50,6 +50,8 @@ document.addEventListener('DOMContentLoaded', function(){
       // Fix multi-line links from card shortcodes:
       // [Title  \n\\\nDescription](url) → [Title — Description](url)
       md = md.replace(/\[([^\]]*?)\s*\\\s*\n\\?\s*\n?([^\]]*?)\]\(([^)]+)\)/g, '[$1 — $2]($3)');
+      // Add comment before mermaid code blocks
+      md = md.replace(/```\n(\s*(?:flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)\b)/g, '<!-- Mermaid diagram -->\n```mermaid\n$1');
       navigator.clipboard.writeText(md).then(function(){
         var label = btn.querySelector('.copy-md-label');
         var origText = label.textContent;
