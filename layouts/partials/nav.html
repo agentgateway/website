@@ -52,38 +52,23 @@
     display: none
   }
 
-  .navbar.scrolled {
-    background-color: white;
+  /* Scroll transitions only apply to the landing page navbar */
+  .navbar.landing-navbar.scrolled {
+    background-color: #030712;
     border-color: transparent;
     transition-property: background-color, border;
     transition-duration: 500ms;
     transition-timing-function: linear;
   }
 
-  .navbar.landing-navbar.scrolled {
-    background-color: #030712;
-  }
-  
-  .dark .navbar.scrolled {
-    background-color: #111; /* matches hextra dark mode bg */
-  }
-  
-  .navbar.scrolled .link {
+  .navbar.landing-navbar.scrolled .link {
     color: rgb(55, 65, 81); /* gray-700 */
     transition: color 500ms linear;
   }
 
-  .dark .navbar.scrolled .link {
-    color: rgb(209, 213, 219); /* gray-300 */
-  }
-
-  .navbar.scrolled a.link svg {
+  .navbar.landing-navbar.scrolled a.link svg {
     fill: rgb(55, 65, 81);
     transition: fill 500ms linear;
-  }
-
-  .dark .navbar.scrolled a.link svg {
-    fill: rgb(209, 213, 219);
   }
 
   .mobile-nav {
@@ -330,26 +315,18 @@
   }
 </style>
 
-{{- /* Determine if we're on the landing page, docs, or blog */ -}}
+{{- /* Determine if we're on the landing page or docs */ -}}
 {{- $isLandingPage := eq .RelPermalink "/" -}}
-{{- $isEnterprisePage := eq .RelPermalink "/enterprise/" -}}
 {{- $isDocsPage := false -}}
-{{- $isBlogPage := false -}}
-{{- if eq .Section "blog" -}}
-  {{- $isBlogPage = true -}}
-{{- end -}}
 {{- if .RelPermalink -}}
   {{- $path := .RelPermalink -}}
   {{- $segments := split $path "/" -}}
   {{- if and (ge (len $segments) 2) (eq (index $segments 1) "docs") -}}
     {{- $isDocsPage = true -}}
   {{- end -}}
-  {{- if and (not $isBlogPage) (ge (len $segments) 2) (eq (index $segments 1) "blog") -}}
-    {{- $isBlogPage = true -}}
-  {{- end -}}
 {{- end -}}
 
-{{- if or $isLandingPage $isEnterprisePage -}}
+{{- if $isLandingPage -}}
   {{- /* Original landing page navbar style - larger, lighter text for dark background */ -}}
   <style>
     /* Landing page navbar text - larger and lighter for dark mode */
@@ -454,15 +431,12 @@
   </div>
   </div>
 {{- else -}}
-  {{- /* Docs/blog navbar with dropdown - use dark navbar (and dark logo) on blog */ -}}
-  <nav class="navbar desktop-navbar py-4 px-2 xl:px-4 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
+  {{- /* Docs/blog/enterprise/models navbar with dropdown, search, and dark/light toggle */ -}}
+  <nav class="navbar desktop-navbar py-4 px-2 xl:px-4 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20 bg-white dark:bg-[#030712]">
     <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
       <div class="flex items-center gap-8">
         {{- $page := . -}}
         {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\"" -}}
-        {{- if $isBlogPage -}}
-          {{- $logoParams = merge $logoParams (dict "forceDark" true) -}}
-        {{- end -}}
         <a href="/">{{ partial "utils/logo.html" $logoParams }}</a>
       </div>
       <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between gap-4">
@@ -591,7 +565,7 @@
     </div>
   </nav>
 
-  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-gray-900{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
+  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-[#030712]">
     <div class="py-3 px-4 flex justify-between items-center">
       <div class="flex items-center gap-1">
         {{- if $isDocsPage -}}
@@ -603,9 +577,6 @@
         {{- end -}}
         {{- $page := . -}}
         {{- $mobileLogoParams := dict "Page" $page "attributes" "height=\"50\"" -}}
-        {{- if $isBlogPage -}}
-          {{- $mobileLogoParams = merge $mobileLogoParams (dict "forceDark" true) -}}
-        {{- end -}}
         <a href="/">{{ partial "utils/logo.html" $mobileLogoParams }}</a>
       </div>
       <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">

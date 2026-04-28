@@ -283,6 +283,11 @@ h6 {
 .dark .light-only { display: none; }
 .dark .dark-only { display: block; }
 
+/* Dark mode footer matches nav background */
+.dark .hextra-footer {
+    background-color: #030712 !important;
+}
+
 /* Center all footer content on all screen sizes */
 .hextra-custom-footer {
     margin-left: auto;
