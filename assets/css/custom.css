@@ -209,7 +209,6 @@ h6 {
     background: #111;
 }
 .hextra-search-results {
-    display: none;
     position: absolute;
     top: 100%;
     z-index: 20;
