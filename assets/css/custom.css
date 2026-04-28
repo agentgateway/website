@@ -307,39 +307,19 @@ h6 {
 }
 .table-wrapper table {
     width: 100%;
-    table-layout: fixed;
+    table-layout: auto;
     border-collapse: collapse;
 }
 .table-wrapper th,
 .table-wrapper td {
     padding: 0.5rem 0.75rem;
     border: 1px solid #e5e7eb;
+    white-space: normal;
+    word-wrap: break-word;
 }
 .dark .table-wrapper th,
 .dark .table-wrapper td {
     border-color: #374151;
-}
-/* Field and Type columns stay compact; Description wraps */
-.table-wrapper th:first-child,
-.table-wrapper td:first-child {
-    width: 20%;
-    white-space: nowrap;
-}
-.table-wrapper th:nth-child(2),
-.table-wrapper td:nth-child(2) {
-    width: 15%;
-    white-space: nowrap;
-}
-.table-wrapper th:last-child,
-.table-wrapper td:last-child {
-    white-space: normal;
-    word-wrap: break-word;
-}
-/* 4-column tables (e.g. CEL: Field, Type, Default, Description) */
-.table-wrapper th:nth-child(3):not(:last-child),
-.table-wrapper td:nth-child(3):not(:last-child) {
-    width: 10%;
-    white-space: nowrap;
 }
 
 /* Generated card grids — top-align content */
