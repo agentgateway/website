@@ -32,7 +32,7 @@ Chatbot UI is designed for simplicity, but enterprises need additional controls:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Chatbot UI    │────▶│  agentgateway  │────▶│   LLM Provider  │
+│   Chatbot UI    │────▶│   agentgateway  │────▶│   LLM Provider  │
 │   (Browser)     │     │                 │     │  (OpenAI, etc)  │
 └─────────────────┘     │  - Auth         │     └─────────────────┘
                         │  - Audit        │
