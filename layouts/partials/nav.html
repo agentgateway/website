@@ -332,6 +332,7 @@
 
 {{- /* Determine if we're on the landing page, docs, or blog */ -}}
 {{- $isLandingPage := eq .RelPermalink "/" -}}
+{{- $isEnterprisePage := eq .RelPermalink "/enterprise/" -}}
 {{- $isDocsPage := false -}}
 {{- $isBlogPage := false -}}
 {{- if eq .Section "blog" -}}
@@ -348,7 +349,7 @@
   {{- end -}}
 {{- end -}}
 
-{{- if $isLandingPage -}}
+{{- if or $isLandingPage $isEnterprisePage -}}
   {{- /* Original landing page navbar style - larger, lighter text for dark background */ -}}
   <style>
     /* Landing page navbar text - larger and lighter for dark mode */
