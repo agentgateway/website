@@ -12,8 +12,8 @@ Azure supports two endpoint types:
 ## Set up access to Azure
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
-   * For an Azure OpenAI endpoint like `https://my-resource.openai.azure.com`, the resource name is `my-resource`.
-   * For an Azure AI Foundry endpoint like `https://my-resource-resource.services.ai.azure.com`, the resource name is `my-resource` and you also need the Foundry project name.
+   * For an Azure OpenAI endpoint like `https://{my-resource}.openai.azure.com`, the resource name is `my-resource`.
+   * For an Azure AI Foundry endpoint like `https://{my-resource}-resource.services.ai.azure.com` and path `/api/projects/{my-project}`, the resource name is `my-resource` and the project name is `my-project`. If the resource name and the project name are the same, you can leave the `projectName` field empty.
 
 2. Store the API key to access your model deployment in an environment variable. If you are using implicit Entra ID authentication (such as managed identity or workload identity), you can skip this step.
    ```sh
