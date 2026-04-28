@@ -1,6 +1,6 @@
 {{- /* Copy as Markdown button — uses Hugo's transform.HTMLToMarkdown (v0.151+)
        to convert rendered HTML back to clean markdown for clipboard copy. */ -}}
-{{- $md := .Content | transform.HTMLToMarkdown -}}
+{{- $md := printf "# %s\n\n%s" .Title (.Content | transform.HTMLToMarkdown) -}}
 {{- /* Strip heading anchor links — [](#id) and [text](#id) → text */ -}}
 {{- $md = $md | replaceRE `\[([^\]]*)\]\(#[^)]+\)` "$1" -}}
 {{- /* Strip localhost URLs from images — //localhost:PORT/path → /path */ -}}

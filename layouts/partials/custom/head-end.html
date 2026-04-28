@@ -34,6 +34,22 @@ document.addEventListener('DOMContentLoaded', function(){
       var source = wrapper.querySelector('.copy-md-source');
       if(!source) return;
       var md = source.textContent;
+      // Decode HTML entities that survive Hugo's HTMLToMarkdown conversion.
+      // Run decode in a loop to handle double/triple-encoded entities.
+      function decodeEntities(str) {
+        var el = document.createElement('textarea');
+        var prev = '';
+        while (prev !== str) {
+          prev = str;
+          el.innerHTML = str;
+          str = el.value;
+        }
+        return str;
+      }
+      md = decodeEntities(md);
+      // Fix multi-line links from card shortcodes:
+      // [Title  \n\\\nDescription](url) → [Title — Description](url)
+      md = md.replace(/\[([^\]]*?)\s*\\\s*\n\\?\s*\n?([^\]]*?)\]\(([^)]+)\)/g, '[$1 — $2]($3)');
       navigator.clipboard.writeText(md).then(function(){
         var label = btn.querySelector('.copy-md-label');
         var origText = label.textContent;
