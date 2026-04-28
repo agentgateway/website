@@ -342,7 +342,7 @@ h6 {
 /* Space between headings and following content. Needed because reuse
    shortcode output often has no <p> wrapper, leaving bare text/links
    with no margin-top to create a gap after the heading. */
-.content :is(h2, h3, h4, h5, h6) {
+.content :is(h1, h2, h3, h4, h5, h6) {
     margin-bottom: 0.75rem !important;
 }
 
