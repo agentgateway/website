@@ -3,8 +3,10 @@
 {{- $md := printf "# %s\n\n%s" .Title (.Content | transform.HTMLToMarkdown) -}}
 {{- /* Strip heading anchor links — [](#id) and [text](#id) → text */ -}}
 {{- $md = $md | replaceRE `\[([^\]]*)\]\(#[^)]+\)` "$1" -}}
-{{- /* Strip localhost URLs from images — //localhost:PORT/path → /path */ -}}
-{{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` "$1/" -}}
+{{- /* Convert image paths to absolute URLs — //localhost:PORT/path and relative /path both become full URLs */ -}}
+{{- $baseURL := site.BaseURL | strings.TrimRight "/" -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` (printf "$1%s/" $baseURL) -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()(/[^)]+)` (printf "$1%s$2" $baseURL) -}}
 {{- /* Fill empty image alt text with filename — ![](/path/foo-bar.png) → ![foo-bar](/path/foo-bar.png) */ -}}
 {{- $md = $md | replaceRE `!\[\]\(([^)]*/)([^/)]+\.[a-zA-Z]+)\)` "![$2]($1$2)" -}}
 {{- if $md -}}
