@@ -111,7 +111,7 @@ Agentgateway federates multiple MCP servers:
 ```
 ┌─────────────────────────────────────────────┐
 │              agentgateway                   │
-│                 :3000                        │
+│                 :3000                       │
 ├─────────────────────────────────────────────┤
 │  time_*        →  mcp-server-time           │
 │  everything_*  →  server-everything         │
