@@ -28,5 +28,13 @@
   {{- errorf "The %q shortcode was unable to find %q. See %s" .Name $asset .Position}}
 {{- end }}
 
-{{- /* Render resource content. */}}
-{{- $r.Content | .Page.RenderString | chomp }}
+{{- /* Render resource content. Try block mode for proper <p> wrapping;
+       fall back to inline mode if nested shortcodes fail in block mode. */}}
+{{- $content := $r.Content -}}
+{{- with try (.Page.RenderString (dict "display" "block") $content) -}}
+  {{- with .Err -}}
+    {{- $.Page.RenderString $content | chomp -}}
+  {{- else -}}
+    {{- .Value | chomp -}}
+  {{- end -}}
+{{- end -}}

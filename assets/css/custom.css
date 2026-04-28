@@ -331,13 +331,6 @@ h6 {
 }
 
 
-/* Spacing for bare text nodes from reuse shortcodes (no <p> wrapper) */
-.content {
-    line-height: 1.75;
-}
-.content > h1 {
-    margin-bottom: 1.5rem;
-}
 
 /* Sidebar child indent border - dark mode */
 .dark .sidebar-container ul[style*="border-left"] {
