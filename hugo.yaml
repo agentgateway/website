@@ -104,7 +104,7 @@ params:
     enable: true
     displayCopyright: true
     displayPoweredBy: false
-    width: normal
+    width: wide
 
   displayUpdatedDate: true
   dateFormat: "January 2, 2006"
