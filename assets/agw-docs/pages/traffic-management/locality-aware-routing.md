@@ -664,53 +664,6 @@ Use `internalTrafficPolicy: Local` to require that requests reach an endpoint on
    fi
    {{< /doc-test >}}
 
-## Troubleshooting
-
-### Locality preferences appear to be ignored
-
-**What's happening:**
-
-You set `trafficDistribution: PreferClose` on the Service, but traffic still spreads across endpoints in other zones.
-
-**Why it's happening:**
-
-The gateway proxy could not determine its own locality, so every endpoint falls into the highest-priority bucket. Common causes:
-
-- The node where the gateway pod runs is missing the `topology.kubernetes.io/region` and `topology.kubernetes.io/zone` labels.
-- The proxy started before the node labels were applied, and it cached an empty locality.
-- The Istio CRDs are not installed, so locality information from `WorkloadEntry` resources is not discovered.
-
-**How to fix it:**
-
-1. Check the labels on the gateway proxy's node.
-
-   ```sh
-   kubectl get nodes --label-columns=topology.kubernetes.io/region,topology.kubernetes.io/zone
-   ```
-
-2. If labels are missing, apply them and restart the proxy.
-
-   ```sh
-   kubectl label node <node-name> topology.kubernetes.io/region=<region> topology.kubernetes.io/zone=<zone> --overwrite
-   kubectl rollout restart deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   ```
-
-3. As a last resort, set the `LOCALITY` environment variable on the proxy explicitly to `region/zone/subzone`. Use the `extraEnv` field in your installation values to make the override persistent.
-
-### Strict mode returns 503 for every request
-
-**What's happening:**
-
-With `internalTrafficPolicy: Local`, all requests return `503 Service Unavailable`.
-
-**Why it's happening:**
-
-No backend endpoint runs on the same node as the gateway proxy. Strict mode does not spill over to other localities.
-
-**How to fix it:**
-
-Either schedule a backend pod on the gateway's node, or relax the policy to `trafficDistribution: PreferClose` so that requests can spill over to other localities when no local endpoint is available.
-
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
