@@ -350,6 +350,15 @@ h6 {
     margin-top: 0 !important;
 }
 
+
+/* Spacing for bare text nodes from reuse shortcodes (no <p> wrapper) */
+.content {
+    line-height: 1.75;
+}
+.content > h1 {
+    margin-bottom: 1.5rem;
+}
+
 /* Sidebar child indent border - dark mode */
 .dark .sidebar-container ul[style*="border-left"] {
     border-left-color: #374151 !important;
