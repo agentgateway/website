@@ -54,6 +54,17 @@ document.addEventListener('DOMContentLoaded', function(){
       md = md.replace(/\[([^\]]*?)\s*\\\s*\n\\?\s*\n?([^\]]*?)\]\(([^)]+)\)/g, '[$1 — $2]($3)');
       // Add comment before mermaid code blocks
       md = md.replace(/```\n(\s*(?:flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)\b)/g, '<!-- Mermaid diagram -->\n```mermaid\n$1');
+      // Clean up tab panel labels — replace IDs with actual tab names from the page
+      var content = document.querySelector('article .content');
+      if (content) {
+        content.querySelectorAll('.hextra-tabs-toggle').forEach(function(btn) {
+          var id = btn.id;
+          var label = btn.textContent.trim();
+          if (id && label) {
+            md = md.replace('Option: ' + id, 'Option: ' + label);
+          }
+        });
+      }
       navigator.clipboard.writeText(md).then(function(){
         var label = btn.querySelector('.copy-md-label');
         var origText = label.textContent;

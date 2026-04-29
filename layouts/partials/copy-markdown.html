@@ -9,6 +9,15 @@
 {{- /* Remove card grid wrappers and their inline styles */ -}}
 {{- $html = $html | replaceRE `(?s)<div class="hextra-cards[^"]*"[^>]*>(.*?)</div>` "$1" -}}
 {{- $html = $html | replaceRE `(?s)<style>\s*\.hextra-card-styled[^<]*</style>` "" -}}
+{{- /* Tabs: strip the button bar, unhide all panels, and inject a label before each panel
+       using the aria-labelledby to match the tab button's text. */ -}}
+{{- /* Remove entire tablist div (buttons) — we'll label panels directly */ -}}
+{{- $html = $html | replaceRE `(?s)<div[^>]*role="tablist"[^>]*>.*?</div>` "" -}}
+{{- /* Unhide all panels and inject "Option:" label using the panel's aria-labelledby ID to
+       extract the tab name from the corresponding button. Since buttons are gone, we use
+       the tab ID suffix as a fallback — but simpler: just add a marker we'll fix in JS. */ -}}
+{{- $html = $html | replaceRE `aria-hidden="true"` "" -}}
+{{- $html = $html | replaceRE `<div class="hextra-tabs-panel[^"]*"[^>]*aria-labelledby="([^"]*)"[^>]*>` `<div style="display:block"><p><strong>Option: $1</strong></p>` -}}
 {{- $md := printf "# %s\n\n%s" .Title ($html | transform.HTMLToMarkdown) -}}
 {{- /* Strip heading anchor links — [](#id) and [text](#id) → text */ -}}
 {{- $md = $md | replaceRE `\[([^\]]*)\]\(#[^)]+\)` "$1" -}}
