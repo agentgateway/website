@@ -356,3 +356,113 @@ h6 {
 .dark .sidebar-container ul[style*="border-left"] {
     border-left-color: #374151 !important;
 }
+
+/* Auto-generated child cards on section list pages.
+   Replicates the docs-theme-lotus card grid on parent sections */
+.section-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.section-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  height: 100%;
+}
+
+.section-card:hover {
+  border-color: #158bc2;
+  box-shadow: 0 2px 8px rgba(21, 139, 194, 0.1);
+}
+
+.section-card-icon {
+  font-size: 28px;
+  color: #158bc2;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.section-card-body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-card-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin: 16px 0 4px !important;
+  color: #111827;
+}
+
+.section-card-desc {
+  font-size: 0.75rem !important;
+  color: #374151;
+  margin: 0 !important;
+  line-height: 1.5;
+}
+
+.section-card-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  color: #374151;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.section-card-badge.badge-tag {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.section-card-badge.badge-oss {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Section cards dark mode */
+.dark .section-card {
+  border-color: #374151;
+}
+
+.dark .section-card:hover {
+  border-color: #60b5e0;
+  box-shadow: 0 2px 8px rgba(96, 181, 224, 0.1);
+}
+
+.dark .section-card-title {
+  color: #f3f4f6;
+}
+
+.dark .section-card-desc {
+  color: #9ca3af;
+}
+
+.dark .section-card-badge {
+  background: #374151;
+  color: #d1d5db;
+}
+
+.dark .section-card-badge.badge-tag {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+.dark .section-card-badge.badge-oss {
+  background: #064e3b;
+  color: #6ee7b7;
+}

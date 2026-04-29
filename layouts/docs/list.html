@@ -113,6 +113,36 @@
             {{ partial "copy-markdown.html" . }}
             {{ if .Title }}<h1>{{ .Title }}</h1>{{ end }}
             {{ .Content }}
+
+            {{- /* Auto-generated child cards — matches old docs-theme-lotus behavior */ -}}
+            {{- if not .Params.disableCards -}}
+              {{- $children := where .Pages.ByWeight "Params.hidden" "!=" true -}}
+              {{- if gt (len $children) 0 -}}
+                <div class="section-cards">
+                  {{- range $children -}}
+                    <a class="section-card" href="{{ .Permalink }}">
+                      {{- with .Params.icon }}
+                        <i class="material-icons section-card-icon" aria-hidden="true">{{ . }}</i>
+                      {{- end }}
+                      <div class="section-card-body">
+                        <p class="section-card-title">
+                          {{ .Title }}
+                          {{- if .Draft }} <span class="section-card-badge">DRAFT</span>{{ end -}}
+                          {{- if .Params.Enterprise }} <span class="section-card-badge">Enterprise</span>{{ end -}}
+                          {{- if .Params.Oss }} <span class="section-card-badge badge-oss">Open Source</span>{{ end -}}
+                          {{- if .Params.Alpha }} <span class="section-card-badge badge-tag">Alpha</span>{{ end -}}
+                          {{- if .Params.Beta }} <span class="section-card-badge badge-tag">Beta</span>{{ end -}}
+                          {{- if .Params.Experimental }} <span class="section-card-badge badge-tag">Experimental</span>{{ end -}}
+                        </p>
+                        {{- with .Description }}
+                          <p class="section-card-desc">{{ . | truncate 100 | markdownify }}</p>
+                        {{- end }}
+                      </div>
+                    </a>
+                  {{- end }}
+                </div>
+              {{- end -}}
+            {{- end -}}
           </div>
           {{ partial "components/last-updated.html" . }}
           {{ partial "components/pager.html" . }}
