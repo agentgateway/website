@@ -67,6 +67,7 @@ jobs:
             --root-dir "${{ github.workspace }}/public"
             --index-files index.html
             --exclude-path public/docs/kubernetes/2.2.x
+            --exclude-path public/docs/kubernetes/1.0.x
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
             --remap "public/docs/observability public/docs/kubernetes/latest/observability"
             --remap "public/docs/resiliency public/docs/kubernetes/latest/resiliency"
