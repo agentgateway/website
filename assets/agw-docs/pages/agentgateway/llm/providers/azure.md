@@ -37,8 +37,8 @@ Azure supports two endpoint types:
 
 4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure the Azure LLM provider.
 
-   {{< tabs items="Azure OpenAI (API key),Azure AI Foundry (API key),Azure OpenAI (implicit auth)" >}}
-   {{% tab %}}
+   {{< tabs tabTotal="3" items="Azure OpenAI (API key),Azure AI Foundry (API key),Azure OpenAI (implicit auth)" >}}
+   {{% tab tabName="Azure OpenAI (API key)" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -56,7 +56,7 @@ Azure supports two endpoint types:
    EOF
    ```
    {{% /tab %}}
-   {{% tab %}}
+   {{% tab tabName="Azure AI Foundry (API key)" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -75,7 +75,7 @@ Azure supports two endpoint types:
    EOF
    ```
    {{% /tab %}}
-   {{% tab %}}
+   {{% tab tabName="Azure OpenAI (implicit auth)" %}}
    When you use implicit Entra ID authentication, the gateway automatically obtains a token using `DefaultAzureCredential`. No secret or `policies.auth` is required. This works with managed identity, workload identity, or Azure CLI credentials.
 
    ```yaml
