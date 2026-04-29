@@ -13,6 +13,7 @@ Control traffic with external processing, request matching, redirects, transform
   {{< card link="match" title="Matching" >}}
   {{< card link="redirect" title="Redirects" >}}
   {{< card link="rewrite" title="Rewrites" >}}
+  {{< card link="route-delegation" title="Route delegation" >}}
   {{< card link="traffic-split" title="Traffic splitting" >}}
   {{< card link="transformations" title="Transformations" >}}
 {{< /cards >}}
