@@ -20,7 +20,7 @@ In failover mode (the default when you set `trafficDistribution` on a Service), 
 
 Two enforcement levels are available.
 
-- **Failover (default)**: Prefer local endpoints, but spill over to other localities when no local endpoints are available. Use failover for cost and latency optimization without sacrificing availability.
+- **Failover (default)**: Prefer local endpoints, but fail over to other localities when no local endpoints are available. Use failover for cost and latency optimization without sacrificing availability.
 - **Strict**: Only deliver to endpoints that match the configured locality. If no matching endpoints exist, requests return `503 Service Unavailable` instead of spilling over. Use strict mode when locality is a hard requirement, such as data residency or same-node co-location.
 
 You configure both modes through standard Kubernetes Service fields, not through agentgateway-specific resources.
@@ -436,7 +436,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
    Example output:
 
    ```
-     20 backend-zone-a-868fdff56f-w9jsn
+   20 backend-zone-a-868fdff56f-w9jsn
    ```
 
    {{< doc-test paths="locality-aware-routing" >}}
@@ -479,7 +479,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
    Example output:
 
    ```
-     20 backend-zone-b-6bddfdcd85-ht8qn
+   20 backend-zone-b-6bddfdcd85-ht8qn
    ```
 
    {{< doc-test paths="locality-aware-routing" >}}
@@ -522,7 +522,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
     Example output:
 
     ```
-      20 backend-region-b-5d46cfc8b5-xmfnc
+   20 backend-region-b-5d46cfc8b5-xmfnc
     ```
 
    {{< doc-test paths="locality-aware-routing" >}}
