@@ -1,7 +1,7 @@
 ---
-title: Azure OpenAI
+title: Azure
 weight: 20
-description:
+description: Configuration and setup for Azure AI services provider
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/azure.md" >}}

@@ -23,7 +23,7 @@ These providers have first-class support with dedicated configuration:
 - [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}})
 - [Google Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}})
 - [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}})
-- [Azure OpenAI]({{< link-hextra path="/llm/providers/azure/" >}})
+- [Azure]({{< link-hextra path="/llm/providers/azure/" >}})
 
 ### OpenAI-compatible providers
 
