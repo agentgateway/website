@@ -1,6 +1,6 @@
 Review the following table to compare agentgateway's support of different LLM provider APIs.
 
-| API | OpenAI | Anthropic | Amazon Bedrock | Azure OpenAI | Google Gemini | Google Vertex AI |
+| API | OpenAI | Anthropic | Amazon Bedrock | Azure | Google Gemini | Google Vertex AI |
 |-----|:------:|:---------:|:--------------:|:------------:|:-------------:|:----------------:|
 | Completions<br>`/v1/chat/completions` | ✅ Native | ✅ Translation | ✅ Translation| ✅ Native | ✅ Native`*`| ✅ Native`†` | 
 | Responses<br>`/v1/responses` | ✅ Native  | ❌ No |  ✅ Translation| ✅ Native| ❌ No | ❌ No |
