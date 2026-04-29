@@ -9,7 +9,7 @@ For more information, see the following resources.
 
 {{< cards >}}
   {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Kubernetes Gateway API Inference Extension docs" icon="external-link">}}
-  {{< card link="/docs/standalone/main/inference/" title="Standalone inference routing" >}}
+  {{< card link="https://agentgateway.dev/docs/standalone/main/inference/" title="Standalone inference routing" >}}
   {{< card link="https://kgateway.dev/blog/deep-dive-inference-extensions/" title="Kgateway deep-dive blog on Inference Extension" icon="external-link">}}
 {{< /cards >}}
 
