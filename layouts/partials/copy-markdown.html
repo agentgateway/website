@@ -19,8 +19,9 @@
 {{- $html = $html | replaceRE `aria-hidden="true"` "" -}}
 {{- $html = $html | replaceRE `<div class="hextra-tabs-panel[^"]*"[^>]*aria-labelledby="([^"]*)"[^>]*>` `<div style="display:block"><p><strong>Option: $1</strong></p>` -}}
 {{- $md := printf "# %s\n\n%s" .Title ($html | transform.HTMLToMarkdown) -}}
-{{- /* Strip heading anchor links — [](#id) and [text](#id) → text */ -}}
-{{- $md = $md | replaceRE `\[([^\]]*)\]\(#[^)]+\)` "$1" -}}
+{{- /* Strip empty heading-permalink anchors only — [](#id) → "".
+       Preserve [text](#id) cross-section links so readers retain the reference. */ -}}
+{{- $md = $md | replaceRE `\[\]\(#[^)]+\)` "" -}}
 {{- /* Convert image paths to absolute URLs — //localhost:PORT/path and relative /path both become full URLs */ -}}
 {{- $baseURL := site.BaseURL | strings.TrimRight "/" -}}
 {{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` (printf "$1%s/" $baseURL) -}}
