@@ -9,6 +9,10 @@
 {{- /* Remove card grid wrappers and their inline styles */ -}}
 {{- $html = $html | replaceRE `(?s)<div class="hextra-cards[^"]*"[^>]*>(.*?)</div>` "$1" -}}
 {{- $html = $html | replaceRE `(?s)<style>\s*\.hextra-card-styled[^<]*</style>` "" -}}
+{{- /* Chroma linenos=table: replace the two-cell table with just the code-side <pre>.
+       Otherwise HTMLToMarkdown serializes the line-number <td> as its own fenced block
+       above the actual code, producing an orphan "1\n2\n..." block in the copy output. */ -}}
+{{- $html = $html | replaceRE `(?s)<table class="lntable"><tr><td class="lntd">\s*<pre[^>]*><code><span class="lnt">.*?</td>\s*<td class="lntd">\s*(<pre[^>]*><code[^>]*>.*?</code></pre>)\s*</td>\s*</tr>\s*</table>` "$1" -}}
 {{- /* Tabs: strip the button bar, unhide all panels, and inject a label before each panel
        using the aria-labelledby to match the tab button's text. */ -}}
 {{- /* Remove entire tablist div (buttons) — we'll label panels directly */ -}}

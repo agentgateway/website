@@ -61,7 +61,8 @@ document.addEventListener('DOMContentLoaded', function(){
           var id = btn.id;
           var label = btn.textContent.trim();
           if (id && label) {
-            md = md.replace('Option: ' + id, 'Option: ' + label);
+            var replacement = /^option\b/i.test(label) ? label : 'Option: ' + label;
+            md = md.replace('Option: ' + id, replacement);
           }
         });
       }
