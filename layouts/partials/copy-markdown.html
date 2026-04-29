@@ -26,12 +26,44 @@
 {{- /* Strip empty heading-permalink anchors only — [](#id) → "".
        Preserve [text](#id) cross-section links so readers retain the reference. */ -}}
 {{- $md = $md | replaceRE `\[\]\(#[^)]+\)` "" -}}
-{{- /* Convert image paths to absolute URLs — //localhost:PORT/path and relative /path both become full URLs */ -}}
-{{- $baseURL := site.BaseURL | strings.TrimRight "/" -}}
-{{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` (printf "$1%s/" $baseURL) -}}
-{{- $md = $md | replaceRE `(!\[[^\]]*\]\()(/[^)]+)` (printf "$1%s$2" $baseURL) -}}
+{{- /* Normalize Goldmark/typographer-introduced smart punctuation back to ASCII so the
+       copied markdown survives plain-text contexts (LLM prompts, terminals, code blocks). */ -}}
+{{- $md = $md | replaceRE "[“”]" "\"" -}}
+{{- $md = $md | replaceRE "[‘’]" "'" -}}
+{{- $md = $md | replaceRE "…" "..." -}}
+{{- $md = $md | replaceRE "–" "-" -}}
+{{- $md = $md | replaceRE "—" "--" -}}
+{{- /* Resolve a canonical base URL for the copied markdown so links resolve when pasted
+       elsewhere. site.BaseURL is "/" in this repo (root-relative output), so fall back to
+       the production hostname when it lacks a scheme/host. */ -}}
+{{- $siteBase := site.BaseURL | strings.TrimRight "/" -}}
+{{- $baseURL := $siteBase -}}
+{{- if not (or (hasPrefix $siteBase "http://") (hasPrefix $siteBase "https://")) -}}
+  {{- $baseURL = "https://agentgateway.dev" -}}
+{{- end -}}
+{{- /* Current page URL (without any trailing slash), normalized to use the canonical baseURL.
+       In dev .Permalink is //localhost:PORT/path/, in prod it's https://host/path/. */ -}}
+{{- $pagePath := .Permalink | replaceRE `^(https?:)?//[^/]+` "" -}}
+{{- $pageAbs := printf "%s%s" $baseURL $pagePath | strings.TrimRight "/" -}}
+
+{{- /* Image paths → absolute URLs.
+       Use ${1}/${2} (not $1/$2) so Go's regex engine doesn't merge the digit with following
+       letters into an undefined named group — e.g. "$1https" parses as name "1https" → "". */ -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()(/[^)]+)` (printf "${1}%s${2}" $baseURL) -}}
 {{- /* Fill empty image alt text with filename — ![](/path/foo-bar.png) → ![foo-bar](/path/foo-bar.png) */ -}}
-{{- $md = $md | replaceRE `!\[\]\(([^)]*/)([^/)]+\.[a-zA-Z]+)\)` "![$2]($1$2)" -}}
+{{- $md = $md | replaceRE `!\[\]\(([^)]*/)([^/)]+\.[a-zA-Z]+)\)` "![${2}](${1}${2})" -}}
+
+{{- /* Link URLs → absolute URLs. Run AFTER image rewriting so already-https image URLs
+       don't match the relative-link pattern below. */ -}}
+{{- /* Localhost-rooted links → baseURL/path */ -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}
+{{- /* Root-relative links (/docs/…) → baseURL/path. Excludes anchors via [^)#]. */ -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()(/[^)#]+)` (printf "${1}%s${2}" $baseURL) -}}
+{{- /* Relative links (basic, basic/sub, basic#anchor) → pageAbs/relative. First URL char
+       must be alphanum or _/-; subsequent chars exclude ) and : so we skip absolute URLs
+       (https://…, mailto:…) but allow # for fragment-suffixed relative links. */ -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()([a-zA-Z0-9_\-][^):]*)(\))` (printf "${1}%s/${2}${3}" $pageAbs) -}}
 {{- if $md -}}
 <div class="copy-md-wrapper" style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
   <style>
