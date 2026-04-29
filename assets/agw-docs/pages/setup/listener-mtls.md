@@ -20,7 +20,7 @@ In this guide, you learn how to apply default certificate validation configurati
 Throughout this guide, you use self-signed TLS certificates for the Certificate Authority. These certificates are used to sign the TLS certificates for the gateway proxy (server) and httpbin client. 
 
 {{< callout type="warning" >}}
-Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trust Certificate Authority. 
+Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
 {{< /callout >}}
 
 ## Before you begin
@@ -38,7 +38,7 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
 Create self-signed TLS certificates that you use for the mutual TLS connection between your client application (`curl`) and the gateway proxy. 
 
 {{< callout type="warning" >}}
-Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trust Certificate Authority. 
+Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
 {{< /callout >}}
 
 <!-- >
