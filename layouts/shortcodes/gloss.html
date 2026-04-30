@@ -1,30 +1,21 @@
 {{- /*
   Shortcode: gloss
-  Renders an inline glossary term with a hover tooltip showing the definition and an optional "Learn more" link, sourced from data/glossary.
+  Renders an inline glossary term with a native <abbr> tooltip sourced from data/{lang}/termbase.
 
   Parameters:
-    - 0 (positional): The glossary key to look up in data/glossary.
-    - (inner content): (optional) Custom display text; defaults to the glossary key if not provided.
+    - 0 (positional): Glossary key — matches abbr or term (case-insensitive).
+    - (inner content): Optional custom display text; defaults to the key if omitted.
 
   Example: {{< gloss "MCP" >}}custom display text{{< /gloss >}}
 */ -}}
-{{ $key := .Get 0 }}
-{{ $entry := index site.Data.glossary $key }}
-
-{{ if $entry }}
-<span class="glossary-term" tabindex="0" data-glossary-term="{{ $key }}">
-  {{ .Inner | default $key }}
-  <span class="tooltip-content">
-    <strong>{{ $key }}</strong>
-    <span>{{ $entry.short }}</span>
-    {{ if $entry.link }}
-    <a href="{{ $entry.link }}" class="tooltip-link" target="_blank">
-      Learn more
-    </a>
-    {{ end }}
-  </span>
-</span>
-{{ else }}
-{{ .Inner | default $key }}
-{{ end }}
-
+{{- $key := .Get 0 -}}
+{{- $keyLower := lower $key -}}
+{{- $match := dict -}}
+{{- range (index .Site.Data .Site.Language.Lang "termbase") -}}
+  {{- if or (eq (lower .abbr) $keyLower) (eq (lower .term) $keyLower) -}}
+    {{- $match = . -}}
+    {{- break -}}
+  {{- end -}}
+{{- end -}}
+{{- $display := .Inner | default $key -}}
+{{- with $match -}}<abbr title="{{ .definition | plainify }}">{{ $display }}</abbr>{{- else -}}{{ $display }}{{- end -}}

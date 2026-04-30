@@ -1,0 +1,151 @@
+- term: A2A
+  definition: "Agent-to-Agent Protocol for secure, policy-driven communication across agents."
+
+- term: Agentgateway
+  definition: "An open-source data plane optimized for agentic AI connectivity."
+
+- term: Agents
+  definition: "Autonomous AI components that interact with MCP tools, services, and other agents."
+
+- term: API Gateway
+  definition: "A centralized entry point that manages, secures, and routes API traffic."
+
+- term: API Key
+  definition: "A secret token used to authenticate API requests. Agentgateway can validate API keys and attach metadata to authenticated requests."
+
+- term: Authentication (AuthN)
+  abbr: AuthN
+  definition: "The process of verifying the identity of a user or service. Agentgateway supports various authentication methods including JWT, API keys, and basic authentication."
+
+- term: Authorization (AuthZ)
+  abbr: AuthZ
+  definition: "The process of determining what actions an authenticated user or service is allowed to perform. Agentgateway supports HTTP authorization, MCP authorization, and external authorization services."
+
+- term: Backend
+  definition: "A destination service that receives traffic from agentgateway. Backends can be static hosts, MCP servers, LLM providers, or other services."
+
+- term: CEL (Common Expression Language)
+  abbr: CEL
+  definition: "A simple expression language used throughout agentgateway to enable flexible configuration. CEL expressions can access request context, JWT claims, and other variables to make dynamic decisions."
+
+- term: Circuit Breaker
+  definition: "A resiliency pattern that stops sending requests to a failing backend temporarily, allowing it to recover. Circuit breakers help prevent cascading failures."
+
+- term: Control Plane
+  definition: "Components that manage and distribute configuration and policies to the data plane."
+
+- term: CORS (Cross-Origin Resource Sharing)
+  abbr: CORS
+  definition: "A security mechanism that allows web pages to make requests to a different domain than the one serving the web page. Agentgateway can configure CORS headers to control cross-origin access."
+
+- term: CSRF (Cross-Site Request Forgery)
+  abbr: CSRF
+  definition: "A security vulnerability where unauthorized commands are transmitted from a user that the web application trusts. Agentgateway can help protect against CSRF attacks."
+
+- term: Data Plane
+  definition: "Proxies (agentgateway) that process live network traffic per configuration from the control plane."
+
+- term: Direct Response
+  definition: "A traffic management feature that returns a fixed response (body and status code) directly to the client without forwarding the request to a backend."
+
+- term: ExtProc (External Processing)
+  abbr: ExtProc
+  definition: "An advanced filter that allows arbitrary modifications to HTTP requests and responses using an external gRPC processing server. ExtProc is API-compatible with Envoy's External Processing service."
+
+- term: HTTP (Hypertext Transfer Protocol)
+  abbr: HTTP
+  definition: "The protocol used for transmitting web pages and data over the internet. Agentgateway primarily handles HTTP and HTTPS traffic."
+
+- term: HTTPS (HTTP Secure)
+  abbr: HTTPS
+  definition: "HTTP over TLS/SSL, providing encrypted communication. Agentgateway supports HTTPS listeners with TLS certificate configuration."
+
+- term: Inference
+  definition: "The process of generating predictions or responses from a trained machine learning model. In the context of agentgateway, inference refers to LLM API calls for generating text or other outputs."
+
+- term: JWT (JSON Web Token)
+  abbr: JWT
+  definition: "A compact, URL-safe token format used for securely transmitting information between parties. JWTs are commonly used for authentication and authorization in agentgateway."
+
+- term: Large Language Model (LLM)
+  abbr: LLM
+  definition: "Pre-trained language models used for natural language tasks. LLM traffic can be managed via agentgateway."
+
+- term: Listener
+  definition: "An entry point for incoming traffic into agentgateway. Listeners are configured on ports and support HTTP, HTTPS, TCP, and TLS protocols."
+
+- term: LLM Gateway / AI Gateway
+  definition: "A gateway pattern for managing LLM/AI traffic, often served by agentgateway."
+
+- term: Matching
+  definition: "The process of determining which route should handle an incoming request based on criteria such as path, hostname, headers, query parameters, or HTTP methods."
+
+- term: MCP (Model Context Protocol)
+  abbr: MCP
+  definition: "Protocol for exchanging model context and metadata between LLM gateways, agents, and tools."
+
+- term: Mirroring
+  definition: "A resiliency feature that sends a copy of requests to an additional backend for testing or analysis, without affecting the primary request flow."
+
+- term: Multiplex
+  definition: "A connection method for MCP servers that allows multiple MCP sessions to share a single transport connection, improving efficiency."
+
+- term: Observability (Logging, Monitoring, Tracing)
+  definition: "Telemetry systems (logs, metrics, traces) used to monitor agentgateway."
+
+- term: OpenAPI
+  definition: "A specification for describing RESTful APIs. Agentgateway can connect to MCP servers that expose an OpenAPI specification."
+
+- term: Policy
+  definition: "A configuration that manipulates, secures, or observes traffic as it flows through agentgateway. Policies can be attached at the listener, route, or backend level."
+
+- term: Provider
+  definition: "A service that provides LLM capabilities, such as OpenAI, Anthropic, or Azure. Agentgateway supports multiple LLM providers and can route to different providers based on configuration."
+
+- term: Proxy
+  definition: "Agentgateway-based data plane process that terminates and forwards traffic."
+
+- term: Quota
+  definition: "A limit on the amount of resources (requests, tokens, etc.) that can be consumed within a specific time period. Quotas are enforced through rate limiting policies."
+
+- term: Rate Limiting
+  definition: "Policies that control request rates to protect backends and enforce quotas."
+
+- term: Redirect
+  definition: "A traffic management feature that sends clients to a different URL, with configurable scheme, authority, path, or status code."
+
+- term: Resiliency
+  definition: "Features that improve reliability, such as retries, timeouts, and circuit breakers."
+
+- term: Retry
+  definition: "A resiliency feature that automatically resends failed requests to backends. Retries can be configured with backoff strategies and specific conditions for when to retry."
+
+- term: Rewrite
+  definition: "A traffic management feature that modifies the authority (host) or path of requests before forwarding them to backends."
+
+- term: Route
+  definition: "A rule that matches incoming requests and forwards them to backends. Routes can match on path, hostname, headers, query parameters, and HTTP methods."
+
+- term: Security
+  definition: "Authentication, authorization, encryption and other protections for traffic."
+
+- term: STDIO (Standard Input/Output)
+  abbr: STDIO
+  definition: "A connection method for MCP servers that communicates through standard input and output streams. STDIO is commonly used for local MCP server processes."
+
+- term: TCP (Transmission Control Protocol)
+  abbr: TCP
+  definition: "A connection-oriented protocol that provides reliable, ordered delivery of data. Agentgateway supports TCP listeners for non-HTTP traffic."
+
+- term: Timeout
+  definition: "A time limit for how long agentgateway will wait for a response from a backend before considering the request failed. Timeouts can be configured at the request or backend level."
+
+- term: TLS (Transport Layer Security)
+  abbr: TLS
+  definition: "A cryptographic protocol that provides secure communication over a network. Agentgateway supports TLS for both incoming connections (listeners) and outgoing connections (backends)."
+
+- term: Traffic Management
+  definition: "Features to control routing, transformations, load balancing, and traffic shaping."
+
+- term: Transformation
+  definition: "The process of modifying HTTP requests or responses as they pass through agentgateway. Transformations can change headers, body content, and other request/response attributes."

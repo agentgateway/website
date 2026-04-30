@@ -196,9 +196,9 @@ Available versions: Check the `hugo.yaml` file's `versions` section in the [kgat
 
 ### gloss
 
-Use the gloss shortcode to add inline glossary tooltips to terms in your documentation. When users hover over or click a glossary term, a tooltip displays the term's definition from the glossary data file.
+Use the gloss shortcode to add inline glossary tooltips to terms in your documentation. When users hover over a glossary term, the browser displays its definition as a native tooltip via the HTML `<abbr>` element.
 
-The shortcode takes a glossary key as the first argument and optionally accepts inner content for the displayed text. If no inner content is provided, the key itself is used as the display text.
+The shortcode takes a glossary key as the first argument and optionally accepts inner content for the displayed text. If no inner content is provided, the key itself is used as the display text. Matching is case-insensitive against both the `term` and `abbr` fields in the termbase.
 
 Example:
 
@@ -208,7 +208,15 @@ The {{</* gloss "API Gateway" */>}}API Gateway{{</* /gloss */>}} manages traffic
 You can also use it without inner content: {{</* gloss "Control Plane" */>}}
 ```
 
-The glossary definitions are stored in `data/glossary.yaml`. Each entry should have a `short` field (displayed in the tooltip) and optionally a link field for a "Learn more" link.
+Glossary definitions are stored in `data/en/termbase.yaml`. Each entry must have a `term` and `definition` field; `abbr` is optional and enables shorter lookup keys.
+
+```yaml
+- term: MCP (Model Context Protocol)
+  abbr: MCP
+  definition: "Protocol for exchanging model context and metadata between LLM gateways, agents, and tools."
+```
+
+The [Glossary page]({{< link-hextra path="/reference/glossary/" >}}) is automatically generated from this file using Hextra's `layout: glossary`.
 
 ## Redirects {#redirects}
 
