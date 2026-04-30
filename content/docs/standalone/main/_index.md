@@ -1,6 +1,7 @@
 ---
 linkTitle: "Main (in dev)"
-title: Welcome to the main (dev) standalone docs
+title: Main (dev)
+description: Welcome to the main (dev) standalone docs for agentgateway.
 test: skip
 ---
 
