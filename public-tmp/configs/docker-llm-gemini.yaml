@@ -1,0 +1,13 @@
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: gemini
+          provider:
+            gemini:
+              model: gemini-1.5-flash
+      policies:
+        backendAuth:
+          key: "$GEMINI_API_KEY"

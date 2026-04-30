@@ -1,0 +1,11 @@
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: bedrock
+          provider:
+            bedrock:
+              model: anthropic.claude-3-sonnet-20240229-v1:0
+              region: "$AWS_REGION"

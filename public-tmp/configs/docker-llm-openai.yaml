@@ -1,0 +1,13 @@
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: openai
+          provider:
+            openAI:
+              model: gpt-3.5-turbo
+      policies:
+        backendAuth:
+          key: "$OPENAI_API_KEY"
