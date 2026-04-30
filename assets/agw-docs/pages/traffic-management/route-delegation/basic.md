@@ -170,6 +170,17 @@ The following image illustrates the route delegation hierarchy:
    kubectl get httproute child-team2 -n team2
    ```
 
+   Note that only the parent HTTPRoute has the `delegation.example` hostname.
+
+   ```
+   NAME     HOSTNAMES                AGE
+   parent   ["delegation.example"]   22s
+   NAME          HOSTNAMES   AGE
+   child-team1               12s
+   NAME          HOSTNAMES   AGE
+   child-team2               6s   
+   ```
+
 5. Send a request to the `delegation.example` domain along the `/anything/team1/foo` path. Verify that you get a 200 HTTP response.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}

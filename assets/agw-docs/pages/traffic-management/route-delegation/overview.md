@@ -64,7 +64,7 @@ Only parent HTTPRoutes can specify the `spec.hostnames` field. All child and gra
 
 A parent HTTPRoute that delegates to child HTTPRoutes _must_ use `PathPrefix` matchers, as shown in the following example:
 
-```yaml {filename="route-matcher.yaml"}
+```yaml {filename="route-matcher-snippet.yaml"}
 rules:
 - matches:
   - path:
@@ -79,7 +79,7 @@ rules:
 
 A child HTTPRoute can use prefix, exact, or regex path matchers in its rules, as shown in the following example. Each path matcher must start with the prefix that the parent HTTPRoute delegates traffic for, in this case `/a`. The child HTTPRoute defines three route matchers along the `/a` path: `/1`, `/1/foo`, and `/1/.*`.
 
-```yaml {filename="route-matcher.yaml"}
+```yaml {filename="route-matcher-snippet.yaml"}
 rules:
 - matches:
   - path:
@@ -102,14 +102,9 @@ If a child HTTPRoute delegates routing decisions to a grandchild, the rule that 
 
 ### Headers, query parameters, HTTP methods
 
-You can specify headers, query parameters, and HTTP method matchers on a parent HTTPRoute. Any child HTTPRoute that you delegate traffic to must specify the same matchers to be considered a valid configuration. You can optionally define additional header, query parameter, or HTTP method matchers on the child.
+You can specify headers, query parameters, and HTTP method matchers on both parent and child HTTPRoutes. The parent's matchers control which requests are delegated, and the child's matchers independently control which delegated requests are routed to a backend. A request must satisfy both the parent's and the child's matchers to reach a backend service.
 
-For example, the following parent and child configurations show valid and invalid combinations:
-
-| Example configuration | Valid? |
-|---|---|
-| <ul><li>parent<ul><li>matches `/anything/team1` and delegates to the `child` HTTPRoute</li><li>`header1: val1`</li><li>`query1=val1`</li></ul></li><li>child<ul><li>matches `/anything/team1/foo` and routes to httpbin</li><li>`header1: val1`</li><li>`headerX: valX`</li><li>`query1=val1`</li><li>`queryX=valX`</li></ul></li></ul> | ✅<br/><br/>The headers and query parameters on the child are a superset of those on the parent. |
-| <ul><li>parent<ul><li>matches `/anything/team1` and delegates to the `child` HTTPRoute</li><li>`header1: val1`</li><li>`query1=val1`</li></ul></li><li>child<ul><li>matches `/anything/team1/foo` and routes to httpbin</li><li>`headerX: valX`</li><li>`queryX=valX`</li></ul></li></ul> | ❌<br/><br/>The headers and query parameters on the child do not include the header and query parameters on the parent. |
+The parent and child can define different sets of header and query parameter matchers. For example, a parent might delegate traffic that includes `header1: val1`, while the child matches on `headerX: valX`. In this case, a request must include both `header1` and `headerX` to reach the backend: `header1` so the parent delegates the request, and `headerX` so the child routes it.
 
 {{< callout type="info" >}}
 For an example route delegation setup that uses headers and query parameters, see [Header and query match]({{< link-hextra path="/traffic-management/route-delegation/header-query/" >}}).

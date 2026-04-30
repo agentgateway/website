@@ -19,9 +19,6 @@ In this guide, you walk through two route delegation examples.
 
 The following image illustrates the route delegation hierarchy:
 
-{{< reuse-image src="img/route-delegation-inheritance-trafficpolicies.svg" >}}
-{{< reuse-image-dark srcDark="img/route-delegation-inheritance-trafficpolicies-dark.svg" >}}
-
 **`parent` HTTPRoute**:
 * Delegates traffic on the `/anything/team1` prefix to HTTPRoutes in the `team1` namespace.
 

@@ -2,9 +2,7 @@ Use header and query matchers in a route delegation setup.
 
 ## Configuration overview
 
-In this guide, you add headers and query parameters as matchers on a parent HTTPRoute and on its children. The delegation chain works only when the child defines the same header and query matchers that the parent defines. You can optionally define additional header or query matchers on the child.
-
-For example, if the parent specifies the `header1` header, the child must also specify a matcher for `header1`.
+In this guide, you add headers and query parameters as matchers on a parent HTTPRoute. Parent matchers control which requests are delegated. Child matchers independently control which delegated requests are routed to a backend. A child can define additional matchers beyond what the parent specifies, or rely solely on path matching.
 
 The following image illustrates the route delegation hierarchy:
 
@@ -17,10 +15,10 @@ The following image illustrates the route delegation hierarchy:
   * `/anything/team2` is delegated to `child-team2` in namespace `team2` for requests that include the `header2: val2` request header and the `query2=val2` query parameter.
 
 **`child-team1` HTTPRoute**:
-* Matches incoming traffic for the `/anything/team1/foo` prefix path when the request includes the `header1: val1` and `headerX: valX` headers and the `query1=val1` and `queryX=valX` query parameters. Matching requests are forwarded to the httpbin app in the `team1` namespace. The child's headers and query parameters are a superset of the parent's.
+* Matches incoming traffic for the `/anything/team1/foo` prefix path when the request includes the `header1: val1` and `headerX: valX` headers and the `query1=val1` and `queryX=valX` query parameters. Matching requests are forwarded to the httpbin app in the `team1` namespace. The child defines additional header and query parameter matchers beyond what the parent specifies.
 
 **`child-team2` HTTPRoute**:
-* Matches incoming traffic for the `/anything/team2/bar` exact path when the request includes the `headerX: valX` header and the `queryX=valX` query parameter. The child does not include the same header and query parameters that the parent specified for the `/anything/team2` route (`header2: val2` and `query2=val2`), so the parent's rule never matches the request and delegation never happens.
+* Matches incoming traffic for the `/anything/team2/bar` exact path and routes that traffic to the httpbin app in the `team2` namespace. Unlike `child-team1`, this child does not define any header or query parameter matchers. It relies solely on path matching, while the parent's matchers control which requests are delegated.
 
 ## Before you begin
 
@@ -121,7 +119,7 @@ The following image illustrates the route delegation hierarchy:
    EOF
    ```
 
-3. Create the `child-team2` HTTPRoute in the `team2` namespace that matches traffic on the `/anything/team2/bar` exact path when the `headerX: valX` request header and the `queryX=valX` query parameter are present. The child does not restate the parent's `header2: val2` or `query2=val2` matchers, which makes this route invalid for the parent's `/anything/team2` rule.
+3. Create the `child-team2` HTTPRoute in the `team2` namespace that matches traffic on the `/anything/team2/bar` exact path. Unlike `child-team1`, this child does not define any header or query parameter matchers. The parent's matchers still control which requests are delegated to the `team2` namespace.
    ```yaml {paths="header-query"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -135,14 +133,6 @@ The following image illustrates the route delegation hierarchy:
        - path:
            type: Exact
            value: /anything/team2/bar
-         headers:
-         - type: Exact
-           name: headerX
-           value: valX
-         queryParams:
-         - type: Exact
-           name: queryX
-           value: valX
        backendRefs:
        - name: httpbin
          port: 8000
@@ -289,32 +279,71 @@ The following image illustrates the route delegation hierarchy:
    server: agentgateway
    ```
 
-6. Send a request along the `/anything/team2/bar` path that is configured on `child-team2`. Include all of the parent's and child's headers and query parameters. Verify that you get a 404 HTTP response. The parent's rule matches `header2` and `query2`, and the child's rule matches `headerX` and `queryX`. Because the child does not also match `header2` and `query2`, the parent's `/anything/team2` rule never selects this child as a valid delegation target.
+6. Send a request along the `/anything/team2/bar` path with the parent's matchers (`header2` and `query2`). Verify that you get a 200 HTTP response. The parent's rule delegates the request to the `team2` namespace, and `child-team2` matches on path alone with no additional header or query parameter requirements.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar?queryX=valX&query2=val2" \
-     -H "host: delegation.example" -H "headerX: valX" -H "header2: val2"
+   curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar?query2=val2" \
+     -H "host: delegation.example" -H "header2: val2"
    ```
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl -i "localhost:8080/anything/team2/bar?queryX=valX&query2=val2" \
-     -H "host: delegation.example" -H "headerX: valX" -H "header2: val2"
+   curl -i "localhost:8080/anything/team2/bar?query2=val2" \
+     -H "host: delegation.example" -H "header2: val2"
    ```
    {{% /tab %}}
    {{< /tabs >}}
 
    {{< doc-test paths="header-query" >}}
    YAMLTest -f - <<'EOF'
-   - name: /team2/bar returns 404 because child-team2 does not restate parent matchers
+   - name: /team2/bar with parent matchers returns 200 (child matches on path only)
      http:
-       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team2/bar?queryX=valX&query2=val2"
+       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team2/bar?query2=val2"
        method: GET
        headers:
          host: delegation.example
-         headerX: valX
          header2: val2
+     source:
+       type: local
+     expect:
+       statusCode: 200
+   EOF
+   {{< /doc-test >}}
+
+   Example output:
+   ```
+   HTTP/1.1 200 OK
+   access-control-allow-credentials: true
+   access-control-allow-origin: *
+   content-type: application/json; encoding=utf-8
+   server: agentgateway
+   ```
+
+7. Send another request along the `/anything/team2/bar` path, but without the parent's matchers. Verify that you get a 404 HTTP response. Even though `child-team2` matches on path alone, the parent requires `header2: val2` and `query2=val2` to delegate the request to the `team2` namespace.
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar \
+     -H "host: delegation.example"
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Port-forward for local testing" %}}
+   ```sh
+   curl -i localhost:8080/anything/team2/bar \
+     -H "host: delegation.example"
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   {{< doc-test paths="header-query" >}}
+   YAMLTest -f - <<'EOF'
+   - name: /team2/bar without parent matchers returns 404 (no delegation)
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/anything/team2/bar"
+       method: GET
+       headers:
+         host: delegation.example
      source:
        type: local
      expect:
@@ -328,8 +357,6 @@ The following image illustrates the route delegation hierarchy:
    content-type: text/plain
    server: agentgateway
    ```
-
-   To make the child eligible for delegation from the parent's `/anything/team2` rule, update `child-team2` to also match on the `header2: val2` request header and `query2=val2` query parameter.
 
 ## Cleanup
 
