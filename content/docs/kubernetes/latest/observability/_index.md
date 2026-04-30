@@ -1,6 +1,7 @@
 ---
 title: Observability
 weight: 700
+icon: monitoring
 description: Tracing, prompt logging, cost tracking, and metrics for your gateways.
 next: /operations
 prev: /integrations

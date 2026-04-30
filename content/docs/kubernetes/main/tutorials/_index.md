@@ -1,6 +1,7 @@
 ---
 title: Tutorials
 weight: 23
+icon: school
 description: Step-by-step guides for deploying and managing agentgateway on Kubernetes
 test: skip
 ---

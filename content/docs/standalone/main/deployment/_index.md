@@ -1,6 +1,7 @@
 ---
 title: Deployment
 weight: 21
+icon: cloud_upload
 description: How to deploy agentgateway in your environment.
 test: skip
 ---

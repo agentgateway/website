@@ -2,6 +2,7 @@
 linkTitle: "Get started"
 title: Get started
 weight: 1
+icon: rocket_launch
 description: Install and run agentgateway, or route traffic to MCP, LLM, or HTTP backends.
 test: skip
 ---

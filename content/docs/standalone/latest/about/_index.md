@@ -1,6 +1,7 @@
 ---
 title: About
 weight: 20
+icon: info
 description: 
 test: skip
 ---

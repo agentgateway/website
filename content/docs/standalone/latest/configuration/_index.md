@@ -1,6 +1,7 @@
 ---
 title: Configuration
 weight: 22
+icon: tune
 description: 
 test: skip
 ---

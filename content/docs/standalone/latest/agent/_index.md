@@ -1,6 +1,7 @@
 ---
 title: Agent connectivity
 weight: 60
+icon: smart_toy
 description:
 test: skip
 ---

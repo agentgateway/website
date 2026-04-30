@@ -1,6 +1,7 @@
 ---
 title: Tutorials
 weight: 23
+icon: school
 description: Step-by-step guides for common agentgateway use cases
 test: skip
 ---

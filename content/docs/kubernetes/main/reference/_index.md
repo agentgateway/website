@@ -1,7 +1,7 @@
 ---
 title: Reference
 weight: 901
-icon: import_contacts
+icon: menu_book
 test: skip
 ---
 
