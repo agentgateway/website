@@ -967,14 +967,14 @@ function generateK8sConfig(provider, endpoint) {
 
     let providerBlock;
     if (type === 'native') {
-        providerBlock = `            ${providerType}:
-              model: ${model}`;
+        providerBlock = `      ${providerType}:
+        model: ${model}`;
     } else {
-        providerBlock = `            openai:
-              model: ${model}
-              host: ${host}
-              port: ${port}
-              path: "${configPath}"`;
+        providerBlock = `      openai:
+        model: ${model}
+        host: ${host}
+        port: ${port}
+        path: "${configPath}"`;
     }
 
     const secretStep = env ? `
@@ -992,10 +992,10 @@ stringData:
 EOF
 ` : '';
 
-    const policiesBlock = env ? `    policies:
-      auth:
-        secretRef:
-          name: ${secretName}
+    const policiesBlock = env ? `  policies:
+    auth:
+      secretRef:
+        name: ${secretName}
 ` : '';
 
     const stepOffset = env ? 0 : -1;
