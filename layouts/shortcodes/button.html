@@ -1,1 +1,10 @@
+{{- /*
+  Shortcode: button
+  Renders a button by delegating to the "button" partial with all shortcode parameters passed through.
+
+  Parameters:
+    (passes all named parameters to the "button" partial -- see partials/button.html for supported params)
+
+  Example: {{< button text="Get Started" link="/docs/" >}}
+*/ -}}
 {{ partial "button" .Params }}

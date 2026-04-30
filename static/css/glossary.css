@@ -14,8 +14,7 @@
 
 /* Target ANY element inside glossary-term that contains tooltip content */
 .glossary-term > span {
-  visibility: hidden;
-  opacity: 0;
+  display: none;
   width: 280px;
   background-color: #fff;
   color: #333;
@@ -29,7 +28,6 @@
   transform: translateX(-50%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 1px solid #e1e5e9;
-  transition: opacity 0.3s, visibility 0.3s;
   pointer-events: none;
 }
 
@@ -47,8 +45,7 @@
 
 .glossary-term:hover > span,
 .glossary-term:focus > span {
-  visibility: visible;
-  opacity: 1;
+  display: block;
 }
 
 /* Style the content inside the tooltip */
@@ -93,8 +90,7 @@
 
 /* Mobile active state */
 .glossary-term.active > span {
-  visibility: visible;
-  opacity: 1;
+  display: block;
 }
 
 /* Missing term style */
@@ -121,23 +117,21 @@
   color: #805ad5;
 }
 
-/* Dark mode support */
-@media (prefers-color-scheme: dark) {
-  .glossary-term > span {
-    background-color: #1a1a1a;
-    color: #e5e5e5;
-    border-color: #333;
-  }
-  
-  .glossary-term > span::after {
-    border-color: #1a1a1a transparent transparent transparent;
-  }
-  
-  .glossary-term > span strong {
-    color: #fff;
-  }
-  
-  .glossary-term > span a {
-    color: #60a5fa;
-  }
+/* Dark mode support — use .dark class to match site toggle, not OS preference */
+.dark .glossary-term > span {
+  background-color: #030712;
+  color: #e5e5e5;
+  border-color: #374151;
+}
+
+.dark .glossary-term > span::after {
+  border-color: #030712 transparent transparent transparent;
+}
+
+.dark .glossary-term > span strong {
+  color: #fff;
+}
+
+.dark .glossary-term > span a {
+  color: #60a5fa;
 }

@@ -52,34 +52,23 @@
     display: none
   }
 
-  .navbar.scrolled {
-    background-color: white;
+  /* Scroll transitions only apply to the landing page navbar */
+  .navbar.landing-navbar.scrolled {
+    background-color: #030712;
     border-color: transparent;
     transition-property: background-color, border;
     transition-duration: 500ms;
     transition-timing-function: linear;
   }
-  
-  .dark .navbar.scrolled {
-    background-color: rgb(17, 24, 39); /* gray-900 */
-  }
-  
-  .navbar.scrolled .link {
+
+  .navbar.landing-navbar.scrolled .link {
     color: rgb(55, 65, 81); /* gray-700 */
     transition: color 500ms linear;
   }
 
-  .dark .navbar.scrolled .link {
-    color: rgb(209, 213, 219); /* gray-300 */
-  }
-
-  .navbar.scrolled a.link svg {
+  .navbar.landing-navbar.scrolled a.link svg {
     fill: rgb(55, 65, 81);
     transition: fill 500ms linear;
-  }
-
-  .dark .navbar.scrolled a.link svg {
-    fill: rgb(209, 213, 219);
   }
 
   .mobile-nav {
@@ -88,7 +77,8 @@
     left: 100%;
     transition: left 400ms ease-out;
     height: 100vh;
-    height: calc(var(--vh, 1vh) * 100);
+    height: 100dvh;
+    overflow-y: auto;
   }
 
   .mobile-nav .x {
@@ -168,9 +158,9 @@
   .navbar #logo,
   .navbar a[href="/"] svg,
   .navbar a[href="/"] img {
-    height: 50px !important;
+    height: 60px !important;
     width: auto !important;
-    max-width: 200px !important;
+    max-width: 250px !important;
   }
   
   /* Ensure logo dark mode classes work correctly */
@@ -326,21 +316,14 @@
   }
 </style>
 
-{{- /* Determine if we're on the landing page, docs, or blog */ -}}
+{{- /* Determine if we're on the landing page or docs */ -}}
 {{- $isLandingPage := eq .RelPermalink "/" -}}
 {{- $isDocsPage := false -}}
-{{- $isBlogPage := false -}}
-{{- if eq .Section "blog" -}}
-  {{- $isBlogPage = true -}}
-{{- end -}}
 {{- if .RelPermalink -}}
   {{- $path := .RelPermalink -}}
   {{- $segments := split $path "/" -}}
   {{- if and (ge (len $segments) 2) (eq (index $segments 1) "docs") -}}
     {{- $isDocsPage = true -}}
-  {{- end -}}
-  {{- if and (not $isBlogPage) (ge (len $segments) 2) (eq (index $segments 1) "blog") -}}
-    {{- $isBlogPage = true -}}
   {{- end -}}
 {{- end -}}
 
@@ -449,15 +432,12 @@
   </div>
   </div>
 {{- else -}}
-  {{- /* Docs/blog navbar with dropdown - use dark navbar (and dark logo) on blog */ -}}
-  <nav class="navbar py-[1.875rem] px-12 xl:px-25 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
+  {{- /* Docs/blog/enterprise/models navbar with dropdown, search, and dark/light toggle */ -}}
+  <nav class="navbar desktop-navbar py-4 px-2 xl:px-4 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20 bg-white dark:bg-[#030712]">
     <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
       <div class="flex items-center gap-8">
         {{- $page := . -}}
-        {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\" height=\"50\"" -}}
-        {{- if $isBlogPage -}}
-          {{- $logoParams = merge $logoParams (dict "forceDark" true) -}}
-        {{- end -}}
+        {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\"" -}}
         <a href="/">{{ partial "utils/logo.html" $logoParams }}</a>
       </div>
       <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between gap-4">
@@ -510,13 +490,11 @@
         {{- $currentPage := . -}}
         {{- $docsRendered := false -}}
         {{- range .Site.Menus.main -}}
-          {{- if eq .Params.type "search" -}}
-            {{- /* Search menu item - use Hextra search if available */ -}}
-            {{- if templates.Exists "partials/hextra/search.html" -}}
-              {{- partial "hextra/search.html" (dict "params" .Params) -}}
-            {{- else if templates.Exists "partials/search.html" -}}
-              {{- partial "search.html" (dict "params" .Params) -}}
-            {{- end -}}
+          {{- if eq .Name "Home" -}}
+            {{- /* Skip Home — logo already links to / */ -}}
+          {{- else if eq .Params.type "search" -}}
+            {{- /* Search — call hextra's search partial directly */ -}}
+            {{- partial "search.html" (dict "params" .Params "location" "navbar") -}}
           {{- else if and (eq .Name "Docs") (not $docsRendered) -}}
             {{- /* Docs dropdown - only render once */ -}}
             {{- $docsRendered = true -}}
@@ -576,11 +554,19 @@
             <a class="link whitespace-nowrap text-gray-700 dark:text-gray-300" {{ if $external }}target="_blank" rel="noreferer"{{ end }} href="{{ .URL }}">{{ .Name }}</a>
           {{- end -}}
         {{- end -}}
+        {{- if (.Site.Params.theme.displayToggle | default true) -}}
+          <button type="button" class="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" aria-label="Toggle theme" onclick="(function(){var t=document.documentElement,isDark=t.classList.contains('dark'),c=isDark?'light':'dark';t.classList.remove('light','dark');t.classList.add(c);t.style.colorScheme=c;try{localStorage.setItem('color-theme',c)}catch(e){}})()">
+            {{- /* Sun icon (shown in dark mode) */ -}}
+            <svg class="w-5 h-5 hidden dark:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            {{- /* Moon icon (shown in light mode) */ -}}
+            <svg class="w-5 h-5 block dark:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+          </button>
+        {{- end -}}
       </div>
     </div>
   </nav>
 
-  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-gray-900{{ if $isBlogPage }} navbar-dark-bg{{ end }}">
+  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-[#030712]">
     <div class="py-3 px-4 flex justify-between items-center">
       <div class="flex items-center gap-1">
         {{- if $isDocsPage -}}
@@ -592,9 +578,6 @@
         {{- end -}}
         {{- $page := . -}}
         {{- $mobileLogoParams := dict "Page" $page "attributes" "height=\"50\"" -}}
-        {{- if $isBlogPage -}}
-          {{- $mobileLogoParams = merge $mobileLogoParams (dict "forceDark" true) -}}
-        {{- end -}}
         <a href="/">{{ partial "utils/logo.html" $mobileLogoParams }}</a>
       </div>
       <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">

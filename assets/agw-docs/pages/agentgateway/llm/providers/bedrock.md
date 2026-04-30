@@ -3,7 +3,8 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}). 
-2. Make sure that your [Amazon credentials](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html) have access to the Bedrock models that you want to use. You can alternatively use an [AWS Bedrock API key](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html). 
+2. Make sure that your [Amazon credentials](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html) have access to the Bedrock models that you want to use. You can alternatively use an [AWS Bedrock API key](https://docs.aws.amazon.com/bedrock/latest/userguide/api-keys.html).{{< version exclude-if="1.1.x" >}}
+3. Optional: You can [configure AWS IAM Identity Center](https://docs.aws.amazon.com/singlesignon/latest/userguide/getting-started.html) to allow single sign-on (SSO) credentials to authenticate to AWS Bedrock. Make sure that you have access to AWS Bedrock and set up your AWS profile to use SSO, such as through the [`aws` CLI](https://docs.aws.amazon.com/cli/latest/userguide/cli-configure-files.html). Make sure the workload can use that profile (for example with `AWS_PROFILE`). Later when you create the {{< reuse "agw-docs/snippets/backend.md" >}}, omit `policies.auth` so the proxy uses implicit AWS SSO credentials.{{< /version >}}
 
 ## Set up access to Amazon Bedrock {#setup}
 
@@ -82,7 +83,7 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    | `ai.provider.bedrock` | Define the LLM provider that you want to use. The example uses Amazon Bedrock. |
    | `bedrock.model`     | The model to use to generate responses. In this example, you use the `amazon.nova-micro-v1:0` model. Keep in mind that some models support cross-region inference. These models begin with a `us.` prefix, such as `us.anthropic.claude-sonnet-4-20250514-v1:0`. For more models, see the [AWS Bedrock docs](https://docs.aws.amazon.com/bedrock/latest/userguide/models-supported.html). |
    | `bedrock.region`    | The AWS region where your Bedrock model is deployed. Multiple regions are not supported. |
-   | `policies.auth` | Provide the credentials to use to access the Amazon Bedrock API. The example refers to the secret that you previously created. To use IRSA, omit the `auth` settings.|
+   | `policies.auth` | Provide the credentials to use to access the Amazon Bedrock API. The example refers to the secret that you previously created. To use implicit credentials from the workload or environment instead (for example IRSA{{< version exclude-if="1.1.x" >}} and AWS IAM Identity Center (SSO) profiles{{< /version >}}), omit the `auth` settings. |
 
 3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. The default Bedrock route is `/model/${MODEL}/converse`, such as `/model/amazon.nova-micro-v1:0/converse`.
 

@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: labs-list
+  Renders a filterable grid of lab cards from the site's data/labs data file, with tag-based filtering support.
+
+  Parameters:
+    (none -- reads from .Site.Data.labs)
+
+  Example: {{< labs-list >}}
+*/ -}}
 {{ $data := .Site.Data.labs }}
 
 <script>

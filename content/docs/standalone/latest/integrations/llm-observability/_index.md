@@ -7,13 +7,6 @@ test: skip
 
 Agentgateway can send LLM telemetry to specialized observability platforms for prompt logging, cost tracking, audit trail, and performance monitoring.
 
-{{< cards >}}
-  {{< card link="langfuse" title="Langfuse" subtitle="Open-source LLM analytics" >}}
-  {{< card link="langsmith" title="LangSmith" subtitle="LangChain's observability platform" >}}
-  {{< card link="phoenix" title="Arize Phoenix" subtitle="LLM tracing and evaluation" >}}
-  {{< card link="helicone" title="Helicone" subtitle="LLM monitoring and caching" >}}
-{{< /cards >}}
-
 ## How it works
 
 Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to LLM-specific observability platforms. These platforms provide the following.

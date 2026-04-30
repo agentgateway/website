@@ -433,11 +433,11 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
 
 1. Delete the HTTPRoute resource. 
-  ```sh
-  kubectl delete httproute httpbin-timeout -n httpbin
-  ```
+   ```sh
+   kubectl delete httproute httpbin-timeout -n httpbin
+   ```
 2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it from the namespace you created it in.
-  ```sh
-  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n httpbin
-  kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-  ```
+   ```sh
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n httpbin
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} timeout -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```

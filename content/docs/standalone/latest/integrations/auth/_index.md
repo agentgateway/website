@@ -7,14 +7,6 @@ test: skip
 
 Agentgateway supports multiple authentication methods and integrates with popular identity providers.
 
-{{< cards >}}
-  {{< card link="oauth2-proxy" title="OAuth2 Proxy" subtitle="GitHub, Google, Azure AD authentication" >}}
-  {{< card link="keycloak" title="Keycloak" subtitle="Open source identity management" >}}
-  {{< card link="auth0" title="Auth0" subtitle="Identity platform" >}}
-  {{< card link="tailscale" title="Tailscale" subtitle="Zero-trust network authentication" >}}
-  {{< card link="okta" title="Okta" subtitle="Enterprise identity management" >}}
-{{< /cards >}}
-
 ## Authentication methods
 
 Agentgateway supports several authentication approaches.

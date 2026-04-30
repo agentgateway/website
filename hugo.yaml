@@ -4,9 +4,9 @@ canonifyURLs: true
 title: "agentgateway | Agent Connectivity Solved"
 
 outputs:
-  home: [HTML]
-  page: [HTML]
-  section: [HTML, RSS]
+  home: [HTML, RSS, llms]
+  page: [HTML, markdown]
+  section: [HTML, RSS, markdown]
 
 defaultContentLanguage: en
 
@@ -40,6 +40,10 @@ caches:
 
 markup:
   goldmark:
+    extensions:
+      extras:
+        superscript:
+          enable: true
     renderer:
       unsafe: true
   highlight:
@@ -104,7 +108,7 @@ params:
     enable: true
     displayCopyright: true
     displayPoweredBy: false
-    width: normal
+    width: wide
 
   displayUpdatedDate: true
   dateFormat: "January 2, 2006"

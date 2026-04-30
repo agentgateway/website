@@ -1,7 +1,7 @@
 <!-- Hidden mobile menu elements to prevent Hextra theme main.js errors -->
-<div class="mobile-menu-overlay hx-hidden" style="display: none !important;"></div>
-<div class="hamburger-menu hx-hidden" style="display: none !important;"><svg></svg></div>
-<div class="sidebar-container hx-hidden" style="display: none !important;"></div>
+<div class="mobile-menu-overlay hx:hidden" style="display: none !important;"></div>
+<div class="hamburger-menu hx:hidden" style="display: none !important;"><svg></svg></div>
+<div class="sidebar-container hx:hidden" style="display: none !important;"></div>
 
 <!-- Hide Alpine.js elements until initialized to prevent flash -->
 <style>[x-cloak] { display: none !important; }</style>
@@ -11,8 +11,10 @@
   <!-- Trigger Button: compact pill, scaled up on desktop (keeps proportions) -->
   <button
     @click="toggle()"
-    class="chatbot-trigger fixed bottom-4 right-4 z-[9998] flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] bg-gradient-to-br from-violet-600 to-violet-700 text-white border-none rounded-full font-inherit font-medium cursor-pointer transition-all duration-200 shadow-[0_4px_14px_rgba(124,58,237,0.4)] sm:gap-3 sm:px-6 sm:py-3.5 sm:text-base sm:shadow-[0_4px_18px_rgba(124,58,237,0.45)] sm:bottom-6 sm:right-6"
-    :class="isOpen ? 'shadow-[0_2px_8px_rgba(124,58,237,0.3)] opacity-80 hover:opacity-100' : 'hover:-translate-y-0.5 hover:shadow-[0_6px_22px_rgba(124,58,237,0.55)] active:translate-y-0'"
+    class="chatbot-trigger"
+    style="position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 9998; display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 0.875rem 1.5rem; font-size: 1rem; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 9999px; font-weight: 500; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 18px rgba(124,58,237,0.45);"
+    onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 22px rgba(124,58,237,0.55)'"
+    onmouseout="this.style.transform='';this.style.boxShadow='0 4px 18px rgba(124,58,237,0.45)'"
     aria-label="Ask AI"
   >
     <svg class="shrink-0 w-5 h-5 sm:w-6 sm:h-6" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

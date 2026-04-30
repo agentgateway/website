@@ -1,6 +1,7 @@
 ---
 title: About
 weight: 20
+icon: info
 description: 
 test: skip
 ---
@@ -9,7 +10,3 @@ test: skip
 
 Review the following topics to learn more about agentgateway.
 
-{{< cards >}}
-  {{< card link="introduction" title="Introduction" >}}
-  {{< card link="architecture" title="Architecture" >}}
-{{< /cards >}}

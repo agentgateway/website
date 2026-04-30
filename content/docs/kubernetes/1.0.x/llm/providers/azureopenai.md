@@ -4,5 +4,5 @@ weight: 20
 description:
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/llm/providers/azureopenai.md" >}}
+{{< reuse "agw-docs/pages/agentgateway/llm/providers/azure.md" >}}
 

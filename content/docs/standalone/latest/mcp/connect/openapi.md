@@ -22,11 +22,13 @@ In your OpenAPI schema, make sure to set the URL of the server. If no URL is set
 To avoid this issue, explicitly set the URL value to `/` in the OpenAPI schema, such as the following example.
 
 ```json
- "servers": [
+{
+  "servers": [
     {
       "url": "/"
     }
   ]
+}
 ```
 
 ### Sample Petstore server {#petstore}
