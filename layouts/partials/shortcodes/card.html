@@ -1,0 +1,46 @@
+{{- $link := .link -}}
+{{- $title := .title -}}
+{{- $icon := .icon -}}
+{{- $subtitle := .subtitle -}}
+{{- $image := .image -}}
+{{- $alt := .alt | default $title -}}
+{{- $width := .width -}}
+{{- $height := .height -}}
+{{- $imageStyle := .imageStyle -}}
+
+{{- $external := strings.HasPrefix $link "http" -}}
+{{- $href := cond (strings.HasPrefix $link "/") ($link | relURL) $link -}}
+
+<style>
+  .hextra-card-custom { display: flex; flex-direction: column; justify-content: start; overflow: hidden; border-radius: 0.5rem; border: 1px solid #d1d5db; padding: 1rem; min-height: 7rem; text-decoration: none; color: inherit; transition: all 0.2s ease; background: transparent; }
+  .hextra-card-custom:hover { border-color: #9ca3af; background: #f8fafc; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07); }
+  .dark .hextra-card-custom { border-color: #374151; }
+  .dark .hextra-card-custom:hover { border-color: #4b5563; background: rgba(255,255,255,0.03); }
+  .hextra-card-custom .card-title { font-weight: 600; color: #374151; }
+  .dark .hextra-card-custom .card-title { color: #e5e7eb; }
+  .hextra-card-custom .card-subtitle { margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; }
+  .dark .hextra-card-custom .card-subtitle { color: #9ca3af; }
+</style>
+<a
+  class="hextra-card hextra-card-custom"
+  {{- if $link }}
+    href="{{ $href }}"
+    {{ with $external }}target="_blank" rel="noreferrer"{{ end -}}
+  {{- end -}}
+>
+  {{- with $image -}}
+    <img
+      alt="{{ $alt }}"
+      loading="lazy"
+      decoding="async"
+      src="{{ $image | safeURL }}"
+      {{ with $width }}width="{{ . }}"{{ end }}
+      {{ with $height }}height="{{ . }}"{{ end }}
+      {{ with $imageStyle }}style="{{ . | safeCSS }}"{{ end }}
+      style="max-height: 4rem; width: auto; object-fit: contain; margin-bottom: 1rem;"
+    />
+  {{- end -}}
+  {{- with $icon }}{{ partial "utils/icon.html" (dict "name" $icon "attributes" "style='width:1.5rem;height:1.5rem;margin-bottom:0.5rem;'") -}}{{- end -}}
+  {{- with $title }}<span class="card-title">{{ . }}</span>{{ end -}}
+  {{- with $subtitle }}<p class="card-subtitle">{{ . | markdownify }}</p>{{ end -}}
+</a>

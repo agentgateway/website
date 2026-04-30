@@ -1,1 +1,10 @@
+{{- /*
+  Shortcode: doc-test
+  Wraps inner content for documentation test annotations; the inner content is consumed but not rendered, allowing test metadata to be embedded in pages without affecting output.
+
+  Parameters:
+    (none -- uses inner content as test metadata)
+
+  Example: {{< doc-test >}}test: my-test-name{{< /doc-test >}}
+*/ -}}
 {{- $_ := .Inner -}}

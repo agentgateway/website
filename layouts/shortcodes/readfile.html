@@ -1,3 +1,14 @@
+{{- /*
+  Shortcode: readfile
+  Reads a local file and renders the content as either Markdown or raw HTML, with optional security scan skipping.
+
+  Parameters:
+    - file: The path to the local file to read (relative to the project root).
+    - markdown: (optional) Set to "true" to render the file content as Markdown; otherwise renders as raw HTML.
+    - type: (optional) Set to "SECURITY_SCAN" to conditionally skip reading when the site's noSecurityScan param is enabled.
+
+  Example: {{< readfile file="/static/examples/config.yaml" markdown="true" >}}
+*/ -}}
 {{$file := .Get "file"}}
 
 {{- if and (eq (.Get "type") "SECURITY_SCAN") .Site.Params.noSecurityScan -}}

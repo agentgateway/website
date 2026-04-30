@@ -1,3 +1,16 @@
+{{- /*
+  Shortcode: testimonials-carousel
+  Wraps inner testimonial shortcodes in a horizontally scrollable carousel with previous/next navigation buttons.
+
+  Parameters:
+    (none -- uses inner content, which should contain {{< testimonial >}} shortcodes)
+
+  Example:
+    {{< testimonials-carousel >}}
+      {{< testimonial author="Jane Doe" >}}Great product!{{< /testimonial >}}
+      {{< testimonial author="John Smith" >}}Highly recommended.{{< /testimonial >}}
+    {{< /testimonials-carousel >}}
+*/ -}}
 {{ $id := printf "testimonials-carousel-%d" (index (seq 1 99 | shuffle) 0) }}
 <div id="{{ $id }}" class="testimonials-carousel" style="position: relative; margin: 1.5rem 0;">
   <div class="testimonials-carousel-track" style="display: flex; gap: 1.5rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 0.5rem 0; -ms-overflow-style: none; scrollbar-width: none;">

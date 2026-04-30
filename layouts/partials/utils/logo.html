@@ -40,13 +40,13 @@
 {{- if $forceDark -}}
   {{- /* Single dark logo for dark navbar */ -}}
   {{- if $attributes -}}
-    <img src="{{ $logoDark }}" alt="agentgateway logo" {{ $attributes | safeHTML }} />
+    <img src="{{ $logoDark }}" alt="agentgateway logo" {{ $attributes | safeHTMLAttr }} />
   {{- else -}}
     <img src="{{ $logoDark }}" alt="agentgateway logo" height="50" />
   {{- end -}}
 {{- else if $attributes -}}
-  <img src="{{ $logoLight }}" alt="agentgateway logo" class="dark:hidden" {{ $attributes | safeHTML }} />
-  <img src="{{ $logoDark }}" alt="agentgateway logo" class="hidden dark:block" {{ $attributes | safeHTML }} />
+  <img src="{{ $logoLight }}" alt="agentgateway logo" class="dark:hidden" {{ $attributes | safeHTMLAttr }} />
+  <img src="{{ $logoDark }}" alt="agentgateway logo" class="hidden dark:block" {{ $attributes | safeHTMLAttr }} />
 {{- else -}}
   <img src="{{ $logoLight }}" alt="agentgateway logo" class="dark:hidden" height="50" />
   <img src="{{ $logoDark }}" alt="agentgateway logo" class="hidden dark:block" height="50" />
