@@ -15,6 +15,7 @@ Control traffic and route requests through agentgateway.
 
 {{< cards >}}
   {{< card link="matching" title="Request matching" >}}
+  {{< card link="route-delegation" title="Route delegation" >}}
   {{< card link="manipulation" title="Header manipulation" >}}
   {{< card link="redirects" title="Redirects" >}}
   {{< card link="transformations" title="Transformations" >}}
