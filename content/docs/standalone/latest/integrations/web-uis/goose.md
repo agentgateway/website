@@ -36,7 +36,7 @@ Autonomous agents like Goose require careful governance because they can:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│     Goose       │────▶│  agentgateway  │────▶│   LLM Provider  │
+│     Goose       │────▶│   agentgateway  │────▶│   LLM Provider  │
 │   (Agent)       │     │                 │     │  (Anthropic)    │
 └─────────────────┘     │  - Auth         │     └─────────────────┘
         │               │  - Audit        │

@@ -1,14 +1,32 @@
+/* Hide Hextra theme navbar globally - all pages use custom nav.html instead */
+.hextra-nav-container {
+    display: none !important;
+}
+
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-    font-family: 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family: 'Open Sans', 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 .nav-container {
-    font-family: 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    font-family: 'Open Sans', 'ui-sans-serif', 'system-ui', 'sans-serif', "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+/* Page description (subtitle under <h1>) — auto-rendered from front matter
+   `description` by docs/single.html and docs/list.html. */
+.page-description {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    color: #6b7280;
+    margin-top: -0.5rem;
+    margin-bottom: 1.5rem;
+}
+.dark .page-description {
+    color: #9ca3af;
 }
 
 /* Test Status Badge - Modern gradient style */
@@ -118,4 +136,362 @@ h6 {
 
 .dark .test-status-tooltip::before {
     border-bottom-color: #374151;
+}
+
+/* Dark mode code block scrollbar track */
+.dark pre::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+.dark pre::-webkit-scrollbar {
+    height: 8px;
+}
+.dark pre::-webkit-scrollbar-thumb {
+    background: #444;
+    border-radius: 4px;
+}
+.dark pre {
+    scrollbar-color: #444 #1e1e1e;
+}
+
+/* Sidebar link styling — match TOC text color */
+.sidebar-link:not(.sidebar-active-item) {
+    color: #6b7280;
+}
+.sidebar-link:not(.sidebar-active-item):hover {
+    color: #111827;
+    background: #f3f4f6;
+}
+.sidebar-link.sidebar-active-item {
+    color: #1e40af;
+    background: #dbeafe;
+}
+.dark .sidebar-link:not(.sidebar-active-item) {
+    color: #9ca3af !important;
+}
+.dark .sidebar-link:not(.sidebar-active-item):hover {
+    color: #e5e7eb !important;
+    background: rgba(255,255,255,0.05) !important;
+}
+.dark .sidebar-link.sidebar-active-item {
+    color: #c7d2fe !important;
+    background: rgba(99,102,241,0.1) !important;
+}
+.dark .sidebar-container {
+    background-color: #111 !important;
+}
+.sidebar-nav {
+    color: #6b7280;
+}
+.dark .sidebar-nav {
+    color: #9ca3af !important;
+}
+
+/* Search bar styling */
+.hextra-search-wrapper {
+    position: relative;
+    width: 16rem;
+}
+.hextra-search-input {
+    display: block;
+    width: 100%;
+    appearance: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    line-height: 1.25;
+    background: rgba(0, 0, 0, 0.05);
+    border: none;
+    outline: none;
+    transition: background-color 0.15s;
+    color: inherit;
+}
+.hextra-search-input::placeholder {
+    color: #6b7280;
+}
+.hextra-search-input:focus {
+    background: white;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.3);
+}
+.dark .hextra-search-input {
+    background: rgba(255, 255, 255, 0.1);
+}
+.dark .hextra-search-input::placeholder {
+    color: #9ca3af;
+}
+.dark .hextra-search-input:focus {
+    background: #111;
+}
+.hextra-search-results {
+    position: absolute;
+    top: 100%;
+    z-index: 20;
+    margin-top: 0.5rem;
+    overflow: auto;
+    overscroll-behavior: contain;
+    border-radius: 0.75rem;
+    padding: 0.625rem 0;
+    box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1);
+    max-height: min(calc(50vh - 11rem), 400px);
+    min-height: 100px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    width: 100vw;
+    max-width: min(calc(100vw - 2rem), calc(100% + 20rem));
+}
+.dark .hextra-search-results {
+    background: #1a1a1a;
+    border-color: #374151;
+}
+
+/* Hextra tabs - data-state show/hide and active styling */
+.hextra-tabs-panel {
+    display: none;
+}
+.hextra-tabs-panel[data-state="selected"] {
+    display: block;
+    padding-top: 1.5rem;
+}
+.hextra-tabs-toggle {
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-right: 0.5rem;
+    font-weight: 500;
+    border-bottom: 2px solid transparent;
+    color: #4b5563;
+    background: none;
+    border-top: none;
+    border-left: none;
+    border-right: none;
+    transition: color 0.15s, border-color 0.15s;
+}
+.hextra-tabs-toggle:hover {
+    color: #000;
+    border-bottom-color: #d1d5db;
+}
+.hextra-tabs-toggle[data-state="selected"] {
+    color: hsl(212, 100%, 45%);
+    border-bottom-color: hsl(212, 100%, 50%);
+}
+.dark .hextra-tabs-toggle {
+    color: #d1d5db;
+}
+.dark .hextra-tabs-toggle:hover {
+    color: #fff;
+    border-bottom-color: #4b5563;
+}
+.dark .hextra-tabs-toggle[data-state="selected"] {
+    color: hsl(212, 100%, 60%);
+    border-bottom-color: hsl(212, 100%, 50%);
+}
+
+/* TOC link styling */
+.toc-link:hover { color: #111827; }
+.dark .toc-link { color: #9ca3af; }
+.dark .toc-link:hover { color: #e5e7eb; }
+
+/* Light/dark image toggling */
+.light-only { display: block; }
+.dark-only { display: none; }
+.dark .light-only { display: none; }
+.dark .dark-only { display: block; }
+
+/* Dark mode: everything matches nav background (#030712) */
+.dark body,
+.dark .hextra-footer,
+.dark .sidebar-container,
+.dark .hextra-toc {
+    background-color: #030712 !important;
+}
+
+/* Center all footer content on all screen sizes */
+.hextra-custom-footer {
+    margin-left: auto;
+    margin-right: auto;
+}
+.hextra-footer > .hextra-max-footer-width:not(.hextra-custom-footer) {
+    justify-content: center !important;
+}
+.hextra-footer > .hextra-max-footer-width:not(.hextra-custom-footer) > div {
+    align-items: center !important;
+}
+
+/* Responsive tables — scrollable container */
+.table-wrapper {
+    margin: 1.5rem 0;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.table-wrapper table {
+    width: 100%;
+    table-layout: auto;
+    border-collapse: collapse;
+}
+.table-wrapper th,
+.table-wrapper td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #e5e7eb;
+    white-space: normal;
+    word-wrap: break-word;
+}
+.dark .table-wrapper th,
+.dark .table-wrapper td {
+    border-color: #374151;
+}
+
+/* Generated card grids — top-align content */
+.hextra-cards .hextra-card {
+    justify-content: flex-start !important;
+}
+.hextra-cards .hextra-card > .hx\:mt-auto {
+    margin-top: 0 !important;
+}
+
+
+
+/* Spacing between headings and following content. Needed because reuse
+   shortcode output has no <p> wrapper, so there's no margin-top from
+   the next element. Using padding-bottom avoids doubling up with
+   margin collapsing when a proper <p> does follow. */
+/* Space between headings and following content. Needed because reuse
+   shortcode output often has no <p> wrapper, leaving bare text/links
+   with no margin-top to create a gap after the heading. */
+.content :is(h1, h2, h3, h4, h5, h6) {
+    margin-bottom: 0.75rem !important;
+}
+
+/* Space between text and code blocks inside list items and after bare text */
+.content li > .hextra-code-block,
+.content li > pre {
+    margin-top: 0.75rem;
+}
+
+/* Sidebar child indent border - dark mode */
+.dark .sidebar-container ul[style*="border-left"] {
+    border-left-color: #374151 !important;
+}
+
+/* Auto-generated child cards on section list pages.
+   Replicates the docs-theme-lotus card grid on parent sections */
+.section-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-auto-rows: 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.section-card {
+  display: flex;
+  flex-direction: column;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  height: 100%;
+}
+
+.section-card:hover {
+  border-color: #158bc2;
+  box-shadow: 0 2px 8px rgba(21, 139, 194, 0.1);
+}
+
+.material-icons {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+.section-card-icon {
+  font-size: 28px;
+  color: #158bc2;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.section-card-body {
+  min-width: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-card-title {
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+  margin: 16px 0 4px !important;
+  color: #111827;
+}
+
+.section-card-desc {
+  font-size: 0.75rem !important;
+  color: #374151;
+  margin: 0 !important;
+  line-height: 1.5;
+}
+
+.section-card-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: #e5e7eb;
+  color: #374151;
+  vertical-align: middle;
+  margin-left: 4px;
+}
+
+.section-card-badge.badge-tag {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.section-card-badge.badge-oss {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Section cards dark mode */
+.dark .section-card {
+  border-color: #374151;
+}
+
+.dark .section-card:hover {
+  border-color: #60b5e0;
+  box-shadow: 0 2px 8px rgba(96, 181, 224, 0.1);
+}
+
+.dark .section-card-title {
+  color: #f3f4f6;
+}
+
+.dark .section-card-desc {
+  color: #9ca3af;
+}
+
+.dark .section-card-badge {
+  background: #374151;
+  color: #d1d5db;
+}
+
+.dark .section-card-badge.badge-tag {
+  background: #1e3a5f;
+  color: #93c5fd;
+}
+
+.dark .section-card-badge.badge-oss {
+  background: #064e3b;
+  color: #6ee7b7;
 }

@@ -5,8 +5,6 @@ author: "Sebastian Maniak"
 description: "A Year In: agentgateway Hits v1.0.0 — and the Pieces Are Converging"
 ---
 
-# A Year In: agentgateway Hits v1.0.0 — and the Pieces Are Converging
-
 A lot of open-source projects feel "promising" for a long time. And then, suddenly, a few signals land at once and you realize: it's been a year, you've crossed 1 million image pulls, you're approaching 2K GitHub stars… and v1.0.0 is here.
 
 For agentgateway, that convergence looks like this:

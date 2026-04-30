@@ -32,7 +32,7 @@ While Open WebUI provides a great user experience, enterprises need additional c
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Open WebUI    │────▶│  agentgateway  │────▶│   LLM Provider  │
+│   Open WebUI    │────▶│   agentgateway  │────▶│   LLM Provider  │
 │                 │     │                 │     │  (OpenAI, etc)  │
 └─────────────────┘     │  - Auth         │     └─────────────────┘
                         │  - Audit        │
@@ -196,7 +196,7 @@ A complete reference implementation is available at [agentgateway-webui-multi-ll
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   Open WebUI    │────▶│  agentgateway  │────▶│   Anthropic     │
+│   Open WebUI    │────▶│   agentgateway  │────▶│   Anthropic     │
 │   (Port 8888)   │     │   (Port 3000)   │     │   (Claude)      │
 └─────────────────┘     │                 │     └─────────────────┘
         │               │  Unified API    │     ┌─────────────────┐

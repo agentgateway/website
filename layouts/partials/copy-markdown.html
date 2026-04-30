@@ -1,0 +1,83 @@
+{{- /* Copy as Markdown button — uses Hugo's transform.HTMLToMarkdown (v0.151+)
+       to convert rendered HTML back to clean markdown for clipboard copy. */ -}}
+{{- $html := .Content -}}
+{{- /* Convert Hextra card links to simple <p><a> links before markdown conversion,
+       otherwise transform.HTMLToMarkdown drops them entirely.
+       Matches: <a class="hextra-card..."><span class="card-title">Title</span></a>
+       Also:    <a class="hextra-card...">...<span class="hextra-card-icon...">Title</span>...</a> */ -}}
+{{- $html = $html | replaceRE `(?s)<a\s+class="hextra-card[^"]*"[^>]*href="([^"]*)"[^>]*>.*?<span[^>]*>([^<]+)</span>.*?</a>` "<p><a href=\"$1\">$2</a></p>" -}}
+{{- /* Remove card grid wrappers and their inline styles */ -}}
+{{- $html = $html | replaceRE `(?s)<div class="hextra-cards[^"]*"[^>]*>(.*?)</div>` "$1" -}}
+{{- $html = $html | replaceRE `(?s)<style>\s*\.hextra-card-styled[^<]*</style>` "" -}}
+{{- /* Chroma linenos=table: replace the two-cell table with just the code-side <pre>.
+       Otherwise HTMLToMarkdown serializes the line-number <td> as its own fenced block
+       above the actual code, producing an orphan "1\n2\n..." block in the copy output. */ -}}
+{{- $html = $html | replaceRE `(?s)<table class="lntable"><tr><td class="lntd">\s*<pre[^>]*><code><span class="lnt">.*?</td>\s*<td class="lntd">\s*(<pre[^>]*><code[^>]*>.*?</code></pre>)\s*</td>\s*</tr>\s*</table>` "$1" -}}
+{{- /* Tabs: strip the button bar, unhide all panels, and inject a label before each panel
+       using the aria-labelledby to match the tab button's text. */ -}}
+{{- /* Remove entire tablist div (buttons) — we'll label panels directly */ -}}
+{{- $html = $html | replaceRE `(?s)<div[^>]*role="tablist"[^>]*>.*?</div>` "" -}}
+{{- /* Unhide all panels and inject "Option:" label using the panel's aria-labelledby ID to
+       extract the tab name from the corresponding button. Since buttons are gone, we use
+       the tab ID suffix as a fallback — but simpler: just add a marker we'll fix in JS. */ -}}
+{{- $html = $html | replaceRE `aria-hidden="true"` "" -}}
+{{- $html = $html | replaceRE `<div class="hextra-tabs-panel[^"]*"[^>]*aria-labelledby="([^"]*)"[^>]*>` `<div style="display:block"><p><strong>Option: $1</strong></p>` -}}
+{{- $md := printf "# %s\n\n%s" .Title ($html | transform.HTMLToMarkdown) -}}
+{{- /* Strip empty heading-permalink anchors only — [](#id) → "".
+       Preserve [text](#id) cross-section links so readers retain the reference. */ -}}
+{{- $md = $md | replaceRE `\[\]\(#[^)]+\)` "" -}}
+{{- /* Normalize Goldmark/typographer-introduced smart punctuation back to ASCII so the
+       copied markdown survives plain-text contexts (LLM prompts, terminals, code blocks). */ -}}
+{{- $md = $md | replaceRE "[“”]" "\"" -}}
+{{- $md = $md | replaceRE "[‘’]" "'" -}}
+{{- $md = $md | replaceRE "…" "..." -}}
+{{- $md = $md | replaceRE "–" "-" -}}
+{{- $md = $md | replaceRE "—" "--" -}}
+{{- /* Resolve a canonical base URL for the copied markdown so links resolve when pasted
+       elsewhere. site.BaseURL is "/" in this repo (root-relative output), so fall back to
+       the production hostname when it lacks a scheme/host. */ -}}
+{{- $siteBase := site.BaseURL | strings.TrimRight "/" -}}
+{{- $baseURL := $siteBase -}}
+{{- if not (or (hasPrefix $siteBase "http://") (hasPrefix $siteBase "https://")) -}}
+  {{- $baseURL = "https://agentgateway.dev" -}}
+{{- end -}}
+{{- /* Current page URL (without any trailing slash), normalized to use the canonical baseURL.
+       In dev .Permalink is //localhost:PORT/path/, in prod it's https://host/path/. */ -}}
+{{- $pagePath := .Permalink | replaceRE `^(https?:)?//[^/]+` "" -}}
+{{- $pageAbs := printf "%s%s" $baseURL $pagePath | strings.TrimRight "/" -}}
+
+{{- /* Image paths → absolute URLs.
+       Use ${1}/${2} (not $1/$2) so Go's regex engine doesn't merge the digit with following
+       letters into an undefined named group — e.g. "$1https" parses as name "1https" → "". */ -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()(/[^)]+)` (printf "${1}%s${2}" $baseURL) -}}
+{{- /* Fill empty image alt text with filename — ![](/path/foo-bar.png) → ![foo-bar](/path/foo-bar.png) */ -}}
+{{- $md = $md | replaceRE `!\[\]\(([^)]*/)([^/)]+\.[a-zA-Z]+)\)` "![${2}](${1}${2})" -}}
+
+{{- /* Link URLs → absolute URLs. Run AFTER image rewriting so already-https image URLs
+       don't match the relative-link pattern below. */ -}}
+{{- /* Localhost-rooted links → baseURL/path */ -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}
+{{- /* Root-relative links (/docs/…) → baseURL/path. Excludes anchors via [^)#]. */ -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()(/[^)#]+)` (printf "${1}%s${2}" $baseURL) -}}
+{{- /* Relative links (basic, basic/sub, basic#anchor) → pageAbs/relative. First URL char
+       must be alphanum or _/-; subsequent chars exclude ) and : so we skip absolute URLs
+       (https://…, mailto:…) but allow # for fragment-suffixed relative links. */ -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()([a-zA-Z0-9_\-][^):]*)(\))` (printf "${1}%s/${2}${3}" $pageAbs) -}}
+{{- if $md -}}
+<div class="copy-md-wrapper" style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+  <style>
+    .copy-md-btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 500; color: #6b7280; background: transparent; border: 1px solid #e5e7eb; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s ease; }
+    .copy-md-btn:hover { color: #111827; border-color: #9ca3af; background: #f9fafb; }
+    .dark .copy-md-btn { color: #9ca3af; border-color: #374151; }
+    .dark .copy-md-btn:hover { color: #e5e7eb; border-color: #6b7280; background: rgba(255,255,255,0.05); }
+  </style>
+  <button class="copy-md-btn" title="Copy page as Markdown" aria-label="Copy page as Markdown" data-copied-label="Copied!">
+    <i class="material-symbols-outlined" aria-hidden="true" style="font-size: 0.875rem;">content_copy</i>
+    <span class="copy-md-label">Copy as Markdown</span>
+  </button>
+  <script type="text/markdown" class="copy-md-source">
+{{- $md -}}
+  </script>
+</div>
+{{- end -}}

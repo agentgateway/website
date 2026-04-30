@@ -1,6 +1,7 @@
 ---
 linkTitle: "Latest"
-title: Welcome
+title: Latest
+description: Welcome to the latest standalone docs for agentgateway.
 test: skip
 ---
 

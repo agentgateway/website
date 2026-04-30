@@ -190,7 +190,7 @@ EOF
    ...
    ```
 
-## Clean up
+## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 

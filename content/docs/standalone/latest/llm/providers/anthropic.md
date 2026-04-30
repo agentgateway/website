@@ -34,7 +34,7 @@ llm:
 
 After running agentgateway with the configuration from the previous section, you can send a request to the `v1/messages` endpoint. Agentgateway automatically adds the `x-api-key` authorization and `anthropic-version` headers to the request. The request is forwarded to the Anthropic API and the response is returned to the client.
 
-```json
+```bash
 curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
   -d '{

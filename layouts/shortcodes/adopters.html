@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: adopters
+  Renders a section displaying adopter logos from the site's data/adopters data file, with light/dark mode support and a link to add new logos.
+
+  Parameters:
+    (none -- reads from .Site.Data.adopters)
+
+  Example: {{< adopters >}}
+*/ -}}
 {{ $data := .Site.Data.adopters }}
 
 {{ if $data }}

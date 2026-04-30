@@ -1,3 +1,13 @@
+{{- /*
+  Shortcode: gloss
+  Renders an inline glossary term with a hover tooltip showing the definition and an optional "Learn more" link, sourced from data/glossary.
+
+  Parameters:
+    - 0 (positional): The glossary key to look up in data/glossary.
+    - (inner content): (optional) Custom display text; defaults to the glossary key if not provided.
+
+  Example: {{< gloss "MCP" >}}custom display text{{< /gloss >}}
+*/ -}}
 {{ $key := .Get 0 }}
 {{ $entry := index site.Data.glossary $key }}
 
