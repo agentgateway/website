@@ -1,9 +1,15 @@
 Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the Kubernetes Gateway API Inference Extension to route requests to AI inference workloads, such as Large Language Models (LLMs) that run in your Kubernetes environment.
 
+This page covers Kubernetes Gateway API mode, where agentgateway routes to
+`InferencePool` backends from Gateway API resources. If you want to run the
+Endpoint Picker Extension (EPP) with agentgateway as a standalone sidecar proxy,
+see the standalone request scheduler guide instead.
+
 For more information, see the following resources.
 
 {{< cards >}}
   {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Kubernetes Gateway API Inference Extension docs" icon="external-link">}}
+  {{< card link="https://agentgateway.dev/docs/standalone/main/inference/" title="Standalone inference routing" >}}
   {{< card link="https://kgateway.dev/blog/deep-dive-inference-extensions/" title="Kgateway deep-dive blog on Inference Extension" icon="external-link">}}
 {{< /cards >}}
 
