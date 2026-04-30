@@ -18,13 +18,21 @@
                     <p class="text-white">{{ $.Page.Params.Description }}</p>
                 </div>
             </section>
-            <div class="px-10 md:px-32 py-32 max-w-[1440px] mx-auto prose prose-gray prose-lg max-w-none 
-                        prose-headings:text-gray-900 prose-p:text-gray-700 prose-a:text-blue-600 
-                        prose-a:hover:text-blue-800 prose-strong:text-gray-900 prose-code:text-red-600 
-                        prose-code:bg-gray-100 prose-code:px-1 prose-code:py-0.5 prose-code:rounded
-                        prose-pre:bg-gray-100 prose-pre:text-gray-800
-                        prose-blockquote:border-l-blue-500 prose-blockquote:bg-gray-50 prose-blockquote:text-gray-600
-                        prose-li:text-gray-700">
+            <div class="px-10 md:px-32 py-32 max-w-[1440px] mx-auto prose prose-gray dark:prose-invert prose-lg max-w-none
+                        prose-headings:text-gray-900 dark:prose-headings:text-gray-100
+                        prose-p:text-gray-700 dark:prose-p:text-gray-300
+                        prose-a:text-blue-600 dark:prose-a:text-blue-400
+                        prose-a:hover:text-blue-800 dark:prose-a:hover:text-blue-300
+                        prose-strong:text-gray-900 dark:prose-strong:text-gray-100
+                        prose-code:text-red-600 dark:prose-code:text-red-400
+                        prose-code:bg-gray-100 dark:prose-code:bg-gray-800
+                        prose-code:px-1 prose-code:py-0.5 prose-code:rounded
+                        prose-pre:bg-gray-100 dark:prose-pre:bg-gray-800
+                        prose-pre:text-gray-800 dark:prose-pre:text-gray-200
+                        prose-blockquote:border-l-blue-500
+                        prose-blockquote:bg-gray-50 dark:prose-blockquote:bg-gray-800
+                        prose-blockquote:text-gray-600 dark:prose-blockquote:text-gray-300
+                        prose-li:text-gray-700 dark:prose-li:text-gray-300">
                 {{ .Content }}
             </div>
         </main>
