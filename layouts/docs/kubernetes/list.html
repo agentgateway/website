@@ -21,6 +21,7 @@
         <div class="content">
           {{ partial "copy-markdown.html" . }}
           {{ if .Title }}<h1>{{ .Title }}</h1>{{ end }}
+          {{- with .Description }}<p class="page-description">{{ . | markdownify }}</p>{{ end }}
           {{ .Content }}
 
           {{- /* Auto-generated child cards — matches old docs-theme-lotus behavior */ -}}
