@@ -1,6 +1,6 @@
 ---
 linkTitle: "Main (in dev)"
-title: Welcome
+title: Welcome to the main (dev) standalone docs
 test: skip
 ---
 

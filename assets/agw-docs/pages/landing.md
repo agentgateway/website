@@ -92,4 +92,3 @@ Enable secure communication between AI agents using the [Agent-to-Agent (A2A)](h
 
 Run agentgateway anywhere—bare metal, VMs, containers, or Kubernetes. Conformant to the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) with support for HTTPRoute, GRPCRoute, TCPRoute, and TLSRoute.
 
-## Next steps

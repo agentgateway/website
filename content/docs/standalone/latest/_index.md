@@ -1,6 +1,6 @@
 ---
 linkTitle: "Latest"
-title: Welcome
+title: Welcome to the latest standalone docs
 test: skip
 ---
 

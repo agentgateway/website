@@ -397,6 +397,22 @@ h6 {
   box-shadow: 0 2px 8px rgba(21, 139, 194, 0.1);
 }
 
+.material-icons {
+  font-family: 'Material Symbols Outlined';
+  font-weight: normal;
+  font-style: normal;
+  display: inline-block;
+  line-height: 1;
+  text-transform: none;
+  letter-spacing: normal;
+  word-wrap: normal;
+  white-space: nowrap;
+  direction: ltr;
+  font-feature-settings: 'liga';
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
 .section-card-icon {
   font-size: 28px;
   color: #158bc2;

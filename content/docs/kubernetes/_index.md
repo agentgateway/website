@@ -5,8 +5,6 @@ description:
 test: skip
 ---
 
-{{< cards >}}
-{{< /cards >}}
 
 Select the version for the agentgateway docs.
 
