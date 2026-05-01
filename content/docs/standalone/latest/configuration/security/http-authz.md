@@ -3,13 +3,12 @@ title: HTTP authorization
 weight: 12
 ---
 
-Attach to:
-{{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
 HTTP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} allows defining rules to allow or deny requests based on their properties, using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
 
 {{< callout type="info" >}}
-Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
 {{< /callout >}}
 
 Policies can define `allow`, `deny`, and `require` rules. When evaluating a request:

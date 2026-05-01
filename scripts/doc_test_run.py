@@ -384,7 +384,7 @@ def collect_cluster_context(cluster_name: str, context_dir: Path) -> None:
         os.unlink(kubeconfig_path)
 
 
-def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None) -> Dict:
+def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
 
@@ -462,6 +462,14 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
                 except Exception as exc:
                     logger.warning("Context collection error: %s", exc)
     finally:
+        if pause:
+            logger.info("--pause set: cluster '%s' is kept running. Press Ctrl+C to clean up and exit.", cluster_name)
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                logger.info("Interrupted — deleting cluster '%s'...", cluster_name)
+
         if cloud_provider is not None:
             cloud_provider.terminate()
             try:
@@ -533,6 +541,7 @@ def main() -> int:
     parser.add_argument("--list-tests", action="store_true", help="Print discovered test cases as JSON to stdout and exit")
     parser.add_argument("--file", nargs="+", default=None, metavar="FILE", help="Path(s) to one or more markdown files to test (relative to repo root or absolute)")
     parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (only used when --file specifies a single file)")
+    parser.add_argument("--pause", action="store_true", help="After the test, keep the cluster running until Ctrl+C, then clean up")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -614,7 +623,7 @@ def main() -> int:
     for test_case in test_cases:
         doc_rel = test_case.document.relative_to(repo_root).as_posix()
         key = f"{doc_rel}::{test_case.name}"
-        result = run_test_case(repo_root, test_case, args.cluster_prefix, context_base_dir=context_base_dir)
+        result = run_test_case(repo_root, test_case, args.cluster_prefix, context_base_dir=context_base_dir, pause=args.pause)
         status_icon = "PASSED" if result.get("status") == "passed" else "FAILED"
         logger.info("%s: %s", status_icon, key)
         test_results[key] = result

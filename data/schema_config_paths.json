@@ -1,0 +1,1089 @@
+{
+  "generatedFrom": "/tmp/config.json",
+  "pathsByDef": {
+    "A2aPolicy": [
+      "backends[].policies.a2a",
+      "binds[].listeners[].routes[].backends[].policies.a2a",
+      "binds[].listeners[].routes[].policies.a2a",
+      "mcp.policies.a2a",
+      "policies[].policy.a2a",
+      "routeGroups[].routes[].backends[].policies.a2a",
+      "routeGroups[].routes[].policies.a2a"
+    ],
+    "APIKey": [
+      "binds[].listeners[].policies.apiKey.keys[].key",
+      "binds[].listeners[].routes[].policies.apiKey.keys[].key",
+      "llm.policies.apiKey.keys[].key",
+      "mcp.policies.apiKey.keys[].key",
+      "policies[].policy.apiKey.keys[].key",
+      "routeGroups[].routes[].policies.apiKey.keys[].key"
+    ],
+    "Authorization": [
+      "binds[].listeners[].routes[].policies.authorization",
+      "llm.policies.authorization",
+      "mcp.policies.authorization",
+      "policies[].policy.authorization",
+      "routeGroups[].routes[].policies.authorization"
+    ],
+    "AuthorizationLocation": [
+      "binds[].listeners[].policies.apiKey.location",
+      "binds[].listeners[].policies.basicAuth.authorizationLocation",
+      "binds[].listeners[].routes[].policies.apiKey.location",
+      "binds[].listeners[].routes[].policies.basicAuth.authorizationLocation",
+      "binds[].listeners[].routes[].policies.mcpAuthentication.authorizationLocation",
+      "llm.policies.apiKey.location",
+      "llm.policies.basicAuth.authorizationLocation",
+      "mcp.policies.apiKey.location",
+      "mcp.policies.basicAuth.authorizationLocation",
+      "mcp.policies.mcpAuthentication.authorizationLocation",
+      "policies[].policy.apiKey.location",
+      "policies[].policy.basicAuth.authorizationLocation",
+      "policies[].policy.mcpAuthentication.authorizationLocation",
+      "routeGroups[].routes[].policies.apiKey.location",
+      "routeGroups[].routes[].policies.basicAuth.authorizationLocation",
+      "routeGroups[].routes[].policies.mcpAuthentication.authorizationLocation"
+    ],
+    "AzureResourceType": [
+      "llm.models[].params.azureResourceType"
+    ],
+    "BackendAuth": [
+      "backends[].policies.backendAuth",
+      "binds[].listeners[].policies.extAuthz.policies.backendAuth",
+      "binds[].listeners[].policies.extProc.policies.backendAuth",
+      "binds[].listeners[].routes[].backends[].policies.backendAuth",
+      "binds[].listeners[].routes[].policies.backendAuth",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.backendAuth",
+      "binds[].listeners[].routes[].policies.extProc.policies.backendAuth",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendAuth",
+      "frontendPolicies.accessLog.otlp.policies.backendAuth",
+      "frontendPolicies.tracing.policies.backendAuth",
+      "llm.policies.extAuthz.policies.backendAuth",
+      "llm.policies.extProc.policies.backendAuth",
+      "mcp.policies.backendAuth",
+      "mcp.policies.extAuthz.policies.backendAuth",
+      "mcp.policies.extProc.policies.backendAuth",
+      "mcp.policies.remoteRateLimit.policies.backendAuth",
+      "mcp.targets[].policies.backendAuth",
+      "policies[].policy.backendAuth",
+      "policies[].policy.extAuthz.policies.backendAuth",
+      "policies[].policy.extProc.policies.backendAuth",
+      "policies[].policy.remoteRateLimit.policies.backendAuth",
+      "routeGroups[].routes[].backends[].policies.backendAuth",
+      "routeGroups[].routes[].policies.backendAuth",
+      "routeGroups[].routes[].policies.extAuthz.policies.backendAuth",
+      "routeGroups[].routes[].policies.extProc.policies.backendAuth",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.backendAuth"
+    ],
+    "BackendConfig": [
+      "config.backend"
+    ],
+    "BodyOptions": [
+      "binds[].listeners[].policies.extAuthz.includeRequestBody",
+      "binds[].listeners[].routes[].policies.extAuthz.includeRequestBody",
+      "llm.policies.extAuthz.includeRequestBody",
+      "mcp.policies.extAuthz.includeRequestBody",
+      "policies[].policy.extAuthz.includeRequestBody",
+      "routeGroups[].routes[].policies.extAuthz.includeRequestBody"
+    ],
+    "CorsSerde": [
+      "binds[].listeners[].routes[].policies.cors",
+      "mcp.policies.cors",
+      "policies[].policy.cors",
+      "routeGroups[].routes[].policies.cors"
+    ],
+    "Csrf": [
+      "binds[].listeners[].routes[].policies.csrf",
+      "mcp.policies.csrf",
+      "policies[].policy.csrf",
+      "routeGroups[].routes[].policies.csrf"
+    ],
+    "DescriptorEntry": [
+      "binds[].listeners[].routes[].policies.remoteRateLimit.descriptors[]",
+      "mcp.policies.remoteRateLimit.descriptors[]",
+      "policies[].policy.remoteRateLimit.descriptors[]",
+      "routeGroups[].routes[].policies.remoteRateLimit.descriptors[]"
+    ],
+    "DirectResponse": [
+      "binds[].listeners[].routes[].policies.directResponse",
+      "mcp.policies.directResponse",
+      "policies[].policy.directResponse",
+      "routeGroups[].routes[].policies.directResponse"
+    ],
+    "DnsLookupFamily": [
+      "config.dns.lookupFamily"
+    ],
+    "Duration": [
+      "backends[].policies.tcp.connectTimeout",
+      "binds[].listeners[].policies.extAuthz.policies.tcp.connectTimeout",
+      "binds[].listeners[].policies.extProc.policies.tcp.connectTimeout",
+      "binds[].listeners[].routes[].backends[].policies.tcp.connectTimeout",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.tcp.connectTimeout",
+      "binds[].listeners[].routes[].policies.extProc.policies.tcp.connectTimeout",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.tcp.connectTimeout",
+      "frontendPolicies.accessLog.otlp.policies.tcp.connectTimeout",
+      "frontendPolicies.tracing.policies.tcp.connectTimeout",
+      "llm.policies.extAuthz.policies.tcp.connectTimeout",
+      "llm.policies.extProc.policies.tcp.connectTimeout",
+      "mcp.policies.extAuthz.policies.tcp.connectTimeout",
+      "mcp.policies.extProc.policies.tcp.connectTimeout",
+      "mcp.policies.remoteRateLimit.policies.tcp.connectTimeout",
+      "mcp.targets[].policies.tcp.connectTimeout",
+      "policies[].policy.extAuthz.policies.tcp.connectTimeout",
+      "policies[].policy.extProc.policies.tcp.connectTimeout",
+      "policies[].policy.remoteRateLimit.policies.tcp.connectTimeout",
+      "routeGroups[].routes[].backends[].policies.tcp.connectTimeout",
+      "routeGroups[].routes[].policies.extAuthz.policies.tcp.connectTimeout",
+      "routeGroups[].routes[].policies.extProc.policies.tcp.connectTimeout",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.connectTimeout"
+    ],
+    "Expression": [
+      "binds[].listeners[].routes[].policies.remoteRateLimit.descriptors[].limitOverride",
+      "frontendPolicies.accessLog.filter",
+      "frontendPolicies.tracing.clientSampling",
+      "frontendPolicies.tracing.randomSampling",
+      "mcp.policies.remoteRateLimit.descriptors[].limitOverride",
+      "policies[].policy.remoteRateLimit.descriptors[].limitOverride",
+      "routeGroups[].routes[].policies.remoteRateLimit.descriptors[].limitOverride"
+    ],
+    "ExtAuthz": [
+      "binds[].listeners[].policies.extAuthz",
+      "binds[].listeners[].routes[].policies.extAuthz",
+      "llm.policies.extAuthz",
+      "mcp.policies.extAuthz",
+      "policies[].policy.extAuthz",
+      "routeGroups[].routes[].policies.extAuthz"
+    ],
+    "ExtProc": [
+      "binds[].listeners[].policies.extProc",
+      "binds[].listeners[].routes[].policies.extProc",
+      "llm.policies.extProc",
+      "mcp.policies.extProc",
+      "policies[].policy.extProc",
+      "routeGroups[].routes[].policies.extProc"
+    ],
+    "FailureMode": [
+      "binds[].listeners[].routes[].policies.remoteRateLimit.failureMode",
+      "mcp.policies.remoteRateLimit.failureMode",
+      "policies[].policy.remoteRateLimit.failureMode",
+      "routeGroups[].routes[].policies.remoteRateLimit.failureMode"
+    ],
+    "FailureMode2": [
+      "binds[].listeners[].policies.extAuthz.failureMode",
+      "binds[].listeners[].routes[].policies.extAuthz.failureMode",
+      "llm.policies.extAuthz.failureMode",
+      "mcp.policies.extAuthz.failureMode",
+      "policies[].policy.extAuthz.failureMode",
+      "routeGroups[].routes[].policies.extAuthz.failureMode"
+    ],
+    "FailureMode3": [
+      "binds[].listeners[].policies.extProc.failureMode",
+      "binds[].listeners[].routes[].policies.extProc.failureMode",
+      "llm.policies.extProc.failureMode",
+      "mcp.policies.extProc.failureMode",
+      "policies[].policy.extProc.failureMode",
+      "routeGroups[].routes[].policies.extProc.failureMode"
+    ],
+    "FailureMode4": [
+      "mcp.failureMode"
+    ],
+    "FileInlineOrRemote": [
+      "binds[].listeners[].policies.oidc.discovery",
+      "binds[].listeners[].policies.oidc.jwks",
+      "binds[].listeners[].routes[].policies.mcpAuthentication.jwks",
+      "binds[].listeners[].routes[].policies.oidc.discovery",
+      "binds[].listeners[].routes[].policies.oidc.jwks",
+      "llm.policies.oidc.discovery",
+      "llm.policies.oidc.jwks",
+      "mcp.policies.mcpAuthentication.jwks",
+      "mcp.policies.oidc.discovery",
+      "mcp.policies.oidc.jwks",
+      "policies[].policy.mcpAuthentication.jwks",
+      "policies[].policy.oidc.discovery",
+      "policies[].policy.oidc.jwks",
+      "routeGroups[].routes[].policies.mcpAuthentication.jwks",
+      "routeGroups[].routes[].policies.oidc.discovery",
+      "routeGroups[].routes[].policies.oidc.jwks"
+    ],
+    "FileOrInline": [
+      "binds[].listeners[].policies.basicAuth.htpasswd",
+      "binds[].listeners[].routes[].policies.basicAuth.htpasswd",
+      "llm.policies.basicAuth.htpasswd",
+      "mcp.policies.basicAuth.htpasswd",
+      "policies[].policy.basicAuth.htpasswd",
+      "routeGroups[].routes[].policies.basicAuth.htpasswd"
+    ],
+    "FilterOrPolicy": [
+      "binds[].listeners[].routes[].policies",
+      "mcp.policies",
+      "policies[].policy",
+      "routeGroups[].routes[].policies"
+    ],
+    "FullLocalBackend": [
+      "backends[]"
+    ],
+    "HTTP": [
+      "backends[].policies.http",
+      "binds[].listeners[].policies.extAuthz.policies.http",
+      "binds[].listeners[].policies.extProc.policies.http",
+      "binds[].listeners[].routes[].backends[].policies.http",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.http",
+      "binds[].listeners[].routes[].policies.extProc.policies.http",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.http",
+      "frontendPolicies.accessLog.otlp.policies.http",
+      "frontendPolicies.tracing.policies.http",
+      "llm.policies.extAuthz.policies.http",
+      "llm.policies.extProc.policies.http",
+      "mcp.policies.extAuthz.policies.http",
+      "mcp.policies.extProc.policies.http",
+      "mcp.policies.remoteRateLimit.policies.http",
+      "mcp.targets[].policies.http",
+      "policies[].policy.extAuthz.policies.http",
+      "policies[].policy.extProc.policies.http",
+      "policies[].policy.remoteRateLimit.policies.http",
+      "routeGroups[].routes[].backends[].policies.http",
+      "routeGroups[].routes[].policies.extAuthz.policies.http",
+      "routeGroups[].routes[].policies.extProc.policies.http",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.http"
+    ],
+    "HTTP2": [
+      "frontendPolicies.http"
+    ],
+    "HeaderMatch": [
+      "binds[].listeners[].routes[].matches[].headers[]",
+      "llm.models[].matches[].headers[]",
+      "routeGroups[].routes[].matches[].headers[]"
+    ],
+    "HeaderModifier": [
+      "backends[].policies.ai.promptGuard.request[].rejection.headers",
+      "backends[].policies.ai.promptGuard.response[].rejection.headers",
+      "backends[].policies.requestHeaderModifier",
+      "backends[].policies.responseHeaderModifier",
+      "binds[].listeners[].policies.extAuthz.policies.requestHeaderModifier",
+      "binds[].listeners[].policies.extProc.policies.requestHeaderModifier",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers",
+      "binds[].listeners[].routes[].backends[].policies.requestHeaderModifier",
+      "binds[].listeners[].routes[].backends[].policies.responseHeaderModifier",
+      "binds[].listeners[].routes[].policies.ai.promptGuard.request[].rejection.headers",
+      "binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection.headers",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.requestHeaderModifier",
+      "binds[].listeners[].routes[].policies.extProc.policies.requestHeaderModifier",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.requestHeaderModifier",
+      "binds[].listeners[].routes[].policies.requestHeaderModifier",
+      "binds[].listeners[].routes[].policies.responseHeaderModifier",
+      "frontendPolicies.accessLog.otlp.policies.requestHeaderModifier",
+      "frontendPolicies.tracing.policies.requestHeaderModifier",
+      "llm.models[].guardrails.request[].rejection.headers",
+      "llm.models[].guardrails.response[].rejection.headers",
+      "llm.models[].requestHeaders",
+      "llm.models[].responseHeaders",
+      "llm.policies.extAuthz.policies.requestHeaderModifier",
+      "llm.policies.extProc.policies.requestHeaderModifier",
+      "mcp.policies.ai.promptGuard.request[].rejection.headers",
+      "mcp.policies.ai.promptGuard.response[].rejection.headers",
+      "mcp.policies.extAuthz.policies.requestHeaderModifier",
+      "mcp.policies.extProc.policies.requestHeaderModifier",
+      "mcp.policies.remoteRateLimit.policies.requestHeaderModifier",
+      "mcp.policies.requestHeaderModifier",
+      "mcp.policies.responseHeaderModifier",
+      "mcp.targets[].policies.requestHeaderModifier",
+      "policies[].policy.ai.promptGuard.request[].rejection.headers",
+      "policies[].policy.ai.promptGuard.response[].rejection.headers",
+      "policies[].policy.extAuthz.policies.requestHeaderModifier",
+      "policies[].policy.extProc.policies.requestHeaderModifier",
+      "policies[].policy.remoteRateLimit.policies.requestHeaderModifier",
+      "policies[].policy.requestHeaderModifier",
+      "policies[].policy.responseHeaderModifier",
+      "routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection.headers",
+      "routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection.headers",
+      "routeGroups[].routes[].backends[].policies.requestHeaderModifier",
+      "routeGroups[].routes[].backends[].policies.responseHeaderModifier",
+      "routeGroups[].routes[].policies.ai.promptGuard.request[].rejection.headers",
+      "routeGroups[].routes[].policies.ai.promptGuard.response[].rejection.headers",
+      "routeGroups[].routes[].policies.extAuthz.policies.requestHeaderModifier",
+      "routeGroups[].routes[].policies.extProc.policies.requestHeaderModifier",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.requestHeaderModifier",
+      "routeGroups[].routes[].policies.requestHeaderModifier",
+      "routeGroups[].routes[].policies.responseHeaderModifier"
+    ],
+    "HeaderOrPseudo": [
+      "binds[].listeners[].policies.extAuthz.includeRequestHeaders[]",
+      "binds[].listeners[].routes[].policies.extAuthz.includeRequestHeaders[]",
+      "llm.policies.extAuthz.includeRequestHeaders[]",
+      "mcp.policies.extAuthz.includeRequestHeaders[]",
+      "policies[].policy.extAuthz.includeRequestHeaders[]",
+      "routeGroups[].routes[].policies.extAuthz.includeRequestHeaders[]"
+    ],
+    "HeaderValueMatch": [
+      "binds[].listeners[].routes[].matches[].headers[].value",
+      "llm.models[].matches[].headers[].value",
+      "routeGroups[].routes[].matches[].headers[].value"
+    ],
+    "HostRedirect": [
+      "backends[].policies.requestRedirect.authority",
+      "binds[].listeners[].routes[].backends[].policies.requestRedirect.authority",
+      "binds[].listeners[].routes[].policies.requestRedirect.authority",
+      "binds[].listeners[].routes[].policies.urlRewrite.authority",
+      "mcp.policies.requestRedirect.authority",
+      "mcp.policies.urlRewrite.authority",
+      "policies[].policy.requestRedirect.authority",
+      "policies[].policy.urlRewrite.authority",
+      "routeGroups[].routes[].backends[].policies.requestRedirect.authority",
+      "routeGroups[].routes[].policies.requestRedirect.authority",
+      "routeGroups[].routes[].policies.urlRewrite.authority"
+    ],
+    "InferenceRouting": [
+      "backends[].policies.inferenceRouting",
+      "binds[].listeners[].routes[].backends[].policies.inferenceRouting",
+      "routeGroups[].routes[].backends[].policies.inferenceRouting"
+    ],
+    "InferenceRoutingDestinationMode": [
+      "backends[].policies.inferenceRouting.destinationMode",
+      "binds[].listeners[].routes[].backends[].policies.inferenceRouting.destinationMode",
+      "routeGroups[].routes[].backends[].policies.inferenceRouting.destinationMode"
+    ],
+    "JWTValidationOptions": [
+      "binds[].listeners[].routes[].policies.mcpAuthentication.jwtValidationOptions",
+      "mcp.policies.mcpAuthentication.jwtValidationOptions",
+      "policies[].policy.mcpAuthentication.jwtValidationOptions",
+      "routeGroups[].routes[].policies.mcpAuthentication.jwtValidationOptions"
+    ],
+    "KV": [
+      "binds[].listeners[].routes[].policies.remoteRateLimit.descriptors[].entries[]",
+      "mcp.policies.remoteRateLimit.descriptors[].entries[]",
+      "policies[].policy.remoteRateLimit.descriptors[].entries[]",
+      "routeGroups[].routes[].policies.remoteRateLimit.descriptors[].entries[]"
+    ],
+    "KeepaliveConfig": [
+      "backends[].policies.tcp.keepalives",
+      "binds[].listeners[].policies.extAuthz.policies.tcp.keepalives",
+      "binds[].listeners[].policies.extProc.policies.tcp.keepalives",
+      "binds[].listeners[].routes[].backends[].policies.tcp.keepalives",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.tcp.keepalives",
+      "binds[].listeners[].routes[].policies.extProc.policies.tcp.keepalives",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.tcp.keepalives",
+      "config.backend.keepalives",
+      "frontendPolicies.accessLog.otlp.policies.tcp.keepalives",
+      "frontendPolicies.tcp.keepalives",
+      "frontendPolicies.tracing.policies.tcp.keepalives",
+      "llm.policies.extAuthz.policies.tcp.keepalives",
+      "llm.policies.extProc.policies.tcp.keepalives",
+      "mcp.policies.extAuthz.policies.tcp.keepalives",
+      "mcp.policies.extProc.policies.tcp.keepalives",
+      "mcp.policies.remoteRateLimit.policies.tcp.keepalives",
+      "mcp.targets[].policies.tcp.keepalives",
+      "policies[].policy.extAuthz.policies.tcp.keepalives",
+      "policies[].policy.extProc.policies.tcp.keepalives",
+      "policies[].policy.remoteRateLimit.policies.tcp.keepalives",
+      "routeGroups[].routes[].backends[].policies.tcp.keepalives",
+      "routeGroups[].routes[].policies.extAuthz.policies.tcp.keepalives",
+      "routeGroups[].routes[].policies.extProc.policies.tcp.keepalives",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.keepalives"
+    ],
+    "LLMRouteMatch": [
+      "llm.models[].matches[]"
+    ],
+    "LocalAPIKey": [
+      "binds[].listeners[].policies.apiKey.keys[]",
+      "binds[].listeners[].routes[].policies.apiKey.keys[]",
+      "llm.policies.apiKey.keys[]",
+      "mcp.policies.apiKey.keys[]",
+      "policies[].policy.apiKey.keys[]",
+      "routeGroups[].routes[].policies.apiKey.keys[]"
+    ],
+    "LocalAPIKeys": [
+      "binds[].listeners[].policies.apiKey",
+      "binds[].listeners[].routes[].policies.apiKey",
+      "llm.policies.apiKey",
+      "mcp.policies.apiKey",
+      "policies[].policy.apiKey",
+      "routeGroups[].routes[].policies.apiKey"
+    ],
+    "LocalBackendPolicies": [
+      "backends[].policies",
+      "binds[].listeners[].routes[].backends[].policies",
+      "routeGroups[].routes[].backends[].policies"
+    ],
+    "LocalBackendTLS": [
+      "backends[].policies.backendTLS",
+      "binds[].listeners[].policies.extAuthz.policies.backendTLS",
+      "binds[].listeners[].policies.extProc.policies.backendTLS",
+      "binds[].listeners[].routes[].backends[].policies.backendTLS",
+      "binds[].listeners[].routes[].policies.backendTLS",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.backendTLS",
+      "binds[].listeners[].routes[].policies.extProc.policies.backendTLS",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendTLS",
+      "binds[].listeners[].tcpRoutes[].backends[].policies.backendTLS",
+      "binds[].listeners[].tcpRoutes[].policies.backendTLS",
+      "frontendPolicies.accessLog.otlp.policies.backendTLS",
+      "frontendPolicies.tracing.policies.backendTLS",
+      "llm.models[].backendTLS",
+      "llm.policies.extAuthz.policies.backendTLS",
+      "llm.policies.extProc.policies.backendTLS",
+      "mcp.policies.backendTLS",
+      "mcp.policies.extAuthz.policies.backendTLS",
+      "mcp.policies.extProc.policies.backendTLS",
+      "mcp.policies.remoteRateLimit.policies.backendTLS",
+      "mcp.targets[].policies.backendTLS",
+      "policies[].policy.backendTLS",
+      "policies[].policy.extAuthz.policies.backendTLS",
+      "policies[].policy.extProc.policies.backendTLS",
+      "policies[].policy.remoteRateLimit.policies.backendTLS",
+      "routeGroups[].routes[].backends[].policies.backendTLS",
+      "routeGroups[].routes[].policies.backendTLS",
+      "routeGroups[].routes[].policies.extAuthz.policies.backendTLS",
+      "routeGroups[].routes[].policies.extProc.policies.backendTLS",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.backendTLS"
+    ],
+    "LocalBasicAuth": [
+      "binds[].listeners[].policies.basicAuth",
+      "binds[].listeners[].routes[].policies.basicAuth",
+      "llm.policies.basicAuth",
+      "mcp.policies.basicAuth",
+      "policies[].policy.basicAuth",
+      "routeGroups[].routes[].policies.basicAuth"
+    ],
+    "LocalBind": [
+      "binds[]"
+    ],
+    "LocalEviction": [
+      "backends[].policies.health.eviction",
+      "binds[].listeners[].routes[].backends[].policies.health.eviction",
+      "llm.models[].health.eviction",
+      "routeGroups[].routes[].backends[].policies.health.eviction"
+    ],
+    "LocalFrontendPolicies": [
+      "frontendPolicies"
+    ],
+    "LocalGatewayPolicy": [
+      "binds[].listeners[].policies"
+    ],
+    "LocalHealthPolicy": [
+      "backends[].policies.health",
+      "binds[].listeners[].routes[].backends[].policies.health",
+      "llm.models[].health",
+      "routeGroups[].routes[].backends[].policies.health"
+    ],
+    "LocalJwtConfig": [
+      "binds[].listeners[].policies.jwtAuth",
+      "binds[].listeners[].routes[].policies.jwtAuth",
+      "llm.policies.jwtAuth",
+      "mcp.policies.jwtAuth",
+      "policies[].policy.jwtAuth",
+      "routeGroups[].routes[].policies.jwtAuth"
+    ],
+    "LocalLLMConfig": [
+      "llm"
+    ],
+    "LocalLLMModels": [
+      "llm.models[]"
+    ],
+    "LocalLLMParams": [
+      "llm.models[].params"
+    ],
+    "LocalLLMPolicy": [
+      "llm.policies"
+    ],
+    "LocalListener": [
+      "binds[].listeners[]"
+    ],
+    "LocalListenerProtocol": [
+      "binds[].listeners[].protocol"
+    ],
+    "LocalMcpAuthentication": [
+      "binds[].listeners[].routes[].policies.mcpAuthentication",
+      "mcp.policies.mcpAuthentication",
+      "policies[].policy.mcpAuthentication",
+      "routeGroups[].routes[].policies.mcpAuthentication"
+    ],
+    "LocalMcpTarget": [
+      "mcp.targets[]"
+    ],
+    "LocalModelAIProvider": [
+      "llm.models[].provider"
+    ],
+    "LocalOidcConfig": [
+      "binds[].listeners[].policies.oidc",
+      "binds[].listeners[].routes[].policies.oidc",
+      "llm.policies.oidc",
+      "mcp.policies.oidc",
+      "policies[].policy.oidc",
+      "routeGroups[].routes[].policies.oidc"
+    ],
+    "LocalPolicy": [
+      "policies[]"
+    ],
+    "LocalRoute": [
+      "binds[].listeners[].routes[]",
+      "routeGroups[].routes[]"
+    ],
+    "LocalRouteBackend": [
+      "binds[].listeners[].routes[].backends[]",
+      "routeGroups[].routes[].backends[]"
+    ],
+    "LocalRouteGroup": [
+      "routeGroups[]"
+    ],
+    "LocalSimpleMcpConfig": [
+      "mcp"
+    ],
+    "LocalTCPBackendPolicies": [
+      "binds[].listeners[].tcpRoutes[].backends[].policies"
+    ],
+    "LocalTCPRoute": [
+      "binds[].listeners[].tcpRoutes[]"
+    ],
+    "LocalTCPRouteBackend": [
+      "binds[].listeners[].tcpRoutes[].backends[]"
+    ],
+    "LocalTLSServerConfig": [
+      "binds[].listeners[].tls"
+    ],
+    "LocalTransform": [
+      "backends[].policies.transformations.request",
+      "backends[].policies.transformations.response",
+      "binds[].listeners[].policies.extAuthz.policies.transformations.request",
+      "binds[].listeners[].policies.extAuthz.policies.transformations.response",
+      "binds[].listeners[].policies.extProc.policies.transformations.request",
+      "binds[].listeners[].policies.extProc.policies.transformations.response",
+      "binds[].listeners[].policies.transformations.request",
+      "binds[].listeners[].policies.transformations.response",
+      "binds[].listeners[].routes[].backends[].policies.transformations.request",
+      "binds[].listeners[].routes[].backends[].policies.transformations.response",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.transformations.request",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.transformations.response",
+      "binds[].listeners[].routes[].policies.extProc.policies.transformations.request",
+      "binds[].listeners[].routes[].policies.extProc.policies.transformations.response",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.transformations.request",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.transformations.response",
+      "binds[].listeners[].routes[].policies.transformations.request",
+      "binds[].listeners[].routes[].policies.transformations.response",
+      "frontendPolicies.accessLog.otlp.policies.transformations.request",
+      "frontendPolicies.accessLog.otlp.policies.transformations.response",
+      "frontendPolicies.tracing.policies.transformations.request",
+      "frontendPolicies.tracing.policies.transformations.response",
+      "llm.policies.extAuthz.policies.transformations.request",
+      "llm.policies.extAuthz.policies.transformations.response",
+      "llm.policies.extProc.policies.transformations.request",
+      "llm.policies.extProc.policies.transformations.response",
+      "llm.policies.transformations.request",
+      "llm.policies.transformations.response",
+      "mcp.policies.extAuthz.policies.transformations.request",
+      "mcp.policies.extAuthz.policies.transformations.response",
+      "mcp.policies.extProc.policies.transformations.request",
+      "mcp.policies.extProc.policies.transformations.response",
+      "mcp.policies.remoteRateLimit.policies.transformations.request",
+      "mcp.policies.remoteRateLimit.policies.transformations.response",
+      "mcp.policies.transformations.request",
+      "mcp.policies.transformations.response",
+      "mcp.targets[].policies.transformations.request",
+      "mcp.targets[].policies.transformations.response",
+      "policies[].policy.extAuthz.policies.transformations.request",
+      "policies[].policy.extAuthz.policies.transformations.response",
+      "policies[].policy.extProc.policies.transformations.request",
+      "policies[].policy.extProc.policies.transformations.response",
+      "policies[].policy.remoteRateLimit.policies.transformations.request",
+      "policies[].policy.remoteRateLimit.policies.transformations.response",
+      "policies[].policy.transformations.request",
+      "policies[].policy.transformations.response",
+      "routeGroups[].routes[].backends[].policies.transformations.request",
+      "routeGroups[].routes[].backends[].policies.transformations.response",
+      "routeGroups[].routes[].policies.extAuthz.policies.transformations.request",
+      "routeGroups[].routes[].policies.extAuthz.policies.transformations.response",
+      "routeGroups[].routes[].policies.extProc.policies.transformations.request",
+      "routeGroups[].routes[].policies.extProc.policies.transformations.response",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.request",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.transformations.response",
+      "routeGroups[].routes[].policies.transformations.request",
+      "routeGroups[].routes[].policies.transformations.response"
+    ],
+    "LocalTransformationConfig": [
+      "backends[].policies.transformations",
+      "binds[].listeners[].policies.extAuthz.policies.transformations",
+      "binds[].listeners[].policies.extProc.policies.transformations",
+      "binds[].listeners[].policies.transformations",
+      "binds[].listeners[].routes[].backends[].policies.transformations",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.transformations",
+      "binds[].listeners[].routes[].policies.extProc.policies.transformations",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.transformations",
+      "binds[].listeners[].routes[].policies.transformations",
+      "frontendPolicies.accessLog.otlp.policies.transformations",
+      "frontendPolicies.tracing.policies.transformations",
+      "llm.policies.extAuthz.policies.transformations",
+      "llm.policies.extProc.policies.transformations",
+      "llm.policies.transformations",
+      "mcp.policies.extAuthz.policies.transformations",
+      "mcp.policies.extProc.policies.transformations",
+      "mcp.policies.remoteRateLimit.policies.transformations",
+      "mcp.policies.transformations",
+      "mcp.targets[].policies.transformations",
+      "policies[].policy.extAuthz.policies.transformations",
+      "policies[].policy.extProc.policies.transformations",
+      "policies[].policy.remoteRateLimit.policies.transformations",
+      "policies[].policy.transformations",
+      "routeGroups[].routes[].backends[].policies.transformations",
+      "routeGroups[].routes[].policies.extAuthz.policies.transformations",
+      "routeGroups[].routes[].policies.extProc.policies.transformations",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.transformations",
+      "routeGroups[].routes[].policies.transformations"
+    ],
+    "LoggingFormat": [
+      "config.logging.format"
+    ],
+    "LoggingPolicy": [
+      "frontendPolicies.accessLog"
+    ],
+    "MCPLocalBackendPolicies": [
+      "mcp.targets[].policies"
+    ],
+    "McpAuthenticationMode": [
+      "binds[].listeners[].routes[].policies.mcpAuthentication.mode",
+      "mcp.policies.mcpAuthentication.mode",
+      "policies[].policy.mcpAuthentication.mode",
+      "routeGroups[].routes[].policies.mcpAuthentication.mode"
+    ],
+    "McpAuthorization": [
+      "backends[].policies.mcpAuthorization",
+      "binds[].listeners[].routes[].backends[].policies.mcpAuthorization",
+      "binds[].listeners[].routes[].policies.mcpAuthorization",
+      "mcp.policies.mcpAuthorization",
+      "mcp.targets[].policies.mcpAuthorization",
+      "policies[].policy.mcpAuthorization",
+      "routeGroups[].routes[].backends[].policies.mcpAuthorization",
+      "routeGroups[].routes[].policies.mcpAuthorization"
+    ],
+    "McpIDP": [
+      "binds[].listeners[].routes[].policies.mcpAuthentication.provider",
+      "mcp.policies.mcpAuthentication.provider",
+      "policies[].policy.mcpAuthentication.provider",
+      "routeGroups[].routes[].policies.mcpAuthentication.provider"
+    ],
+    "McpPrefixMode": [
+      "mcp.prefixMode"
+    ],
+    "McpStatefulMode": [
+      "mcp.statefulMode"
+    ],
+    "Mode2": [
+      "binds[].listeners[].policies.basicAuth.mode",
+      "binds[].listeners[].routes[].policies.basicAuth.mode",
+      "llm.policies.basicAuth.mode",
+      "mcp.policies.basicAuth.mode",
+      "policies[].policy.basicAuth.mode",
+      "routeGroups[].routes[].policies.basicAuth.mode"
+    ],
+    "Mode3": [
+      "binds[].listeners[].policies.apiKey.mode",
+      "binds[].listeners[].routes[].policies.apiKey.mode",
+      "llm.policies.apiKey.mode",
+      "mcp.policies.apiKey.mode",
+      "policies[].policy.apiKey.mode",
+      "routeGroups[].routes[].policies.apiKey.mode"
+    ],
+    "NetworkAuthorization": [
+      "frontendPolicies.networkAuthorization"
+    ],
+    "OrderedStringMap_Expression": [
+      "frontendPolicies.tracing.attributes",
+      "frontendPolicies.tracing.resources"
+    ],
+    "OtlpLoggingConfig": [
+      "frontendPolicies.accessLog.otlp"
+    ],
+    "PathMatch": [
+      "binds[].listeners[].routes[].matches[].path",
+      "routeGroups[].routes[].matches[].path"
+    ],
+    "PathRedirect": [
+      "backends[].policies.requestRedirect.path",
+      "binds[].listeners[].routes[].backends[].policies.requestRedirect.path",
+      "binds[].listeners[].routes[].policies.requestRedirect.path",
+      "binds[].listeners[].routes[].policies.urlRewrite.path",
+      "mcp.policies.requestRedirect.path",
+      "mcp.policies.urlRewrite.path",
+      "policies[].policy.requestRedirect.path",
+      "policies[].policy.urlRewrite.path",
+      "routeGroups[].routes[].backends[].policies.requestRedirect.path",
+      "routeGroups[].routes[].policies.requestRedirect.path",
+      "routeGroups[].routes[].policies.urlRewrite.path"
+    ],
+    "Policy": [
+      "backends[].policies.ai",
+      "binds[].listeners[].routes[].backends[].policies.ai",
+      "binds[].listeners[].routes[].policies.ai",
+      "mcp.policies.ai",
+      "policies[].policy.ai",
+      "routeGroups[].routes[].backends[].policies.ai",
+      "routeGroups[].routes[].policies.ai"
+    ],
+    "Policy2": [
+      "binds[].listeners[].routes[].policies.timeout",
+      "mcp.policies.timeout",
+      "policies[].policy.timeout",
+      "routeGroups[].routes[].policies.timeout"
+    ],
+    "Policy3": [
+      "binds[].listeners[].routes[].policies.retry",
+      "mcp.policies.retry",
+      "policies[].policy.retry",
+      "routeGroups[].routes[].policies.retry"
+    ],
+    "PolicyPhase": [
+      "policies[].phase"
+    ],
+    "PolicyTarget": [
+      "policies[].target"
+    ],
+    "PromptCachingConfig": [
+      "backends[].policies.ai.promptCaching",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptCaching",
+      "binds[].listeners[].routes[].policies.ai.promptCaching",
+      "mcp.policies.ai.promptCaching",
+      "policies[].policy.ai.promptCaching",
+      "routeGroups[].routes[].backends[].policies.ai.promptCaching",
+      "routeGroups[].routes[].policies.ai.promptCaching"
+    ],
+    "PromptEnrichment": [
+      "backends[].policies.ai.prompts",
+      "binds[].listeners[].routes[].backends[].policies.ai.prompts",
+      "binds[].listeners[].routes[].policies.ai.prompts",
+      "mcp.policies.ai.prompts",
+      "policies[].policy.ai.prompts",
+      "routeGroups[].routes[].backends[].policies.ai.prompts",
+      "routeGroups[].routes[].policies.ai.prompts"
+    ],
+    "PromptGuard": [
+      "backends[].policies.ai.promptGuard",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptGuard",
+      "binds[].listeners[].routes[].policies.ai.promptGuard",
+      "llm.models[].guardrails",
+      "mcp.policies.ai.promptGuard",
+      "policies[].policy.ai.promptGuard",
+      "routeGroups[].routes[].backends[].policies.ai.promptGuard",
+      "routeGroups[].routes[].policies.ai.promptGuard"
+    ],
+    "Protocol": [
+      "config.tracing.otlpProtocol"
+    ],
+    "Protocol2": [
+      "binds[].listeners[].policies.extAuthz.protocol",
+      "binds[].listeners[].routes[].policies.extAuthz.protocol",
+      "llm.policies.extAuthz.protocol",
+      "mcp.policies.extAuthz.protocol",
+      "policies[].policy.extAuthz.protocol",
+      "routeGroups[].routes[].policies.extAuthz.protocol"
+    ],
+    "Proxy": [
+      "frontendPolicies.proxyProtocol"
+    ],
+    "ProxyMode": [
+      "frontendPolicies.proxyProtocol.mode"
+    ],
+    "ProxyVersion": [
+      "frontendPolicies.proxyProtocol.version"
+    ],
+    "QueryMatch": [
+      "binds[].listeners[].routes[].matches[].query[]",
+      "routeGroups[].routes[].matches[].query[]"
+    ],
+    "QueryValueMatch": [
+      "binds[].listeners[].routes[].matches[].query[].value",
+      "routeGroups[].routes[].matches[].query[].value"
+    ],
+    "RateLimitSpec": [
+      "binds[].listeners[].routes[].policies.localRateLimit[]",
+      "mcp.policies.localRateLimit[]",
+      "policies[].policy.localRateLimit[]",
+      "routeGroups[].routes[].policies.localRateLimit[]"
+    ],
+    "RateLimitType": [
+      "binds[].listeners[].routes[].policies.localRateLimit[].type",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.descriptors[].type",
+      "mcp.policies.localRateLimit[].type",
+      "mcp.policies.remoteRateLimit.descriptors[].type",
+      "policies[].policy.localRateLimit[].type",
+      "policies[].policy.remoteRateLimit.descriptors[].type",
+      "routeGroups[].routes[].policies.localRateLimit[].type",
+      "routeGroups[].routes[].policies.remoteRateLimit.descriptors[].type"
+    ],
+    "RawConfig": [
+      "config"
+    ],
+    "RawDnsConfig": [
+      "config.dns"
+    ],
+    "RawHBONE": [
+      "config.hbone"
+    ],
+    "RawLogging": [
+      "config.logging"
+    ],
+    "RawLoggingFields": [
+      "config.logging.fields",
+      "config.tracing.fields"
+    ],
+    "RawLoggingLevel": [
+      "config.logging.level"
+    ],
+    "RawMcpConfig": [
+      "config.mcp"
+    ],
+    "RawMetricFields": [
+      "config.metrics.fields"
+    ],
+    "RawMetrics": [
+      "config.metrics"
+    ],
+    "RawSession": [
+      "config.session"
+    ],
+    "RawTracing": [
+      "config.tracing"
+    ],
+    "RemoteRateLimit": [
+      "binds[].listeners[].routes[].policies.remoteRateLimit",
+      "mcp.policies.remoteRateLimit",
+      "policies[].policy.remoteRateLimit",
+      "routeGroups[].routes[].policies.remoteRateLimit"
+    ],
+    "RequestGuard": [
+      "backends[].policies.ai.promptGuard.request[]",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[]",
+      "binds[].listeners[].routes[].policies.ai.promptGuard.request[]",
+      "llm.models[].guardrails.request[]",
+      "mcp.policies.ai.promptGuard.request[]",
+      "policies[].policy.ai.promptGuard.request[]",
+      "routeGroups[].routes[].backends[].policies.ai.promptGuard.request[]",
+      "routeGroups[].routes[].policies.ai.promptGuard.request[]"
+    ],
+    "RequestMirror": [
+      "binds[].listeners[].routes[].policies.requestMirror",
+      "mcp.policies.requestMirror",
+      "policies[].policy.requestMirror",
+      "routeGroups[].routes[].policies.requestMirror"
+    ],
+    "RequestRedirect": [
+      "backends[].policies.requestRedirect",
+      "binds[].listeners[].routes[].backends[].policies.requestRedirect",
+      "binds[].listeners[].routes[].policies.requestRedirect",
+      "mcp.policies.requestRedirect",
+      "policies[].policy.requestRedirect",
+      "routeGroups[].routes[].backends[].policies.requestRedirect",
+      "routeGroups[].routes[].policies.requestRedirect"
+    ],
+    "RequestRejection": [
+      "backends[].policies.ai.promptGuard.request[].rejection",
+      "backends[].policies.ai.promptGuard.response[].rejection",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptGuard.request[].rejection",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[].rejection",
+      "binds[].listeners[].routes[].policies.ai.promptGuard.request[].rejection",
+      "binds[].listeners[].routes[].policies.ai.promptGuard.response[].rejection",
+      "llm.models[].guardrails.request[].rejection",
+      "llm.models[].guardrails.response[].rejection",
+      "mcp.policies.ai.promptGuard.request[].rejection",
+      "mcp.policies.ai.promptGuard.response[].rejection",
+      "policies[].policy.ai.promptGuard.request[].rejection",
+      "policies[].policy.ai.promptGuard.response[].rejection",
+      "routeGroups[].routes[].backends[].policies.ai.promptGuard.request[].rejection",
+      "routeGroups[].routes[].backends[].policies.ai.promptGuard.response[].rejection",
+      "routeGroups[].routes[].policies.ai.promptGuard.request[].rejection",
+      "routeGroups[].routes[].policies.ai.promptGuard.response[].rejection"
+    ],
+    "ResourceMetadata": [
+      "binds[].listeners[].routes[].policies.mcpAuthentication.resourceMetadata",
+      "mcp.policies.mcpAuthentication.resourceMetadata",
+      "policies[].policy.mcpAuthentication.resourceMetadata",
+      "routeGroups[].routes[].policies.mcpAuthentication.resourceMetadata"
+    ],
+    "ResourceName": [
+      "policies[].name"
+    ],
+    "ResponseGuard": [
+      "backends[].policies.ai.promptGuard.response[]",
+      "binds[].listeners[].routes[].backends[].policies.ai.promptGuard.response[]",
+      "binds[].listeners[].routes[].policies.ai.promptGuard.response[]",
+      "llm.models[].guardrails.response[]",
+      "mcp.policies.ai.promptGuard.response[]",
+      "policies[].policy.ai.promptGuard.response[]",
+      "routeGroups[].routes[].backends[].policies.ai.promptGuard.response[]",
+      "routeGroups[].routes[].policies.ai.promptGuard.response[]"
+    ],
+    "RouteMatch": [
+      "binds[].listeners[].routes[].matches[]",
+      "routeGroups[].routes[].matches[]"
+    ],
+    "SecretFromFile": [
+      "llm.models[].params.apiKey"
+    ],
+    "SimpleChatCompletionMessage": [
+      "backends[].policies.ai.prompts.append[]",
+      "backends[].policies.ai.prompts.prepend[]",
+      "binds[].listeners[].routes[].backends[].policies.ai.prompts.append[]",
+      "binds[].listeners[].routes[].backends[].policies.ai.prompts.prepend[]",
+      "binds[].listeners[].routes[].policies.ai.prompts.append[]",
+      "binds[].listeners[].routes[].policies.ai.prompts.prepend[]",
+      "mcp.policies.ai.prompts.append[]",
+      "mcp.policies.ai.prompts.prepend[]",
+      "policies[].policy.ai.prompts.append[]",
+      "policies[].policy.ai.prompts.prepend[]",
+      "routeGroups[].routes[].backends[].policies.ai.prompts.append[]",
+      "routeGroups[].routes[].backends[].policies.ai.prompts.prepend[]",
+      "routeGroups[].routes[].policies.ai.prompts.append[]",
+      "routeGroups[].routes[].policies.ai.prompts.prepend[]"
+    ],
+    "SimpleLocalBackend": [
+      "backends[].policies.backendTunnel.proxy",
+      "backends[].policies.inferenceRouting.endpointPicker",
+      "binds[].listeners[].policies.extAuthz.policies.backendTunnel.proxy",
+      "binds[].listeners[].policies.extProc.policies.backendTunnel.proxy",
+      "binds[].listeners[].routes[].backends[].policies.backendTunnel.proxy",
+      "binds[].listeners[].routes[].backends[].policies.inferenceRouting.endpointPicker",
+      "binds[].listeners[].routes[].policies.backendTunnel.proxy",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.backendTunnel.proxy",
+      "binds[].listeners[].routes[].policies.extProc.policies.backendTunnel.proxy",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy",
+      "binds[].listeners[].routes[].policies.requestMirror.backend",
+      "binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel.proxy",
+      "frontendPolicies.accessLog.otlp.policies.backendTunnel.proxy",
+      "frontendPolicies.tracing.policies.backendTunnel.proxy",
+      "llm.models[].backendTunnel.proxy",
+      "llm.policies.extAuthz.policies.backendTunnel.proxy",
+      "llm.policies.extProc.policies.backendTunnel.proxy",
+      "mcp.policies.backendTunnel.proxy",
+      "mcp.policies.extAuthz.policies.backendTunnel.proxy",
+      "mcp.policies.extProc.policies.backendTunnel.proxy",
+      "mcp.policies.remoteRateLimit.policies.backendTunnel.proxy",
+      "mcp.policies.requestMirror.backend",
+      "mcp.targets[].policies.backendTunnel.proxy",
+      "policies[].policy.backendTunnel.proxy",
+      "policies[].policy.extAuthz.policies.backendTunnel.proxy",
+      "policies[].policy.extProc.policies.backendTunnel.proxy",
+      "policies[].policy.remoteRateLimit.policies.backendTunnel.proxy",
+      "policies[].policy.requestMirror.backend",
+      "routeGroups[].routes[].backends[].policies.backendTunnel.proxy",
+      "routeGroups[].routes[].backends[].policies.inferenceRouting.endpointPicker",
+      "routeGroups[].routes[].policies.backendTunnel.proxy",
+      "routeGroups[].routes[].policies.extAuthz.policies.backendTunnel.proxy",
+      "routeGroups[].routes[].policies.extProc.policies.backendTunnel.proxy",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel.proxy",
+      "routeGroups[].routes[].policies.requestMirror.backend"
+    ],
+    "SimpleLocalBackendPolicies": [
+      "binds[].listeners[].policies.extAuthz.policies",
+      "binds[].listeners[].policies.extProc.policies",
+      "binds[].listeners[].routes[].policies.extAuthz.policies",
+      "binds[].listeners[].routes[].policies.extProc.policies",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies",
+      "frontendPolicies.accessLog.otlp.policies",
+      "frontendPolicies.tracing.policies",
+      "llm.policies.extAuthz.policies",
+      "llm.policies.extProc.policies",
+      "mcp.policies.extAuthz.policies",
+      "mcp.policies.extProc.policies",
+      "mcp.policies.remoteRateLimit.policies",
+      "policies[].policy.extAuthz.policies",
+      "policies[].policy.extProc.policies",
+      "policies[].policy.remoteRateLimit.policies",
+      "routeGroups[].routes[].policies.extAuthz.policies",
+      "routeGroups[].routes[].policies.extProc.policies",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies"
+    ],
+    "StringBoolFloat": [
+      "config.tracing.clientSampling",
+      "config.tracing.randomSampling"
+    ],
+    "TCP": [
+      "backends[].policies.tcp",
+      "binds[].listeners[].policies.extAuthz.policies.tcp",
+      "binds[].listeners[].policies.extProc.policies.tcp",
+      "binds[].listeners[].routes[].backends[].policies.tcp",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.tcp",
+      "binds[].listeners[].routes[].policies.extProc.policies.tcp",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.tcp",
+      "frontendPolicies.accessLog.otlp.policies.tcp",
+      "frontendPolicies.tracing.policies.tcp",
+      "llm.policies.extAuthz.policies.tcp",
+      "llm.policies.extProc.policies.tcp",
+      "mcp.policies.extAuthz.policies.tcp",
+      "mcp.policies.extProc.policies.tcp",
+      "mcp.policies.remoteRateLimit.policies.tcp",
+      "mcp.targets[].policies.tcp",
+      "policies[].policy.extAuthz.policies.tcp",
+      "policies[].policy.extProc.policies.tcp",
+      "policies[].policy.remoteRateLimit.policies.tcp",
+      "routeGroups[].routes[].backends[].policies.tcp",
+      "routeGroups[].routes[].policies.extAuthz.policies.tcp",
+      "routeGroups[].routes[].policies.extProc.policies.tcp",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.tcp"
+    ],
+    "TCP2": [
+      "frontendPolicies.tcp"
+    ],
+    "TCPFilterOrPolicy": [
+      "binds[].listeners[].tcpRoutes[].policies"
+    ],
+    "TLS": [
+      "frontendPolicies.tls"
+    ],
+    "TLSVersion": [
+      "binds[].listeners[].tls.maxTLSVersion",
+      "binds[].listeners[].tls.minTLSVersion",
+      "frontendPolicies.tls.maxVersion",
+      "frontendPolicies.tls.minVersion"
+    ],
+    "TokenEndpointAuth": [
+      "binds[].listeners[].policies.oidc.tokenEndpointAuth",
+      "binds[].listeners[].routes[].policies.oidc.tokenEndpointAuth",
+      "llm.policies.oidc.tokenEndpointAuth",
+      "mcp.policies.oidc.tokenEndpointAuth",
+      "policies[].policy.oidc.tokenEndpointAuth",
+      "routeGroups[].routes[].policies.oidc.tokenEndpointAuth"
+    ],
+    "TracingConfig": [
+      "frontendPolicies.tracing"
+    ],
+    "TracingProtocol": [
+      "frontendPolicies.accessLog.otlp.protocol",
+      "frontendPolicies.tracing.protocol"
+    ],
+    "Tunnel": [
+      "backends[].policies.backendTunnel",
+      "binds[].listeners[].policies.extAuthz.policies.backendTunnel",
+      "binds[].listeners[].policies.extProc.policies.backendTunnel",
+      "binds[].listeners[].routes[].backends[].policies.backendTunnel",
+      "binds[].listeners[].routes[].policies.backendTunnel",
+      "binds[].listeners[].routes[].policies.extAuthz.policies.backendTunnel",
+      "binds[].listeners[].routes[].policies.extProc.policies.backendTunnel",
+      "binds[].listeners[].routes[].policies.remoteRateLimit.policies.backendTunnel",
+      "binds[].listeners[].tcpRoutes[].backends[].policies.backendTunnel",
+      "frontendPolicies.accessLog.otlp.policies.backendTunnel",
+      "frontendPolicies.tracing.policies.backendTunnel",
+      "llm.models[].backendTunnel",
+      "llm.policies.extAuthz.policies.backendTunnel",
+      "llm.policies.extProc.policies.backendTunnel",
+      "mcp.policies.backendTunnel",
+      "mcp.policies.extAuthz.policies.backendTunnel",
+      "mcp.policies.extProc.policies.backendTunnel",
+      "mcp.policies.remoteRateLimit.policies.backendTunnel",
+      "mcp.targets[].policies.backendTunnel",
+      "policies[].policy.backendTunnel",
+      "policies[].policy.extAuthz.policies.backendTunnel",
+      "policies[].policy.extProc.policies.backendTunnel",
+      "policies[].policy.remoteRateLimit.policies.backendTunnel",
+      "routeGroups[].routes[].backends[].policies.backendTunnel",
+      "routeGroups[].routes[].policies.backendTunnel",
+      "routeGroups[].routes[].policies.extAuthz.policies.backendTunnel",
+      "routeGroups[].routes[].policies.extProc.policies.backendTunnel",
+      "routeGroups[].routes[].policies.remoteRateLimit.policies.backendTunnel"
+    ],
+    "TunnelProtocol": [
+      "binds[].tunnelProtocol"
+    ],
+    "UrlRewrite": [
+      "binds[].listeners[].routes[].policies.urlRewrite",
+      "mcp.policies.urlRewrite",
+      "policies[].policy.urlRewrite",
+      "routeGroups[].routes[].policies.urlRewrite"
+    ]
+  }
+}

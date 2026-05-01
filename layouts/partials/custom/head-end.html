@@ -19,6 +19,64 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 {{ end }}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+{{/* Open Sans body font + Material Symbols for copy-markdown icon */}}
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;500;600;700&family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap" rel="stylesheet">
+{{/* Glossary tooltip styles — must be in <head> to prevent FOUC */}}
+<link rel="stylesheet" href="{{ "css/glossary.css" | absURL }}?v={{ now.Unix }}">
 {{/* /CSS */}}
 {{/* Search section priority: show current docs section (standalone/kubernetes) first */}}
 <script src="{{ "js/search-section-priority.js" | absURL }}" defer></script>
+
+{{/* Copy as Markdown */}}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  document.querySelectorAll('.copy-md-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var wrapper = btn.closest('.copy-md-wrapper');
+      var source = wrapper.querySelector('.copy-md-source');
+      if(!source) return;
+      var md = source.textContent;
+      // Decode HTML entities that survive Hugo's HTMLToMarkdown conversion.
+      // Run decode in a loop to handle double/triple-encoded entities.
+      function decodeEntities(str) {
+        var el = document.createElement('textarea');
+        var prev = '';
+        while (prev !== str) {
+          prev = str;
+          el.innerHTML = str;
+          str = el.value;
+        }
+        return str;
+      }
+      md = decodeEntities(md);
+      // Fix multi-line links from card shortcodes:
+      // [Title  \n\\\nDescription](url) → [Title — Description](url)
+      md = md.replace(/\[([^\]]*?)\s*\\\s*\n\\?\s*\n?([^\]]*?)\]\(([^)]+)\)/g, '[$1 — $2]($3)');
+      // Add comment before mermaid code blocks
+      md = md.replace(/```\n(\s*(?:flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)\b)/g, '<!-- Mermaid diagram -->\n```mermaid\n$1');
+      // Clean up tab panel labels — replace IDs with actual tab names from the page
+      var content = document.querySelector('article .content');
+      if (content) {
+        content.querySelectorAll('.hextra-tabs-toggle').forEach(function(btn) {
+          var id = btn.id;
+          var label = btn.textContent.trim();
+          if (id && label) {
+            var replacement = /^option\b/i.test(label) ? label : 'Option: ' + label;
+            md = md.replace('Option: ' + id, replacement);
+          }
+        });
+      }
+      navigator.clipboard.writeText(md).then(function(){
+        var label = btn.querySelector('.copy-md-label');
+        var origText = label.textContent;
+        label.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function(){
+          label.textContent = origText;
+          btn.classList.remove('copied');
+        }, 2000);
+      });
+    });
+  });
+});
+</script>

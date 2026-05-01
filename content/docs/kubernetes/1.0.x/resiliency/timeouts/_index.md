@@ -5,9 +5,3 @@ description: Configure timeouts.
 test: skip
 ---
 
-{{< cards >}}
-{{< card link="about" title="About timeouts" >}}
-{{< card link="request" title="Request timeouts" >}}
-{{< card link="idle" title="Idle timeouts" >}}
-{{< card link="per-try-timeout" title="Per-try timeouts">}}
-{{< /cards >}}

@@ -1,13 +1,6 @@
 ---
 title: Resiliency
 weight: 72
-icon: import_contacts
+icon: health_and_safety
 test: skip
 ---
-
-
-{{< cards >}}
-  {{< card link="keepalive" title="Keepalive" >}}
-  {{< card link="retry" title="Retries" >}}
-  {{< card link="timeouts" title="Timeouts" >}}
-{{< /cards >}}

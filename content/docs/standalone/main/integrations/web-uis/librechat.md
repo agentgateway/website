@@ -32,7 +32,7 @@ LibreChat connects to multiple providers, creating governance challenges:
 
 ```
 ┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
-│   LibreChat     │────▶│  agentgateway  │────▶│     OpenAI      │
+│   LibreChat     │────▶│   agentgateway  │────▶│     OpenAI      │
 │                 │     │                 │     └─────────────────┘
 │  - OpenAI       │     │  - Unified Auth │     ┌─────────────────┐
 │  - Anthropic    │     │  - Audit Log    │────▶│   Anthropic     │

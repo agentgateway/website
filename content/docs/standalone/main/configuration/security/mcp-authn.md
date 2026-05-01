@@ -3,8 +3,7 @@ title: MCP authentication
 weight: 30
 ---
 
-Attach to:
-{{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
 MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
 

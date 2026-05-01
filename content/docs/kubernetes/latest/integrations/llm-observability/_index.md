@@ -7,10 +7,6 @@ test: skip
 
 Agentgateway can send LLM telemetry to specialized observability platforms for prompt logging (request/response logging), cost tracking, audit trail, and performance monitoring.
 
-{{< cards >}}
-  {{< card link="langfuse" title="Langfuse" subtitle="Open-source LLM analytics" >}}
-  {{< card link="langsmith" title="LangSmith" subtitle="LangChain's observability platform" >}}
-{{< /cards >}}
 
 ## How it works
 

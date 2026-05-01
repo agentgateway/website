@@ -4,9 +4,9 @@ canonifyURLs: true
 title: "agentgateway | Agent Connectivity Solved"
 
 outputs:
-  home: [HTML]
-  page: [HTML]
-  section: [HTML, RSS]
+  home: [HTML, RSS, llms]
+  page: [HTML, markdown]
+  section: [HTML, RSS, markdown]
 
 defaultContentLanguage: en
 
@@ -40,6 +40,10 @@ caches:
 
 markup:
   goldmark:
+    extensions:
+      extras:
+        superscript:
+          enable: true
     renderer:
       unsafe: true
   highlight:
@@ -79,7 +83,7 @@ menu:
 
 params:
   title: agentgateway
-  description: Agentgateway is an open source project that is built on AI-native protocols to connect, secure, and observe agent-to-agent and agent-to-tool communication across any agent framework and environment.
+  description: Agentgateway is an open source HTTP and gRPC proxy and gateway that unifies everyday API traffic with LLM, MCP, and A2A workloads in one data plane — connecting, securing, and observing agent-to-agent, agent-to-tool, and agent-to-LLM communication across any agent framework and environment.
   navbar:
     displayTitle: false
     displayLogo: true
@@ -104,7 +108,7 @@ params:
     enable: true
     displayCopyright: true
     displayPoweredBy: false
-    width: normal
+    width: wide
 
   displayUpdatedDate: true
   dateFormat: "January 2, 2006"
@@ -118,6 +122,9 @@ params:
     flexsearch:
       # index page by: content | summary | heading | title
       index: summary
+
+  feedback:
+    enable: true
 
   editURL:
     enable: false
