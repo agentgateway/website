@@ -495,3 +495,41 @@ h6 {
   background: #064e3b;
   color: #6ee7b7;
 }
+
+/* Search: collapsible "Other versions" block */
+.hextra-search-other-versions {
+  border-top: 1px solid #e5e7eb;
+  margin-top: 4px;
+}
+.dark .hextra-search-other-versions {
+  border-top-color: #374151;
+}
+.hextra-search-other-versions > summary {
+  padding: 6px 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  user-select: none;
+}
+.hextra-search-other-versions > summary::-webkit-details-marker {
+  display: none;
+}
+.hextra-search-other-versions > summary::before {
+  content: '▶ ';
+  font-size: 0.6rem;
+  vertical-align: middle;
+  margin-right: 2px;
+}
+details[open].hextra-search-other-versions > summary::before {
+  content: '▼ ';
+}
+.dark .hextra-search-other-versions > summary {
+  color: #9ca3af;
+}
+.hextra-search-other-versions > ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
