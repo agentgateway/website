@@ -1,4 +1,4 @@
-{{< reuse "agw-docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}} Read on to learn how agentgateway addresses the unique demands of agent traffic.
 
 {{< callout type="info" >}}
 **New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!

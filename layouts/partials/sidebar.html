@@ -70,6 +70,55 @@
         display: none !important;
       }
     }
+
+    /*
+     * Sidebar tree expand/collapse.
+     *
+     * The full tree is rendered server-side and the chevron is its own
+     * <button>, so users can expand `Reference > SubPage` (or any node) without
+     * the link's navigation firing. Children of unexpanded nodes are kept in
+     * the DOM but hidden via the `hidden` attribute, which keeps the markup
+     * traversable by assistive tech and avoids re-rendering on toggle.
+     *
+     * Server marks `data-expanded="true"` on ancestors of the current page so
+     * the active subtree is open by default; the JS in static/js/sidebar.js
+     * persists user toggles in localStorage.
+     */
+    .sidebar-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0.5rem;
+      background: transparent;
+      border: 0;
+      border-radius: 0.25rem;
+      color: inherit;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .dark .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .sidebar-toggle svg {
+      transition: transform 0.15s ease;
+      width: 1rem;
+      height: 1rem;
+    }
+    .sidebar-toggle[aria-expanded="true"] svg {
+      transform: rotate(90deg);
+    }
+    .sidebar-link-wrapper {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+    .sidebar-link-wrapper .sidebar-link {
+      flex: 1;
+      min-width: 0;
+    }
   </style>
 
   <!-- Mobile sidebar overlay -->
@@ -130,7 +179,14 @@
           {{- end -}}
         </div>
 
-        <div class="hextra-scrollbar hx:overflow-y-auto hx:overflow-x-hidden hx:p-4 hx:grow hx:md:h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+        {{- /*
+          Sidebar nav grows to its natural height (no `h-[calc(...)]` cap and
+          no internal `overflow-y: auto`). Previously the inner div was clamped
+          to 100vh-navbar with auto-overflow, which produced an internal
+          scrollbar even when the user scrolled the page. Now the sidebar
+          extends to fit its rendered tree and scrolls with the page.
+        */ -}}
+        <div class="hx:p-4 hx:grow">
           <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
             {{- template "render-sidebar-tree" (dict "page" $docsSection "current" $context "versionPrefix" $versionPrefix "depth" 0) -}}
           </nav>
@@ -146,7 +202,7 @@
       {{- partial "hextra/sidebar.html" (dict "context" $context) -}}
     {{- else -}}
       <aside class="sidebar-container sidebar-mobile-panel hx:order-first hx:w-64 hx:shrink-0 hx:hidden hx:xl:block hx:print:hidden hx:flex hx:flex-col">
-        <div class="hextra-scrollbar hx:overflow-y-auto hx:overflow-x-hidden hx:p-4 hx:grow hx:md:h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
+        <div class="hx:p-4 hx:grow">
           <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
             {{- template "render-sidebar-tree" (dict "page" $context "current" $context "versionPrefix" "" "depth" 0) -}}
           </nav>
@@ -202,24 +258,34 @@
             {{- $grandchildren = $grandchildren | append . -}}
           {{- end -}}
         {{- end -}}
+        {{- $hasChildren := gt (len $grandchildren) 0 -}}
 
-        <li class="hx:relative">
-          <a
-            href="{{ .RelPermalink }}"
-            class="sidebar-link {{ if $childIsActive }}sidebar-active-item{{ end }}"
-            style="display: flex; align-items: center; gap: 0.5rem; border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; transition: color 0.15s; text-decoration: none; {{ if $childIsActive }}font-weight: 600;{{ end }}"
-            {{ if $childIsActive }}aria-current="page"{{ end }}
-          >
-            <span class="hx:flex-1">{{ .Title | default .File.LogicalName }}</span>
-            {{- if gt (len $grandchildren) 0 -}}
-              <svg class="hx:h-4 hx:w-4 hx:shrink-0 hx:ml-auto hx:transition-transform {{ if $childIsExpanded }}hx:rotate-90{{ end }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+        <li class="hx:relative"{{ if $hasChildren }} data-sidebar-item data-expanded="{{ $childIsExpanded }}"{{ end }}>
+          <div class="sidebar-link-wrapper">
+            <a
+              href="{{ .RelPermalink }}"
+              class="sidebar-link {{ if $childIsActive }}sidebar-active-item{{ end }}"
+              style="display: flex; align-items: center; gap: 0.5rem; border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; transition: color 0.15s; text-decoration: none; {{ if $childIsActive }}font-weight: 600;{{ end }}"
+              {{ if $childIsActive }}aria-current="page"{{ end }}
+            >
+              <span class="hx:flex-1">{{ .Title | default .File.LogicalName }}</span>
+            </a>
+            {{- if $hasChildren -}}
+              <button type="button"
+                      class="sidebar-toggle"
+                      aria-label="Toggle {{ .Title | default .File.LogicalName }} subsection"
+                      aria-expanded="{{ $childIsExpanded }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             {{- end -}}
-          </a>
+          </div>
 
-          {{- if and (gt (len $grandchildren) 0) $childIsExpanded -}}
-            {{- template "render-sidebar-tree" (dict "page" . "current" $current "versionPrefix" $versionPrefix "depth" (add $depth 1)) -}}
+          {{- if $hasChildren -}}
+            <div class="sidebar-children"{{ if not $childIsExpanded }} hidden{{ end }}>
+              {{- template "render-sidebar-tree" (dict "page" . "current" $current "versionPrefix" $versionPrefix "depth" (add $depth 1)) -}}
+            </div>
           {{- end -}}
         </li>
       {{- end -}}

@@ -6,7 +6,5 @@ description:
 test: skip
 ---
 
-{{< reuse "agw-docs/snippets/about-agw.md" >}}
-
-Review the following topics to learn more about agentgateway.
+{{< reuse "agw-docs/snippets/about-agw.md" >}} To learn more about {{< reuse "agw-docs/snippets/agentgateway.md" >}}, review the following topics.
 

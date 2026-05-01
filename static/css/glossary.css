@@ -12,7 +12,16 @@
   border-bottom-color: #007acc;
 }
 
-/* Target ANY element inside glossary-term that contains tooltip content */
+/*
+ * The tooltip is positioned via JavaScript (see static/js/glossary.js) using
+ * `position: fixed`. This is necessary because the tooltip's natural ancestors
+ * include things like `.table-wrapper { overflow-x: auto }` (see
+ * layouts/_default/_markup/render-table.html), and any `overflow: auto|hidden|
+ * scroll` ancestor clips absolutely-positioned descendants. A fixed-positioned
+ * tooltip sits in the viewport, escaping every ancestor overflow context.
+ *
+ * JS sets `top`/`left` on hover/focus, then unsets them on leave/blur.
+ */
 .glossary-term > span {
   display: none;
   width: 280px;
@@ -21,17 +30,17 @@
   text-align: left;
   border-radius: 6px;
   padding: 12px;
-  position: absolute;
+  position: fixed;
   z-index: 1000;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   border: 1px solid #e1e5e9;
   pointer-events: none;
 }
 
-/* Tooltip arrow */
+/* Tooltip arrow — JS sets `.tooltip-below` when the tooltip flips beneath
+ * the term, in which case the arrow points up from the top edge instead of
+ * down from the bottom edge.
+ */
 .glossary-term > span::after {
   content: "";
   position: absolute;
@@ -43,8 +52,18 @@
   border-color: #fff transparent transparent transparent;
 }
 
-.glossary-term:hover > span,
-.glossary-term:focus > span {
+.glossary-term > span.tooltip-below::after {
+  top: auto;
+  bottom: 100%;
+  border-color: transparent transparent #fff transparent;
+}
+
+/* Tooltip visibility is JS-driven. JS adds `.show-tooltip` after computing
+ * fixed-position coords for the tooltip. This avoids a one-frame flash where
+ * a hover-triggered CSS rule would reveal the tooltip at its un-positioned
+ * static origin before the JS gets a chance to place it.
+ */
+.glossary-term.show-tooltip > span {
   display: block;
 }
 
@@ -69,6 +88,7 @@
   color: #007acc;
   text-decoration: none;
   display: inline-block;
+  pointer-events: auto;
 }
 
 .glossary-term > span a:hover {
@@ -79,18 +99,7 @@
 @media (max-width: 768px) {
   .glossary-term > span {
     width: 250px;
-    left: 0;
-    transform: none;
   }
-  
-  .glossary-term > span::after {
-    left: 20px;
-  }
-}
-
-/* Mobile active state */
-.glossary-term.active > span {
-  display: block;
 }
 
 /* Missing term style */
@@ -126,6 +135,10 @@
 
 .dark .glossary-term > span::after {
   border-color: #030712 transparent transparent transparent;
+}
+
+.dark .glossary-term > span.tooltip-below::after {
+  border-color: transparent transparent #030712 transparent;
 }
 
 .dark .glossary-term > span strong {
