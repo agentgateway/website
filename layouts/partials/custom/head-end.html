@@ -138,12 +138,7 @@ document.addEventListener('DOMContentLoaded', function(){
               var m;
               while ((m = re.exec(md)) !== null) { blocks.push(m[1]); }
               if (!blocks.length) return;
-              var filename = (document.title || 'page').replace(/\s*[|\-–—].*$/, '').trim().replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-codeblocks.md';
-              var blob = new Blob([blocks.join('\n\n')], {type: 'text/markdown'});
-              var blobUrl = URL.createObjectURL(blob);
-              var a = document.createElement('a');
-              a.href = blobUrl; a.download = filename; a.click();
-              URL.revokeObjectURL(blobUrl);
+              navigator.clipboard.writeText(blocks.join('\n\n'));
             })();
           } else if (item.dataset.action === 'print') {
             window.print();
