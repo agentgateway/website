@@ -65,17 +65,130 @@
        (https://…, mailto:…) but allow # for fragment-suffixed relative links. */ -}}
 {{- $md = $md | replaceRE `(\[[^\]]+\]\()([a-zA-Z0-9_\-][^):]*)(\))` (printf "${1}%s/${2}${3}" $pageAbs) -}}
 {{- if $md -}}
-<div class="copy-md-wrapper" style="display: flex; justify-content: flex-end; margin-bottom: 0.5rem;">
+<div class="copy-md-wrapper" style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;" data-page-url="{{ $pageAbs }}">
   <style>
-    .copy-md-btn { display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.35rem 0.75rem; font-size: 0.75rem; font-weight: 500; color: #6b7280; background: transparent; border: 1px solid #e5e7eb; border-radius: 0.375rem; cursor: pointer; transition: all 0.15s ease; }
-    .copy-md-btn:hover { color: #111827; border-color: #9ca3af; background: #f9fafb; }
-    .dark .copy-md-btn { color: #9ca3af; border-color: #374151; }
-    .dark .copy-md-btn:hover { color: #e5e7eb; border-color: #6b7280; background: rgba(255,255,255,0.05); }
+    .copy-md-split{display:inline-flex;border:1px solid #e5e7eb;border-radius:0.375rem;position:relative;}
+    .dark .copy-md-split{border-color:#374151;}
+    .copy-md-split:hover{border-color:#9ca3af;}
+    .dark .copy-md-split:hover{border-color:#6b7280;}
+    .copy-md-btn{display:inline-flex;align-items:center;gap:0.375rem;padding:0.35rem 0.75rem;font-size:0.75rem;font-weight:500;color:#6b7280;background:transparent;border:none;border-right:1px solid #e5e7eb;border-radius:0.375rem 0 0 0.375rem;cursor:pointer;transition:all 0.15s ease;}
+    .dark .copy-md-btn{color:#9ca3af;border-right-color:#374151;}
+    .copy-md-btn:hover,.copy-md-btn.copied{color:#111827;background:#f9fafb;}
+    .dark .copy-md-btn:hover,.dark .copy-md-btn.copied{color:#e5e7eb;background:rgba(255,255,255,0.05);}
+    .copy-md-toggle{display:inline-flex;align-items:center;justify-content:center;padding:0.35rem 0.4rem;background:transparent;border:none;border-radius:0 0.375rem 0.375rem 0;color:#6b7280;cursor:pointer;transition:all 0.15s ease;}
+    .dark .copy-md-toggle{color:#9ca3af;}
+    .copy-md-toggle:hover{color:#111827;background:#f9fafb;}
+    .dark .copy-md-toggle:hover{color:#e5e7eb;background:rgba(255,255,255,0.05);}
+    .copy-md-chevron{font-size:1rem;transition:transform 0.2s;}
+    .copy-md-toggle[aria-expanded="true"] .copy-md-chevron{transform:rotate(180deg);}
+    .copy-md-dropdown{display:none;position:absolute;top:calc(100% + 4px);right:0;z-index:50;min-width:11rem;background:#fff;border:1px solid #e5e7eb;border-radius:0.5rem;box-shadow:0 4px 12px rgba(0,0,0,0.1);padding:0.25rem;list-style:none;margin:0;}
+    .dark .copy-md-dropdown{background:#1f2937;border-color:#374151;}
+    .copy-md-dropdown.open{display:block;}
+    .copy-md-dropdown li{margin:0;}
+    .copy-md-dropdown button{display:flex;align-items:center;gap:0.5rem;width:100%;padding:0.4rem 0.75rem;font-size:0.8125rem;color:#374151;background:transparent;border:none;border-radius:0.25rem;cursor:pointer;text-align:left;white-space:nowrap;}
+    .dark .copy-md-dropdown button{color:#d1d5db;}
+    .copy-md-dropdown button:hover{background:#f3f4f6;color:#111827;}
+    .dark .copy-md-dropdown button:hover{background:rgba(255,255,255,0.05);color:#f9fafb;}
+    .copy-md-dropdown-sep{height:1px;background:#e5e7eb;margin:0.25rem 0;}
+    .dark .copy-md-dropdown-sep{background:#374151;}
+    .copy-md-dialog{padding:0;border:none;border-radius:0.5rem;box-shadow:0 20px 60px rgba(0,0,0,0.3);max-width:min(900px,90vw);width:100%;max-height:85vh;flex-direction:column;background:#fff;}
+    .copy-md-dialog[open]{display:flex;}
+    .dark .copy-md-dialog{background:#1f2937;color:#e5e7eb;}
+    .copy-md-dialog::backdrop{background:rgba(0,0,0,0.5);}
+    .copy-md-dialog-header{display:flex;align-items:center;justify-content:space-between;padding:0.75rem 1rem;border-bottom:1px solid #e5e7eb;flex-shrink:0;}
+    .dark .copy-md-dialog-header{border-bottom-color:#374151;}
+    .copy-md-dialog-title{font-size:0.875rem;font-weight:600;margin:0;color:#111827;}
+    .dark .copy-md-dialog-title{color:#f9fafb;}
+    .copy-md-dialog-actions{display:flex;align-items:center;gap:0.5rem;}
+    .copy-md-dialog-copy,.copy-md-dialog-download{display:inline-flex;align-items:center;gap:0.375rem;padding:0.3rem 0.65rem;font-size:0.75rem;font-weight:500;color:#6b7280;background:transparent;border:1px solid #e5e7eb;border-radius:0.375rem;cursor:pointer;transition:all 0.15s ease;}
+    .dark .copy-md-dialog-copy,.dark .copy-md-dialog-download{color:#9ca3af;border-color:#374151;}
+    .copy-md-dialog-copy:hover,.copy-md-dialog-download:hover{color:#111827;border-color:#9ca3af;background:#f9fafb;}
+    .dark .copy-md-dialog-copy:hover,.dark .copy-md-dialog-download:hover{color:#e5e7eb;border-color:#6b7280;background:rgba(255,255,255,0.05);}
+    .copy-md-dialog-close{display:inline-flex;align-items:center;justify-content:center;width:1.75rem;height:1.75rem;padding:0;background:transparent;border:none;border-radius:0.25rem;color:#6b7280;cursor:pointer;font-size:1rem;line-height:1;}
+    .dark .copy-md-dialog-close{color:#9ca3af;}
+    .copy-md-dialog-close:hover{background:#f3f4f6;color:#111827;}
+    .dark .copy-md-dialog-close:hover{background:rgba(255,255,255,0.1);color:#f9fafb;}
+    .copy-md-dialog-body{overflow:auto;flex:1;padding:1rem;}
+    .copy-md-dialog-pre{margin:0;padding:0;font-size:0.8125rem;line-height:1.6;white-space:pre-wrap;word-break:break-word;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;color:#1f2937;}
+    .dark .copy-md-dialog-pre{color:#e5e7eb;}
   </style>
-  <button class="copy-md-btn" title="Copy page as Markdown" aria-label="Copy page as Markdown" data-copied-label="Copied!">
-    <i class="material-symbols-outlined" aria-hidden="true" style="font-size: 0.875rem;">content_copy</i>
-    <span class="copy-md-label">Copy as Markdown</span>
-  </button>
+  <div class="copy-md-split" role="group" aria-label="Copy page options">
+    <button class="copy-md-btn" title="Copy page as Markdown" aria-label="Copy page as Markdown">
+      <i class="material-symbols-outlined" aria-hidden="true" style="font-size:0.875rem;">content_copy</i>
+      <span class="copy-md-label">Copy as Markdown</span>
+    </button>
+    <button class="copy-md-toggle" aria-label="More copy options" aria-haspopup="true" aria-expanded="false">
+      <i class="material-symbols-outlined copy-md-chevron" aria-hidden="true">expand_more</i>
+    </button>
+    <ul class="copy-md-dropdown" role="menu">
+      <li role="none">
+        <button role="menuitem" data-action="copy">
+          <i class="material-symbols-outlined" aria-hidden="true" style="font-size:0.875rem;">content_copy</i>
+          Copy as Markdown
+        </button>
+      </li>
+      <li role="none">
+        <button role="menuitem" data-action="view">
+          <i class="material-symbols-outlined" aria-hidden="true" style="font-size:0.875rem;">code</i>
+          View as Markdown
+        </button>
+      </li>
+      <li class="copy-md-dropdown-sep" role="separator"></li>
+      <li role="none">
+        <button role="menuitem" data-action="open-claude">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex-shrink:0;">
+            <rect width="14" height="14" rx="2.5" fill="#c96442"/>
+            <text x="7" y="10" font-family="system-ui,sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="white">C</text>
+          </svg>
+          Open in Claude
+        </button>
+      </li>
+      <li role="none">
+        <button role="menuitem" data-action="open-chatgpt">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex-shrink:0;">
+            <rect width="14" height="14" rx="2.5" fill="#10a37f"/>
+            <text x="7" y="10" font-family="system-ui,sans-serif" font-size="8" font-weight="700" text-anchor="middle" fill="white">G</text>
+          </svg>
+          Open in ChatGPT
+        </button>
+      </li>
+      <li role="none">
+        <button role="menuitem" data-action="open-perplexity">
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true" style="flex-shrink:0;">
+            <rect width="14" height="14" rx="2.5" fill="#20808d"/>
+            <text x="7" y="10" font-family="system-ui,sans-serif" font-size="9" font-weight="700" text-anchor="middle" fill="white">P</text>
+          </svg>
+          Open in Perplexity
+        </button>
+      </li>
+      <li class="copy-md-dropdown-sep" role="separator"></li>
+      <li role="none">
+        <button role="menuitem" data-action="print">
+          <i class="material-symbols-outlined" aria-hidden="true" style="font-size:0.875rem;">print</i>
+          Print
+        </button>
+      </li>
+    </ul>
+  </div>
+  <dialog class="copy-md-dialog" aria-label="Page as Markdown">
+    <div class="copy-md-dialog-header">
+      <span class="copy-md-dialog-title">Page as Markdown</span>
+      <div class="copy-md-dialog-actions">
+        <button class="copy-md-dialog-copy" title="Copy to clipboard">
+          <i class="material-symbols-outlined" aria-hidden="true" style="font-size:0.875rem;">content_copy</i>
+          <span class="copy-md-dialog-copy-label">Copy</span>
+        </button>
+        <button class="copy-md-dialog-download" title="Download as Markdown file">
+          <i class="material-symbols-outlined" aria-hidden="true" style="font-size:0.875rem;">download</i>
+          <span>Download</span>
+        </button>
+        <button class="copy-md-dialog-close" aria-label="Close">&#x2715;</button>
+      </div>
+    </div>
+    <div class="copy-md-dialog-body">
+      <pre class="copy-md-dialog-pre"></pre>
+    </div>
+  </dialog>
   <script type="text/markdown" class="copy-md-source">
 {{- $md -}}
   </script>

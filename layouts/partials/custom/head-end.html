@@ -30,52 +30,134 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 {{/* Copy as Markdown */}}
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-  document.querySelectorAll('.copy-md-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){
-      var wrapper = btn.closest('.copy-md-wrapper');
-      var source = wrapper.querySelector('.copy-md-source');
-      if(!source) return;
-      var md = source.textContent;
-      // Decode HTML entities that survive Hugo's HTMLToMarkdown conversion.
-      // Run decode in a loop to handle double/triple-encoded entities.
-      function decodeEntities(str) {
-        var el = document.createElement('textarea');
-        var prev = '';
-        while (prev !== str) {
-          prev = str;
-          el.innerHTML = str;
-          str = el.value;
+  function processCopyMd(wrapper) {
+    var source = wrapper.querySelector('.copy-md-source');
+    if (!source) return null;
+    var md = source.textContent;
+    function decodeEntities(str) {
+      var el = document.createElement('textarea');
+      var prev = '';
+      while (prev !== str) { prev = str; el.innerHTML = str; str = el.value; }
+      return str;
+    }
+    md = decodeEntities(md);
+    md = md.replace(/\[([^\]]*?)\s*\\\s*\n\\?\s*\n?([^\]]*?)\]\(([^)]+)\)/g, '[$1 — $2]($3)');
+    md = md.replace(/```\n(\s*(?:flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)\b)/g, '<!-- Mermaid diagram -->\n```mermaid\n$1');
+    var content = document.querySelector('article .content');
+    if (content) {
+      content.querySelectorAll('.hextra-tabs-toggle').forEach(function(tabBtn) {
+        var id = tabBtn.id, label = tabBtn.textContent.trim();
+        if (id && label) {
+          var replacement = /^option\b/i.test(label) ? label : 'Option: ' + label;
+          md = md.replace('Option: ' + id, replacement);
         }
-        return str;
-      }
-      md = decodeEntities(md);
-      // Fix multi-line links from card shortcodes:
-      // [Title  \n\\\nDescription](url) → [Title — Description](url)
-      md = md.replace(/\[([^\]]*?)\s*\\\s*\n\\?\s*\n?([^\]]*?)\]\(([^)]+)\)/g, '[$1 — $2]($3)');
-      // Add comment before mermaid code blocks
-      md = md.replace(/```\n(\s*(?:flowchart|graph|sequenceDiagram|classDiagram|stateDiagram|erDiagram|gantt|pie|gitGraph|journey)\b)/g, '<!-- Mermaid diagram -->\n```mermaid\n$1');
-      // Clean up tab panel labels — replace IDs with actual tab names from the page
-      var content = document.querySelector('article .content');
-      if (content) {
-        content.querySelectorAll('.hextra-tabs-toggle').forEach(function(btn) {
-          var id = btn.id;
-          var label = btn.textContent.trim();
-          if (id && label) {
-            var replacement = /^option\b/i.test(label) ? label : 'Option: ' + label;
-            md = md.replace('Option: ' + id, replacement);
+      });
+    }
+    return md;
+  }
+
+  function doCopy(wrapper, feedbackBtn) {
+    var md = processCopyMd(wrapper);
+    if (!md) return;
+    navigator.clipboard.writeText(md).then(function(){
+      var label = feedbackBtn && feedbackBtn.querySelector('.copy-md-label, .copy-md-dialog-copy-label');
+      var orig = label ? label.textContent : null;
+      if (label) label.textContent = 'Copied!';
+      if (feedbackBtn) feedbackBtn.classList.add('copied');
+      setTimeout(function(){
+        if (label) label.textContent = orig;
+        if (feedbackBtn) feedbackBtn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+
+  document.querySelectorAll('.copy-md-wrapper').forEach(function(wrapper){
+    var mainBtn     = wrapper.querySelector('.copy-md-btn');
+    var toggle      = wrapper.querySelector('.copy-md-toggle');
+    var dropdown    = wrapper.querySelector('.copy-md-dropdown');
+    var dialog      = wrapper.querySelector('.copy-md-dialog');
+    var dialogClose = wrapper.querySelector('.copy-md-dialog-close');
+    var dialogCopy     = wrapper.querySelector('.copy-md-dialog-copy');
+    var dialogDownload = wrapper.querySelector('.copy-md-dialog-download');
+    var dialogPre      = wrapper.querySelector('.copy-md-dialog-pre');
+
+    if (mainBtn) mainBtn.addEventListener('click', function(){ doCopy(wrapper, mainBtn); });
+
+    if (toggle && dropdown) {
+      toggle.addEventListener('click', function(e){
+        e.stopPropagation();
+        var open = dropdown.classList.toggle('open');
+        toggle.setAttribute('aria-expanded', String(open));
+      });
+    }
+
+    if (dropdown) {
+      dropdown.querySelectorAll('[data-action]').forEach(function(item){
+        item.addEventListener('click', function(e){
+          e.stopPropagation();
+          dropdown.classList.remove('open');
+          if (toggle) toggle.setAttribute('aria-expanded', 'false');
+          if (item.dataset.action === 'copy') {
+            doCopy(wrapper, mainBtn);
+          } else if (item.dataset.action === 'view' && dialog && dialogPre) {
+            var md = processCopyMd(wrapper);
+            if (md) { dialogPre.textContent = md; dialog.showModal(); }
+          } else if (item.dataset.action === 'open-claude' || item.dataset.action === 'open-chatgpt' || item.dataset.action === 'open-perplexity') {
+            var action = item.dataset.action;
+            var pageUrl = wrapper.dataset.pageUrl || '';
+            if (pageUrl.indexOf('https://') === 0) {
+              var prompt = 'Give me a summary of this page and prepare for me to ask you questions about it: ' + pageUrl;
+              var chatBase = action === 'open-claude' ? 'https://claude.ai/new?q='
+                : action === 'open-chatgpt' ? 'https://chatgpt.com/?q='
+                : 'https://www.perplexity.ai/?q=';
+              window.open(chatBase + encodeURIComponent(prompt), '_blank', 'noopener');
+            } else {
+              var md = processCopyMd(wrapper);
+              if (md) {
+                var fallbackUrl = action === 'open-claude' ? 'https://claude.ai/new'
+                  : action === 'open-chatgpt' ? 'https://chatgpt.com/'
+                  : 'https://www.perplexity.ai/';
+                window.open(fallbackUrl, '_blank', 'noopener');
+                navigator.clipboard.writeText(md).then(function(){
+                  if (mainBtn) {
+                    var lbl = mainBtn.querySelector('.copy-md-label');
+                    var orig = lbl ? lbl.textContent : null;
+                    if (lbl) lbl.textContent = 'Copied — paste in chat';
+                    mainBtn.classList.add('copied');
+                    setTimeout(function(){ if (lbl) lbl.textContent = orig; mainBtn.classList.remove('copied'); }, 3000);
+                  }
+                });
+              }
+            }
+          } else if (item.dataset.action === 'print') {
+            window.print();
           }
         });
-      }
-      navigator.clipboard.writeText(md).then(function(){
-        var label = btn.querySelector('.copy-md-label');
-        var origText = label.textContent;
-        label.textContent = 'Copied!';
-        btn.classList.add('copied');
-        setTimeout(function(){
-          label.textContent = origText;
-          btn.classList.remove('copied');
-        }, 2000);
       });
+    }
+
+    if (dialogClose && dialog) dialogClose.addEventListener('click', function(){ dialog.close(); });
+    if (dialogCopy) dialogCopy.addEventListener('click', function(){ doCopy(wrapper, dialogCopy); });
+    if (dialogDownload) {
+      dialogDownload.addEventListener('click', function(){
+        var md = processCopyMd(wrapper);
+        if (!md) return;
+        var filename = (document.title || 'page').replace(/\s*[|\-–—].*$/, '').trim().replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '.md';
+        var blob = new Blob([md], {type: 'text/markdown'});
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = blobUrl; a.download = filename; a.click();
+        URL.revokeObjectURL(blobUrl);
+      });
+    }
+    if (dialog) dialog.addEventListener('click', function(e){ if (e.target === dialog) dialog.close(); });
+  });
+
+  document.addEventListener('click', function(){
+    document.querySelectorAll('.copy-md-dropdown.open').forEach(function(dd){
+      var tog = dd.closest('.copy-md-split') && dd.closest('.copy-md-split').querySelector('.copy-md-toggle');
+      dd.classList.remove('open');
+      if (tog) tog.setAttribute('aria-expanded', 'false');
     });
   });
 });
