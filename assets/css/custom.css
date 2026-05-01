@@ -346,6 +346,26 @@ h6 {
     margin-top: 0 !important;
 }
 
+/* {{< cards >}} shortcode — responsive grid */
+.hextra-cards-grid {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+  grid-template-columns: 1fr;
+}
+
+@media (min-width: 640px) {
+  .hextra-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hextra-cards-grid {
+    grid-template-columns: repeat(var(--hextra-cols, 3), minmax(0, 1fr));
+  }
+}
+
 
 
 /* Spacing between headings and following content. Needed because reuse
