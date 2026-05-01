@@ -8,6 +8,9 @@
 
 {{/* =================================================================== */}}
 {{/* SOURCES — where to fetch structured data                            */}}
+{{/*                                                                     */}}
+{{/* YAML path hints for each $defs type live in data/schema_config_paths */}}
+{{/* (pathsByDef). Regenerate with: python3 scripts/gen-schema-config-paths.py */}}
 {{/* =================================================================== */}}
 {{ $sources := dict
   "configSchema" "https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/schema/config.json"
@@ -94,11 +97,18 @@
     {{ $fullMd = printf "%s\n---\n\n## %s\n" $fullMd .title }}
     {{ with .desc }}{{ $fullMd = printf "%s\n%s\n" $fullMd . }}{{ end }}
     {{ $fullMd = printf "%s\nSchema type: `%s`\n" $fullMd .defName }}
+    {{ $scp := index site.Data "schema_config_paths" | default dict }}
+    {{ $pathsByDef := index $scp "pathsByDef" | default dict }}
+    {{ $cfgPaths := index $pathsByDef .defName | default slice }}
+    {{ if gt (len $cfgPaths) 0 }}
+      {{ $fullMd = printf "%s\n%s can be configured in the following sections:\n\n```text\n%s\n```\n\n" $fullMd .title (delimit $cfgPaths "\n") }}
+    {{ end }}
     {{ with $typeDef }}
       {{ with .description }}
         {{ $fullMd = printf "%s\n> %s\n" $fullMd (replace . "\n" " ") }}
       {{ end }}
       {{ with .properties }}
+        {{ $fullMd = printf "%s\nYou can configure the following fields:\n\n" $fullMd }}
         {{ $fullMd = printf "%s\n| Field | Type | Description |\n|-------|------|-------------|\n" $fullMd }}
         {{ range $fname, $fprop := . }}
           {{ $ftype := "" }}
