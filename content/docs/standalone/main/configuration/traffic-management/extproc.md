@@ -4,8 +4,7 @@ weight: 16
 description: 
 ---
 
-Attach to:
-{{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
 {{< gloss "ExtProc (External Processing)" >}}External processing{{< /gloss >}} is an advanced filter that allows arbitrary modifications to HTTP requests and responses with an external processing server.
 

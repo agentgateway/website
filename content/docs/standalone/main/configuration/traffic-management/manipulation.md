@@ -3,8 +3,7 @@ title: Header manipulation
 weight: 10
 ---
 
-Attach to:
-{{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
+Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
 
 There are a few different policies that offer manipulation of HTTP requests and responses.
 

@@ -4,8 +4,7 @@ weight: 12
 description: Modify header and body information for requests and responses. 
 ---
 
-Attach to:
-{{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
 Agentgateway uses {{< gloss "Transformation" >}}transformation{{< /gloss >}} templates that are written in {{< gloss "CEL (Common Expression Language)" >}}Common Expression Language (CEL){{< /gloss >}}. CEL is a fast, portable, and safely executable language that goes beyond declarative configurations. CEL lets you develop more complex expressions in a readable, developer-friendly syntax.
 

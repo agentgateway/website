@@ -3,8 +3,7 @@ title: MCP authorization
 weight: 40
 ---
 
-Attach to:
-{{< badge content="Backend" path="/configuration/backends/">}} (MCP Backends only)
+Attaches to: {{< badge content="Backend" path="/configuration/backends/">}} (MCP Backends only)
 
 The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}}), but runs in the context of an MCP request.
 
