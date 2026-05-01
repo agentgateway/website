@@ -26,7 +26,7 @@ mcpAuthorization:
 ```
 
 {{< callout type="info" >}}
-Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
 {{< /callout >}}
 
 ## CEL variables

@@ -14,7 +14,7 @@ To learn more about how to use CEL, refer to the following resources:
 - [Agentgateway reference docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/)
 
 {{< callout type="info" >}}
-Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
 {{< /callout >}}
 
 ### Header transformation
