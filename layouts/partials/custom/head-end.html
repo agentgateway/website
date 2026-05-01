@@ -129,6 +129,22 @@ document.addEventListener('DOMContentLoaded', function(){
                 });
               }
             }
+          } else if (item.dataset.action === 'download-codeblocks') {
+            (function(){
+              var md = processCopyMd(wrapper);
+              if (!md) return;
+              var blocks = [];
+              var re = /^(```[\w-]*\n[\s\S]*?\n```)/gm;
+              var m;
+              while ((m = re.exec(md)) !== null) { blocks.push(m[1]); }
+              if (!blocks.length) return;
+              var filename = (document.title || 'page').replace(/\s*[|\-–—].*$/, '').trim().replace(/[^a-z0-9]+/gi, '-').toLowerCase() + '-codeblocks.md';
+              var blob = new Blob([blocks.join('\n\n')], {type: 'text/markdown'});
+              var blobUrl = URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.href = blobUrl; a.download = filename; a.click();
+              URL.revokeObjectURL(blobUrl);
+            })();
           } else if (item.dataset.action === 'print') {
             window.print();
           }
