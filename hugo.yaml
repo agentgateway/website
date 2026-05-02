@@ -6,7 +6,7 @@ title: "agentgateway | Agent Connectivity Solved"
 outputs:
   home: [HTML, RSS, llms]
   page: [HTML, markdown]
-  section: [HTML, RSS, markdown]
+  section: [HTML, RSS, markdown, llms]
 
 defaultContentLanguage: en
 
