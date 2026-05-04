@@ -1,7 +1,7 @@
 ---
 title: AgentgatewayPolicy
 weight: 1
-description: Use AgentgatewayPolicy to manipulate traffic, configurable observability, enforce rich security rules, and more.
+description: Use AgentgatewayPolicy to configure the agentgateway policy engine.
 ---
 
 {{< reuse "agw-docs/snippets/kubespec-note.md" >}}
