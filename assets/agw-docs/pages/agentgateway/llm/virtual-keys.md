@@ -55,31 +55,31 @@ This example creates two virtual keys (for Alice and Bob) with independent 100,0
 
 ### Create API keys for users
 
-Create API key secrets for each user. Each secret includes a label that references the key group for authentication.
+Create an API key secret that stores keys and metadata for each user.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
 apiVersion: v1
 kind: Secret
 metadata:
-  name: user-alice-key
+  name: llm-api-keys
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  labels:
-    api-key-group: llm-users
-type: extauth.solo.io/apikey
+type: Opaque
 stringData:
-  api-key: sk-alice-abc123def456
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: user-bob-key
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  labels:
-    api-key-group: llm-users
-type: extauth.solo.io/apikey
-stringData:
-  api-key: sk-bob-xyz789uvw012
+  alice: |
+    {
+      "key": "sk-alice-abc123def456",
+      "metadata": {
+        "user_id": "alice"
+      }
+    }
+  bob: |
+    {
+      "key": "sk-bob-xyz789uvw012",
+      "metadata": {
+        "user_id": "bob"
+      }
+    }
 EOF
 ```
 
@@ -87,13 +87,13 @@ EOF
 
 | Setting     | Description |
 |-------------|-------------|
-| `type` | Set to `extauth.solo.io/apikey` to create API key secrets. |
-| `labels.api-key-group` | Label to group API keys together for authentication policy selection. |
-| `stringData.api-key` | The API key value that users include in their requests. |
+| `stringData.<name>` | Each key in `stringData` represents a user. The value is a JSON object containing the API key and metadata. |
+| `key` | The API key value that users include in their `Authorization: Bearer` header. |
+| `metadata.user_id` | The user identifier extracted by rate limiting policies to enforce per-user budgets. |
 
 ### Configure API key authentication
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. The policy extracts the user ID from the `X-User-ID` header for use in rate limiting.
+Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
@@ -110,9 +110,8 @@ spec:
   traffic:
     apiKeyAuthentication:
       mode: Strict
-      secretSelector:
-        matchLabels:
-          api-key-group: llm-users
+      secretRef:
+        name: llm-api-keys
 EOF
 ```
 
@@ -122,7 +121,7 @@ EOF
 |-------------|-------------|
 | `targetRefs` | Apply the policy to the entire Gateway so all routes require API keys. |
 | `apiKeyAuthentication.mode` | Set to `Strict` to require a valid API key for all requests. |
-| `secretSelector` | Use label selectors to reference all API key secrets with the `api-key-group: llm-users` label. |
+| `secretRef.name` | References the Secret containing API keys and user metadata. |
 
 ### Configure per-key token budgets
 
@@ -152,7 +151,7 @@ spec:
         descriptors:
           - entries:
               - name: user_id
-                expression: 'request.headers["x-user-id"]'
+                expression: 'apiKey.metadata.user_id'
             unit: Tokens
 EOF
 ```
@@ -165,7 +164,7 @@ EOF
 | `domain` | A namespace for rate limit configurations. Use `token-budgets` to organize your budget policies. |
 | `backendRef` | References the rate limit server Service. Must include `kind`, `name`, `namespace`, and `port`. |
 | `descriptors[].entries[].name` | The name of the descriptor entry. Set to `user_id` to rate limit per user. |
-| `descriptors[].entries[].expression` | CEL expression to extract the user ID from the `X-User-ID` request header. |
+| `descriptors[].entries[].expression` | CEL expression to extract the user ID from the API key's metadata. |
 | `descriptors[].unit` | Set to `Tokens` to enforce token-based limits instead of request-based limits. |
 
 ### Configure the rate limit server
@@ -287,7 +286,6 @@ YAMLTest -f - <<'EOF'
     headers:
       content-type: application/json
       Authorization: "Bearer sk-alice-abc123def456"
-      X-User-ID: alice
     body: |
       {
         "model": "gpt-3.5-turbo",
@@ -305,7 +303,6 @@ YAMLTest -f - <<'EOF'
     headers:
       content-type: application/json
       Authorization: "Bearer sk-bob-xyz789uvw012"
-      X-User-ID: bob
     body: |
       {
         "model": "gpt-3.5-turbo",
@@ -323,7 +320,6 @@ YAMLTest -f - <<'EOF'
     headers:
       content-type: application/json
       Authorization: "Bearer invalid-key"
-      X-User-ID: charlie
     body: |
       {
         "model": "gpt-3.5-turbo",
@@ -361,7 +357,6 @@ YAMLTest -f - <<'EOF'
     headers:
       content-type: application/json
       Authorization: "Bearer sk-alice-abc123def456"
-      X-User-ID: alice
     body: |
       {
         "model": "gpt-4",
@@ -380,7 +375,6 @@ YAMLTest -f - <<'EOF'
     headers:
       content-type: application/json
       Authorization: "Bearer sk-bob-xyz789uvw012"
-      X-User-ID: bob
     body: |
       {
         "model": "gpt-4",
@@ -399,7 +393,6 @@ YAMLTest -f - <<'EOF'
     headers:
       content-type: application/json
       Authorization: "Bearer invalid-key"
-      X-User-ID: charlie
     body: |
       {
         "model": "gpt-4",
@@ -419,8 +412,7 @@ EOF
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" \
      -H "Authorization: Bearer sk-alice-abc123def456" \
-     -H "X-User-ID: alice" \
-     -H "Content-Type: application/json" \
+      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [{"role": "user", "content": "Hello!"}]
@@ -431,8 +423,7 @@ EOF
    ```sh
    curl "localhost:8080/openai" \
      -H "Authorization: Bearer sk-alice-abc123def456" \
-     -H "X-User-ID: alice" \
-     -H "Content-Type: application/json" \
+      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [{"role": "user", "content": "Hello!"}]
@@ -483,8 +474,7 @@ EOF
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" \
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \
-     -H "X-User-ID: bob" \
-     -H "Content-Type: application/json" \
+      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [{"role": "user", "content": "Hello!"}]
@@ -495,8 +485,7 @@ EOF
    ```sh
    curl "localhost:8080/openai" \
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \
-     -H "X-User-ID: bob" \
-     -H "Content-Type: application/json" \
+      -H "Content-Type: application/json" \
      -d '{
        "model": "gpt-3.5-turbo",
        "messages": [{"role": "user", "content": "Hello!"}]
@@ -548,35 +537,35 @@ For more information on cost tracking, see the [cost tracking guide]({{< link-he
 
 Provide different budget tiers for free, standard, and premium users.
 
-1. Add a tier label to each API key secret.
+1. Add tier metadata to each API key in the Secret.
 
    ```yaml
    apiVersion: v1
    kind: Secret
    metadata:
-     name: user-alice-key
+     name: llm-api-keys
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     labels:
-       api-key-group: llm-users
-       tier: premium
-   type: extauth.solo.io/apikey
+   type: Opaque
    stringData:
-     api-key: sk-alice-abc123def456
-   ---
-   apiVersion: v1
-   kind: Secret
-   metadata:
-     name: user-charlie-key
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     labels:
-       api-key-group: llm-users
-       tier: free
-   type: extauth.solo.io/apikey
-   stringData:
-     api-key: sk-charlie-ghi345jkl678
+     alice: |
+       {
+         "key": "sk-alice-abc123def456",
+         "metadata": {
+           "user_id": "alice",
+           "tier": "premium"
+         }
+       }
+     charlie: |
+       {
+         "key": "sk-charlie-ghi345jkl678",
+         "metadata": {
+           "user_id": "charlie",
+           "tier": "free"
+         }
+       }
    ```
 
-2. Configure rate limiting to use the tier from a header.
+2. Configure rate limiting to use the tier and user_id from API key metadata.
 
    ```yaml
    traffic:
@@ -591,9 +580,9 @@ Provide different budget tiers for free, standard, and premium users.
          descriptors:
            - entries:
                - name: tier
-                 expression: 'request.headers["x-user-tier"]'
+                 expression: 'apiKey.metadata.tier'
                - name: user_id
-                 expression: 'request.headers["x-user-id"]'
+                 expression: 'apiKey.metadata.user_id'
              unit: Tokens
    ```
 
@@ -641,16 +630,16 @@ descriptors:
 
 ### Multi-tenant virtual keys
 
-Create virtual keys scoped to both user and tenant for multi-tenant applications.
+Create virtual keys scoped to both user and tenant for multi-tenant applications. Add tenant_id to the API key metadata.
 
 ```yaml
 # In TrafficPolicy
 descriptors:
   - entries:
       - name: tenant_id
-        expression: 'request.headers["x-tenant-id"]'
+        expression: 'apiKey.metadata.tenant_id'
       - name: user_id
-        expression: 'request.headers["x-user-id"]'
+        expression: 'apiKey.metadata.user_id'
     unit: Tokens
 ```
 
@@ -674,7 +663,7 @@ For more advanced rate limiting patterns, see the [budget and spend limits guide
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth daily-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete secret user-alice-key user-bob-key -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete configmap rate-limit-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
