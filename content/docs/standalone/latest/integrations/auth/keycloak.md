@@ -95,7 +95,7 @@ policies:
   authorization:
     rules:
     # Check for admin role in token
-    - if: '"admin" in auth.claims.realm_access.roles'
+    - '"admin" in jwt.realm_access.roles'
 ```
 
 ## Learn more

@@ -25,8 +25,6 @@ You can add, set, or remove request and response headers with agentgateway's tra
 To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 {{< /callout >}}
 
-{{< tabs items="Route-level,Gateway-level" >}}
-{{% tab %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -59,48 +57,6 @@ binds:
             - server
             - x-content-type-options
 ```
-{{% /tab %}}
-{{% tab %}}
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - gatewayName: my-gateway
-    routes:
-    - backends:
-      - ai:
-         name: openai
-         provider:
-           openAI:
-             # Optional; overrides the model in requests
-             model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPEN_AI_APIKEY"
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"   
-gatewayPolicies:
-  - name: global-transformations
-    target:
-      gateway: my-gateway
-    policy:
-      transformations:
-        request:
-          add:
-            x-gateway: '"agentgateway"'
-        response:
-          add:
-            x-served-by: '"agentgateway"'
-```
-
-{{% /tab %}}
-{{< /tabs >}}
-
-
 
 ### Body transformation
 

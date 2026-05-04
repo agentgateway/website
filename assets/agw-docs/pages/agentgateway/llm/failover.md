@@ -42,7 +42,7 @@ Failover uses priority groups to automatically switch between backends when fail
 
 For weight-based traffic distribution (A/B testing, traffic splitting, or canary deployments), see [Traffic splitting]({{< link-hextra path="/traffic-management/traffic-split/" >}}).
 
-For locality-aware routing (zones and regions), see [Locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).
+{{< version exclude-if="1.0.x,1.1.x" >}}For locality-aware routing (zones and regions), see [Locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).{{< /version >}}
 
 ## Before you begin
 
