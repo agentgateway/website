@@ -5,7 +5,7 @@ description: Use header and query matchers in a route delegation setup.
 test:
   header-query:
   - file: content/docs/kubernetes/main/quickstart/install.md
-    path: standard
+    path: experimental
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/traffic-management/route-delegation/header-query.md

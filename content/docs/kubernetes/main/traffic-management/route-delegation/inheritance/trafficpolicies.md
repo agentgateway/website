@@ -5,7 +5,7 @@ description: Learn how policies in `AgentgatewayPolicy` resources are inherited 
 test:
   trafficpolicies:
   - file: content/docs/kubernetes/main/quickstart/install.md
-    path: standard
+    path: experimental
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/traffic-management/route-delegation/inheritance/trafficpolicies.md

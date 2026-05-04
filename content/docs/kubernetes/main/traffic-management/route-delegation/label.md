@@ -5,7 +5,7 @@ description: Use labels to delegate traffic to child HTTPRoutes with the `<key>=
 test:
   label:
   - file: content/docs/kubernetes/main/quickstart/install.md
-    path: standard
+    path: experimental
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/traffic-management/route-delegation/label.md

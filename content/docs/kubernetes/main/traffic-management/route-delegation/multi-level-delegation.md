@@ -5,7 +5,7 @@ description: Create a 3-level route delegation hierarchy with a parent, child, a
 test:
   multi-level:
   - file: content/docs/kubernetes/main/quickstart/install.md
-    path: standard
+    path: experimental
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/traffic-management/route-delegation/multi-level-delegation.md

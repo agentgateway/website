@@ -5,7 +5,7 @@ description: Set up basic route delegation between a parent HTTPRoute and two ch
 test:
   basic:
   - file: content/docs/kubernetes/main/quickstart/install.md
-    path: standard
+    path: experimental
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
   - file: content/docs/kubernetes/main/traffic-management/route-delegation/basic.md
