@@ -22,7 +22,7 @@ llm:
   - name: "*"
     provider: bedrock
     params:
-      region: us-west-2
+      awsRegion: us-west-2
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -32,7 +32,7 @@ llm:
 | `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
 | `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.region` | The AWS region where the Bedrock model is hosted. |
+| `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
 
 ## Token counting
 
@@ -55,68 +55,6 @@ Example response:
   "input_tokens": 15
 }
 ```
-
-## Extended thinking and reasoning
-
-Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
-
-{{< callout type="info" >}}
-Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
-{{< /callout >}}
-
-{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Bedrock default" %}}
-
-Use the `reasoning.effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
-
-| `reasoning.effort` value | Thinking budget |
-|---|---|
-| `minimal` or `low` | 1,024 tokens |
-| `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
-
-```sh
-curl "localhost:3000/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
-  -H content-type:application/json -d '{
-  "model": "",
-  "max_output_tokens": 5000,
-  "input": "Explain the trade-offs between consistency and availability in distributed systems.",
-  "reasoning": {
-    "effort": "high"
-  }
-}' | jq
-```
-
-{{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
-
-Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
-
-| `reasoning_effort` value | Thinking budget |
-|---|---|
-| `minimal` or `low` | 1,024 tokens |
-| `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
-
-Note that `max_tokens` must be greater than the thinking budget, and the minimum thinking budget is 1,024 tokens.
-
-```sh
-curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
-  "model": "",
-  "max_tokens": 6000,
-  "reasoning_effort": "high",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Explain the trade-offs between consistency and availability in distributed systems."
-    }
-  ]
-}' | jq
-```
-
-{{% /tab %}}
-
-{{< /tabs >}}
 
 ## Structured outputs
 

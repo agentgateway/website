@@ -55,7 +55,7 @@ Create a configuration file with tracing enabled.
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
     otlpEndpoint: http://localhost:4317
     randomSampling: true
@@ -80,8 +80,8 @@ EOF
 ```
 
 Key configuration:
-- `config.tracing.otlpEndpoint`: Where to send traces (Jaeger's OTLP endpoint)
-- `config.tracing.randomSampling: true`: Sample all requests (for testing)
+- `frontendPolicies.tracing.otlpEndpoint`: Where to send traces (Jaeger's OTLP endpoint)
+- `frontendPolicies.tracing.randomSampling: true`: Sample all requests (for testing)
 
 ## Step 4: Start agentgateway
 
@@ -218,7 +218,7 @@ Sample a percentage of traces to reduce overhead:
 config:
   tracing:
     otlpEndpoint: http://localhost:4317
-    ratioSampling: 0.1  # Sample 10% of traces
+    randomSampling: "0.1"  # Sample 10% of traces
 ```
 
 ---

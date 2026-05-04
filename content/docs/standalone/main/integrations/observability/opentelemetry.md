@@ -12,7 +12,7 @@ Enable OpenTelemetry tracing in your agentgateway configuration.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
     otlpEndpoint: http://localhost:4317
     randomSampling: true
@@ -40,7 +40,7 @@ Configure agentgateway.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
     otlpEndpoint: http://localhost:4317
     randomSampling: true
