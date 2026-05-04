@@ -1,5 +1,9 @@
 {{ define "main" }}
-<div class="w-full absolute top-20 lg:top-25 z-10">   
+<style>
+  .hextra-footer { background-color: #030712 !important; color: #9ca3af; }
+  .hextra-footer a { color: #7734be; }
+</style>
+<div class="w-full absolute top-20 lg:top-25 z-10">
 {{ partial "announcement.html" .}}
 </div>
 <div class='mx-auto flex bg-primary-bg text-primary-dark'>
@@ -11,7 +15,6 @@
         </main>
     </article>
 </div>
-{{ partial "hackathon-float.html" . }}
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id={{ .Site.Params.gtmContainerID }}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <!-- End Google Tag Manager (noscript) -->

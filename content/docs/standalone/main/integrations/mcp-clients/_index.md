@@ -1,21 +1,16 @@
 ---
-title: MCP Clients
+title: MCP clients
 weight: 15
 description: Connect AI coding assistants and tools to agentgateway
+test: skip
 ---
 
 Configure popular AI coding assistants and tools to use agentgateway as their MCP server.
 
+## Before you begin
+
+{{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
+
 ## IDE Comparison
 
 {{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
-
-## Guides
-
-{{< cards >}}
-  {{< card link="claude" title="Claude" subtitle="Anthropic's Claude Desktop and CLI" >}}
-  {{< card link="cursor" title="Cursor" subtitle="AI-powered code editor" >}}
-  {{< card link="opencode" title="OpenCode" subtitle="Open source AI coding assistant" >}}
-  {{< card link="windsurf" title="Windsurf" subtitle="Codeium's AI IDE" >}}
-  {{< card link="vscode" title="VS Code" subtitle="GitHub Copilot MCP extension" >}}
-{{< /cards >}}

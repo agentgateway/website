@@ -77,14 +77,14 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
 
 {{% /tab %}}
 {{% tab tabName="Development" %}}
-When using the development build {{< reuse "agw-docs/versions/helm-version-flag-n1.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
+When using the nightly build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
 
 
 
 
 ```sh {paths="experimental"}
 helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
---version {{< reuse "agw-docs/versions/helm-version-flag-n1.md" >}} \
+--version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
 --set controller.image.pullPolicy=Always \
 --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
 ```
@@ -103,7 +103,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
       TEST SUITE: None
       ```
 
-4. Verify that the control plane is up and running.
+1. Verify that the control plane is up and running.
 
    ```sh
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -112,12 +112,52 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
    Example output:
 
    ```txt
-   NAME                                  READY   STATUS    RESTARTS   AGE
+   NAME                                      READY   STATUS    RESTARTS   AGE
    {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-78658959cd-cz6jt             1/1     Running   0          12s
    ```
 
-5. Verify that the `{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}` GatewayClass is created. You can optionally take a look at how the GatewayClass is configured by adding the `-o yaml` option to your command.
+2. Verify that the `{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}` GatewayClass is created. You can optionally take a look at how the GatewayClass is configured by adding the `-o yaml` option to your command.
 
    ```sh
    kubectl get gatewayclass {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}
    ```
+
+   Example output: 
+   
+   ```txt
+   NAME             CONTROLLER                       ACCEPTED   AGE   
+   {{< reuse "/agw-docs/snippets/gatewayclass.md" >}}     agentgateway.dev/{{< reuse "/agw-docs/snippets/gatewayclass.md" >}}    True       6m36s
+   ```
+
+{{< doc-test paths="standard,experimental" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: verify agentgateway GatewayClass exists
+  wait:
+    target:
+      kind: GatewayClass
+      metadata:
+        name: agentgateway
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}

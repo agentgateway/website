@@ -26,7 +26,6 @@ This pattern lets you route based on any field in the request body while using t
 2. Set up [API access to each LLM provider]({{< link-hextra path="/llm/api-keys/" >}}) that you want to route to.
 
 {{< doc-test paths="content-routing" >}}
-export OPENAI_API_KEY=${OPENAI_API_KEY:-<insert your API key>}
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 kubectl apply -f- <<EOF
 apiVersion: v1

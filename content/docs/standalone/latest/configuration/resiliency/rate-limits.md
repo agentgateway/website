@@ -4,8 +4,7 @@ weight: 10
 description: Enforce budget and spend limits per key by controlling request and token usage.
 ---
 
-Attach to:
-{{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
 Use rate limiting to enforce budget and spend limits per key: control the rate of requests and token usage on a route. Token-based limits let you cap usage per user, per API key, or per time window. Combined with API key authentication and observability, this gives you virtual key management.
 

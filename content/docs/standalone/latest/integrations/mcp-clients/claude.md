@@ -6,9 +6,17 @@ description: Connect Claude Desktop and Claude Code to agentgateway
 
 Configure Anthropic's Claude Desktop app or Claude Code CLI to use agentgateway as an MCP server.
 
+{{< callout type="info" >}}
+This page covers connecting Claude as an **MCP client**. To proxy Claude Code's **LLM traffic** (prompts and responses) through agentgateway, see the [Claude Code LLM client guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).
+{{< /callout >}}
+
+## Before you begin
+
+{{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
+
 ## Claude Desktop
 
-Add agentgateway to your Claude Desktop configuration file:
+Add agentgateway to your Claude Desktop configuration file.
 
 {{< tabs items="macOS,Windows" >}}
 {{< tab >}}
@@ -41,13 +49,13 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ## Claude Code CLI
 
-Configure Claude Code to connect to agentgateway:
+Configure Claude Code to connect to agentgateway.
 
 ```bash
 claude mcp add agentgateway --transport sse http://localhost:15000/mcp/sse
 ```
 
-Or add to your project's `.mcp.json`:
+Or, add to your project's `.mcp.json`.
 
 ```json
 {
@@ -62,7 +70,7 @@ Or add to your project's `.mcp.json`:
 
 ## Streamable HTTP Transport
 
-For better performance, use the streamable HTTP transport:
+For better performance, use the streamable HTTP transport.
 
 ```json
 {
@@ -76,7 +84,7 @@ For better performance, use the streamable HTTP transport:
 
 ## Authentication
 
-If agentgateway requires authentication, include the token in the URL or headers:
+If agentgateway requires authentication, include the token in the URL or headers.
 
 ```json
 {

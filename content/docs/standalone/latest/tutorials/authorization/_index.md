@@ -1,5 +1,5 @@
 ---
-title: JWT Authorization
+title: JWT authorization
 weight: 4
 description: Secure your agentgateway with JWT authentication and fine-grained tool access control
 ---
@@ -131,7 +131,7 @@ The pre-generated test token contains these claims that match our authorization 
    cat test-token.jwt
    ```
 
-2. To decode and inspect the claims, visit [jwt.io](https://jwt.io) and paste the token contents into the **Encoded** field on the left side.
+2. To decode and inspect the claims, visit [jwt.io](https://www.jwt.io) and paste the token contents into the **Encoded** field on the left side.
 
 ![JWT.io Token Generation](/images/tutorials/jwtio.gif)
 

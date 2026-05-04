@@ -1,5 +1,5 @@
 ---
-title: "Linux Installation"
+title: "Linux installation"
 weight: 20
 ---
 

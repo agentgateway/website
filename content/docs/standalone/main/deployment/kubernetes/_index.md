@@ -2,6 +2,7 @@
 title: Deploy on Kubernetes
 weight: 25
 description: Overview of how to deploy agentgateway on Kubernetes
+test: skip
 ---
 
 This website, [agentgateway.dev](https://agentgateway.dev/), is primarily focused on deploying and operating agentgateway as a standalone binary.

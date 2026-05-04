@@ -3,7 +3,7 @@ title: Budget and spend limits
 weight: 75
 description: Control LLM spending by enforcing token budget limits per API key or user.
 test:
-  budget-limits:
+  budget-limits-apikey-auth:
   - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md

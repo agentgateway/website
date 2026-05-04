@@ -33,7 +33,7 @@ EOF
 # Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e OPENAI_API_KEY=$OPENAI_API_KEY \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
 curl http://localhost:3000/v1/chat/completions \
@@ -64,7 +64,7 @@ EOF
 # Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
 curl http://localhost:3000/v1/chat/completions \
@@ -96,7 +96,7 @@ EOF
 # Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e XAI_API_KEY=$XAI_API_KEY \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
 curl http://localhost:3000/v1/chat/completions \
@@ -130,7 +130,7 @@ EOF
 # Run agentgateway (use host.docker.internal to reach Ollama on the host)
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   --add-host=host.docker.internal:host-gateway \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
 curl http://localhost:3000/v1/chat/completions \
@@ -167,7 +167,7 @@ docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
   -e AZURE_DEPLOYMENT=$AZURE_DEPLOYMENT \
   -e AZURE_ENDPOINT=$AZURE_ENDPOINT \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
 curl http://localhost:3000/v1/chat/completions \
@@ -202,7 +202,7 @@ docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY \
   -e AWS_REGION=$AWS_REGION \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
 curl http://localhost:3000/v1/chat/completions \
@@ -233,7 +233,7 @@ EOF
 # Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e GEMINI_API_KEY=$GEMINI_API_KEY \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
 curl http://localhost:3000/v1/chat/completions \
@@ -253,7 +253,7 @@ By default, the agentgateway admin UI listens on localhost. To access it from yo
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -p 127.0.0.1:15000:15000 -e ADMIN_ADDR=0.0.0.0:15000 \
   -e OPENAI_API_KEY=$OPENAI_API_KEY \
-  cr.agentgateway.dev/agentgateway:0.11.1 -f /config.yaml
+  cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 ```
 
 Then open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
@@ -267,7 +267,7 @@ services:
   agentgateway:
     container_name: agentgateway
     restart: unless-stopped
-    image: cr.agentgateway.dev/agentgateway:0.11.1
+    image: cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}}
     ports:
       - "3000:3000"
       - "127.0.0.1:15000:15000"

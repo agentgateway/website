@@ -1,6 +1,6 @@
 Replace the host header value before forwarding a request to a backend service by using the `URLRewrite` filter. 
 
-For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#gateway.networking.k8s.io/v1.HTTPURLRewriteFilter).
+For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#httpurlrewritefilter).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

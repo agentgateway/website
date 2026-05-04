@@ -10,7 +10,7 @@ Use custom regex patterns and built-in PII detectors to filter LLM requests and 
 
 Regex-based prompt guards let you inspect LLM requests and responses against custom regex patterns or built-in PII detectors. Use the `reject` action to block requests that match a pattern, or the `mask` action to redact sensitive data in responses before they reach the client.
 
-### Built-in prompt guard patterns
+### Built-in prompt guard patterns {#built-in-patterns}
 
 Agentgateway includes the following built-in patterns for common PII types that you can reference in your prompt guards. 
 

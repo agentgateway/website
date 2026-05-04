@@ -51,7 +51,7 @@ AgentGateway natively emits OpenTelemetry traces for every LLM request. A lightw
 
 ## Prerequisites
 
-- [Docker](https://docs.docker.com/get-docker/) installed and running
+- [Docker](https://docs.docker.com/get-started/get-docker/) installed and running
 - [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) installed
 - [kubectl](https://kubernetes.io/docs/tasks/tools/) installed
 - [helm](https://helm.sh/docs/intro/install/) installed
@@ -427,6 +427,6 @@ kind delete cluster --name agentgateway
 - [Solo AgentGateway Docs](https://docs.solo.io/agentgateway/)
 - [AgentGateway OSS](https://agentgateway.dev)
 - [Langfuse Docs](https://langfuse.com/docs)
-- [Langfuse OpenTelemetry Integration](https://langfuse.com/docs/integrations/opentelemetry)
+- [Langfuse OpenTelemetry Integration](https://langfuse.com/integrations/native/opentelemetry)
 - [OpenTelemetry GenAI Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-- [Source Code for This Guide](https://github.com/ProfessorSeb/agentgateway-langfuse)
+- [Source Code for This Guide](https://github.com/sebastianmaniak/agentgateway-langfuse)

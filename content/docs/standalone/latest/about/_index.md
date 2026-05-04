@@ -1,14 +1,10 @@
 ---
 title: About
 weight: 20
+icon: info
 description: 
+test: skip
 ---
 
-{{< reuse "agw-docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}} To learn more about {{< reuse "agw-docs/snippets/agentgateway.md" >}}, review the following topics.
 
-Review the following topics to learn more about agentgateway.
-
-{{< cards >}}
-  {{< card link="introduction" title="Introduction" >}}
-  {{< card link="architecture" title="Architecture" >}}
-{{< /cards >}}

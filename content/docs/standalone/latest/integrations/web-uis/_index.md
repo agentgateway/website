@@ -1,7 +1,8 @@
 ---
-title: Web UIs & Agent Frameworks
+title: Web UIs & agent frameworks
 weight: 1
 description: Integrate agentgateway with popular web interfaces and agent frameworks for enterprise governance
+test: skip
 ---
 
 Agentgateway provides a unified control plane to secure, observe, and audit all AI communications from web UIs and agent frameworks. By routing LLM, A2A, and MCP traffic through agentgateway, enterprises gain complete visibility and governance over their AI infrastructure.
@@ -22,13 +23,3 @@ Web UIs and agent frameworks typically connect directly to LLM providers and too
 - **Rate Limiting** - Prevent runaway costs and resource exhaustion
 - **Content Filtering** - Block sensitive data from leaving your environment
 - **Observability** - Metrics, traces, and dashboards for all AI traffic
-
-## Supported Integrations
-
-{{< cards >}}
-  {{< card link="open-webui" title="Open WebUI" subtitle="Self-hosted ChatGPT-like interface" >}}
-  {{< card link="goose" title="Goose" subtitle="Block's autonomous AI agent" >}}
-  {{< card link="kagent" title="Kagent" subtitle="Kubernetes-native AI agent framework" >}}
-  {{< card link="librechat" title="LibreChat" subtitle="Open source multi-model chat UI" >}}
-  {{< card link="chatbot-ui" title="Chatbot UI" subtitle="Open source ChatGPT interface" >}}
-{{< /cards >}}

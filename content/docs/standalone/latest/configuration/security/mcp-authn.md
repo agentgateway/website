@@ -3,10 +3,11 @@ title: MCP authentication
 weight: 30
 ---
 
-Attach to:
-{{< badge content="Backend" path="/configuration/backends/">}} (MCP Backends only)
+Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
 MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
+
+MCP authentication is configured at the route level under `policies.mcpAuthentication`. Because the policy runs at the route level, you can use JWT claims from MCP auth in other route-level policies, such as authorization, rate limiting, and transformations.
 
 MCP authentication uses a connect-time model: the OAuth flow happens once when the client first connects, not on each tool call. After the initial authentication, the access token is reused for all subsequent requests within the session.
 
@@ -27,22 +28,40 @@ In this mode, agentgateway:
 - Returns `401 Unauthorized` with appropriate `WWW-Authenticate` headers for unauthenticated requests
 
 ```yaml
-mcpAuthentication:
-  issuer: http://localhost:7080/realms/mcp
-  jwks:
-    url: http://localhost:7080/protocol/openid-connect/certs
-  provider:
-    keycloak: {}
-  resourceMetadata:
-    resource: http://localhost:3000/mcp
-    scopesSupported:
-    - read:all
-    bearerMethodsSupported:
-    - header
-    - body
-    - query
-    resourceDocumentation: http://localhost:3000/stdio/docs
-    resourcePolicyUri: http://localhost:3000/stdio/policies
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  - path:
+      exact: /.well-known/oauth-authorization-server/mcp
+  - path:
+      exact: /.well-known/oauth-authorization-server/mcp/client-registration
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:7080/realms/mcp
+      jwks:
+        url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
+      provider:
+        keycloak: {}
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
+        resourceDocumentation: http://localhost:3000/stdio/docs
+        resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
 
 ## Resource Server Only
@@ -50,18 +69,32 @@ mcpAuthentication:
 Agentgateway acts solely as a resource server, validating tokens issued by an external authorization server.
 
 ```yaml
-mcpAuthentication:
-  issuer: http://localhost:9000
-  jwks:
-    url: http://localhost:9000/.well-known/jwks.json
-  resourceMetadata:
-    resource: http://localhost:3000/mcp
-    scopesSupported:
-    - read:all
-    bearerMethodsSupported:
-    - header
-    - body
-    - query
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:9000
+      jwks:
+        url: http://localhost:9000/.well-known/jwks.json
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
 ```
 
 ## Authentication mode
@@ -77,17 +110,18 @@ You can control how agentgateway handles requests that lack valid credentials by
 The following example sets the mode to `permissive`:
 
 ```yaml
-mcpAuthentication:
-  mode: permissive
-  issuer: http://localhost:9000
-  jwks:
-    url: http://localhost:9000/.well-known/jwks.json
-  resourceMetadata:
-    resource: http://localhost:3000/mcp
-    scopesSupported:
-    - read:all
+policies:
+  mcpAuthentication:
+    mode: permissive
+    issuer: http://localhost:9000
+    jwks:
+      url: http://localhost:9000/.well-known/jwks.json
+    resourceMetadata:
+      resource: http://localhost:3000/mcp
+      scopesSupported:
+      - read:all
 ```
 
 ## Passthrough
 
-When the MCP server already implements OAuth authentication, no additional configuration is needed. Agentgateway will pass requests through without modification.
+When the MCP server already implements OAuth authentication, no additional configuration is needed. Agentgateway passes requests through without modification.

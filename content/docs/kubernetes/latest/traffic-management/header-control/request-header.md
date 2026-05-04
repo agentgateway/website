@@ -31,5 +31,4 @@ test:
     path: remove-request-header
 ---
 
-
 {{< reuse "agw-docs/pages/traffic-management/header-control/request-header.md" >}}

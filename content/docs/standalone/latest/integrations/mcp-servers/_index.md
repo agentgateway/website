@@ -1,18 +1,11 @@
 ---
-title: MCP Servers
-weight: 60
+title: MCP servers
+weight: 15
 description: Connect agentgateway to MCP servers using various transports
+test: skip
 ---
 
 Agentgateway supports connecting to MCP servers via multiple transport protocols. Choose the transport that best fits your deployment model.
-
-## Transports
-
-{{< cards >}}
-  {{< card link="stdio" title="stdio" subtitle="Local process-based MCP servers" >}}
-  {{< card link="sse" title="SSE" subtitle="Server-Sent Events transport" >}}
-  {{< card link="streamable-http" title="Streamable HTTP" subtitle="HTTP with streaming support" >}}
-{{< /cards >}}
 
 ## Why use agentgateway with MCP Servers?
 

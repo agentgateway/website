@@ -3,7 +3,7 @@ title: Virtual keys
 weight: 30
 description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
 test:
-  virtual-keys:
+  virtual-keys-auth:
   - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
   - file: content/docs/kubernetes/latest/setup/gateway.md

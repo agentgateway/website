@@ -30,7 +30,7 @@ This tutorial requires **two terminal windows**:
 
 ```
 ┌──────────────┐      ┌──────────────────┐      ┌─────────────────┐
-│   Playground │ ──── │  agentgateway   │ ──── │  Hello World    │
+│   Playground │ ──── │  agentgateway    │ ──── │  Hello World    │
 │   (Browser)  │      │     :3000        │      │  Agent :9999    │
 └──────────────┘      └──────────────────┘      └─────────────────┘
                            Terminal 2              Terminal 1
@@ -160,7 +160,7 @@ Agentgateway provides:
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/tutorials/jwt-authorization" title="Authorization" subtitle="Add JWT authentication" >}}
+  {{< card path="/tutorials/authorization" title="Authorization" subtitle="Add JWT authentication" >}}
   {{< card path="/agent/" title="Agent Overview" subtitle="Understanding A2A connectivity" >}}
   {{< card path="/agent/a2a" title="A2A Reference" subtitle="Complete A2A configuration" >}}
 {{< /cards >}}

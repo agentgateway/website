@@ -1,0 +1,16 @@
+{{- /*
+  Shortcode: testimonials
+  Wraps inner testimonial shortcodes in a responsive CSS grid layout.
+
+  Parameters:
+    (none -- uses inner content, which should contain {{< testimonial >}} shortcodes)
+
+  Example:
+    {{< testimonials >}}
+      {{< testimonial author="Jane Doe" >}}Great product!{{< /testimonial >}}
+      {{< testimonial author="John Smith" >}}Highly recommended.{{< /testimonial >}}
+    {{< /testimonials >}}
+*/ -}}
+<div class="testimonials-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 400px), 1fr)); gap: 1.5rem; margin: 1.5rem 0;">
+  {{ .Inner }}
+</div>

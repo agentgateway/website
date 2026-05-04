@@ -83,10 +83,10 @@ policies:
   authorization:
     rules:
     # Check for Okta group membership
-    - if: '"AI-Users" in auth.claims.groups'
+    - '"AI-Users" in jwt.groups'
 ```
 
 ## Learn more
 
-- [Okta Developer Documentation](https://developer.okta.com/docs/)
+- [Okta Developer Documentation](https://developer.okta.com/)
 - [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})

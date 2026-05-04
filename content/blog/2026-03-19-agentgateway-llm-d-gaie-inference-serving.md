@@ -15,7 +15,7 @@ scale across nodes and data centers.
 This shift is exactly why [agentgateway](https://agentgateway.dev/), [llm-d](https://llm-d.ai/), and the
 [Gateway API Inference Extension (GIE)](https://gateway-api-inference-extension.sigs.k8s.io/) belong together.
 
-[llm-d](https://llm-d.ai/docs/architecture/) is pushing new frontiers in intelligent scheduling, prefill/decode
+[llm-d](https://llm-d.ai/docs/architecture) is pushing new frontiers in intelligent scheduling, prefill/decode
 disaggregation, tiered KV caching, and workload-aware autoscaling. [Agentgateway](https://github.com/agentgateway/agentgateway/releases/tag/v1.0.0)
 has quickly developed into a production-ready high performance AI gateway for LLM, MCP, A2A, and Kubernetes-native
 inference traffic. GIE has become the standard contract between the gateway layer and inference-aware scheduling.
@@ -75,7 +75,7 @@ Each layer does a different job.
   conformant gateway.
 - **GIE** gives you the shared language between the gateway and the inference scheduler. Its [InferencePool](https://gateway-api-inference-extension.sigs.k8s.io/api-types/inferencepool/) API and [extension protocol](https://github.com/kubernetes-sigs/gateway-api-inference-extension/blob/v1.4.0/docs/proposals/004-endpoint-picker-protocol/README.md) let gateways route inference traffic without hard-coding scheduler behavior into the gateway itself.
 - **llm-d** gives you the serving intelligence. Its architecture focuses on [intelligent inference scheduling, prefill/decode disaggregation,
-  wide expert parallelism, tiered KV prefix caching, and workload autoscaling](https://llm-d.ai/docs/architecture/).
+  wide expert parallelism, tiered KV prefix caching, and workload autoscaling](https://llm-d.ai/docs/architecture).
 
 The clean separation while being integrated through standard interfaces is the superpower. agentgateway does not need to reimplement llm-d's scheduler logic.
 llm-d does not need to reinvent gateway functionality, security policy, or Kubernetes networking APIs. GIE is the thread that stitches them all together.
@@ -84,7 +84,7 @@ That makes the stack easier to understand and evolve over time.
 ## Why this combination matters right now
 
 The [llm-d inference scheduler](https://github.com/llm-d/llm-d-inference-scheduler) makes this relationship explicit. Its Endpoint Picker
-extends GIE and adds llm-d-specific capabilities such as P/D disaggregation. At the same time, the [llm-d architecture](https://llm-d.ai/docs/architecture/)
+extends GIE and adds llm-d-specific capabilities such as P/D disaggregation. At the same time, the [llm-d architecture](https://llm-d.ai/docs/architecture)
 leans into the exact optimizations that operators care about most:
 
 - Prefix-cache-aware routing

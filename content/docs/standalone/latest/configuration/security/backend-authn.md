@@ -3,8 +3,7 @@ title: Backend authentication
 weight: 10
 ---
 
-Attach to:
-{{< badge content="Backend" path="/configuration/backends/" >}}
+Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
 
 When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 
@@ -23,7 +22,7 @@ backendAuth:
     file: /path/to/my/key
 ```
 
-When using [JWT authentication](#jwt-authentication), the original token is removed by default.
+When using [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), the original token is removed by default.
 To add it back, the `passthrough` method can be used:
 
 ```yaml
@@ -31,7 +30,7 @@ backendAuth:
   passthrough: {}
 ```
 
-Google [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
+Google [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
 
 ```yaml
 backendAuth:

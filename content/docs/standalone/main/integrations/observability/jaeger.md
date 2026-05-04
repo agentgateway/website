@@ -21,7 +21,7 @@ Configure agentgateway to send traces:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
+frontendPolicies:
   tracing:
     otlpEndpoint: http://localhost:4317
     randomSampling: true

@@ -1,5 +1,5 @@
 ---
-title: LLM Gateway
+title: LLM gateway
 weight: 2
 description: Route requests to multiple LLM providers through a unified API
 ---
@@ -156,7 +156,7 @@ llm:
     params:
       model: grok-4-latest
       apiKey: "$XAI_API_KEY"
-      baseUrl: "https://api.x.ai"
+      hostOverride: "api.x.ai"
 EOF
 ```
 
@@ -193,7 +193,7 @@ llm:
     provider: bedrock
     params:
       model: amazon.nova-lite-v1:0
-      region: us-west-2
+      awsRegion: us-west-2
 EOF
 ```
 
@@ -214,9 +214,9 @@ curl http://localhost:4000/v1/chat/completions \
 {{< /tab >}}
 
 {{< tab >}}
-#### Set your credentials
+#### Set your API key (optional)
 ```bash
-export AZURE_CLIENT_SECRET=your-client-secret
+export AZURE_API_KEY=your-api-key
 ```
 
 #### Create the config
@@ -230,10 +230,9 @@ llm:
     provider: azure
     params:
       model: gpt-4
-      azureEndpoint: "https://your-resource.openai.azure.com"
-      azureTenantId: "your-tenant-id"
-      azureClientId: "your-client-id"
-      azureClientSecret: "$AZURE_CLIENT_SECRET"
+      azureResourceName: "your-resource-name"
+      azureResourceType: OpenAI
+      apiKey: "$AZURE_API_KEY"
 EOF
 ```
 
@@ -270,7 +269,7 @@ llm:
     provider: openAI
     params:
       model: llama3
-      baseUrl: "http://localhost:11434"
+      hostOverride: "localhost:11434"
 EOF
 ```
 

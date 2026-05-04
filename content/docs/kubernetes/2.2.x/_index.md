@@ -1,7 +1,10 @@
 ---
-title: Latest
+title: Agentgateway v2.2.x
 weight: 460
-description: Use kgateway with agentgateway. 
+description: Use agentgateway in a Kubernetes environment. 
+cascade:
+  excludeSearch: true
+  llms: false
 ---
 
 Welcome to the documentation for using agentgateway on Kubernetes!

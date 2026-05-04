@@ -1,6 +1,7 @@
 ---
 title: "Examples"
 weight: 40
+test: skip
 ---
 
 This section contains step-by-step examples showing how to migrate common Ingress NGINX configurations to agentgateway using the `ingress2gateway` tool.
@@ -14,13 +15,3 @@ Each example walks through the following steps:
 
 Pick the example that matches your use case, or work through them all to get familiar with the migration workflow.
 
-{{< cards >}}
-  {{< card link="basic" title="Basic Ingress" >}}<!--
-  {{< card link="session-affinity" title="Session Affinity" >}}-->
-  {{< card link="rate-limiting" title="Rate Limiting" >}}
-  {{< card link="cors" title="CORS" >}}
-  {{< card link="ssl-redirect" title="SSL Redirect" >}}
-  {{< card link="external-auth" title="External Auth" >}}
-  {{< card link="canary" title="Canary Release" >}}
-  {{< card link="backend-tls" title="Backend TLS" >}}
-{{< /cards >}}

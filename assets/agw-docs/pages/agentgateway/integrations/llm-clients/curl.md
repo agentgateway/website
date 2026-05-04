@@ -2,8 +2,8 @@ Test and interact with agentgateway using curl.
 
 ## Before you begin
 
-- Agentgateway running at `http://localhost:3000` with a configured LLM backend.
-- curl installed (pre-installed on macOS and Linux).
+1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+2. Install curl (pre-installed on macOS and Linux).
 
 ## Example agentgateway configuration
 

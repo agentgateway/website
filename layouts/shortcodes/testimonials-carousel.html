@@ -1,0 +1,60 @@
+{{- /*
+  Shortcode: testimonials-carousel
+  Wraps inner testimonial shortcodes in a horizontally scrollable carousel with previous/next navigation buttons.
+
+  Parameters:
+    (none -- uses inner content, which should contain {{< testimonial >}} shortcodes)
+
+  Example:
+    {{< testimonials-carousel >}}
+      {{< testimonial author="Jane Doe" >}}Great product!{{< /testimonial >}}
+      {{< testimonial author="John Smith" >}}Highly recommended.{{< /testimonial >}}
+    {{< /testimonials-carousel >}}
+*/ -}}
+{{ $id := printf "testimonials-carousel-%d" (index (seq 1 99 | shuffle) 0) }}
+<div id="{{ $id }}" class="testimonials-carousel" style="position: relative; margin: 1.5rem 0;">
+  <div class="testimonials-carousel-track" style="display: flex; gap: 1.5rem; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth; padding: 0.5rem 0; -ms-overflow-style: none; scrollbar-width: none;">
+    {{ .Inner }}
+  </div>
+  <button class="testimonials-carousel-btn testimonials-carousel-prev" aria-label="Previous" style="position: absolute; left: -1rem; top: 50%; transform: translateY(-50%); width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--testimonial-border); background: var(--testimonial-bg); color: var(--testimonial-text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 2;">&#8249;</button>
+  <button class="testimonials-carousel-btn testimonials-carousel-next" aria-label="Next" style="position: absolute; right: -1rem; top: 50%; transform: translateY(-50%); width: 2.5rem; height: 2.5rem; border-radius: 50%; border: 1px solid var(--testimonial-border); background: var(--testimonial-bg); color: var(--testimonial-text); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1); z-index: 2;">&#8250;</button>
+</div>
+<style>
+  .testimonials-carousel-track::-webkit-scrollbar { display: none; }
+  .testimonials-carousel-track > figure {
+    flex: 0 0 calc(33.333% - 1rem);
+    scroll-snap-align: start;
+    min-width: 280px;
+  }
+  @media (max-width: 768px) {
+    .testimonials-carousel-track > figure {
+      flex: 0 0 85%;
+    }
+  }
+  :root {
+    --testimonial-bg: #f9fafb;
+    --testimonial-border: #e5e7eb;
+    --testimonial-text: #374151;
+    --testimonial-author: #111827;
+    --testimonial-title: #6b7280;
+  }
+  :root.dark {
+    --testimonial-bg: #1f2937;
+    --testimonial-border: #374151;
+    --testimonial-text: #d1d5db;
+    --testimonial-author: #f3f4f6;
+    --testimonial-title: #9ca3af;
+  }
+</style>
+<script>
+(function(){
+  const container = document.getElementById('{{ $id }}');
+  if (!container) return;
+  const track = container.querySelector('.testimonials-carousel-track');
+  const prev = container.querySelector('.testimonials-carousel-prev');
+  const next = container.querySelector('.testimonials-carousel-next');
+  const scrollAmount = () => track.querySelector('figure')?.offsetWidth + 24 || 400;
+  prev.addEventListener('click', () => track.scrollBy({ left: -scrollAmount(), behavior: 'smooth' }));
+  next.addEventListener('click', () => track.scrollBy({ left: scrollAmount(), behavior: 'smooth' }));
+})();
+</script>

@@ -1,8 +1,12 @@
-By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment. For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
+By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exposes metrics in Prometheus format. You can use these metrics to monitor the health and performance of your gateway environment, or to verify that the control plane is emitting expected metrics when debugging your [observability stack]({{< link-hextra path="/observability/otel-stack/">}}). For more information about how metrics are implemented, refer to the [kgateway project developer docs](https://github.com/kgateway-dev/kgateway/blob/main/devel/architecture/metrics.md).
+
+## Before you begin
+
+{{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
 
 ## View control plane metrics {#control-plane-metrics}
 
-The following steps show you how to quickly view the metrics endpoint of the control plane deployment. To integrate the metrics into your observability stack, see the [OpenTelemetry guide]({{< link-hextra path="/observability/otel-stack/">}}).
+The following steps show you how to view the raw metrics endpoint of the control plane deployment.
 
 1. Port-forward the control plane deployment on port 9092.
 
@@ -21,6 +25,26 @@ The following steps show you how to quickly view the metrics endpoint of the con
    kgateway_controller_reconciliations_total{controller="gatewayclass",result="success"} 2
    kgateway_controller_reconciliations_total{controller="gatewayclass-provisioner",result="success"} 2
    ```
+
+{{< doc-test paths="control-plane-metrics" >}}
+YAMLTest -f - <<'EOF'
+- name: Control plane metrics endpoint returns HTTP 200
+  retries: 3
+  http:
+    url: "http://localhost:9092/metrics"
+    method: GET
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 ## Control plane metrics reference {#reference}
 
@@ -41,9 +65,9 @@ Helpful terms:
 
 * Transform: The process of the control plane converting high-level resources or intermediate representations (IR) into lower-level representations into the structure that the XDS API expects for a snapshot.
 
-{{< version include-if="2.2.x" >}}
-{{< reuse "agw-docs/snippets/metrics-control-plane-22x.md" >}}
+{{< version include-if="1.1.x" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-latest.md" >}}
 {{< /version >}}
-{{< version include-if="2.3.x" >}}
-{{< reuse "agw-docs/snippets/metrics-control-plane-23x.md" >}}
+{{< version include-if="1.2.x" >}}
+{{< reuse "agw-docs/snippets/metrics-control-plane-main.md" >}}
 {{< /version >}}

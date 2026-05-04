@@ -1,4 +1,4 @@
-* **Unified data plane**: Agentgateway is a unified data plane to manage agent connectivity with support for agent protocols including MCP and A2A, and the ability to integrate existing REST APIs as agent-native tools.
+* **Unified data plane**: Agentgateway is one gateway for HTTP, gRPC, and agent traffic so that you can route microservice APIs with the same proxy you use for MCP, A2A, and LLMs, including the ability to integrate existing REST APIs as agent-native tools.
 * **Highly performant**: Built in Rust, agentgateway is designed to handle any scale. It is optimized for high throughput, low latency, reliability, and stability when handling long-lived connections and fan-out patterns. 
 * **Any agent framework**: Agentgateway is compatible with any agentic framework supporting MCP and A2A protocols, including LangGraph, AutoGen, kagent, Claude Desktop, and OpenAI SDK. You can also use agentgateway to expose a REST API as an agent-native tool.
 * **Platform-agnostic**: Agentgateway can run in any environment, including bare metal, virtual machine, containers, and Kubernetes.

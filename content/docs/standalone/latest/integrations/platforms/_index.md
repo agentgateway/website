@@ -2,33 +2,20 @@
 title: Platforms
 weight: 80
 description: Deploy agentgateway on various platforms and cloud providers
+test: skip
 ---
 
 Agentgateway runs anywhere—from local development to production cloud environments.
 
-## Deployment Options
-
-{{< cards >}}
-  {{< card link="kubernetes" title="Kubernetes" subtitle="EKS, GKE, AKS, OpenShift, kind, minikube, and more" >}}
-  {{< card link="docker" title="Docker" subtitle="Container deployment" >}}
-  {{< card link="aws" title="AWS" subtitle="ECS, Lambda, and AWS services" >}}
-  {{< card link="gcp" title="Google Cloud" subtitle="Cloud Run and GCP services" >}}
-  {{< card link="azure" title="Azure" subtitle="Container Apps and Azure services" >}}
-{{< /cards >}}
-
 ## Kubernetes distributions
 
-Agentgateway runs on all Kubernetes distributions through [kgateway](https://agentgateway.dev/docs/kubernetes/).
+Agentgateway runs on all Kubernetes distributions. For more information, see the [Kubernetes section of the docs](https://agentgateway.dev/docs/kubernetes/).
 
 | Category | Distributions |
 |----------|---------------|
 | **Cloud-managed** | Amazon EKS, Google GKE, Azure AKS, DigitalOcean, Linode, IBM Cloud, Oracle OKE, Alibaba ACK |
 | **On-premises** | Red Hat OpenShift, Rancher RKE/RKE2, VMware Tanzu, Canonical MicroK8s, K3s, vanilla Kubernetes |
 | **Local development** | kind, minikube, Docker Desktop, Rancher Desktop, k3d |
-
-{{< cards >}}
-  {{< card link="kubernetes" title="View all Kubernetes distributions" subtitle="Detailed setup guides for each platform" >}}
-{{< /cards >}}
 
 ## Choosing a deployment model
 

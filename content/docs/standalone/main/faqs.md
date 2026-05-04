@@ -1,6 +1,7 @@
 ---
 title: FAQs
 weight: 200
+icon: help_outline
 description: Check out frequently asked questions about agentgateway. 
 prev: /docs/reference
 --- 
@@ -25,15 +26,11 @@ Check out frequently asked questions about agentgateway.
 
 {{< reuse "agw-docs/snippets/key-benefits.md" >}}
 
-## How does agentgateway relate to kgateway?
+## How do I deploy agentgateway on Kubernetes?
 
-While you can manually deploy agentgateway proxies in any environment, you might want a more declarative way to define your agentgateway proxy and deploy it, especially in cloud-native environments, such as Kubernetes. 
+Agentgateway includes a built-in Kubernetes controller, which allows users to use the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) to provision and configure agentgateway proxies.
 
-The [kgateway open source project](https://kgateway.dev) is the recommended control plane to quickly spin up and manage the lifecycle of agentgateway proxies in Kubernetes clusters. In addition, you can leverage kgateway's traffic management, resiliency, and security policies to further protect your agentgateway proxy and make it more robust. 
-
-Kgateway passes conformance tests for the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) and [Inference Extensions](https://gateway-api-inference-extension.sigs.k8s.io/) projects so you can use the standards that you are familiar with to configure agentgateway. 
-
-For more information about how to deploy agentgateway with kgateway, see the [Agentgateway on Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/). 
+For more information, see the [Agentgateway on Kubernetes documentation](https://agentgateway.dev/docs/kubernetes/). 
 
 ## What's the difference between agentgateway and kagent? 
 
@@ -61,7 +58,7 @@ The changelog is part of each [GitHub release](https://github.com/agentgateway/a
 ## Is there enterprise software that is based on agentgateway?
 
 {{< cards >}}
-  {{< card link="https://www.solo.io/products/agentgateway-enterprise" title="Solo.io" icon="external-link">}}
+  {{< card link="https://www.solo.io/products/agentgateway" title="Solo.io" icon="external-link">}}
 {{< /cards >}}
 
 ## What if I have more questions about agentgateway? 

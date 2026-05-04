@@ -1,4 +1,4 @@
-1. Create a Gateway that uses the `{{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}` GatewayClass. The following example sets up a Gateway that uses the [default agentgateway proxy template](https://github.com/agentgateway/agentgateway/blob/main/controller/pkg/kgateway/helm/agentgateway/templates/deployment.yaml).
+1. Create a Gateway that uses the `{{< reuse "agw-docs/snippets/agw-gatewayclass.md" >}}` GatewayClass. The following example sets up a Gateway that uses the [default agentgateway proxy template](https://github.com/agentgateway/agentgateway/blob/main/controller/pkg/helm/agentgateway/templates/deployment.yaml).
    ```sh {paths="all"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1

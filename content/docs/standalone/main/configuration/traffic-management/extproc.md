@@ -4,8 +4,7 @@ weight: 16
 description: 
 ---
 
-Attach to:
-{{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
 {{< gloss "ExtProc (External Processing)" >}}External processing{{< /gloss >}} is an advanced filter that allows arbitrary modifications to HTTP requests and responses with an external processing server.
 
@@ -68,10 +67,8 @@ If any incompatibility causes issues for your external processing server, open a
 
 ## Setup
 
-External processing can be applied at the route or the gateway level. If applied to both, the route-level policy takes precedence.
+External processing is applied at the route level.
 
-{{< tabs items="Route-level,Gateway-level">}}
-{{% tab %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -92,22 +89,4 @@ binds:
           host: "extproc.com:9000"
           failureMode: failClosed
 ```
-{{% /tab %}}
-{{% tab %}}
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - gatewayName: my-gateway
-gatewayPolicies:
-  - name: extproc
-    target:
-      gateway: my-gateway
-    policy:
-      extProc:
-        host: "extproc.com:9000"
-        failureMode: failClosed
-```
-{{% /tab %}}
-{{< /tabs >}}
+

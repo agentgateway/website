@@ -372,6 +372,56 @@ textarea::-webkit-scrollbar-thumb:hover {
   border-top-color: #374151;
 }
 
+/* ===== Code Copy Button ===== */
+.chatbot-code-block {
+  position: relative;
+}
+
+.chatbot-code-copy {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+  z-index: 1;
+}
+
+.chatbot-code-block:hover .chatbot-code-copy {
+  opacity: 1;
+}
+
+.chatbot-code-copy:hover,
+.chatbot-code-copy.copied {
+  color: #7c3aed;
+  background: #fff;
+}
+
+.dark .chatbot-code-copy {
+  background: rgba(17, 24, 39, 0.9);
+  border-color: #374151;
+  color: #9ca3af;
+}
+
+.dark .chatbot-code-block:hover .chatbot-code-copy {
+  opacity: 1;
+}
+
+.dark .chatbot-code-copy:hover,
+.dark .chatbot-code-copy.copied {
+  color: #a78bfa;
+  background: #111827;
+}
+
 /* ===== @ Mention Autocomplete ===== */
 .chatbot-mention-menu {
   max-height: 280px;

@@ -48,6 +48,8 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 - Only `sh`/`bash`/`shell`/`yaml`/`yml` are extracted. Blocks without `paths=` are skipped when `skip_tabs_without_paths` is true.
 - **Tabbed content**: Use different paths per tab (e.g. `{paths="httpbin,httpbin-linux"}` and `{paths="httpbin-macos"}`) so the scenario can pick one.
 - **Multiple paths must be comma-separated** — both in fenced block info strings (`{paths="a,b"}`) and in `{{< doc-test paths="a,b" >}}` shortcodes. The extractor splits on `,`, so space-separated values (e.g. `paths="a b"`) are treated as a single path name and will never match — causing the block to be silently excluded from the generated script. This is especially dangerous for shared setup blocks (e.g. "install binary") that need to run for multiple scenarios.
+- **Display-only YAML blocks**: Some pages show YAML configs as plain display blocks (no `cat <<'EOF'` shell wrapper), unlike LLM guides that wrap configs in shell commands. You can't tag a display-only YAML block with `paths=` because it isn't a runnable shell command. Instead, add a **hidden** `{{< doc-test >}}` block that writes the config with `cat <<'EOF' > config.yaml`. See `content/docs/standalone/main/mcp/mcp-authz.md` for an example.
+- **External service dependencies**: When a config example depends on an external service that can't be trivially stood up in the test (e.g. Keycloak on port 9000, a custom OIDC provider), skip that example and only test self-contained ones. It's better to test one example well than to skip the entire page.
 
 ### 4. Long-running processes (standalone binary)
 
@@ -75,6 +77,26 @@ test:
     path: <path-name>
 ---
 ```
+
+**Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) should be marked with `test: skip` instead of a scenario dict. This counts the page as covered in the test coverage report without generating any test cases:
+
+```yaml
+---
+title: About
+test: skip
+---
+```
+
+**Before marking a page `test: skip`, consider whether the content could become testable.** The table below summarizes what it would take for each category of "non-runnable" content. If the effort is low (content-only changes), prefer making the page testable over skipping it.
+
+| Content type | Why it seems non-runnable | Path to testable | Change needed |
+|---|---|---|---|
+| Display-only YAML configs with placeholders (e.g. Auth0, provider configs) | YAML blocks aren't shell commands, placeholders reference external services | Add hidden `{{< doc-test >}}` blocks that write self-contained configs via `cat <<'EOF' > config.yaml`, start the server, and validate with `agentgateway --validate` or a YAMLTest health check. Skip examples that require real external services (IdPs, cloud APIs) and test only the self-contained subset | Content only |
+| Client config snippets (e.g. Claude Desktop JSON, VS Code settings) | Can't run the client in CI | Add hidden blocks that write the JSON to a file and validate syntax with `jq . config.json`. Catches typos and structural errors without proving the integration works end-to-end | Content only |
+| Conceptual/about pages (pure prose, no code) | No code to run | Add a minimal "try it" example at the bottom that demonstrates the concept with a working config + assertion. This is a content strategy decision — if the page's purpose is purely explanatory, `test: skip` is appropriate | Content decision |
+| Index/hub pages (`_index.md` with card links) | No code, only navigation | These are legitimately `test: skip`. The only possible validation is confirming card link targets exist, which would be a separate link-checking CI job (not a doc test) | Script change (separate job) |
+
+**Key principle:** The existing framework already supports every content type except pure link validation. Most "non-runnable" pages can become testable through content changes alone — adding hidden `{{< doc-test >}}` blocks that write configs, start services in the background, and run lightweight assertions. 
 
 Or for the latest (stable) version:
 
@@ -119,8 +141,34 @@ Example with all three:
 
 > **Do not use `jsonPath`** — the correct property name is `bodyJsonPath`. Using `jsonPath` causes `/expect: unknown property "jsonPath"` schema validation errors.
 
+#### MCP endpoint testing
+
+MCP uses JSON-RPC over HTTP, so YAMLTest works for MCP endpoints, but the request format differs from REST. To test that an MCP endpoint is up and accepting connections, send an `initialize` request:
+
+```yaml
+YAMLTest -f - <<'EOF'
+- name: MCP endpoint accepts initialize request
+  http:
+    url: "http://localhost:3000"
+    path: /mcp
+    method: POST
+    headers:
+      content-type: application/json
+      accept: "application/json, text/event-stream"
+    body: |
+      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+```
+
+For deeper assertions (e.g. verifying `tools/list` returns only authorized tools), you would need to capture the `mcp-session-id` from the initialize response and pass it as a header in subsequent requests. The authorization tutorial (`content/docs/standalone/main/tutorials/authorization/_index.md`) shows the full curl-based MCP session flow.
+
 - For Kubernetes tests, use `${INGRESS_GW_ADDRESS}` as the host in the URL (e.g. `url: "http://${INGRESS_GW_ADDRESS}:80/get"`). **Never use `kubectl port-forward`** in visible blocks — tests containing `kubectl port-forward` are automatically failed without running.
 - **Host headers must not include a port** — use `host: "example.com"`, not `host: "example.com:80"`. The gateway's hostname matching is strict: including the port causes no route match, and agentgateway resets the TCP connection (`ECONNRESET`) rather than returning an HTTP error response.
+- **Response body CEL expressions require uncompressed responses.** YAMLTest uses axios, which sends `Accept-Encoding: gzip, deflate, br` by default. If a test asserts on a response header computed from a `json(response.body)` CEL expression (e.g. `string(json(response.body).model)`), the upstream may return a compressed body that agentgateway cannot parse, causing the CEL expression to fail silently and the header to never be set. Fix by adding `accept-encoding: identity` to the YAMLTest `http.headers` to force an uncompressed response. This only affects test requests — `curl` and most API clients do not request compression by default, so user-facing examples work without the header.
 
 #### Data plane warmup for new hostnames
 
@@ -168,7 +216,7 @@ The curl loop exits as soon as the proxy returns any HTTP response (even 404) �
 
 **How to spot it in advance**: Compare the HTTPRoute `name` in the feature page's `kubectl apply` blocks vs. the HTTPRoute names created in the prereq chain. If the feature creates a new name (e.g. `httpbin-match` for `match.example`) that isn't in the prereqs, add the warmup loop + `retries: 1`. If it overwrites an existing prereq-chain HTTPRoute (same name), skip it.
 
-- For cleanup blocks tagged with a specific path, add `--ignore-not-found` to all `kubectl delete` commands. The tagged path may only create a subset of the resources the cleanup tries to delete (e.g., when a cleanup block covers resources from multiple scenarios but only one scenario runs in a given test).
+- For cleanup blocks tagged with a specific path, add `--ignore-not-found` to `kubectl delete` commands **only when the page has multiple test scenarios** and the cleanup block is shared across them (tagged with multiple paths like `paths="scenario-a,scenario-b"`). In that case, a single scenario may only create a subset of the resources the cleanup tries to delete. When a page has only one test scenario, `--ignore-not-found` is unnecessary because every resource in the cleanup was created by that scenario.
 
 ### 8. Validate YAML code blocks
 
@@ -185,6 +233,36 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
+### 10. When a test fails: fix the test or fix the content?
+
+When a test fails, determine **where the bug lives** before changing anything. There are two distinct cases:
+
+#### Case 1: Test bug, content is correct
+
+The hidden `{{< doc-test >}}` block has a mistake — wrong assertion, missing retry, bad YAMLTest schema property, missing env var setup — but the visible documentation accurately describes what the product does. **Fix only the test.** The customer-facing content stays as-is.
+
+Examples:
+- YAMLTest `wait.target` includes an unsupported property like `apiVersion` → remove the invalid property from the hidden block.
+- A shell variable (e.g. `ANTHROPIC_API_KEY`) is referenced in a tagged block but set in an untagged visible block → add a hidden `{{< doc-test >}}` block that exports the variable with a placeholder default.
+- A config_dump assertion needs more retries because the data plane takes time to propagate → increase `retries` in the hidden block.
+
+#### Case 2: Content bug, test is revealing it
+
+The visible documentation — `kubectl apply` blocks, example output, curl commands, or explanatory text — shows something that **does not actually work** as described. The test is correctly catching a real problem. **Fix the content first, then update the test to match the corrected content.** Do not silently weaken or remove test assertions to hide content bugs.
+
+Examples:
+- A documented CEL expression (e.g. `json(response.body).model`) silently fails, so a response header the docs promise never appears → the visible `kubectl apply` block and example output are misleading readers. Flag this for a content fix. Don't just remove the assertion.
+- An example YAML block has a wrong `apiVersion` or misindented field that causes the resource to behave differently than described → fix the visible YAML, then update the test.
+- An example curl command shows a response that the product doesn't actually return → fix the example output.
+
+#### How to tell the difference
+
+Ask: **"If a customer follows the visible instructions exactly, will they get the documented result?"**
+- **Yes** → Case 1. The test setup is wrong.
+- **No** → Case 2. The content needs to be corrected. Raise the issue with the content owner if you can't determine the correct fix yourself.
+
+When in doubt, flag the failure to the user rather than silently adjusting the test. A weakened assertion that hides a content bug is worse than a failing test.
+
 ---
 
 ## Checklist (quick)
@@ -193,17 +271,21 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - [ ] Multiple paths in `paths="..."` are **comma-separated**, not space-separated — `paths="a,b"` ✓, `paths="a b"` ✗ (spaces make the whole string a single path, silently excluding the block).
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
-- [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse).
+- [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse). For pages with no testable content (index pages, no code blocks), use `test: skip` instead — counts toward coverage without generating test cases.
 - [ ] When copying a test chain between `main` and `latest`, **update every `file:` path** in front matter to match the target version directory.
 - [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
 - [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.
 - [ ] Host headers in YAMLTest `http.headers` use bare hostnames — no port suffix (e.g. `host: "example.com"`, not `host: "example.com:80"`). Including a port causes ECONNRESET, not an HTTP error.
 - [ ] If the test creates an HTTPRoute with a hostname **not already in the prereq chain**, use the two-phase warmup fix: (1) add a curl warmup loop `{{< doc-test >}}` block before the YAMLTest block (`for i in $(seq 1 60); do curl -s --max-time 5 ... && break; sleep 2; done`) to cover Phase 1 (~120s of immediate resets), AND (2) add `retries: 1` to the **first** HTTP assertion in YAMLTest to absorb Phase 2 (4–26s hold then reset). Do **not** use `retries: 3` or higher without the warmup loop — it multiplies the total wait time.
-- [ ] Cleanup blocks tagged with a path use `--ignore-not-found` on all `kubectl delete` commands.
+- [ ] Cleanup blocks on multi-scenario pages (where the cleanup is shared across paths) use `--ignore-not-found` on `kubectl delete` commands. Single-scenario pages do not need it.
 - [ ] YAMLTest `expect:` uses `bodyJsonPath` (not `jsonPath`) for response body assertions; all keys under `expect:` are at the same indentation level.
 - [ ] YAML code blocks tagged with `paths=` have correct indentation — list items nested under a mapping key (e.g. `filters`, `matches`, `rules`) must be indented 2+ spaces past the key, not at the same level.
+- [ ] Display-only YAML blocks (no shell wrapper) are **not** tagged with `paths=` — use a hidden `{{< doc-test >}}` block with `cat <<'EOF' > config.yaml` instead.
+- [ ] For MCP endpoint tests, use a JSON-RPC `initialize` request (not a simple GET) — see the MCP endpoint testing section above.
+- [ ] Examples that depend on external services (auth servers, rate limit services) that can't be stood up in the test are skipped — only self-contained examples are tested.
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
+- [ ] When fixing a failing test, verified whether the bug is in the test or in the customer-facing content. If the content is wrong, fix the content first — don't silently weaken assertions.
 
 ---
 

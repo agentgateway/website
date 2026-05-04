@@ -1,4 +1,4 @@
-[Argo Rollouts](https://argoproj.github.io/rollouts/) is a Kubernetes controller that provides advanced deployment capabilities such as blue-green, canary, canary analysis, experimentation, and progressive delivery features to Kubernetes. Because Argo Rollouts supports the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, you can use Argo Rollouts to control how traffic is split and forwarded from the proxies that kgateway v2 manages to the apps in your cluster. 
+[Argo Rollouts](https://argoproj.github.io/rollouts/) is a Kubernetes controller that provides advanced deployment capabilities such as blue-green, canary, canary analysis, experimentation, and progressive delivery features to Kubernetes. Because Argo Rollouts supports the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}}, you can use Argo Rollouts to control how traffic is split and forwarded from the proxies that agentgateway manages to the apps in your cluster. 
 
 ## Before you begin 
 
@@ -12,7 +12,14 @@
    kubectl apply -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
    ```
 
-2. Change the config map for the Argo Rollouts pod to install the Argo Rollouts Gateway API plug-in as shown in the following example. Alternatively, you could install the Argo Rollouts Helm chart instead to use init containers to achieve the same thing. For more information about either method, refer to the [Argo Rollouts docs](https://rollouts-plugin-trafficrouter-gatewayapi.readthedocs.io/en/v0.8.0/installation/).
+2. Change the config map for the Argo Rollouts pod to install the Argo Rollouts Gateway API plug-in as shown in the following example. Alternatively, you could install the Argo Rollouts Helm chart instead to use init containers to achieve the same thing. For more information about either method, refer to the [Argo Rollouts docs](https://rollouts-plugin-trafficrouter-gatewayapi.readthedocs.io/en/v0.11.0/installation/).
+
+   {{< callout type="info" >}}
+   This configuration is only an example. Ensure you use the correct plugin binary for your platform, such as amd64 or arm64. For more platform and version options, refer to the [releases of the Argo rollouts traffic router plugin for the Gateway API](https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases).
+   {{< /callout >}}
+
+   {{< tabs items="Linux amd64, Linux arm64" tabTotal="2" >}}
+   {{% tab tabName="Linux amd64" %}}
    ```yaml
    cat <<EOF | kubectl apply -f -
    apiVersion: v1
@@ -23,12 +30,32 @@
    data:
      trafficRouterPlugins: |-
        - name: "argoproj-labs/gatewayAPI"
-	     # example uses amd64 and v0.8.0
+	     # example uses amd64 and v0.11.0
 	     # for other builds and versions,
-		 # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
-         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.8.0/gatewayapi-plugin-amd64"
+	     # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
+         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.11.0/gatewayapi-plugin-amd64"
    EOF
    ```
+   {{% /tab %}}
+   {{% tab tabName="Linux arm64" %}}
+   ```yaml
+   cat <<EOF | kubectl apply -f -
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: argo-rollouts-config
+     namespace: argo-rollouts
+   data:
+     trafficRouterPlugins: |-
+       - name: "argoproj-labs/gatewayAPI"
+	     # example uses arm64 and v0.11.0
+	     # for other builds and versions,
+	     # see https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases
+         location: "https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases/download/v0.11.0/gatewayapi-plugin-linux-arm64"
+   EOF
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Restart the Argo Rollouts pod to pick up the latest configuration changes. 
    ```sh
@@ -78,215 +105,274 @@
 
 ## Set up a rollout
 
-1. Create a stable and canary service for the `rollouts-demo` pod that you deploy in the next step.  
+1. Create a stable and canary service for the `httpbun` pod that you deploy in the next step.  
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: Service
    metadata:
-     name: argo-rollouts-stable-service
+     name: httpbun-stable-service
      namespace: default
+     labels:
+       app: httpbun
+       version: v1
    spec:
-     ports:
-       - port: 80
-         targetPort: http
-         protocol: TCP
-         name: http
      selector:
-       app: rollouts-demo
+       app: httpbun
+     ports:
+       - protocol: TCP
+         port: 3090
+         targetPort: 3090
+     type: ClusterIP
    ---
    apiVersion: v1
    kind: Service
    metadata:
-     name: argo-rollouts-canary-service
+     name: httpbun-canary-service
      namespace: default
+     labels:
+       app: httpbun
    spec:
-     ports:
-       - port: 80
-         targetPort: http
-         protocol: TCP
-         name: http
      selector:
-       app: rollouts-demo
+       app: httpbun
+     ports:
+       - protocol: TCP
+         port: 3090
+         targetPort: 3090
+     type: ClusterIP
    EOF
    ```
 
-2. Create an Argo Rollout that deploys the `rollouts-demo` pod. Add your stable and canary services to the `spec.strategy.canary` section. 
+2. Create an Argo Rollout that deploys the `httpbun` pod. Add your stable and canary services to the `spec.strategy.canary` section. 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: argoproj.io/v1alpha1
    kind: Rollout
    metadata:
-     name: rollouts-demo
+     name: httpbun-rollout
      namespace: default
+     labels:
+       app: httpbun
    spec:
-     replicas: 3
-     strategy:
-       canary:
-         canaryService: argo-rollouts-canary-service # our created canary service
-         stableService: argo-rollouts-stable-service # our created stable service
-         trafficRouting:
-           plugins:
-             argoproj-labs/gatewayAPI:
-               httpRoute: argo-rollouts-http-route 
-               namespace: default
-         steps:
-         - setWeight: 30
-         - pause: { duration: 30s }
-         - setWeight: 60
-         - pause: { duration: 30s }
-         - setWeight: 100
-         - pause: { duration: 30s }
-     revisionHistoryLimit: 2
+     replicas: 2
      selector:
        matchLabels:
-         app: rollouts-demo
+         app: httpbun
      template:
        metadata:
          labels:
-           app: rollouts-demo
+           app: httpbun
        spec:
          containers:
-           - name: rollouts-demo
-             image: kostiscodefresh/summer-of-k8s-app:v1
+           - name: httpbun
+             image: sharat87/httpbun
+             env:
+               - name: HTTPBUN_BIND
+                 value: "0.0.0.0:3090"
              ports:
-               - name: http
-                 containerPort: 8080
-                 protocol: TCP
-             resources:
-               requests:
-                 memory: 32Mi
-                 cpu: 5m
+               - containerPort: 3090
+     strategy:
+       canary:
+         stableService: httpbun-stable-service
+         canaryService: httpbun-canary-service
+         trafficRouting:
+           plugins:
+             argoproj-labs/gatewayAPI:
+               httpRoute: httpbun-http-route
+               namespace: default
+         steps:
+           - setWeight: 30
+           - pause: {}
+           - setWeight: 60
+           - pause: { duration: 30s }
+           - setWeight: 100
    EOF
    ```
 
-2. Create an HTTPRoute resource to expose the `rollouts-demo` pod on the HTTP gateway that you created as part of the [Get started guide]({{< link-hextra path="/quickstart">}}). The HTTP resource can serve both the stable and canary versions of your app. 
+3. Create an HTTPRoute resource to expose the `httpbun` pod on the HTTP gateway that you created as part of the [Get started guide]({{< link-hextra path="/quickstart">}}). The HTTP resource can serve both the stable and canary versions of your app. 
    ```yaml
    kubectl apply -f- <<EOF
-   kind: HTTPRoute
    apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
    metadata:
-     name: argo-rollouts-http-route
+     name: httpbun-http-route
      namespace: default
    spec:
      parentRefs:
-       - name: http
-         namespace: kgateway-system
-     hostnames:
-     - "demo.example.com"
+       - name: agentgateway-proxy
+         namespace: agentgateway-system
      rules:
-     - matches:
-       - path:
-           type: PathPrefix
-           value: /  
-       backendRefs:
-       - name: argo-rollouts-stable-service
-         kind: Service
-         port: 80
-       - name: argo-rollouts-canary-service
-         kind: Service
-         port: 80
+       - matches:
+           - path:
+               type: PathPrefix
+               value: /llm/chat/completions
+         backendRefs:
+           - name: httpbun-stable-service
+             kind: Service
+             port: 3090
+           - name: httpbun-canary-service
+             kind: Service
+             port: 3090
    EOF
    ```
-
-3. Send a request to the `rollouts-demo` app and verify your CLI output.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab  %}}
+3. Send a request to the `httpbun` app and verify your CLI output.
+   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
+   {{% tab tabName="Cloud Provider LoadBalancer" %}}
    1. Get the external address of the gateway and save it in an environment variable.
-      ```sh
-      export INGRESS_GW_ADDRESS=$(kubectl get svc -n kgateway-system http -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
-      echo $INGRESS_GW_ADDRESS
-      ```
-   
-   2. Send a request to the `rollouts-demo` app and verify that you see the `ver: 1.0` response from the stable service. 
-      ```sh
-      curl http://$INGRESS_GW_ADDRESS:8080/callme -H "host: demo.example.com:8080"
-      ```
-
-      Example output: 
-      ```console
-      <div class='pod' style='background:#44B3C2'> ver: 1.0
-      </div>%
-      ```
+        ```bash
+        export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
+          -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+        echo $INGRESS_GW_ADDRESS
+        ```
+   2. Send a standard chat completion Non-streaming request.
+       ```bash
+       curl -s http://$INGRESS_GW_ADDRESS/llm/chat/completions \
+         -H "Content-Type: application/json" \
+         -d '{
+           "model": "gpt-4",
+           "messages": [
+             {"role": "user", "content": "Explain agentgateway in one sentence."}
+           ]
+         }' | jq
+       ```
+       Example output:
+       ```json
+       {
+         "id": "chatcmpl-abc123",
+         "object": "chat.completion",
+         "created": 1748000000,
+         "model": "gpt-4",
+         "choices": [
+           {
+             "index": 0,
+             "message": {
+               "role": "assistant",
+               "content": "This is a mock response from httpbun."
+             },
+             "finish_reason": "stop"
+           }
+         ],
+         "usage": {
+           "prompt_tokens": 10,
+           "completion_tokens": 8,
+           "total_tokens": 18
+         }
+       }
+       ```
    {{% /tab %}}
-   {{% tab  %}}
-   3. Port-forward the `http` pod on port 8080. 
-      ```sh
-      kubectl port-forward deployment/http -n kgateway-system 8080:8080
-      ```
-   
-   4. Send a request to the `rollouts-demo` app and verify that you see the `ver: 1.0` response from the stable service.
-      ```sh
-      curl -vi localhost:8080/callme -H "host: demo.example.com"
-      ```
-
-      Example output: 
-      ```console
-      <div class='pod' style='background:#44B3C2'> ver: 1.0
-      </div>%
-      ```
-
+   {{% tab tabName="Port-forward for local testing" %}}
+   1. Port-forward the gateway proxy `http` pod on port 8080.
+       ```bash
+       kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
+       ```
+   2. Send a standard chat completion Non-streaming request.
+       ```bash
+       curl -s http://localhost:8080/llm/chat/completions \
+         -H "Content-Type: application/json" \
+         -d '{
+           "model": "gpt-4",
+           "messages": [
+             {"role": "user", "content": "Explain agentgateway in one sentence."}
+           ]
+         }' | jq
+       ```
+       Example output:
+       ```json
+       {
+         "id": "chatcmpl-abc123",
+         "object": "chat.completion",
+         "created": 1748000000,
+         "model": "gpt-4",
+         "choices": [
+           {
+             "index": 0,
+             "message": {
+               "role": "assistant",
+               "content": "This is a mock response from httpbun."
+             },
+             "finish_reason": "stop"
+           }
+         ],
+         "usage": {
+           "prompt_tokens": 10,
+           "completion_tokens": 8,
+           "total_tokens": 18
+         }
+       }
+       ```
    {{% /tab %}}
    {{< /tabs >}}
 
-4. Change the manifest to use the `v2` tag to start a rollout of your app. Argo Rollouts automatically starts splitting traffic between version 1 and version 2 of the app for the duration of the rollout.
-   ```sh
-   kubectl patch rollout rollouts-demo -n default \
-     --type='json' -p='[{"op": "replace", "path": "/spec/template/spec/containers/0/image", "value":"kostiscodefresh/summer-of-k8s-app:v2"}]'
-   ```
+## Test the promotion
 
-5. Send another request to your app. Because traffic is split between version 1 and version 2 of the app, you see responses from both app versions until the rollout is completed.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab  %}}
+{{< callout type="info" >}}
+Make sure you have installed the [argo-rollouts](https://argo-rollouts.readthedocs.io/en/stable/installation/#kubectl-plugin-installation) extension for kubectl.
+{{< /callout >}}
+
+1. Verify `httpbun` image.
    ```bash
-   while true; do curl -H "host: demo.example.com" $INGRESS_GW_ADDRESS:8080/callme; done     
+   kubectl get pod httpbun -o yaml | grep image:
+   ```
+   Example output:
+   ```shell
+   image: sharat87/httpbun
+   image: docker.io/sharat87/httpbun
    ```
 
-   Example output: 
-   ```console
-   <div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
+2. Check the weight difference between the stable and canary service.
+   ```shell
+   kubectl get httproute httpbun-http-route -o yaml
    ```
-   {{% /tab %}}
-   {{% tab  %}}
+   Or use the following command to watch the promotion progress in real time.
+   ```shell
+   kubectl argo rollouts get rollout httpbun-rollout --watch
+   ```
+
+3. Change the manifest to use a other image to start a rollout of your app. Argo Rollouts automatically starts splitting traffic between version 1 and version 2 of the app for the duration of the rollout.
    ```sh
-   while true; do curl localhost:8080/callme -H "host: demo.example.com"; done
+   kubectl argo rollouts set image httpbun-rollout httpbun=sharat87/httpbun:latest
    ```
-   Example output: 
-   ```console
-   <div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#44B3C2'> ver: 1.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   </div><div class='pod' style='background:#F1A94E'> ver: 2.0
-   ```
-   {{% /tab %}}
-   {{< /tabs >}}
 
-Congratulations, you successfully rolled out a new version of your app without downtime by using the HTTP gateway that is managed by kgateway v2. After a rollout, you typically perform tasks such as the following: 
+4. Promote the rollout.
+   ```sh
+   kubectl argo rollouts promote httpbun-rollout
+   ```
+
+5. Check the weight difference between the stable and canary services again to verify the traffic split.
+   ```shell
+   kubectl get httproute httpbun-http-route -o jsonpath='{.spec.rules[0].backendRefs}' | jq
+   ```
+   Example Output:
+   ```shell
+   [
+     {
+       "group": "",
+       "kind": "Service",
+       "name": "httpbun-stable-service",
+       "port": 3090,
+       "weight": 70
+     },
+     {
+       "group": "",
+       "kind": "Service",
+       "name": "httpbun-canary-service",
+       "port": 3090,
+       "weight": 30
+     }
+   ]
+   ```
+
+6. Check that the `httpbun` Pod is running the `latest` image.
+   ```bash
+   k get pod httpbun -o yaml | grep image:
+   ```
+   Example output:
+   ```shell
+   image: sharat87/httpbun:latest
+   image: docker.io/sharat87/httpbun:latest
+   ```
+
+Congratulations, you successfully rolled out a new version of your app without downtime by using the HTTP gateway that is managed by agentgateway. After a rollout, you typically perform tasks such as the following: 
 
 - **Testing**: Conduct thorough testing of your app to ensure that it functions correctly after the rollout.
 - **Monitoring**: Monitor your application to detect any issues that may arise after the rollout. 
@@ -303,17 +389,17 @@ Congratulations, you successfully rolled out a new version of your app without d
 
 1. Remove the HTTPRoute. 
    ```sh
-   kubectl delete httproute argo-rollouts-http-route
+   kubectl delete httproute httpbun-http-route
    ```
 
 2. Remove the Argo Rollout.
    ```sh
-   kubectl delete rollout rollouts-demo
+   kubectl delete rollout httpbun-rollout
    ```
 
 3. Remove the stable and canary services. 
    ```sh
-   kubectl delete services argo-rollouts-canary-service argo-rollouts-stable-service
+   kubectl delete services httpbun-canary-service httpbun-stable-service
    ```
 
 4. Remove the cluster role for the Argo Rollouts pod. 
@@ -331,4 +417,3 @@ Congratulations, you successfully rolled out a new version of your app without d
    kubectl delete -n argo-rollouts -f https://github.com/argoproj/argo-rollouts/releases/latest/download/install.yaml
    kubectl delete namespace argo-rollouts
    ```
-

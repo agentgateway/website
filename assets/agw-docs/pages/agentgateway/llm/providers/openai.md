@@ -20,8 +20,8 @@ The following example uses OpenAI. If you use another AI provider, create an API
 
 2. Save the API key in an environment variable.
 
-   ```sh {paths="openai-setup"}
-   export OPENAI_API_KEY=${OPENAI_API_KEY:-<insert your API key>}
+   ```sh
+   export OPENAI_API_KEY='<your-api-key>'
    ```
 
 3. Create a Kubernetes secret to store your AI API key.

@@ -1,0 +1,35 @@
+{{/* Previous/Next navigation */}}
+
+{{- $prev := .NextInSection -}}
+{{- $next := .PrevInSection -}}
+
+{{- if eq .Params.prev false }}{{ $prev = false }}{{ end -}}
+{{- if eq .Params.next false }}{{ $next = false }}{{ end -}}
+
+{{- if or $prev $next -}}
+<style>
+  .pager { margin-bottom: 2rem; display: flex; align-items: center; border-top: 1px solid #e5e7eb; padding-top: 2rem; }
+  .pager a { display: flex; max-width: 50%; align-items: center; gap: 0.25rem; padding: 1rem 0; font-size: 1rem; font-weight: 500; color: #4b5563; text-decoration: none; transition: color 0.15s; word-break: break-word; }
+  .pager a:hover { color: #7c3aed; }
+  .pager .pager-next { margin-left: auto; text-align: right; padding-left: 1rem; }
+  .pager .pager-prev { padding-right: 1rem; }
+  .pager svg { display: inline; height: 1.25rem; width: 1.25rem; flex-shrink: 0; }
+  .dark .pager { border-top-color: #374151; }
+  .dark .pager a { color: #d1d5db; }
+  .dark .pager a:hover { color: #a78bfa; }
+</style>
+<div class="pager">
+  {{- if $prev -}}
+    <a href="{{ $prev.RelPermalink }}" class="pager-prev" title="{{ $prev.Title }}">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
+      {{ $prev.Title }}
+    </a>
+  {{- end -}}
+  {{- if $next -}}
+    <a href="{{ $next.RelPermalink }}" class="pager-next" title="{{ $next.Title }}">
+      {{ $next.Title }}
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+    </a>
+  {{- end -}}
+</div>
+{{- end -}}

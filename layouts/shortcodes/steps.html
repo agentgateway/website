@@ -1,0 +1,24 @@
+{{- /*
+  Shortcode: steps
+  Wraps content in a step container with a vertical line and auto-numbered headings.
+  Each h3 (or h2/h4/h5/h6) inside gets a numbered circle marker.
+
+  Parameters: none
+
+  Example:
+    {{% steps %}}
+    ### Step one
+    Content for step one.
+
+    ### Step two
+    Content for step two.
+    {{% /steps %}}
+*/ -}}
+<div class="hextra-steps" style="margin-left: 1rem; margin-bottom: 3rem; border-left: 1px solid #e5e7eb; padding-left: 1.5rem; counter-reset: step;">
+  {{- .Inner -}}
+</div>
+<style>
+  .dark .hextra-steps {
+    border-left-color: #374151 !important;
+  }
+</style>

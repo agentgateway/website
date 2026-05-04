@@ -1,7 +1,7 @@
 ---
 title: Helm value reference
 weight: 20
-description: 
+description:
 ---
 
 ## Download the Helm chart {#download}
@@ -27,7 +27,3 @@ You can download the Helm chart to review the Helm values that are supported.
 
 Review the documentation for the following Helm charts.
 
-{{< cards >}}
-  {{< card link="agentgateway" title="agentgateway" >}}
-  {{< card link="agentgateway-crds." title="agentgateway-crds" >}}
-{{< /cards >}}

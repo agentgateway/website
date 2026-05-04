@@ -2,6 +2,7 @@
 title: "Ingress NGINX"
 description: "How ingress-nginx annotations map to Gateway API + agentgateway resources"
 weight: 30
+test: skip
 ---
 
 The `ingress-nginx` provider defines the source resources to be translated, e.g. an Ingress resource with Ingress NGINX-specific annotations.

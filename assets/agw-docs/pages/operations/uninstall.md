@@ -5,7 +5,7 @@ If you no longer need your {{< reuse "/agw-docs/snippets/kgateway.md" >}} enviro
 Remove the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and gateway proxies.
 
 {{< callout type="info" >}}
-Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Skip to the [Argo CD steps](#argocd).
+Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Skip to the [Argo CD steps](#argocd). For Flux installations, skip to the [Flux steps](#flux).
 {{< /callout >}}
 
 1. Get all HTTP routes in your environment. 
@@ -44,35 +44,41 @@ Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? S
    kubectl delete -n <namespace> gateway <gateway-name>
    ```
 
+{{< doc-test paths="uninstall" >}}
+kubectl delete gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete httproutes --all -A --ignore-not-found
+kubectl delete referencegrants --all -A --ignore-not-found
+{{< /doc-test >}}
+
 7. Uninstall the control plane.
    
    1. Uninstall the {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} Helm release.
       
-      ```sh
+      ```sh {paths="uninstall"}
       helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    2. Delete the CRDs.
 
-      ```sh
+      ```sh {paths="uninstall"}
       helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    3. Remove the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace. 
       
-      ```sh
+      ```sh {paths="uninstall"}
       kubectl delete namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    4. Confirm that the CRDs are deleted.
 
-      ```sh
-      kubectl get crds | grep {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}
+      ```sh {paths="uninstall"}
+      kubectl get crds | grep {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} || true
       ```
 
 8. Remove the Kubernetes Gateway API CRDs. If you installed a different version or channel of the Kubernetes Gateway API, update the following command accordingly.
    
-   ```sh
+   ```sh {paths="uninstall"}
    kubectl delete -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
 
@@ -171,4 +177,41 @@ For ArgoCD installations, use the following steps to clean up your environment.
 {{% /tab %}}
 {{< /tabs >}}
 
+## Uninstall with FluxCD {#flux}
+
+If you followed the [Flux installation steps]({{< link-hextra path="/install/flux" >}}) and want to uninstall, use the following steps to undo them. If you instead manage the manifests from a Git or OCI source that Flux reconciles, remove them from that source and let the controllers prune the resources for you.
+
+1. Delete the {{< reuse "/agw-docs/snippets/kgateway.md" >}} `HelmRelease` and `OCIRepository` resources. Flux uninstalls the corresponding Helm releases from the cluster.
+
+   ```sh
+   kubectl delete helmrelease -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+   kubectl delete ocirepository -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+   ```
+
+2. Verify that the pods were removed from the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace.
+
+   ```sh
+   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+   Example output:
+   ```txt
+   No resources found in {{< reuse "agw-docs/snippets/namespace.md" >}} namespace.
+   ```
+
+3. Remove the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace.
+
+   ```sh
+   kubectl delete namespace {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+4. Delete the Kubernetes Gateway API `Kustomization` and `GitRepository`. Because the `Kustomization` was created with `prune: true`, Flux removes the Gateway API CRDs from the cluster. Then remove the `gateway-api` namespace.
+
+   ```sh
+   kubectl delete kustomization -n gateway-api gateway-api
+   kubectl delete gitrepository -n gateway-api gateway-api
+   kubectl delete namespace gateway-api
+   ```
+
+5. If you no longer need Flux, uninstall it by following the [Flux uninstallation guide](https://fluxcd.io/flux/installation/uninstall/) or, if you installed it with the Flux Operator, the [Flux Operator uninstall guide](https://fluxoperator.dev/docs/guides/install/#uninstall).
 

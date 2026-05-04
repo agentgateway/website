@@ -1,5 +1,5 @@
 ---
-title: OAuth2 Proxy Integration
+title: OAuth2 proxy integration
 weight: 10
 description: Integrate with OAuth2 Proxy for GitHub, Google, and other OAuth providers
 ---
@@ -193,7 +193,7 @@ After authenticating, check the agentgateway logs:
 
 ```
 ┌──────────┐     ┌──────────────┐     ┌─────────────┐     ┌────────┐
-│  Client  │────▶│agentgateway │────▶│OAuth2 Proxy │────▶│ GitHub │
+│  Client  │────▶│ agentgateway │────▶│OAuth2 Proxy │────▶│ GitHub │
 └──────────┘     └──────────────┘     └─────────────┘     └────────┘
      │                  │                    │                 │
      │ 1. Request /mcp  │                    │                 │
@@ -205,11 +205,11 @@ After authenticating, check the agentgateway logs:
      │ 4. 302 Redirect  │                    │                 │
      │◀─────────────────│                    │                 │
      │ 5. Login page    │                    │                 │
-     │─────────────────────────────────────▶│                 │
+     │─────────────────────────────────────▶ │                 │
      │                  │                    │ 6. OAuth flow   │
      │                  │                    │◀───────────────▶│
      │ 7. Set cookie    │                    │                 │
-     │◀────────────────────────────────────│                 │
+     │◀────────────────────────────────────  │                 │
      │ 8. Request /mcp  │                    │                 │
      │  (with cookie)   │                    │                 │
      │─────────────────▶│                    │                 │

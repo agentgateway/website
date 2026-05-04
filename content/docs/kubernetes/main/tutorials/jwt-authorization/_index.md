@@ -1,5 +1,5 @@
 ---
-title: JWT Authorization
+title: JWT authorization
 weight: 5
 description: Secure agentgateway with JWT authentication and fine-grained access control on Kubernetes
 ---
@@ -269,5 +269,4 @@ kind delete cluster --name agentgateway
 {{< cards >}}
   {{< card path="/security/jwt/" title="JWT Reference" subtitle="Complete JWT configuration options" >}}
   {{< card path="/mcp/tool-access" title="Tool Access Control" subtitle="Control MCP tool access with JWT claims" >}}
-  {{< card path="/tutorials/ai-prompt-guard" title="AI Prompt Guard" subtitle="Block sensitive data in LLM requests" >}}
 {{< /cards >}}

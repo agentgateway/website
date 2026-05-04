@@ -1,5 +1,5 @@
 ---
-title: "macOS Installation"
+title: "macOS installation"
 weight: 10
 ---
 

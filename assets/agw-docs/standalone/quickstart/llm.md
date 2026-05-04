@@ -4,7 +4,7 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   {{< tabs items="Latest,Specific version" tabTotal="2">}}
+   {{< tabs items="Latest,Specific version,Nightly build" tabTotal="3">}}
 {{% tab tabName="Latest" %}}
 
 To install the latest release:
@@ -16,11 +16,47 @@ curl -sL https://agentgateway.dev/install | bash
 {{% /tab %}}
 {{% tab tabName="Specific version" %}}
 
-To install a specific version, such as the development version `{{< reuse "agw-docs/versions/patch-dev.md" >}}`, include the `--version` flag:
+To install a specific version, pass the `--version` flag. Use any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), such as `{{< reuse "agw-docs/versions/n-patch.md" >}}`.
 
 ```sh
-curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-docs/versions/patch-dev.md" >}}
+curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
+{{% /tab %}}
+{{% tab tabName="Nightly build" %}}
+
+To install the nightly build for development and testing:
+
+1. Go to the [nightly release in GitHub Actions](https://github.com/agentgateway/agentgateway/actions/workflows/nightly.yml) and click the release that you want to use.
+2. From the URL, get the release number, such as `24873456345` in `https://github.com/agentgateway/agentgateway/actions/runs/24873456345`.
+3. Using the `gh` CLI, download the release for your OS. The following example uses macOS.
+
+   ```sh
+   gh run download 24873456345 -R agentgateway/agentgateway -n release-binary-mac
+   ```
+
+4. Make the binary file executable and move it to your binary location, such as in the following example.
+   
+   ```sh
+   chmod +x agentgateway
+   sudo mv agentgateway /usr/local/bin/agentgateway
+   ```
+
+5. Verify that you have the nightly release.
+
+   ```sh
+   agentgateway --version
+   ```
+
+   Example output:
+   ```json
+   {
+     "version": "0.0.0-alpha.813d7d0",
+     "git_revision": "813d7d0ab4757db7c8ed5a639bc63c0bb20ac116",
+     "rust_version": "1.95.0",
+     "build_profile": "release",
+     "build_target": "aarch64-apple-darwin"
+   }
+   ```
 {{% /tab %}}
    {{< /tabs >}}
 
@@ -28,7 +64,7 @@ curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-
 # For CI/tests: install dev version to local bin without sudo
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
 BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
 curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"
@@ -46,8 +82,8 @@ Route to an OpenAI backend through agentgateway.
 
 Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
 
-```sh {paths="llm"}
-export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
+```sh
+export OPENAI_API_KEY='<your-api-key>'
 ```
 
 ### Step 2: Create the configuration

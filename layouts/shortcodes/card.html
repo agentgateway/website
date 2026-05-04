@@ -1,50 +1,55 @@
+{{- /*
+  Shortcode: card
+  Renders a styled card link with an optional icon or image, title, and subtitle, with section-aware URL resolution via the "path" parameter.
+
+  Parameters:
+    - link: (optional) A direct URL for the card link (used as-is).
+    - path: (optional) A section-relative path resolved to the current docs section (e.g., "/tutorials/basic/").
+    - title: The card title (aliased as "header").
+    - subtitle: (optional) A short description below the title (aliased as "description"); supports Markdown.
+    - icon: (optional) The name of an icon to display (rendered via the utils/icon partial).
+    - image: (optional) An image URL to display at the top of the card.
+    - alt: (optional) Alt text for the image; defaults to the title.
+
+  Example: {{< card title="Getting Started" subtitle="Learn the basics" path="/getting-started/" icon="rocket" >}}
+*/ -}}
 {{- $link := .Get "link" -}}
 {{- $path := .Get "path" -}}
 {{- if $path }}
   {{- $pathTrimmed := strings.TrimPrefix "/" $path -}}
   {{- $section := "" -}}
-  {{- with findRE `^/docs/(?:kubernetes|standalone)/(?:latest|main)` .Page.RelPermalink }}{{ $section = index . 0 }}{{ end -}}
+  {{- with findRE `^/docs/(?:kubernetes|standalone)/(?:latest|main|\d+\.\d+\.[x\d]+)` .Page.RelPermalink }}{{ $section = index . 0 }}{{ end -}}
   {{- if not $section }}{{ $section = strings.TrimSuffix "/" .Page.FirstSection.RelPermalink }}{{ end -}}
   {{- $section = replaceRE `^https?://[^/]+` "" $section -}}
   {{- $section = replaceRE `^/localhost:[^/]+` "" $section -}}
   {{- if not (hasPrefix $section "/") }}{{ $section = printf "/%s" $section }}{{ end -}}
   {{- $link = printf "%s/%s" $section $pathTrimmed -}}
-  {{- if not (strings.HasSuffix $link "/") }}{{ $link = printf "%s/" $link }}{{ end -}}
+  {{- if and (not (strings.HasSuffix $link "/")) (not (in $link "#")) }}{{ $link = printf "%s/" $link }}{{ end -}}
   {{- range (seq 10) }}{{ $link = replace $link "//" "/" }}{{ end -}}
 {{- end -}}
 
-{{- if templates.Exists "partials/shortcodes/card.html" -}}
-  {{- partial "shortcodes/card" (dict
-    "page" .Page
-    "link" $link
-    "title" (.Get "title" | default (.Get "header"))
-    "icon" (.Get "icon")
-    "subtitle" (.Get "subtitle" | default (.Get "description"))
-    "image" (.Get "image")
-    "alt" (.Get "alt" | default (.Get "title") | default (.Get "header"))
-    "width" 0
-    "height" 0
-    "imageStyle" (.Get "imageStyle")
-    "tag" (.Get "tag")
-    "tagColor" (.Get "tagColor")
-    "tagType" (.Get "tagColor")
-    "tagBorder" (not (eq (.Get "tagBorder") false))
-    "tagIcon" (.Get "tagIcon")
-  ) -}}
-{{- else -}}
-  {{- $title := .Get "title" | default (.Get "header") -}}
-  {{- $subtitle := .Get "subtitle" | default (.Get "description") -}}
-  {{- $icon := .Get "icon" -}}
-  {{- $image := .Get "image" -}}
-  {{- $alt := .Get "alt" | default $title -}}
-  <a class="hextra-card flex flex-col hx:rounded-xl hx:border hx:border-gray-200 hx:bg-white hx:p-4 hx:shadow-sm hx:transition-colors hx:dark:border-neutral-800 hx:dark:bg-neutral-900" href="{{ $link }}">
-    {{- if $image }}
-    <div class="hextra-card-image hx:mb-4 hx:flex hx:justify-center">
-      <img src="{{ $image }}" alt="{{ $alt }}" class="hx:max-h-16 hx:w-auto hx:object-contain" />
-    </div>
-    {{- end -}}
-    {{- if $icon }}{{ partial "utils/icon.html" (dict "name" $icon "attributes" "class='hx:mb-2 hx:size-6'") }}{{ end -}}
-    {{- if $title }}<p class="hx:font-semibold hx:text-primary">{{ $title }}</p>{{ end -}}
-    {{- if $subtitle }}<p class="hextra-card-subtitle hx:mt-1 hx:text-sm hx:text-gray-500 hx:dark:text-gray-400">{{ $subtitle | markdownify }}</p>{{ end -}}
-  </a>
-{{- end -}}
+{{- $title := .Get "title" | default (.Get "header") -}}
+{{- $subtitle := .Get "subtitle" | default (.Get "description") -}}
+{{- $icon := .Get "icon" -}}
+{{- $image := .Get "image" -}}
+{{- $alt := .Get "alt" | default $title -}}
+<style>
+  .hextra-card-styled { display: flex; flex-direction: column; justify-content: start; overflow: hidden; border-radius: 0.5rem; border: 1px solid #d1d5db; padding: 1rem; min-height: 7rem; text-decoration: none; color: inherit; transition: all 0.2s ease; background: transparent; }
+  .hextra-card-styled:hover { border-color: #9ca3af; background: #f8fafc; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07); }
+  .dark .hextra-card-styled { border-color: #374151; }
+  .dark .hextra-card-styled:hover { border-color: #4b5563; background: rgba(255,255,255,0.03); }
+  .hextra-card-styled .card-title { font-weight: 600; color: #374151; }
+  .dark .hextra-card-styled .card-title { color: #e5e7eb; }
+  .hextra-card-styled .card-subtitle { margin-top: 0.5rem; font-size: 0.875rem; line-height: 1.4; color: #6b7280; }
+  .dark .hextra-card-styled .card-subtitle { color: #9ca3af; }
+</style>
+<a class="hextra-card hextra-card-styled" href="{{ $link }}">
+  {{- if $image }}
+  <div style="margin-bottom: 1rem; display: flex; justify-content: center;">
+    <img src="{{ $image }}" alt="{{ $alt }}" style="max-height: 4rem; width: auto; object-fit: contain;" loading="lazy" />
+  </div>
+  {{- end -}}
+  {{- if $icon }}{{ partial "utils/icon.html" (dict "name" $icon "attributes" "style='width:1.5rem;height:1.5rem;margin-bottom:0.5rem;'") }}{{ end -}}
+  {{- if $title }}<span class="card-title">{{ $title }}</span>{{ end -}}
+  {{- if $subtitle }}<p class="card-subtitle">{{ $subtitle | markdownify }}</p>{{ end -}}
+</a>
