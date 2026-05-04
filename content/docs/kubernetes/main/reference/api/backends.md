@@ -9,5 +9,5 @@ description: Use AgentgatewayBackends to configure the target services that agen
 ## Reference
 
 <div style="--ks-sticky-top: 7rem;">
-{{< readfile file="content/apis/agentgateway.dev_agentgatewaybackends.yaml.html" >}}
+{{< readfile file="assets/agw-docs/pages/reference/api/main/agentgateway.dev_agentgatewaybackends.yaml.html" >}}
 </div>

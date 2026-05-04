@@ -9,5 +9,5 @@ description: Use AgentgatewayPolicy to manipulate traffic, configurable observab
 ## Reference
 
 <div style="--ks-sticky-top: 7rem;">
-{{< readfile file="content/apis/agentgateway.dev_agentgatewaypolicies.yaml.html" >}}
+{{< readfile file="assets/agw-docs/pages/reference/api/latest/agentgateway.dev_agentgatewaypolicies.yaml.html" >}}
 </div>

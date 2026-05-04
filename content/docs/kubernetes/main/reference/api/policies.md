@@ -9,5 +9,5 @@ description: Use AgentgatewayPolicy to configure the agentgateway policy engine.
 ## Reference
 
 <div style="--ks-sticky-top: 7rem;">
-{{< readfile file="content/apis/agentgateway.dev_agentgatewaypolicies.yaml.html" >}}
+{{< readfile file="assets/agw-docs/pages/reference/api/main/agentgateway.dev_agentgatewaypolicies.yaml.html" >}}
 </div>

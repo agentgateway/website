@@ -9,5 +9,5 @@ description: Use AgentgatewayParameters to configure the agentgateway data plane
 ## Reference
 
 <div style="--ks-sticky-top: 7rem;">
-{{< readfile file="content/apis/agentgateway.dev_agentgatewayparameters.yaml.html" >}}
+{{< readfile file="assets/agw-docs/pages/reference/api/latest/agentgateway.dev_agentgatewayparameters.yaml.html" >}}
 </div>
