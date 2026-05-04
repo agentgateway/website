@@ -566,3 +566,62 @@ details[open].hextra-search-other-versions > summary::before {
   margin: 0;
   padding: 0;
 }
+
+/* ── Print styles ─────────────────────────────────────────────────────── */
+@media print {
+  @page { margin: 1.5cm 2cm; }
+
+  /* Hide UI chrome — sidebar/TOC already have hx:print:hidden from hextra */
+  .copy-md-wrapper,
+  .navbar,
+  .desktop-navbar,
+  .mobile-nav-bar,
+  .mobile-nav,
+  .hextra-nav-container,
+  footer,
+  .hextra-component-issue,
+  [class*="pager"],
+  [class*="page-feedback"],
+  [class*="last-updated"],
+  [class*="comments"],
+  #chatbot-widget { display: none !important; }
+
+  /* Let article fill the printable area */
+  body, html { overflow: visible !important; }
+  article {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding-right: 0 !important;
+    min-height: 0 !important;
+  }
+  article > main {
+    max-width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Fix the main cause: code blocks clip at the paper edge on screen overflow */
+  pre, code {
+    white-space: pre-wrap !important;
+    overflow: visible !important;
+    word-break: break-word !important;
+    max-width: 100% !important;
+  }
+
+  /* Chroma lntable: the general pre/code rules above collapse the line-number
+     column at page breaks, causing two-digit numbers to split across lines.
+     Undo word-break and max-width constraints for that column only. */
+  .lntable { width: 100%; }
+  .lntable .lntd:first-child pre,
+  .lntable .lntd:first-child code {
+    white-space: pre !important;
+    word-break: normal !important;
+    overflow-wrap: normal !important;
+    max-width: none !important;
+    min-width: 2.5em;
+  }
+
+  /* Avoid breaking inside short blocks; don't force headings to next page */
+  blockquote, figure, img { break-inside: avoid; }
+}
