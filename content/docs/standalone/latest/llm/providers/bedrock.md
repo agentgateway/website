@@ -56,6 +56,38 @@ Example response:
 }
 ```
 
+## Extended thinking and reasoning
+
+Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
+
+{{< callout type="info" >}}
+Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
+{{< /callout >}}
+
+Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
+
+| `reasoning_effort` value | Thinking budget |
+|---|---|
+| `minimal` or `low` | 1,024 tokens |
+| `medium` | 2,048 tokens |
+| `high` or `xhigh` | 4,096 tokens |
+
+Note that `max_tokens` must be greater than the thinking budget, and the minimum thinking budget is 1,024 tokens.
+
+```sh
+curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
+  "model": "",
+  "max_tokens": 6000,
+  "reasoning_effort": "high",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Explain the trade-offs between consistency and availability in distributed systems."
+    }
+  ]
+}' | jq
+```
+
 ## Structured outputs
 
 Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request.
