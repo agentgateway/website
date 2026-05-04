@@ -30,7 +30,7 @@ This tutorial requires **two terminal windows**:
 
 ```
 ┌──────────────┐      ┌──────────────────┐      ┌─────────────────┐
-│   Playground │ ──── │  agentgateway   │ ──── │  Hello World    │
+│   Playground │ ──── │  agentgateway    │ ──── │  Hello World    │
 │   (Browser)  │      │     :3000        │      │  Agent :9999    │
 └──────────────┘      └──────────────────┘      └─────────────────┘
                            Terminal 2              Terminal 1

@@ -172,7 +172,7 @@ The following steps show how to stream a response from OpenAI.
 
 2. In the output, verify that the request succeeds and that you get back a streamed response from the chat completion API.
 
-   ```json
+   ```console
    data: {"id":"chatcmpl-BKq9o...","object":"chat.completion.chunk","created":1744306752,"model":"gpt-3.5-turbo-0125","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":null,"finish_reason":null}]}
 
    data: {"id":"chatcmpl-BKq9o...","object":"chat.completion.chunk","created":1744306752,"model":"gpt-3.5-turbo-0125","choices":[{"index":0,"delta":{"content":"You"},"logprobs":null,"finish_reason":null}]}

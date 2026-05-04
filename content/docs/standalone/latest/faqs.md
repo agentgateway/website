@@ -1,6 +1,7 @@
 ---
 title: FAQs
 weight: 200
+icon: help_outline
 description: Check out frequently asked questions about agentgateway. 
 prev: /docs/reference
 --- 

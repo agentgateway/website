@@ -1,3 +1,14 @@
+{{- /*
+  Shortcode: testimonial
+  Renders a single testimonial card with a quoted inner content block, author name (optionally linked), and title, styled for light and dark mode.
+
+  Parameters:
+    - author: The name of the person giving the testimonial.
+    - title: (optional) The person's title or role.
+    - link: (optional) A URL to link the author's name to.
+
+  Example: {{< testimonial author="Jane Doe" title="CTO, Acme Corp" link="https://example.com" >}}This product is amazing!{{< /testimonial >}}
+*/ -}}
 {{- $author := .Get "author" -}}
 {{- $title := .Get "title" -}}
 {{- $link := .Get "link" -}}

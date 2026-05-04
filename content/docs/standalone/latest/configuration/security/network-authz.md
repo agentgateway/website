@@ -3,8 +3,7 @@ title: Network authorization
 weight: 13
 ---
 
-Attach to:
-{{< badge content="Frontend" path="/configuration/overview/">}}
+Attaches to: {{< badge content="Frontend" path="/configuration/overview/">}}
 
 Network authorization enforces access control at the L4 (transport) level, before HTTP processing. You can enforce policies for non-HTTP traffic such as raw TCP and TLS connections, and layer L4+L7 controls when you combine policies with [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz/" >}}).
 

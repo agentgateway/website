@@ -4,7 +4,7 @@ weight: 10
 description:
 ---
 
-{{< reuse "agw-docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}} The rest of this page covers the motivation behind agentgateway, the core problems it solves, and its key features.
 
 {{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
 

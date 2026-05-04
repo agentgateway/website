@@ -55,7 +55,7 @@ Self-signed certificates are used for demonstration purposes. Do not use self-si
 Create self-signed TLS certificates that you use for the mutual TLS connection between your client application (`curl`) and the gateway proxy. 
 
 {{< callout type="warning" >}}
-Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trust Certificate Authority. 
+Self-signed certificates are used for demonstration purposes. Do not use self-signed certificates in production environments. Instead, use certificates that are issued from a trusted Certificate Authority. 
 {{< /callout >}}
 
 

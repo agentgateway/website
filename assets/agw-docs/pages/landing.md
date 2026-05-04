@@ -1,4 +1,4 @@
-{{< reuse "agw-docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}} Read on to learn how agentgateway addresses the unique demands of agent traffic.
 
 {{< callout type="info" >}}
 **New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!
@@ -92,39 +92,3 @@ Enable secure communication between AI agents using the [Agent-to-Agent (A2A)](h
 
 Run agentgateway anywhere—bare metal, VMs, containers, or Kubernetes. Conformant to the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) with support for HTTPRoute, GRPCRoute, TCPRoute, and TLSRoute.
 
-## Next steps
-
-{{< conditional-text include-if="standalone" >}}
-{{< cards >}}
-  {{< card link="quickstart" title="Quickstart" >}}
-  {{< card link="about" title="About" >}}
-  {{< card link="deployment" title="Deployment" >}}
-  {{< card link="configuration" title="Configuration" >}}
-  {{< card link="tutorials" title="Tutorials" >}}
-  {{< card link="llm" title="LLM consumption" >}}
-  {{< card link="inference" title="Inference routing" >}}
-  {{< card link="mcp" title="MCP connectivity" >}}
-  {{< card link="agent" title="Agent connectivity" >}}
-  {{< card link="integrations" title="Integrations" >}}
-  {{< card link="reference" title="Reference" >}}
-  {{< card link="faqs" title="FAQs" >}}
-{{< /cards >}}
-{{< /conditional-text >}}
-
-{{< conditional-text include-if="kubernetes" >}}
-{{< cards >}}
-  {{< card link="quickstart" title="Get started" >}}
-  {{< card link="about" title="About" >}}
-  {{< card link="install" title="Installation" >}}
-  {{< card link="setup" title="Gateway setup" >}}
-  {{< card link="llm" title="LLM consumption" >}}
-  {{< card link="inference" title="Inference routing" >}}
-  {{< card link="mcp" title="MCP connectivity" >}}
-  {{< card link="agent" title="Agent connectivity" >}}
-  {{< card link="traffic-management" title="Traffic management" >}}
-  {{< card link="security" title="Security" >}}
-  {{< card link="observability" title="Observability" >}}
-  {{< card link="operations" title="Operations" >}}
-  {{< card link="reference" title="Reference" >}}
-{{< /cards >}}
-{{< /conditional-text >}}

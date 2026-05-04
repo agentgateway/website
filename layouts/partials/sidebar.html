@@ -8,7 +8,7 @@
 {{- $isLandingPage := or $isDocsIndex $isStandaloneIndex $isKubernetesIndex -}}
 
 {{- if or $disableSidebar $isLandingPage -}}
-  <aside class="hx-hidden"></aside>
+  <aside class="hx:hidden"></aside>
 {{- else -}}
   {{- /* Extract current version and section from page path */ -}}
   {{- $path := $context.RelPermalink -}}
@@ -70,10 +70,65 @@
         display: none !important;
       }
     }
+
+    /*
+     * Sidebar tree expand/collapse.
+     *
+     * The full tree is rendered server-side and the chevron is its own
+     * <button>, so users can expand `Reference > SubPage` (or any node) without
+     * the link's navigation firing. Children of unexpanded nodes are kept in
+     * the DOM but hidden via the `hidden` attribute, which keeps the markup
+     * traversable by assistive tech and avoids re-rendering on toggle.
+     *
+     * Server marks `data-expanded="true"` on ancestors of the current page so
+     * the active subtree is open by default; the JS in static/js/sidebar.js
+     * persists user toggles in localStorage.
+     */
+    .sidebar-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 0.5rem;
+      background: transparent;
+      border: 0;
+      border-radius: 0.25rem;
+      color: inherit;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .sidebar-toggle:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    .dark .sidebar-toggle:hover {
+      background: rgba(255, 255, 255, 0.06);
+    }
+    .sidebar-toggle svg {
+      transition: transform 0.15s ease;
+      width: 1rem;
+      height: 1rem;
+    }
+    .sidebar-toggle[aria-expanded="true"] svg {
+      transform: rotate(90deg);
+    }
+    .sidebar-link-wrapper {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+    }
+    .sidebar-link-wrapper .sidebar-link {
+      flex: 1;
+      min-width: 0;
+    }
   </style>
 
   <!-- Mobile sidebar overlay -->
   <div class="sidebar-mobile-overlay" onclick="closeMobileSidebar()"></div>
+  <style>
+    html.dark .sidebar-nav a.sidebar-link:not(.sidebar-active-item) { color: #9ca3af !important; }
+    html.dark .sidebar-nav a.sidebar-link:not(.sidebar-active-item):hover { color: #e5e7eb !important; }
+    html.dark .sidebar-nav a.sidebar-link.sidebar-active-item { color: #c7d2fe !important; }
+    html.dark .sidebar-nav a.sidebar-link span { color: inherit !important; }
+  </style>
 
   {{- if $isVersionedDocs -}}
     {{- /* Get the docs section page for the current version */ -}}
@@ -83,7 +138,7 @@
 
     {{- if $docsSection -}}
       {{- /* Render sidebar with mobile slide-in support */ -}}
-      <aside class="sidebar-container sidebar-mobile-panel hx-order-first hx-w-64 hx-shrink-0 hx-hidden xl:hx-block print:hx-hidden hx-flex hx-flex-col">
+      <aside class="sidebar-container sidebar-mobile-panel hx:order-first hx:w-64 hx:shrink-0 hx:hidden hx:xl:block hx:print:hidden hx:flex hx:flex-col">
 
         {{- /* Mobile-only: Section selector + version picker */ -}}
         <div class="sidebar-mobile-only" style="border-bottom: 1px solid; border-color: inherit;">
@@ -92,12 +147,12 @@
             {{- $otherSection := cond (eq $section "standalone") "kubernetes" "standalone" -}}
             <a href="/docs/{{ $section }}/{{ $currentVersion }}/"
                style="flex: 1; text-align: center; padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; background: rgb(219 234 254); color: rgb(30 64 175);"
-               class="dark:hx-bg-primary-400/10 dark:hx-text-primary-600">
+               class="hx:dark:bg-primary-400/10 hx:dark:text-primary-600">
               {{ $section | title }}
             </a>
             <a href="/docs/{{ $otherSection }}/{{ $currentVersion }}/"
                style="flex: 1; text-align: center; padding: 0.5rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; color: rgb(75 85 99);"
-               class="hover:hx-bg-gray-100 dark:hx-text-gray-400 dark:hover:hx-bg-gray-800">
+               class="hx:hover:bg-gray-100 hx:dark:text-gray-400 hx:dark:hover:bg-gray-800">
               {{ $otherSection | title }}
             </a>
           </div>
@@ -115,7 +170,7 @@
                   {{- $isActive := eq $currentVersion .linkVersion -}}
                   <a href="/docs/{{ $section }}/{{ .linkVersion }}{{ $newPath }}"
                      style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; {{ if $isActive }}background: rgb(229 231 235); color: rgb(17 24 39);{{ else }}color: rgb(107 114 128);{{ end }}"
-                     class="{{ if $isActive }}dark:hx-bg-gray-700 dark:hx-text-white{{ else }}hover:hx-bg-gray-100 dark:hx-text-gray-400 dark:hover:hx-bg-gray-800{{ end }}">
+                     class="{{ if $isActive }}hx:dark:bg-gray-700 hx:dark:text-white{{ else }}hx:hover:bg-gray-100 hx:dark:text-gray-400 hx:dark:hover:bg-gray-800{{ end }}">
                     {{ .dropdown }}
                   </a>
                 {{- end -}}
@@ -124,75 +179,34 @@
           {{- end -}}
         </div>
 
-        <div class="hextra-scrollbar hx-overflow-y-auto hx-overflow-x-hidden hx-p-4 hx-grow md:hx-h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
-          <nav class="hx-flex hx-flex-col hx-gap-2 hx-text-sm hx-text-gray-600 dark:hx-text-gray-400">
+        {{- /*
+          Sidebar nav grows to its natural height (no `h-[calc(...)]` cap and
+          no internal `overflow-y: auto`). Previously the inner div was clamped
+          to 100vh-navbar with auto-overflow, which produced an internal
+          scrollbar even when the user scrolled the page. Now the sidebar
+          extends to fit its rendered tree and scrolls with the page.
+        */ -}}
+        <div class="hx:p-4 hx:grow">
+          <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
             {{- template "render-sidebar-tree" (dict "page" $docsSection "current" $context "versionPrefix" $versionPrefix "depth" 0) -}}
           </nav>
         </div>
-        {{- if (.Site.Params.theme.displayToggle | default true) -}}
-        <div class="hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show">
-          <div class="hx-flex hx-grow hx-flex-col">
-            <button
-              title="Change theme"
-              data-theme="light"
-              class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
-              type="button"
-              aria-label="Change theme"
-            >
-              <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize">
-                <svg height="12" class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-                <span class="group-data-[theme=light]:hx-hidden">Light</span>
-                <svg height="12" class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                </svg>
-                <span class="group-data-[theme=dark]:hx-hidden">Dark</span>
-              </div>
-            </button>
-          </div>
-        </div>
-        {{- end -}}
       </aside>
     {{- else -}}
       {{- /* Fallback: empty sidebar if section not found */ -}}
-      <aside class="sidebar-container hx-order-first hx-hidden hx-w-64 hx-shrink-0 xl:hx-block print:hx-hidden"></aside>
+      <aside class="sidebar-container hx:order-first hx:hidden hx:w-64 hx:shrink-0 hx:xl:block hx:print:hidden"></aside>
     {{- end -}}
   {{- else -}}
     {{- /* For non-versioned pages, try to use theme's sidebar or render empty */ -}}
     {{- if templates.Exists "partials/hextra/sidebar.html" -}}
       {{- partial "hextra/sidebar.html" (dict "context" $context) -}}
     {{- else -}}
-      <aside class="sidebar-container sidebar-mobile-panel hx-order-first hx-w-64 hx-shrink-0 hx-hidden xl:hx-block print:hx-hidden hx-flex hx-flex-col">
-        <div class="hextra-scrollbar hx-overflow-y-auto hx-overflow-x-hidden hx-p-4 hx-grow md:hx-h-[calc(100vh-var(--navbar-height)-var(--menu-height))]">
-          <nav class="hx-flex hx-flex-col hx-gap-2 hx-text-sm hx-text-gray-600 dark:hx-text-gray-400">
+      <aside class="sidebar-container sidebar-mobile-panel hx:order-first hx:w-64 hx:shrink-0 hx:hidden hx:xl:block hx:print:hidden hx:flex hx:flex-col">
+        <div class="hx:p-4 hx:grow">
+          <nav class="sidebar-nav" style="display: flex; flex-direction: column; gap: 0.5rem; font-size: 0.875rem;">
             {{- template "render-sidebar-tree" (dict "page" $context "current" $context "versionPrefix" "" "depth" 0) -}}
           </nav>
         </div>
-        {{- if (.Site.Params.theme.displayToggle | default true) -}}
-        <div class="hx-sticky hx-bottom-0 hx-bg-white dark:hx-bg-dark hx-mx-4 hx-py-4 hx-shadow-[0_-12px_16px_#fff] hx-flex hx-items-center hx-gap-2 dark:hx-border-neutral-800 dark:hx-shadow-[0_-12px_16px_#111] contrast-more:hx-border-neutral-400 contrast-more:hx-shadow-none contrast-more:dark:hx-shadow-none hx-border-t" data-toggle-animation="show">
-          <div class="hx-flex hx-grow hx-flex-col">
-            <button
-              title="Change theme"
-              data-theme="light"
-              class="theme-toggle hx-group hx-h-7 hx-rounded-md hx-px-2 hx-text-left hx-text-xs hx-font-medium hx-text-gray-600 hx-transition-colors dark:hx-text-gray-400 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hover:hx-bg-primary-100/5 dark:hover:hx-text-gray-50"
-              type="button"
-              aria-label="Change theme"
-            >
-              <div class="hx-flex hx-items-center hx-gap-2 hx-capitalize">
-                <svg height="12" class="group-data-[theme=light]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/>
-                </svg>
-                <span class="group-data-[theme=light]:hx-hidden">Light</span>
-                <svg height="12" class="group-data-[theme=dark]:hx-hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/>
-                </svg>
-                <span class="group-data-[theme=dark]:hx-hidden">Dark</span>
-              </div>
-            </button>
-          </div>
-        </div>
-        {{- end -}}
       </aside>
     {{- end -}}
   {{- end -}}
@@ -227,7 +241,7 @@
   {{- $sortedChildren := $children -}}
 
   {{- if gt (len $sortedChildren) 0 -}}
-    <ul class="{{ if eq $depth 0 }}hx-mt-2{{ else }}hx-ml-4 hx-mt-1{{ end }} hx-space-y-1">
+    <ul style="{{ if eq $depth 0 }}margin-top: 0.5rem;{{ else }}margin-left: 0.75rem; margin-top: 0.25rem; padding-left: 0.75rem; border-left: 1px solid #e5e7eb;{{ end }}" class="hx:space-y-1">
       {{- range $sortedChildren -}}
         {{- $childIsActive := eq .RelPermalink $current.RelPermalink -}}
         {{- $childIsAncestor := $current.IsDescendant . -}}
@@ -244,23 +258,34 @@
             {{- $grandchildren = $grandchildren | append . -}}
           {{- end -}}
         {{- end -}}
+        {{- $hasChildren := gt (len $grandchildren) 0 -}}
 
-        <li class="hx-relative">
-          <a
-            href="{{ .RelPermalink }}"
-            class="hx-flex hx-items-center hx-gap-2 hx-rounded-md hx-px-3 hx-py-2 hx-text-sm hx-transition-colors {{ if $childIsActive }}hx-bg-primary-100 hx-font-semibold hx-text-primary-800 dark:hx-bg-gray-900 dark:hx-text-white sidebar-active-item{{ else }}hx-text-gray-700 hover:hx-bg-gray-100 hover:hx-text-gray-900 dark:hx-text-gray-300 dark:hover:hx-bg-gray-900 dark:hover:hx-text-white{{ end }}"
-            {{ if $childIsActive }}aria-current="page"{{ end }}
-          >
-            <span class="hx-flex-1">{{ .Title | default .File.LogicalName }}</span>
-            {{- if gt (len $grandchildren) 0 -}}
-              <svg class="hx-h-4 hx-w-4 hx-shrink-0 hx-ml-auto hx-transition-transform {{ if $childIsExpanded }}hx-rotate-90{{ end }}" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-              </svg>
+        <li class="hx:relative"{{ if $hasChildren }} data-sidebar-item data-expanded="{{ $childIsExpanded }}"{{ end }}>
+          <div class="sidebar-link-wrapper">
+            <a
+              href="{{ .RelPermalink }}"
+              class="sidebar-link {{ if $childIsActive }}sidebar-active-item{{ end }}"
+              style="display: flex; align-items: center; gap: 0.5rem; border-radius: 0.375rem; padding: 0.5rem 0.75rem; font-size: 0.875rem; transition: color 0.15s; text-decoration: none; {{ if $childIsActive }}font-weight: 600;{{ end }}"
+              {{ if $childIsActive }}aria-current="page"{{ end }}
+            >
+              <span class="hx:flex-1">{{ .Title | default .File.LogicalName }}</span>
+            </a>
+            {{- if $hasChildren -}}
+              <button type="button"
+                      class="sidebar-toggle"
+                      aria-label="Toggle {{ .Title | default .File.LogicalName }} subsection"
+                      aria-expanded="{{ $childIsExpanded }}">
+                <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
             {{- end -}}
-          </a>
+          </div>
 
-          {{- if and (gt (len $grandchildren) 0) $childIsExpanded -}}
-            {{- template "render-sidebar-tree" (dict "page" . "current" $current "versionPrefix" $versionPrefix "depth" (add $depth 1)) -}}
+          {{- if $hasChildren -}}
+            <div class="sidebar-children"{{ if not $childIsExpanded }} hidden{{ end }}>
+              {{- template "render-sidebar-tree" (dict "page" . "current" $current "versionPrefix" $versionPrefix "depth" (add $depth 1)) -}}
+            </div>
           {{- end -}}
         </li>
       {{- end -}}
