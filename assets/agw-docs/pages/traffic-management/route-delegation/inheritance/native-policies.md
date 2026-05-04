@@ -57,7 +57,7 @@ The following image illustrates the route delegation hierarchy and policy inheri
        backendRefs:
        - group: gateway.networking.k8s.io
          kind: HTTPRoute
-         name: "*"
+         name: child-team1
          namespace: team1
        timeouts:
          request: 1s
@@ -68,7 +68,7 @@ The following image illustrates the route delegation hierarchy and policy inheri
        backendRefs:
        - group: gateway.networking.k8s.io
          kind: HTTPRoute
-         name: "*"
+         name: child-team2
          namespace: team2
        timeouts:
          request: 1s

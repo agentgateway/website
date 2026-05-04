@@ -52,7 +52,7 @@ The following image illustrates the route delegation hierarchy:
        backendRefs:
        - group: gateway.networking.k8s.io
          kind: HTTPRoute
-         name: "*"
+         name: child-team1
          namespace: team1
    EOF
    ```
