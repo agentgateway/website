@@ -23,7 +23,7 @@ Generated on {{ now.Format "2006-01-02 15:04:05 UTC" }}
 {{- $hashes := strings.Repeat $level "#" -}}
 
 {{- range where $context.RegularPages "Params.llms" "ne" false }}
-- [{{ .Title }}]({{ print "https://agentgateway.dev" .RelPermalink }}): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
+- [{{ .Title }}]({{ print "https://agentgateway.dev" (.RelPermalink | strings.TrimSuffix "/") }}.md): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
 {{- end }}
 
 {{- range where $context.Sections "Params.llms" "ne" false }}
