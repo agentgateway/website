@@ -1,0 +1,53 @@
+{{- $depth := len (findRE "[^/]+" .RelPermalink) -}}
+{{- if eq $depth 1 }}
+# {{ .Title }}
+
+> Agentgateway documentation for Kubernetes and standalone binary deployments. For the full index see [llms.txt](/llms.txt).
+
+{{- range where .Sections "Params.llms" "ne" false }}
+{{- $product := . }}
+
+## {{ $product.Title }}
+
+{{- range where $product.Sections "Params.llms" "ne" false }}
+{{- if strings.HasSuffix .RelPermalink "/latest/" }}
+{{- template "llms-docs-section-tree" dict "context" . "level" 3 }}
+{{- end }}
+{{- end }}
+
+{{- end }}
+
+---
+Generated on {{ now.Format "2006-01-02 15:04:05 UTC" }}
+
+{{- else }}
+# {{ .Title }}
+{{ with .Description }}
+> {{ . }}
+{{ end }}
+{{- if and .Sections (lt $depth 3) }}
+{{- range where .Sections "Params.llms" "ne" false }}
+- [{{ .Title }}]({{ print "https://agentgateway.dev" .RelPermalink }}llms.txt)
+{{- end }}
+
+{{- else }}
+{{- template "llms-docs-section-tree" dict "context" . "level" 2 }}
+{{- end }}
+
+---
+Generated on {{ now.Format "2006-01-02 15:04:05 UTC" }}
+{{- end }}
+
+{{- define "llms-docs-section-tree" -}}
+{{- $context := .context -}}
+{{- $level := .level | default 2 -}}
+{{- $hashes := strings.Repeat $level "#" -}}
+
+{{- range where $context.RegularPages "Params.llms" "ne" false }}
+- [{{ .Title }}]({{ print "https://agentgateway.dev" .RelPermalink }}): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
+{{- end }}
+
+{{- range where $context.Sections "Params.llms" "ne" false }}
+{{ "\n" }}{{ $hashes }} {{ .Title }}
+{{ template "llms-docs-section-tree" dict "context" . "level" (add $level 1) }}
+{{- end }}{{- end -}}
