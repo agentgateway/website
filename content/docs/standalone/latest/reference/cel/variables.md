@@ -22,30 +22,30 @@ Depending on the policy, different top-level variables are bound when CEL runs. 
 
 | Policy | Available top-level variables |
 |--------|------------------------------|
-| Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — not `response`, `mcp`, or `llmRequest`. [^trans-req] |
-| Transformation (response) | Same as request-path, plus `response` for response-side rules. [^trans-resp] |
+| Transformation (request) | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — not `response`, `mcp`, or `llmRequest`. [^1] |
+| Transformation (response) | Same as request-path, plus `response` for response-side rules. [^2] |
 | Remote rate limit | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` |
 | HTTP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` |
-| Network authorization | `env`, `source` [^network] |
-| External Authorization | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — some expressions run after the authorization service returns and can read `response`. [^extauthz] |
+| Network authorization | `env`, `source` [^3] |
+| External Authorization | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — some expressions run after the authorization service returns and can read `response`. [^4] |
 | MCP Authorization | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` |
 | External processing (ExtProc) | Request-phase rules: same as Transformation (request). Response-phase rules: same as Transformation (response). |
-| LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^llm] |
-| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` [^tcp] |
+| LLM policy | `request`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `llmRequest`, `source`, `backend`, `extauthz`, `extproc`, `metadata` — `llmRequest` is the raw JSON body during LLM request handling (not `mcp`). [^5] |
+| Logging | `request`, `response`, `env`, `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `mcp`, `backend`, `extauthz`, `extproc`, `metadata` [^6] |
 | Tracing | Same as Logging. |
 | Metrics | Same as Logging. |
 
-[^trans-req]: Request-time evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them; `mcp` only applies to MCP-specific policies.
+[^1]: Request-time transformation evaluation binds `jwt`, `apiKey`, `basicAuth`, `llm`, `source`, `backend`, `extauthz`, `extproc`, and `metadata` when earlier filters have populated them; `mcp` only applies to MCP-specific policies.
 
-[^trans-resp]: Response-side transformation sees the HTTP response object as well as the request snapshot fields.
+[^2]: Response-side transformation sees the HTTP response object as well as the request snapshot fields.
 
-[^network]: Network (L4) authorization uses `new_source` only: no HTTP `request` object.
+[^3]: Network (L4) authorization uses `new_source` only: no HTTP `request` object.
 
-[^extauthz]: Some external authorization expressions run with only the client request; others run after the authorization service responds and can read the authorization HTTP response.
+[^4]: Some external authorization expressions run with only the client request; others run after the authorization service responds and can read the authorization HTTP response.
 
-[^llm]: LLM route transforms bind `llmRequest` to the parsed JSON body and restore the other fields from the stored request snapshot when available.
+[^5]: LLM route transforms bind `llmRequest` to the parsed JSON body and restore the other fields from the stored request snapshot when available.
 
-[^tcp]: For TCP logging, the executor is narrowed to `env`, `source`, and request timing fields (no full HTTP `request`/`response` objects).
+[^6]: For TCP logging, the executor is narrowed to `env`, `source`, and request timing fields (no full HTTP `request`/`response` objects).
 
 ## Functions {#functions-policy-all}
 
