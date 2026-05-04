@@ -136,15 +136,17 @@ jobs:
 
       - name: Generate agentgateway API docs
         run: |
-          CRD_DIR="agentgateway/controller/install/helm/agentgateway-crds/templates"
-          TARGET_DIR="website/assets/agw-docs/pages/reference/api/${{ matrix.link_version }}"
+          CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
+          TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/api/${{ matrix.link_version }}"
           mkdir -p "$TARGET_DIR"
+
+          cd website/scripts/kubespec-render
 
           echo "Generating interactive API reference docs from CRD YAMLs..."
           for crd in "$CRD_DIR"/agentgateway.dev_*.yaml; do
             basename="$(basename "$crd")"
             echo "  Rendering ${basename}..."
-            go run website/scripts/kubespec-render/render.go "$crd" \
+            go run render.go "$crd" \
               > "${TARGET_DIR}/${basename}.html"
           done
 
