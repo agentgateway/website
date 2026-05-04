@@ -1,0 +1,33 @@
+# {{ .Title }}
+{{ with .Description }}
+> {{ . }}
+{{ end }}
+{{- $depth := len (findRE "[^/]+" .RelPermalink) -}}
+{{- if and .Sections (lt $depth 3) }}
+{{- /* Intermediate section (docs, docs/kubernetes): list subsection llms.txt links */}}
+{{ range where .Sections "Params.llms" "ne" false }}
+- [{{ .Title }}]({{ print "https://agentgateway.dev" .RelPermalink }}llms.txt)
+{{- end }}
+
+{{- else }}
+{{- /* Content section (version dirs and leaf sections): full page listing */}}
+{{- template "llms-section-full-tree" dict "context" . "level" 2 }}
+{{- end }}
+
+---
+Generated on {{ now.Format "2006-01-02 15:04:05 UTC" }}
+
+{{- define "llms-section-full-tree" -}}
+{{- $context := .context -}}
+{{- $level := .level | default 2 -}}
+{{- $hashes := strings.Repeat $level "#" -}}
+
+{{- range where $context.RegularPages "Params.llms" "ne" false }}
+- [{{ .Title }}]({{ print "https://agentgateway.dev" (.RelPermalink | strings.TrimSuffix "/") }}.md): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
+{{- end }}
+
+{{- range where $context.Sections "Params.llms" "ne" false }}
+{{ "\n" }}{{ $hashes }} {{ .Title }}
+{{ template "llms-section-full-tree" dict "context" . "level" (add $level 1) }}
+{{- end }}
+{{- end -}}

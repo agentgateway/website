@@ -371,7 +371,7 @@ kubectl delete httproute httpbin-route -n httpbin
 ```sh
 kubectl delete gateway agentgateway-proxy-http -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute httpbin-route -n httpbin
-kubectl delete listenersets http-listenerset -n httpbin
+kubectl delete listenerset http-listenerset -n httpbin
 ```
 {{% /tab %}}
 {{< /tabs >}}

@@ -2,7 +2,7 @@
   <style>
     /* Hide Hextra theme navbar on docs pages - we use custom nav.html instead */
     .nav-container,
-    .hx-sticky.hx-top-0,
+    .hx\:sticky.hx\:top-0,
     div.nav-container {
       display: none !important;
       visibility: hidden !important;
@@ -12,19 +12,23 @@
   <div class="w-full z-10 pt-10 lg:pt-20">
     {{ partial "announcement.html" .}}
   </div>
-  <div class='hx-mx-auto hx-flex {{ partial "utils/page-width" . }}' style="padding-top: 5rem;">
+  <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: 2.5rem;">
     {{ partial "sidebar.html" (dict "context" .) }}
     {{ partial "toc.html" . }}
-    <article class="hx-w-full hx-break-words hx-flex hx-min-h-[calc(100vh-var(--navbar-height))] hx-min-w-0 hx-justify-center hx-pb-8 hx-pr-[calc(env(safe-area-inset-right)-1.5rem)]">
-      <main class="hx-w-full hx-min-w-0 hx-max-w-6xl hx-px-6 hx-pt-4 md:hx-px-12">
+    <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8 hx:pr-[calc(env(safe-area-inset-right)-1.5rem)]">
+      <main class="hx:w-full hx:min-w-0 hx:max-w-6xl hx:px-6 hx:pt-4 hx:md:px-12">
         {{ partial "breadcrumb.html" . }}
         <div class="content">
+          {{ partial "docs-llms-directive.html" . }}
+          {{ partial "copy-markdown.html" . }}
           {{ if .Title }}<h1>{{ .Title }}</h1>{{ end }}
+          {{- with .Description }}<p class="page-description">{{ . | markdownify }}</p>{{ end }}
           {{ partial "test-status-badge.html" . }}
           {{ .Content }}
         </div>
         {{ partial "components/last-updated.html" . }}
         {{ partial "components/pager.html" . }}
+        {{ partial "components/page-feedback.html" . }}
         {{ partial "components/comments.html" . }}
       </main>
     </article>

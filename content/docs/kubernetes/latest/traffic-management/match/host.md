@@ -3,13 +3,13 @@ title: Host
 weight: 10
 test:
   host-match:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: content/docs/kubernetes/latest/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/match/host.md
+  - file: content/docs/kubernetes/latest/traffic-management/match/host.md
     path: host-match
 ---
 Expose a route on multiple hosts. 

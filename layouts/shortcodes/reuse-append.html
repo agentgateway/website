@@ -1,4 +1,14 @@
-{{- /* reads a base snippet from /assets, then append inner Markdown and render it. useful for appending to tables */ -}}
+{{- /*
+  Shortcode: reuse-append
+  Reads a base Markdown snippet from the /assets directory, appends the inner content, and renders the combined result (useful for appending rows to reusable tables).
+
+  Parameters:
+    - 0 (positional): The path to the base file in the /assets directory.
+
+  Example: {{< reuse-append "reuse/table-base.md" >}}
+    | Extra Row | Value |
+  {{< /reuse-append >}}
+*/ -}}
 
 {{- $asset := "" -}}
 {{- with (.Get 0) -}}

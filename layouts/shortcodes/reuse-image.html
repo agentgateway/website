@@ -1,6 +1,18 @@
+{{- /*
+  Shortcode: reuse-image
+  Renders a centered image from the /assets directory for light mode only, with optional width, alt text, and caption.
+
+  Parameters:
+    - src: The path to the image in the /assets directory.
+    - width: (optional) The display width of the image in pixels.
+    - alt: (optional) Alt text for the image.
+    - caption: (optional) A caption displayed below the image in italics.
+
+  Example: {{< reuse-image src="images/architecture.png" width="600" alt="Architecture diagram" caption="System architecture overview" >}}
+*/ -}}
 {{ $src := .Get "src" }}
 {{ $width := .Get "width" }}
 {{ $alt := .Get "alt" }}
 {{ $image := resources.Get $src }}
 {{ $caption := .Get "caption" }}
-<div style="text-align: center;"><figure class="hx-block dark:hx-hidden"><img src="{{ $image.RelPermalink }}" width="{{ $width }}" alt="{{ $alt }}"/> <figcaption style="font-style:italic">{{ $caption }}</figcaption></figure></div>
+<div style="text-align: center;"><figure class="light-only"><img src="{{ $image.RelPermalink }}" width="{{ $width }}" alt="{{ $alt }}"/> <figcaption style="font-style:italic">{{ $caption }}</figcaption></figure></div>

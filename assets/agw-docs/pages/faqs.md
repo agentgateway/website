@@ -61,8 +61,5 @@ The changelog is part of each [GitHub release](https://github.com/kgateway-dev/k
 
 <!--
 ## Is there enterprise software that is based on kgateway?
-
-{{< cards >}}
-  {{< card link="https://www.solo.io/products/gloo-gateway/" title="Solo.io" tag= "Enterprise" image="/img/gloo-gateway-ver-light-on-dark.png" icon="external-link">}}
-{{< /cards >}} -->
+ -->
 

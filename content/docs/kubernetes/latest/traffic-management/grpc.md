@@ -4,9 +4,9 @@ weight: 10
 description:
 test:
   grpc:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/traffic-management/grpc.md
+  - file: content/docs/kubernetes/latest/traffic-management/grpc.md
     path: grpc
 ---
 

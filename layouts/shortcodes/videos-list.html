@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: videos-list
+  Renders a filterable grid of video cards from the site's data/videos data file, each showing a thumbnail, description, and "Watch Video" link.
+
+  Parameters:
+    (none -- reads from .Site.Data.videos)
+
+  Example: {{< videos-list >}}
+*/ -}}
 {{ $data := .Site.Data.videos }}
 
 <script>

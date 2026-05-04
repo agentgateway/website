@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: github-yaml
+  Fetches a remote YAML file by URL and renders the content in a syntax-highlighted YAML code block, stripping any yaml-language-server directives and refreshing the cache daily.
+
+  Parameters:
+    - url: The remote URL of the YAML file to fetch and display.
+
+  Example: {{< github-yaml url="https://raw.githubusercontent.com/org/repo/main/config.yaml" >}}
+*/ -}}
 {{- $url := .Get "url" -}}
 {{- /* Use daily cache key to ensure content refreshes at least once per day */ -}}
 {{- $cacheKey := printf "%s-%s" $url (now.Format "2006-01-02") -}}

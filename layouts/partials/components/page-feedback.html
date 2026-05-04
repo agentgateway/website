@@ -1,0 +1,86 @@
+{{- if and (not .Params.hide_feedback) (site.Params.feedback.enable) -}}
+<div class="page-feedback border-t border-gray-200 dark:border-gray-700 mt-8 pt-6 pb-2" id="page-feedback">
+  <!-- Initial state: question + buttons -->
+  <div id="page-feedback-prompt" class="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
+    <span>Was this page helpful?</span>
+    <div class="flex items-center gap-0.5">
+      <!-- Thumb up -->
+      <button
+        onclick="submitPageFeedback('up')"
+        class="page-feedback-btn p-1.5 bg-transparent border-none rounded transition-colors duration-150 text-gray-300 dark:text-gray-600 hover:text-green-500 dark:hover:text-green-400 cursor-pointer"
+        aria-label="Yes, this page was helpful"
+        title="Yes"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+        </svg>
+      </button>
+      <!-- Thumb down -->
+      <button
+        onclick="submitPageFeedback('down')"
+        class="page-feedback-btn p-1.5 bg-transparent border-none rounded transition-colors duration-150 text-gray-300 dark:text-gray-600 hover:text-red-500 dark:hover:text-red-400 cursor-pointer"
+        aria-label="No, this page was not helpful"
+        title="No"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h2.67A2.31 2.31 0 0 1 22 4v7a2.31 2.31 0 0 1-2.33 2H17"></path>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Thank-you state (hidden initially) -->
+  <div id="page-feedback-thanks" class="hidden text-sm text-gray-500 dark:text-gray-400">
+    <span id="page-feedback-thanks-msg"></span>
+  </div>
+</div>
+
+<script>
+  function submitPageFeedback(type) {
+    var prompt = document.getElementById('page-feedback-prompt');
+    var thanks = document.getElementById('page-feedback-thanks');
+    var thanksMsg = document.getElementById('page-feedback-thanks-msg');
+    if (!prompt || !thanks || !thanksMsg) return;
+
+    // Push event to GTM dataLayer
+    window.dataLayer = window.dataLayer || [];
+    window.dataLayer.push({
+      event: 'page_helpful',
+      page_helpful_value: type === 'up' ? 1 : 0,
+      page_helpful_type: type,
+      page_path: window.location.pathname
+    });
+
+    // Update UI
+    prompt.classList.add('hidden');
+    thanks.classList.remove('hidden');
+
+    if (type === 'up') {
+      thanksMsg.innerHTML = 'Thanks for the feedback!';
+    } else {
+      var pageUrl = window.location.href;
+      var pagePath = window.location.pathname;
+      var issueTitle = encodeURIComponent('Docs feedback: ' + pagePath);
+      var bodyTemplate = [
+        '## Summary',
+        '',
+        '{Briefly describe what is wrong, missing, or confusing on the page. Can include screenshots, log output, or malformed examples that demonstrate the issue.}',
+        '',
+        '## Environment',
+        '',
+        '- Page URL: ' + pageUrl,
+        '- Browser: {Browser}',
+        '- Operating system: {Operating system}',
+        '',
+        '## Additional comments (optional)',
+        '',
+        '{Anything else you want to share.}',
+        ''
+      ].join('\n');
+      var issueBody = encodeURIComponent(bodyTemplate);
+      var issueUrl = 'https://github.com/agentgateway/website/issues/new?title=' + issueTitle + '&body=' + issueBody;
+      thanksMsg.innerHTML = 'Sorry to hear that. Please <a href="' + issueUrl + '" class="text-violet-600 dark:text-violet-400 hover:underline" target="_blank" rel="noopener noreferrer">open an issue</a> to let us know how we can improve this page.';
+    }
+  }
+</script>
+{{- end -}}

@@ -194,4 +194,4 @@ binds:
 
 - [MCP Authorization]({{< link-hextra path="/mcp/mcp-authz" >}})
 - [Backend Authentication]({{< link-hextra path="/configuration/security/backend-authn" >}})
-- [Configuration Reference]({{< link-hextra path="/reference/configuration" >}})
+- [Configuration Reference]({{< link-hextra path="/reference/configuration/schema/" >}})

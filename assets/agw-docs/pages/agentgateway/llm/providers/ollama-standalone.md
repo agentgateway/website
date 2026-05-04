@@ -1,10 +1,10 @@
-Configure [Ollama](https://ollama.ai/) to serve local models through agentgateway. Ollama runs models locally on your machine and exposes an OpenAI-compatible API that agentgateway can route to.
+Configure [Ollama](https://ollama.com/) to serve local models through agentgateway. Ollama runs models locally on your machine and exposes an OpenAI-compatible API that agentgateway can route to.
 
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-2. Install [Ollama](https://ollama.ai/download).
+2. Install [Ollama](https://ollama.com/download).
 
 3. Make sure that you have at least one model pulled locally.
    

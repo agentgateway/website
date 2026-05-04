@@ -37,6 +37,22 @@ export class ThinkingAnimator {
   }
 }
 
+const COPY_ICON_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+
+function injectCodeCopyButtons(html) {
+  return html.replace(/<pre><code([^>]*)>([\s\S]*?)<\/code><\/pre>/g, (match, attrs, escapedCode) => {
+    const rawCode = escapedCode
+      .replace(/<[^>]+>/g, '')
+      .replace(/&amp;/g, '&')
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&#39;/g, "'")
+      .replace(/&quot;/g, '"');
+    const encodedCode = encodeURIComponent(rawCode);
+    return `<div class="chatbot-code-block"><button class="chatbot-code-copy" data-code="${encodedCode}" title="Copy code" aria-label="Copy code">${COPY_ICON_SVG}</button><pre><code${attrs}>${escapedCode}</code></pre></div>`;
+  });
+}
+
 /**
  * MarkdownRenderer - Handles buffered markdown rendering with code block streaming
  */
@@ -143,7 +159,7 @@ export class MarkdownRenderer {
     // Render markdown for complete parts
     let html = this.renderFn(contentToRender) || '';
 
-    // Append incomplete code block
+    // Append incomplete code block (no copy button while still streaming)
     if (hasIncompleteCodeBlock) {
       html += incompleteCodeBlockHTML;
     }
@@ -161,17 +177,17 @@ export class MarkdownRenderer {
   }
 
   /**
-   * Flush any remaining buffered content
+   * Flush any remaining buffered content and inject code copy buttons.
+   * Called once when streaming completes.
    */
   flush() {
     if (this.renderTimeout) {
       clearTimeout(this.renderTimeout);
       this.renderTimeout = null;
     }
-    if (this.tokenBuffer.length > 0) {
-      return this.render();
-    }
-    return this.render();
+    this.render();
+    this.lastRenderedHTML = injectCodeCopyButtons(this.lastRenderedHTML);
+    return this.lastRenderedHTML;
   }
 
   /**

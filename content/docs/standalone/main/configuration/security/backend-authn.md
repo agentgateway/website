@@ -3,8 +3,7 @@ title: Backend authentication
 weight: 10
 ---
 
-Attach to:
-{{< badge content="Backend" path="/configuration/backends/" >}}
+Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
 
 When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 
@@ -31,7 +30,7 @@ backendAuth:
   passthrough: {}
 ```
 
-Google [Application Default Credentials](https://cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
+Google [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
 
 ```yaml
 backendAuth:

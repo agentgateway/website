@@ -33,76 +33,76 @@ Configure global or provider-specific aliases for your models to refer to your m
 2. Send a request to the OpenAI provider with the `fast` model. Verify that the request succeeds and that you also see the `gpt-3.5-turbo` model in your response. 
 
    {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
-{{% tab tabName="OpenAI v1/chat/completions" %}}
-**Cloud Provider LoadBalancer**:
-```sh
-curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "fast",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
+   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "fast",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
 
-**Localhost**:
-```sh
-curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "fast",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
-{{% /tab %}}
-{{% tab tabName="Custom route" %}}
-**Cloud Provider LoadBalancer**:
-```sh
-curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
-   "model": "fast",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "fast",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
+     "model": "fast",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
 
-**Localhost**:
-```sh
-curl "localhost:8080/openai" -H content-type:application/json  -d '{
-   "model": "fast",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
-{{% /tab %}}
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/openai" -H content-type:application/json  -d '{
+     "model": "fast",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
@@ -117,76 +117,76 @@ curl "localhost:8080/openai" -H content-type:application/json  -d '{
 3. Repeat the request to the OpenAI provider with the `smart` model. Verify that the request succeeds and that you also see the `gpt-4-turbo` model in your response. 
 
    {{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
-{{% tab tabName="OpenAI v1/chat/completions" %}}
-**Cloud Provider LoadBalancer**:
-```sh
-curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "smart",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
+   {{% tab tabName="OpenAI v1/chat/completions" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "smart",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
 
-**Localhost**:
-```sh
-curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "smart",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
-{{% /tab %}}
-{{% tab tabName="Custom route" %}}
-**Cloud Provider LoadBalancer**:
-```sh
-curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
-   "model": "smart",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
+     "model": "smart",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Custom route" %}}
+   **Cloud Provider LoadBalancer**:
+   ```sh
+   curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
+     "model": "smart",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
 
-**Localhost**:
-```sh
-curl "localhost:8080/openai" -H content-type:application/json  -d '{
-   "model": "smart",
-   "messages": [
-     {
-       "role": "system",
-       "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
-     },
-     {
-       "role": "user",
-       "content": "Compose a poem that explains the concept of recursion in programming."
-     }
-   ]
- }' | jq
-```
-{{% /tab %}}
+   **Localhost**:
+   ```sh
+   curl "localhost:8080/openai" -H content-type:application/json  -d '{
+     "model": "smart",
+     "messages": [
+       {
+         "role": "system",
+         "content": "You are a poetic assistant, skilled in explaining complex programming concepts with creative flair."
+       },
+       {
+         "role": "user",
+         "content": "Compose a poem that explains the concept of recursion in programming."
+       }
+     ]
+   }' | jq
+   ```
+   {{% /tab %}}
    {{< /tabs >}}
 
    Example output: 
@@ -200,7 +200,7 @@ curl "localhost:8080/openai" -H content-type:application/json  -d '{
 
 ## Cleanup
 
-{{< reuse "agw-docs/snippets/cleanup.md" >}}
+{{% reuse "agw-docs/snippets/cleanup.md" %}}
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}} 

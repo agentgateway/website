@@ -3,9 +3,9 @@ title: Set up Keycloak
 weight: 20
 test:
   setup-keycloak:
-  - file: content/docs/kubernetes/main/install/helm.md
+  - file: content/docs/kubernetes/latest/install/helm.md
     path: experimental
-  - file: content/docs/kubernetes/main/mcp/auth/keycloak.md
+  - file: content/docs/kubernetes/latest/mcp/auth/keycloak.md
     path: setup-keycloak
 ---
 

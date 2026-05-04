@@ -74,12 +74,12 @@ build:
 # Start local dev server (drafts and future-dated content shown)
 .PHONY: serve
 serve:
-	hugo147 server --buildDrafts --buildFuture
+	hugo160 server --buildDrafts --buildFuture
 
 # Start local server with production-like build (GC, minify, no drafts)
 .PHONY: serve-prod
 serve-prod:
-	hugo147 server --gc --minify
+	hugo160 server --gc --minify
 
 # Remove public/ and resources/ (Hugo output and cache)
 .PHONY: clean

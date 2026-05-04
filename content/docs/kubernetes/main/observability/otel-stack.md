@@ -1,6 +1,12 @@
 ---
 title: OTel stack
 weight: 10
+test:
+  otel-stack:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/main/observability/otel-stack.md
+    path: otel-stack
 ---
 
 {{< reuse "agw-docs/snippets/agentgateway/otel-prereq.md" >}}

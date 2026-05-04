@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: openapi
+  Renders an interactive Swagger UI page for an OpenAPI spec fetched from a remote URL.
+
+  Parameters:
+    - url: The URL of the OpenAPI/Swagger specification file (JSON or YAML).
+
+  Example: {{< openapi url="https://example.com/api/openapi.json" >}}
+*/ -}}
 {{ $url := .Get "url" }}
 {{ $spec := resources.GetRemote $url | transform.Unmarshal }}
 

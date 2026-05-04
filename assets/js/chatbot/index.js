@@ -69,6 +69,7 @@ document.addEventListener('alpine:init', () => {
     showFeedbackModal: false,
     feedbackModalIndex: -1,
     feedbackComment: '',
+    copiedMessageIndex: -1,
 
     // @ Mention
     showMentionMenu: false,
@@ -149,6 +150,23 @@ document.addEventListener('alpine:init', () => {
       window.addEventListener('beforeunload', () => {
         this.flushInputSave();
         this.finalizeAndSave();
+      });
+
+      // Delegated handler for code-block copy buttons (injected by marked renderer)
+      const copyIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>`;
+      const checkIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+      this.$el.addEventListener('click', (e) => {
+        const btn = e.target.closest('.chatbot-code-copy');
+        if (!btn) return;
+        const code = decodeURIComponent(btn.dataset.code || '');
+        navigator.clipboard.writeText(code).then(() => {
+          btn.innerHTML = checkIcon;
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.innerHTML = copyIcon;
+            btn.classList.remove('copied');
+          }, 2000);
+        }).catch(() => {});
       });
     },
 
@@ -959,7 +977,10 @@ document.addEventListener('alpine:init', () => {
             this.isProcessing = false;
             this.currentEventSource = null;
             this.saveState();
-            this.$nextTick(() => this.$refs.input?.focus());
+            this.$nextTick(() => {
+              this.$refs.input?.focus();
+              if (this.$refs.messagesSpacer) this.$refs.messagesSpacer.style.minHeight = '0';
+            });
           },
 
           onError: (errorMessage, errorType) => {
@@ -977,6 +998,9 @@ document.addEventListener('alpine:init', () => {
             this.isProcessing = false;
             this.currentEventSource = null;
             this.saveState();
+            this.$nextTick(() => {
+              if (this.$refs.messagesSpacer) this.$refs.messagesSpacer.style.minHeight = '0';
+            });
           }
         });
       } catch (error) {
@@ -993,6 +1017,9 @@ document.addEventListener('alpine:init', () => {
         this.isProcessing = false;
         this.currentEventSource = null;
         this.saveState();
+        this.$nextTick(() => {
+          if (this.$refs.messagesSpacer) this.$refs.messagesSpacer.style.minHeight = '0';
+        });
       }
     },
 
@@ -1079,6 +1106,22 @@ document.addEventListener('alpine:init', () => {
     },
 
     // ─── Utilities ───────────────────────────────────────────
+
+    async copyMessage(index) {
+      const msg = this.messages[index];
+      if (!msg) return;
+      let text = msg.markdown;
+      if (!text) {
+        const tmp = document.createElement('div');
+        tmp.innerHTML = msg.content;
+        text = tmp.innerText;
+      }
+      try {
+        await navigator.clipboard.writeText(text);
+        this.copiedMessageIndex = index;
+        setTimeout(() => { this.copiedMessageIndex = -1; }, 2000);
+      } catch (_) {}
+    },
 
     generateSessionId() {
       if (window.crypto?.randomUUID) return window.crypto.randomUUID();

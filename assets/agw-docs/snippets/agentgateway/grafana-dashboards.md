@@ -2,12 +2,12 @@ You can use the pre-built Grafana dashboards to observe the control and data pla
 
 1. Create a Grafana dashboard for the control metrics. You can download the following sample Grafana dashboard configuration: 
    * [Agentgateway dashboard](https://github.com/agentgateway/website/blob/main/content/docs/kubernetes/main/observability/agentgateway.json)
-     ```sh
-     curl -L "http://kgateway.dev/docs/main/agentgateway/observability/agentgateway.json" >> agentgateway.json 
+     ```sh {paths="otel-stack"}
+     curl -L "https://agentgateway.dev/docs/kubernetes/main/observability/agentgateway.json" >> agentgateway.json 
      ```
 
 2. Import the Grafana dashboard.
-   ```sh
+   ```sh {paths="otel-stack"}
    kubectl -n telemetry create cm agentgateway-dashboard \
    --from-file=agentgateway.json
    kubectl label -n telemetry cm agentgateway-dashboard grafana_dashboard=1
@@ -32,8 +32,8 @@ open "http://$(kubectl -n telemetry get svc kube-prometheus-stack-grafana -o jso
             
 1. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the translation and reconciliation time, total number of operations, or the number of resources in your cluster. 
       
-   {{< reuse-image src="img/kgateway-dashboard.png" >}}
-   {{< reuse-image-dark srcDark="img/kgateway-dashboard.png" >}}
+   {{< reuse-image src="img/agentgateway-dashboard.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-dashboard.png" >}}
    
    | Metric | Description |
    | -- | -- |

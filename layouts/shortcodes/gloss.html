@@ -1,20 +1,23 @@
-{{ $key := .Get 0 }}
-{{ $entry := index site.Data.glossary $key }}
+{{- /*
+  Shortcode: gloss
+  Renders an inline glossary term with a hover tooltip showing the definition and an optional "Learn more" link, sourced from data/glossary.
 
-{{ if $entry }}
-<span class="glossary-term" tabindex="0" data-glossary-term="{{ $key }}">
-  {{ .Inner | default $key }}
-  <span class="tooltip-content">
-    <strong>{{ $key }}</strong>
-    <span>{{ $entry.short }}</span>
-    {{ if $entry.link }}
-    <a href="{{ $entry.link }}" class="tooltip-link" target="_blank">
-      Learn more
-    </a>
-    {{ end }}
-  </span>
-</span>
-{{ else }}
-{{ .Inner | default $key }}
-{{ end }}
+  Parameters:
+    - 0 (positional): The glossary key to look up in data/glossary.
+    - (inner content): (optional) Custom display text; defaults to the glossary key if not provided.
 
+  Example: {{< gloss "MCP" >}}custom display text{{< /gloss >}}
+
+  IMPORTANT: This template uses {{- -}} whitespace-trim delimiters and emits a
+  single inline HTML fragment with no surrounding newlines. Do not reformat —
+  Goldmark treats shortcode output with leading/trailing newlines as block-level
+  HTML, which collapses the spaces between the term and the words around it
+  (rendering "policies are" as "policiesare").
+*/ -}}
+{{- $key := .Get 0 -}}
+{{- $entry := index site.Data.glossary $key -}}
+{{- if $entry -}}
+<span class="glossary-term" tabindex="0" data-glossary-term="{{ $key }}">{{ .Inner | default $key }}<span class="tooltip-content"><strong>{{ $key }}</strong><span>{{ $entry.short }}</span>{{ if $entry.link }}<a href="{{ $entry.link }}" class="tooltip-link" target="_blank">Learn more</a>{{ end }}</span></span>
+{{- else -}}
+{{- .Inner | default $key -}}
+{{- end -}}
