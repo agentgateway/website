@@ -1,5 +1,5 @@
 ---
-title: About
+title: About - LATEST
 weight: 10
 icon: info
 test: skip
