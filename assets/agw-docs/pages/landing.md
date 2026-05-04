@@ -1,4 +1,4 @@
-{{< reuse "agw-docs/snippets/about-agw.md" >}}
+{{< reuse "agw-docs/snippets/about-agw.md" >}} Read on to learn how agentgateway addresses the unique demands of agent traffic.
 
 {{< callout type="info" >}}
 **New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!
@@ -8,9 +8,11 @@
 
 ## Why agentgateway?
 
-Traditional API gateways and reverse proxies aren't built for MCP and A2A, and adapting them isn't straightforward. These systems are optimized for **stateless REST-style interactions**—one request in, pick a backend, one response out—with no session context or ongoing connection state.
+Agentgateway is an open source, agentic-native full HTTP and gRPC proxy, not just an “AI sidecar.” You can put microservice APIs and agentic traffic behind one gateway with shared policies, security, and observability.
 
-MCP and A2A are fundamentally different:
+Traditional API gateways and reverse proxies route HTTP/gRPC well for many cases, but they are not purpose-built for MCP and A2A, and adapting them is not straightforward. These systems are often optimized for stateless, REST-style interactions—one request in, pick a backend, one response out—with no session context or ongoing connection state.
+
+MCP and A2A are fundamentally different, as outlined in the following table.
 
 | Traditional API Gateway | Agentgateway |
 |------------------------|--------------|
@@ -34,7 +36,7 @@ Agentgateway is built in **Rust** because performance and memory safety are non-
 
 ## Features
 
-Agentgateway is a unified data plane for managing agent connectivity, built in Rust for high performance and reliability. It supports agent protocols including MCP and A2A, and provides a unified interface for LLM consumption.
+Agentgateway is a unified data plane built in Rust for high performance and reliability. It handles HTTP and gRPC routing and policies for everyday APIs, adds first-class support for agent protocols including MCP and A2A, and provides a unified interface for LLM consumption—all in one deployment.
 
 ### LLM Gateway
 
@@ -63,7 +65,7 @@ Running your own models on GPU infrastructure? Agentgateway implements the [Kube
 
 ### MCP Gateway
 
-Connect LLMs to tools and external data sources using the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/). Agentgateway provides:
+Connect LLMs to tools and external data sources using the [Model Context Protocol (MCP)](https://modelcontextprotocol.io/docs/getting-started/intro). Agentgateway provides:
 
 - **Tool federation**: Aggregate multiple MCP servers behind a single endpoint
 - **Protocol support**: stdio, HTTP/SSE, and Streamable HTTP transports
@@ -82,7 +84,7 @@ Enable secure communication between AI agents using the [Agent-to-Agent (A2A)](h
 ### Security & Observability
 
 - **Authentication**: JWT, API keys, basic auth, MCP auth spec
-- **Authorization**: Fine-grained RBAC with [Cedar policy engine](https://www.cedarpolicy.com/)
+- **Authorization**: Fine-grained RBAC with [CEL policy engine](https://cel.dev)
 - **Traffic policies**: Rate limiting, CORS, TLS, external authz
 - **Observability**: Built-in [OpenTelemetry](https://opentelemetry.io) metrics, logs, and distributed tracing
 
@@ -90,39 +92,3 @@ Enable secure communication between AI agents using the [Agent-to-Agent (A2A)](h
 
 Run agentgateway anywhere—bare metal, VMs, containers, or Kubernetes. Conformant to the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io/) with support for HTTPRoute, GRPCRoute, TCPRoute, and TLSRoute.
 
-## Next steps
-
-{{< conditional-text include-if="standalone" >}}
-{{< cards >}}
-  {{< card link="quickstart" title="Quickstart" >}}
-  {{< card link="about" title="About" >}}
-  {{< card link="deployment" title="Deployment" >}}
-  {{< card link="configuration" title="Configuration" >}}
-  {{< card link="tutorials" title="Tutorials" >}}
-  {{< card link="llm" title="LLM consumption" >}}
-  {{< card link="inference" title="Inference routing" >}}
-  {{< card link="mcp" title="MCP connectivity" >}}
-  {{< card link="agent" title="Agent connectivity" >}}
-  {{< card link="integrations" title="Integrations" >}}
-  {{< card link="reference" title="Reference" >}}
-  {{< card link="faqs" title="FAQs" >}}
-{{< /cards >}}
-{{< /conditional-text >}}
-
-{{< conditional-text include-if="kubernetes" >}}
-{{< cards >}}
-  {{< card link="quickstart" title="Get started" >}}
-  {{< card link="about" title="About" >}}
-  {{< card link="install" title="Installation" >}}
-  {{< card link="setup" title="Gateway setup" >}}
-  {{< card link="llm" title="LLM consumption" >}}
-  {{< card link="inference" title="Inference routing" >}}
-  {{< card link="mcp" title="MCP connectivity" >}}
-  {{< card link="agent" title="Agent connectivity" >}}
-  {{< card link="traffic-management" title="Traffic management" >}}
-  {{< card link="security" title="Security" >}}
-  {{< card link="observability" title="Observability" >}}
-  {{< card link="operations" title="Operations" >}}
-  {{< card link="reference" title="Reference" >}}
-{{< /cards >}}
-{{< /conditional-text >}}

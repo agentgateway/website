@@ -1,7 +1,7 @@
 ---
 title: Connect via HTTPS
 weight: 40 
-description: 
+description:
 ---
 
 Configure your agentgateway proxy to connect to an MCP server by using the HTTPS protocol. 

@@ -3,8 +3,7 @@ title: Rewrites
 weight: 13
 ---
 
-Attach to:
-{{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
 Modify URLs of incoming requests with {{< gloss "Rewrite" >}}rewrite{{< /gloss >}} policies.
 

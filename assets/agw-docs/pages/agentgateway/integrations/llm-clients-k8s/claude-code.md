@@ -1,10 +1,10 @@
-Configure [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the AI coding CLI by Anthropic, to route LLM requests through your agentgateway proxy running in Kubernetes.
+Configure [Claude Code](https://code.claude.com/docs), the AI coding CLI by Anthropic, to route LLM requests through your agentgateway proxy running in Kubernetes.
 
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Install the [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`).
-3. Get an Anthropic API key from the [Anthropic Console](https://console.anthropic.com).
+2. Install the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`).
+3. Get an Anthropic API key from the [Anthropic Console](https://platform.claude.com).
 
 ## Get the gateway URL
 
@@ -16,7 +16,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
 1. Export your Anthropic API key.
 
-   ```bash
+   ```bash {paths="claude-code-k8s"}
    export ANTHROPIC_API_KEY="sk-ant-your-key-here"
    ```
 
@@ -100,7 +100,6 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
      wait:
        target:
          kind: AgentgatewayBackend
-         apiVersion: agentgateway.dev/v1alpha1
          metadata:
            namespace: agentgateway-system
            name: anthropic

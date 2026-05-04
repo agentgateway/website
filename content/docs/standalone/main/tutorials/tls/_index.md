@@ -170,8 +170,8 @@ binds:
     protocol: HTTP
     routes:
     - policies:
-        redirect:
-          https: true
+        requestRedirect:
+          scheme: https
       backends: []
 
 # HTTPS listener - handles actual traffic

@@ -1,10 +1,10 @@
-Configure [Claude Code](https://docs.anthropic.com/en/docs/claude-code), the AI coding CLI by Anthropic, to route LLM requests through your agentgateway proxy.
+Configure [Claude Code](https://code.claude.com/docs), the AI coding CLI by Anthropic, to route LLM requests through your agentgateway proxy.
 
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Install the [Claude Code CLI](https://docs.anthropic.com/en/docs/claude-code) (`npm install -g @anthropic-ai/claude-code`).
-3. Get an Anthropic API key from the [Anthropic Console](https://console.anthropic.com).
+2. Install the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`).
+3. Get an Anthropic API key from the [Anthropic Console](https://platform.claude.com).
 
 ## Configure agentgateway
 
@@ -33,7 +33,7 @@ Start agentgateway with an Anthropic backend configuration.
    {{< doc-test paths="claude-code-validate" >}}
    mkdir -p "$HOME/.local/bin"
    export PATH="$HOME/.local/bin:$PATH"
-   VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+   VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
    BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
    curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
    chmod +x "$HOME/.local/bin/agentgateway"

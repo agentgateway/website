@@ -92,7 +92,7 @@ policies:
   authorization:
     rules:
     # Check for specific permission
-    - if: '"read:tools" in auth.claims.permissions'
+    - '"read:tools" in jwt.permissions'
 ```
 
 ## Learn more

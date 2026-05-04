@@ -316,7 +316,7 @@ Set up retries to the sample app.
          ```
 
          Example output:
-         ```json {linenos=table,hl_lines=[20,21,22,23,24,25,26,27],filename="http://localhost:15000/config_dump"}
+         ```json {linenos=table,hl_lines=[18,19,20,21,22,23,24,25],filename="http://localhost:15000/config_dump"}
          {
             "key": "traffic/agentgateway-system/retry:retry:agentgateway-system/agentgateway-proxy/http",
             "name": {

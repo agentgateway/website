@@ -267,7 +267,7 @@ services:
   agentgateway:
     container_name: agentgateway
     restart: unless-stopped
-    image: cr.agentgateway.dev/agentgateway:0.11.1
+    image: cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}}
     ports:
       - "3000:3000"
       - "127.0.0.1:15000:15000"

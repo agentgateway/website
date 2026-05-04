@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: integrations
+  Renders a section displaying integration partner logos from the site's data/integrations data file.
+
+  Parameters:
+    (none -- reads from .Site.Data.integrations)
+
+  Example: {{< integrations >}}
+*/ -}}
 {{ $data := .Site.Data.integrations }}
 
 {{ if $data }}

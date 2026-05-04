@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: reuse
+  Reads a reusable Markdown snippet from the /assets directory and renders the content inline on the current page.
+
+  Parameters:
+    - 0 (positional): The path to the file in the /assets directory (leading slash is trimmed automatically).
+
+  Example: {{< reuse "reuse/intro-paragraph.md" >}}
+*/ -}}
 {{- /*  Initialize. */}}
 {{- $asset := "" }}
 
@@ -21,5 +30,3 @@
 
 {{- /* Render resource content. */}}
 {{- $r.Content | .Page.RenderString | chomp }}
-
-{{- /* Chomp trailing newlines. */ -}}

@@ -11,5 +11,29 @@ processor:
     # - they duplicate the main resource with just metadata + items
     - "(AgentgatewayBackend|AgentgatewayParameters|AgentgatewayPolicy)List$"
 
-renderer:
+render:
   kubernetesVersion: "1.31"
+  # External Gateway API types referenced from agentgateway CRDs. Without these,
+  # crd-ref-docs emits intra-page links to anchors that don't exist on the page,
+  # which surface as broken anchors in the link checker.
+  knownTypes:
+    - name: SectionName
+      package: sigs.k8s.io/gateway-api/apis/v1
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#sectionname
+    - name: BackendObjectReference
+      package: sigs.k8s.io/gateway-api/apis/v1
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#backendobjectreference
+    - name: LocalPolicyTargetReferenceWithSectionName
+      package: sigs.k8s.io/gateway-api/apis/v1alpha2
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#localpolicytargetreferencewithsectionname
+    - name: LocalPolicyTargetSelectorWithSectionName
+      package: sigs.k8s.io/gateway-api/apis/v1alpha2
+      link: https://gateway-api.sigs.k8s.io/reference/spec/#localpolicytargetselectorwithsectionname
+    # Kubernetes core/meta types whose generated anchors don't exist on the
+    # k8s API reference page.
+    - name: PullPolicy
+      package: k8s.io/api/core/v1
+      link: https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
+    - name: Duration
+      package: k8s.io/apimachinery/pkg/apis/meta/v1
+      link: https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Duration

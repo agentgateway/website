@@ -3,8 +3,7 @@ title: Backend TLS
 weight: 10
 ---
 
-Attach to:
-{{< badge content="Backend" path="/configuration/backends/">}}
+Attaches to: {{< badge content="Backend" path="/configuration/backends/">}}
 
 By default, requests to backends use HTTP.
 To use HTTPS, configure a backend {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}} policy.

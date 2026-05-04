@@ -1,3 +1,13 @@
+{{- /*
+  Shortcode: conditional-text
+  Conditionally renders the inner content based on the current docs section (e.g., "standalone" or "kubernetes") extracted from the page URL.
+
+  Parameters:
+    - include-if: (optional) Comma-separated list of section names for which the content should be rendered.
+    - exclude-if: (optional) Comma-separated list of section names for which the content should be hidden.
+
+  Example: {{< conditional-text include-if="kubernetes" >}}This text only appears in the Kubernetes section.{{< /conditional-text >}}
+*/ -}}
 {{- /* Extract the current section (standalone or kubernetes) from the page URL */ -}}
 {{- $path := .Page.RelPermalink -}}
 {{- $segments := split $path "/" -}}

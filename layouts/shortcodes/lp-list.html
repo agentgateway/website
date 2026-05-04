@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: lp-list
+  Renders a list of child pages as styled article cards showing the date, author, title, summary, and a "Read full article" link.
+
+  Parameters:
+    (none -- iterates over child pages of the current page)
+
+  Example: {{< lp-list >}}
+*/ -}}
 <section class="px-6 md:px-10 py-20 md:py-28 max-w-6xl mx-auto bg-gray-50">
   <div class="flex flex-col gap-8">
     {{ range $.Page.Pages }}

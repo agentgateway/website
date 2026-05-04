@@ -224,7 +224,7 @@ info request ... tailscale.node=your-machine-name tailscale.email=you@example.co
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌─────────────────┐
-│   Client     │────▶│agentgateway │────▶│ Tailscale Daemon│
+│   Client     │────▶│ agentgateway │────▶│ Tailscale Daemon│
 │(100.x.x.x)   │     │              │     │                 │
 └──────────────┘     └──────────────┘     └─────────────────┘
        │                    │                      │
@@ -244,38 +244,17 @@ info request ... tailscale.node=your-machine-name tailscale.email=you@example.co
 3. Tailscale returns the node and user information
 4. Agentgateway allows/denies the request and logs the identity
 
-## Adding authorization rules
-
-Restrict access based on Tailscale identity.
-
-```yaml
-policies:
-  extAuthz:
-    host: unix:/var/run/tailscale/tailscaled.sock
-    protocol:
-      http:
-        path: |
-          "/localapi/v0/whois?addr=" + source.address
-        addRequestHeaders:
-          :authority: '"local-tailscaled.sock"'
-        metadata:
-          tailscaleNode: json(response.body).Node.Name
-          tailscaleEmail: json(response.body).UserProfile.LoginName
-  authorization:
-    rules:
-    # Only allow specific users
-    - if: 'extauthz.tailscaleEmail == "admin@example.com"'
-    # Or check node name patterns
-    - if: 'extauthz.tailscaleNode.startsWith("prod-")'
-```
-
 ## Tailscale socket locations
 
 | Platform | Socket Path |
 |----------|-------------|
-| Linux | `/run/tailscale/tailscaled.sock` |
+| Linux | `/var/run/tailscale/tailscaled.sock` |
 | macOS | `/var/run/tailscale/tailscaled.sock` |
 | Windows | Named pipe (not supported via unix socket) |
+
+{{< callout type="info" >}}
+On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
+{{< /callout >}}
 
 ## Cleanup
 

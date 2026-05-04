@@ -1,3 +1,12 @@
+{{- /*
+  Shortcode: link-hextra
+  Generates a section-aware relative URL by prepending the current page's section prefix (up to 3 segments deep) to the provided path.
+
+  Parameters:
+    - path: The path to append to the current section prefix (e.g., "/getting-started/install/").
+
+  Example: {{< link-hextra path="/getting-started/install/" >}}
+*/ -}}
 {{- $path := .Get "path" -}}
 {{- $rel := .Page.RelPermalink -}}
 {{- $match3 := findRE `^/[^/]+/[^/]+/[^/]+` $rel -}}

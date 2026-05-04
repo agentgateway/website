@@ -4,7 +4,7 @@ weight: 55
 description: Dynamically compute and set LLM request fields using CEL expressions.
 test:
   transformations:
-  - file: content/docs/standalone/main/llm/transformations.md
+  - file: content/docs/standalone/latest/llm/transformations.md
     path: transformations
 ---
 
@@ -16,7 +16,7 @@ To learn more about CEL, see the following resources:
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 
 {{< callout type="info" >}}
-Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/" >}}#cel-playground) in the agentgateway admin UI before using them in your configuration.
+Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
 {{< /callout >}}
 
 ## Before you begin
@@ -27,11 +27,10 @@ Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/
 # Install agentgateway binary
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
 BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
 curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"
-export OPENAI_API_KEY="${OPENAI_API_KEY:-<your-api-key>}"
 {{< /doc-test >}}
 
 ## Configure LLM request transformations

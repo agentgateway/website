@@ -162,10 +162,7 @@ Send a request to the httpbin app through the agentgateway proxy.
    access-control-allow-credentials: true
    access-control-allow-origin: *
    content-type: application/json; encoding=utf-8
-   date: Thu, 13 Feb 2025 18:49:32 GMT
    content-length: 330
-   x-envoy-upstream-service-time: 4
-   server: envoy
    ```
    ```json
    {
@@ -203,11 +200,9 @@ Send a request to the httpbin app through the agentgateway proxy.
    access-control-allow-credentials: true
    access-control-allow-origin: *
    content-type: application/json; encoding=utf-8
-   date: Thu, 13 Feb 2025 18:49:32 GMT
    content-length: 330
-   x-envoy-upstream-service-time: 4
-   server: envoy
    ```
+   
    ```json
    {
      "headers": {

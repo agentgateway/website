@@ -1,4 +1,4 @@
-Configure [Continue](https://continue.dev/), the open-source AI code assistant for VS Code, to use agentgateway deployed in Kubernetes.
+Configure [Continue](https://www.continue.dev/), the open-source AI code assistant for VS Code, to use agentgateway deployed in Kubernetes.
 
 ## Before you begin
 

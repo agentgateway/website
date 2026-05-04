@@ -4,13 +4,13 @@ weight: 20
 description:
 test:
   idle-timeout:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: content/docs/kubernetes/latest/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/resiliency/timeouts/idle.md
+  - file: content/docs/kubernetes/latest/resiliency/timeouts/idle.md
     path: idle-timeout
 ---
 

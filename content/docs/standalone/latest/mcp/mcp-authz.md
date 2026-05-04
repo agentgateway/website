@@ -3,7 +3,7 @@ title: MCP authorization
 weight: 40
 test:
   mcp-authz-tools:
-  - file: content/docs/standalone/main/mcp/mcp-authz.md
+  - file: content/docs/standalone/latest/mcp/mcp-authz.md
     path: mcp-authz-tools
 ---
 
@@ -20,7 +20,7 @@ The `mcpAuthorization` policy can be attached at the backend level (applying to 
 # Install agentgateway binary
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/patch-dev.md" >}}"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
 BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
 curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"
@@ -209,7 +209,6 @@ Review the following table of common variables in MCP authorization rules. For t
 |----------|-------------|
 | `mcp.tool.name` | The name of the tool being called |
 | `mcp.tool.target` | The target backend handling the tool call |
-| `mcp.tool.arguments` | The JSON arguments passed to the tool call |
 | `mcp.prompt.name` | The name of the prompt being accessed |
 | `mcp.resource.name` | The name of the resource being accessed |
 | `jwt.sub` | The `sub` (subject) claim from the JWT |

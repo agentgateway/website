@@ -1,1 +1,1 @@
-This policy works only for [MCP](https://modelcontextprotocol.io/) traffic. Note that all standard HTTP policies also apply to MCP traffic.
+This policy works only for [MCP](https://modelcontextprotocol.io/docs/getting-started/intro) traffic. Note that all standard HTTP policies also apply to MCP traffic.

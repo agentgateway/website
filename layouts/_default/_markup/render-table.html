@@ -1,0 +1,27 @@
+<div class="table-wrapper" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+  <table>
+    <thead>
+      {{- range .THead }}
+      <tr>
+        {{- range . }}
+        <th{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>
+          {{- .Text -}}
+        </th>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </thead>
+    <tbody>
+      {{- range .TBody }}
+      <tr>
+        {{- range . }}
+        {{- $nowrap := and (le (len (plainify .Text)) 30) (ne (len (plainify .Text)) 0) -}}
+        <td{{ with .Alignment }} style="text-align: {{ . }}{{ if $nowrap }}; white-space: nowrap{{ end }}"{{ else }}{{ if $nowrap }} style="white-space: nowrap"{{ end }}{{ end }}>
+          {{- .Text -}}
+        </td>
+        {{- end }}
+      </tr>
+      {{- end }}
+    </tbody>
+  </table>
+</div>

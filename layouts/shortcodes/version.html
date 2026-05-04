@@ -1,3 +1,13 @@
+{{- /*
+  Shortcode: version
+  Conditionally renders inner content based on the version segment in the page URL, using TOML-driven version mappings from site params to determine whether to include or exclude content.
+
+  Parameters:
+    - include-if: (optional) Comma-separated list of version identifiers for which the content should be rendered.
+    - exclude-if: (optional) Comma-separated list of version identifiers for which the content should be hidden.
+
+  Example: {{< version include-if="1.18" >}}This content only appears in version 1.18.{{< /version >}}
+*/ -}}
 <!-- Get the current version from the URL path -->
 {{- $url := .Page.RelPermalink -}}
 {{- /* remove leading/trailing slashes */ -}}
