@@ -27,8 +27,12 @@ You configure both modes through standard Kubernetes Service fields, not through
 
 | Behavior | Service field | Value |
 | --- | --- | --- |
-| Failover, prefer same zone | `spec.trafficDistribution` | `PreferClose` |
+| Failover, prefer same zone | `spec.trafficDistribution` | `PreferSameZone` |
 | Strict, same node only | `spec.internalTrafficPolicy` | `Local` |
+
+{{< callout type="info" >}}
+`PreferSameZone` requires Kubernetes 1.34 or later. On earlier versions, use the `PreferClose` value, which has the same behavior but is deprecated in 1.34+.
+{{< /callout >}}
 
 ### How the gateway determines its own locality
 
@@ -76,7 +80,7 @@ kubectl rollout status deployment/agentgateway -n agentgateway-system --timeout=
 
 ## Set up failover across localities {#failover}
 
-Deploy three backend instances that represent three localities, and then enable `PreferClose` on the Service so that the gateway prefers same-zone endpoints and falls back to other zones or regions only when needed.
+Deploy three backend instances that represent three localities, and then enable `PreferSameZone` on the Service so that the gateway prefers same-zone endpoints and falls back to other zones or regions only when needed.
 
 {{< callout type="info" >}}
 The example uses Istio `WorkloadEntry` resources to override locality on each backend. WorkloadEntries are required for single-node clusters such as kind, where every pod runs on the same node and shares one locality. In a real multi-zone cluster, you do not need WorkloadEntries, because each pod inherits locality from the node where it runs, and a Service selector that matches pod labels works as usual.
@@ -403,7 +407,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
    backend-zone-a-868fdff56f-w9jsn
    ```
 
-7. Enable locality-aware failover by setting `trafficDistribution: PreferClose` on the Service.
+7. Enable locality-aware failover by setting `trafficDistribution: PreferSameZone` on the Service.
 
    ```yaml,paths="locality-aware-routing"
    kubectl apply -f- <<EOF
@@ -420,7 +424,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
          port: 80
          targetPort: 80
          protocol: TCP
-     trafficDistribution: PreferClose
+     trafficDistribution: PreferSameZone
    EOF
    ```
 
@@ -440,7 +444,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
    ```
 
    {{< doc-test paths="locality-aware-routing" >}}
-   # Wait for PreferClose to take effect in the proxy's xDS endpoint weights.
+   # Wait for PreferSameZone to take effect in the proxy's xDS endpoint weights.
    for i in $(seq 1 60); do
      body=$(curl -s --max-time 5 -H "host: locality.test" "http://${INGRESS_GW_ADDRESS}/hostname" || echo "")
      case "$body" in
@@ -451,7 +455,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
    {{< /doc-test >}}
 
    {{< doc-test paths="locality-aware-routing" >}}
-   # Assert all requests go to backend-zone-a after PreferClose is enabled.
+   # Assert all requests go to backend-zone-a after PreferSameZone is enabled.
    EXPECTED=20
    EXPECTED_PREFIX=backend-zone-a
    for attempt in $(seq 1 12); do
