@@ -228,7 +228,8 @@ metadata:
 spec:
   mcp:
     targets:
-    - selector:
+    - name: mcp-server-everything
+      selector:
         services:
           matchLabels:
             app: mcp-server-everything
