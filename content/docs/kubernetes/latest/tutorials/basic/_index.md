@@ -171,6 +171,12 @@ spec:
         command: ["npx", "-y", "mcp-proxy", "--port", "8080", "--", "npx", "-y", "@modelcontextprotocol/server-everything"]
         ports:
         - containerPort: 8080
+        readinessProbe:
+          tcpSocket:
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 30
 ---
 apiVersion: v1
 kind: Service
@@ -284,7 +290,7 @@ EOF
 {{< doc-test paths="basic-mcp" >}}
 YAMLTest -f - <<'EOF'
 - name: MCP endpoint accepts initialize request
-  retries: 1
+  retries: 10
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80"
     path: /mcp
