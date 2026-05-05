@@ -440,6 +440,17 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
    ```
 
    {{< doc-test paths="locality-aware-routing" >}}
+   # Wait for PreferClose to take effect in the proxy's xDS endpoint weights.
+   for i in $(seq 1 60); do
+     body=$(curl -s --max-time 5 -H "host: locality.test" "http://${INGRESS_GW_ADDRESS}/hostname" || echo "")
+     case "$body" in
+       backend-zone-a-*) break ;;
+     esac
+     sleep 2
+   done
+   {{< /doc-test >}}
+
+   {{< doc-test paths="locality-aware-routing" >}}
    # Assert all requests go to backend-zone-a after PreferClose is enabled.
    EXPECTED=20
    EXPECTED_PREFIX=backend-zone-a
