@@ -96,6 +96,9 @@ Wait for the proxy to be ready:
 
 ```bash {paths="basic-mcp"}
 kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+```bash
 kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 

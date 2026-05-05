@@ -81,7 +81,7 @@ EOF
 
 Wait for the proxy:
 
-```bash {paths="telemetry"}
+```bash
 kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
