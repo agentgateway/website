@@ -371,7 +371,7 @@
           {{ $fdesc  = replace $fdesc "\n" " " }}
           {{ $sections = printf "%s### %s\n\n" $sections $fname }}
           {{ if $fdesc }}{{ $sections = printf "%s%s\n\n" $sections $fdesc }}{{ end }}
-          {{ $sections = printf "%s_Configure in the `%s` CR at `spec.%s`_\n\n" $sections $crd.kind $fname }}
+          {{ $sections = printf "%s_Configured in the `%s` CR at `spec.%s`_\n\n" $sections $crd.kind $fname }}
 
           {{/* ---- Build table rows for direct sub-properties of spec.<fname> ----
                Strategy:
