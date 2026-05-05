@@ -183,6 +183,8 @@ kind: Service
 metadata:
   name: mcp-server-everything
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    app: mcp-server-everything
 spec:
   selector:
     app: mcp-server-everything
