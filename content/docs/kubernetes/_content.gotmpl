@@ -344,66 +344,171 @@
 
       {{/* ---------------------------------------------------------------- */}}
       {{/* PER-FIELD H3 SECTIONS WITH NESTED FIELD TABLE                    */}}
+      {{/*                                                                   */}}
+      {{/* Table columns: Field | Validation | Description                   */}}
+      {{/*   Validation: "Type: X" first, then enum/min/max/CEL constraints  */}}
+      {{/*   Description: description text; default appended inline          */}}
+      {{/* H4 subheadings: emitted for any L2 subfield that has its own      */}}
+      {{/*   sub-properties, so deeply-nested objects get their own section. */}}
       {{/* ---------------------------------------------------------------- */}}
+
+      {{/* ---- Helper: build a validation string for a single property ---- */}}
+      {{/* Returns constraint tokens joined by " | " for the Validation cell */}}
+      {{/* Usage: call with a property dict (fprop / subprop / etc.)        */}}
+      {{/* We inline this logic because Hugo define blocks can't return      */}}
+      {{/* values — they only render to the output stream.                   */}}
+
+      {{/* ---- Helper: resolve the display type for a property dict ----   */}}
+      {{/* (array items folded in, null stripped from union types)           */}}
+
       {{ $sections := "" }}
       {{ if $specProps }}
         {{ range $fname, $fprop := $specProps }}
-          {{/* Each top-level spec field is an H3 subheading */}}
+
+          {{/* --- H3: top-level spec field heading + description + "Part of" --- */}}
           {{ $fdesc := $fprop.description | default "" }}
           {{ $fdesc  = replace $fdesc "|" "\\|" }}
           {{ $fdesc  = replace $fdesc "\n" " " }}
           {{ $sections = printf "%s### %s\n\n" $sections $fname }}
           {{ if $fdesc }}{{ $sections = printf "%s%s\n\n" $sections $fdesc }}{{ end }}
+          {{ $sections = printf "%s_Configure in the `%s` CR at `spec.%s`_\n\n" $sections $crd.kind $fname }}
 
-          {{/* Nested fields go into a table under the H3.
-               Paths are relative to spec.<fname> — the H3 heading provides that context. */}}
-          {{ $rows := "" }}
+          {{/* ---- Build table rows for direct sub-properties of spec.<fname> ----
+               Strategy:
+               • For each sub-property (L2):
+                 - If it has its own properties → emit an H4 heading for it, then
+                   a table of its sub-sub-properties (L3) below the H4.
+                   The L2 row itself is still emitted in the parent table first
+                   so the field is visible at a glance before drilling down.
+                 - If it has no sub-properties → plain row in the parent table.
+               • L3 fields always go in the H4 table regardless of further depth.
+               Columns: Field | Validation | Description
+          */}}
+
+          {{/* --- Macro: resolve display type string for a property --- */}}
+          {{/* (inlined where needed since Hugo can't return from define) */}}
+
+          {{ $l2rows  := "" }}   {{/* rows for the H3-level table (L2 fields) */}}
+          {{ $h4blocks := "" }}  {{/* H4 sub-sections (for L2 fields that have props) */}}
+
           {{ with $fprop.properties }}
             {{ range $subname, $subprop := . }}
+
+              {{/* Resolve type for this L2 field */}}
               {{ $stype := "" }}
               {{ with $subprop.type }}
                 {{ if reflect.IsSlice . }}
                   {{ $filtered := slice }}
                   {{ range . }}{{ if ne . "null" }}{{ $filtered = $filtered | append . }}{{ end }}{{ end }}
-                  {{ $stype = delimit $filtered " \\| " }}
+                  {{ $stype = delimit $filtered "/" }}
                 {{ else }}{{ $stype = . }}{{ end }}
               {{ end }}
               {{ if eq $stype "array" }}
                 {{ with $subprop.items }}{{ if .type }}{{ $stype = printf "[]%s" .type }}{{ end }}{{ end }}
               {{ end }}
               {{ if not $stype }}{{ $stype = "object" }}{{ end }}
+
+              {{/* Build Validation cell for L2 field */}}
+              {{ $sval := slice (printf "Type: `%s`" $stype) }}
+              {{ with $subprop.enum }}
+                {{ $sval = $sval | append (printf "Enum: `[%s]`" (delimit . ", ")) }}
+              {{ end }}
+              {{ with $subprop.minimum }}{{ $sval = $sval | append (printf "Min: `%v`" .) }}{{ end }}
+              {{ with $subprop.maximum }}{{ $sval = $sval | append (printf "Max: `%v`" .) }}{{ end }}
+              {{ with $subprop.minLength }}{{ $sval = $sval | append (printf "MinLength: `%v`" .) }}{{ end }}
+              {{ with $subprop.maxLength }}{{ $sval = $sval | append (printf "MaxLength: `%v`" .) }}{{ end }}
+              {{ with $subprop.minItems }}{{ $sval = $sval | append (printf "MinItems: `%v`" .) }}{{ end }}
+              {{ with $subprop.maxItems }}{{ $sval = $sval | append (printf "MaxItems: `%v`" .) }}{{ end }}
+              {{ with $subprop.pattern }}{{ $sval = $sval | append (printf "Pattern: `%s`" .) }}{{ end }}
+              {{ range $subprop.required }}{{ $sval = $sval | append (printf "Required: `%s`" .) }}{{ end }}
+              {{ range index $subprop "x-kubernetes-validations" | default slice }}
+                {{ with .message }}{{ $sval = $sval | append . }}{{ end }}
+              {{ end }}
+              {{ $svalStr := delimit $sval "<br>" }}
+
+              {{/* Build Description cell for L2 field (with optional Default appended) */}}
               {{ $sdesc := $subprop.description | default "" }}
               {{ $sdesc  = replace $sdesc "|" "\\|" }}
               {{ $sdesc  = replace $sdesc "\n" " " }}
-              {{ if gt (len $sdesc) 300 }}{{ $sdesc = printf "%s..." (substr $sdesc 0 300) }}{{ end }}
-              {{ $rows = printf "%s| %s | `%s` | %s |\n" $rows $subname $stype $sdesc }}
-              {{/* Level 2 nested fields — relative to spec.<fname>.<subname> */}}
+              {{ if gt (len $sdesc) 400 }}{{ $sdesc = printf "%s..." (substr $sdesc 0 400) }}{{ end }}
+              {{ with $subprop.default }}
+                {{ $sdesc = printf "%s Default: `%v`." $sdesc . }}
+              {{ end }}
+
+              {{/* Emit the L2 row into the H3 table */}}
+              {{ $l2rows = printf "%s| %s | %s | %s |\n" $l2rows $subname $svalStr $sdesc }}
+
+              {{/* If this L2 field has sub-properties, emit an H4 block for them */}}
               {{ with $subprop.properties }}
+                {{ $h4rows := "" }}
                 {{ range $ssname, $ssprop := . }}
+
+                  {{/* Resolve type for L3 field */}}
                   {{ $sstype := "" }}
                   {{ with $ssprop.type }}
                     {{ if reflect.IsSlice . }}
                       {{ $filtered := slice }}
                       {{ range . }}{{ if ne . "null" }}{{ $filtered = $filtered | append . }}{{ end }}{{ end }}
-                      {{ $sstype = delimit $filtered " \\| " }}
+                      {{ $sstype = delimit $filtered "/" }}
                     {{ else }}{{ $sstype = . }}{{ end }}
                   {{ end }}
                   {{ if eq $sstype "array" }}
                     {{ with $ssprop.items }}{{ if .type }}{{ $sstype = printf "[]%s" .type }}{{ end }}{{ end }}
                   {{ end }}
                   {{ if not $sstype }}{{ $sstype = "object" }}{{ end }}
+
+                  {{/* Build Validation cell for L3 field */}}
+                  {{ $ssval := slice (printf "Type: `%s`" $sstype) }}
+                  {{ with $ssprop.enum }}
+                    {{ $ssval = $ssval | append (printf "Enum: `[%s]`" (delimit . ", ")) }}
+                  {{ end }}
+                  {{ with $ssprop.minimum }}{{ $ssval = $ssval | append (printf "Min: `%v`" .) }}{{ end }}
+                  {{ with $ssprop.maximum }}{{ $ssval = $ssval | append (printf "Max: `%v`" .) }}{{ end }}
+                  {{ with $ssprop.minLength }}{{ $ssval = $ssval | append (printf "MinLength: `%v`" .) }}{{ end }}
+                  {{ with $ssprop.maxLength }}{{ $ssval = $ssval | append (printf "MaxLength: `%v`" .) }}{{ end }}
+                  {{ with $ssprop.minItems }}{{ $ssval = $ssval | append (printf "MinItems: `%v`" .) }}{{ end }}
+                  {{ with $ssprop.maxItems }}{{ $ssval = $ssval | append (printf "MaxItems: `%v`" .) }}{{ end }}
+                  {{ with $ssprop.pattern }}{{ $ssval = $ssval | append (printf "Pattern: `%s`" .) }}{{ end }}
+                  {{ range $ssprop.required }}{{ $ssval = $ssval | append (printf "Required: `%s`" .) }}{{ end }}
+                  {{ range index $ssprop "x-kubernetes-validations" | default slice }}
+                    {{ with .message }}{{ $ssval = $ssval | append . }}{{ end }}
+                  {{ end }}
+                  {{ $ssvalStr := delimit $ssval "<br>" }}
+
+                  {{/* Build Description cell for L3 field */}}
                   {{ $ssdesc := $ssprop.description | default "" }}
                   {{ $ssdesc  = replace $ssdesc "|" "\\|" }}
                   {{ $ssdesc  = replace $ssdesc "\n" " " }}
-                  {{ if gt (len $ssdesc) 300 }}{{ $ssdesc = printf "%s..." (substr $ssdesc 0 300) }}{{ end }}
-                  {{ $rows = printf "%s| %s.%s | `%s` | %s |\n" $rows $subname $ssname $sstype $ssdesc }}
+                  {{ if gt (len $ssdesc) 400 }}{{ $ssdesc = printf "%s..." (substr $ssdesc 0 400) }}{{ end }}
+                  {{ with $ssprop.default }}
+                    {{ $ssdesc = printf "%s Default: `%v`." $ssdesc . }}
+                  {{ end }}
+
+                  {{ $h4rows = printf "%s| %s | %s | %s |\n" $h4rows $ssname $ssvalStr $ssdesc }}
+                {{ end }}
+
+                {{ if $h4rows }}
+                  {{/* H4 heading + L2 field description + "Part of" context + table */}}
+                  {{ $sdesc2 := $subprop.description | default "" }}
+                  {{ $sdesc2  = replace $sdesc2 "|" "\\|" }}
+                  {{ $sdesc2  = replace $sdesc2 "\n" " " }}
+                  {{ $h4header := printf "#### %s\n\n" $subname }}
+                  {{ if $sdesc2 }}{{ $h4header = printf "%s%s\n\n" $h4header $sdesc2 }}{{ end }}
+                  {{ $h4header = printf "%s_Configure in the `%s` CR at `spec.%s.%s`_\n\n" $h4header $crd.kind $fname $subname }}
+                  {{ $h4blocks = printf "%s%s| Field | Validation | Description |\n|-------|------------|-------------|\n%s\n" $h4blocks $h4header $h4rows }}
                 {{ end }}
               {{ end }}
             {{ end }}
           {{ end }}
-          {{ if $rows }}
-            {{ $sections = printf "%s| Field | Type | Description |\n|-------|------|-------------|\n%s\n" $sections $rows }}
+
+          {{/* Emit H3 table (L2 fields), then all H4 sub-sections */}}
+          {{ if $l2rows }}
+            {{ $sections = printf "%s| Field | Validation | Description |\n|-------|------------|-------------|\n%s\n" $sections $l2rows }}
           {{ end }}
+          {{ if $h4blocks }}
+            {{ $sections = printf "%s%s" $sections $h4blocks }}
+          {{ end }}
+
         {{ end }}
         {{ $tableSection = printf "%s%s%s" $headerMd $exBlock $sections }}
       {{ else }}
