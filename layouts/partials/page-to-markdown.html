@@ -1,0 +1,39 @@
+{{- /* Returns clean markdown from a page's rendered HTML content.
+     Usage: {{ $md := partial "page-to-markdown.html" . }}
+     Mirrors the copy-markdown.html processing pipeline. */ -}}
+{{- $html := .Content -}}
+{{- /* Convert Hextra card links to simple <p><a> links */ -}}
+{{- $html = $html | replaceRE `(?s)<a\s+class="hextra-card[^"]*"[^>]*href="([^"]*)"[^>]*>.*?<span[^>]*>([^<]+)</span>.*?</a>` "<p><a href=\"$1\">$2</a></p>" -}}
+{{- /* Remove card grid wrappers and their inline styles */ -}}
+{{- $html = $html | replaceRE `(?s)<div class="hextra-cards[^"]*"[^>]*>(.*?)</div>` "$1" -}}
+{{- $html = $html | replaceRE `(?s)<style>\s*\.hextra-card-styled[^<]*</style>` "" -}}
+{{- /* Chroma linenos=table: keep code cell, drop line-number cell */ -}}
+{{- $html = $html | replaceRE `(?s)<table class="lntable"><tr><td class="lntd">\s*<pre[^>]*><code><span class="lnt">.*?</td>\s*<td class="lntd">\s*(<pre[^>]*><code[^>]*>.*?</code></pre>)\s*</td>\s*</tr>\s*</table>` "$1" -}}
+{{- /* Tabs: strip button bar, unhide all panels, inject panel labels */ -}}
+{{- $html = $html | replaceRE `(?s)<div[^>]*role="tablist"[^>]*>.*?</div>` "" -}}
+{{- $html = $html | replaceRE `aria-hidden="true"` "" -}}
+{{- $html = $html | replaceRE `<div class="hextra-tabs-panel[^"]*"[^>]*aria-labelledby="([^"]*)"[^>]*>` `<div style="display:block"><p><strong>Option: $1</strong></p>` -}}
+{{- $md := $html | transform.HTMLToMarkdown -}}
+{{- /* Remove empty heading-permalink anchors */ -}}
+{{- $md = $md | replaceRE `\[\]\(#[^)]+\)` "" -}}
+{{- /* Normalize smart punctuation to ASCII */ -}}
+{{- $md = $md | replaceRE `[""]` `"` -}}
+{{- $md = $md | replaceRE `['']` `'` -}}
+{{- $md = $md | replaceRE `…` `...` -}}
+{{- $md = $md | replaceRE `–` `-` -}}
+{{- $md = $md | replaceRE `—` `--` -}}
+{{- /* Resolve URLs to absolute */ -}}
+{{- $siteBase := site.BaseURL | strings.TrimRight "/" -}}
+{{- $baseURL := $siteBase -}}
+{{- if not (or (hasPrefix $siteBase "http://") (hasPrefix $siteBase "https://")) -}}
+  {{- $baseURL = "https://agentgateway.dev" -}}
+{{- end -}}
+{{- $pagePath := .Permalink | replaceRE `^(https?:)?//[^/]+` "" -}}
+{{- $pageAbs := printf "%s%s" $baseURL $pagePath | strings.TrimRight "/" -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}
+{{- $md = $md | replaceRE `(!\[[^\]]*\]\()(/[^)]+)` (printf "${1}%s${2}" $baseURL) -}}
+{{- $md = $md | replaceRE `!\[\]\(([^)]*/)([^/)]+\.[a-zA-Z]+)\)` "![${2}](${1}${2})" -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()(/[^)#]+)` (printf "${1}%s${2}" $baseURL) -}}
+{{- $md = $md | replaceRE `(\[[^\]]+\]\()([a-zA-Z0-9_\-][^):]*)(\))` (printf "${1}%s/${2}${3}" $pageAbs) -}}
+{{- return $md -}}

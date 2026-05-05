@@ -83,7 +83,7 @@ policies:
   authorization:
     rules:
     # Check for Okta group membership
-    - if: '"AI-Users" in auth.claims.groups'
+    - '"AI-Users" in jwt.groups'
 ```
 
 ## Learn more

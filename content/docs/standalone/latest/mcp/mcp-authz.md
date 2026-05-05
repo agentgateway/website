@@ -209,7 +209,6 @@ Review the following table of common variables in MCP authorization rules. For t
 |----------|-------------|
 | `mcp.tool.name` | The name of the tool being called |
 | `mcp.tool.target` | The target backend handling the tool call |
-| `mcp.tool.arguments` | The JSON arguments passed to the tool call |
 | `mcp.prompt.name` | The name of the prompt being accessed |
 | `mcp.resource.name` | The name of the resource being accessed |
 | `jwt.sub` | The `sub` (subject) claim from the JWT |

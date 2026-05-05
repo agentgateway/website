@@ -419,6 +419,7 @@
                                      data-provider-type="{{ .providerType }}"
                                      data-host="{{ .host }}"
                                      data-path="{{ .path }}"
+                                     data-port="{{ .port }}"
                                      data-model="{{ .model }}"
                                      data-env="{{ .envVar }}"
                                      data-endpoints="{{ with .endpoints }}{{ delimit . " " }}{{ end }}"
@@ -881,50 +882,53 @@ let currentProvider = null;
 // Generate standalone config
 function generateConfig(provider, endpoint) {
     const name = provider.dataset.name || 'Provider';
-    const slug = provider.dataset.slug || 'provider';
-    const type = provider.dataset.type || 'openai-compatible';
-    const providerType = provider.dataset.providerType || slug;
-    const model = endpointModels[endpoint] || provider.dataset.model || 'model-name';
-    const env = provider.dataset.env || 'API_KEY';
+    const type = provider.dataset.type || 'openai-compat';
+    const providerType = provider.dataset.providerType || 'openAI';
+    const rawModel = endpointModels[endpoint] || provider.dataset.model || '';
+    const model = rawModel.startsWith('(') ? '' : rawModel;
+    const env = provider.dataset.env || '';
     const host = provider.dataset.host || 'api.example.com';
+    const port = provider.dataset.port || '443';
     const meta = endpointMeta[endpoint] || {};
     const epPath = meta.path || '/v1/' + endpoint;
+    // For the chat endpoint use the provider's own path (may be non-standard);
+    // for all other endpoints use the standard endpoint path from endpointMeta.
+    const configPath = (endpoint === 'chat' && provider.dataset.path) ? provider.dataset.path : epPath;
+
+    const header = `# ${name} — ${meta.label || endpoint}\n# Endpoint: ${epPath}`;
 
     if (type === 'native') {
-        return `# ${name} — ${meta.label || endpoint}
-# Endpoint: ${epPath}
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: ${slug}
-          provider:
-            ${providerType}:
-              model: ${model}
-      policies:
-        backendAuth:
-          key: "$${env}"`;
+        const modelLine = model ? `\n      model: ${model}` : '';
+        const apiKeyLine = env ? `\n      apiKey: "$${env}"` : '';
+        return `${header}
+llm:
+  models:
+  - name: "*"
+    provider: ${providerType}
+    params:${modelLine}${apiKeyLine}`;
+    } else if (type === 'local') {
+        const modelLine = model ? `\n      model: ${model}` : '';
+        return `${header}
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:${modelLine}
+      host: ${host}
+      port: ${port}
+      path: "${configPath}"`;
     } else {
-        return `# ${name} — ${meta.label || endpoint}
-# Endpoint: ${epPath}
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: ${slug}
-          provider:
-            openAI:
-              model: ${model}
-              host: ${host}
-              port: 443
-              path: "${provider.dataset.path || '/v1/chat/completions'}"
-      policies:
-        backendAuth:
-          key: "$${env}"`;
+        const apiKeyLine = env ? `\n      apiKey: "$${env}"` : '';
+        return `${header}
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: ${model}
+      host: ${host}
+      port: 443
+      path: "${configPath}"${apiKeyLine}`;
     }
 }
 
@@ -932,27 +936,53 @@ binds:
 function generateK8sConfig(provider, endpoint) {
     const name = provider.dataset.name || 'Provider';
     const slug = provider.dataset.slug || 'provider';
-    const type = provider.dataset.type || 'openai-compatible';
-    const providerType = provider.dataset.providerType || slug;
-    const model = endpointModels[endpoint] || provider.dataset.model || 'model-name';
-    const env = provider.dataset.env || 'API_KEY';
+    const type = provider.dataset.type || 'openai-compat';
+    const providerType = provider.dataset.providerType || 'openAI';
+    const rawModel = endpointModels[endpoint] || provider.dataset.model || 'model-name';
+    const model = rawModel.startsWith('(') ? 'your-model' : rawModel;
+    const env = provider.dataset.env || '';
     const host = provider.dataset.host || 'api.example.com';
+    const port = provider.dataset.port || '443';
     const meta = endpointMeta[endpoint] || {};
     const epPath = meta.path || '/v1/' + endpoint;
+    const configPath = (endpoint === 'chat' && provider.dataset.path) ? provider.dataset.path : epPath;
     const secretName = slug + '-secret';
     const backendName = slug;
 
     let providerBlock;
     if (type === 'native') {
-        providerBlock = `            ${providerType}:
-              model: ${model}`;
+        providerBlock = `      ${providerType}:
+        model: ${model}`;
     } else {
-        providerBlock = `            openai:
-              model: ${model}
-              host: ${host}
-              port: 443
-              path: "${provider.dataset.path || '/v1/chat/completions'}"`;
+        providerBlock = `      openai:
+        model: ${model}
+        host: ${host}
+        port: ${port}
+        path: "${configPath}"`;
     }
+
+    const secretStep = env ? `
+# Step 2: Secret
+export ${env}=<your-key>
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: ${secretName}
+  namespace: agentgateway-system
+type: Opaque
+stringData:
+  Authorization: \${${env}}
+EOF
+` : '';
+
+    const policiesBlock = env ? `  policies:
+    auth:
+      secretRef:
+        name: ${secretName}
+` : '';
+
+    const stepOffset = env ? 0 : -1;
 
     return `# ${name} — ${meta.label || endpoint} (Kubernetes)
 # Endpoint: ${epPath}
@@ -974,21 +1004,8 @@ spec:
       namespaces:
         from: All
 EOF
-
-# Step 2: Secret
-export ${env}=<your-key>
-kubectl apply -f- <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: ${secretName}
-  namespace: agentgateway-system
-type: Opaque
-stringData:
-  Authorization: \${${env}}
-EOF
-
-# Step 3: Backend
+${secretStep}
+# Step ${2 + stepOffset}: Backend
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayBackend
@@ -999,13 +1016,9 @@ spec:
   ai:
     provider:
 ${providerBlock}
-    policies:
-      auth:
-        secretRef:
-          name: ${secretName}
-EOF
+${policiesBlock}EOF
 
-# Step 4: Route
+# Step ${3 + stepOffset}: Route
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -1028,7 +1041,7 @@ spec:
       kind: AgentgatewayBackend
 EOF
 
-# Step 5: Port-forward to test
+# Step ${4 + stepOffset}: Port-forward to test
 kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &`;
 }
 

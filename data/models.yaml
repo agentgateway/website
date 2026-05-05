@@ -68,19 +68,13 @@ categories:
           - "tts-1-hd"
           - "gpt-4o-mini-tts"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: openai
-                    provider:
-                      openAI:
-                        model: gpt-4o
-                policies:
-                  backendAuth:
-                    key: "$OPENAI_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: gpt-4o
+                apiKey: "$OPENAI_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -192,24 +186,13 @@ categories:
           - "claude-3-sonnet"
           - "claude-3-haiku"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: anthropic
-                    provider:
-                      anthropic:
-                        model: claude-sonnet-4-20250514
-                    routes:
-                      /v1/messages: messages
-                      /v1/chat/completions: completions
-                      /v1/models: passthrough
-                      "*": passthrough
-                policies:
-                  backendAuth:
-                    key: "$ANTHROPIC_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: anthropic
+              params:
+                model: claude-sonnet-4-20250514
+                apiKey: "$ANTHROPIC_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -356,17 +339,13 @@ categories:
           - "google.gemma-3-27b-it"
           - "google.gemma-3-12b-it"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: bedrock
-                    provider:
-                      bedrock:
-                        model: us.anthropic.claude-sonnet-4-20250514-v1:0
-                        region: us-east-1
+          llm:
+            models:
+            - name: "*"
+              provider: bedrock
+              params:
+                model: us.anthropic.claude-sonnet-4-20250514-v1:0
+                region: us-east-1
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -497,19 +476,13 @@ categories:
           - "gemma-2-9b-it"
           - "learnlm-1.5-pro"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: gemini
-                    provider:
-                      gemini:
-                        model: gemini-2.5-flash
-                policies:
-                  backendAuth:
-                    key: "$GOOGLE_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: gemini
+              params:
+                model: gemini-2.5-flash
+                apiKey: "$GOOGLE_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -644,21 +617,15 @@ categories:
           - "mistral-large"
           - "jamba-1.5-large"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: vertex-ai
-                    provider:
-                      vertexAI:
-                        model: gemini-pro
-                        projectId: "my-gcp-project"
-                        region: "us-central1"
-                policies:
-                  backendAuth:
-                    key: "$VERTEX_AI_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: vertexAI
+              params:
+                model: gemini-pro
+                projectId: "my-gcp-project"
+                region: "us-central1"
+                apiKey: "$VERTEX_AI_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -798,24 +765,16 @@ categories:
           - "whisper"
           - "tts-1"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: azure-openai
-                    provider:
-                      openAI:
-                        model: gpt-4o
-                        host: your-resource.openai.azure.com
-                        port: 443
-                        path: "/openai/deployments/gpt-4o/chat/completions?api-version=2024-10-21"
-                policies:
-                  backendAuth:
-                    key: "$AZURE_API_KEY"
-                  tls:
-                    sni: your-resource.openai.azure.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: gpt-4o
+                host: your-resource.openai.azure.com
+                port: 443
+                path: "/openai/deployments/gpt-4o/chat/completions?api-version=2024-10-21"
+                apiKey: "$AZURE_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -955,24 +914,16 @@ categories:
           - "open-mixtral-8x7b"
           - "open-mixtral-8x22b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: mistral
-                    provider:
-                      openAI:
-                        model: mistral-medium-2505
-                        host: api.mistral.ai
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$MISTRAL_API_KEY"
-                  tls:
-                    sni: api.mistral.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: mistral-medium-2505
+                host: api.mistral.ai
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$MISTRAL_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1085,24 +1036,16 @@ categories:
           - "deepseek-r1"
           - "deepseek-coder"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: deepseek
-                    provider:
-                      openAI:
-                        model: deepseek-chat
-                        host: api.deepseek.com
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$DEEPSEEK_API_KEY"
-                  tls:
-                    sni: api.deepseek.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: deepseek-chat
+                host: api.deepseek.com
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$DEEPSEEK_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1221,24 +1164,16 @@ categories:
           - "grok-beta"
           - "grok-vision-beta"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: xai
-                    provider:
-                      openAI:
-                        model: grok-2-latest
-                        host: api.x.ai
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$XAI_API_KEY"
-                  tls:
-                    sni: api.x.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: grok-2-latest
+                host: api.x.ai
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$XAI_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1361,24 +1296,16 @@ categories:
           - "whisper-large-v3"
           - "whisper-large-v3-turbo"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: groq
-                    provider:
-                      openAI:
-                        model: llama-3.3-70b-versatile
-                        host: api.groq.com
-                        port: 443
-                        path: "/openai/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$GROQ_API_KEY"
-                  tls:
-                    sni: api.groq.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: llama-3.3-70b-versatile
+                host: api.groq.com
+                port: 443
+                path: "/openai/v1/chat/completions"
+                apiKey: "$GROQ_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1501,24 +1428,16 @@ categories:
           - "c4ai-aya-expanse-32b"
           - "c4ai-aya-vision-32b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: cohere
-                    provider:
-                      openAI:
-                        model: command-r-plus
-                        host: api.cohere.ai
-                        port: 443
-                        path: "/compatibility/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$COHERE_API_KEY"
-                  tls:
-                    sni: api.cohere.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: command-r-plus
+                host: api.cohere.ai
+                port: 443
+                path: "/compatibility/v1/chat/completions"
+                apiKey: "$COHERE_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1655,24 +1574,16 @@ categories:
           - "mistralai/Mixtral-8x22B-Instruct-v0.1"
           - "mistralai/Mistral-Small-24B-Instruct-2501"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: together
-                    provider:
-                      openAI:
-                        model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
-                        host: api.together.xyz
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$TOGETHER_API_KEY"
-                  tls:
-                    sni: api.together.xyz
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+                host: api.together.xyz
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$TOGETHER_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1813,24 +1724,16 @@ categories:
           - "yi-large"
           - "phi-3-vision-128k-instruct"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: fireworks
-                    provider:
-                      openAI:
-                        model: accounts/fireworks/models/llama-v3p1-70b-instruct
-                        host: api.fireworks.ai
-                        port: 443
-                        path: "/inference/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$FIREWORKS_API_KEY"
-                  tls:
-                    sni: api.fireworks.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: accounts/fireworks/models/llama-v3p1-70b-instruct
+                host: api.fireworks.ai
+                port: 443
+                path: "/inference/v1/chat/completions"
+                apiKey: "$FIREWORKS_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1943,24 +1846,16 @@ categories:
           - "llama-3.1-sonar-large-128k-online"
           - "llama-3.1-sonar-huge-128k-online"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: perplexity
-                    provider:
-                      openAI:
-                        model: sonar-pro
-                        host: api.perplexity.ai
-                        port: 443
-                        path: "/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$PERPLEXITY_API_KEY"
-                  tls:
-                    sni: api.perplexity.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: sonar-pro
+                host: api.perplexity.ai
+                port: 443
+                path: "/chat/completions"
+                apiKey: "$PERPLEXITY_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2118,24 +2013,16 @@ categories:
           - "cohere/command-r-plus"
           - "nousresearch/hermes-3-llama-3.1-405b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: openrouter
-                    provider:
-                      openAI:
-                        model: anthropic/claude-sonnet-4-20250514
-                        host: openrouter.ai
-                        port: 443
-                        path: "/api/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$OPENROUTER_API_KEY"
-                  tls:
-                    sni: openrouter.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: anthropic/claude-sonnet-4-20250514
+                host: openrouter.ai
+                port: 443
+                path: "/api/v1/chat/completions"
+                apiKey: "$OPENROUTER_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2250,24 +2137,16 @@ categories:
           - "zai-glm-4.6"
           - "zai-glm-4.7"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: cerebras
-                    provider:
-                      openAI:
-                        model: llama-3.3-70b
-                        host: api.cerebras.ai
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$CEREBRAS_API_KEY"
-                  tls:
-                    sni: api.cerebras.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: llama-3.3-70b
+                host: api.cerebras.ai
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$CEREBRAS_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2390,24 +2269,16 @@ categories:
           - "Qwen3-235B-A22B-Instruct-2507"
           - "gpt-oss-120b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: sambanova
-                    provider:
-                      openAI:
-                        model: Meta-Llama-3.1-70B-Instruct
-                        host: api.sambanova.ai
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$SAMBANOVA_API_KEY"
-                  tls:
-                    sni: api.sambanova.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: Meta-Llama-3.1-70B-Instruct
+                host: api.sambanova.ai
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$SAMBANOVA_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2543,24 +2414,16 @@ categories:
           - "mistralai/Mixtral-8x22B-Instruct-v0.1"
           - "microsoft/WizardLM-2-8x22B"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: deepinfra
-                    provider:
-                      openAI:
-                        model: meta-llama/Llama-3.3-70B-Instruct-Turbo
-                        host: api.deepinfra.com
-                        port: 443
-                        path: "/v1/openai/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$DEEPINFRA_API_KEY"
-                  tls:
-                    sni: api.deepinfra.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/Llama-3.3-70B-Instruct-Turbo
+                host: api.deepinfra.com
+                port: 443
+                path: "/v1/openai/chat/completions"
+                apiKey: "$DEEPINFRA_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2694,24 +2557,16 @@ categories:
           - "bigscience/bloom"
           - "tiiuae/falcon-180B-chat"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: huggingface
-                    provider:
-                      openAI:
-                        model: meta-llama/Llama-3.1-70B-Instruct
-                        host: api-inference.huggingface.co
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$HF_API_KEY"
-                  tls:
-                    sni: api-inference.huggingface.co
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/Llama-3.1-70B-Instruct
+                host: api-inference.huggingface.co
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$HF_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2840,24 +2695,16 @@ categories:
           - "nvidia/nemotron-3-nano-30b-a3b"
           - "nvidia/nemotron-3-super-120b-a12b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: nvidia-nim
-                    provider:
-                      openAI:
-                        model: meta/llama-3.1-70b-instruct
-                        host: integrate.api.nvidia.com
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$NVIDIA_API_KEY"
-                  tls:
-                    sni: integrate.api.nvidia.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta/llama-3.1-70b-instruct
+                host: integrate.api.nvidia.com
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$NVIDIA_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2978,24 +2825,16 @@ categories:
           - "google/gemini-2.5-flash"
           - "mistralai/mixtral-8x7b-instruct-v0.1"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: replicate
-                    provider:
-                      openAI:
-                        model: meta/llama-3.1-405b-instruct
-                        host: api.replicate.com
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$REPLICATE_API_KEY"
-                  tls:
-                    sni: api.replicate.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta/llama-3.1-405b-instruct
+                host: api.replicate.com
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$REPLICATE_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3109,19 +2948,13 @@ categories:
           - "j2-mid"
           - "j2-light"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: ai21
-                    provider:
-                      openai:
-                        model: jamba-1.5-large
-                policies:
-                  backendAuth:
-                    key: "$AI21_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: jamba-1.5-large
+                apiKey: "$AI21_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3229,19 +3062,13 @@ categories:
           - "@cf/deepseek-ai/deepseek-r1-distill-qwen-32b"
           - "@hf/thebloke/deepseek-coder-6.7b-instruct-awq"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: cloudflare
-                    provider:
-                      openai:
-                        model: @cf/meta/llama-3.1-8b-instruct
-                policies:
-                  backendAuth:
-                    key: "$CF_API_TOKEN"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: "@cf/meta/llama-3.1-8b-instruct"
+                apiKey: "$CF_API_TOKEN"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3345,19 +3172,13 @@ categories:
           - "deepseek-llm-67b-chat"
           - "qwen2.5-72b-instruct"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: lambda
-                    provider:
-                      openai:
-                        model: llama-3.3-70b-instruct
-                policies:
-                  backendAuth:
-                    key: "$LAMBDA_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: llama-3.3-70b-instruct
+                apiKey: "$LAMBDA_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3466,19 +3287,13 @@ categories:
           - "deepseek-ai/DeepSeek-V3-0324"
           - "mistralai/Mistral-Large-2411"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: nebius
-                    provider:
-                      openai:
-                        model: meta-llama/Llama-3.3-70B-Instruct
-                policies:
-                  backendAuth:
-                    key: "$NEBIUS_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/Llama-3.3-70B-Instruct
+                apiKey: "$NEBIUS_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3588,19 +3403,13 @@ categories:
           - "mistralai/mistral-large-2411"
           - "microsoft/phi-4"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: novita
-                    provider:
-                      openai:
-                        model: meta-llama/llama-3.3-70b-instruct
-                policies:
-                  backendAuth:
-                    key: "$NOVITA_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/llama-3.3-70b-instruct
+                apiKey: "$NOVITA_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3708,19 +3517,13 @@ categories:
           - "Qwen/QwQ-32B"
           - "mistralai/Mistral-Small-24B-Instruct-2501"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: hyperbolic
-                    provider:
-                      openai:
-                        model: meta-llama/Llama-3.3-70B-Instruct
-                policies:
-                  backendAuth:
-                    key: "$HYPERBOLIC_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/Llama-3.3-70B-Instruct
+                apiKey: "$HYPERBOLIC_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3846,24 +3649,16 @@ categories:
           - "databricks-gemini-3-pro"
           - "databricks-qwen3-235b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: databricks
-                    provider:
-                      openAI:
-                        model: databricks-meta-llama-3-1-70b-instruct
-                        host: <your-workspace>.cloud.databricks.com
-                        port: 443
-                        path: "/serving-endpoints/databricks-meta-llama-3-1-70b-instruct/invocations"
-                policies:
-                  backendAuth:
-                    key: "$DATABRICKS_TOKEN"
-                  tls:
-                    sni: <your-workspace>.cloud.databricks.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: databricks-meta-llama-3-1-70b-instruct
+                host: <your-workspace>.cloud.databricks.com
+                port: 443
+                path: "/serving-endpoints/databricks-meta-llama-3-1-70b-instruct/invocations"
+                apiKey: "$DATABRICKS_TOKEN"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -3997,24 +3792,16 @@ categories:
           - "Phi-3-medium-128k-instruct"
           - "AI21-Jamba-1.5-Large"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: github-models
-                    provider:
-                      openAI:
-                        model: gpt-4o
-                        host: models.inference.ai.azure.com
-                        port: 443
-                        path: "/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$GITHUB_TOKEN"
-                  tls:
-                    sni: models.inference.ai.azure.com
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: gpt-4o
+                host: models.inference.ai.azure.com
+                port: 443
+                path: "/chat/completions"
+                apiKey: "$GITHUB_TOKEN"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -4128,24 +3915,16 @@ categories:
           - "deepseek-r1-distill-llama-70b"
           - "deepseek-r1-distill-qwen-32b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: scaleway
-                    provider:
-                      openAI:
-                        model: llama-3.1-70b-instruct
-                        host: api.scaleway.ai
-                        port: 443
-                        path: "/v1/chat/completions"
-                policies:
-                  backendAuth:
-                    key: "$SCALEWAY_API_KEY"
-                  tls:
-                    sni: api.scaleway.ai
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: llama-3.1-70b-instruct
+                host: api.scaleway.ai
+                port: 443
+                path: "/v1/chat/completions"
+                apiKey: "$SCALEWAY_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -4281,19 +4060,13 @@ categories:
           - "qwen-vl-plus"
           - "qwen-coder-turbo"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: dashscope
-                    provider:
-                      openai:
-                        model: qwen-max
-                policies:
-                  backendAuth:
-                    key: "$DASHSCOPE_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: qwen-max
+                apiKey: "$DASHSCOPE_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -4397,19 +4170,13 @@ categories:
           - "kimi-k2"
           - "kimi-k2.5"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: moonshot
-                    provider:
-                      openai:
-                        model: kimi-latest
-                policies:
-                  backendAuth:
-                    key: "$MOONSHOT_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: kimi-latest
+                apiKey: "$MOONSHOT_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -4523,19 +4290,13 @@ categories:
           - "glm-4v-plus"
           - "codegeex-4"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: zhipu
-                    provider:
-                      openai:
-                        model: glm-4-plus
-                policies:
-                  backendAuth:
-                    key: "$ZHIPU_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: glm-4-plus
+                apiKey: "$ZHIPU_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -4647,19 +4408,13 @@ categories:
           - "doubao-vision-pro-32k"
           - "doubao-embedding"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: volcengine
-                    provider:
-                      openai:
-                        model: doubao-pro-32k
-                policies:
-                  backendAuth:
-                    key: "$VOLC_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: doubao-pro-32k
+                apiKey: "$VOLC_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -4777,19 +4532,13 @@ categories:
           - "mistralai/mistral-large"
           - "openai/gpt-oss-120b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: watsonx
-                    provider:
-                      openai:
-                        model: ibm/granite-3.1-8b-instruct
-                policies:
-                  backendAuth:
-                    key: "$WATSONX_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: ibm/granite-3.1-8b-instruct
+                apiKey: "$WATSONX_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -4907,16 +4656,12 @@ categories:
           - "snowflake-arctic"
           - "gemma-7b"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: snowflake
-                    provider:
-                      openai:
-                        model: llama3.3-70b
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: llama3.3-70b
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -5006,19 +4751,13 @@ categories:
           - "Qwen2.5-72B-Instruct"
           - "Phi-3-mini-4k-instruct"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: ovhcloud
-                    provider:
-                      openai:
-                        model: Llama-3.3-70B-Instruct
-                policies:
-                  backendAuth:
-                    key: "$OVH_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: Llama-3.3-70B-Instruct
+                apiKey: "$OVH_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -5121,19 +4860,13 @@ categories:
           - "cohere.command-r"
           - "meta.llama-3.2-90b-vision-instruct"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: oci
-                    provider:
-                      openai:
-                        model: meta.llama-3.3-70b-instruct
-                policies:
-                  backendAuth:
-                    key: "$OCI_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta.llama-3.3-70b-instruct
+                apiKey: "$OCI_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -5238,19 +4971,13 @@ categories:
           - "google/gemma-7b-it"
           - "codellama/CodeLlama-70b-Instruct-hf"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: anyscale
-                    provider:
-                      openai:
-                        model: meta-llama/Llama-3-70b-chat-hf
-                policies:
-                  backendAuth:
-                    key: "$ANYSCALE_API_KEY"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/Llama-3-70b-chat-hf
+                apiKey: "$ANYSCALE_API_KEY"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -5389,19 +5116,15 @@ categories:
           - "devstral"
           - "cogito"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: ollama
-                    provider:
-                      openAI:
-                        model: llama3.2
-                        host: localhost
-                        port: 11434
-                        path: "/v1/chat/completions"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: llama3.2
+                host: localhost
+                port: 11434
+                path: "/v1/chat/completions"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -5540,19 +5263,15 @@ categories:
           - "microsoft/Phi-4"
           - "Any HuggingFace model"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: vllm
-                    provider:
-                      openAI:
-                        model: meta-llama/Llama-3.1-8B-Instruct
-                        host: localhost
-                        port: 8000
-                        path: "/v1/chat/completions"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                model: meta-llama/Llama-3.1-8B-Instruct
+                host: localhost
+                port: 8000
+                path: "/v1/chat/completions"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -5689,18 +5408,14 @@ categories:
           - "DeepSeek R1 distills"
           - "CodeLlama"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: llamacpp
-                    provider:
-                      openAI:
-                        host: localhost
-                        port: 8080
-                        path: "/v1/chat/completions"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                host: localhost
+                port: 8080
+                path: "/v1/chat/completions"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -5783,18 +5498,14 @@ categories:
           - "Any Python backend model"
           - "Custom ONNX models"
         standalone: |
-          binds:
-          - port: 3000
-            listeners:
-            - routes:
-              - backends:
-                - ai:
-                    name: triton
-                    provider:
-                      openAI:
-                        host: localhost
-                        port: 8000
-                        path: "/v1/chat/completions"
+          llm:
+            models:
+            - name: "*"
+              provider: openAI
+              params:
+                host: localhost
+                port: 8000
+                path: "/v1/chat/completions"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
