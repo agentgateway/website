@@ -227,10 +227,11 @@ metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   mcp:
-    selector:
-      services:
-        matchLabels:
-          app: mcp-server-everything
+    targets:
+    - selector:
+        services:
+          matchLabels:
+            app: mcp-server-everything
 EOF
 ```
 

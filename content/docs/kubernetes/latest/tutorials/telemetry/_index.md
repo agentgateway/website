@@ -16,7 +16,7 @@ In this tutorial, you will:
 
 1. Set up a local Kubernetes cluster with agentgateway and an LLM backend
 2. Deploy Jaeger for trace collection and visualization
-3. Configure a TrafficPolicy to enable distributed tracing
+3. Configure an AgentgatewayPolicy to enable distributed tracing
 4. Send requests and view traces in the Jaeger UI
 
 ## Before you begin
@@ -202,14 +202,14 @@ EOF
 
 ---
 
-## Step 5: Configure tracing with a TrafficPolicy
+## Step 5: Configure tracing with an AgentgatewayPolicy
 
-Create a TrafficPolicy that sends traces to the Jaeger collector.
+Create an AgentgatewayPolicy that sends traces to the Jaeger collector.
 
 ```bash {paths="telemetry"}
 kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1alpha2
-kind: TrafficPolicy
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
 metadata:
   name: tracing
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
