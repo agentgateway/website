@@ -5,7 +5,7 @@ description: Reduce cross-zone traffic costs and latency with topology-aware rou
 test:
   locality-aware-routing:
   - file: content/docs/kubernetes/main/quickstart/install.md
-    path: standard
+    path: experimental
   - file: content/docs/kubernetes/main/traffic-management/locality-aware-routing.md
     path: locality-aware-routing
 ---

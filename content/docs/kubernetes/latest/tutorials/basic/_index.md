@@ -2,6 +2,10 @@
 title: Basic MCP server
 weight: 2
 description: Deploy and connect to an MCP server through agentgateway on Kubernetes
+test:
+  basic-mcp:
+  - file: content/docs/kubernetes/latest/tutorials/basic/_index.md
+    path: basic-mcp
 ---
 
 Deploy an MCP server on Kubernetes and connect to it through agentgateway using the Kubernetes Gateway API.
@@ -46,7 +50,7 @@ kubectl cluster-info --context kind-agentgateway
 
 Install the Gateway API CRDs, agentgateway CRDs, and the control plane.
 
-```bash
+```bash {paths="basic-mcp"}
 # Gateway API CRDs
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
@@ -61,7 +65,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
 Verify the control plane is running:
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
@@ -69,7 +73,7 @@ kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 
 ## Step 3: Create a Gateway
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -90,10 +94,53 @@ EOF
 
 Wait for the proxy to be ready:
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+```bash
 kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
+
+{{< doc-test paths="basic-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-proxy deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: wait for agentgateway-proxy service LB address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="basic-mcp" >}}
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+{{< /doc-test >}}
 
 ---
 
@@ -101,7 +148,7 @@ kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namesp
 
 Deploy the MCP "everything" server as a Kubernetes Deployment and Service. This server provides sample tools like `echo`, `add`, and `longRunningOperation`.
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
 kind: Deployment
@@ -120,22 +167,30 @@ spec:
     spec:
       containers:
       - name: mcp-server
-        image: node:22-alpine
-        command: ["npx", "-y", "mcp-proxy", "--port", "8080", "--", "npx", "-y", "@modelcontextprotocol/server-everything"]
+        image: node:20-alpine
+        command: ["npx", "-y", "@modelcontextprotocol/server-everything", "streamableHttp"]
         ports:
-        - containerPort: 8080
+        - containerPort: 3001
+        readinessProbe:
+          tcpSocket:
+            port: 3001
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          failureThreshold: 30
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: mcp-server-everything
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  labels:
+    app: mcp-server-everything
 spec:
   selector:
     app: mcp-server-everything
   ports:
-  - port: 80
-    targetPort: 8080
+  - port: 3001
+    targetPort: 3001
     appProtocol: agentgateway.dev/mcp
 EOF
 ```
@@ -146,13 +201,32 @@ Wait for the MCP server pod to be ready. The first startup may take a minute as 
 kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=mcp-server-everything -w
 ```
 
+{{< doc-test paths="basic-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp-server-everything deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: mcp-server-everything
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 ---
 
 ## Step 5: Create the MCP backend
 
 Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that connects to the MCP server using dynamic service discovery.
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -161,10 +235,12 @@ metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   mcp:
-    selector:
-      services:
-        matchLabels:
-          app: mcp-server-everything
+    targets:
+    - name: mcp-server-everything
+      selector:
+        services:
+          matchLabels:
+            app: mcp-server-everything
 EOF
 ```
 
@@ -174,7 +250,7 @@ EOF
 
 Route MCP traffic through the agentgateway proxy to the backend.
 
-```bash
+```bash {paths="basic-mcp"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
@@ -187,12 +263,78 @@ spec:
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
     - backendRefs:
-      - name: mcp-backend
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        group: agentgateway.dev
-        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+        - name: mcp-backend
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: agentgateway.dev
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+      matches:
+      - path:
+          type: PathPrefix
+          value: /mcp
 EOF
 ```
+
+{{< doc-test paths="basic-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for mcp-backend to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: mcp-backend
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+
+- name: wait for mcp HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: mcp
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="basic-mcp" >}}
+for i in $(seq 1 90); do
+  STATUS=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}' 2>/dev/null)
+  if [ "$STATUS" = "200" ]; then break; fi
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="basic-mcp" >}}
+YAMLTest -f - <<'EOF'
+- name: MCP endpoint accepts initialize request
+  retries: 10
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /mcp
+    method: POST
+    headers:
+      content-type: application/json
+      accept: "application/json, text/event-stream"
+    body: |
+      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 ---
 

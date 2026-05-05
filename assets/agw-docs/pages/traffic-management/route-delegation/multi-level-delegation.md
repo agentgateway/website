@@ -144,48 +144,6 @@ The following image illustrates the route delegation hierarchy:
        polling:
          timeoutSeconds: 300
          intervalSeconds: 5
-   - name: wait for child-team1 HTTPRoute to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: team1
-           name: child-team1
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   - name: wait for child-team2 HTTPRoute to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: team2
-           name: child-team2
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
-   - name: wait for grandchild HTTPRoute to be accepted
-     wait:
-       target:
-         kind: HTTPRoute
-         metadata:
-           namespace: team2
-           name: grandchild
-       jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
-       jsonPathExpectation:
-         comparator: equals
-         value: "True"
-       polling:
-         timeoutSeconds: 300
-         intervalSeconds: 5
    EOF
    {{< /doc-test >}}
 

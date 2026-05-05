@@ -2,6 +2,10 @@
 title: Telemetry & observability
 weight: 6
 description: Enable tracing, prompt logging, cost tracking, and metrics for agentgateway on Kubernetes
+test:
+  telemetry:
+  - file: content/docs/kubernetes/latest/tutorials/telemetry/_index.md
+    path: telemetry
 ---
 
 Enable distributed tracing and metrics collection for agentgateway on Kubernetes using OpenTelemetry and Jaeger. Get prompt logging, cost tracking, and an audit trail: traces include LLM request/response data and token usage for each request.
@@ -12,7 +16,7 @@ In this tutorial, you will:
 
 1. Set up a local Kubernetes cluster with agentgateway and an LLM backend
 2. Deploy Jaeger for trace collection and visualization
-3. Configure a TrafficPolicy to enable distributed tracing
+3. Configure an AgentgatewayPolicy to enable distributed tracing
 4. Send requests and view traces in the Jaeger UI
 
 ## Before you begin
@@ -38,7 +42,7 @@ kind create cluster --name agentgateway
 
 ## Step 2: Install agentgateway
 
-```bash
+```bash {paths="telemetry"}
 # Gateway API CRDs
 kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
@@ -56,7 +60,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
 ## Step 3: Create a Gateway
 
-```bash
+```bash {paths="telemetry"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
@@ -81,13 +85,53 @@ Wait for the proxy:
 kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
+{{< doc-test paths="telemetry" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for agentgateway-proxy deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: wait for agentgateway-proxy service LB address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: agentgateway-system
+        name: agentgateway-proxy
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+  setVars:
+    INGRESS_GW_ADDRESS:
+      value: true
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="telemetry" >}}
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+{{< /doc-test >}}
+
 ---
 
 ## Step 4: Deploy Jaeger
 
 Deploy Jaeger as a trace collector and visualization tool in its own namespace.
 
-```bash
+```bash {paths="telemetry"}
 kubectl create namespace telemetry
 
 kubectl apply -n telemetry -f- <<EOF
@@ -137,16 +181,35 @@ Wait for Jaeger to be ready:
 kubectl get pods -n telemetry -w
 ```
 
+{{< doc-test paths="telemetry" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for jaeger deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: telemetry
+        name: jaeger
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
 ---
 
-## Step 5: Configure tracing with a TrafficPolicy
+## Step 5: Configure tracing with an AgentgatewayPolicy
 
-Create a TrafficPolicy that sends traces to the Jaeger collector.
+Create an AgentgatewayPolicy that sends traces to the Jaeger collector.
 
-```bash
+```bash {paths="telemetry"}
 kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1alpha2
-kind: TrafficPolicy
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
 metadata:
   name: tracing
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -174,6 +237,92 @@ This policy:
 ---
 
 ## Step 6: Set up an LLM backend
+
+{{< doc-test paths="telemetry" >}}
+export OPENAI_API_KEY=${OPENAI_API_KEY:-placeholder}
+
+kubectl apply -f- <<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openai-secret
+  namespace: agentgateway-system
+type: Opaque
+stringData:
+  Authorization: $OPENAI_API_KEY
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: openai
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: gpt-4.1-nano
+  policies:
+    auth:
+      secretRef:
+        name: openai-secret
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agentgateway-system
+  rules:
+    - backendRefs:
+      - name: openai
+        namespace: agentgateway-system
+        group: agentgateway.dev
+        kind: AgentgatewayBackend
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="telemetry" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for openai backend to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="telemetry" >}}
+YAMLTest -f - <<'EOF'
+- name: send request to OpenAI through agentgateway with tracing
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      content-type: application/json
+    body: |
+      {
+        "model": "gpt-4.1-nano",
+        "messages": [{"role": "user", "content": "Say hello in one word"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
 
 ```bash
 export OPENAI_API_KEY=<insert your API key>
