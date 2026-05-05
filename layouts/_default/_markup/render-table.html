@@ -15,8 +15,7 @@
       {{- range .TBody }}
       <tr>
         {{- range . }}
-        {{- $nowrap := and (le (len (plainify .Text)) 30) (ne (len (plainify .Text)) 0) -}}
-        <td{{ with .Alignment }} style="text-align: {{ . }}{{ if $nowrap }}; white-space: nowrap{{ end }}"{{ else }}{{ if $nowrap }} style="white-space: nowrap"{{ end }}{{ end }}>
+        <td{{ with .Alignment }} style="text-align: {{ . }}"{{ end }}>
           {{- .Text -}}
         </td>
         {{- end }}
