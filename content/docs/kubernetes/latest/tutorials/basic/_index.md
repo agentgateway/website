@@ -261,10 +261,10 @@ spec:
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   rules:
     - backendRefs:
-      - name: mcp-backend
-        namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        group: agentgateway.dev
-        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+        - name: mcp-backend
+          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          group: agentgateway.dev
+          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
 
@@ -283,6 +283,21 @@ YAMLTest -f - <<'EOF'
       value: "True"
     polling:
       timeoutSeconds: 60
+      intervalSeconds: 2
+
+- name: wait for mcp HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: mcp
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
       intervalSeconds: 2
 EOF
 {{< /doc-test >}}
