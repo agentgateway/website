@@ -167,13 +167,13 @@ spec:
     spec:
       containers:
       - name: mcp-server
-        image: node:22-alpine
-        command: ["npx", "-y", "mcp-proxy", "--port", "8080", "--", "npx", "-y", "@modelcontextprotocol/server-everything"]
+        image: node:20-alpine
+        command: ["npx", "-y", "@modelcontextprotocol/server-everything", "streamableHttp"]
         ports:
-        - containerPort: 8080
+        - containerPort: 3001
         readinessProbe:
           tcpSocket:
-            port: 8080
+            port: 3001
           initialDelaySeconds: 10
           periodSeconds: 5
           failureThreshold: 30
@@ -187,8 +187,8 @@ spec:
   selector:
     app: mcp-server-everything
   ports:
-  - port: 80
-    targetPort: 8080
+  - port: 3001
+    targetPort: 3001
     appProtocol: agentgateway.dev/mcp
 EOF
 ```
@@ -265,6 +265,10 @@ spec:
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
           group: agentgateway.dev
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+      matches:
+      - path:
+          type: PathPrefix
+          value: /mcp
 EOF
 ```
 
@@ -300,6 +304,14 @@ YAMLTest -f - <<'EOF'
       timeoutSeconds: 120
       intervalSeconds: 2
 EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="basic-mcp" >}}
+for i in $(seq 1 90); do
+  STATUS=$(curl -s --max-time 5 -o /dev/null -w "%{http_code}" -X POST "http://${INGRESS_GW_ADDRESS}:80/mcp" -H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}' 2>/dev/null)
+  if [ "$STATUS" = "200" ]; then break; fi
+  sleep 2
+done
 {{< /doc-test >}}
 
 {{< doc-test paths="basic-mcp" >}}
