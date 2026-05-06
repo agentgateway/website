@@ -7,8 +7,6 @@ next: /configuration/traffic-management
 
 {{< gloss "Route" >}}Routes{{< /gloss >}} are the entry points for traffic to your agentgateway. They are configured on listeners and are used to route traffic to {{< gloss "Backend" >}}backends{{< /gloss >}}.
 
-You can use the built-in agentgateway UI or a configuration file to create, update, and delete routes. 
-
 ## Types of routes
 
 You can configure two types of routes: HTTP routes (`routes`) and TCP routes (`tcpRoutes`).
@@ -28,16 +26,22 @@ binds:
     protocol: HTTP
     routes:
     - name: http-backend
+      hostnames:
+      - "example.com"
+      matches:
+      - path:
+          type: PathPrefix
+          value: /
       backends:
       - host: http.example.com:8080
         weight: 1
 ```
 
-For more information, continue to the [Create routes](#create-routes) section.
+HTTP routes support various matching options for incoming requests. For more information, see the [Request matching]({{< link-hextra path="/configuration/traffic-management/matching/" >}}) guide.
 
 ### TCP routes
 
-[TCP listeners](../listeners) use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than other HTTP routes.
+[TCP listeners](../listeners) use `tcpRoutes` instead of `routes`. TCP routes have a simpler structure than HTTP routes.
 
 Keep in mind that TCP routes do not support HTTP features such as path, header, method, or query matching, and HTTP-specific filters and policies.
 
@@ -59,116 +63,61 @@ binds:
 
 For more information, see [TCP route matching]({{< link-hextra path="/configuration/traffic-management/matching#tcp-routes" >}}).
 
-## Before you begin
+## Route configuration
 
-1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Set up a listener]({{< link-hextra path="/configuration/listeners" >}}).
+Routes are configured within the `routes` or `tcpRoutes` section of a listener. The following fields are available for route configuration:
 
-## Create routes
+| Field | Description |
+|-------|-------------|
+| `name` | An optional name for the route. |
+| `hostnames` | A list of hostnames that the route serves traffic on. |
+| `matches` | Defines the matching rules for the route, including path, headers, methods, and query parameters. For more options, see the [Request matching]({{< link-hextra path="/configuration/traffic-management/matching/" >}}) guide. |
+| `backends` | Specifies the {{< gloss "Backend" >}}backend{{< /gloss >}} services to route traffic to. |
+| `policies` | Optional {{< gloss "Policy" >}}policies{{< /gloss >}} to apply to the route. |
 
-Set up a route on your listener. 
+### Backend configuration
 
-{{< tabs items="UI,Configuration file" >}}
-{{% tab %}}
+Routes route traffic to backends, which can be configured with the following fields:
 
-1. Download a configuration file for your agentgateway.
-   ```yaml
-   curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
-   ```
+| Field | Description |
+|-------|-------------|
+| `host` | The hostname or IP address of the backend. |
+| `weight` | The weight for load balancing across multiple backends. |
 
-2. Review the configuration file.
+For more advanced backend configurations, such as MCP servers and LLM providers, see the [Backends]({{< link-hextra path="/configuration/backends" >}}) documentation.
 
-   ```
-   cat config.yaml
-   ```
+### Example configuration with policies
 
-   {{% github-yaml url="https://agentgateway.dev/examples/basic/config.yaml" %}}
+The following example shows a route with CORS policy configuration:
 
-3. Run the agentgateway. 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-4. [Open the agentgateway route UI](http://localhost:15000/ui/routes/). 
-   {{< reuse-image src="img/ui-routes-none.png" >}}
-
-5. Click **Add Route** and configure a route such as follows:
-   * Name: An optional name for the route.
-   * Rule Name: An optional name for the matching rules of the route.
-   * Target Listener: Select the listener that you previously created. The Route Type is automatically determined based on the listener protocol.
-   * Hostnames: Add the hostnames that the route serves traffic on.
-   * Path Match Type: Select the type of path matching that you want to use, such as `Path Prefix`, and then configure its details. For more options, see the [Request matching]({{< link-hextra path="/configuration/traffic-management/matching/" >}}) guide.
-   * Headers: Optional header configuration, such as the authorization header.
-   * HTTP Methods: Optional HTTP methods to allow, such as `GET, POST, PUT`.
-   * Query Parameters: Optional query parameters to allow, such as `version=v1`.
-   * Click **Add HTTP Route** to continue.
-   {{< reuse-image src="img/ui-routes-add.png" >}}
-
-{{% /tab %}}
-{{% tab %}}
-
-1. Download a configuration file that contains your route configuration.
-
-   ```sh
-   curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
-   ```
-
-2. Review the configuration file. The example sets up an HTTP listener on port 3000 that matches on all hosts. For more options, see the [Request matching]({{< link-hextra path="/configuration/traffic-management/matching/" >}}) guide.
-   
-   ```yaml
-   cat config.yaml
-   ```
-
-   {{% github-yaml  url="https://agentgateway.dev/examples/basic/config.yaml" %}}
-
-3. Run the agentgateway. 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-4. [Open the agentgateway listener UI](http://localhost:15000/ui/routes/) and verify that your route is added successfully. 
-   {{< reuse-image src="img/agentgateway-ui-routes.png" >}}
-   
-{{% /tab %}}
-{{< /tabs >}}
-
-## Delete routes
-
-Remove agentgateway routes by using the UI or deleting the configuration file. 
-
-{{< tabs items="UI,Configuration file" >}}
-{{% tab %}}
-
-Remove agentgateway routes with the UI. 
-
-1. Run the agentgateway from which you want to remove a route. 
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-2. [Open the agentgateway route UI](http://localhost:15000/ui/routes/) and find the route that you want to remove. 
-   {{< reuse-image src="img/agentgateway-ui-routes.png" >}}
-
-3. Click the trash icon to remove the route. 
-
-{{% /tab %}}
-{{% tab %}}
-
-Update the configuration file to remove the route.
-
-1. Remove the route from your configuration file.
-2. Apply the updated configuration file to your agentgateway.
-
-   ```sh
-   agentgateway -f config.yaml
-   ```
-
-{{% /tab %}}
-{{< /tabs >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        cors:
+          allowOrigins:
+          - "*"
+          allowHeaders:
+          - mcp-protocol-version
+          - content-type
+          - cache-control
+          exposeHeaders:
+          - "Mcp-Session-Id"
+      backends:
+      - mcp:
+          targets:
+          - name: everything
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+```
 
 ## Next steps
 
-After you create routes, you might want to apply policies to them.
+After you configure routes, you might want to apply policies to them or learn more about traffic management options.
 
 {{< cards >}}
   {{< card path="/configuration/traffic-management/matching/" title="Request matching" >}}
