@@ -64,6 +64,65 @@
   max-width: 48rem;
   box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.08);
 }
+.ks-rich-block + .ks-rich-block,
+.ks-code-wrap + .ks-rich-block,
+.ks-rich-block + .ks-code-wrap,
+.ks-code-wrap + .ks-code-wrap,
+.ks-rich-heading + .ks-rich-block,
+.ks-rich-block + .ks-rich-heading,
+.ks-rich-heading + .ks-code-wrap,
+.ks-code-wrap + .ks-rich-heading,
+.ks-rich-heading + .ks-rich-heading {
+  margin-top: 0.7rem;
+}
+.ks-rich-heading {
+  color: #0f172a;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.ks-rich-h1 {
+  font-size: 1.1rem;
+}
+.ks-rich-h2 {
+  font-size: 1rem;
+}
+.ks-rich-h3 {
+  font-size: 0.94rem;
+}
+.ks-rich-h4,
+.ks-rich-h5,
+.ks-rich-h6 {
+  font-size: 0.88rem;
+}
+.ks-strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+.ks-inline-code {
+  display: inline-block;
+  padding: 0.02rem 0.34rem;
+  border-radius: 0.35rem;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.92em;
+}
+.ks-code-wrap {
+  border: 1px solid #dbe2ea;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.ks-code-block {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  overflow-x: auto;
+  white-space: pre;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
 .ks-search {
   position: relative;
   margin: 0.875rem 0 1rem;
@@ -314,6 +373,27 @@
   border-radius: 0;
   padding: 0;
 }
+.ks-documentation {
+  margin-top: 0.7rem;
+}
+.ks-doc-link-row + .ks-doc-link-row {
+  margin-top: 0.35rem;
+}
+.ks-doc-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  font-size: 0.72rem;
+  color: #0f766e;
+  text-decoration: underline;
+  text-decoration-color: rgba(15, 118, 110, 0.28);
+  text-underline-offset: 0.14em;
+  word-break: break-word;
+}
+.ks-doc-link:hover {
+  color: #115e59;
+  text-decoration-color: currentColor;
+}
 @media (max-width: 900px) {
   .ks-layout {
     grid-template-columns: minmax(0, 1fr);
@@ -327,10 +407,7 @@
 <div class="ks-schema">
 <div class="ks-header">
   <div class="ks-apiversion">agentgateway.dev/v1alpha1</div>
-  <div class="ks-resource-desc">AgentgatewayParameters are configuration that is used to dynamically
-provision the agentgateway data plane. Labels and annotations that apply to
-all resources may be specified at a higher level; see
-https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure</div>
+  <div class="ks-resource-desc"><div class="ks-rich-block">AgentgatewayParameters are configuration that is used to dynamically<br />provision the agentgateway data plane. Labels and annotations that apply to<br />all resources may be specified at a higher level; see<br />https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure</div></div>
   <div class="ks-search"><input class="ks-search-input" type="search" placeholder="Search fields like spec.template.spec.containers" autocomplete="off" spellcheck="false" aria-label="Search schema fields" data-ks-search-input /><div class="ks-search-results" data-ks-search-results hidden></div></div>
 </div>
 <div class="ks-layout">
@@ -440,692 +517,275 @@ https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure</div>
 </ul></div>
 <aside class="ks-detail-pane"><div data-ks-active-panel></div></aside>
 </div>
-<template data-ks-field-panel="ks-widget-1-node-0"><div class="ks-detail-card"><div class="ks-detail-path">apiVersion</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">APIVersion defines the versioned schema of this representation of an object.
-Servers should convert recognized schemas to the latest internal value, and
-may reject unrecognized values.
-More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-1"><div class="ks-detail-card"><div class="ks-detail-path">kind</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Kind is a string value representing the REST resource this object represents.
-Servers may infer this from the endpoint the client submits requests to.
-Cannot be updated.
-In CamelCase.
-More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-0"><div class="ks-detail-card"><div class="ks-detail-path">apiVersion</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">APIVersion defines the versioned schema of this representation of an object.<br />Servers should convert recognized schemas to the latest internal value, and<br />may reject unrecognized values.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-1"><div class="ks-detail-card"><div class="ks-detail-path">kind</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Kind is a string value representing the REST resource this object represents.<br />Servers may infer this from the endpoint the client submits requests to.<br />Cannot be updated.<br />In CamelCase.<br />More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds</div></div></div></template>
 <template data-ks-field-panel="ks-widget-1-node-2"><div class="ks-detail-card"><div class="ks-detail-path">metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-3"><div class="ks-detail-card"><div class="ks-detail-path">spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">spec defines the desired state of AgentgatewayParameters.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-4"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`deployment` allows specifying overrides for the generated
-`Deployment` resource.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-5"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`metadata` defines a subset of object metadata to be customized.
-`labels` and `annotations` are merged with existing values. If both
-`GatewayClass` and `Gateway` parameters define the same label or
-annotation key, the `Gateway` value takes precedence (applied second).</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-6"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Annotations is an unstructured key value map stored with a resource that may be
-set by external tools to store and retrieve arbitrary metadata. They are not
-queryable and should be preserved when modifying objects.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-7"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Map of string keys and values that can be used to organize and categorize
-(scope and select) objects. May match selectors of replication controllers
-and services.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-8"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">`spec` provides an opaque mechanism to configure the resource spec.
-This field accepts a complete or partial Kubernetes resource spec, such
-as `PodSpec` or `ServiceSpec`, and will be merged with the generated
-configuration using **Strategic Merge Patch** semantics.
-
-# Application Order
-
-Overlays are applied after all typed configuration fields from both levels.
-The full merge order is:
-
- 1. `GatewayClass` typed configuration fields
- 2. `Gateway` typed configuration fields
- 3. `GatewayClass` overlays
- 4. `Gateway` overlays (can override all previous values)
-
-# Strategic Merge Patch &amp; Deletion Guide
-
-This merge strategy allows you to override individual fields, merge lists, or delete items
-without needing to provide the entire resource definition.
-
-**1. Replacing Values (Scalars):**
-Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
-
-**2. Merging Lists (Append/Merge):**
-Lists with &quot;merge keys&quot;, like `containers` which merges on `name`, or
-`tolerations` which merges on `key`,
-will append your items to the generated list, or update existing items if keys match.
-
-**3. Deleting Fields or List Items ($patch: delete):**
-To remove a field or list item from the generated resource, use the
-`$patch: delete` directive. This works for both map fields and list items,
-and is the recommended approach because it works with both client-side
-and server-side apply.
-
-	spec:
-	  template:
-	    spec:
-	      # Delete pod-level securityContext
-	      securityContext:
-	        $patch: delete
-	      # Delete nodeSelector
-	      nodeSelector:
-	        $patch: delete
-	      containers:
-	      # Be sure to use the correct proxy name here or you will add a
-	      # container instead of modifying a container.
-	      - name: proxy-name
-	        # Delete container-level securityContext
-	        securityContext:
-	          $patch: delete
-
-**4. Null Values (server-side apply only):**
-Setting a field to `null` can also remove it, but this ONLY works with
-`kubectl apply --server-side` or equivalent. With regular client-side
-`kubectl apply`, null values are stripped by kubectl before reaching
-the API server, so the deletion won't occur. Prefer `$patch: delete`
-for consistent behavior across both apply modes.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
-
-**5. Replacing Maps Entirely ($patch: replace):**
-To replace an entire map with your values (instead of merging), use `$patch: replace`.
-This removes all existing keys and replaces them with only your specified keys.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector:
-	        $patch: replace
-	        custom-key: custom-value
-
-**6. Replacing Lists Entirely ($patch: replace):**
-If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
-
-	service:
-	  spec:
-	    ports:
-	    - $patch: replace
-	    - name: http
-	      port: 80
-	      targetPort: 8080
-	      protocol: TCP
-	    - name: https
-	      port: 443
-	      targetPort: 8443
-	      protocol: TCP</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-9"><div class="ks-detail-card"><div class="ks-detail-path">spec.env</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object[]</span></div><div class="ks-detail-desc">The container environment variables. These override any existing
-values. If you want to delete an environment variable entirely, use
-`$patch: delete` with `AgentgatewayParametersOverlays` instead. Note that
-[variable
-expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)
-does apply, but is highly discouraged -- to set dependent environment
-variables, you can use `$(VAR_NAME)`, but it's highly discouraged.
-`$$(VAR_NAME)` avoids expansion and results in a literal
-`$(VAR_NAME)`.
-
-If `SESSION_KEY` is specified, it takes precedence over the
-controller-managed per-`Gateway` session key `Secret`.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-10"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">Name of the environment variable.
-May consist of any printable ASCII characters except '='.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-11"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.value</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Variable references $(VAR_NAME) are expanded
-using the previously defined environment variables in the container and
-any service environment variables. If a variable cannot be resolved,
-the reference in the input string will be unchanged. Double $$ are reduced
-to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.
-&quot;$$(VAR_NAME)&quot; will produce the string literal &quot;$(VAR_NAME)&quot;.
-Escaped references will never be expanded, regardless of whether the variable
-exists or not.
-Defaults to &quot;&quot;.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-12"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">Source for the environment variable's value. Cannot be used if value is not empty.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-13"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">Selects a key of a ConfigMap.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-14"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">The key to select.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-15"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Name of the referent.
-This field is effectively required, but due to backwards compatibility is
-allowed to be empty. Instances of this type with an empty value here are
-almost certainly wrong.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-16"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc">Specify whether the ConfigMap or its key must be defined</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-17"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">Selects a field of the pod: supports metadata.name, metadata.namespace, `metadata.labels['&lt;KEY&gt;']`, `metadata.annotations['&lt;KEY&gt;']`,
-spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-18"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef.apiVersion</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Version of the schema the FieldPath is written in terms of, defaults to &quot;v1&quot;.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-19"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef.fieldPath</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">Path of the field to select in the specified API version.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-20"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">FileKeyRef selects a key of the env file.
-Requires the EnvFiles feature gate to be enabled.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-21"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">The key within the env file. An invalid key will prevent the pod from starting.
-The keys defined within a source may consist of any printable ASCII characters except '='.
-During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-22"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc">Specify whether the file or its key must be defined. If the file or key
-does not exist, then the env var is not published.
-If optional is set to true and the specified key does not exist,
-the environment variable will not be set in the Pod's containers.
-
-If optional is set to false and the specified key does not exist,
-an error will be returned during Pod creation.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">false</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-23"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.path</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">The path within the volume from which to select the file.
-Must be relative and may not contain the '..' path or start with '..'.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-24"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.volumeName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">The name of the volume mount containing the env file.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-25"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">Selects a resource of the container: only resources limits and requests
-(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-26"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.containerName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Container name: required for volumes, optional for env vars</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-27"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.divisor</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-other"></span></div><div class="ks-detail-desc">Specifies the output format of the exposed resources, defaults to &quot;1&quot;</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Pattern</span><span class="ks-validation-value">^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$</span></div><div class="ks-validation-item"><span class="ks-validation-label">Int or string</span><span class="ks-validation-value">true</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-28"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.resource</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">Required: resource to select</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-29"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">Selects a key of a secret in the pod's namespace</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-30"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">The key of the secret to select from.  Must be a valid secret key.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-31"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Name of the referent.
-This field is effectively required, but due to backwards compatibility is
-allowed to be empty. Instances of this type with an empty value here are
-almost certainly wrong.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-32"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc">Specify whether the Secret or its key must be defined</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-33"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`horizontalPodAutoscaler` allows creating a `HorizontalPodAutoscaler`
-for the agentgateway proxy. If absent, no HPA is created. If present, an
-HPA is created with its `scaleTargetRef` automatically configured to
-target the agentgateway proxy `Deployment`. The `metadata` and `spec`
-fields from this overlay are applied to the generated HPA.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-34"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`metadata` defines a subset of object metadata to be customized.
-`labels` and `annotations` are merged with existing values. If both
-`GatewayClass` and `Gateway` parameters define the same label or
-annotation key, the `Gateway` value takes precedence (applied second).</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-35"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Annotations is an unstructured key value map stored with a resource that may be
-set by external tools to store and retrieve arbitrary metadata. They are not
-queryable and should be preserved when modifying objects.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-36"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Map of string keys and values that can be used to organize and categorize
-(scope and select) objects. May match selectors of replication controllers
-and services.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-37"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">`spec` provides an opaque mechanism to configure the resource spec.
-This field accepts a complete or partial Kubernetes resource spec, such
-as `PodSpec` or `ServiceSpec`, and will be merged with the generated
-configuration using **Strategic Merge Patch** semantics.
-
-# Application Order
-
-Overlays are applied after all typed configuration fields from both levels.
-The full merge order is:
-
- 1. `GatewayClass` typed configuration fields
- 2. `Gateway` typed configuration fields
- 3. `GatewayClass` overlays
- 4. `Gateway` overlays (can override all previous values)
-
-# Strategic Merge Patch &amp; Deletion Guide
-
-This merge strategy allows you to override individual fields, merge lists, or delete items
-without needing to provide the entire resource definition.
-
-**1. Replacing Values (Scalars):**
-Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
-
-**2. Merging Lists (Append/Merge):**
-Lists with &quot;merge keys&quot;, like `containers` which merges on `name`, or
-`tolerations` which merges on `key`,
-will append your items to the generated list, or update existing items if keys match.
-
-**3. Deleting Fields or List Items ($patch: delete):**
-To remove a field or list item from the generated resource, use the
-`$patch: delete` directive. This works for both map fields and list items,
-and is the recommended approach because it works with both client-side
-and server-side apply.
-
-	spec:
-	  template:
-	    spec:
-	      # Delete pod-level securityContext
-	      securityContext:
-	        $patch: delete
-	      # Delete nodeSelector
-	      nodeSelector:
-	        $patch: delete
-	      containers:
-	      # Be sure to use the correct proxy name here or you will add a
-	      # container instead of modifying a container.
-	      - name: proxy-name
-	        # Delete container-level securityContext
-	        securityContext:
-	          $patch: delete
-
-**4. Null Values (server-side apply only):**
-Setting a field to `null` can also remove it, but this ONLY works with
-`kubectl apply --server-side` or equivalent. With regular client-side
-`kubectl apply`, null values are stripped by kubectl before reaching
-the API server, so the deletion won't occur. Prefer `$patch: delete`
-for consistent behavior across both apply modes.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
-
-**5. Replacing Maps Entirely ($patch: replace):**
-To replace an entire map with your values (instead of merging), use `$patch: replace`.
-This removes all existing keys and replaces them with only your specified keys.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector:
-	        $patch: replace
-	        custom-key: custom-value
-
-**6. Replacing Lists Entirely ($patch: replace):**
-If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
-
-	service:
-	  spec:
-	    ports:
-	    - $patch: replace
-	    - name: http
-	      port: 80
-	      targetPort: 8080
-	      protocol: TCP
-	    - name: https
-	      port: 443
-	      targetPort: 8443
-	      protocol: TCP</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-38"><div class="ks-detail-card"><div class="ks-detail-path">spec.image</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">The agentgateway container image. See
-https://kubernetes.io/docs/concepts/containers/images
-for details.
-
-Default values, which may be overridden individually:
-
-	registry: cr.agentgateway.dev
-	repository: agentgateway
-	tag: &lt;agentgateway version&gt;
-	pullPolicy: &lt;omitted, relying on Kubernetes defaults which depend on the tag&gt;</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-39"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.digest</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The hash digest of the image, e.g. `sha256:12345...`</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-40"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.pullPolicy</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The image pull policy for the container. See
-https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy
-for details.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-41"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.registry</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The image registry.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-42"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.repository</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The image repository (name).</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-43"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.tag</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The image tag.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-44"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">Configure Istio integration. If enabled, Agentgateway can natively connect to Istio enabled pods with mTLS.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-45"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.additionalTrustDomains</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string[]</span></div><div class="ks-detail-desc">Additional SPIFFE trust domains accepted on inbound HBONE connections.
-The local trust domain is always implicitly included.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-46"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.caAddress</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The address of the Istio CA. If unset, defaults to `https://istiod.istio-system.svc:15012`.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-47"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.trustDomain</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The Istio trust domain. If not set, defaults to `cluster.local`.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-48"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`logging` configuration for Agentgateway. By default, all logs are set to
-`info` level.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-49"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging.format</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">The default logging format is text.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Enum</span><span class="ks-validation-value">json, text</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-50"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging.level</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Logging level in standard `RUST_LOG` syntax, for example `info` (the
-default), or a comma-separated per-module setting such as
-`rmcp=warn,hickory_server::server::server_future=off,typespec_client_core::http::policies::logging=warn`.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-51"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`podDisruptionBudget` allows creating a `PodDisruptionBudget` for the
-agentgateway proxy. If absent, no PDB is created. If present, a PDB is
-created with its selector automatically configured to target the
-agentgateway proxy `Deployment`. The `metadata` and `spec` fields from
-this overlay are applied to the generated PDB.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-52"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`metadata` defines a subset of object metadata to be customized.
-`labels` and `annotations` are merged with existing values. If both
-`GatewayClass` and `Gateway` parameters define the same label or
-annotation key, the `Gateway` value takes precedence (applied second).</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-53"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Annotations is an unstructured key value map stored with a resource that may be
-set by external tools to store and retrieve arbitrary metadata. They are not
-queryable and should be preserved when modifying objects.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-54"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Map of string keys and values that can be used to organize and categorize
-(scope and select) objects. May match selectors of replication controllers
-and services.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-55"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">`spec` provides an opaque mechanism to configure the resource spec.
-This field accepts a complete or partial Kubernetes resource spec, such
-as `PodSpec` or `ServiceSpec`, and will be merged with the generated
-configuration using **Strategic Merge Patch** semantics.
-
-# Application Order
-
-Overlays are applied after all typed configuration fields from both levels.
-The full merge order is:
-
- 1. `GatewayClass` typed configuration fields
- 2. `Gateway` typed configuration fields
- 3. `GatewayClass` overlays
- 4. `Gateway` overlays (can override all previous values)
-
-# Strategic Merge Patch &amp; Deletion Guide
-
-This merge strategy allows you to override individual fields, merge lists, or delete items
-without needing to provide the entire resource definition.
-
-**1. Replacing Values (Scalars):**
-Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
-
-**2. Merging Lists (Append/Merge):**
-Lists with &quot;merge keys&quot;, like `containers` which merges on `name`, or
-`tolerations` which merges on `key`,
-will append your items to the generated list, or update existing items if keys match.
-
-**3. Deleting Fields or List Items ($patch: delete):**
-To remove a field or list item from the generated resource, use the
-`$patch: delete` directive. This works for both map fields and list items,
-and is the recommended approach because it works with both client-side
-and server-side apply.
-
-	spec:
-	  template:
-	    spec:
-	      # Delete pod-level securityContext
-	      securityContext:
-	        $patch: delete
-	      # Delete nodeSelector
-	      nodeSelector:
-	        $patch: delete
-	      containers:
-	      # Be sure to use the correct proxy name here or you will add a
-	      # container instead of modifying a container.
-	      - name: proxy-name
-	        # Delete container-level securityContext
-	        securityContext:
-	          $patch: delete
-
-**4. Null Values (server-side apply only):**
-Setting a field to `null` can also remove it, but this ONLY works with
-`kubectl apply --server-side` or equivalent. With regular client-side
-`kubectl apply`, null values are stripped by kubectl before reaching
-the API server, so the deletion won't occur. Prefer `$patch: delete`
-for consistent behavior across both apply modes.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
-
-**5. Replacing Maps Entirely ($patch: replace):**
-To replace an entire map with your values (instead of merging), use `$patch: replace`.
-This removes all existing keys and replaces them with only your specified keys.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector:
-	        $patch: replace
-	        custom-key: custom-value
-
-**6. Replacing Lists Entirely ($patch: replace):**
-If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
-
-	service:
-	  spec:
-	    ports:
-	    - $patch: replace
-	    - name: http
-	      port: 80
-	      targetPort: 8080
-	      protocol: TCP
-	    - name: https
-	      port: 443
-	      targetPort: 8443
-	      protocol: TCP</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-56"><div class="ks-detail-card"><div class="ks-detail-path">spec.rawConfig</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">`rawConfig` provides an opaque mechanism to configure the `agentgateway`
-config file. The `agentgateway` binary has a `-f` option to specify a
-config file, and this field supplies that file. This will be merged with
-configuration derived from typed fields like `logging.format`, and those
-typed fields will take precedence.
-
-Example:
-
-	rawConfig:
-	  binds:
-	  - port: 3000
-	    listeners:
-	    - routes:
-	      - policies:
-	          cors:
-	            allowOrigins:
-	            - &quot;*&quot;
-	            allowHeaders:
-	            - mcp-protocol-version
-	            - content-type
-	            - cache-control
-	        backends:
-	        - mcp:
-	            targets:
-	            - name: everything
-	              stdio:
-	                cmd: npx
-	                args: [&quot;@modelcontextprotocol/server-everything&quot;]</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-57"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">The compute resources required by this container. See
-https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
-for details.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-58"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object[]</span></div><div class="ks-detail-desc">Claims lists the names of resources, defined in spec.resourceClaims,
-that are used by this container.
-
-This field depends on the
-DynamicResourceAllocation feature gate.
-
-This field is immutable. It can only be set for containers.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">List type</span><span class="ks-validation-value">map</span></div><div class="ks-validation-item"><span class="ks-validation-label">List map keys</span><span class="ks-validation-value">name</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-59"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">Name must match the name of one entry in pod.spec.resourceClaims of
-the Pod where this field is used. It makes that resource available
-inside a container.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-60"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims.request</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc">Request is the name chosen for a request in the referenced claim.
-If empty, everything from the claim is made available, otherwise
-only the result of this request.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-61"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.limits</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Limits describes the maximum amount of compute resources allowed.
-More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-62"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.requests</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Requests describes the minimum amount of compute resources required.
-If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,
-otherwise to an implementation-defined value. Requests cannot exceed Limits.
-More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-63"><div class="ks-detail-card"><div class="ks-detail-path">spec.service</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`service` allows specifying overrides for the generated `Service`
-resource.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-64"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`metadata` defines a subset of object metadata to be customized.
-`labels` and `annotations` are merged with existing values. If both
-`GatewayClass` and `Gateway` parameters define the same label or
-annotation key, the `Gateway` value takes precedence (applied second).</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-65"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Annotations is an unstructured key value map stored with a resource that may be
-set by external tools to store and retrieve arbitrary metadata. They are not
-queryable and should be preserved when modifying objects.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-66"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Map of string keys and values that can be used to organize and categorize
-(scope and select) objects. May match selectors of replication controllers
-and services.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-67"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">`spec` provides an opaque mechanism to configure the resource spec.
-This field accepts a complete or partial Kubernetes resource spec, such
-as `PodSpec` or `ServiceSpec`, and will be merged with the generated
-configuration using **Strategic Merge Patch** semantics.
-
-# Application Order
-
-Overlays are applied after all typed configuration fields from both levels.
-The full merge order is:
-
- 1. `GatewayClass` typed configuration fields
- 2. `Gateway` typed configuration fields
- 3. `GatewayClass` overlays
- 4. `Gateway` overlays (can override all previous values)
-
-# Strategic Merge Patch &amp; Deletion Guide
-
-This merge strategy allows you to override individual fields, merge lists, or delete items
-without needing to provide the entire resource definition.
-
-**1. Replacing Values (Scalars):**
-Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
-
-**2. Merging Lists (Append/Merge):**
-Lists with &quot;merge keys&quot;, like `containers` which merges on `name`, or
-`tolerations` which merges on `key`,
-will append your items to the generated list, or update existing items if keys match.
-
-**3. Deleting Fields or List Items ($patch: delete):**
-To remove a field or list item from the generated resource, use the
-`$patch: delete` directive. This works for both map fields and list items,
-and is the recommended approach because it works with both client-side
-and server-side apply.
-
-	spec:
-	  template:
-	    spec:
-	      # Delete pod-level securityContext
-	      securityContext:
-	        $patch: delete
-	      # Delete nodeSelector
-	      nodeSelector:
-	        $patch: delete
-	      containers:
-	      # Be sure to use the correct proxy name here or you will add a
-	      # container instead of modifying a container.
-	      - name: proxy-name
-	        # Delete container-level securityContext
-	        securityContext:
-	          $patch: delete
-
-**4. Null Values (server-side apply only):**
-Setting a field to `null` can also remove it, but this ONLY works with
-`kubectl apply --server-side` or equivalent. With regular client-side
-`kubectl apply`, null values are stripped by kubectl before reaching
-the API server, so the deletion won't occur. Prefer `$patch: delete`
-for consistent behavior across both apply modes.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
-
-**5. Replacing Maps Entirely ($patch: replace):**
-To replace an entire map with your values (instead of merging), use `$patch: replace`.
-This removes all existing keys and replaces them with only your specified keys.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector:
-	        $patch: replace
-	        custom-key: custom-value
-
-**6. Replacing Lists Entirely ($patch: replace):**
-If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
-
-	service:
-	  spec:
-	    ports:
-	    - $patch: replace
-	    - name: http
-	      port: 80
-	      targetPort: 8080
-	      protocol: TCP
-	    - name: https
-	      port: 443
-	      targetPort: 8443
-	      protocol: TCP</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-68"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`serviceAccount` allows specifying overrides for the generated
-`ServiceAccount` resource.</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-69"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">`metadata` defines a subset of object metadata to be customized.
-`labels` and `annotations` are merged with existing values. If both
-`GatewayClass` and `Gateway` parameters define the same label or
-annotation key, the `Gateway` value takes precedence (applied second).</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-70"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Annotations is an unstructured key value map stored with a resource that may be
-set by external tools to store and retrieve arbitrary metadata. They are not
-queryable and should be preserved when modifying objects.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-71"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">Map of string keys and values that can be used to organize and categorize
-(scope and select) objects. May match selectors of replication controllers
-and services.
-More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-72"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">`spec` provides an opaque mechanism to configure the resource spec.
-This field accepts a complete or partial Kubernetes resource spec, such
-as `PodSpec` or `ServiceSpec`, and will be merged with the generated
-configuration using **Strategic Merge Patch** semantics.
-
-# Application Order
-
-Overlays are applied after all typed configuration fields from both levels.
-The full merge order is:
-
- 1. `GatewayClass` typed configuration fields
- 2. `Gateway` typed configuration fields
- 3. `GatewayClass` overlays
- 4. `Gateway` overlays (can override all previous values)
-
-# Strategic Merge Patch &amp; Deletion Guide
-
-This merge strategy allows you to override individual fields, merge lists, or delete items
-without needing to provide the entire resource definition.
-
-**1. Replacing Values (Scalars):**
-Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.
-
-**2. Merging Lists (Append/Merge):**
-Lists with &quot;merge keys&quot;, like `containers` which merges on `name`, or
-`tolerations` which merges on `key`,
-will append your items to the generated list, or update existing items if keys match.
-
-**3. Deleting Fields or List Items ($patch: delete):**
-To remove a field or list item from the generated resource, use the
-`$patch: delete` directive. This works for both map fields and list items,
-and is the recommended approach because it works with both client-side
-and server-side apply.
-
-	spec:
-	  template:
-	    spec:
-	      # Delete pod-level securityContext
-	      securityContext:
-	        $patch: delete
-	      # Delete nodeSelector
-	      nodeSelector:
-	        $patch: delete
-	      containers:
-	      # Be sure to use the correct proxy name here or you will add a
-	      # container instead of modifying a container.
-	      - name: proxy-name
-	        # Delete container-level securityContext
-	        securityContext:
-	          $patch: delete
-
-**4. Null Values (server-side apply only):**
-Setting a field to `null` can also remove it, but this ONLY works with
-`kubectl apply --server-side` or equivalent. With regular client-side
-`kubectl apply`, null values are stripped by kubectl before reaching
-the API server, so the deletion won't occur. Prefer `$patch: delete`
-for consistent behavior across both apply modes.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector: null  # Removes nodeSelector (server-side apply only!)
-
-**5. Replacing Maps Entirely ($patch: replace):**
-To replace an entire map with your values (instead of merging), use `$patch: replace`.
-This removes all existing keys and replaces them with only your specified keys.
-
-	spec:
-	  template:
-	    spec:
-	      nodeSelector:
-	        $patch: replace
-	        custom-key: custom-value
-
-**6. Replacing Lists Entirely ($patch: replace):**
-If you want to strictly define a list and ignore all generated defaults, use `$patch: replace`.
-
-	service:
-	  spec:
-	    ports:
-	    - $patch: replace
-	    - name: http
-	      port: 80
-	      targetPort: 8080
-	      protocol: TCP
-	    - name: https
-	      port: 443
-	      targetPort: 8443
-	      protocol: TCP</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-73"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc">Shutdown delay configuration. How graceful planned or unplanned data
-plane changes happen is in tension with how quickly rollouts of the data
-plane complete. How long a data plane pod must wait for shutdown to be
-perfectly graceful depends on how you have configured your `Gateway`
-resources.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Rule</span><div class="ks-validation-value ks-validation-value-block">The 'min' value must be less than or equal to the 'max' value.</div></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-74"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown.max</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">Maximum time (in seconds) to wait before allowing Agentgateway to
-terminate. Refer to the `TERMINATION_GRACE_PERIOD_SECONDS`
-environment variable for details.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">int64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">31536000</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-75"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown.min</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc">Minimum time (in seconds) to wait before allowing Agentgateway to
-terminate. Refer to the `CONNECTION_MIN_TERMINATION_DEADLINE`
-environment variable for details.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">int64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">31536000</span></div></div></details></div></template>
-<template data-ks-field-panel="ks-widget-1-node-76"><div class="ks-detail-card"><div class="ks-detail-path">status</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc">status defines the current state of AgentgatewayParameters.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-3"><div class="ks-detail-card"><div class="ks-detail-path">spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">spec defines the desired state of AgentgatewayParameters.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-4"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">deployment</code> allows specifying overrides for the generated<br /><code class="ks-inline-code">Deployment</code> resource.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/customize/">setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-5"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-6"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-7"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-8"><div class="ks-detail-card"><div class="ks-detail-path">spec.deployment.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/customize/">setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-9"><div class="ks-detail-card"><div class="ks-detail-path">spec.env</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The container environment variables. These override any existing<br />values. If you want to delete an environment variable entirely, use<br /><code class="ks-inline-code">$patch: delete</code> with <code class="ks-inline-code">AgentgatewayParametersOverlays</code> instead. Note that<br />[variable<br />expansion](https://kubernetes.io/docs/tasks/inject-data-application/define-interdependent-environment-variables/)<br />does apply, but is highly discouraged -- to set dependent environment<br />variables, you can use <code class="ks-inline-code">$(VAR_NAME)</code>, but it's highly discouraged.<br /><code class="ks-inline-code">$$(VAR_NAME)</code> avoids expansion and results in a literal<br /><code class="ks-inline-code">$(VAR_NAME)</code>.</div><div class="ks-rich-block">If <code class="ks-inline-code">SESSION_KEY</code> is specified, it takes precedence over the<br />controller-managed per-<code class="ks-inline-code">Gateway</code> session key <code class="ks-inline-code">Secret</code>.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (3)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../llm/guardrail-api/guardrails/">llm/guardrail-api/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../llm/guardrails/webhook/guardrails/">llm/guardrails/webhook/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-10"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name of the environment variable.<br />May consist of any printable ASCII characters except '='.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (3)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../llm/guardrail-api/guardrails/">llm/guardrail-api/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../llm/guardrails/webhook/guardrails/">llm/guardrails/webhook/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-11"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.value</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Variable references $(VAR_NAME) are expanded<br />using the previously defined environment variables in the container and<br />any service environment variables. If a variable cannot be resolved,<br />the reference in the input string will be unchanged. Double $$ are reduced<br />to a single $, which allows for escaping the $(VAR_NAME) syntax: i.e.<br />&quot;$$(VAR_NAME)&quot; will produce the string literal &quot;$(VAR_NAME)&quot;.<br />Escaped references will never be expanded, regardless of whether the variable<br />exists or not.<br />Defaults to &quot;&quot;.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (3)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../llm/guardrail-api/guardrails/">llm/guardrail-api/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../llm/guardrails/webhook/guardrails/">llm/guardrails/webhook/guardrails</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-12"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Source for the environment variable's value. Cannot be used if value is not empty.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-13"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a key of a ConfigMap.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-14"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The key to select.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-15"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name of the referent.<br />This field is effectively required, but due to backwards compatibility is<br />allowed to be empty. Instances of this type with an empty value here are<br />almost certainly wrong.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-16"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.configMapKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specify whether the ConfigMap or its key must be defined</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-17"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a field of the pod: supports metadata.name, metadata.namespace, <code class="ks-inline-code">metadata.labels['&lt;KEY&gt;']</code>, <code class="ks-inline-code">metadata.annotations['&lt;KEY&gt;']</code>,<br />spec.nodeName, spec.serviceAccountName, status.hostIP, status.podIP, status.podIPs.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-18"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef.apiVersion</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Version of the schema the FieldPath is written in terms of, defaults to &quot;v1&quot;.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-19"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fieldRef.fieldPath</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Path of the field to select in the specified API version.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-20"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">FileKeyRef selects a key of the env file.<br />Requires the EnvFiles feature gate to be enabled.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-21"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The key within the env file. An invalid key will prevent the pod from starting.<br />The keys defined within a source may consist of any printable ASCII characters except '='.<br />During Alpha stage of the EnvFiles feature gate, the key size is limited to 128 characters.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-22"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specify whether the file or its key must be defined. If the file or key<br />does not exist, then the env var is not published.<br />If optional is set to true and the specified key does not exist,<br />the environment variable will not be set in the Pod's containers.</div><div class="ks-rich-block">If optional is set to false and the specified key does not exist,<br />an error will be returned during Pod creation.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">false</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-23"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.path</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The path within the volume from which to select the file.<br />Must be relative and may not contain the '..' path or start with '..'.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-24"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.fileKeyRef.volumeName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The name of the volume mount containing the env file.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-25"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a resource of the container: only resources limits and requests<br />(limits.cpu, limits.memory, limits.ephemeral-storage, requests.cpu, requests.memory and requests.ephemeral-storage) are currently supported.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-26"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.containerName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Container name: required for volumes, optional for env vars</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-27"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.divisor</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-other"></span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specifies the output format of the exposed resources, defaults to &quot;1&quot;</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Pattern</span><span class="ks-validation-value">^(\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))(([KMGTPE]i)|[numkMGTPE]|([eE](\+|-)?(([0-9]+(\.[0-9]*)?)|(\.[0-9]+))))?$</span></div><div class="ks-validation-item"><span class="ks-validation-label">Int or string</span><span class="ks-validation-value">true</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-28"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.resourceFieldRef.resource</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Required: resource to select</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-29"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Selects a key of a secret in the pod's namespace</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Map type</span><span class="ks-validation-value">atomic</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-30"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The key of the secret to select from.  Must be a valid secret key.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-31"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name of the referent.<br />This field is effectively required, but due to backwards compatibility is<br />allowed to be empty. Instances of this type with an empty value here are<br />almost certainly wrong.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/names/#names</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-32"><div class="ks-detail-card"><div class="ks-detail-path">spec.env.valueFrom.secretKeyRef.optional</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Specify whether the Secret or its key must be defined</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-33"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">horizontalPodAutoscaler</code> allows creating a <code class="ks-inline-code">HorizontalPodAutoscaler</code><br />for the agentgateway proxy. If absent, no HPA is created. If present, an<br />HPA is created with its <code class="ks-inline-code">scaleTargetRef</code> automatically configured to<br />target the agentgateway proxy <code class="ks-inline-code">Deployment</code>. The <code class="ks-inline-code">metadata</code> and <code class="ks-inline-code">spec</code><br />fields from this overlay are applied to the generated HPA.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-34"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-35"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-36"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-37"><div class="ks-detail-card"><div class="ks-detail-path">spec.horizontalPodAutoscaler.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-38"><div class="ks-detail-card"><div class="ks-detail-path">spec.image</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The agentgateway container image. See<br />https://kubernetes.io/docs/concepts/containers/images<br />for details.</div><div class="ks-rich-block">Default values, which may be overridden individually:</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>registry: cr.agentgateway.dev
+repository: agentgateway
+tag: &lt;agentgateway version&gt;
+pullPolicy: &lt;omitted, relying on Kubernetes defaults which depend on the tag&gt;</code></pre></div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-39"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.digest</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The hash digest of the image, e.g. <code class="ks-inline-code">sha256:12345...</code></div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-40"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.pullPolicy</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image pull policy for the container. See<br />https://kubernetes.io/docs/concepts/containers/images/#image-pull-policy<br />for details.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-41"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.registry</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image registry.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-42"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.repository</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image repository (name).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-43"><div class="ks-detail-card"><div class="ks-detail-path">spec.image.tag</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The image tag.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-44"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Configure Istio integration. If enabled, Agentgateway can natively connect to Istio enabled pods with mTLS.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-45"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.additionalTrustDomains</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Additional SPIFFE trust domains accepted on inbound HBONE connections.<br />The local trust domain is always implicitly included.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-46"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.caAddress</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The address of the Istio CA. If unset, defaults to <code class="ks-inline-code">https://istiod.istio-system.svc:15012</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-47"><div class="ks-detail-card"><div class="ks-detail-path">spec.istio.trustDomain</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The Istio trust domain. If not set, defaults to <code class="ks-inline-code">cluster.local</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-48"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">logging</code> configuration for Agentgateway. By default, all logs are set to<br /><code class="ks-inline-code">info</code> level.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/customize/">setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-49"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging.format</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The default logging format is text.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Enum</span><span class="ks-validation-value">json, text</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (2)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/customize/">setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-50"><div class="ks-detail-card"><div class="ks-detail-path">spec.logging.level</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Logging level in standard <code class="ks-inline-code">RUST_LOG</code> syntax, for example <code class="ks-inline-code">info</code> (the<br />default), or a comma-separated per-module setting such as<br /><code class="ks-inline-code">rmcp=warn,hickory_server::server::server_future=off,typespec_client_core::http::policies::logging=warn</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-51"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">podDisruptionBudget</code> allows creating a <code class="ks-inline-code">PodDisruptionBudget</code> for the<br />agentgateway proxy. If absent, no PDB is created. If present, a PDB is<br />created with its selector automatically configured to target the<br />agentgateway proxy <code class="ks-inline-code">Deployment</code>. The <code class="ks-inline-code">metadata</code> and <code class="ks-inline-code">spec</code> fields from<br />this overlay are applied to the generated PDB.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-52"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-53"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-54"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-55"><div class="ks-detail-card"><div class="ks-detail-path">spec.podDisruptionBudget.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-56"><div class="ks-detail-card"><div class="ks-detail-path">spec.rawConfig</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">rawConfig</code> provides an opaque mechanism to configure the <code class="ks-inline-code">agentgateway</code><br />config file. The <code class="ks-inline-code">agentgateway</code> binary has a <code class="ks-inline-code">-f</code> option to specify a<br />config file, and this field supplies that file. This will be merged with<br />configuration derived from typed fields like <code class="ks-inline-code">logging.format</code>, and those<br />typed fields will take precedence.</div><div class="ks-rich-block">Example:</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>rawConfig:
+  binds:
+  - port: 3000
+    listeners:
+    - routes:
+      - policies:
+          cors:
+            allowOrigins:
+            - &quot;*&quot;
+            allowHeaders:
+            - mcp-protocol-version
+            - content-type
+            - cache-control
+        backends:
+        - mcp:
+            targets:
+            - name: everything
+              stdio:
+                cmd: npx
+                args: [&quot;@modelcontextprotocol/server-everything&quot;]</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/customize/">setup/customize/customize</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-57"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-58"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Claims lists the names of resources, defined in spec.resourceClaims,<br />that are used by this container.</div><div class="ks-rich-block">This field depends on the<br />DynamicResourceAllocation feature gate.</div><div class="ks-rich-block">This field is immutable. It can only be set for containers.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">List type</span><span class="ks-validation-value">map</span></div><div class="ks-validation-item"><span class="ks-validation-label">List map keys</span><span class="ks-validation-value">name</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-59"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Name must match the name of one entry in pod.spec.resourceClaims of<br />the Pod where this field is used. It makes that resource available<br />inside a container.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-60"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.claims.request</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Request is the name chosen for a request in the referenced claim.<br />If empty, everything from the claim is made available, otherwise<br />only the result of this request.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-61"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.limits</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Limits describes the maximum amount of compute resources allowed.<br />More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-62"><div class="ks-detail-card"><div class="ks-detail-path">spec.resources.requests</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Requests describes the minimum amount of compute resources required.<br />If Requests is omitted for a container, it defaults to Limits if that is explicitly specified,<br />otherwise to an implementation-defined value. Requests cannot exceed Limits.<br />More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-63"><div class="ks-detail-card"><div class="ks-detail-path">spec.service</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">service</code> allows specifying overrides for the generated <code class="ks-inline-code">Service</code><br />resource.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-64"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-65"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-66"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-67"><div class="ks-detail-card"><div class="ks-detail-path">spec.service.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-68"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">serviceAccount</code> allows specifying overrides for the generated<br /><code class="ks-inline-code">ServiceAccount</code> resource.</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-69"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> defines a subset of object metadata to be customized.<br /><code class="ks-inline-code">labels</code> and <code class="ks-inline-code">annotations</code> are merged with existing values. If both<br /><code class="ks-inline-code">GatewayClass</code> and <code class="ks-inline-code">Gateway</code> parameters define the same label or<br />annotation key, the <code class="ks-inline-code">Gateway</code> value takes precedence (applied second).</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-70"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata.annotations</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Annotations is an unstructured key value map stored with a resource that may be<br />set by external tools to store and retrieve arbitrary metadata. They are not<br />queryable and should be preserved when modifying objects.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations</div></div><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-71"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.metadata.labels</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Map of string keys and values that can be used to organize and categorize<br />(scope and select) objects. May match selectors of replication controllers<br />and services.<br />More info: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-72"><div class="ks-detail-card"><div class="ks-detail-path">spec.serviceAccount.spec</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">spec</code> provides an opaque mechanism to configure the resource spec.<br />This field accepts a complete or partial Kubernetes resource spec, such<br />as <code class="ks-inline-code">PodSpec</code> or <code class="ks-inline-code">ServiceSpec</code>, and will be merged with the generated<br />configuration using <strong class="ks-strong">Strategic Merge Patch</strong> semantics.</div><div class="ks-rich-heading ks-rich-h1">Application Order</div><div class="ks-rich-block">Overlays are applied after all typed configuration fields from both levels.<br />The full merge order is:</div><div class="ks-rich-block"> 1. <code class="ks-inline-code">GatewayClass</code> typed configuration fields<br /> 2. <code class="ks-inline-code">Gateway</code> typed configuration fields<br /> 3. <code class="ks-inline-code">GatewayClass</code> overlays<br /> 4. <code class="ks-inline-code">Gateway</code> overlays (can override all previous values)</div><div class="ks-rich-heading ks-rich-h1">Strategic Merge Patch &amp; Deletion Guide</div><div class="ks-rich-block">This merge strategy allows you to override individual fields, merge lists, or delete items<br />without needing to provide the entire resource definition.</div><div class="ks-rich-block"><strong class="ks-strong">1. Replacing Values (Scalars):</strong><br />Simple fields (strings, integers, booleans) in your config will overwrite the generated defaults.</div><div class="ks-rich-block"><strong class="ks-strong">2. Merging Lists (Append/Merge):</strong><br />Lists with &quot;merge keys&quot;, like <code class="ks-inline-code">containers</code> which merges on <code class="ks-inline-code">name</code>, or<br /><code class="ks-inline-code">tolerations</code> which merges on <code class="ks-inline-code">key</code>,<br />will append your items to the generated list, or update existing items if keys match.</div><div class="ks-rich-block"><strong class="ks-strong">3. Deleting Fields or List Items ($patch: delete):</strong><br />To remove a field or list item from the generated resource, use the<br /><code class="ks-inline-code">$patch: delete</code> directive. This works for both map fields and list items,<br />and is the recommended approach because it works with both client-side<br />and server-side apply.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      # Delete pod-level securityContext
+      securityContext:
+        $patch: delete
+      # Delete nodeSelector
+      nodeSelector:
+        $patch: delete
+      containers:
+      # Be sure to use the correct proxy name here or you will add a
+      # container instead of modifying a container.
+      - name: proxy-name
+        # Delete container-level securityContext
+        securityContext:
+          $patch: delete</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">4. Null Values (server-side apply only):</strong><br />Setting a field to <code class="ks-inline-code">null</code> can also remove it, but this ONLY works with<br /><code class="ks-inline-code">kubectl apply --server-side</code> or equivalent. With regular client-side<br /><code class="ks-inline-code">kubectl apply</code>, null values are stripped by kubectl before reaching<br />the API server, so the deletion won't occur. Prefer <code class="ks-inline-code">$patch: delete</code><br />for consistent behavior across both apply modes.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector: null  # Removes nodeSelector (server-side apply only!)</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">5. Replacing Maps Entirely ($patch: replace):</strong><br />To replace an entire map with your values (instead of merging), use <code class="ks-inline-code">$patch: replace</code>.<br />This removes all existing keys and replaces them with only your specified keys.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>spec:
+  template:
+    spec:
+      nodeSelector:
+        $patch: replace
+        custom-key: custom-value</code></pre></div><div class="ks-rich-block"><strong class="ks-strong">6. Replacing Lists Entirely ($patch: replace):</strong><br />If you want to strictly define a list and ignore all generated defaults, use <code class="ks-inline-code">$patch: replace</code>.</div><div class="ks-code-wrap"><pre class="ks-code-block"><code>service:
+  spec:
+    ports:
+    - $patch: replace
+    - name: http
+      port: 80
+      targetPort: 8080
+      protocol: TCP
+    - name: https
+      port: 443
+      targetPort: 8443
+      protocol: TCP</code></pre></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Preserve unknown fields</span><span class="ks-validation-value">true</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-73"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your <code class="ks-inline-code">Gateway</code><br />resources.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Rule</span><div class="ks-validation-value ks-validation-value-block">The 'min' value must be less than or equal to the 'max' value.</div></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-74"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown.max</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Maximum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the <code class="ks-inline-code">TERMINATION_GRACE_PERIOD_SECONDS</code><br />environment variable for details.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">int64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">31536000</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-75"><div class="ks-detail-card"><div class="ks-detail-path">spec.shutdown.min</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Minimum time (in seconds) to wait before allowing Agentgateway to<br />terminate. Refer to the <code class="ks-inline-code">CONNECTION_MIN_TERMINATION_DEADLINE</code><br />environment variable for details.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">int64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">31536000</span></div></div></details><details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (1)</summary><div class="ks-validation-body"><div class="ks-doc-link-row"><a class="ks-doc-link" href="../../../setup/customize/configs/">setup/customize/configs</a></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-76"><div class="ks-detail-card"><div class="ks-detail-path">status</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">status defines the current state of AgentgatewayParameters.</div></div></div></template>
 
 </div>
 </template>

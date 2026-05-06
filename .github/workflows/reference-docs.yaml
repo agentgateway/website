@@ -134,6 +134,16 @@ jobs:
           go-version-file: agentgateway/go.mod
           cache: false
 
+      - name: Setup Hugo for rendered docs extraction
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: '0.160.1'
+          extended: true
+
+      - name: Install website dependencies
+        working-directory: website
+        run: npm ci
+
       - name: Generate agentgateway API docs
         run: |
           pushd website || exit 1
@@ -191,31 +201,43 @@ jobs:
             echo "API doc file not found - skipping shared types"
           fi
 
-      - name: Generate kubespec widget HTMLs
-        run: |
-          CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
-          TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/api/${{ matrix.link_version }}"
-          mkdir -p "$TARGET_DIR"
-
-          cd website/scripts/kubespec-render
-
-          echo "Generating interactive kubespec widget HTMLs from CRD YAMLs..."
-          for crd in "$CRD_DIR"/agentgateway.dev_*.yaml; do
-            basename="$(basename "$crd")"
-            echo "  Rendering ${basename}..."
-            go run render.go "$crd" \
-              > "${TARGET_DIR}/${basename}.html"
-          done
-
-          echo "Kubespec HTMLs generated successfully:"
-          ls -la "$TARGET_DIR"/*.html
-
       - name: Generate Helm and metrics docs
         run: |
           LINK_VERSION="${{ matrix.link_version }}" \
           WEBSITE_DIR="website" \
           KGATEWAY_DIR="agentgateway/controller" \
           python3 website/scripts/generate-ref-docs.py
+
+      - name: Build rendered docs for kubespec index
+        working-directory: website
+        run: hugo --config hugo.yaml
+
+      - name: Generate kubespec widget HTMLs
+        run: |
+          LINK_VERSION="${{ matrix.link_version }}"
+          CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
+          DOCS_KEY_FILE="${RUNNER_TEMP}/${LINK_VERSION}-keys.json"
+          RENDERED_DOCS_DIR="${GITHUB_WORKSPACE}/website/public/docs/kubernetes/${LINK_VERSION}"
+          TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/api/${LINK_VERSION}"
+          mkdir -p "$TARGET_DIR"
+
+          python3 website/scripts/extract_rendered_yaml.py \
+            --input-dir "$RENDERED_DOCS_DIR" \
+            --agentgateway-keys \
+            > "$DOCS_KEY_FILE"
+
+          echo "Generating interactive kubespec widget HTMLs from CRD YAMLs..."
+          for crd in "$CRD_DIR"/agentgateway.dev_*.yaml; do
+            basename="$(basename "$crd")"
+            echo "  Rendering ${basename}..."
+            go run -C website/scripts/kubespec-render ./render.go \
+              -docs "$DOCS_KEY_FILE" \
+              "$crd" \
+              > "${TARGET_DIR}/${basename}.html"
+          done
+
+          echo "Kubespec HTMLs generated successfully:"
+          ls -la "$TARGET_DIR"/*.html
 
       # Create PR: needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions)
       # or a repo secret CREATE_PR_TOKEN (PAT with pull_requests: write).

@@ -27,10 +27,13 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
 	"os"
+	"path"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -54,6 +57,11 @@ type validationItem struct {
 	label   string
 	value   string
 	isBlock bool
+}
+
+type docLink struct {
+	label string
+	href  string
 }
 
 type propertyMap struct {
@@ -565,7 +573,168 @@ func renderValidationDetails(items []validationItem) string {
 	return b.String()
 }
 
-func renderFieldPanel(nodeID, path string, prop propertyDef, isRequired bool) string {
+func renderDocumentationDetails(links []docLink) string {
+	if len(links) == 0 {
+		return ""
+	}
+	var b strings.Builder
+	fmt.Fprintf(&b, `<details class="ks-validation ks-documentation"><summary class="ks-validation-summary">Documentation References (%d)</summary><div class="ks-validation-body">`, len(links))
+	for _, link := range links {
+		b.WriteString(`<div class="ks-doc-link-row">`)
+		fmt.Fprintf(&b, `<a class="ks-doc-link" href="%s">%s</a>`, esc(link.href), esc(link.label))
+		b.WriteString(`</div>`)
+	}
+	b.WriteString(`</div></details>`)
+	return b.String()
+}
+
+func renderInlineRichText(text string) string {
+	var b strings.Builder
+	for i := 0; i < len(text); {
+		switch {
+		case strings.HasPrefix(text[i:], "`"):
+			end := strings.Index(text[i+1:], "`")
+			if end < 0 {
+				b.WriteString(esc(text[i:]))
+				return b.String()
+			}
+			end += i + 1
+			fmt.Fprintf(&b, `<code class="ks-inline-code">%s</code>`, esc(text[i+1:end]))
+			i = end + 1
+		case strings.HasPrefix(text[i:], "**"):
+			end := strings.Index(text[i+2:], "**")
+			if end < 0 {
+				b.WriteString(esc(text[i:]))
+				return b.String()
+			}
+			end += i + 2
+			fmt.Fprintf(&b, `<strong class="ks-strong">%s</strong>`, renderInlineRichText(text[i+2:end]))
+			i = end + 2
+		default:
+			b.WriteString(esc(text[i : i+1]))
+			i++
+		}
+	}
+	return b.String()
+}
+
+func renderTextBlock(text string) string {
+	text = strings.Trim(text, "\n")
+	if strings.TrimSpace(text) == "" {
+		return ""
+	}
+	lines := strings.Split(text, "\n")
+	var blocks []string
+	var paragraph []string
+
+	flushParagraph := func() {
+		if len(paragraph) == 0 {
+			return
+		}
+		blocks = append(blocks, `<div class="ks-rich-block">`+strings.Join(paragraph, "<br />")+`</div>`)
+		paragraph = nil
+	}
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			flushParagraph()
+			continue
+		}
+		if headingLevel, headingText, ok := parseHeadingLine(trimmed); ok {
+			flushParagraph()
+			blocks = append(blocks, fmt.Sprintf(
+				`<div class="ks-rich-heading ks-rich-h%d">%s</div>`,
+				headingLevel,
+				renderInlineRichText(headingText),
+			))
+			continue
+		}
+		paragraph = append(paragraph, renderInlineRichText(line))
+	}
+	flushParagraph()
+
+	return strings.Join(blocks, "")
+}
+
+func renderCodeBlock(code string) string {
+	code = strings.Trim(code, "\n")
+	if code == "" {
+		return ""
+	}
+	var b strings.Builder
+	b.WriteString(`<div class="ks-code-wrap">`)
+	fmt.Fprintf(&b, `<pre class="ks-code-block"><code>%s</code></pre>`, esc(code))
+	b.WriteString(`</div>`)
+	return b.String()
+}
+
+func parseHeadingLine(line string) (int, string, bool) {
+	level := 0
+	for level < len(line) && level < 6 && line[level] == '#' {
+		level++
+	}
+	if level == 0 || level >= len(line) || line[level] != ' ' {
+		return 0, "", false
+	}
+	return level, strings.TrimSpace(line[level+1:]), true
+}
+
+func renderRichText(text string) string {
+	text = strings.ReplaceAll(text, "\r\n", "\n")
+	text = strings.ReplaceAll(text, "\r", "\n")
+	if text == "" {
+		return ""
+	}
+
+	var blocks []string
+	var textLines []string
+	var codeLines []string
+	inCode := false
+
+	flushText := func() {
+		if block := renderTextBlock(strings.Join(textLines, "\n")); block != "" {
+			blocks = append(blocks, block)
+		}
+		textLines = nil
+	}
+	flushCode := func() {
+		if block := renderCodeBlock(strings.Join(codeLines, "\n")); block != "" {
+			blocks = append(blocks, block)
+		}
+		codeLines = nil
+	}
+
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, "\t") {
+			if !inCode {
+				flushText()
+				inCode = true
+			}
+			codeLines = append(codeLines, strings.TrimPrefix(line, "\t"))
+			continue
+		}
+		if inCode {
+			if strings.TrimSpace(line) == "" {
+				codeLines = append(codeLines, "")
+				continue
+			}
+			flushCode()
+			inCode = false
+		}
+		textLines = append(textLines, line)
+	}
+
+	if inCode {
+		flushCode()
+	} else {
+		flushText()
+	}
+
+	return strings.Join(blocks, "")
+}
+
+func renderFieldPanel(nodeID, path string, prop propertyDef, isRequired bool, docs []docLink) string {
 	var b strings.Builder
 	fmt.Fprintf(&b, `<template data-ks-field-panel="%s">`, esc(nodeID))
 	b.WriteString(`<div class="ks-detail-card">`)
@@ -577,12 +746,15 @@ func renderFieldPanel(nodeID, path string, prop propertyDef, isRequired bool) st
 	}
 	b.WriteString(`</div>`)
 	if prop.description != "" {
-		fmt.Fprintf(&b, `<div class="ks-detail-desc">%s</div>`, esc(prop.description))
+		fmt.Fprintf(&b, `<div class="ks-detail-desc">%s</div>`, renderRichText(prop.description))
 	} else {
 		b.WriteString(`<div class="ks-detail-empty">No description for this field.</div>`)
 	}
 	if validationHTML := renderValidationDetails(prop.validation); validationHTML != "" {
 		b.WriteString(validationHTML)
+	}
+	if documentationHTML := renderDocumentationDetails(docs); documentationHTML != "" {
+		b.WriteString(documentationHTML)
 	}
 	b.WriteString(`</div></template>`)
 	return b.String()
@@ -625,7 +797,7 @@ type searchEntry struct {
 	propType string
 }
 
-func renderTree(pm *propertyMap, scope string, level int, path, widgetID string, counter *int, searchIndex *[]searchEntry, panelTemplates *[]string, b *strings.Builder) {
+func renderTree(pm *propertyMap, scope string, level int, path, widgetID string, docsByPath map[string][]docLink, counter *int, searchIndex *[]searchEntry, panelTemplates *[]string, b *strings.Builder) {
 	if pm == nil || len(pm.keys) == 0 {
 		return
 	}
@@ -662,7 +834,7 @@ func renderTree(pm *propertyMap, scope string, level int, path, widgetID string,
 			typeControl = fmt.Sprintf(`<button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="%s">%s</button>`,
 				esc(childrenID), typeHTML)
 		}
-		*panelTemplates = append(*panelTemplates, renderFieldPanel(nodeID, searchPath, prop, isRequired))
+		*panelTemplates = append(*panelTemplates, renderFieldPanel(nodeID, searchPath, prop, isRequired, docsByPath[normalizePath(searchPath)]))
 
 		fmt.Fprintf(b, `<li class="ks-row" data-ks-path="%s">`, esc(searchPath))
 		fmt.Fprintf(b, `<div class="ks-row-line" id="%s" data-ks-node-id="%s" data-ks-path="%s">`, esc(nodeID), esc(nodeID), esc(searchPath))
@@ -672,7 +844,7 @@ func renderTree(pm *propertyMap, scope string, level int, path, widgetID string,
 		b.WriteString(`</div>`)
 		if hasChildren && prop.definition != nil {
 			fmt.Fprintf(b, `<div class="ks-children-container" id="%s" data-ks-children-container hidden>`, esc(childrenID))
-			renderTree(prop.definition, scope, level+1, propPath, widgetID, counter, searchIndex, panelTemplates, b)
+			renderTree(prop.definition, scope, level+1, propPath, widgetID, docsByPath, counter, searchIndex, panelTemplates, b)
 			b.WriteString(`</div>`)
 		}
 		b.WriteString("</li>\n")
@@ -742,6 +914,65 @@ const css = `.ks-schema {
   white-space: pre-wrap;
   max-width: 48rem;
   box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.08);
+}
+.ks-rich-block + .ks-rich-block,
+.ks-code-wrap + .ks-rich-block,
+.ks-rich-block + .ks-code-wrap,
+.ks-code-wrap + .ks-code-wrap,
+.ks-rich-heading + .ks-rich-block,
+.ks-rich-block + .ks-rich-heading,
+.ks-rich-heading + .ks-code-wrap,
+.ks-code-wrap + .ks-rich-heading,
+.ks-rich-heading + .ks-rich-heading {
+  margin-top: 0.7rem;
+}
+.ks-rich-heading {
+  color: #0f172a;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.ks-rich-h1 {
+  font-size: 1.1rem;
+}
+.ks-rich-h2 {
+  font-size: 1rem;
+}
+.ks-rich-h3 {
+  font-size: 0.94rem;
+}
+.ks-rich-h4,
+.ks-rich-h5,
+.ks-rich-h6 {
+  font-size: 0.88rem;
+}
+.ks-strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+.ks-inline-code {
+  display: inline-block;
+  padding: 0.02rem 0.34rem;
+  border-radius: 0.35rem;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.92em;
+}
+.ks-code-wrap {
+  border: 1px solid #dbe2ea;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.ks-code-block {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  overflow-x: auto;
+  white-space: pre;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
 }
 .ks-search {
   position: relative;
@@ -992,6 +1223,27 @@ const css = `.ks-schema {
   background: transparent;
   border-radius: 0;
   padding: 0;
+}
+.ks-documentation {
+  margin-top: 0.7rem;
+}
+.ks-doc-link-row + .ks-doc-link-row {
+  margin-top: 0.35rem;
+}
+.ks-doc-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  font-size: 0.72rem;
+  color: #0f766e;
+  text-decoration: underline;
+  text-decoration-color: rgba(15, 118, 110, 0.28);
+  text-underline-offset: 0.14em;
+  word-break: break-word;
+}
+.ks-doc-link:hover {
+  color: #115e59;
+  text-decoration-color: currentColor;
 }
 @media (max-width: 900px) {
   .ks-layout {
@@ -1397,7 +1649,7 @@ func renderSearchScript(hostID, templateID string, searchIndex []searchEntry) st
 	return b.String()
 }
 
-func renderWidget(kind, group, version, scope string, pm *propertyMap, widgetID string) string {
+func renderWidget(kind, group, version, scope string, pm *propertyMap, widgetID string, docsByPath map[string][]docLink) string {
 	apiVersion := version
 	if group != "" {
 		apiVersion = group + "/" + version
@@ -1416,13 +1668,13 @@ func renderWidget(kind, group, version, scope string, pm *propertyMap, widgetID 
 	b.WriteString(`<div class="ks-header">` + "\n")
 	fmt.Fprintf(&b, `  <div class="ks-apiversion">%s</div>`+"\n", esc(apiVersion))
 	if pm.description != "" {
-		fmt.Fprintf(&b, `  <div class="ks-resource-desc">%s</div>`+"\n", esc(pm.description))
+		fmt.Fprintf(&b, `  <div class="ks-resource-desc">%s</div>`+"\n", renderRichText(pm.description))
 	}
 	fmt.Fprintf(&b, `  <div class="ks-search"><input class="ks-search-input" type="search" placeholder="Search fields like spec.template.spec.containers" autocomplete="off" spellcheck="false" aria-label="Search schema fields" data-ks-search-input /><div class="ks-search-results" data-ks-search-results hidden></div></div>`+"\n")
 	b.WriteString("</div>\n")
 	b.WriteString(`<div class="ks-layout">` + "\n")
 	b.WriteString(`<div class="ks-tree-pane">` + "\n")
-	renderTree(pm, scope, 0, "", widgetID, &nodeCounter, &searchIndex, &panelTemplates, &b)
+	renderTree(pm, scope, 0, "", widgetID, docsByPath, &nodeCounter, &searchIndex, &panelTemplates, &b)
 	b.WriteString(`</div>` + "\n")
 	b.WriteString(`<aside class="ks-detail-pane"><div data-ks-active-panel></div></aside>` + "\n")
 	b.WriteString(`</div>` + "\n")
@@ -1506,7 +1758,7 @@ func looksLikeJSONSchema(m nodeMap) bool {
 	return t != "" && (getString(m, "title") != "" || getNode(m, "required") != nil)
 }
 
-func renderJSONSchemaWidget(doc crdDocument, widgetID string) (string, bool) {
+func renderJSONSchemaWidget(doc crdDocument, widgetID string, docsByPath map[string][]docLink) (string, bool) {
 	m := doc.mapping()
 	if !looksLikeJSONSchema(m) {
 		return "", false
@@ -1527,7 +1779,131 @@ func renderJSONSchemaWidget(doc crdDocument, widgetID string) (string, bool) {
 		return "", false
 	}
 	pm := toPropertyMapWithResolver(root, required, &schemaResolver{root: root}, nil)
-	return renderWidget(title, "", schemaVersion, "Schema", pm, widgetID), true
+	return renderWidget(title, "", schemaVersion, "Schema", pm, widgetID, docsByPath), true
+}
+
+func normalizePath(value string) string {
+	return strings.ToLower(strings.TrimSpace(strings.TrimPrefix(value, ".")))
+}
+
+func docHref(raw string) string {
+	if raw == "" {
+		return ""
+	}
+	if suffix := docKubernetesSuffix(raw); suffix != "" {
+		return "../../../" + suffix + "/"
+	}
+	if strings.HasPrefix(raw, "http://") || strings.HasPrefix(raw, "https://") || strings.HasPrefix(raw, "/") || strings.HasPrefix(raw, "#") {
+		return raw
+	}
+	trimmed := strings.TrimPrefix(raw, "./")
+	switch {
+	case strings.HasSuffix(trimmed, "/index.html"):
+		trimmed = strings.TrimSuffix(trimmed, "index.html")
+	case strings.HasSuffix(trimmed, ".html"):
+		trimmed = strings.TrimSuffix(trimmed, ".html")
+	}
+	return "/" + strings.TrimLeft(trimmed, "/")
+}
+
+func docLabel(raw string) string {
+	if suffix := docKubernetesSuffix(raw); suffix != "" {
+		return suffix
+	}
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return ""
+	}
+	trimmed = strings.TrimSuffix(trimmed, "index.html")
+	trimmed = strings.TrimSuffix(trimmed, ".html")
+	trimmed = strings.Trim(trimmed, "/")
+	if trimmed == "" {
+		return raw
+	}
+	return path.Clean(trimmed)
+}
+
+func docKubernetesSuffix(raw string) string {
+	trimmed := strings.TrimSpace(raw)
+	if trimmed == "" {
+		return ""
+	}
+	trimmed = strings.TrimPrefix(trimmed, "./")
+	trimmed = strings.TrimPrefix(trimmed, "/")
+	trimmed = strings.TrimPrefix(trimmed, "content/")
+	trimmed = strings.TrimPrefix(trimmed, "public/")
+	trimmed = strings.TrimSuffix(trimmed, "/index.html")
+	trimmed = strings.TrimSuffix(trimmed, "/index.md")
+	trimmed = strings.TrimSuffix(trimmed, ".html")
+	trimmed = strings.TrimSuffix(trimmed, ".md")
+
+	parts := strings.Split(path.Clean(trimmed), "/")
+	for i := 0; i+3 < len(parts); i++ {
+		if parts[i] != "docs" || parts[i+1] != "kubernetes" {
+			continue
+		}
+		version := parts[i+2]
+		if version == "" {
+			return ""
+		}
+		suffix := strings.Join(parts[i+3:], "/")
+		if suffix == "." || suffix == "" {
+			return ""
+		}
+		return suffix
+	}
+	return ""
+}
+
+func parseDocsIndexFile(filename string) (map[string][]docLink, error) {
+	if strings.TrimSpace(filename) == "" {
+		return nil, nil
+	}
+	data, err := os.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
+	var raw map[string][]string
+	if err := json.Unmarshal(data, &raw); err != nil {
+		return nil, err
+	}
+
+	docsByPath := map[string][]docLink{}
+	seen := map[string]map[string]bool{}
+	for source, paths := range raw {
+		href := docHref(source)
+		label := docLabel(source)
+		if href == "" || label == "" {
+			continue
+		}
+		for _, schemaPath := range paths {
+			key := normalizePath(schemaPath)
+			if key == "" {
+				continue
+			}
+			if seen[key] == nil {
+				seen[key] = map[string]bool{}
+			}
+			if seen[key][href] {
+				continue
+			}
+			seen[key][href] = true
+			docsByPath[key] = append(docsByPath[key], docLink{
+				label: label,
+				href:  href,
+			})
+		}
+	}
+	for key := range docsByPath {
+		sort.Slice(docsByPath[key], func(i, j int) bool {
+			if docsByPath[key][i].label == docsByPath[key][j].label {
+				return docsByPath[key][i].href < docsByPath[key][j].href
+			}
+			return docsByPath[key][i].label < docsByPath[key][j].label
+		})
+	}
+
+	return docsByPath, nil
 }
 
 // ---------------------------------------------------------------------------
@@ -1536,6 +1912,7 @@ func renderJSONSchemaWidget(doc crdDocument, widgetID string) (string, bool) {
 
 func main() {
 	outputFile := flag.String("output", "", "Write output to `FILE` instead of stdout")
+	docsFile := flag.String("docs", "", "Optional JSON `FILE` mapping documentation pages to schema paths")
 	versionFilter := flag.String("version", "", "Only render a specific schema `VERSION` (e.g. v1)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
@@ -1556,6 +1933,11 @@ func main() {
 		os.Exit(1)
 	}
 	inputFile := flag.Arg(0)
+	docsByPath, err := parseDocsIndexFile(*docsFile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Error reading docs index %s: %v\n", *docsFile, err)
+		os.Exit(1)
+	}
 
 	data, err := os.ReadFile(inputFile)
 	if err != nil {
@@ -1572,7 +1954,7 @@ func main() {
 
 		if !isCRD(m) {
 			widgetID := fmt.Sprintf("ks-widget-%d", len(widgets)+1)
-			if widget, ok := renderJSONSchemaWidget(doc, widgetID); ok {
+			if widget, ok := renderJSONSchemaWidget(doc, widgetID, docsByPath); ok {
 				widgets = append(widgets, widget)
 			}
 			continue
@@ -1624,7 +2006,7 @@ func main() {
 			openAPIMap := decodeMapping(openAPINode)
 			pm := toPropertyMap(openAPINode, getStringSlice(openAPIMap, "required"))
 			widgetID := fmt.Sprintf("ks-widget-%d", len(widgets)+1)
-			widgets = append(widgets, renderWidget(crdKind, group, verName, scope, pm, widgetID))
+			widgets = append(widgets, renderWidget(crdKind, group, verName, scope, pm, widgetID, docsByPath))
 		}
 	}
 
