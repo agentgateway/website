@@ -96,7 +96,7 @@ Open the [agentgateway UI on the default port 15000](http://localhost:15000/ui) 
 - **Targets**: Review the MCP target (`server-everything`).
 - **Policies**: Review configured policies.
 
-You can change target and port configuration in the UI. Any updates you make apply immediately without restarting agentgateway.
+You can change the target and port configurations in the UI. Any updates you make apply immediately without restarting agentgateway.
 
 {{< reuse-image src="img/agentgateway-ui-home.png" >}}
 
