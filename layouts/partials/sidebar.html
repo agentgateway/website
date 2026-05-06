@@ -168,7 +168,16 @@
                 {{- $newPath := printf "/%s" (delimit $filtered "/") -}}
                 {{- range $versions -}}
                   {{- $isActive := eq $currentVersion .linkVersion -}}
-                  <a href="/docs/{{ $section }}/{{ .linkVersion }}{{ $newPath }}"
+                  {{- /* See nav.html for the rationale on the not-in-version fallback. */ -}}
+                  {{- $href := printf "/docs/%s/%s%s" $section .linkVersion $newPath -}}
+                  {{- $targetPath := printf "/docs/%s/%s%s" $section .linkVersion $newPath -}}
+                  {{- if not (site.GetPage $targetPath) -}}
+                    {{- $fallbackPath := printf "/docs/%s/%s/not-in-version" $section .linkVersion -}}
+                    {{- if site.GetPage $fallbackPath -}}
+                      {{- $href = printf "/docs/%s/%s/not-in-version/" $section .linkVersion -}}
+                    {{- end -}}
+                  {{- end -}}
+                  <a href="{{ $href }}"
                      style="padding: 0.375rem 0.75rem; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; {{ if $isActive }}background: rgb(229 231 235); color: rgb(17 24 39);{{ else }}color: rgb(107 114 128);{{ end }}"
                      class="{{ if $isActive }}hx:dark:bg-gray-700 hx:dark:text-white{{ else }}hx:hover:bg-gray-100 hx:dark:text-gray-400 hx:dark:hover:bg-gray-800{{ end }}">
                     {{ .dropdown }}
