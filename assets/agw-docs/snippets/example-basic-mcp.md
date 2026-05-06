@@ -1,10 +1,8 @@
 | Field | Description |
 | ----- | ----------- |
-| `binds` | Binds set up each port on which the agentgateway listens for incoming requests. This example configures one port. |
-| `port` | The port to listen on, such as `3000`. |
-| `listeners` | Listeners configure how agentgateway accepts and processes incoming requests. They do this by grouping together resources such as routes and the backends that serve traffic. |
-| `routes` | Routes configure advanced routing features, such as traffic policies, that control how traffic is sent to the backends. In the example, the route matches all traffic. |
-| `policies` | Policies configure traffic policies on routes that shape how traffic is sent to the backends. In the example, a basic CORS policy is configured to allow all origins and the `mcp-protocol-version` header. This way, the configuration works with the [MCP inspector tool](https://modelcontextprotocol.io/docs/tools/inspector). |
-| `backends` | Backends configure the backing destination where the traffic is sent to. Backends can be MCP servers, A2A agents, or OpenAPI servers. In this example, the backend is an MCP server. |
-| `targets` | Targets configure the details of the backend, such as the MCP server. In this example, the target is the sample, open source MCP test server, `server-everything`. The server runs a bunch of tools in a single process that are useful for testing. |
-| `stdio` | To run the server, you use the standard input/output (`stdio`) capability of the agentgateway, which allows you to pass in the command and command arguments that you want to use. In this example, the `npx` command is used. The `npx` command utility lets you run a Node.js package (`@modelcontextprotocol/server-everything`) without installing it. If you do not have `npx` on your machine, follow the [instructions to install Node.js](https://nodejs.org/en/download). |
+| `mcp` | The top-level MCP configuration block that defines how agentgateway connects to MCP servers. |
+| `port` | The port on which agentgateway listens for incoming MCP requests, such as `3000`. If not specified, a default port is used. |
+| `targets` | A list of MCP targets to connect to. Each target defines an MCP server that agentgateway proxies requests to. At least one target is required. |
+| `name` | A unique name for the MCP target, such as `server-everything`. This name identifies the target in logs and the UI. |
+| `stdio` | Configuration for connecting to an MCP server via standard input/output. Use this for local MCP servers that run as a command. Contains `cmd` (the command to run) and `args` (arguments for the command). In this example, `npx` runs the `@modelcontextprotocol/server-everything` package. |
+| `mcp` | Configuration for connecting to a remote MCP server via streamable HTTP. Use this for remote MCP servers. Contains `host` (the URL of the MCP server endpoint). |
