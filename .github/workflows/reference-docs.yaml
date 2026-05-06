@@ -136,13 +136,70 @@ jobs:
 
       - name: Generate agentgateway API docs
         run: |
+          pushd website || exit 1
+
+          LINK_VERSION="${{ matrix.link_version }}"
+          API_FILE="api-${LINK_VERSION}.md"
+
+          # API types live in agentgateway controller/api/v1alpha1/agentgateway/
+          echo "Generating agentgateway API docs from controller/api/v1alpha1/agentgateway/"
+          go run github.com/elastic/crd-ref-docs@latest \
+            --source-path="$PWD/../agentgateway/controller/api/v1alpha1/agentgateway/" \
+            --renderer=markdown \
+            --output-path ./ \
+            --max-depth=100 \
+            --config=scripts/crd-ref-docs-config.yaml
+
+          if [ ! -f "./out.md" ]; then
+            echo "Error: API docs generation failed - out.md not found"
+            exit 1
+          fi
+
+          TARGET_DIR="assets/agw-docs/pages/reference/api"
+          mkdir -p "$TARGET_DIR"
+          TARGET_FILE="${TARGET_DIR}/${API_FILE}"
+
+          echo "Processing API docs -> ${TARGET_FILE}"
+
+          # Remove first 3 lines and fix common artifacts
+          tail -n +4 "./out.md" | \
+            sed 's/Required: {}/Required/g; s/Optional: {}/Optional/g; /^# API Reference$/,/^$/d' \
+            > "$TARGET_FILE"
+
+          # Simplify complex struct types
+          sed -i.bak -E 's/_Underlying type:_ _\[?struct\{[^}]*\}[]\)]*(\\([^)]+\\))?_/_Underlying type:_ _struct_/g' "$TARGET_FILE"
+          rm -f "$TARGET_FILE.bak"
+
+          rm "./out.md"
+          echo "API docs generated successfully at $TARGET_FILE"
+
+          popd || exit 1
+
+      - name: Generate shared types documentation
+        run: |
+          LINK_VERSION="${{ matrix.link_version }}"
+          TARGET_FILE="website/assets/agw-docs/pages/reference/api/api-${LINK_VERSION}.md"
+          SHARED_DIR="agentgateway/controller/api/v1alpha1/shared"
+          AGENTGATEWAY_SOURCE_DIR="agentgateway/controller/api/v1alpha1/agentgateway"
+          if [ -f "$TARGET_FILE" ]; then
+            echo "Generating shared types documentation for api-${LINK_VERSION}.md..."
+            python3 website/scripts/generate-shared-types.py \
+              "$SHARED_DIR" \
+              "$TARGET_FILE" \
+              "$AGENTGATEWAY_SOURCE_DIR"
+          else
+            echo "API doc file not found - skipping shared types"
+          fi
+
+      - name: Generate kubespec widget HTMLs
+        run: |
           CRD_DIR="${GITHUB_WORKSPACE}/agentgateway/controller/install/helm/agentgateway-crds/templates"
           TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/api/${{ matrix.link_version }}"
           mkdir -p "$TARGET_DIR"
 
           cd website/scripts/kubespec-render
 
-          echo "Generating interactive API reference docs from CRD YAMLs..."
+          echo "Generating interactive kubespec widget HTMLs from CRD YAMLs..."
           for crd in "$CRD_DIR"/agentgateway.dev_*.yaml; do
             basename="$(basename "$crd")"
             echo "  Rendering ${basename}..."
@@ -150,7 +207,7 @@ jobs:
               > "${TARGET_DIR}/${basename}.html"
           done
 
-          echo "API docs generated successfully:"
+          echo "Kubespec HTMLs generated successfully:"
           ls -la "$TARGET_DIR"/*.html
 
       - name: Generate Helm and metrics docs
@@ -172,13 +229,13 @@ jobs:
             Generate reference documentation for agentgateway (${{ matrix.link_version }}).
 
             Source: agentgateway/agentgateway at `${{ matrix.ref }}`.
-            Updates API reference (interactive kubespec widgets), Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ matrix.link_version }} version.
+            Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ matrix.link_version }} version.
 
             This PR was created automatically by the reference-docs workflow.
 
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
           branch: ref-docs-${{ matrix.link_version }}
-          commit-message: 'docs: update API, Helm, and metrics docs from agentgateway ${{ matrix.ref }}'
+          commit-message: 'docs: update API (incl. shared types), kubespec widgets, Helm, and metrics docs from agentgateway ${{ matrix.ref }}'
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ matrix.link_version }}) from agentgateway ${{ matrix.ref }}'

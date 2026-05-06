@@ -1,21 +1,13 @@
 {{/*
-  Kubernetes content adapter: generates API reference pages for each
+  Kubernetes content adapter: generates interactive kubespec widget pages for each
   agentgateway custom resource.
 
-  Each page includes:
-    1. The interactive kubespec HTML widget (pre-built by CI and stored in
-       assets/agw-docs/pages/reference/api/{version}/).
-    2. A table-style reference generated at build time from the CRD YAML
-       fetched directly from GitHub.
+  Each page includes the interactive kubespec HTML widget pre-built by CI and stored in
+  assets/agw-docs/pages/reference/api/{version}/.
 
   CONFIGURATION — edit the sections below to change sources, outputs, or targets.
   RENDERING     — the logic below the config sections should not need editing.
 */}}
-
-{{/* =================================================================== */}}
-{{/* SOURCES — where to fetch CRD YAML files                             */}}
-{{/* =================================================================== */}}
-{{ $crdBase := "https://raw.githubusercontent.com/agentgateway/agentgateway/refs/heads/main/controller/install/helm/agentgateway-crds/templates" }}
 
 {{/* =================================================================== */}}
 {{/* TARGETS — version prefixes to generate pages into                    */}}
@@ -23,36 +15,32 @@
 {{ $targets := slice "latest" "main" }}
 
 {{/* =================================================================== */}}
-{{/* PAGES — CRD definition per resource                                  */}}
+{{/* PAGES — kubespec widget page per resource                            */}}
 {{/*                                                                     */}}
-{{/*   file    : CRD YAML filename fetched from $crdBase                  */}}
-{{/*   htmlFile: HTML filename in assets/agw-docs/pages/reference/api/    */}}
-{{/*   path    : output path under {version}/reference/api/               */}}
+{{/*   htmlFile: HTML filename in assets/agw-docs/pages/reference/api/   */}}
+{{/*   path    : output path under {version}/reference/ (e.g. api-kubespec/policies) */}}
 {{/*   title   : page title                                               */}}
 {{/*   weight  : sort order                                               */}}
 {{/*   desc    : page description                                         */}}
 {{/* =================================================================== */}}
 {{ $crdPages := slice
   (dict
-    "file"     "agentgateway.dev_agentgatewaypolicies.yaml"
     "htmlFile" "agentgateway.dev_agentgatewaypolicies.yaml.html"
-    "path"     "api/policies"
+    "path"     "api-kubespec/policies"
     "title"    "AgentgatewayPolicy"
     "weight"   1
     "desc"     "Use AgentgatewayPolicy to configure traffic manipulation, observability, security, and more."
   )
   (dict
-    "file"     "agentgateway.dev_agentgatewaybackends.yaml"
     "htmlFile" "agentgateway.dev_agentgatewaybackends.yaml.html"
-    "path"     "api/backends"
+    "path"     "api-kubespec/backends"
     "title"    "AgentgatewayBackend"
     "weight"   10
     "desc"     "Use AgentgatewayBackends to configure the target services that agentgateway routes traffic to."
   )
   (dict
-    "file"     "agentgateway.dev_agentgatewayparameters.yaml"
     "htmlFile" "agentgateway.dev_agentgatewayparameters.yaml.html"
-    "path"     "api/parameters"
+    "path"     "api-kubespec/parameters"
     "title"    "AgentgatewayParameters"
     "weight"   20
     "desc"     "Use AgentgatewayParameters to configure the agentgateway data plane."
@@ -60,471 +48,27 @@
 }}
 
 {{/* =================================================================== */}}
-{{/* RENDERING — fetch CRDs and generate pages. No config below here.    */}}
+{{/* RENDERING — load widget HTML and generate pages.                     */}}
 {{/* =================================================================== */}}
 
-{{/* --- Fetch and parse each CRD YAML once (shared across all versions) --- */}}
-{{ $parsedCrds := slice }}
-{{ range $crdPages }}
-  {{ $url := printf "%s/%s" $crdBase .file }}
-  {{ with try (resources.GetRemote $url) }}
-    {{ with .Err }}
-      {{ warnf "Failed to fetch CRD %s: %s" $url . }}
-      {{ $parsedCrds = $parsedCrds | append (dict "ok" false) }}
-    {{ else with .Value }}
-      {{ $crd := .Content | transform.Unmarshal }}
-      {{ $names  := $crd.spec.names }}
-      {{ $ver    := index $crd.spec.versions 0 }}
-      {{ $schema := $ver.schema.openAPIV3Schema }}
-      {{ $parsedCrds = $parsedCrds | append (dict
-        "ok"         true
-        "kind"       $names.kind
-        "shortNames" ($names.shortNames | default slice)
-        "group"      $crd.spec.group
-        "version"    $ver.name
-        "schema"     $schema
-      ) }}
-    {{ end }}
-  {{ end }}
-{{ end }}
-
-{{/* --- Helper: recursively render fields into a markdown table --- */}}
-{{/* Hugo templates can't recurse natively, so we inline up to 3 levels. */}}
-{{ define "renderFieldTable" }}
-  {{/* params: props (dict), prefix (string) */}}
-  {{ $props  := .props }}
-  {{ $prefix := .prefix }}
-  {{ $rows   := "" }}
-  {{ range $fname, $fprop := $props }}
-    {{ $fpath := $fname }}
-    {{ if $prefix }}{{ $fpath = printf "%s.%s" $prefix $fname }}{{ end }}
-    {{/* Determine type */}}
-    {{ $ftype := "" }}
-    {{ with $fprop.type }}
-      {{ if reflect.IsSlice . }}
-        {{ $filtered := slice }}
-        {{ range . }}{{ if ne . "null" }}{{ $filtered = $filtered | append . }}{{ end }}{{ end }}
-        {{ $ftype = delimit $filtered " \\| " }}
-      {{ else }}
-        {{ $ftype = . }}
-      {{ end }}
-    {{ end }}
-    {{ if eq $ftype "array" }}
-      {{ with $fprop.items }}
-        {{ if .type }}{{ $ftype = printf "[]%s" .type }}{{ end }}
-      {{ end }}
-    {{ end }}
-    {{ if not $ftype }}{{ $ftype = "object" }}{{ end }}
-    {{/* Required indicator */}}
-    {{ $req := "" }}
-    {{ if $fprop.required }}{{ $req = " *" }}{{ end }}
-    {{/* Description — strip newlines, escape pipes, cap length */}}
-    {{ $fdesc := $fprop.description | default "" }}
-    {{ $fdesc  = replace $fdesc "|" "\\|" }}
-    {{ $fdesc  = replace $fdesc "\n" " " }}
-    {{ if gt (len $fdesc) 300 }}{{ $fdesc = printf "%s..." (substr $fdesc 0 300) }}{{ end }}
-    {{ $rows = printf "%s| `%s`%s | `%s` | %s |\n" $rows $fpath $req $ftype $fdesc }}
-    {{/* One level of nested properties */}}
-    {{ with $fprop.properties }}
-      {{ range $subname, $subprop := . }}
-        {{ $spath := printf "%s.%s" $fpath $subname }}
-        {{ $stype := "" }}
-        {{ with $subprop.type }}
-          {{ if reflect.IsSlice . }}
-            {{ $filtered := slice }}
-            {{ range . }}{{ if ne . "null" }}{{ $filtered = $filtered | append . }}{{ end }}{{ end }}
-            {{ $stype = delimit $filtered " \\| " }}
-          {{ else }}
-            {{ $stype = . }}
-          {{ end }}
-        {{ end }}
-        {{ if eq $stype "array" }}
-          {{ with $subprop.items }}{{ if .type }}{{ $stype = printf "[]%s" .type }}{{ end }}{{ end }}
-        {{ end }}
-        {{ if not $stype }}{{ $stype = "object" }}{{ end }}
-        {{ $sdesc := $subprop.description | default "" }}
-        {{ $sdesc  = replace $sdesc "|" "\\|" }}
-        {{ $sdesc  = replace $sdesc "\n" " " }}
-        {{ if gt (len $sdesc) 300 }}{{ $sdesc = printf "%s..." (substr $sdesc 0 300) }}{{ end }}
-        {{ $rows = printf "%s| `%s` | `%s` | %s |\n" $rows $spath $stype $sdesc }}
-        {{/* Two levels deep */}}
-        {{ with $subprop.properties }}
-          {{ range $subsubname, $subsubprop := . }}
-            {{ $sspath := printf "%s.%s" $spath $subsubname }}
-            {{ $sstype := $subsubprop.type | default "object" }}
-            {{ if eq $sstype "array" }}
-              {{ with $subsubprop.items }}{{ if .type }}{{ $sstype = printf "[]%s" .type }}{{ end }}{{ end }}
-            {{ end }}
-            {{ $ssdesc := $subsubprop.description | default "" }}
-            {{ $ssdesc  = replace $ssdesc "|" "\\|" }}
-            {{ $ssdesc  = replace $ssdesc "\n" " " }}
-            {{ if gt (len $ssdesc) 300 }}{{ $ssdesc = printf "%s..." (substr $ssdesc 0 300) }}{{ end }}
-            {{ $rows = printf "%s| `%s` | `%s` | %s |\n" $rows $sspath $sstype $ssdesc }}
-          {{ end }}
-        {{ end }}
-      {{ end }}
-    {{ end }}
-  {{ end }}
-  {{- $rows -}}
-{{ end }}
-
-{{/* --- Generate pages for each version --- */}}
 {{ range $version := $targets }}
-  {{ range $i, $page := $crdPages }}
-    {{ $crd := index $parsedCrds $i }}
+  {{ range $page := $crdPages }}
 
-    {{/* --- Kubespec HTML widget — loaded as a page param, not inline Markdown.
+    {{/* Load the pre-built kubespec widget HTML.
          Embedding raw HTML (including <script> blocks) inside a "text/markdown"
-         content string causes Goldmark to corrupt the JavaScript: blank lines
-         inside <script> become <p> tags and the typographer extension HTML-encodes
-         quote characters inside string literals, breaking widget initialization.
-         By passing the HTML through .Params.widgetHtml and rendering it with
-         safeHTML in the layout, we bypass Goldmark entirely for this section. */}}
+         content string causes Goldmark to corrupt the JavaScript. Passing the HTML
+         through .Params.widgetHtml and rendering it with safeHTML in the layout
+         bypasses Goldmark entirely. */}}
     {{ $widgetHtml := "" }}
     {{ $htmlPath := printf "assets/agw-docs/pages/reference/api/%s/%s" $version $page.htmlFile }}
     {{ if os.FileExists $htmlPath }}
       {{ $widgetHtml = readFile $htmlPath }}
     {{ else }}
-      {{ warnf "Kubespec HTML not found: %s (skipping widget section for %s %s)" $htmlPath $page.title $version }}
+      {{ warnf "Kubespec HTML not found: %s (skipping widget for %s %s)" $htmlPath $page.title $version }}
     {{ end }}
 
-    {{/* --- Field reference section from CRD YAML — Markdown, safe for Goldmark.
-         Structure: each top-level spec field becomes an H3 subheading; its
-         nested fields (levels 1 and 2) appear in a table beneath it.
-         Field names in the table use plain text (no backtick wrapping). */}}
-    {{ $tableSection := "" }}
-    {{ if $crd.ok }}
-      {{ $schema := $crd.schema }}
-      {{ $specProps := dict }}
-      {{ with $schema.properties }}
-        {{ with index . "spec" }}
-          {{ $specProps = .properties | default dict }}
-        {{ end }}
-      {{ end }}
+    {{ $mdContent := "{{< reuse \"agw-docs/snippets/kubespec-note.md\" >}}\n\n<p></p><div id=\"ks-widget-slot\"></div>" }}
 
-      {{ $headerMd := printf "## Spec reference\n\n" }}
-      {{ with $crd.shortNames }}
-        {{ $headerMd = printf "%sShort name: `%s`  \n" $headerMd (delimit . "`, `") }}
-      {{ end }}
-      {{ $headerMd = printf "%sAPI group: `%s/%s`\n\n" $headerMd $crd.group $crd.version }}
-
-      {{/* ---------------------------------------------------------------- */}}
-      {{/* EXAMPLE CR — skeleton YAML with placeholders, capped at 3 levels */}}
-      {{/* ---------------------------------------------------------------- */}}
-      {{/* Helper macro: returns the scalar placeholder for a given type/enum */}}
-
-      {{ $exLines := slice }}
-      {{ $exLines = $exLines | append (printf "apiVersion: %s/%s" $crd.group $crd.version) }}
-      {{ $exLines = $exLines | append (printf "kind: %s" $crd.kind) }}
-      {{ $exLines = $exLines | append "metadata:" }}
-      {{ $exName := lower $crd.kind }}
-      {{ with $crd.shortNames }}{{ $exName = index . 0 }}{{ end }}
-      {{ $exLines = $exLines | append (printf "  name: my-%s" $exName) }}
-      {{ $exLines = $exLines | append "  namespace: default" }}
-      {{ $exLines = $exLines | append "spec:" }}
-
-      {{ range $fname, $fprop := $specProps }}
-        {{ $f0req  := $crd.schema.properties.spec.required | default slice }}
-        {{ $f0opt  := not (in $f0req $fname) }}
-        {{ $f0cmt  := cond $f0opt "  # optional" "" }}
-        {{ $f0type := $fprop.type | default "object" }}
-        {{ $f0enum := $fprop.enum | default slice }}
-
-        {{ if $f0enum }}
-          {{ $exLines = $exLines | append (printf "  %s: %s%s" $fname (index $f0enum 0) $f0cmt) }}
-        {{ else if eq $f0type "string" }}
-          {{ $exLines = $exLines | append (printf "  %s: \"\"%s" $fname $f0cmt) }}
-        {{ else if eq $f0type "integer" }}
-          {{ $exLines = $exLines | append (printf "  %s: 0%s" $fname $f0cmt) }}
-        {{ else if eq $f0type "boolean" }}
-          {{ $exLines = $exLines | append (printf "  %s: false%s" $fname $f0cmt) }}
-        {{ else if eq $f0type "array" }}
-          {{ $exLines = $exLines | append (printf "  %s:%s" $fname $f0cmt) }}
-          {{ $f0items := $fprop.items | default dict }}
-          {{ $f0itype := $f0items.type | default "object" }}
-          {{ $f0iprops := $f0items.properties | default dict }}
-          {{ $f0ireq   := $f0items.required | default slice }}
-          {{ if $f0iprops }}
-            {{ $exLines = $exLines | append "    -" }}
-            {{ range $sname, $sprop := $f0iprops }}
-              {{ $s1req  := in $f0ireq $sname }}
-              {{ $s1cmt  := cond $s1req "" "  # optional" }}
-              {{ $s1type := $sprop.type | default "object" }}
-              {{ $s1enum := $sprop.enum | default slice }}
-              {{ if $s1enum }}
-                {{ $exLines = $exLines | append (printf "      %s: %s%s" $sname (index $s1enum 0) $s1cmt) }}
-              {{ else if eq $s1type "string" }}
-                {{ $exLines = $exLines | append (printf "      %s: \"\"%s" $sname $s1cmt) }}
-              {{ else if eq $s1type "integer" }}
-                {{ $exLines = $exLines | append (printf "      %s: 0%s" $sname $s1cmt) }}
-              {{ else if eq $s1type "boolean" }}
-                {{ $exLines = $exLines | append (printf "      %s: false%s" $sname $s1cmt) }}
-              {{ else }}
-                {{ $exLines = $exLines | append (printf "      %s: {}%s" $sname $s1cmt) }}
-              {{ end }}
-            {{ end }}
-          {{ else if eq $f0itype "string" }}
-            {{ $exLines = $exLines | append "    - \"\"" }}
-          {{ else if eq $f0itype "integer" }}
-            {{ $exLines = $exLines | append "    - 0" }}
-          {{ else }}
-            {{ $exLines = $exLines | append "    - {}" }}
-          {{ end }}
-        {{ else }}
-          {{/* object — recurse up to 2 more levels inline */}}
-          {{ $f0props := $fprop.properties | default dict }}
-          {{ $f0req2  := $fprop.required | default slice }}
-          {{ if $f0props }}
-            {{ $exLines = $exLines | append (printf "  %s:%s" $fname $f0cmt) }}
-            {{ range $sname, $sprop := $f0props }}
-              {{ $s1req  := in $f0req2 $sname }}
-              {{ $s1cmt  := cond $s1req "" "  # optional" }}
-              {{ $s1type := $sprop.type | default "object" }}
-              {{ $s1enum := $sprop.enum | default slice }}
-              {{ $s1props := $sprop.properties | default dict }}
-              {{ $s1req2  := $sprop.required | default slice }}
-              {{ if $s1enum }}
-                {{ $exLines = $exLines | append (printf "    %s: %s%s" $sname (index $s1enum 0) $s1cmt) }}
-              {{ else if eq $s1type "string" }}
-                {{ $exLines = $exLines | append (printf "    %s: \"\"%s" $sname $s1cmt) }}
-              {{ else if eq $s1type "integer" }}
-                {{ $exLines = $exLines | append (printf "    %s: 0%s" $sname $s1cmt) }}
-              {{ else if eq $s1type "boolean" }}
-                {{ $exLines = $exLines | append (printf "    %s: false%s" $sname $s1cmt) }}
-              {{ else if eq $s1type "array" }}
-                {{ $exLines = $exLines | append (printf "    %s:%s" $sname $s1cmt) }}
-                {{ $s1items := $sprop.items | default dict }}
-                {{ $s1itype := $s1items.type | default "object" }}
-                {{ if eq $s1itype "string" }}
-                  {{ $exLines = $exLines | append "      - \"\"" }}
-                {{ else if eq $s1itype "integer" }}
-                  {{ $exLines = $exLines | append "      - 0" }}
-                {{ else }}
-                  {{ $exLines = $exLines | append "      - {}" }}
-                {{ end }}
-              {{ else if $s1props }}
-                {{ $exLines = $exLines | append (printf "    %s:%s" $sname $s1cmt) }}
-                {{ range $ssname, $ssprop := $s1props }}
-                  {{ $s2req  := in $s1req2 $ssname }}
-                  {{ $s2cmt  := cond $s2req "" "  # optional" }}
-                  {{ $s2type := $ssprop.type | default "object" }}
-                  {{ $s2enum := $ssprop.enum | default slice }}
-                  {{ if $s2enum }}
-                    {{ $exLines = $exLines | append (printf "      %s: %s%s" $ssname (index $s2enum 0) $s2cmt) }}
-                  {{ else if eq $s2type "string" }}
-                    {{ $exLines = $exLines | append (printf "      %s: \"\"%s" $ssname $s2cmt) }}
-                  {{ else if eq $s2type "integer" }}
-                    {{ $exLines = $exLines | append (printf "      %s: 0%s" $ssname $s2cmt) }}
-                  {{ else if eq $s2type "boolean" }}
-                    {{ $exLines = $exLines | append (printf "      %s: false%s" $ssname $s2cmt) }}
-                  {{ else }}
-                    {{ $exLines = $exLines | append (printf "      %s: {}%s" $ssname $s2cmt) }}
-                  {{ end }}
-                {{ end }}
-              {{ else }}
-                {{ $exLines = $exLines | append (printf "    %s: {}%s" $sname $s1cmt) }}
-              {{ end }}
-            {{ end }}
-          {{ else }}
-            {{ $exLines = $exLines | append (printf "  %s: {}%s" $fname $f0cmt) }}
-          {{ end }}
-        {{ end }}
-      {{ end }}
-
-      {{ $exYaml  := delimit $exLines "\n" }}
-      {{ $detailsTitle := printf "Expand for a %s example YAML" $crd.kind }}
-      {{/* Goldmark does not process Markdown (fenced code blocks) inside raw HTML
-           blocks, so we emit the YAML as an HTML <pre><code> element with the YAML
-           content HTML-escaped. The highlight class signals Chroma; if Chroma isn't
-           applied at render time the plain <pre> still renders correctly.
-           {{% details %}} shortcode delimiters are not processed in content-adapter
-           Markdown, so we use the Hextra details HTML directly. */}}
-      {{ $exYamlHtml := $exYaml | htmlEscape }}
-      {{ $exBlock := printf "### Example YAML\n\n<details class=\"hx:last-of-type:mb-0 hx:rounded-lg hx:bg-neutral-50 hx:dark:bg-neutral-800 hx:p-2 hx:mt-4 hx:group\">\n<summary class=\"hx:flex hx:items-center hx:cursor-pointer hx:select-none hx:list-none hx:p-1 hx:rounded-sm hx:transition-colors hx:hover:bg-gray-100 hx:dark:hover:bg-neutral-800 hx:before:mr-1 hx:before:inline-block hx:before:transition-transform hx:before:content-[''] hx:dark:before:invert hx:rtl:before:rotate-180 hx:group-open:before:rotate-90\"><strong class=\"hx:text-lg\">%s</strong></summary>\n<div class=\"hx:p-2 hx:overflow-auto\"><pre><code class=\"language-yaml\">%s</code></pre></div>\n</details>\n\n" $detailsTitle $exYamlHtml }}
-
-      {{/* ---------------------------------------------------------------- */}}
-      {{/* PER-FIELD H3 SECTIONS WITH NESTED FIELD TABLE                    */}}
-      {{/*                                                                   */}}
-      {{/* Table columns: Field | Validation | Description                   */}}
-      {{/*   Validation: "Type: X" first, then enum/min/max/CEL constraints  */}}
-      {{/*   Description: description text; default appended inline          */}}
-      {{/* H4 subheadings: emitted for any L2 subfield that has its own      */}}
-      {{/*   sub-properties, so deeply-nested objects get their own section. */}}
-      {{/* ---------------------------------------------------------------- */}}
-
-      {{/* ---- Helper: build a validation string for a single property ---- */}}
-      {{/* Returns constraint tokens joined by " | " for the Validation cell */}}
-      {{/* Usage: call with a property dict (fprop / subprop / etc.)        */}}
-      {{/* We inline this logic because Hugo define blocks can't return      */}}
-      {{/* values — they only render to the output stream.                   */}}
-
-      {{/* ---- Helper: resolve the display type for a property dict ----   */}}
-      {{/* (array items folded in, null stripped from union types)           */}}
-
-      {{ $sections := "" }}
-      {{ if $specProps }}
-        {{ range $fname, $fprop := $specProps }}
-
-          {{/* --- H3: top-level spec field heading + description + "Part of" --- */}}
-          {{ $fdesc := $fprop.description | default "" }}
-          {{ $fdesc  = replace $fdesc "|" "\\|" }}
-          {{ $fdesc  = replace $fdesc "\n" " " }}
-          {{ $sections = printf "%s### %s\n\n" $sections $fname }}
-          {{ if $fdesc }}{{ $sections = printf "%s%s\n\n" $sections $fdesc }}{{ end }}
-          {{ $sections = printf "%s_Configured in the `%s` CR at `spec.%s`_\n\n" $sections $crd.kind $fname }}
-
-          {{/* ---- Build table rows for direct sub-properties of spec.<fname> ----
-               Strategy:
-               • For each sub-property (L2):
-                 - If it has its own properties → emit an H4 heading for it, then
-                   a table of its sub-sub-properties (L3) below the H4.
-                   The L2 row itself is still emitted in the parent table first
-                   so the field is visible at a glance before drilling down.
-                 - If it has no sub-properties → plain row in the parent table.
-               • L3 fields always go in the H4 table regardless of further depth.
-               Columns: Field | Validation | Description
-          */}}
-
-          {{/* --- Macro: resolve display type string for a property --- */}}
-          {{/* (inlined where needed since Hugo can't return from define) */}}
-
-          {{ $l2rows  := "" }}   {{/* rows for the H3-level table (L2 fields) */}}
-          {{ $h4blocks := "" }}  {{/* H4 sub-sections (for L2 fields that have props) */}}
-
-          {{ with $fprop.properties }}
-            {{ range $subname, $subprop := . }}
-
-              {{/* Resolve type for this L2 field */}}
-              {{ $stype := "" }}
-              {{ with $subprop.type }}
-                {{ if reflect.IsSlice . }}
-                  {{ $filtered := slice }}
-                  {{ range . }}{{ if ne . "null" }}{{ $filtered = $filtered | append . }}{{ end }}{{ end }}
-                  {{ $stype = delimit $filtered "/" }}
-                {{ else }}{{ $stype = . }}{{ end }}
-              {{ end }}
-              {{ if eq $stype "array" }}
-                {{ with $subprop.items }}{{ if .type }}{{ $stype = printf "[]%s" .type }}{{ end }}{{ end }}
-              {{ end }}
-              {{ if not $stype }}{{ $stype = "object" }}{{ end }}
-
-              {{/* Build Validation cell for L2 field */}}
-              {{ $sval := slice (printf "Type: `%s`" $stype) }}
-              {{ with $subprop.enum }}
-                {{ $sval = $sval | append (printf "Enum: `[%s]`" (delimit . ", ")) }}
-              {{ end }}
-              {{ with $subprop.minimum }}{{ $sval = $sval | append (printf "Min: `%v`" .) }}{{ end }}
-              {{ with $subprop.maximum }}{{ $sval = $sval | append (printf "Max: `%v`" .) }}{{ end }}
-              {{ with $subprop.minLength }}{{ $sval = $sval | append (printf "MinLength: `%v`" .) }}{{ end }}
-              {{ with $subprop.maxLength }}{{ $sval = $sval | append (printf "MaxLength: `%v`" .) }}{{ end }}
-              {{ with $subprop.minItems }}{{ $sval = $sval | append (printf "MinItems: `%v`" .) }}{{ end }}
-              {{ with $subprop.maxItems }}{{ $sval = $sval | append (printf "MaxItems: `%v`" .) }}{{ end }}
-              {{ with $subprop.pattern }}{{ $sval = $sval | append (printf "Pattern: `%s`" .) }}{{ end }}
-              {{ range $subprop.required }}{{ $sval = $sval | append (printf "Required: `%s`" .) }}{{ end }}
-              {{ range index $subprop "x-kubernetes-validations" | default slice }}
-                {{ with .message }}{{ $sval = $sval | append . }}{{ end }}
-              {{ end }}
-              {{ $svalStr := delimit $sval "<br>" }}
-
-              {{/* Build Description cell for L2 field (with optional Default appended) */}}
-              {{ $sdesc := $subprop.description | default "" }}
-              {{ $sdesc  = replace $sdesc "|" "\\|" }}
-              {{ $sdesc  = replace $sdesc "\n" " " }}
-              {{ if gt (len $sdesc) 400 }}{{ $sdesc = printf "%s..." (substr $sdesc 0 400) }}{{ end }}
-              {{ with $subprop.default }}
-                {{ $sdesc = printf "%s Default: `%v`." $sdesc . }}
-              {{ end }}
-
-              {{/* Emit the L2 row into the H3 table */}}
-              {{ $l2rows = printf "%s| %s | %s | %s |\n" $l2rows $subname $svalStr $sdesc }}
-
-              {{/* If this L2 field has sub-properties, emit an H4 block for them */}}
-              {{ with $subprop.properties }}
-                {{ $h4rows := "" }}
-                {{ range $ssname, $ssprop := . }}
-
-                  {{/* Resolve type for L3 field */}}
-                  {{ $sstype := "" }}
-                  {{ with $ssprop.type }}
-                    {{ if reflect.IsSlice . }}
-                      {{ $filtered := slice }}
-                      {{ range . }}{{ if ne . "null" }}{{ $filtered = $filtered | append . }}{{ end }}{{ end }}
-                      {{ $sstype = delimit $filtered "/" }}
-                    {{ else }}{{ $sstype = . }}{{ end }}
-                  {{ end }}
-                  {{ if eq $sstype "array" }}
-                    {{ with $ssprop.items }}{{ if .type }}{{ $sstype = printf "[]%s" .type }}{{ end }}{{ end }}
-                  {{ end }}
-                  {{ if not $sstype }}{{ $sstype = "object" }}{{ end }}
-
-                  {{/* Build Validation cell for L3 field */}}
-                  {{ $ssval := slice (printf "Type: `%s`" $sstype) }}
-                  {{ with $ssprop.enum }}
-                    {{ $ssval = $ssval | append (printf "Enum: `[%s]`" (delimit . ", ")) }}
-                  {{ end }}
-                  {{ with $ssprop.minimum }}{{ $ssval = $ssval | append (printf "Min: `%v`" .) }}{{ end }}
-                  {{ with $ssprop.maximum }}{{ $ssval = $ssval | append (printf "Max: `%v`" .) }}{{ end }}
-                  {{ with $ssprop.minLength }}{{ $ssval = $ssval | append (printf "MinLength: `%v`" .) }}{{ end }}
-                  {{ with $ssprop.maxLength }}{{ $ssval = $ssval | append (printf "MaxLength: `%v`" .) }}{{ end }}
-                  {{ with $ssprop.minItems }}{{ $ssval = $ssval | append (printf "MinItems: `%v`" .) }}{{ end }}
-                  {{ with $ssprop.maxItems }}{{ $ssval = $ssval | append (printf "MaxItems: `%v`" .) }}{{ end }}
-                  {{ with $ssprop.pattern }}{{ $ssval = $ssval | append (printf "Pattern: `%s`" .) }}{{ end }}
-                  {{ range $ssprop.required }}{{ $ssval = $ssval | append (printf "Required: `%s`" .) }}{{ end }}
-                  {{ range index $ssprop "x-kubernetes-validations" | default slice }}
-                    {{ with .message }}{{ $ssval = $ssval | append . }}{{ end }}
-                  {{ end }}
-                  {{ $ssvalStr := delimit $ssval "<br>" }}
-
-                  {{/* Build Description cell for L3 field */}}
-                  {{ $ssdesc := $ssprop.description | default "" }}
-                  {{ $ssdesc  = replace $ssdesc "|" "\\|" }}
-                  {{ $ssdesc  = replace $ssdesc "\n" " " }}
-                  {{ if gt (len $ssdesc) 400 }}{{ $ssdesc = printf "%s..." (substr $ssdesc 0 400) }}{{ end }}
-                  {{ with $ssprop.default }}
-                    {{ $ssdesc = printf "%s Default: `%v`." $ssdesc . }}
-                  {{ end }}
-
-                  {{ $h4rows = printf "%s| %s | %s | %s |\n" $h4rows $ssname $ssvalStr $ssdesc }}
-                {{ end }}
-
-                {{ if $h4rows }}
-                  {{/* H4 heading + L2 field description + "Part of" context + table */}}
-                  {{ $sdesc2 := $subprop.description | default "" }}
-                  {{ $sdesc2  = replace $sdesc2 "|" "\\|" }}
-                  {{ $sdesc2  = replace $sdesc2 "\n" " " }}
-                  {{ $h4header := printf "#### %s\n\n" $subname }}
-                  {{ if $sdesc2 }}{{ $h4header = printf "%s%s\n\n" $h4header $sdesc2 }}{{ end }}
-                  {{ $h4header = printf "%s_Configure in the `%s` CR at `spec.%s.%s`_\n\n" $h4header $crd.kind $fname $subname }}
-                  {{ $h4blocks = printf "%s%s| Field | Validation | Description |\n|-------|------------|-------------|\n%s\n" $h4blocks $h4header $h4rows }}
-                {{ end }}
-              {{ end }}
-            {{ end }}
-          {{ end }}
-
-          {{/* Emit H3 table (L2 fields), then all H4 sub-sections */}}
-          {{ if $l2rows }}
-            {{ $sections = printf "%s| Field | Validation | Description |\n|-------|------------|-------------|\n%s\n" $sections $l2rows }}
-          {{ end }}
-          {{ if $h4blocks }}
-            {{ $sections = printf "%s%s" $sections $h4blocks }}
-          {{ end }}
-
-        {{ end }}
-        {{ $tableSection = printf "%s%s%s" $headerMd $exBlock $sections }}
-      {{ else }}
-        {{ $tableSection = printf "%s_No spec fields found in CRD schema._\n" $headerMd }}
-      {{ end }}
-    {{ else }}
-      {{ $tableSection = "_Table reference unavailable: CRD YAML could not be fetched at build time._\n" }}
-    {{ end }}
-
-    {{/* Prepend the "Interactive reference" heading + widget slot sentinel so the
-         TOC partial (which scans .Content) finds both H2s, and the layout can
-         split .Content at the sentinel to inject the kubespec widget HTML between
-         the two sections without passing it through Goldmark. */}}
-    {{ $mdContent := printf "## Interactive reference\n\n{{< reuse \"agw-docs/snippets/kubespec-note.md\" >}}\n\n<div id=\"ks-widget-slot\"></div>\n\n<div class=\"api-ref-table\">\n\n%s\n\n</div>" $tableSection }}
-
-    {{/* --- Add page: widgetHtml in params (safeHTML in layout), Markdown in content. --- */}}
     {{ $.AddPage (dict
       "content"      (dict "mediaType" "text/markdown" "value" $mdContent)
       "kind"         "page"
