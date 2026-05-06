@@ -219,7 +219,7 @@ jobs:
           cd website/scripts/kubespec-render
 
           echo "Generating interactive CEL context widget HTML from schema/cel.json..."
-          go run render.go "$CEL_SCHEMA" \
+          go run render.go -title "CEL expression context" "$CEL_SCHEMA" \
             > "${TARGET_DIR}/cel-context.html"
 
           echo "CEL widget HTML generated successfully:"
