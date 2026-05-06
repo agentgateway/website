@@ -102,6 +102,8 @@ document.addEventListener('DOMContentLoaded', function(){
           } else if (item.dataset.action === 'view' && dialog && dialogPre) {
             var md = processCopyMd(wrapper);
             if (md) { dialogPre.textContent = md; dialog.showModal(); }
+          } else if (item.dataset.action === 'connect-docs-mcp') {
+            window.open('https://search.solo.io/', '_blank', 'noopener');
           } else if (item.dataset.action === 'open-claude' || item.dataset.action === 'open-chatgpt' || item.dataset.action === 'open-perplexity') {
             var action = item.dataset.action;
             var pageUrl = wrapper.dataset.pageUrl || '';
