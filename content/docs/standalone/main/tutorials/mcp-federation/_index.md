@@ -30,26 +30,22 @@ curl -sL https://agentgateway.dev/install | bash
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: [mcp-protocol-version, content-type, cache-control]
-          exposeHeaders: ["Mcp-Session-Id"]
-      backends:
-      - mcp:
-          targets:
-          - name: filesystem
-            stdio:
-              cmd: npx
-              args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
-          - name: memory
-            stdio:
-              cmd: npx
-              args: ["-y", "@modelcontextprotocol/server-memory"]
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: [mcp-protocol-version, content-type, cache-control]
+      exposeHeaders: ["Mcp-Session-Id"]
+  targets:
+  - name: filesystem
+    stdio:
+      cmd: npx
+      args: ["-y", "@modelcontextprotocol/server-filesystem", "/tmp"]
+  - name: memory
+    stdio:
+      cmd: npx
+      args: ["-y", "@modelcontextprotocol/server-memory"]
 EOF
 ```
 

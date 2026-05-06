@@ -31,25 +31,13 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
      tracing:
        otlpEndpoint: http://localhost:4317
        randomSampling: true
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - policies:
-           cors:
-             allowOrigins:
-               - "*"
-             allowHeaders:
-               - mcp-protocol-version
-               - content-type
-               - cache-control
-         backends:
-         - mcp:
-             targets:
-             - name: everything
-               stdio:
-                 cmd: npx
-                 args: ["@modelcontextprotocol/server-everything"]
+   mcp:
+     port: 3000
+     targets:
+     - name: everything
+       stdio:
+         cmd: npx
+         args: ["@modelcontextprotocol/server-everything"]
    EOF
    ```
 

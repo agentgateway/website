@@ -54,39 +54,30 @@ Create a configuration file with MCP authentication enabled.
 ```bash
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-          exposeHeaders: ["Mcp-Session-Id"]
-        mcpAuthentication:
-          mode: strict
-          issuer: agentgateway.dev
-          audiences: [test.agentgateway.dev]
-          jwks:
-            file: ./pub-key
-          resourceMetadata:
-            resource: http://localhost:3000/mcp
-            scopesSupported:
-            - read:all
-            bearerMethodsSupported:
-            - header
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: ["*"]
+      exposeHeaders: ["Mcp-Session-Id"]
+    mcpAuthentication:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./pub-key
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
 EOF
 ```
 
@@ -201,47 +192,34 @@ For production with Keycloak, use the following configuration.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
-      - path:
-          exact: /.well-known/oauth-authorization-server/mcp
-      - path:
-          exact: /.well-known/oauth-authorization-server/mcp/client-registration
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-          exposeHeaders: ["Mcp-Session-Id"]
-        mcpAuthentication:
-          mode: strict
-          issuer: http://localhost:7080/realms/mcp
-          audiences: [mcp_proxy]
-          jwks:
-            url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
-          provider:
-            keycloak: {}
-          resourceMetadata:
-            resource: http://localhost:3000/mcp
-            scopesSupported:
-            - profile
-            - offline_access
-            - openid
-            bearerMethodsSupported:
-            - header
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: ["*"]
+      exposeHeaders: ["Mcp-Session-Id"]
+    mcpAuthentication:
+      mode: strict
+      issuer: http://localhost:7080/realms/mcp
+      audiences: [mcp_proxy]
+      jwks:
+        url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
+      provider:
+        keycloak: {}
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - profile
+        - offline_access
+        - openid
+        bearerMethodsSupported:
+        - header
+  targets:
+  - name: tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
 ```
 
 The `provider.keycloak` setting enables special handling for Keycloak's non-standard OAuth endpoints.
