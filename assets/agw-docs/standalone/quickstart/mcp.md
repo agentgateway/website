@@ -18,29 +18,48 @@ chmod +x "$HOME/.local/bin/agentgateway"
    curl -sL https://agentgateway.dev/install | bash
    ```
 
-2. Install [Node.js](https://nodejs.org/) to run the MCP server via `npx`.
-
 ## Steps
 
 {{% steps %}}
 
-### Step 1: Download a basic configuration
+### Step 1: Create the configuration
 
-Download the basic MCP example configuration.
+Create a `config.yaml` that defines an MCP target for the `server-everything` test server. This configuration uses the simplified MCP format.
 
-```sh {paths="mcp"}
-curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
+```yaml {paths="mcp"}
+cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+mcp:
+  port: 3000
+  targets:
+  - name: server-everything
+    stdio:
+      cmd: npx
+      args:
+      - -y
+      - "@modelcontextprotocol/server-everything"
+EOF
+```
+
+You can also connect to a remote MCP server by using the `mcp` transport instead of `stdio`:
+
+```yaml
+mcp:
+  port: 3000
+  targets:
+  - name: remote-mcp
+    mcp:
+      host: http://localhost:3005/mcp/
 ```
 
 ### Step 2: Review the configuration
 
-Inspect the file to see how the listener, route, and MCP backend are defined.
+Inspect the file to see how the simplified `mcp` field defines the port and targets.
 
 ```sh {paths="mcp"}
 cat config.yaml
 ```
-
-{{% github-yaml url="https://agentgateway.dev/examples/basic/config.yaml" %}}
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
 
@@ -73,12 +92,11 @@ info  proxy::gateway started bind  bind="bind/3000"
 
 Open the [agentgateway UI on the default port 15000](http://localhost:15000/ui) in your browser.
 
-- **Listeners**: Review the listener on port 3000.
-- **Routes**: Review the route for the MCP backend.
-- **Backends**: Review the MCP target (`server-everything`).
-- **Policies**: Review route and backend policies.
+- **Port**: Review the listening port (3000).
+- **Targets**: Review the MCP target (`server-everything`).
+- **Policies**: Review configured policies.
 
-You can change listener, route, and backend configuration in the UI. Any updates you make apply immediately without restarting agentgateway.
+You can change target and port configuration in the UI. Any updates you make apply immediately without restarting agentgateway.
 
 {{< reuse-image src="img/agentgateway-ui-home.png" >}}
 
