@@ -30,12 +30,92 @@ backendAuth:
   passthrough: {}
 ```
 
-Google [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
+Google Cloud Platform authentication can be used to authenticate with GCP services in multiple ways:
+
+**Ambient Credentials (Application Default Credentials)**
+
+The simplest approach uses Google [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials):
 
 ```yaml
 backendAuth:
   gcp: {}
 ```
+
+This method relies on ambient credentials from your environment (e.g., service account key, metadata service). No explicit credential configuration is needed.
+
+**Explicit Credentials**
+
+You can also provide explicit GCP credentials for either access token or ID token authentication.
+
+For **access token** authentication with inline credentials (supported types: `authorized_user`, `service_account`, `impersonated_service_account`, `external_account`):
+
+```yaml
+backendAuth:
+  gcp:
+    auth:
+      accessToken:
+        credential: |
+          {
+            "type": "service_account",
+            "project_id": "my-project",
+            "private_key_id": "key-id",
+            "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+            "client_email": "sa@my-project.iam.gserviceaccount.com",
+            "client_id": "123456789",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token"
+          }
+```
+
+Or reference a credential file:
+
+```yaml
+backendAuth:
+  gcp:
+    auth:
+      accessToken:
+        credential:
+          file: /path/to/gcp-credentials.json
+```
+
+For **ID token** authentication with inline credentials (supported types: `authorized_user`, `service_account`, `impersonated_service_account`):
+
+```yaml
+backendAuth:
+  gcp:
+    auth:
+      idToken:
+        credential: |
+          {
+            "type": "service_account",
+            "project_id": "my-project",
+            "private_key_id": "key-id",
+            "private_key": "-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n",
+            "client_email": "sa@my-project.iam.gserviceaccount.com",
+            "client_id": "123456789",
+            "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+            "token_uri": "https://oauth2.googleapis.com/token"
+          }
+        audience: "https://example.com"
+```
+
+Or reference a credential file:
+
+```yaml
+backendAuth:
+  gcp:
+    auth:
+      idToken:
+        credential:
+          file: /path/to/gcp-credentials.json
+        audience: "https://example.com"
+```
+
+**Credential Types**
+
+When providing explicit credentials:
+- **Access Token** supports: `authorized_user`, `service_account`, `impersonated_service_account`, `external_account`
+- **ID Token** supports: `authorized_user`, `service_account`, `impersonated_service_account` (external_account is not supported for ID tokens)
 
 AWS authentication can be used to sign requests to AWS services:
 
