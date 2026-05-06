@@ -12,8 +12,10 @@ Manage agentgateway through a configuration file. Supported file formats are JSO
 Agentgateway configuration has a few top level sections:
 
 * `config` configures top level settings. These options are the only ones that are not dynamically configured.
-* `binds` provides the entry point to all routing configuration.
-* `services` and `workloads` can be used for very advanced cases where backends need to be represented as complex objects rather than simple URLs. However, it is recommended to [use agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/) for these purposes. Kgateway simplifies the management of agentgateway proxy resources for Kubernetes-based workloads.
+* `binds` provides the entry point to routing configuration using the traditional listeners, routes, and backends model. For a simplified configuration, use the `llm` or `mcp` top-level fields instead.
+* `llm` provides a simplified, model-centric configuration for routing requests to LLM providers. For more information, see [LLM configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
+* `mcp` provides a simplified configuration for connecting to MCP servers without requiring the full `binds` routing structure.
+* `services` and `workloads` can be used for very advanced cases where backends need to be represented as complex objects rather than simple URLs. However, it is recommended to [use agentgateway on Kubernetes](https://agentgateway.dev/docs/kubernetes/) for these purposes. The [kgateway](https://kgateway.dev/) control plane simplifies the management of agentgateway proxy resources for Kubernetes-based workloads.
 
 
 ### Example configuration file {#example-file}
