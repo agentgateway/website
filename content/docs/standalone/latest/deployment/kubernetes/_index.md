@@ -5,7 +5,7 @@ description: Overview of how to deploy agentgateway on Kubernetes
 test: skip
 ---
 
-This website, [agentgateway.dev](https://agentgateway.dev/), is primarily focused on deploying and operating agentgateway as a standalone binary.
+This section of the agentgateway docs (`agentgateway.dev/docs/standalone`) is primarily focused on deploying and operating agentgateway as a standalone binary.
 
 For guidance on deploying agentgateway on Kubernetes, including Gateway API support and dynamic configuration, see the Kubernetes-specific documentation.
 
