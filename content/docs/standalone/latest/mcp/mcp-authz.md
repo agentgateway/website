@@ -32,41 +32,33 @@ The following configuration exposes an MCP server and allows any client to call 
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-            policies:
-              mcpAuthorization:
-                rules:
-                - 'mcp.tool.name == "echo"'
+mcp:
+  port: 3000
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    policies:
+      mcpAuthorization:
+        rules:
+        - 'mcp.tool.name == "echo"'
 ```
 
 {{< doc-test paths="mcp-authz-tools" >}}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-            policies:
-              mcpAuthorization:
-                rules:
-                - 'mcp.tool.name == "echo"'
+mcp:
+  port: 3000
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    policies:
+      mcpAuthorization:
+        rules:
+        - 'mcp.tool.name == "echo"'
 EOF
 {{< /doc-test >}}
 
@@ -108,37 +100,33 @@ In this example:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          policies:
-            mcpAuthentication:
-              issuer: http://localhost:9000
-              jwks:
-                url: http://localhost:9000/.well-known/jwks.json
-              resourceMetadata:
-                resource: http://localhost:3000/mcp
-                scopesSupported:
-                - read:all
-                bearerMethodsSupported:
-                - header
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-            policies:
-              mcpAuthorization:
-                rules:
-                # Any authenticated user can call 'echo'
-                - 'mcp.tool.name == "echo"'
-                # Only the test-user can call 'add'
-                - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-                # Claim-based access for 'printEnv'
-                - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+mcp:
+  port: 3000
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:9000
+      jwks:
+        url: http://localhost:9000/.well-known/jwks.json
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    policies:
+      mcpAuthorization:
+        rules:
+        # Any authenticated user can call 'echo'
+        - 'mcp.tool.name == "echo"'
+        # Only the test-user can call 'add'
+        - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+        # Claim-based access for 'printEnv'
+        - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
 ## Different rules per target
@@ -152,51 +140,46 @@ In this example:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders:
-          - mcp-protocol-version
-          - content-type
-          - cache-control
-      backends:
-      - mcp:
-          policies:
-            mcpAuthentication:
-              mode: optional
-              issuer: http://localhost:9000
-              jwks:
-                url: http://localhost:9000/.well-known/jwks.json
-              resourceMetadata:
-                resource: http://localhost:3000/mcp
-                scopesSupported:
-                - read:all
-                bearerMethodsSupported:
-                - header
-          targets:
-          - name: public-tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-            policies:
-              mcpAuthorization:
-                rules:
-                # Allow anyone to access all tools
-                - 'true'
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders:
+      - mcp-protocol-version
+      - content-type
+      - cache-control
+    mcpAuthentication:
+      mode: optional
+      issuer: http://localhost:9000
+      jwks:
+        url: http://localhost:9000/.well-known/jwks.json
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+  targets:
+  - name: public-tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    policies:
+      mcpAuthorization:
+        rules:
+        # Allow anyone to access all tools
+        - 'true'
 
-          - name: admin-tools
-            stdio:
-              cmd: npx
-              args: ["@mycompany/admin-server"]
-            policies:
-              mcpAuthorization:
-                rules:
-                # Only authenticated admins can access these tools
-                - 'has(jwt.sub) && "admin" in jwt.roles'
+  - name: admin-tools
+    stdio:
+      cmd: npx
+      args: ["@mycompany/admin-server"]
+    policies:
+      mcpAuthorization:
+        rules:
+        # Only authenticated admins can access these tools
+        - 'has(jwt.sub) && "admin" in jwt.roles'
 ```
 
 ## CEL expression reference

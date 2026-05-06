@@ -29,27 +29,15 @@ Configure an stdio MCP backend in your `config.yaml`:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
-          exposeHeaders:
-            - "Mcp-Session-Id"
-      backends:
-      - mcp:
-          targets:
-          - name: my-mcp-server
-            stdio:
-              cmd: npx
-              args:
-                - "-y"
-                - "@modelcontextprotocol/server-everything"
+mcp:
+  port: 3000
+  targets:
+  - name: my-mcp-server
+    stdio:
+      cmd: npx
+      args:
+        - "-y"
+        - "@modelcontextprotocol/server-everything"
 ```
 
 ## Example: MCP test server

@@ -113,24 +113,20 @@ Build the Docker image from the source code. The example builds the image for an
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - backends:
-         - mcp:
-             targets:
-             - name: openapi
-               openapi:
-                 schema:
-                   file: openapi.json
-                 host: localhost:8080
-         policies:
-           cors:
-             allowOrigins:
-               - "*"
-             allowHeaders:
-               - "*"
+   mcp:
+     port: 3000
+     policies:
+       cors:
+         allowOrigins:
+           - "*"
+         allowHeaders:
+           - "*"
+     targets:
+     - name: openapi
+       openapi:
+         schema:
+           file: openapi.json
+         host: localhost:8080
    ```
 
 4. Run the agentgateway. 
@@ -195,24 +191,20 @@ Fetch the OpenAPI schema from a remote URL. Agentgateway retrieves the schema at
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: openapi
-            openapi:
-              schema:
-                url: http://localhost:8080/api/v3/openapi.json
-              host: localhost:8080
-      policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+  targets:
+  - name: openapi
+    openapi:
+      schema:
+        url: http://localhost:8080/api/v3/openapi.json
+      host: localhost:8080
 ```
 
 ### Inline schema
@@ -221,24 +213,20 @@ Embed the OpenAPI schema directly as an inline string.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: openapi
-            openapi:
-              schema: |
-                {"openapi":"3.0.0",...}
-              host: localhost:8080
-      policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+  targets:
+  - name: openapi
+    openapi:
+      schema: |
+        {"openapi":"3.0.0",...}
+      host: localhost:8080
 ```
 
 ### Stateless sessions

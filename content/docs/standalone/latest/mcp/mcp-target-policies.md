@@ -48,7 +48,7 @@ Target-level policies override backend-level policies for the same policy type.
 
 ## Configuration examples
 
-Target-level policies are configured under `binds[].listeners[].routes[].backends[].mcp.targets[].policies`.
+Target-level policies are configured under `mcp.targets[].policies`.
 
 ### Authorization per target
 
@@ -56,32 +56,28 @@ Apply different authorization rules to different MCP servers.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: public-tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-            policies:
-              mcpAuthorization:
-                rules:
-                # Allow anyone to access tools from this server
-                - 'true'
-          
-          - name: admin-tools
-            stdio:
-              cmd: npx
-              args: ["@mycompany/admin-server"]
-            policies:
-              mcpAuthorization:
-                rules:
-                # Only authenticated admins can access these tools
-                - 'has(jwt.sub) && "admin" in jwt.roles'
+mcp:
+  port: 3000
+  targets:
+  - name: public-tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    policies:
+      mcpAuthorization:
+        rules:
+        # Allow anyone to access tools from this server
+        - 'true'
+  
+  - name: admin-tools
+    stdio:
+      cmd: npx
+      args: ["@mycompany/admin-server"]
+    policies:
+      mcpAuthorization:
+        rules:
+        # Only authenticated admins can access these tools
+        - 'has(jwt.sub) && "admin" in jwt.roles'
 ```
 
 ### Authentication per target
@@ -90,30 +86,26 @@ Use different authentication methods for different targets.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: service-a
-            mcp:
-              host: https://service-a.example.com/mcp
-            policies:
-              backendAuth:
-                key: "$SERVICE_A_API_KEY"
-              backendTLS:
-                sni: service-a.example.com
-          
-          - name: service-b
-            mcp:
-              host: https://service-b.example.com/mcp
-            policies:
-              backendAuth:
-                key: "$SERVICE_B_API_KEY"
-              backendTLS:
-                sni: service-b.example.com
+mcp:
+  port: 3000
+  targets:
+  - name: service-a
+    mcp:
+      host: https://service-a.example.com/mcp
+    policies:
+      backendAuth:
+        key: "$SERVICE_A_API_KEY"
+      backendTLS:
+        sni: service-a.example.com
+  
+  - name: service-b
+    mcp:
+      host: https://service-b.example.com/mcp
+    policies:
+      backendAuth:
+        key: "$SERVICE_B_API_KEY"
+      backendTLS:
+        sni: service-b.example.com
 ```
 
 ### LLM policies per target
@@ -122,28 +114,24 @@ Apply different prompt guards to different MCP servers.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: production-llm
-            mcp:
-              host: https://prod-llm.example.com
-            policies:
-              ai:
-                promptGuard:
-                  - regex:
-                      deny:
-                        - pattern: ".*password.*"
-                        - pattern: ".*secret.*"
-          
-          - name: sandbox-llm
-            mcp:
-              host: https://sandbox-llm.example.com
-            # No prompt guard for sandbox environment
+mcp:
+  port: 3000
+  targets:
+  - name: production-llm
+    mcp:
+      host: https://prod-llm.example.com
+    policies:
+      ai:
+        promptGuard:
+          - regex:
+              deny:
+                - pattern: ".*password.*"
+                - pattern: ".*secret.*"
+  
+  - name: sandbox-llm
+    mcp:
+      host: https://sandbox-llm.example.com
+    # No prompt guard for sandbox environment
 ```
 
 ### Inheritance
@@ -154,40 +142,32 @@ In this example:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        # Route-level policy applies to all backends
-        cors:
-          allowOrigins: ["*"]
-      backends:
-      - mcp:
-          # Backend-level policy applies to all targets
-          policies:
-            mcpAuthorization:
-              rules:
-                # Default: require authentication
-                - 'has(jwt.sub)'
-          
-          targets:
-          - name: public-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-            # Target-level policy overrides backend-level
-            policies:
-              mcpAuthorization:
-                rules:
-                  # Override: allow anonymous access for this target
-                  - 'true'
-          
-          - name: restricted-server
-            stdio:
-              cmd: npx
-              args: ["@mycompany/restricted-server"]
-            # This target uses the backend-level policy (requires auth)
+mcp:
+  port: 3000
+  policies:
+    # Top-level policy applies to all targets
+    mcpAuthorization:
+      rules:
+        # Default: require authentication
+        - 'has(jwt.sub)'
+  
+  targets:
+  - name: public-server
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    # Target-level policy overrides top-level
+    policies:
+      mcpAuthorization:
+        rules:
+          # Override: allow anonymous access for this target
+          - 'true'
+  
+  - name: restricted-server
+    stdio:
+      cmd: npx
+      args: ["@mycompany/restricted-server"]
+    # This target uses the top-level policy (requires auth)
 ```
 
 ## Learn more

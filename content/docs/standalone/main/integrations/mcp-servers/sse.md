@@ -17,24 +17,20 @@ SSE transport is useful when:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
-          exposeHeaders:
-            - "Mcp-Session-Id"
-      backends:
-      - mcp:
-          targets:
-          - name: remote-mcp
-            mcp:
-              host: http://mcp-server:8080/sse
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+  - name: remote-mcp
+    mcp:
+      host: http://mcp-server:8080/sse
 ```
 
 ## Why use agentgateway?

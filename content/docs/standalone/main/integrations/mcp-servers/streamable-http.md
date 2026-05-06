@@ -23,24 +23,20 @@ PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
 # Create config.yaml
 cat <<EOF > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
-          exposeHeaders:
-            - "Mcp-Session-Id"
-      backends:
-      - mcp:
-          targets:
-          - name: mcp
-            mcp:
-              host: http://localhost:3005/mcp/
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+  - name: mcp
+    mcp:
+      host: http://localhost:3005/mcp/
 EOF
 
 # Run agentgateway
@@ -53,24 +49,20 @@ Configure a streamable HTTP MCP backend:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
-          exposeHeaders:
-            - "Mcp-Session-Id"
-      backends:
-      - mcp:
-          targets:
-          - name: remote-mcp
-            mcp:
-              host: http://mcp-server:8080/mcp/
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+  - name: remote-mcp
+    mcp:
+      host: http://mcp-server:8080/mcp/
 ```
 
 ## Key configuration
