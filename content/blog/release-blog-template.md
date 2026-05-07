@@ -26,7 +26,7 @@ For more information, check out the docs and include link.
 
 Include links to docs or examples when they help readers adopt the feature.
 
-### <New Feature 3>
+### <New feature 3>
 
 Include links to docs or examples when they help readers adopt the feature.
 
