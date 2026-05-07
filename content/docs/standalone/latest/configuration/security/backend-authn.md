@@ -22,8 +22,8 @@ backendAuth:
     file: /path/to/my/key
 ```
 
-When using [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), the original token is removed by default.
-To add it back, the `passthrough` method can be used:
+When using any form of incoming authentication (such as [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), or [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}})), the original credential is removed from the request by default before forwarding to the backend.
+To pass the original credential through to the backend unchanged, use the `passthrough` method:
 
 ```yaml
 backendAuth:

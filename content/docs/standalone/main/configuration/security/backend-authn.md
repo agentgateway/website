@@ -11,7 +11,8 @@ To attach a static key as an `Authorization` value, use `key`:
 
 ```yaml
 backendAuth:
-  key: $MY_API_KEY
+  key:
+    value: $MY_API_KEY
 ```
 
 A file path can also be used:
@@ -19,15 +20,60 @@ A file path can also be used:
 ```yaml
 backendAuth:
   key:
-    file: /path/to/my/key
+    value:
+      file: /path/to/my/key
 ```
 
-When using [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), the original token is removed by default.
-To add it back, the `passthrough` method can be used:
+By default, the key is sent as the `Authorization` header value. Use the `location` field to change where the key is sent:
+
+```yaml
+backendAuth:
+  key:
+    value: $MY_API_KEY
+    location:
+      # Send as a request header (default)
+      header:
+        name: authorization
+        prefix: "Bearer "
+```
+
+```yaml
+backendAuth:
+  key:
+    value: $MY_API_KEY
+    location:
+      # Send as a query parameter
+      queryParameter:
+        name: api_key
+```
+
+```yaml
+backendAuth:
+  key:
+    value: $MY_API_KEY
+    location:
+      # Send as a cookie
+      cookie:
+        name: api_key
+```
+
+When using any form of incoming authentication (such as [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), or [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}})), the original credential is removed from the request by default before forwarding to the backend.
+To pass the original credential through to the backend unchanged, use the `passthrough` method:
 
 ```yaml
 backendAuth:
   passthrough: {}
+```
+
+The `passthrough` method also accepts a `location` field to specify where to read the credential from:
+
+```yaml
+backendAuth:
+  passthrough:
+    location:
+      header:
+        name: authorization
+        prefix: "Bearer "
 ```
 
 Google [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
