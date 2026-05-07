@@ -510,7 +510,20 @@
               {{- $filtered := after 4 $segments -}}
               {{- $newPath := printf "/%s" (delimit $filtered "/") -}}
               {{- range $versions -}}
-                <a href="/docs/{{ $subSection }}/{{ .linkVersion }}{{ $newPath }}" class="px-4 py-3 block text-left">{{ .dropdown }}</a>
+                {{- /* Default: same path in target version. If that page does not exist
+                       and the target version has a not-in-version fallback page, route
+                       there so the user lands on a helpful page instead of a 404.
+                       Versions without the fallback wrapper keep the existing behavior
+                       (no regression). */ -}}
+                {{- $href := printf "/docs/%s/%s%s" $subSection .linkVersion $newPath -}}
+                {{- $targetPath := printf "/docs/%s/%s%s" $subSection .linkVersion $newPath -}}
+                {{- if not (site.GetPage $targetPath) -}}
+                  {{- $fallbackPath := printf "/docs/%s/%s/not-in-version" $subSection .linkVersion -}}
+                  {{- if site.GetPage $fallbackPath -}}
+                    {{- $href = printf "/docs/%s/%s/not-in-version/" $subSection .linkVersion -}}
+                  {{- end -}}
+                {{- end -}}
+                <a href="{{ $href }}" class="px-4 py-3 block text-left">{{ .dropdown }}</a>
               {{- end -}}
             </div>
           </div>
