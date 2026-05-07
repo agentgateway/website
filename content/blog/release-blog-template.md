@@ -5,7 +5,7 @@ author: "" # replace with authors of release blog
 description: "agentgateway v1.x.x is here! Here are the highlights."
 ---
 
-// <INTRO>
+<!--INTRO-->
 Replace this introduction with a short summary of the release. Keep it to 1-2 paragraphs and explain why this version matters to users.
 
 ---
