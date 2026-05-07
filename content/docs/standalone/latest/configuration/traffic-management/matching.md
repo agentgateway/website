@@ -3,11 +3,11 @@ title: Request matching
 weight: 9
 ---
 
-Based on the route schema (see the [configuration reference](../../../reference/configuration/) for the full field reference and [schema validation](../../../reference/configuration/validation/) for IDE integration), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.
+Based on the route schema (see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}) for the full field reference and [schema validation]({{< link-hextra path="/reference/configuration/validation/" >}}) for IDE integration), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.
 
 ## HTTP routes
 
-For routes configured with [HTTP or HTTPS listeners](../../listeners/), you can configure the following matching conditions. These matching conditions do not apply to [TLS listeners](../../listeners/#tls-listeners), which use TCP routes and only support hostname-based matching.
+For routes configured with [HTTP or HTTPS listeners]({{< link-hextra path="/configuration/listeners/" >}}), you can configure the following matching conditions. These matching conditions do not apply to [TLS listeners]({{< link-hextra path="/configuration/listeners#tls-listeners" >}}), which use TCP routes and only support hostname-based matching.
 
 ### Path matching
 
@@ -268,7 +268,7 @@ routes:
 
 ## TCP routes
 
-For routes configured with [TCP listeners](../../routes/#tcp-routes), you can configure the following matching conditions.
+For routes configured with [TCP listeners]({{< link-hextra path="/configuration/routes#tcp-routes" >}}), you can configure the following matching conditions.
 
 ### Hostname matching
 
