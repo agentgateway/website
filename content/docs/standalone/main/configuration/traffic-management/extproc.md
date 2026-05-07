@@ -42,11 +42,8 @@ sequenceDiagram
 
 You can choose whether you want agentgateway to forward requests if the external processing server is unavailable with the `extProc.failureMode` setting. Choose between the following modes: 
 
-* **failOpen (not recommended)**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
-* **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior. 
-
-> [!WARNING]
-> `failOpen` mode, as specified in the Envoy External Processing API, allows transitive timeouts to corrupt requests, which can lead to unexpected behavior. As such, the mode is fundamentally unsafe and should not be used.
+* **failOpen**: Forward requests to the backend service, even if the connection to the external processing server fails. You might choose this option to ensure availability of the backend services even when the ExtProc service is down.
+* **failClosed**: Block requests if the request to the external processing server fails. This is the default behavior.
 
 ## Compatibility
 
@@ -56,12 +53,11 @@ Although agentgateway aims to support the API as closely as possible, there are 
 
 A non-exhaustive list of these gaps is as follows:
 * Headers and Body are *always* sent, with Body in streaming mode. This means your server must process both headers and the body.
-* `attributes`, `metadata_context`, and `protocol_config` are never sent in requests.
 * `dynamic_metadata`, `mode_override`, and `override_message_timeout` are ignored in all responses.
 * `clear_route_cache` is ignored in responses. Agentgateway does not have a route cache.
 * `status.CONTINUE_AND_REPLACE` is ignored in responses.
 
-When an ExtProc server returns a header modification with `append_action` set to `OVERWRITE_IF_EXISTS_OR_ADD` (the Envoy default), agentgateway treats the `Unset` header append as `Overwrite` instead of ignoring it. This aligns behavior with Envoy's expectations.
+
 
 If any incompatibility causes issues for your external processing server, open an issue on the [agentgateway GitHub repository](https://github.com/agentgateway/agentgateway/issues).
 
