@@ -36,7 +36,7 @@ Agentgateway v1.x.x is available for download on [GitHub](https://github.com/age
 
 To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/).
 
-## Get Involved
+## Get involved
 
 <!--THIS COMMUNITY LIVES BY ITS GREAT COMMUNITY, GET THEM INVOLVED! -->
 The simplest way to get involved with agentgateway is by joining our [Discord](https://discord.gg/BdJpzaPjHv) and [community meetings](https://calendar.google.com/calendar/u/0?cid=Y18zZTAzNGE0OTFiMGUyYzU2OWI1Y2ZlOWNmOWM4NjYyZTljNTNjYzVlOTdmMjdkY2I5ZTZmNmM5ZDZhYzRkM2ZmQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20).
