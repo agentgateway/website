@@ -43,7 +43,7 @@ The simplest way to get involved with agentgateway is by joining our [Discord](h
 
 ## Contributors
 
-<CHECKOUT THE DEVSTATS AND HIGHLIGHT SOME INTRESTING NUMBERS>
+<!--CHECKOUT THE DEVSTATS AND HIGHLIGHT SOME INTRESTING NUMBERS>
 
-Example:
+Example: -->
 Thanks to the X contributors who worked on agentgateway between the previous <PREVIOUS_RELEASE> release and <CURRENT_RELEASE>, as well as the [X contributors](https://github.com/agentgateway/agentgateway/graphs/contributors) who have been with us since we began this journey!
