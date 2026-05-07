@@ -1,9 +1,14 @@
 ---
 title: "Release v1.x.x: <fun title here>"
-publishDate: 2222-22-22 # replace with date of release
+publishDate: 2026-05-07 # replace with date of release
 author: "" # replace with authors of release blog
 description: "agentgateway v1.x.x is here! Here are the highlights."
 ---
+
+> [!NOTE]
+> How to use this file:
+> Copy this file and change from .txt to .md
+> Or from the website repo in your terminal, run 'hugo new blog/2026-05-07-agentgateway-v1.2.0.md --kind release-blog'
 
 <!--INTRO-->
 Replace this introduction with a short summary of the release. Keep it to 1-2 paragraphs and explain why this version matters to users.
