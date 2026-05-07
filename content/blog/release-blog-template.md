@@ -16,7 +16,11 @@ Agentgateway added a number of exciting features in v1.x.x. You can find the ful
 
 ### <New Feature 1>
 
-Include links to docs or examples when they help readers adopt the feature.
+Short description of the new feature and why a user would adopt it.
+
+If helpful, provide an example, before/after, command or code block, configuration, screenshot, diagram, or similar.
+
+For more information, check out the docs and include link.
 
 ### <New Feature 2>
 
