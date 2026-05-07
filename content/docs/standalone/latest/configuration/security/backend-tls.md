@@ -29,10 +29,13 @@ backendTLS:
 
 ## Subject Alternative Names
 
-When connecting to upstream services over TLS, you can specify expected Subject Alternative Names (SANs) to verify. The upstream certificate must contain at least one SAN that matches the configured list. In Kubernetes environments, Service SANs are automatically populated from the service identity.
+When connecting to upstream services over TLS, you can specify expected Subject Alternative Names (SANs) to verify. The upstream certificate must contain at least one SAN that matches the configured list.
+
+By default, agentgateway uses the service hostname for verification (the Kubernetes service hostname or backend static hostname). You can override this by configuring the `subjectAltNames` field with specific values to match.
 
 ```yaml
 backendTLS:
   subjectAltNames:
-  - "spiffe://cluster.local/ns/default/sa/my-service"
+  - "my-upstream-service.example.com"
+  - "another-valid-san.example.com"
 ```
