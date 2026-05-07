@@ -22,7 +22,7 @@ If helpful, provide an example, before/after, command or code block, configurati
 
 For more information, check out the docs and include link.
 
-### <New Feature 2>
+### <New feature 2>
 
 Include links to docs or examples when they help readers adopt the feature.
 
