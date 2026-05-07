@@ -52,8 +52,7 @@ controller:
   disableLeaderElection: true
 ```
 
-
-
+{{< version exclude-if="2.2.x,1.0.x,1.1.x" >}}
 ## Namespace discovery {#namespace-discovery}
 
 You can limit the namespaces that {{< reuse "/agw-docs/snippets/kgateway.md" >}} watches for gateway configuration. For example, you might have a multi-tenant cluster with different namespaces for different tenants. You can limit {{< reuse "/agw-docs/snippets/kgateway.md" >}} to only watch a specific namespace for gateway configuration.
@@ -84,6 +83,8 @@ discoveryNamespaceSelectors:
 - matchLabels:
     version: v3
 ```
+
+{{< /version >}}
 
 <!-- TODO conditional-text oss-only -->
 {{< conditional-text include-if="kubernetes" >}}
