@@ -77,7 +77,7 @@ Routes are configured within the `routes` or `tcpRoutes` section of a listener. 
 
 ### Backend configuration
 
-Routes route traffic to backends, which can be configured with the following fields:
+Routes send traffic to backends, which can be configured with the following fields:
 
 | Field | Description |
 |-------|-------------|
