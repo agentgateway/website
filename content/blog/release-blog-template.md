@@ -14,7 +14,7 @@ Replace this introduction with a short summary of the release. Keep it to 1-2 pa
 
 Agentgateway added a number of exciting features in v1.x.x. You can find the full list of new features in the [release notes](https://agentgateway.dev/docs/kubernetes/main/reference/release-notes/).
 
-### <New Feature 1>
+### <New feature 1>
 
 Short description of the new feature and why a user would adopt it.
 
