@@ -68,7 +68,7 @@ Authorization policies now support `Require` as an action in addition to `Allow`
 
 ### MCP improvements
 
-- **Stateless sessions**: OpenAPI and SSE upstreams can now use stateless sessions. For more information, see [Stateful MCP]({{< link-hextra path="/mcp/session/" >}}).
+- **Stateless sessions**: MCP upstreams can now use stateless sessions. For more information, see [Stateful MCP]({{< link-hextra path="/mcp/session/" >}}).
 - **Explicit service reference lists**: MCP backends can specify targets with explicit service references. For more information, see [Static MCP]({{< link-hextra path="/mcp/static-mcp/" >}}).
 - **Tool payloads in CEL context**: Tool names and payloads are available in logging CEL expressions.
 
