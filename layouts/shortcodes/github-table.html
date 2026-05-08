@@ -1,11 +1,16 @@
 {{- /*
   Shortcode: github-table
-  Fetches a remote Markdown file by URL and extracts a specific section by heading, optionally excluding lines that match a regex pattern.
+  Fetches a remote markdown file by URL and inlines a single section
+  (extracted by heading name), rendered through the page's markdown
+  renderer so headings, tables, and links render correctly.
+
+  Renders correctly under both call forms ({{% github-table %}} and
+  {{< github-table >}}).
 
   Parameters:
-    - url: The remote URL of the Markdown file to fetch.
+    - url: The remote URL of the markdown file to fetch.
     - section: The heading name of the section to extract.
-    - exclude: (optional) A regex pattern for lines to remove from the extracted section.
+    - exclude: (optional) A regex pattern for lines to remove from the section.
 
   Example: {{< github-table url="https://raw.githubusercontent.com/org/repo/main/README.md" section="Compatibility" exclude="^\\|.*draft.*" >}}
 */ -}}
@@ -13,19 +18,18 @@
 {{ $exclude := .Get "exclude" }}
 {{- $section := .Get "section" -}}
 {{- with resources.GetRemote $url -}}
-  {{- $content := .Content  -}}
+  {{- $content := .Content -}}
   {{- $pattern := printf "(?ms)^#+? %s\\s*(.*?)(^#+? |\\z)" $section -}}
   {{- $match := index (findRESubmatch $pattern $content) 0 -}}
   {{- if $match -}}
-    {{ $content := index $match 1 | replaceRE (printf "^#+? %s\\s*" $section) ""  -}}
-    {{ if $exclude -}}
-      {{ replaceRE (printf "(?m)%s.*\n?" $exclude) "" $content |safe.HTML  }}
-    {{ else -}}
-      {{ $content|safe.HTML  }}
-    {{ end }}
+    {{- $section := index $match 1 | replaceRE (printf "^#+? %s\\s*" $section) "" -}}
+    {{- if $exclude -}}
+      {{- $section = replaceRE (printf "(?m)%s.*\n?" $exclude) "" $section -}}
+    {{- end -}}
+    {{- $.Page.RenderString $section -}}
   {{- else -}}
-    {{ errorf "fail to find section: %s" $section }}
+    {{- errorf "fail to find section: %s" $section -}}
   {{- end -}}
 {{- else -}}
-{{ errorf "unable to load content from %s" $url }}
+  {{- errorf "unable to load content from %s" $url -}}
 {{- end -}}
