@@ -1,7 +1,7 @@
 ---
 title: CEL expressions
 weight: 10
-description: 
+description: Learn how agentgateway uses CEL expressions to write flexible policies.
 ---
 
 Agentgateway uses the {{< gloss "CEL (Common Expression Language)" >}}CEL (Common Expression Language){{< /gloss >}} throughout the project to enable flexibility.

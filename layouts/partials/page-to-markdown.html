@@ -36,4 +36,16 @@
 {{- $md = $md | replaceRE `(\[[^\]]+\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}
 {{- $md = $md | replaceRE `(\[[^\]]+\]\()(/[^)#]+)` (printf "${1}%s${2}" $baseURL) -}}
 {{- $md = $md | replaceRE `(\[[^\]]+\]\()([a-zA-Z0-9_\-][^):]*)(\))` (printf "${1}%s/${2}${3}" $pageAbs) -}}
+{{- /* For api-ref pages with a kubespec widget, extract the simplified schema markdown
+       embedded between <!--ks-md-start--> / <!--ks-md-end--> sentinels by render.go. */ -}}
+{{- if .Params.widgetHtml -}}
+  {{- range $i, $part := split .Params.widgetHtml "<!--ks-md-start" -}}
+    {{- if gt $i 0 -}}
+      {{- $schemaMd := index (split $part "ks-md-end-->") 0 | strings.TrimSpace -}}
+      {{- if $schemaMd -}}
+        {{- $md = printf "%s\n\n%s\n" $md $schemaMd -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
 {{- return $md -}}

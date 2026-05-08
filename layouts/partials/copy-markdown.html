@@ -64,6 +64,20 @@
        must be alphanum or _/-; subsequent chars exclude ) and : so we skip absolute URLs
        (https://…, mailto:…) but allow # for fragment-suffixed relative links. */ -}}
 {{- $md = $md | replaceRE `(\[[^\]]+\]\()([a-zA-Z0-9_\-][^):]*)(\))` (printf "${1}%s/${2}${3}" $pageAbs) -}}
+{{- /* For api-ref pages with a kubespec widget, extract the simplified schema markdown
+       embedded between <!--ks-md-start--> / <!--ks-md-end--> sentinels by render.go.
+       Bypasses transform.HTMLToMarkdown, which collapses adjacent spans (name + type)
+       and ignores <template> contents in the widget HTML. */ -}}
+{{- if .Params.widgetHtml -}}
+  {{- range $i, $part := split .Params.widgetHtml "<!--ks-md-start" -}}
+    {{- if gt $i 0 -}}
+      {{- $schemaMd := index (split $part "ks-md-end-->") 0 | strings.TrimSpace -}}
+      {{- if $schemaMd -}}
+        {{- $md = printf "%s\n\n%s\n" $md $schemaMd -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
 {{- if $md -}}
 <div class="copy-md-wrapper" style="display:flex;justify-content:flex-end;margin-bottom:0.5rem;" data-page-url="{{ $pageAbs }}">
   <style>
