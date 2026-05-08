@@ -263,7 +263,7 @@ For detailed instructions on setting up global rate limiting with descriptors an
 {{< version include-if="1.2.x" >}}
 ## Conditional execution
 
-To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/reference/conditional-policies" >}}).
+To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
 {{< /version >}}
 
 ## Cleanup

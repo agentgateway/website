@@ -1,15 +1,13 @@
 ---
-title: Policies
-weight: 11
-description: 
+title: Attachment points
+weight: 10
+description: Learn how to attach policies to different resources in agentgateway.
+test: skip
 ---
 
-{{< gloss "Policy" >}}Policies{{< /gloss >}} are a powerful feature of agentgateway that allow you to manipulate traffic as it flows through your gateway.
-Policies can be used to manipulate traffic, configurable observability, enforce rich security rules, and more.
-
-## Attachment points
-
 You can attach policies at the {{< gloss "Listener" >}}listener{{< /gloss >}}, {{< gloss "Route" >}}route{{< /gloss >}}, or {{< gloss "Backend" >}}backend{{< /gloss >}} level to provide fine-grained control over traffic.
+
+## Phases
 
 Policies that are attached at multiple levels are applied at all levels.
 
@@ -18,8 +16,6 @@ Policies that are attached at multiple levels are applied at all levels.
 |Listener|{{< gloss "JWT (JSON Web Token)" >}}JWT{{< /gloss >}}, External Authorization, {{< gloss "ExtProc (External Processing)" >}}External Processing{{< /gloss >}}, {{< gloss "Transformation" >}}Transformation{{< /gloss >}}, Basic {{< gloss "Authentication (AuthN)" >}}Authentication{{< /gloss >}}, {{< gloss "API Key" >}}API Key{{< /gloss >}} authentication|Runs before route selection|
 |Route|All Policies|Runs after route selection, before backend selection|
 |Backend|Backend TLS, Backend Authentication, Backend HTTP, Backend TCP, AI/LLM, MCP Authorization, MCP Authentication, Header modification|Runs after backend selection|
-
-{{< reuse "agw-docs/pages/agentgateway/about/processing-order.md" >}}
 
 ## Example policy configuration
 

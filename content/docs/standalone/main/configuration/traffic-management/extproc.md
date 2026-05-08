@@ -92,5 +92,5 @@ binds:
 
 ## Conditional execution
 
-To send only certain requests through external processing, use the `conditional` field. For example, you can route LLM chat traffic through a content filter and bypass the processor for every other request. For details, see [Conditional policies]({{< link-hextra path="/configuration/conditional-policies" >}}).
+To send only certain requests through external processing, use the `conditional` field. For example, you can route LLM chat traffic through a content filter and bypass the processor for every other request. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).
 

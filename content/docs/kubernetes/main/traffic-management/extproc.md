@@ -240,7 +240,7 @@ EOF
 
 ## Conditional execution
 
-To send only certain requests through external processing, use the `conditional` field on your `extProc` policy. For example, you can route LLM chat traffic through a content filter and bypass the processor for every other request. For details, see [Conditional policies]({{< link-hextra path="/reference/conditional-policies" >}}).
+To send only certain requests through external processing, use the `conditional` field on your `extProc` policy. For example, you can route LLM chat traffic through a content filter and bypass the processor for every other request. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
 
 ## Cleanup
 

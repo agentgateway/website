@@ -101,4 +101,4 @@ extAuthz:
 
 ## Conditional execution
 
-To choose between multiple external authorization servers based on the request, use the `conditional` field. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/configuration/conditional-policies" >}}).
+To choose between multiple external authorization servers based on the request, use the `conditional` field. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).

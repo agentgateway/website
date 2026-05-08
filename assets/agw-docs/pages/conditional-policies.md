@@ -1,4 +1,4 @@
-## About conditional policies
+## Conditional policies
 
 A policy normally applies the same configuration to every request on the route it attaches to. Conditional execution lets you nest a list of policy variants under a `conditional` field. Each variant has a {{< gloss "CEL (Common Expression Language)" >}}CEL{{< /gloss >}} expression that determines whether it applies. For each request, agentgateway evaluates the entries in order and runs the first variant whose expression returns `true`.
 
@@ -14,16 +14,20 @@ The following policies support conditional execution:
 
 For details on how to write the CEL expressions that go in each `condition` field, see the [CEL expressions reference]({{< link-hextra path="/reference/cel" >}}).
 
-## How conditional execution works {#how-it-works}
+### How conditional execution works {#how-it-works}
 
 - **First match wins.** Agentgateway evaluates each `conditional` entry in the order you list them and runs the first variant whose `condition` evaluates to `true`. Subsequent entries are not evaluated.
 - **Optional fallback.** An entry without a `condition` is the unconditional fallback. It must be the last entry in the list, and you can have at most one. If no condition matches and there is no fallback, the policy does not run for that request.
 - **Mutually exclusive with the inline form.** For a given policy, set either the top-level fields or the `conditional` list, not both.
 - **Limits.** {{< conditional-text include-if="kubernetes" >}}A `conditional` list can have between 1 and 16 entries.{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}A `conditional` list can have between 1 and 64 entries.{{< /conditional-text >}}
 
-## Example: route to one of two external authorization servers {#example-extauth}
+### Examples
 
-The following example routes requests to one of two external authorization servers based on the request path. Requests to a path that starts with `/admin` go to a stricter authorization server. The fallback entry handles every other request.
+Review the following examples to see how conditional policies work. Conditional execution works the same way for every supported policy. The following examples show one configuration per policy type. None of them use a fallback entry, so the policy runs only when the condition matches.
+
+#### Multiple ext auth servers {#example-extauth}
+
+Route to one of two external authorization servers based on the request path. Requests to a path that starts with `/admin` go to a stricter authorization server. The fallback entry handles every other request.
 
 {{< conditional-text include-if="standalone" >}}
 ```yaml
@@ -84,11 +88,7 @@ spec:
 ```
 {{< /conditional-text >}}
 
-## More examples
-
-Conditional execution works the same way for every supported policy. The following examples show one configuration per policy type. None of them use a fallback entry, so the policy runs only when the condition matches.
-
-### Apply different rate limits to writes and reads {#example-ratelimit}
+#### Different rate limits {#example-ratelimit}
 
 Apply a stricter rate limit to write requests and a looser limit to all other traffic.
 
@@ -142,7 +142,7 @@ spec:
 ```
 {{< /conditional-text >}}
 
-### Transform internal traffic only {#example-transformation}
+#### Transform internal traffic {#example-transformation}
 
 Add a tracing header when the request includes an `x-internal: true` header. With no fallback entry, agentgateway skips the transformation on every other request.
 
@@ -188,7 +188,7 @@ spec:
 ```
 {{< /conditional-text >}}
 
-### Send LLM chat requests through a content filter {#example-extproc}
+#### Filter LLM chats with extproc {#example-extproc}
 
 Send requests on a path that starts with `/v1/chat` through an external processor. Every other request bypasses the processor.
 
@@ -232,7 +232,7 @@ spec:
 ```
 {{< /conditional-text >}}
 
-### Short-circuit deprecated paths with a direct response {#example-direct-response}
+#### Short-circuit deprecated paths with a direct response {#example-direct-response}
 
 Return a `410 Gone` response for any path that starts with `/v0/`. Every other request proceeds to the backend.
 

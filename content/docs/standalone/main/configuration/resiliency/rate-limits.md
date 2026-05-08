@@ -184,4 +184,4 @@ remoteRateLimit:
 
 ## Conditional execution
 
-To apply different rate limits based on the request, use the `conditional` field. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/configuration/conditional-policies" >}}).
+To apply different rate limits based on the request, use the `conditional` field. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).
