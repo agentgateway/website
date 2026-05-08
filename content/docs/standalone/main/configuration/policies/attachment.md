@@ -15,7 +15,7 @@ Policies that are attached at multiple levels are applied at all levels.
 |-|-|-|
 |Listener|{{< gloss "JWT (JSON Web Token)" >}}JWT{{< /gloss >}}, External Authorization, {{< gloss "ExtProc (External Processing)" >}}External Processing{{< /gloss >}}, {{< gloss "Transformation" >}}Transformation{{< /gloss >}}, Basic {{< gloss "Authentication (AuthN)" >}}Authentication{{< /gloss >}}, {{< gloss "API Key" >}}API Key{{< /gloss >}} authentication|Runs before route selection|
 |Route|All Policies|Runs after route selection, before backend selection|
-|Backend|Backend TLS, Backend Authentication, Backend HTTP, Backend TCP, AI/LLM, MCP Authorization, MCP Authentication, Header modification|Runs after backend selection|
+|Backend|Backend TLS, Backend Authentication, Backend HTTP, Backend TCP, AI/LLM, MCP Authorization, MCP Authentication, External Authorization, Header modification|Runs after backend selection|
 
 ## Example policy configuration
 

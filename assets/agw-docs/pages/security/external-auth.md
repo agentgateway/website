@@ -2,7 +2,7 @@ Bring your own {{< gloss "External Authorization" >}}external authorization{{< /
 
 ## About external auth {#about}
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway, based on the [Envoy external authorization filter](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ext_authz_filter). Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway, based on the [Envoy external authorization filter](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ext_authz_filter). Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
 
 ```mermaid
 sequenceDiagram
