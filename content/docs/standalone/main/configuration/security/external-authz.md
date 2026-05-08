@@ -98,3 +98,7 @@ extAuthz:
 | `policies.backendAuth` | Credentials to authenticate to the authorization service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). |
 | `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
+
+## Conditional execution
+
+To choose between multiple external authorization servers based on the request, use the `conditional` field. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/configuration/conditional-policies" >}}).

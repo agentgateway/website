@@ -875,6 +875,12 @@ Apply both local and global rate limits to the same traffic.
 
    The first 50 requests succeed (global limit), then subsequent requests return 429.
 
+{{< version include-if="1.2.x" >}}
+## Conditional execution
+
+To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply a strict per-IP limit to anonymous traffic and a higher per-user limit to authenticated traffic. For details, see [Conditional policies]({{< link-hextra path="/reference/conditional-policies" >}}).
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}

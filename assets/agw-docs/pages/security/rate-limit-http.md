@@ -260,6 +260,12 @@ Local rate limiting runs independently on each proxy replica. If you run multipl
 
 For detailed instructions on setting up global rate limiting with descriptors and an external rate limit service, see the [Global rate limiting guide]({{< link-hextra path="/security/rate-limit-global" >}}).
 
+{{< version include-if="1.2.x" >}}
+## Conditional execution
+
+To apply different rate limits based on the request, use the `conditional` field on your `rateLimit` policy. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/reference/conditional-policies" >}}).
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}

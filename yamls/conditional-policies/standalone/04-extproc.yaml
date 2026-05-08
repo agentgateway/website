@@ -1,0 +1,16 @@
+# Conditional ext_proc: route LLM requests through a content-filtering processor,
+# bypass for everything else.
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        extProc:
+          conditional:
+          - condition: request.path.startsWith("/v1/chat")
+            host: localhost:9100
+            failureMode: failClosed

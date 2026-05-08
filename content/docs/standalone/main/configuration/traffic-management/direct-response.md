@@ -15,3 +15,7 @@ directResponse:
   body: "Not found!"
   status: 404
 ```
+
+## Conditional execution
+
+To return a direct response only when a CEL expression matches, use the `conditional` field. For example, you can return `410 Gone` on deprecated paths and let every other request reach the backend. For details, see [Conditional policies]({{< link-hextra path="/configuration/conditional-policies" >}}).

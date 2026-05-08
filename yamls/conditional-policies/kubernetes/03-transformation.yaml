@@ -1,0 +1,21 @@
+# Conditional transformation: stamp a tracing header on internal traffic only.
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: conditional-transform
+  namespace: default
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: my-route
+  traffic:
+    transformation:
+      conditional:
+      - condition: request.headers["x-internal"] == "true"
+        policy:
+          request:
+            add:
+            - name: x-trace-source
+              value: '"internal"'
+      # No fallback: when no condition matches, no transformation runs.

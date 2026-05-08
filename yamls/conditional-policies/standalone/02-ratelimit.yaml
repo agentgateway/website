@@ -1,0 +1,22 @@
+# Conditional local rate limit: tighter limits on writes, looser on reads.
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        localRateLimit:
+          conditional:
+          - condition: request.method == "POST" || request.method == "PUT" || request.method == "DELETE"
+            maxTokens: 10
+            tokensPerFill: 10
+            fillInterval: 1m
+            type: requests
+          # Fallback for read traffic.
+          - maxTokens: 100
+            tokensPerFill: 100
+            fillInterval: 1m
+            type: requests

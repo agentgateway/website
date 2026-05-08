@@ -1,0 +1,29 @@
+# Canonical example: route requests to one of two ext_authz servers based on
+# the request, with an unconditional fallback. First match wins.
+#
+# Run: agentgateway -f 01-extauthz-two-servers.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        extAuthz:
+          conditional:
+          # Admin paths go to the strict authz server.
+          - condition: request.path.startsWith("/admin")
+            host: localhost:9000
+            protocol:
+              grpc: {}
+            failureMode: deny
+
+          # Anything else goes to the standard authz server.
+          # No `condition` => fallback. Must be the last entry, and only
+          # one unconditional entry is allowed.
+          - host: localhost:9001
+            protocol:
+              grpc: {}
+            failureMode: deny
