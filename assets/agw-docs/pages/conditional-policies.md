@@ -23,7 +23,7 @@ For details on how to write the CEL expressions that go in each `condition` fiel
 
 ### Examples
 
-Review the following examples to see how conditional policies work. Conditional execution works the same way for every supported policy. The following examples show one configuration per policy type. None of them use a fallback entry, so the policy runs only when the condition matches.
+Review the following examples to see how conditional policies work. Conditional execution works the same way for every supported policy. The following examples show one configuration per policy type.
 
 #### Multiple ext auth servers {#example-extauth}
 
