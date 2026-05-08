@@ -403,6 +403,89 @@
   }
 }
 
+/* Dark mode: ks-dark is mirrored from html.dark by the widget script. */
+.ks-schema.ks-dark { color: #e2e8f0; }
+.ks-schema.ks-dark .ks-apiversion { color: #5eead4; }
+.ks-schema.ks-dark .ks-resource-desc {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.10) 0%, rgba(15, 23, 42, 0.6) 100%);
+  border-left-color: #2dd4bf;
+  color: #cbd5e1;
+  box-shadow: inset 0 0 0 1px rgba(45, 212, 191, 0.18);
+}
+.ks-schema.ks-dark .ks-rich-heading,
+.ks-schema.ks-dark .ks-strong { color: #f1f5f9; }
+.ks-schema.ks-dark .ks-inline-code {
+  background: #334155;
+  color: #f1f5f9;
+}
+.ks-schema.ks-dark .ks-code-wrap {
+  background: #0f172a;
+  border-color: #334155;
+}
+.ks-schema.ks-dark .ks-code-block { color: #e2e8f0; }
+.ks-schema.ks-dark .ks-search-input {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.ks-schema.ks-dark .ks-search-input::placeholder { color: #64748b; }
+.ks-schema.ks-dark .ks-search-input:focus {
+  border-color: #2dd4bf;
+  box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.22);
+}
+.ks-schema.ks-dark .ks-search-results {
+  background: rgba(15, 23, 42, 0.98);
+  border-color: #334155;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+.ks-schema.ks-dark .ks-search-result:hover,
+.ks-schema.ks-dark .ks-search-result.is-active { background: #134e4a; }
+.ks-schema.ks-dark .ks-search-result-path { color: #f1f5f9; }
+.ks-schema.ks-dark .ks-search-result-type,
+.ks-schema.ks-dark .ks-search-empty { color: #94a3b8; }
+.ks-schema.ks-dark .ks-detail-card {
+  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+  border-color: #334155;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.5);
+}
+.ks-schema.ks-dark .ks-detail-path { color: #f1f5f9; }
+.ks-schema.ks-dark .ks-detail-type {
+  background: #312e81;
+  color: #c7d2fe;
+}
+.ks-schema.ks-dark .ks-detail-required {
+  background: rgba(190, 18, 60, 0.25);
+  color: #fda4af;
+}
+.ks-schema.ks-dark .ks-detail-desc { color: #cbd5e1; }
+.ks-schema.ks-dark .ks-detail-empty { color: #94a3b8; }
+.ks-schema.ks-dark .ks-tree.ks-nested { border-left-color: #334155; }
+.ks-schema.ks-dark .ks-row-line:hover { background: #1e293b; }
+.ks-schema.ks-dark .ks-row-line.is-active { background: #134e4a; }
+.ks-schema.ks-dark .ks-row-line.ks-search-hit { background: #115e59; }
+.ks-schema.ks-dark .ks-name-toggle.is-clickable:hover,
+.ks-schema.ks-dark .ks-type-toggle.is-clickable:hover { background: #134e4a; }
+.ks-schema.ks-dark .ks-name { color: #f1f5f9; }
+.ks-schema.ks-dark .ks-required { color: #fb7185; }
+.ks-schema.ks-dark .ks-type-string  { color: #fdba74; }
+.ks-schema.ks-dark .ks-type-boolean { color: #93c5fd; }
+.ks-schema.ks-dark .ks-type-integer { color: #7dd3fc; }
+.ks-schema.ks-dark .ks-type-object  { color: #c4b5fd; }
+.ks-schema.ks-dark .ks-type-complex { color: #f9a8d4; }
+.ks-schema.ks-dark .ks-type-other   { color: #5eead4; }
+.ks-schema.ks-dark .ks-validation { border-top-color: #334155; }
+.ks-schema.ks-dark .ks-validation-summary { color: #94a3b8; }
+.ks-schema.ks-dark .ks-validation-summary:hover { color: #5eead4; }
+.ks-schema.ks-dark .ks-validation-summary::before { color: #64748b; }
+.ks-schema.ks-dark .ks-validation-label { color: #94a3b8; }
+.ks-schema.ks-dark .ks-validation-value { color: #cbd5e1; }
+.ks-schema.ks-dark .ks-doc-link {
+  color: #5eead4;
+  text-decoration-color: rgba(94, 234, 212, 0.35);
+}
+.ks-schema.ks-dark .ks-doc-link:hover { color: #99f6e4; }
+
 </style>
 <div class="ks-schema">
 <div class="ks-header">
@@ -644,6 +727,15 @@
   if (!root) {
     return;
   }
+
+  // Dark mode sync: mirror Hextra's html.dark class onto the shadow root so
+  // the encapsulated CSS can react. MutationObserver covers theme toggling.
+  const docEl = document.documentElement;
+  const syncDark = () => {
+    root.classList.toggle("ks-dark", docEl.classList.contains("dark"));
+  };
+  syncDark();
+  new MutationObserver(syncDark).observe(docEl, { attributes: true, attributeFilter: ["class"] });
 
   const entries = [
   { nodeId: "ks-widget-1-node-0", path: "request", propType: "object" },
