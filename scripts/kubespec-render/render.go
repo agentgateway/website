@@ -1666,7 +1666,9 @@ func renderWidget(kind, group, version, scope string, pm *propertyMap, widgetID 
 	b.WriteString("<style>\n" + css + "\n</style>\n")
 	b.WriteString(`<div class="ks-schema">` + "\n")
 	b.WriteString(`<div class="ks-header">` + "\n")
-	fmt.Fprintf(&b, `  <div class="ks-apiversion">%s</div>`+"\n", esc(apiVersion))
+	if apiVersion != "" {
+		fmt.Fprintf(&b, `  <div class="ks-apiversion">%s</div>`+"\n", esc(apiVersion))
+	}
 	if pm.description != "" {
 		fmt.Fprintf(&b, `  <div class="ks-resource-desc">%s</div>`+"\n", renderRichText(pm.description))
 	}
@@ -1798,7 +1800,7 @@ func looksLikeJSONSchema(m nodeMap) bool {
 	return t != "" && (getString(m, "title") != "" || getNode(m, "required") != nil)
 }
 
-func renderJSONSchemaWidget(doc crdDocument, widgetID string, docsByPath map[string][]docLink) (string, bool) {
+func renderJSONSchemaWidget(doc crdDocument, widgetID string, titleOverride string, docsByPath map[string][]docLink) (string, bool) {
 	m := doc.mapping()
 	if !looksLikeJSONSchema(m) {
 		return "", false
@@ -1819,6 +1821,15 @@ func renderJSONSchemaWidget(doc crdDocument, widgetID string, docsByPath map[str
 		return "", false
 	}
 	pm := toPropertyMapWithResolver(root, required, &schemaResolver{root: root}, nil)
+
+	// When a title override is provided, use it and suppress the root description
+	// and $schema URL (which are often internal implementation details, e.g. Rust doc comments).
+	if titleOverride != "" {
+		title = titleOverride
+		schemaVersion = ""
+		pm.description = ""
+	}
+
 	return renderWidget(title, "", schemaVersion, "Schema", pm, widgetID, docsByPath), true
 }
 
@@ -1954,6 +1965,7 @@ func main() {
 	outputFile := flag.String("output", "", "Write output to `FILE` instead of stdout")
 	docsFile := flag.String("docs", "", "Optional JSON `FILE` mapping documentation pages to schema paths")
 	versionFilter := flag.String("version", "", "Only render a specific schema `VERSION` (e.g. v1)")
+	titleOverride := flag.String("title", "", "Override the widget title (suppresses root schema description when set)")
 	flag.Usage = func() {
 		fmt.Fprintf(os.Stderr,
 			"Usage: go run render.go [flags] <schema.yaml|schema.json>\n\n"+
@@ -1964,7 +1976,8 @@ func main() {
 				"  go run render.go my-crd.yaml\n"+
 				"  go run render.go cert-manager.yaml -output cert-manager.html\n"+
 				"  go run render.go gateway-crds.yaml -version v1 -output httproute.html\n"+
-				"  go run render.go schema.json -output schema.html\n")
+				"  go run render.go schema.json -output schema.html\n"+
+				"  go run render.go schema.json -title \"CEL context\" -output schema.html\n")
 	}
 	flag.Parse()
 
@@ -1994,7 +2007,7 @@ func main() {
 
 		if !isCRD(m) {
 			widgetID := fmt.Sprintf("ks-widget-%d", len(widgets)+1)
-			if widget, ok := renderJSONSchemaWidget(doc, widgetID, docsByPath); ok {
+			if widget, ok := renderJSONSchemaWidget(doc, widgetID, *titleOverride, docsByPath); ok {
 				widgets = append(widgets, widget)
 			}
 			continue

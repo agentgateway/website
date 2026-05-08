@@ -1,0 +1,1204 @@
+<!-- kubespec widget: CEL expression context () -->
+<div id="ks-widget-1"></div>
+<template id="ks-widget-1-template">
+<style>
+.ks-schema {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #0f172a;
+  max-width: 56rem;
+}
+.ks-schema,
+.ks-schema * {
+  box-sizing: border-box;
+}
+.ks-schema :where(div, span, ul, li, details, summary, input, button, a) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  text-transform: none;
+  text-decoration: none;
+}
+.ks-schema :where(ul, li) {
+  list-style: none;
+}
+.ks-schema :where(pre, code) {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  color: inherit;
+  white-space: inherit;
+  overflow: visible;
+}
+.ks-schema :where(button, input) {
+  background: none;
+}
+.ks-schema [hidden] {
+  display: none !important;
+}
+.ks-header { margin-bottom: 1rem; }
+.ks-apiversion {
+  font-size: 0.875rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #0f766e;
+  margin-bottom: 0.4rem;
+}
+.ks-resource-desc {
+  margin: 0.75rem 0 1rem;
+  padding: 0.8rem 0.95rem;
+  border-left: 4px solid #14b8a6;
+  border-radius: 0.75rem;
+  background: linear-gradient(135deg, #ecfeff 0%, #f8fafc 100%);
+  font-size: 0.875rem;
+  color: #164e63;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  max-width: 48rem;
+  box-shadow: inset 0 0 0 1px rgba(20, 184, 166, 0.08);
+}
+.ks-rich-block + .ks-rich-block,
+.ks-code-wrap + .ks-rich-block,
+.ks-rich-block + .ks-code-wrap,
+.ks-code-wrap + .ks-code-wrap,
+.ks-rich-heading + .ks-rich-block,
+.ks-rich-block + .ks-rich-heading,
+.ks-rich-heading + .ks-code-wrap,
+.ks-code-wrap + .ks-rich-heading,
+.ks-rich-heading + .ks-rich-heading {
+  margin-top: 0.7rem;
+}
+.ks-rich-heading {
+  color: #0f172a;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.ks-rich-h1 {
+  font-size: 1.1rem;
+}
+.ks-rich-h2 {
+  font-size: 1rem;
+}
+.ks-rich-h3 {
+  font-size: 0.94rem;
+}
+.ks-rich-h4,
+.ks-rich-h5,
+.ks-rich-h6 {
+  font-size: 0.88rem;
+}
+.ks-strong {
+  font-weight: 700;
+  color: #0f172a;
+}
+.ks-inline-code {
+  display: inline-block;
+  padding: 0.02rem 0.34rem;
+  border-radius: 0.35rem;
+  background: #e2e8f0;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.92em;
+}
+.ks-code-wrap {
+  border: 1px solid #dbe2ea;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #f8fafc;
+}
+.ks-code-block {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  overflow-x: auto;
+  white-space: pre;
+  color: #0f172a;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.ks-search {
+  position: relative;
+  margin: 0.875rem 0 1rem;
+  max-width: 32rem;
+}
+.ks-search-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.65rem;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+}
+.ks-search-input::placeholder { color: #9ca3af; }
+.ks-search-input:focus {
+  outline: none;
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.14);
+}
+.ks-search-results {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  padding: 0.375rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 18px 40px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(8px);
+}
+.ks-search-results[hidden] { display: none; }
+.ks-search-result {
+  display: block;
+  width: 100%;
+  padding: 0.5rem 0.625rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.ks-search-result:hover,
+.ks-search-result.is-active { background: #ccfbf1; }
+.ks-search-result-path {
+  display: block;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+.ks-search-result-type {
+  display: block;
+  margin-top: 0.125rem;
+  font-size: 0.75rem;
+  color: #475569;
+}
+.ks-search-empty {
+  padding: 0.5rem 0.625rem;
+  font-size: 0.8125rem;
+  color: #475569;
+}
+.ks-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 2.35fr) minmax(20rem, clamp(18rem, 24vw, 30rem));
+  gap: 1.25rem;
+  align-items: start;
+}
+.ks-tree-pane {
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: visible;
+  overscroll-behavior-x: contain;
+}
+.ks-detail-pane {
+  position: sticky;
+  top: var(--ks-sticky-top, 1rem);
+  max-height: calc(100vh - var(--ks-sticky-top, 1rem) - 1rem);
+  overflow: auto;
+}
+.ks-detail-card {
+  padding: 0.9rem 1rem;
+  border: 1px solid #dbe2ea;
+  border-radius: 0.9rem;
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.08);
+}
+.ks-detail-path {
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+  word-break: break-word;
+}
+.ks-detail-meta-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.55rem;
+}
+.ks-detail-type {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  background: #eef2ff;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.ks-detail-required {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.16rem 0.5rem;
+  border-radius: 999px;
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+.ks-detail-desc,
+.ks-detail-empty {
+  margin-top: 0.8rem;
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: #334155;
+  white-space: pre-wrap;
+}
+.ks-detail-empty {
+  color: #64748b;
+}
+.ks-tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, monospace;
+  font-size: 0.8125rem;
+}
+.ks-tree.ks-nested {
+  margin-left: 0.5rem;
+  padding-left: 0.3125rem;
+  border-left: 2px solid #cbd5e1;
+}
+.ks-row { font-weight: 600; }
+.ks-row + .ks-row { margin-top: 0.125rem; }
+.ks-row-line {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.35rem;
+  cursor: pointer;
+}
+.ks-row-line:hover { background: #f8fafc; }
+.ks-row-line.is-active { background: #ccfbf1; }
+.ks-row-line.ks-search-hit { background: #99f6e4; }
+.ks-name-toggle,
+.ks-type-toggle {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.25rem;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  background: transparent;
+  cursor: default;
+  user-select: none;
+}
+.ks-name-toggle.is-clickable,
+.ks-type-toggle.is-clickable {
+  cursor: pointer;
+}
+.ks-name-toggle.is-clickable:hover,
+.ks-type-toggle.is-clickable:hover {
+  background: #f0fdfa;
+}
+.ks-name { color: #0f172a; }
+.ks-required {
+  color: #e11d48;
+  font-size: 0.6875rem;
+  margin-right: 0.125rem;
+  font-family: system-ui, sans-serif;
+}
+.ks-type { font-weight: 400; }
+.ks-type-string  { color: #ea580c; }
+.ks-type-boolean { color: #2563eb; }
+.ks-type-integer { color: #0284c7; }
+.ks-type-object  { color: #7c3aed; }
+.ks-type-complex { color: #db2777; }
+.ks-type-other   { color: #0f766e; }
+.ks-validation {
+  margin-top: 0.8rem;
+  border-top: 1px solid #dbe2ea;
+  padding-top: 0.65rem;
+}
+.ks-validation-summary {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  cursor: pointer;
+  list-style: none;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: #64748b;
+  user-select: none;
+}
+.ks-validation-summary:hover { color: #0f766e; }
+.ks-validation-summary::before {
+  content: "▸" !important;
+  margin-right: 0.4rem;
+  color: #94a3b8;
+  transition: transform 120ms ease;
+}
+.ks-validation[open] > .ks-validation-summary::before {
+  transform: rotate(90deg);
+}
+.ks-validation-body {
+  padding-top: 0.45rem;
+}
+.ks-validation-item {
+  display: grid;
+  grid-template-columns: minmax(0, 7rem) minmax(0, 1fr);
+  gap: 0.25rem 0.6rem;
+  padding-top: 0.35rem;
+}
+.ks-validation-label {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #64748b;
+}
+.ks-validation-value {
+  min-width: 0;
+  font-size: 0.68rem;
+  font-weight: 400;
+  color: #334155;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.ks-validation-value-block {
+  margin: 0;
+  font-family: inherit;
+  background: transparent;
+  border-radius: 0;
+  padding: 0;
+}
+.ks-documentation {
+  margin-top: 0.7rem;
+}
+.ks-doc-link-row + .ks-doc-link-row {
+  margin-top: 0.35rem;
+}
+.ks-doc-link {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  font-size: 0.72rem;
+  color: #0f766e;
+  text-decoration: underline;
+  text-decoration-color: rgba(15, 118, 110, 0.28);
+  text-underline-offset: 0.14em;
+  word-break: break-word;
+}
+.ks-doc-link:hover {
+  color: #115e59;
+  text-decoration-color: currentColor;
+}
+@media (max-width: 900px) {
+  .ks-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ks-detail-pane {
+    position: static;
+  }
+}
+
+</style>
+<div class="ks-schema">
+<div class="ks-header">
+  <div class="ks-search"><input class="ks-search-input" type="search" placeholder="Search fields like spec.template.spec.containers" autocomplete="off" spellcheck="false" aria-label="Search schema fields" data-ks-search-input /><div class="ks-search-results" data-ks-search-results hidden></div></div>
+</div>
+<div class="ks-layout">
+<div class="ks-tree-pane">
+<ul class="ks-tree">
+<li class="ks-row" data-ks-path="request"><div class="ks-row-line" id="ks-widget-1-node-0" data-ks-node-id="ks-widget-1-node-0" data-ks-path="request"><span class="ks-name-toggle"><span class="ks-name">request</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-0-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-0-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="request.method"><div class="ks-row-line" id="ks-widget-1-node-1" data-ks-node-id="ks-widget-1-node-1" data-ks-path="request.method"><span class="ks-name-toggle"><span class="ks-name">method</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.uri"><div class="ks-row-line" id="ks-widget-1-node-2" data-ks-node-id="ks-widget-1-node-2" data-ks-path="request.uri"><span class="ks-name-toggle"><span class="ks-name">uri</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.host"><div class="ks-row-line" id="ks-widget-1-node-3" data-ks-node-id="ks-widget-1-node-3" data-ks-path="request.host"><span class="ks-name-toggle"><span class="ks-name">host</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.scheme"><div class="ks-row-line" id="ks-widget-1-node-4" data-ks-node-id="ks-widget-1-node-4" data-ks-path="request.scheme"><span class="ks-name-toggle"><span class="ks-name">scheme</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.path"><div class="ks-row-line" id="ks-widget-1-node-5" data-ks-node-id="ks-widget-1-node-5" data-ks-path="request.path"><span class="ks-name-toggle"><span class="ks-name">path</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.pathAndQuery"><div class="ks-row-line" id="ks-widget-1-node-6" data-ks-node-id="ks-widget-1-node-6" data-ks-path="request.pathAndQuery"><span class="ks-name-toggle"><span class="ks-name">pathAndQuery</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.version"><div class="ks-row-line" id="ks-widget-1-node-7" data-ks-node-id="ks-widget-1-node-7" data-ks-path="request.version"><span class="ks-name-toggle"><span class="ks-name">version</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.headers"><div class="ks-row-line" id="ks-widget-1-node-8" data-ks-node-id="ks-widget-1-node-8" data-ks-path="request.headers"><span class="ks-name-toggle"><span class="ks-name">headers</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="request.body"><div class="ks-row-line" id="ks-widget-1-node-9" data-ks-node-id="ks-widget-1-node-9" data-ks-path="request.body"><span class="ks-name-toggle"><span class="ks-name">body</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.startTime"><div class="ks-row-line" id="ks-widget-1-node-10" data-ks-node-id="ks-widget-1-node-10" data-ks-path="request.startTime"><span class="ks-name-toggle"><span class="ks-name">startTime</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="request.endTime"><div class="ks-row-line" id="ks-widget-1-node-11" data-ks-node-id="ks-widget-1-node-11" data-ks-path="request.endTime"><span class="ks-name-toggle"><span class="ks-name">endTime</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="response"><div class="ks-row-line" id="ks-widget-1-node-12" data-ks-node-id="ks-widget-1-node-12" data-ks-path="response"><span class="ks-name-toggle"><span class="ks-name">response</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-12-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-12-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="response.code"><div class="ks-row-line" id="ks-widget-1-node-13" data-ks-node-id="ks-widget-1-node-13" data-ks-path="response.code"><span class="ks-name-toggle"><span class="ks-name">code</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="response.headers"><div class="ks-row-line" id="ks-widget-1-node-14" data-ks-node-id="ks-widget-1-node-14" data-ks-path="response.headers"><span class="ks-name-toggle"><span class="ks-name">headers</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="response.body"><div class="ks-row-line" id="ks-widget-1-node-15" data-ks-node-id="ks-widget-1-node-15" data-ks-path="response.body"><span class="ks-name-toggle"><span class="ks-name">body</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="env"><div class="ks-row-line" id="ks-widget-1-node-16" data-ks-node-id="ks-widget-1-node-16" data-ks-path="env"><span class="ks-name-toggle"><span class="ks-name">env</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-16-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-16-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="env.podName"><div class="ks-row-line" id="ks-widget-1-node-17" data-ks-node-id="ks-widget-1-node-17" data-ks-path="env.podName"><span class="ks-name-toggle"><span class="ks-name">podName</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="env.namespace"><div class="ks-row-line" id="ks-widget-1-node-18" data-ks-node-id="ks-widget-1-node-18" data-ks-path="env.namespace"><span class="ks-name-toggle"><span class="ks-name">namespace</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="env.gateway"><div class="ks-row-line" id="ks-widget-1-node-19" data-ks-node-id="ks-widget-1-node-19" data-ks-path="env.gateway"><span class="ks-name-toggle"><span class="ks-name">gateway</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="jwt"><div class="ks-row-line" id="ks-widget-1-node-20" data-ks-node-id="ks-widget-1-node-20" data-ks-path="jwt"><span class="ks-name-toggle"><span class="ks-name">jwt</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="apiKey"><div class="ks-row-line" id="ks-widget-1-node-21" data-ks-node-id="ks-widget-1-node-21" data-ks-path="apiKey"><span class="ks-name-toggle"><span class="ks-name">apiKey</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-21-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-21-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="apiKey.key"><div class="ks-row-line" id="ks-widget-1-node-22" data-ks-node-id="ks-widget-1-node-22" data-ks-path="apiKey.key"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">key</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="basicAuth"><div class="ks-row-line" id="ks-widget-1-node-23" data-ks-node-id="ks-widget-1-node-23" data-ks-path="basicAuth"><span class="ks-name-toggle"><span class="ks-name">basicAuth</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-23-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-23-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="basicAuth.username"><div class="ks-row-line" id="ks-widget-1-node-24" data-ks-node-id="ks-widget-1-node-24" data-ks-path="basicAuth.username"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">username</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="llm"><div class="ks-row-line" id="ks-widget-1-node-25" data-ks-node-id="ks-widget-1-node-25" data-ks-path="llm"><span class="ks-name-toggle"><span class="ks-name">llm</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-25-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-25-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="llm.streaming"><div class="ks-row-line" id="ks-widget-1-node-26" data-ks-node-id="ks-widget-1-node-26" data-ks-path="llm.streaming"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">streaming</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-boolean">boolean</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.requestModel"><div class="ks-row-line" id="ks-widget-1-node-27" data-ks-node-id="ks-widget-1-node-27" data-ks-path="llm.requestModel"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">requestModel</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.responseModel"><div class="ks-row-line" id="ks-widget-1-node-28" data-ks-node-id="ks-widget-1-node-28" data-ks-path="llm.responseModel"><span class="ks-name-toggle"><span class="ks-name">responseModel</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.provider"><div class="ks-row-line" id="ks-widget-1-node-29" data-ks-node-id="ks-widget-1-node-29" data-ks-path="llm.provider"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">provider</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.inputTokens"><div class="ks-row-line" id="ks-widget-1-node-30" data-ks-node-id="ks-widget-1-node-30" data-ks-path="llm.inputTokens"><span class="ks-name-toggle"><span class="ks-name">inputTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.inputImageTokens"><div class="ks-row-line" id="ks-widget-1-node-31" data-ks-node-id="ks-widget-1-node-31" data-ks-path="llm.inputImageTokens"><span class="ks-name-toggle"><span class="ks-name">inputImageTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.inputTextTokens"><div class="ks-row-line" id="ks-widget-1-node-32" data-ks-node-id="ks-widget-1-node-32" data-ks-path="llm.inputTextTokens"><span class="ks-name-toggle"><span class="ks-name">inputTextTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.inputAudioTokens"><div class="ks-row-line" id="ks-widget-1-node-33" data-ks-node-id="ks-widget-1-node-33" data-ks-path="llm.inputAudioTokens"><span class="ks-name-toggle"><span class="ks-name">inputAudioTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.cachedInputTokens"><div class="ks-row-line" id="ks-widget-1-node-34" data-ks-node-id="ks-widget-1-node-34" data-ks-path="llm.cachedInputTokens"><span class="ks-name-toggle"><span class="ks-name">cachedInputTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.cacheCreationInputTokens"><div class="ks-row-line" id="ks-widget-1-node-35" data-ks-node-id="ks-widget-1-node-35" data-ks-path="llm.cacheCreationInputTokens"><span class="ks-name-toggle"><span class="ks-name">cacheCreationInputTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.outputTokens"><div class="ks-row-line" id="ks-widget-1-node-36" data-ks-node-id="ks-widget-1-node-36" data-ks-path="llm.outputTokens"><span class="ks-name-toggle"><span class="ks-name">outputTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.outputImageTokens"><div class="ks-row-line" id="ks-widget-1-node-37" data-ks-node-id="ks-widget-1-node-37" data-ks-path="llm.outputImageTokens"><span class="ks-name-toggle"><span class="ks-name">outputImageTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.outputTextTokens"><div class="ks-row-line" id="ks-widget-1-node-38" data-ks-node-id="ks-widget-1-node-38" data-ks-path="llm.outputTextTokens"><span class="ks-name-toggle"><span class="ks-name">outputTextTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.outputAudioTokens"><div class="ks-row-line" id="ks-widget-1-node-39" data-ks-node-id="ks-widget-1-node-39" data-ks-path="llm.outputAudioTokens"><span class="ks-name-toggle"><span class="ks-name">outputAudioTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.reasoningTokens"><div class="ks-row-line" id="ks-widget-1-node-40" data-ks-node-id="ks-widget-1-node-40" data-ks-path="llm.reasoningTokens"><span class="ks-name-toggle"><span class="ks-name">reasoningTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.totalTokens"><div class="ks-row-line" id="ks-widget-1-node-41" data-ks-node-id="ks-widget-1-node-41" data-ks-path="llm.totalTokens"><span class="ks-name-toggle"><span class="ks-name">totalTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.serviceTier"><div class="ks-row-line" id="ks-widget-1-node-42" data-ks-node-id="ks-widget-1-node-42" data-ks-path="llm.serviceTier"><span class="ks-name-toggle"><span class="ks-name">serviceTier</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.countTokens"><div class="ks-row-line" id="ks-widget-1-node-43" data-ks-node-id="ks-widget-1-node-43" data-ks-path="llm.countTokens"><span class="ks-name-toggle"><span class="ks-name">countTokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.prompt"><div class="ks-row-line" id="ks-widget-1-node-44" data-ks-node-id="ks-widget-1-node-44" data-ks-path="llm.prompt"><span class="ks-name-toggle"><span class="ks-name">prompt</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-44-children"><span class="ks-type ks-type-complex">object[]</span></button></div><div class="ks-children-container" id="ks-widget-1-node-44-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="llm.prompt.role"><div class="ks-row-line" id="ks-widget-1-node-45" data-ks-node-id="ks-widget-1-node-45" data-ks-path="llm.prompt.role"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">role</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.prompt.content"><div class="ks-row-line" id="ks-widget-1-node-46" data-ks-node-id="ks-widget-1-node-46" data-ks-path="llm.prompt.content"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">content</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="llm.completion"><div class="ks-row-line" id="ks-widget-1-node-47" data-ks-node-id="ks-widget-1-node-47" data-ks-path="llm.completion"><span class="ks-name-toggle"><span class="ks-name">completion</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string[]</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params"><div class="ks-row-line" id="ks-widget-1-node-48" data-ks-node-id="ks-widget-1-node-48" data-ks-path="llm.params"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">params</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-48-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-48-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="llm.params.temperature"><div class="ks-row-line" id="ks-widget-1-node-49" data-ks-node-id="ks-widget-1-node-49" data-ks-path="llm.params.temperature"><span class="ks-name-toggle"><span class="ks-name">temperature</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">number</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params.top_p"><div class="ks-row-line" id="ks-widget-1-node-50" data-ks-node-id="ks-widget-1-node-50" data-ks-path="llm.params.top_p"><span class="ks-name-toggle"><span class="ks-name">top_p</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">number</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params.frequency_penalty"><div class="ks-row-line" id="ks-widget-1-node-51" data-ks-node-id="ks-widget-1-node-51" data-ks-path="llm.params.frequency_penalty"><span class="ks-name-toggle"><span class="ks-name">frequency_penalty</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">number</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params.presence_penalty"><div class="ks-row-line" id="ks-widget-1-node-52" data-ks-node-id="ks-widget-1-node-52" data-ks-path="llm.params.presence_penalty"><span class="ks-name-toggle"><span class="ks-name">presence_penalty</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">number</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params.seed"><div class="ks-row-line" id="ks-widget-1-node-53" data-ks-node-id="ks-widget-1-node-53" data-ks-path="llm.params.seed"><span class="ks-name-toggle"><span class="ks-name">seed</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params.max_tokens"><div class="ks-row-line" id="ks-widget-1-node-54" data-ks-node-id="ks-widget-1-node-54" data-ks-path="llm.params.max_tokens"><span class="ks-name-toggle"><span class="ks-name">max_tokens</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params.encoding_format"><div class="ks-row-line" id="ks-widget-1-node-55" data-ks-node-id="ks-widget-1-node-55" data-ks-path="llm.params.encoding_format"><span class="ks-name-toggle"><span class="ks-name">encoding_format</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="llm.params.dimensions"><div class="ks-row-line" id="ks-widget-1-node-56" data-ks-node-id="ks-widget-1-node-56" data-ks-path="llm.params.dimensions"><span class="ks-name-toggle"><span class="ks-name">dimensions</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+</ul></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="llmRequest"><div class="ks-row-line" id="ks-widget-1-node-57" data-ks-node-id="ks-widget-1-node-57" data-ks-path="llmRequest"><span class="ks-name-toggle"><span class="ks-name">llmRequest</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-other"></span></span></div></li>
+<li class="ks-row" data-ks-path="source"><div class="ks-row-line" id="ks-widget-1-node-58" data-ks-node-id="ks-widget-1-node-58" data-ks-path="source"><span class="ks-name-toggle"><span class="ks-name">source</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-58-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-58-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="source.address"><div class="ks-row-line" id="ks-widget-1-node-59" data-ks-node-id="ks-widget-1-node-59" data-ks-path="source.address"><span class="ks-name-toggle"><span class="ks-name">address</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.port"><div class="ks-row-line" id="ks-widget-1-node-60" data-ks-node-id="ks-widget-1-node-60" data-ks-path="source.port"><span class="ks-name-toggle"><span class="ks-name">port</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="source.rawAddress"><div class="ks-row-line" id="ks-widget-1-node-61" data-ks-node-id="ks-widget-1-node-61" data-ks-path="source.rawAddress"><span class="ks-name-toggle"><span class="ks-name">rawAddress</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.rawPort"><div class="ks-row-line" id="ks-widget-1-node-62" data-ks-node-id="ks-widget-1-node-62" data-ks-path="source.rawPort"><span class="ks-name-toggle"><span class="ks-name">rawPort</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-integer">integer</span></span></div></li>
+<li class="ks-row" data-ks-path="source.identity"><div class="ks-row-line" id="ks-widget-1-node-63" data-ks-node-id="ks-widget-1-node-63" data-ks-path="source.identity"><span class="ks-name-toggle"><span class="ks-name">identity</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-63-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-63-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="source.identity.trustDomain"><div class="ks-row-line" id="ks-widget-1-node-64" data-ks-node-id="ks-widget-1-node-64" data-ks-path="source.identity.trustDomain"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">trustDomain</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.identity.namespace"><div class="ks-row-line" id="ks-widget-1-node-65" data-ks-node-id="ks-widget-1-node-65" data-ks-path="source.identity.namespace"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">namespace</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.identity.serviceAccount"><div class="ks-row-line" id="ks-widget-1-node-66" data-ks-node-id="ks-widget-1-node-66" data-ks-path="source.identity.serviceAccount"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">serviceAccount</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="source.subjectAltNames"><div class="ks-row-line" id="ks-widget-1-node-67" data-ks-node-id="ks-widget-1-node-67" data-ks-path="source.subjectAltNames"><span class="ks-name-toggle"><span class="ks-name">subjectAltNames</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string[]</span></span></div></li>
+<li class="ks-row" data-ks-path="source.issuer"><div class="ks-row-line" id="ks-widget-1-node-68" data-ks-node-id="ks-widget-1-node-68" data-ks-path="source.issuer"><span class="ks-name-toggle"><span class="ks-name">issuer</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.subject"><div class="ks-row-line" id="ks-widget-1-node-69" data-ks-node-id="ks-widget-1-node-69" data-ks-path="source.subject"><span class="ks-name-toggle"><span class="ks-name">subject</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.subjectCn"><div class="ks-row-line" id="ks-widget-1-node-70" data-ks-node-id="ks-widget-1-node-70" data-ks-path="source.subjectCn"><span class="ks-name-toggle"><span class="ks-name">subjectCn</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.unverifiedWorkload"><div class="ks-row-line" id="ks-widget-1-node-71" data-ks-node-id="ks-widget-1-node-71" data-ks-path="source.unverifiedWorkload"><span class="ks-name-toggle"><span class="ks-name">unverifiedWorkload</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-71-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-71-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="source.unverifiedWorkload.name"><div class="ks-row-line" id="ks-widget-1-node-72" data-ks-node-id="ks-widget-1-node-72" data-ks-path="source.unverifiedWorkload.name"><span class="ks-name-toggle"><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.unverifiedWorkload.namespace"><div class="ks-row-line" id="ks-widget-1-node-73" data-ks-node-id="ks-widget-1-node-73" data-ks-path="source.unverifiedWorkload.namespace"><span class="ks-name-toggle"><span class="ks-name">namespace</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="source.unverifiedWorkload.serviceAccount"><div class="ks-row-line" id="ks-widget-1-node-74" data-ks-node-id="ks-widget-1-node-74" data-ks-path="source.unverifiedWorkload.serviceAccount"><span class="ks-name-toggle"><span class="ks-name">serviceAccount</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="mcp"><div class="ks-row-line" id="ks-widget-1-node-75" data-ks-node-id="ks-widget-1-node-75" data-ks-path="mcp"><span class="ks-name-toggle"><span class="ks-name">mcp</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-75-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-75-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="mcp.methodName"><div class="ks-row-line" id="ks-widget-1-node-76" data-ks-node-id="ks-widget-1-node-76" data-ks-path="mcp.methodName"><span class="ks-name-toggle"><span class="ks-name">methodName</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.sessionId"><div class="ks-row-line" id="ks-widget-1-node-77" data-ks-node-id="ks-widget-1-node-77" data-ks-path="mcp.sessionId"><span class="ks-name-toggle"><span class="ks-name">sessionId</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.tool"><div class="ks-row-line" id="ks-widget-1-node-78" data-ks-node-id="ks-widget-1-node-78" data-ks-path="mcp.tool"><span class="ks-name-toggle"><span class="ks-name">tool</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-78-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-78-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="mcp.tool.target"><div class="ks-row-line" id="ks-widget-1-node-79" data-ks-node-id="ks-widget-1-node-79" data-ks-path="mcp.tool.target"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">target</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.tool.name"><div class="ks-row-line" id="ks-widget-1-node-80" data-ks-node-id="ks-widget-1-node-80" data-ks-path="mcp.tool.name"><span class="ks-name-toggle"><span class="ks-required" title="Required">*</span><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.tool.arguments"><div class="ks-row-line" id="ks-widget-1-node-81" data-ks-node-id="ks-widget-1-node-81" data-ks-path="mcp.tool.arguments"><span class="ks-name-toggle"><span class="ks-name">arguments</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.tool.result"><div class="ks-row-line" id="ks-widget-1-node-82" data-ks-node-id="ks-widget-1-node-82" data-ks-path="mcp.tool.result"><span class="ks-name-toggle"><span class="ks-name">result</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-other"></span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.tool.error"><div class="ks-row-line" id="ks-widget-1-node-83" data-ks-node-id="ks-widget-1-node-83" data-ks-path="mcp.tool.error"><span class="ks-name-toggle"><span class="ks-name">error</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-other"></span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="mcp.prompt"><div class="ks-row-line" id="ks-widget-1-node-84" data-ks-node-id="ks-widget-1-node-84" data-ks-path="mcp.prompt"><span class="ks-name-toggle"><span class="ks-name">prompt</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-84-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-84-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="mcp.prompt.target"><div class="ks-row-line" id="ks-widget-1-node-85" data-ks-node-id="ks-widget-1-node-85" data-ks-path="mcp.prompt.target"><span class="ks-name-toggle"><span class="ks-name">target</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.prompt.name"><div class="ks-row-line" id="ks-widget-1-node-86" data-ks-node-id="ks-widget-1-node-86" data-ks-path="mcp.prompt.name"><span class="ks-name-toggle"><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="mcp.resource"><div class="ks-row-line" id="ks-widget-1-node-87" data-ks-node-id="ks-widget-1-node-87" data-ks-path="mcp.resource"><span class="ks-name-toggle"><span class="ks-name">resource</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-87-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-87-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="mcp.resource.target"><div class="ks-row-line" id="ks-widget-1-node-88" data-ks-node-id="ks-widget-1-node-88" data-ks-path="mcp.resource.target"><span class="ks-name-toggle"><span class="ks-name">target</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="mcp.resource.name"><div class="ks-row-line" id="ks-widget-1-node-89" data-ks-node-id="ks-widget-1-node-89" data-ks-path="mcp.resource.name"><span class="ks-name-toggle"><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="backend"><div class="ks-row-line" id="ks-widget-1-node-90" data-ks-node-id="ks-widget-1-node-90" data-ks-path="backend"><span class="ks-name-toggle"><span class="ks-name">backend</span></span><button type="button" class="ks-type-toggle is-clickable" data-ks-children-target="ks-widget-1-node-90-children"><span class="ks-type ks-type-complex">object</span></button></div><div class="ks-children-container" id="ks-widget-1-node-90-children" data-ks-children-container hidden><ul class="ks-tree ks-nested">
+<li class="ks-row" data-ks-path="backend.name"><div class="ks-row-line" id="ks-widget-1-node-91" data-ks-node-id="ks-widget-1-node-91" data-ks-path="backend.name"><span class="ks-name-toggle"><span class="ks-name">name</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="backend.type"><div class="ks-row-line" id="ks-widget-1-node-92" data-ks-node-id="ks-widget-1-node-92" data-ks-path="backend.type"><span class="ks-name-toggle"><span class="ks-name">type</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+<li class="ks-row" data-ks-path="backend.protocol"><div class="ks-row-line" id="ks-widget-1-node-93" data-ks-node-id="ks-widget-1-node-93" data-ks-path="backend.protocol"><span class="ks-name-toggle"><span class="ks-name">protocol</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-string">string</span></span></div></li>
+</ul></div></li>
+<li class="ks-row" data-ks-path="extauthz"><div class="ks-row-line" id="ks-widget-1-node-94" data-ks-node-id="ks-widget-1-node-94" data-ks-path="extauthz"><span class="ks-name-toggle"><span class="ks-name">extauthz</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="extproc"><div class="ks-row-line" id="ks-widget-1-node-95" data-ks-node-id="ks-widget-1-node-95" data-ks-path="extproc"><span class="ks-name-toggle"><span class="ks-name">extproc</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="metadata"><div class="ks-row-line" id="ks-widget-1-node-96" data-ks-node-id="ks-widget-1-node-96" data-ks-path="metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+</ul></div>
+<aside class="ks-detail-pane"><div data-ks-active-panel></div></aside>
+</div>
+<template data-ks-field-panel="ks-widget-1-node-0"><div class="ks-detail-card"><div class="ks-detail-path">request</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">request</code> contains attributes about the incoming HTTP request</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-1"><div class="ks-detail-card"><div class="ks-detail-path">request.method</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The HTTP method of the request. For example, <code class="ks-inline-code">GET</code></div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">GET</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-2"><div class="ks-detail-card"><div class="ks-detail-path">request.uri</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The complete URI of the request. For example, <code class="ks-inline-code">http://example.com/path</code>.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">/</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-3"><div class="ks-detail-card"><div class="ks-detail-path">request.host</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The hostname of the request. For example, <code class="ks-inline-code">example.com</code>.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">null</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-4"><div class="ks-detail-card"><div class="ks-detail-path">request.scheme</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The scheme of the request. For example, <code class="ks-inline-code">https</code>.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">null</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-5"><div class="ks-detail-card"><div class="ks-detail-path">request.path</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The path of the request URI. For example, <code class="ks-inline-code">/path</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-6"><div class="ks-detail-card"><div class="ks-detail-path">request.pathAndQuery</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The path and query of the request URI. For example, <code class="ks-inline-code">/path?foo=bar</code>.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">/</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-7"><div class="ks-detail-card"><div class="ks-detail-path">request.version</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The version of the request. For example, <code class="ks-inline-code">HTTP/1.1</code>.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">HTTP/1.1</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-8"><div class="ks-detail-card"><div class="ks-detail-path">request.headers</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The headers of the request.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">{}</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-9"><div class="ks-detail-card"><div class="ks-detail-path">request.body</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The body of the request. Warning: accessing the body will cause the body to be buffered.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-10"><div class="ks-detail-card"><div class="ks-detail-path">request.startTime</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The time the request started</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-11"><div class="ks-detail-card"><div class="ks-detail-path">request.endTime</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The time the request completed</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-12"><div class="ks-detail-card"><div class="ks-detail-path">response</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">response</code> contains attributes about the HTTP response</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-13"><div class="ks-detail-card"><div class="ks-detail-path">response.code</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The HTTP status code of the response.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint16</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">65535</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-14"><div class="ks-detail-card"><div class="ks-detail-path">response.headers</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The headers of the response.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">{}</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-15"><div class="ks-detail-card"><div class="ks-detail-path">response.body</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The body of the response. Warning: accessing the body will cause the body to be buffered.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-16"><div class="ks-detail-card"><div class="ks-detail-path">env</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">env</code> contains selected process environment attributes exposed to CEL.<br />This does NOT expose raw environment variables, but rather a subset of well-known variables.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-17"><div class="ks-detail-card"><div class="ks-detail-path">env.podName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The name of the pod (when running on Kubernetes)</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-18"><div class="ks-detail-card"><div class="ks-detail-path">env.namespace</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The namespace of the pod (when running on Kubernetes)</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-19"><div class="ks-detail-card"><div class="ks-detail-path">env.gateway</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The Gateway we are running as (when running on Kubernetes)</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-20"><div class="ks-detail-card"><div class="ks-detail-path">jwt</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">jwt</code> contains the claims from a verified JWT token. This is only present if the JWT policy is enabled.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-21"><div class="ks-detail-card"><div class="ks-detail-path">apiKey</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">apiKey</code> contains the claims from a verified API Key. This is only present if the API Key policy is enabled.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-22"><div class="ks-detail-card"><div class="ks-detail-path">apiKey.key</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-23"><div class="ks-detail-card"><div class="ks-detail-path">basicAuth</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">basicAuth</code> contains the claims from a verified basic authentication Key. This is only present if the Basic authentication policy is enabled.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-24"><div class="ks-detail-card"><div class="ks-detail-path">basicAuth.username</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-25"><div class="ks-detail-card"><div class="ks-detail-path">llm</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">llm</code> contains attributes about an LLM request or response. This is only present when using an <code class="ks-inline-code">ai</code> backend.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-26"><div class="ks-detail-card"><div class="ks-detail-path">llm.streaming</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-boolean">boolean</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Whether the LLM response is streamed.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-27"><div class="ks-detail-card"><div class="ks-detail-path">llm.requestModel</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The model requested for the LLM request. This may differ from the actual model used.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-28"><div class="ks-detail-card"><div class="ks-detail-path">llm.responseModel</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The model that actually served the LLM response.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-29"><div class="ks-detail-card"><div class="ks-detail-path">llm.provider</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The provider of the LLM.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-30"><div class="ks-detail-card"><div class="ks-detail-path">llm.inputTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of tokens in the input/prompt.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-31"><div class="ks-detail-card"><div class="ks-detail-path">llm.inputImageTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of image tokens in the input/prompt.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-32"><div class="ks-detail-card"><div class="ks-detail-path">llm.inputTextTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of text tokens in the input/prompt.<br />Note: this field is only set in multi-modal calls where the total token count is split out by<br />text/image/audio; for standard all-text calls, this is unset.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-33"><div class="ks-detail-card"><div class="ks-detail-path">llm.inputAudioTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of audio tokens in the input/prompt.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-34"><div class="ks-detail-card"><div class="ks-detail-path">llm.cachedInputTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of tokens in the input/prompt read from cache (savings)</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-35"><div class="ks-detail-card"><div class="ks-detail-path">llm.cacheCreationInputTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">Tokens written to cache (costs)<br />Not present with OpenAI</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-36"><div class="ks-detail-card"><div class="ks-detail-path">llm.outputTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of tokens in the output/completion.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-37"><div class="ks-detail-card"><div class="ks-detail-path">llm.outputImageTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of image tokens in the output/completion.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-38"><div class="ks-detail-card"><div class="ks-detail-path">llm.outputTextTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of text tokens in the output/completion.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-39"><div class="ks-detail-card"><div class="ks-detail-path">llm.outputAudioTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of audio tokens in the output/completion.<br />Note: this field is only set in multi-modal calls where the total token count is split out by<br />text/image/audio; for standard all-text calls, this is unset.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-40"><div class="ks-detail-card"><div class="ks-detail-path">llm.reasoningTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of reasoning tokens in the output/completion.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-41"><div class="ks-detail-card"><div class="ks-detail-path">llm.totalTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The total number of tokens for the request.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-42"><div class="ks-detail-card"><div class="ks-detail-path">llm.serviceTier</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The service tier the provider served the request under.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-43"><div class="ks-detail-card"><div class="ks-detail-path">llm.countTokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The number of tokens in the request, when using the token counting endpoint<br />These are not counted as 'input tokens' since they do not consume input tokens.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-44"><div class="ks-detail-card"><div class="ks-detail-path">llm.prompt</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The prompt sent to the LLM. Warning: accessing this has some performance impacts for large prompts.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-45"><div class="ks-detail-card"><div class="ks-detail-path">llm.prompt.role</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-46"><div class="ks-detail-card"><div class="ks-detail-path">llm.prompt.content</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-47"><div class="ks-detail-card"><div class="ks-detail-path">llm.completion</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The completion from the LLM. Warning: accessing this has some performance impacts for large responses.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-48"><div class="ks-detail-card"><div class="ks-detail-path">llm.params</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The parameters for the LLM request.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-49"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.temperature</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">number</span></div><div class="ks-detail-empty">No description for this field.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">double</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-50"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.top_p</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">number</span></div><div class="ks-detail-empty">No description for this field.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">double</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-51"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.frequency_penalty</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">number</span></div><div class="ks-detail-empty">No description for this field.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">double</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-52"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.presence_penalty</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">number</span></div><div class="ks-detail-empty">No description for this field.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">double</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-53"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.seed</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-empty">No description for this field.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">int64</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-54"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.max_tokens</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-empty">No description for this field.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-55"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.encoding_format</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-56"><div class="ks-detail-card"><div class="ks-detail-path">llm.params.dimensions</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-empty">No description for this field.</div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint64</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-57"><div class="ks-detail-card"><div class="ks-detail-path">llmRequest</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-other"></span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">llmRequest</code> contains the raw LLM request before processing. This is only present *during* LLM policies;<br />policies occurring after the LLM policy, such as logs, will not have this field present even for LLM requests.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-58"><div class="ks-detail-card"><div class="ks-detail-path">source</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">source</code> contains attributes about the source of the request.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-59"><div class="ks-detail-card"><div class="ks-detail-path">source.address</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The IP address of the downstream connection.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">0.0.0.0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">ip</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-60"><div class="ks-detail-card"><div class="ks-detail-path">source.port</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The port of the downstream connection.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint16</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">65535</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-61"><div class="ks-detail-card"><div class="ks-detail-path">source.rawAddress</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The original TCP peer IP address of the downstream connection.<br />This can differ from the <code class="ks-inline-code">address</code> when using tunneling protocols like PROXY.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">0.0.0.0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">ip</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-62"><div class="ks-detail-card"><div class="ks-detail-path">source.rawPort</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-integer">integer</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The original TCP peer port of the downstream connection.<br />This can differ from the <code class="ks-inline-code">port</code> when using tunneling protocols like PROXY.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Format</span><span class="ks-validation-value">uint16</span></div><div class="ks-validation-item"><span class="ks-validation-label">Minimum</span><span class="ks-validation-value">0</span></div><div class="ks-validation-item"><span class="ks-validation-label">Maximum</span><span class="ks-validation-value">65535</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-63"><div class="ks-detail-card"><div class="ks-detail-path">source.identity</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The (Istio SPIFFE) identity of the downstream connection, if available.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">null</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-64"><div class="ks-detail-card"><div class="ks-detail-path">source.identity.trustDomain</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The trust domain of the identity.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-65"><div class="ks-detail-card"><div class="ks-detail-path">source.identity.namespace</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The namespace of the identity.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-66"><div class="ks-detail-card"><div class="ks-detail-path">source.identity.serviceAccount</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The service account of the identity.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-67"><div class="ks-detail-card"><div class="ks-detail-path">source.subjectAltNames</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string[]</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The subject alt names from the downstream certificate, if available.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">[]</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-68"><div class="ks-detail-card"><div class="ks-detail-path">source.issuer</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The issuer from the downstream certificate, if available.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-69"><div class="ks-detail-card"><div class="ks-detail-path">source.subject</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The subject from the downstream certificate, if available.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-70"><div class="ks-detail-card"><div class="ks-detail-path">source.subjectCn</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The CN of the subject from the downstream certificate, if available.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">null</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-71"><div class="ks-detail-card"><div class="ks-detail-path">source.unverifiedWorkload</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The workload context of the downstream connection, resolved from the<br />workload discovery store by source IP. Available when the source pod is<br />known to the controller's workload discovery store.</div><div class="ks-rich-block">Fields are nested under <code class="ks-inline-code">unverified</code> to signal that they are derived<br />from the source IP (not cryptographically authenticated). Policy<br />authors should prefer <code class="ks-inline-code">source.identity.*</code> for trust-sensitive checks.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-72"><div class="ks-detail-card"><div class="ks-detail-path">source.unverifiedWorkload.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The pod name of the source workload.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-73"><div class="ks-detail-card"><div class="ks-detail-path">source.unverifiedWorkload.namespace</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The namespace of the source workload.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-74"><div class="ks-detail-card"><div class="ks-detail-path">source.unverifiedWorkload.serviceAccount</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The service account of the source workload.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-75"><div class="ks-detail-card"><div class="ks-detail-path">mcp</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">mcp</code> contains attributes about the MCP request.<br />Request-time CEL only includes identity fields such as <code class="ks-inline-code">tool</code>, <code class="ks-inline-code">prompt</code>, or <code class="ks-inline-code">resource</code>.<br />Post-request CEL may also include fields like <code class="ks-inline-code">methodName</code>, <code class="ks-inline-code">sessionId</code>, and tool payloads.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-76"><div class="ks-detail-card"><div class="ks-detail-path">mcp.methodName</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-77"><div class="ks-detail-card"><div class="ks-detail-path">mcp.sessionId</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-78"><div class="ks-detail-card"><div class="ks-detail-path">mcp.tool</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-79"><div class="ks-detail-card"><div class="ks-detail-path">mcp.tool.target</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The target handling the tool call after multiplexing resolution.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-80"><div class="ks-detail-card"><div class="ks-detail-path">mcp.tool.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span><span class="ks-detail-required">Required</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The resolved tool name sent to the upstream target.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-81"><div class="ks-detail-card"><div class="ks-detail-path">mcp.tool.arguments</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The JSON arguments passed to the tool call.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-82"><div class="ks-detail-card"><div class="ks-detail-path">mcp.tool.result</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-other"></span></div><div class="ks-detail-desc"><div class="ks-rich-block">The terminal tool result payload, if available.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-83"><div class="ks-detail-card"><div class="ks-detail-path">mcp.tool.error</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-other"></span></div><div class="ks-detail-desc"><div class="ks-rich-block">The terminal JSON-RPC error payload, if available.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-84"><div class="ks-detail-card"><div class="ks-detail-path">mcp.prompt</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-85"><div class="ks-detail-card"><div class="ks-detail-path">mcp.prompt.target</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The target of the resource</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-86"><div class="ks-detail-card"><div class="ks-detail-path">mcp.prompt.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The name of the resource</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-87"><div class="ks-detail-card"><div class="ks-detail-path">mcp.resource</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-empty">No description for this field.</div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-88"><div class="ks-detail-card"><div class="ks-detail-path">mcp.resource.target</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The target of the resource</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-89"><div class="ks-detail-card"><div class="ks-detail-path">mcp.resource.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The name of the resource</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-90"><div class="ks-detail-card"><div class="ks-detail-path">backend</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-complex">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">backend</code> contains information about the backend being used.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-91"><div class="ks-detail-card"><div class="ks-detail-path">backend.name</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The name of the backend being used. For example, <code class="ks-inline-code">my-service</code> or <code class="ks-inline-code">service/my-namespace/my-service:8080</code>.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-92"><div class="ks-detail-card"><div class="ks-detail-path">backend.type</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The type of backend.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Enum</span><span class="ks-validation-value">ai, mcp, static, dynamic, service, unknown</span></div><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">unknown</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-93"><div class="ks-detail-card"><div class="ks-detail-path">backend.protocol</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The protocol of backend.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Enum</span><span class="ks-validation-value">http, tcp, a2a, mcp, llm</span></div><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">http</span></div></div></details></div></template>
+<template data-ks-field-panel="ks-widget-1-node-94"><div class="ks-detail-card"><div class="ks-detail-path">extauthz</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">extauthz</code> contains dynamic metadata from ext_authz filters</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-95"><div class="ks-detail-card"><div class="ks-detail-path">extproc</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">extproc</code> contains dynamic metadata from ext_proc filters</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-96"><div class="ks-detail-card"><div class="ks-detail-path">metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> contains values set by transformation metadata expressions.</div></div></div></template>
+
+</div>
+</template>
+<script>
+(() => {
+  const host = document.getElementById("ks-widget-1");
+  const template = document.getElementById("ks-widget-1-template");
+  if (!host || !template || host.dataset.ksWidgetReady === "true") {
+    return;
+  }
+  host.dataset.ksWidgetReady = "true";
+
+  const shadow = host.shadowRoot || host.attachShadow({ mode: "open" });
+  shadow.innerHTML = "";
+  shadow.appendChild(template.content.cloneNode(true));
+
+  const root = shadow.querySelector(".ks-schema");
+  if (!root) {
+    return;
+  }
+
+  const entries = [
+  { nodeId: "ks-widget-1-node-0", path: "request", propType: "object" },
+  { nodeId: "ks-widget-1-node-1", path: "request.method", propType: "string" },
+  { nodeId: "ks-widget-1-node-2", path: "request.uri", propType: "string" },
+  { nodeId: "ks-widget-1-node-3", path: "request.host", propType: "string" },
+  { nodeId: "ks-widget-1-node-4", path: "request.scheme", propType: "string" },
+  { nodeId: "ks-widget-1-node-5", path: "request.path", propType: "string" },
+  { nodeId: "ks-widget-1-node-6", path: "request.pathAndQuery", propType: "string" },
+  { nodeId: "ks-widget-1-node-7", path: "request.version", propType: "string" },
+  { nodeId: "ks-widget-1-node-8", path: "request.headers", propType: "object" },
+  { nodeId: "ks-widget-1-node-9", path: "request.body", propType: "string" },
+  { nodeId: "ks-widget-1-node-10", path: "request.startTime", propType: "string" },
+  { nodeId: "ks-widget-1-node-11", path: "request.endTime", propType: "string" },
+  { nodeId: "ks-widget-1-node-12", path: "response", propType: "object" },
+  { nodeId: "ks-widget-1-node-13", path: "response.code", propType: "integer" },
+  { nodeId: "ks-widget-1-node-14", path: "response.headers", propType: "object" },
+  { nodeId: "ks-widget-1-node-15", path: "response.body", propType: "string" },
+  { nodeId: "ks-widget-1-node-16", path: "env", propType: "object" },
+  { nodeId: "ks-widget-1-node-17", path: "env.podName", propType: "string" },
+  { nodeId: "ks-widget-1-node-18", path: "env.namespace", propType: "string" },
+  { nodeId: "ks-widget-1-node-19", path: "env.gateway", propType: "string" },
+  { nodeId: "ks-widget-1-node-20", path: "jwt", propType: "object" },
+  { nodeId: "ks-widget-1-node-21", path: "apiKey", propType: "object" },
+  { nodeId: "ks-widget-1-node-22", path: "apiKey.key", propType: "string" },
+  { nodeId: "ks-widget-1-node-23", path: "basicAuth", propType: "object" },
+  { nodeId: "ks-widget-1-node-24", path: "basicAuth.username", propType: "string" },
+  { nodeId: "ks-widget-1-node-25", path: "llm", propType: "object" },
+  { nodeId: "ks-widget-1-node-26", path: "llm.streaming", propType: "boolean" },
+  { nodeId: "ks-widget-1-node-27", path: "llm.requestModel", propType: "string" },
+  { nodeId: "ks-widget-1-node-28", path: "llm.responseModel", propType: "string" },
+  { nodeId: "ks-widget-1-node-29", path: "llm.provider", propType: "string" },
+  { nodeId: "ks-widget-1-node-30", path: "llm.inputTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-31", path: "llm.inputImageTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-32", path: "llm.inputTextTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-33", path: "llm.inputAudioTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-34", path: "llm.cachedInputTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-35", path: "llm.cacheCreationInputTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-36", path: "llm.outputTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-37", path: "llm.outputImageTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-38", path: "llm.outputTextTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-39", path: "llm.outputAudioTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-40", path: "llm.reasoningTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-41", path: "llm.totalTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-42", path: "llm.serviceTier", propType: "string" },
+  { nodeId: "ks-widget-1-node-43", path: "llm.countTokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-44", path: "llm.prompt", propType: "object[]" },
+  { nodeId: "ks-widget-1-node-45", path: "llm.prompt.role", propType: "string" },
+  { nodeId: "ks-widget-1-node-46", path: "llm.prompt.content", propType: "string" },
+  { nodeId: "ks-widget-1-node-47", path: "llm.completion", propType: "string[]" },
+  { nodeId: "ks-widget-1-node-48", path: "llm.params", propType: "object" },
+  { nodeId: "ks-widget-1-node-49", path: "llm.params.temperature", propType: "number" },
+  { nodeId: "ks-widget-1-node-50", path: "llm.params.top_p", propType: "number" },
+  { nodeId: "ks-widget-1-node-51", path: "llm.params.frequency_penalty", propType: "number" },
+  { nodeId: "ks-widget-1-node-52", path: "llm.params.presence_penalty", propType: "number" },
+  { nodeId: "ks-widget-1-node-53", path: "llm.params.seed", propType: "integer" },
+  { nodeId: "ks-widget-1-node-54", path: "llm.params.max_tokens", propType: "integer" },
+  { nodeId: "ks-widget-1-node-55", path: "llm.params.encoding_format", propType: "string" },
+  { nodeId: "ks-widget-1-node-56", path: "llm.params.dimensions", propType: "integer" },
+  { nodeId: "ks-widget-1-node-57", path: "llmRequest", propType: "" },
+  { nodeId: "ks-widget-1-node-58", path: "source", propType: "object" },
+  { nodeId: "ks-widget-1-node-59", path: "source.address", propType: "string" },
+  { nodeId: "ks-widget-1-node-60", path: "source.port", propType: "integer" },
+  { nodeId: "ks-widget-1-node-61", path: "source.rawAddress", propType: "string" },
+  { nodeId: "ks-widget-1-node-62", path: "source.rawPort", propType: "integer" },
+  { nodeId: "ks-widget-1-node-63", path: "source.identity", propType: "object" },
+  { nodeId: "ks-widget-1-node-64", path: "source.identity.trustDomain", propType: "string" },
+  { nodeId: "ks-widget-1-node-65", path: "source.identity.namespace", propType: "string" },
+  { nodeId: "ks-widget-1-node-66", path: "source.identity.serviceAccount", propType: "string" },
+  { nodeId: "ks-widget-1-node-67", path: "source.subjectAltNames", propType: "string[]" },
+  { nodeId: "ks-widget-1-node-68", path: "source.issuer", propType: "string" },
+  { nodeId: "ks-widget-1-node-69", path: "source.subject", propType: "string" },
+  { nodeId: "ks-widget-1-node-70", path: "source.subjectCn", propType: "string" },
+  { nodeId: "ks-widget-1-node-71", path: "source.unverifiedWorkload", propType: "object" },
+  { nodeId: "ks-widget-1-node-72", path: "source.unverifiedWorkload.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-73", path: "source.unverifiedWorkload.namespace", propType: "string" },
+  { nodeId: "ks-widget-1-node-74", path: "source.unverifiedWorkload.serviceAccount", propType: "string" },
+  { nodeId: "ks-widget-1-node-75", path: "mcp", propType: "object" },
+  { nodeId: "ks-widget-1-node-76", path: "mcp.methodName", propType: "string" },
+  { nodeId: "ks-widget-1-node-77", path: "mcp.sessionId", propType: "string" },
+  { nodeId: "ks-widget-1-node-78", path: "mcp.tool", propType: "object" },
+  { nodeId: "ks-widget-1-node-79", path: "mcp.tool.target", propType: "string" },
+  { nodeId: "ks-widget-1-node-80", path: "mcp.tool.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-81", path: "mcp.tool.arguments", propType: "object" },
+  { nodeId: "ks-widget-1-node-82", path: "mcp.tool.result", propType: "" },
+  { nodeId: "ks-widget-1-node-83", path: "mcp.tool.error", propType: "" },
+  { nodeId: "ks-widget-1-node-84", path: "mcp.prompt", propType: "object" },
+  { nodeId: "ks-widget-1-node-85", path: "mcp.prompt.target", propType: "string" },
+  { nodeId: "ks-widget-1-node-86", path: "mcp.prompt.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-87", path: "mcp.resource", propType: "object" },
+  { nodeId: "ks-widget-1-node-88", path: "mcp.resource.target", propType: "string" },
+  { nodeId: "ks-widget-1-node-89", path: "mcp.resource.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-90", path: "backend", propType: "object" },
+  { nodeId: "ks-widget-1-node-91", path: "backend.name", propType: "string" },
+  { nodeId: "ks-widget-1-node-92", path: "backend.type", propType: "string" },
+  { nodeId: "ks-widget-1-node-93", path: "backend.protocol", propType: "string" },
+  { nodeId: "ks-widget-1-node-94", path: "extauthz", propType: "object" },
+  { nodeId: "ks-widget-1-node-95", path: "extproc", propType: "object" },
+  { nodeId: "ks-widget-1-node-96", path: "metadata", propType: "object" }
+];
+  const input = shadow.querySelector("[data-ks-search-input]");
+  const results = shadow.querySelector("[data-ks-search-results]");
+  const detailPanel = shadow.querySelector("[data-ks-active-panel]");
+  if (!input || !results || entries.length === 0) {
+    return;
+  }
+  const nodeByID = new Map();
+  const childrenByID = new Map();
+  const panelTemplateByID = new Map();
+  shadow.querySelectorAll("[data-ks-node-id]").forEach((element) => {
+    nodeByID.set(element.getAttribute("data-ks-node-id"), element);
+  });
+  shadow.querySelectorAll("[data-ks-children-container]").forEach((element) => {
+    childrenByID.set(element.id, element);
+  });
+  shadow.querySelectorAll("[data-ks-field-panel]").forEach((element) => {
+    panelTemplateByID.set(element.getAttribute("data-ks-field-panel"), element);
+  });
+  const entryByPath = new Map(entries.map((entry) => [normalize(entry.path), entry]));
+  const typeButtons = shadow.querySelectorAll("[data-ks-children-target]");
+
+  let matches = [];
+  let activeIndex = -1;
+  let highlightTimer = 0;
+  let activeNodeId = "";
+
+  function normalize(value) {
+    return value.toLowerCase().trim().replace(/^\./, "");
+  }
+
+  function scoreSegment(query, target) {
+    if (!query) {
+      return 0;
+    }
+    let qi = 0;
+    let score = 0;
+    let streak = 0;
+    let lastIndex = -1;
+    for (let i = 0; i < target.length && qi < query.length; i += 1) {
+      if (target[i] !== query[qi]) {
+        continue;
+      }
+      score += 1;
+      if (i === 0) {
+        score += 12;
+      }
+      if (lastIndex === i - 1) {
+        streak += 1;
+        score += 8 + Math.min(streak, 4);
+      } else {
+        streak = 0;
+      }
+      lastIndex = i;
+      qi += 1;
+    }
+    if (qi !== query.length) {
+      return -1;
+    }
+    if (target.startsWith(query)) {
+      score += 18;
+    }
+    return score - (target.length - query.length);
+  }
+
+  function fuzzyScore(query, target) {
+    const queryParts = normalize(query).split(".").filter(Boolean);
+    const targetParts = normalize(target).split(".").filter(Boolean);
+    if (queryParts.length === 0) {
+      return -1;
+    }
+
+    let total = 0;
+    let searchFrom = 0;
+    for (const queryPart of queryParts) {
+      let bestIndex = -1;
+      let bestScore = -1;
+      for (let i = searchFrom; i < targetParts.length; i += 1) {
+        const partScore = scoreSegment(queryPart, targetParts[i]);
+        if (partScore > bestScore) {
+          bestIndex = i;
+          bestScore = partScore;
+        }
+        if (targetParts[i].startsWith(queryPart)) {
+          break;
+        }
+      }
+      if (bestIndex === -1 || bestScore < 0) {
+        return -1;
+      }
+      total += bestScore;
+      if (bestIndex === searchFrom) {
+        total += 6;
+      }
+      searchFrom = bestIndex + 1;
+    }
+
+    const normalizedTarget = normalize(target);
+    const normalizedQuery = normalize(query);
+    if (normalizedTarget.startsWith(normalizedQuery)) {
+      total += 24;
+    }
+    return total - Math.max(0, targetParts.length - queryParts.length);
+  }
+
+  function escapeHtml(value) {
+    return value
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function hideResults() {
+    results.hidden = true;
+    results.innerHTML = "";
+    matches = [];
+    activeIndex = -1;
+  }
+
+  function setActiveIndex(nextIndex) {
+    activeIndex = nextIndex;
+    const buttons = results.querySelectorAll("[data-ks-search-result]");
+    buttons.forEach((button, index) => {
+      button.classList.toggle("is-active", index === activeIndex);
+    });
+  }
+
+  function renderMatches() {
+    const query = input.value.trim();
+    if (!query) {
+      hideResults();
+      return;
+    }
+
+    matches = entries
+      .map((entry) => ({ ...entry, score: fuzzyScore(query, entry.path) }))
+      .filter((entry) => entry.score >= 0)
+      .sort((a, b) => b.score - a.score || a.path.length - b.path.length || a.path.localeCompare(b.path))
+      .slice(0, 8);
+
+    if (matches.length === 0) {
+      results.innerHTML = '<div class="ks-search-empty">No matching fields</div>';
+      results.hidden = false;
+      activeIndex = -1;
+      return;
+    }
+
+    results.innerHTML = matches.map((entry, index) => (
+      '<button type="button" class="ks-search-result' + (index === 0 ? ' is-active' : '') + '" data-ks-search-result data-node-id="' + escapeHtml(entry.nodeId) + '">' +
+        '<span class="ks-search-result-path">' + escapeHtml(entry.path) + '</span>' +
+        '<span class="ks-search-result-type">' + escapeHtml(entry.propType || "field") + '</span>' +
+      '</button>'
+    )).join("");
+    results.hidden = false;
+    activeIndex = 0;
+  }
+
+  function clearHighlight() {
+    shadow.querySelectorAll(".ks-search-hit").forEach((element) => {
+      element.classList.remove("ks-search-hit");
+    });
+  }
+
+  function setActiveNode(entry) {
+    if (!entry) {
+      return;
+    }
+    if (activeNodeId) {
+      const current = nodeByID.get(activeNodeId);
+      if (current) {
+        current.classList.remove("is-active");
+      }
+    }
+    const next = nodeByID.get(entry.nodeId);
+    if (!next) {
+      return;
+    }
+    next.classList.add("is-active");
+    activeNodeId = entry.nodeId;
+    if (detailPanel) {
+      const panelTemplate = panelTemplateByID.get(entry.nodeId);
+      detailPanel.innerHTML = panelTemplate ? panelTemplate.innerHTML : "";
+    }
+  }
+
+  function revealNode(node) {
+    let current = node;
+    while (current && current !== root) {
+      if (current.hasAttribute && current.hasAttribute("data-ks-children-container")) {
+        current.hidden = false;
+      }
+      current = current.parentElement;
+    }
+  }
+
+  function setHash(path) {
+    const nextHash = "#" + encodeURIComponent(path);
+    if (window.location.hash === nextHash) {
+      return;
+    }
+    if (window.history && typeof window.history.replaceState === "function") {
+      window.history.replaceState(null, "", nextHash);
+      return;
+    }
+    window.location.hash = path;
+  }
+
+  function selectEntry(entry, options = {}) {
+    const { updateHash = false, scroll = true } = options;
+    const node = nodeByID.get(entry.nodeId);
+    if (!node) {
+      return;
+    }
+    revealNode(node);
+    setActiveNode(entry);
+    clearHighlight();
+    node.classList.add("ks-search-hit");
+    window.clearTimeout(highlightTimer);
+    highlightTimer = window.setTimeout(clearHighlight, 1800);
+    if (scroll) {
+      node.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    input.value = entry.path;
+    hideResults();
+    if (updateHash) {
+      setHash(entry.path);
+    }
+  }
+
+  function selectHashTarget() {
+    const rawHash = window.location.hash.replace(/^#/, "");
+    if (!rawHash) {
+      if (entries.length > 0) {
+        selectEntry(entries[0], { scroll: false });
+      }
+      return;
+    }
+    const entry = entryByPath.get(normalize(decodeURIComponent(rawHash)));
+    if (entry) {
+      selectEntry(entry);
+      return;
+    }
+    if (entries.length > 0) {
+      selectEntry(entries[0], { scroll: false });
+    }
+  }
+
+  function toggleSubtree(control) {
+    const row = control.closest(".ks-row");
+    if (!row) {
+      return;
+    }
+    const childContainers = Array.from(row.querySelectorAll("[data-ks-children-container]"));
+    if (childContainers.length === 0) {
+      return;
+    }
+    const shouldOpen = childContainers.some((candidate) => candidate.hasAttribute("hidden"));
+    childContainers.forEach((candidate) => {
+      candidate.hidden = !shouldOpen;
+    });
+  }
+
+  input.addEventListener("input", renderMatches);
+  input.addEventListener("focus", () => {
+    if (input.value.trim()) {
+      renderMatches();
+    }
+  });
+  input.addEventListener("keydown", (event) => {
+    if (results.hidden || matches.length === 0) {
+      return;
+    }
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setActiveIndex((activeIndex + 1) % matches.length);
+      return;
+    }
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setActiveIndex((activeIndex - 1 + matches.length) % matches.length);
+      return;
+    }
+    if (event.key === "Enter" && activeIndex >= 0) {
+      event.preventDefault();
+      selectEntry(matches[activeIndex]);
+      return;
+    }
+    if (event.key === "Escape") {
+      hideResults();
+    }
+  });
+
+  results.addEventListener("mousedown", (event) => {
+    event.preventDefault();
+  });
+  results.addEventListener("click", (event) => {
+    const target = event.target;
+    const button = target instanceof Element ? target.closest("[data-node-id]") : null;
+    if (!button) {
+      return;
+    }
+    const entry = matches.find((candidate) => candidate.nodeId === button.getAttribute("data-node-id"));
+    if (entry) {
+      selectEntry(entry);
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    if (!host.contains(event.target)) {
+      hideResults();
+    }
+  });
+  typeButtons.forEach((typeButton) => {
+    typeButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      if (event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        toggleSubtree(typeButton);
+        return;
+      }
+      const children = childrenByID.get(typeButton.getAttribute("data-ks-children-target"));
+      if (children) {
+        children.hidden = !children.hidden;
+      }
+    });
+  });
+  root.addEventListener("click", (event) => {
+    const target = event.target;
+    if (target instanceof Element && target.closest("button")) {
+      return;
+    }
+    const selectable = target instanceof Element ? target.closest(".ks-row-line") : null;
+    if (!selectable || !root.contains(selectable)) {
+      return;
+    }
+    const path = selectable.getAttribute("data-ks-path");
+    if (!path) {
+      return;
+    }
+    if (event.ctrlKey || event.metaKey) {
+      return;
+    }
+    setHash(path);
+    const entry = entryByPath.get(normalize(path));
+    if (entry) {
+      selectEntry(entry, { scroll: false });
+    }
+  });
+  window.addEventListener("hashchange", selectHashTarget);
+  selectHashTarget();
+})();
+</script>
+<!--ks-md-start
+## Field reference
+
+Kind: `CEL expression context`
+
+```text
+request object
+  method string
+  uri string
+  host string
+  scheme string
+  path string
+  pathAndQuery string
+  version string
+  headers object
+  body string
+  startTime string
+  endTime string
+response object
+  code integer
+  headers object
+  body string
+env object
+  podName string
+  namespace string
+  gateway string
+jwt object
+apiKey object
+  key string
+basicAuth object
+  username string
+llm object
+  streaming boolean
+  requestModel string
+  responseModel string
+  provider string
+  inputTokens integer
+  inputImageTokens integer
+  inputTextTokens integer
+  inputAudioTokens integer
+  cachedInputTokens integer
+  cacheCreationInputTokens integer
+  outputTokens integer
+  outputImageTokens integer
+  outputTextTokens integer
+  outputAudioTokens integer
+  reasoningTokens integer
+  totalTokens integer
+  serviceTier string
+  countTokens integer
+  prompt object[]
+    role string
+    content string
+  completion string[]
+  params object
+    temperature number
+    top_p number
+    frequency_penalty number
+    presence_penalty number
+    seed integer
+    max_tokens integer
+    encoding_format string
+    dimensions integer
+llmRequest object
+source object
+  address string
+  port integer
+  rawAddress string
+  rawPort integer
+  identity object
+    trustDomain string
+    namespace string
+    serviceAccount string
+  subjectAltNames string[]
+  issuer string
+  subject string
+  subjectCn string
+  unverifiedWorkload object
+    name string
+    namespace string
+    serviceAccount string
+mcp object
+  methodName string
+  sessionId string
+  tool object
+    target string
+    name string
+    arguments object
+    result object
+    error object
+  prompt object
+    target string
+    name string
+  resource object
+    target string
+    name string
+backend object
+  name string
+  type string
+  protocol string
+extauthz object
+extproc object
+metadata object
+```
+ks-md-end-->
+

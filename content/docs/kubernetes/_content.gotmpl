@@ -1,9 +1,10 @@
 {{/*
-  Kubernetes content adapter: generates interactive kubespec widget pages for each
-  agentgateway custom resource.
+  Kubernetes content adapter: generates interactive widget pages for agentgateway
+  custom resources (kubespec) and the CEL expression context (cel schema).
 
-  Each page includes the interactive kubespec HTML widget pre-built by CI and stored in
-  assets/agw-docs/pages/reference/api/{version}/.
+  Pre-built HTML widgets are stored by CI in:
+    assets/agw-docs/pages/reference/api/{version}/   — CRD kubespec widgets
+    assets/agw-docs/pages/reference/cel/{version}/   — CEL context widget
 
   CONFIGURATION — edit the sections below to change sources, outputs, or targets.
   RENDERING     — the logic below the config sections should not need editing.
@@ -15,10 +16,10 @@
 {{ $targets := slice "latest" "main" }}
 
 {{/* =================================================================== */}}
-{{/* PAGES — kubespec widget page per resource                            */}}
+{{/* CRD PAGES — kubespec widget page per Kubernetes custom resource      */}}
 {{/*                                                                     */}}
 {{/*   htmlFile: HTML filename in assets/agw-docs/pages/reference/api/   */}}
-{{/*   path    : output path under {version}/reference/ (e.g. api-kubespec/policies) */}}
+{{/*   path    : output path under {version}/reference/                  */}}
 {{/*   title   : page title                                               */}}
 {{/*   weight  : sort order                                               */}}
 {{/*   desc    : page description                                         */}}
@@ -48,17 +49,32 @@
 }}
 
 {{/* =================================================================== */}}
+{{/* CEL PAGES — interactive widget for the CEL expression context schema */}}
+{{/*                                                                     */}}
+{{/*   htmlFile: HTML filename in assets/agw-docs/pages/reference/cel/   */}}
+{{/*   path    : output path under {version}/reference/                  */}}
+{{/*   title   : page title                                               */}}
+{{/*   weight  : sort order                                               */}}
+{{/*   desc    : page description                                         */}}
+{{/* =================================================================== */}}
+{{ $celPages := slice
+  (dict
+    "htmlFile" "cel-context.html"
+    "path"     "cel/cel-context-interactive"
+    "title"    "Interactive CEL reference"
+    "weight"   5
+    "desc"     "Explore the CEL expression context interactively, including all available variables and their nested fields."
+  )
+}}
+
+{{/* =================================================================== */}}
 {{/* RENDERING — load widget HTML and generate pages.                     */}}
 {{/* =================================================================== */}}
 
 {{ range $version := $targets }}
-  {{ range $page := $crdPages }}
 
-    {{/* Load the pre-built kubespec widget HTML.
-         Embedding raw HTML (including <script> blocks) inside a "text/markdown"
-         content string causes Goldmark to corrupt the JavaScript. Passing the HTML
-         through .Params.widgetHtml and rendering it with safeHTML in the layout
-         bypasses Goldmark entirely. */}}
+  {{/* --- CRD kubespec pages --- */}}
+  {{ range $page := $crdPages }}
     {{ $widgetHtml := "" }}
     {{ $htmlPath := printf "assets/agw-docs/pages/reference/api/%s/%s" $version $page.htmlFile }}
     {{ if os.FileExists $htmlPath }}
@@ -80,4 +96,29 @@
       "weight"       $page.weight
     ) }}
   {{ end }}
+
+  {{/* --- CEL interactive pages --- */}}
+  {{ range $page := $celPages }}
+    {{ $widgetHtml := "" }}
+    {{ $htmlPath := printf "assets/agw-docs/pages/reference/cel/%s/%s" $version $page.htmlFile }}
+    {{ if os.FileExists $htmlPath }}
+      {{ $widgetHtml = readFile $htmlPath }}
+    {{ else }}
+      {{ warnf "CEL widget HTML not found: %s (skipping widget for %s %s)" $htmlPath $page.title $version }}
+    {{ end }}
+
+    {{ $mdContent := "<p></p><div id=\"ks-widget-slot\"></div>" }}
+
+    {{ $.AddPage (dict
+      "content"      (dict "mediaType" "text/markdown" "value" $mdContent)
+      "kind"         "page"
+      "layout"       "api-ref"
+      "params"       (dict "generated" true "widgetHtml" $widgetHtml)
+      "path"         (printf "%s/reference/%s" $version $page.path)
+      "title"        $page.title
+      "description"  $page.desc
+      "weight"       $page.weight
+    ) }}
+  {{ end }}
+
 {{ end }}

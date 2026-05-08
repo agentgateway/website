@@ -239,6 +239,21 @@ jobs:
           echo "Kubespec HTMLs generated successfully:"
           ls -la "$TARGET_DIR"/*.html
 
+      - name: Generate CEL context widget HTML
+        run: |
+          CEL_SCHEMA="${GITHUB_WORKSPACE}/agentgateway/schema/cel.json"
+          TARGET_DIR="${GITHUB_WORKSPACE}/website/assets/agw-docs/pages/reference/cel/${{ matrix.link_version }}"
+          mkdir -p "$TARGET_DIR"
+  
+          cd website/scripts/kubespec-render
+  
+          echo "Generating interactive CEL context widget HTML from schema/cel.json..."
+          go run render.go -title "CEL expression context" "$CEL_SCHEMA" \
+            > "${TARGET_DIR}/cel-context.html"
+  
+          echo "CEL widget HTML generated successfully:"
+          ls -la "${TARGET_DIR}/cel-context.html"
+
       # Create PR: needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions)
       # or a repo secret CREATE_PR_TOKEN (PAT with pull_requests: write).
       - name: Create PR for website repo
