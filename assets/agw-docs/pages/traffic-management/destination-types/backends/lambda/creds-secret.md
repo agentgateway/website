@@ -8,7 +8,7 @@ Note that this guide uses a Kubernetes secret that contains **long-lived IAM use
 
 ## Create an AWS credentials secret
 
-Create a Kubernetes secret that contains your AWS access key and secret key. You must use a long-lived IAM user access keys (prefixed `AKIA`), not temporary STS/SSO credentials. {{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} uses this secret to connect to AWS Lambda for authentication and function invocation.
+Create a Kubernetes secret that contains your AWS access key and secret key. You must use a long-lived IAM user access keys (prefixed `AKIA`), not temporary STS/SSO credentials. {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} uses this secret to connect to AWS Lambda for authentication and function invocation.
 
 1. Save the AWS account and region that your Lambda instance exists in as environment variables.
    ```sh

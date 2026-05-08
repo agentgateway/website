@@ -2,7 +2,7 @@ Bring your own external authorization service to protect requests that go throug
 
 ## About external auth {#about}
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway. Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway. Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
 
 Review the following diagram to understand the flow of a request: 
 
