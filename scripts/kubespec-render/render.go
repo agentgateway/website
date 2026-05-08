@@ -1685,7 +1685,47 @@ func renderWidget(kind, group, version, scope string, pm *propertyMap, widgetID 
 	b.WriteString("</div>\n")
 	b.WriteString("</template>\n")
 	b.WriteString(renderSearchScript(widgetID, templateID, searchIndex) + "\n")
+
+	// Embedded simplified markdown skeleton for Copy-as-Markdown extraction.
+	// Hidden from browsers (HTML comment) and ignored by transform.HTMLToMarkdown.
+	// Hugo partials extract content between the sentinel comments.
+	b.WriteString("<!--ks-md-start\n")
+	b.WriteString("## Field reference\n\n")
+	if kind != "" {
+		fmt.Fprintf(&b, "Kind: `%s`\n\n", kind)
+	}
+	if apiVersion != "" {
+		fmt.Fprintf(&b, "API version: `%s`\n\n", apiVersion)
+	}
+	if scope != "" && scope != "Schema" {
+		fmt.Fprintf(&b, "Scope: `%s`\n\n", scope)
+	}
+	b.WriteString("```text\n")
+	renderMarkdownTree(pm, 0, &b)
+	b.WriteString("```\n")
+	b.WriteString("ks-md-end-->\n")
+
 	return b.String()
+}
+
+// renderMarkdownTree writes a YAML-skeleton-style indented tree of fields.
+// Each line is "<indent><name> <type>" with two spaces per nesting level.
+func renderMarkdownTree(pm *propertyMap, depth int, b *strings.Builder) {
+	if pm == nil {
+		return
+	}
+	indent := strings.Repeat("  ", depth)
+	for _, name := range pm.keys {
+		prop := pm.props[name]
+		t := prop.propType
+		if t == "" {
+			t = "object"
+		}
+		fmt.Fprintf(b, "%s%s %s\n", indent, name, t)
+		if prop.definition != nil && len(prop.definition.keys) > 0 {
+			renderMarkdownTree(prop.definition, depth+1, b)
+		}
+	}
 }
 
 // ---------------------------------------------------------------------------
