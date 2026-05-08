@@ -6,11 +6,11 @@ A common use case is choosing between two external authorization servers based o
 
 The following policies support conditional execution:
 
-- External authorization (`extAuth`).
-- External processing (`extProc`).
-- Rate limiting (`rateLimit`).
-- Transformations (`transformation`).
-- Direct response (`directResponse`).
+- External authorization (`extAuth`)
+- External processing (`extProc`)
+- Rate limiting (`rateLimit`)
+- Transformations (`transformation`)
+- Direct response (`directResponse`)
 
 For details on how to write the CEL expressions that go in each `condition` field, see the [CEL expressions reference]({{< link-hextra path="/reference/cel" >}}).
 
