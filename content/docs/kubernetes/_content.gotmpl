@@ -1,0 +1,83 @@
+{{/*
+  Kubernetes content adapter: generates interactive kubespec widget pages for each
+  agentgateway custom resource.
+
+  Each page includes the interactive kubespec HTML widget pre-built by CI and stored in
+  assets/agw-docs/pages/reference/api/{version}/.
+
+  CONFIGURATION — edit the sections below to change sources, outputs, or targets.
+  RENDERING     — the logic below the config sections should not need editing.
+*/}}
+
+{{/* =================================================================== */}}
+{{/* TARGETS — version prefixes to generate pages into                    */}}
+{{/* =================================================================== */}}
+{{ $targets := slice "latest" "main" }}
+
+{{/* =================================================================== */}}
+{{/* PAGES — kubespec widget page per resource                            */}}
+{{/*                                                                     */}}
+{{/*   htmlFile: HTML filename in assets/agw-docs/pages/reference/api/   */}}
+{{/*   path    : output path under {version}/reference/ (e.g. api-kubespec/policies) */}}
+{{/*   title   : page title                                               */}}
+{{/*   weight  : sort order                                               */}}
+{{/*   desc    : page description                                         */}}
+{{/* =================================================================== */}}
+{{ $crdPages := slice
+  (dict
+    "htmlFile" "agentgateway.dev_agentgatewaypolicies.yaml.html"
+    "path"     "api-kubespec/policies"
+    "title"    "AgentgatewayPolicy"
+    "weight"   1
+    "desc"     "Use AgentgatewayPolicy to configure traffic manipulation, observability, security, and more."
+  )
+  (dict
+    "htmlFile" "agentgateway.dev_agentgatewaybackends.yaml.html"
+    "path"     "api-kubespec/backends"
+    "title"    "AgentgatewayBackend"
+    "weight"   10
+    "desc"     "Use AgentgatewayBackends to configure the target services that agentgateway routes traffic to."
+  )
+  (dict
+    "htmlFile" "agentgateway.dev_agentgatewayparameters.yaml.html"
+    "path"     "api-kubespec/parameters"
+    "title"    "AgentgatewayParameters"
+    "weight"   20
+    "desc"     "Use AgentgatewayParameters to configure the agentgateway data plane."
+  )
+}}
+
+{{/* =================================================================== */}}
+{{/* RENDERING — load widget HTML and generate pages.                     */}}
+{{/* =================================================================== */}}
+
+{{ range $version := $targets }}
+  {{ range $page := $crdPages }}
+
+    {{/* Load the pre-built kubespec widget HTML.
+         Embedding raw HTML (including <script> blocks) inside a "text/markdown"
+         content string causes Goldmark to corrupt the JavaScript. Passing the HTML
+         through .Params.widgetHtml and rendering it with safeHTML in the layout
+         bypasses Goldmark entirely. */}}
+    {{ $widgetHtml := "" }}
+    {{ $htmlPath := printf "assets/agw-docs/pages/reference/api/%s/%s" $version $page.htmlFile }}
+    {{ if os.FileExists $htmlPath }}
+      {{ $widgetHtml = readFile $htmlPath }}
+    {{ else }}
+      {{ warnf "Kubespec HTML not found: %s (skipping widget for %s %s)" $htmlPath $page.title $version }}
+    {{ end }}
+
+    {{ $mdContent := "{{< reuse \"agw-docs/snippets/kubespec-note.md\" >}}\n\n<p></p><div id=\"ks-widget-slot\"></div>" }}
+
+    {{ $.AddPage (dict
+      "content"      (dict "mediaType" "text/markdown" "value" $mdContent)
+      "kind"         "page"
+      "layout"       "api-ref"
+      "params"       (dict "generated" true "widgetHtml" $widgetHtml)
+      "path"         (printf "%s/reference/%s" $version $page.path)
+      "title"        $page.title
+      "description"  $page.desc
+      "weight"       $page.weight
+    ) }}
+  {{ end }}
+{{ end }}

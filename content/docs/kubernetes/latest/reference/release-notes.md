@@ -1,6 +1,7 @@
 ---
 title: Release notes
 weight: 20
+description: Review the release notes for agentgateway.
 test: skip
 ---
 
