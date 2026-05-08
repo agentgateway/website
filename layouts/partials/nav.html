@@ -358,50 +358,128 @@
 {{- end -}}
 
 {{- if $isLandingPage -}}
-  {{- /* Original landing page navbar style - larger, lighter text for dark background */ -}}
+  {{- /* Landing page navbar — light pill-style nav */ -}}
   <style>
-    /* Landing page navbar text - larger and lighter for dark mode */
+    .landing-navbar {
+      background: rgba(255,255,255,0.78);
+      border: 1px solid rgba(15,19,35,0.08);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-radius: 999px;
+      box-shadow: 0 1px 0 rgba(15,19,35,0.02), 0 8px 24px -16px rgba(15,19,35,0.06);
+      padding: 8px 8px 8px 22px;
+      max-width: fit-content;
+    }
     .landing-navbar .link {
-      font-size: 1rem; /* text-base - larger than docs navbar */
-      color: rgb(243, 244, 246) !important; /* gray-100 - lighter for dark background */
-      font-weight: 400;
+      font-family: 'Figtree', system-ui, sans-serif;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #2A3044 !important;
     }
-    
     .landing-navbar .link:hover {
-      color: rgb(255, 255, 255) !important; /* white on hover */
+      color: #151927 !important;
     }
-    
-    /* Landing page dropdown styling - match landing page text style */
     .landing-navbar .navbar-dropdown-content {
-      background-color: rgba(17, 24, 39, 0.95); /* gray-900 with slight transparency */
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      backdrop-filter: blur(10px);
+      background-color: rgba(255,255,255,0.95);
+      border: 1px solid rgba(15,19,35,0.10);
+      backdrop-filter: blur(14px);
+      box-shadow: 0 8px 24px -6px rgba(15,19,35,0.12);
     }
-    
     .landing-navbar .navbar-dropdown-content a {
-      color: rgb(243, 244, 246) !important; /* gray-100 - lighter text */
-      font-size: 0.9375rem; /* slightly smaller than main nav */
+      color: #2A3044 !important;
+      font-size: 0.875rem;
     }
-    
     .landing-navbar .navbar-dropdown-content a:hover {
-      background-color: rgba(255, 255, 255, 0.1) !important;
-      color: rgb(255, 255, 255) !important; /* white on hover */
+      background-color: rgba(15,19,35,0.04) !important;
+      color: #151927 !important;
     }
+    .landing-navbar .landing-nav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-family: 'Figtree', system-ui, sans-serif;
+      font-weight: 600;
+      font-size: 0.8125rem;
+      text-decoration: none;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+    .landing-navbar .landing-nav-btn-primary {
+      background: #151927;
+      color: #fff;
+      border: 1px solid transparent;
+    }
+    .landing-navbar .landing-nav-btn-primary:hover {
+      background: #2A3044;
+    }
+    .landing-navbar .landing-nav-btn-ghost {
+      background: transparent;
+      color: #151927;
+      border: 1px solid rgba(15,19,35,0.14);
+    }
+    .landing-navbar .landing-nav-btn-ghost:hover {
+      background: rgba(15,19,35,0.04);
+    }
+    .landing-navbar a[href="/"] img { height: 22px !important; }
+    .landing-navbar #logo { height: 22px !important; }
+    /* Scrolled state */
+    .navbar.landing-navbar.scrolled {
+      background: rgba(255,255,255,0.92);
+      border-color: rgba(15,19,35,0.10);
+    }
+    .navbar.landing-navbar.scrolled .link {
+      color: #2A3044 !important;
+    }
+    /* Dark mode landing navbar */
+    .dark .landing-navbar {
+      background: rgba(11,14,24,0.78);
+      border-color: rgba(255,255,255,0.08);
+      box-shadow: 0 1px 0 rgba(255,255,255,0.02), 0 8px 24px -16px rgba(0,0,0,0.3);
+    }
+    .dark .landing-navbar .link { color: #B0B4C4 !important; }
+    .dark .landing-navbar .link:hover { color: #E4E5EB !important; }
+    .dark .landing-navbar .navbar-dropdown-content {
+      background-color: rgba(17,20,34,0.95);
+      border-color: rgba(255,255,255,0.10);
+      box-shadow: 0 8px 24px -6px rgba(0,0,0,0.4);
+    }
+    .dark .landing-navbar .navbar-dropdown-content a { color: #B0B4C4 !important; }
+    .dark .landing-navbar .navbar-dropdown-content a:hover { background-color: rgba(255,255,255,0.04) !important; color: #E4E5EB !important; }
+    .dark .landing-navbar .landing-nav-btn-primary { background: #E4E5EB; color: #0B0E18; }
+    .dark .landing-navbar .landing-nav-btn-primary:hover { background: #fff; }
+    .dark .landing-navbar .landing-nav-btn-ghost { color: #B0B4C4; border-color: rgba(255,255,255,0.14); }
+    .dark .landing-navbar .landing-nav-btn-ghost:hover { background: rgba(255,255,255,0.06); }
+    .dark .navbar.landing-navbar.scrolled { background: rgba(11,14,24,0.92); border-color: rgba(255,255,255,0.10); }
+    .dark .navbar.landing-navbar.scrolled .link { color: #B0B4C4 !important; }
+    .dark .landing-navbar a[href="/"] img { content: url('/logo-dark.svg'); }
+
+    .landing-theme-toggle {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(21,25,39,0.12);
+      background: transparent; color: #3E4254; cursor: pointer;
+      transition: border-color 200ms, background 200ms, color 200ms;
+    }
+    .landing-theme-toggle:hover { background: rgba(21,25,39,0.06); }
+    .dark .landing-theme-toggle { border-color: rgba(255,255,255,0.14); color: #B0B4C4; }
+    .dark .landing-theme-toggle:hover { background: rgba(255,255,255,0.06); }
+    .theme-icon-moon { display: none; }
+    .dark .theme-icon-sun { display: none; }
+    .dark .theme-icon-moon { display: block; }
   </style>
-  <nav class="navbar landing-navbar py-[1.875rem] px-12 xl:px-25 absolute top-0 w-full hidden lg:block z-50">
-    <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
-      <div class="flex items-center gap-8">
-        <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "id='logo'" ) }}</a>
-      </div>
-      <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between lg:gap-8 xl:gap-[3.5625rem]">
+  <div class="fixed top-5 left-0 right-0 flex justify-center z-50 pointer-events-none hidden lg:flex">
+    <nav class="navbar landing-navbar pointer-events-auto flex items-center gap-7">
+      <a href="/" class="flex items-center"><img src="/logo.svg" alt="agentgateway logo" id="logo" height="22" /></a>
+      <div class="flex items-center gap-6">
         <div class="dropdown">
           <a class="link whitespace-nowrap flex items-center gap-1" href="/docs/">
             Docs
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </a>
-          <div class="dropdown-content navbar-dropdown-content rounded-l bg-white dark:bg-gray-900 absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
+          <div class="dropdown-content navbar-dropdown-content rounded-lg absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
             <a href="/docs/standalone/latest/" class="px-4 py-3 block text-left">Standalone</a>
             <a href="/docs/kubernetes/latest/" class="px-4 py-3 block text-left">Kubernetes</a>
           </div>
@@ -409,11 +487,11 @@
         <div class="dropdown">
           <a class="link whitespace-nowrap flex items-center gap-1" href="/tutorials/">
             Tutorials
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-3.5 h-3.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
             </svg>
           </a>
-          <div class="dropdown-content navbar-dropdown-content rounded-l bg-white dark:bg-gray-900 absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
+          <div class="dropdown-content navbar-dropdown-content rounded-lg absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
             <a href="/docs/standalone/latest/tutorials" class="px-4 py-3 block text-left">Standalone</a>
             <a href="/docs/kubernetes/latest/tutorials" class="px-4 py-3 block text-left">Kubernetes</a>
           </div>
@@ -422,42 +500,58 @@
         <a class="link whitespace-nowrap" href="/blog">Blog</a>
         <a class="link whitespace-nowrap" href="/enterprise">Enterprise</a>
         <a class="link whitespace-nowrap" href="https://discord.gg/y9efgEmppm">Community</a>
-        <a class="link whitespace-nowrap" href="/docs/quickstart/">Get Started</a>
-        <a class="link whitespace-nowrap" href="https://github.com/agentgateway/agentgateway">GitHub</a>
+      </div>
+      <div class="flex items-center gap-2 ml-1">
+        <button type="button" class="landing-theme-toggle" aria-label="Toggle theme" onclick="(function(){var t=document.documentElement,isDark=t.classList.contains('dark'),c=isDark?'light':'dark';t.classList.remove('light','dark');t.classList.add(c);t.style.colorScheme=c;try{localStorage.setItem('color-theme',c)}catch(e){}})()">
+          <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+        <a class="landing-nav-btn landing-nav-btn-ghost" href="#getting-started">Get Started</a>
+        <a class="landing-nav-btn landing-nav-btn-primary" href="https://github.com/agentgateway/agentgateway">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </nav>
+  </div>
+
+  <nav class="absolute top-0 w-full block lg:hidden z-50 bg-white/80 dark:bg-[#0B0E18]/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-white/8">
+    <div class="py-4 px-4 flex justify-between items-center">
+      <a href="/" class="flex items-center"><img src="/logo.svg" alt="agentgateway logo" height="28" class="dark:hidden" /><img src="/logo-dark.svg" alt="agentgateway logo" height="28" class="hidden dark:block" /></a>
+      <div class="flex items-center gap-2">
+        <button type="button" class="landing-theme-toggle" aria-label="Toggle theme" onclick="(function(){var t=document.documentElement,isDark=t.classList.contains('dark'),c=isDark?'light':'dark';t.classList.remove('light','dark');t.classList.add(c);t.style.colorScheme=c;try{localStorage.setItem('color-theme',c)}catch(e){}})()">
+          <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+          <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+        <button class="p-3 bg-gray-900 dark:bg-white/10 rounded-lg flex items-center" onClick="openMobileNav()">
+          <div class="visible hamburger hidden">
+            {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
+          </div>
+          <div class="x hidden">
+            {{ partial "utils/icon.html" (dict "name" "x" "attributes" "class='w-4'") }}
+          </div>
+        </button>
       </div>
     </div>
   </nav>
 
-  <nav class="absolute top-0 w-full block lg:hidden z-50">
-    <div class="py-6 pr-4 flex justify-between items-center">
-      <a href="/">{{ partial "utils/icon.html" (dict "name" "logo" "attributes" "height=50" ) }}</a>
-      <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">
-        <div class="visible hamburger hidden">
-          {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
-        </div>
-        <div class="x hidden">
-          {{ partial "utils/icon.html" (dict "name" "x" "attributes" "class='w-4'") }}
-        </div>
-      </button>
-    </div>
-  </nav>
-
   <div class="mobile-nav-overflow-wrapper block lg:hidden">
-  <div class="mobile-nav bg-primary-bg w-screen z-40">
-    <div class="h-full flex flex-col px-4 items-stretch pt-24 pb-8 overflow-y-auto w-screen">
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/">Docs</a>
-      <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/standalone/latest/">Standalone</a>
-      <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/kubernetes/latest/">Kubernetes</a>
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/tutorials/">Tutorials</a>
-      <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/standalone/latest/tutorials">Standalone</a>
-      <a class="whitespace-nowrap text-[1.25rem] text-secondary-text py-3 pl-6" href="/docs/kubernetes/latest/tutorials">Kubernetes</a>
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/models">Models</a>
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/blog">Blog</a>
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/enterprise">Enterprise</a>
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://discord.gg/y9efgEmppm">Community</a>
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="/docs/quickstart/">Get Started</a>
-      <a class="whitespace-nowrap text-[1.5625rem] text-primary-text py-5" href="https://github.com/agentgateway/agentgateway">GitHub</a>
-      {{ partial "community-meeting-compact.html" . }}
+  <div class="mobile-nav bg-white dark:bg-[#111422] w-screen z-40">
+    <div class="h-full flex flex-col px-6 items-stretch pt-24 pb-8 overflow-y-auto w-screen">
+      <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/docs/">Docs</a>
+      <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/standalone/latest/">Standalone</a>
+      <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/kubernetes/latest/">Kubernetes</a>
+      <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/tutorials/">Tutorials</a>
+      <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/standalone/latest/tutorials">Standalone</a>
+      <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/kubernetes/latest/tutorials">Kubernetes</a>
+      <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/models">Models</a>
+      <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/blog">Blog</a>
+      <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/enterprise">Enterprise</a>
+      <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="https://discord.gg/y9efgEmppm">Community</a>
+      <div class="flex gap-3 mt-6">
+        <a class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-[#8A3FFC] text-white rounded-full font-semibold text-sm" href="#getting-started">Get Started</a>
+        <a class="inline-flex items-center justify-center gap-2 px-6 py-3 bg-gray-900 dark:bg-white/10 text-white rounded-full font-semibold text-sm" href="https://github.com/agentgateway/agentgateway">GitHub</a>
+      </div>
     </div>
   </div>
   </div>
@@ -663,7 +757,7 @@
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/blog">Blog</a>
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/enterprise">Enterprise</a>
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="https://discord.gg/y9efgEmppm">Community</a>
-      <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/docs/quickstart/">Get Started</a>
+      <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="#getting-started">Get Started</a>
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="https://github.com/agentgateway/agentgateway">GitHub</a>
     </div>
   </div>

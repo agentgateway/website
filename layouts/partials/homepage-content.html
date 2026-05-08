@@ -1,0 +1,1366 @@
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --hp-accent: #8A3FFC;
+  --hp-accent-soft: rgba(138,63,252,0.12);
+  --hp-accent-glow: rgba(138,63,252,0.35);
+  --hp-accent-deep: #6E29E0;
+  --hp-text-1: #0B0E18;
+  --hp-text-2: #151927;
+  --hp-text-3: #4A5068;
+  --hp-text-4: #5A6078;
+  --hp-text-5: #9AA0B5;
+  --hp-bg-0: #FFFFFF;
+  --hp-bg-1: #F6F7FB;
+  --hp-bg-2: #EDEEF7;
+  --hp-border: rgba(15,19,35,0.08);
+  --hp-border-2: rgba(15,19,35,0.14);
+  --hp-font-h: 'Figtree', system-ui, sans-serif;
+  --hp-font-b: 'DM Sans', system-ui, sans-serif;
+  --hp-font-m: 'DM Mono', ui-monospace, monospace;
+}
+
+.dark {
+  --hp-accent: #A06EFF;
+  --hp-accent-soft: rgba(160,110,255,0.14);
+  --hp-accent-glow: rgba(160,110,255,0.40);
+  --hp-accent-deep: #B48CFF;
+  --hp-text-1: #F0F1F5;
+  --hp-text-2: #E4E5EB;
+  --hp-text-3: #B0B4C4;
+  --hp-text-4: #8A8FA5;
+  --hp-text-5: #5E6378;
+  --hp-bg-0: #0B0E18;
+  --hp-bg-1: #111422;
+  --hp-bg-2: #181C2E;
+  --hp-border: rgba(255,255,255,0.08);
+  --hp-border-2: rgba(255,255,255,0.14);
+}
+.dark .hp-hero-grid-pattern {
+  background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+}
+.dark .hp-hero-blob-1 { opacity: 0.3; }
+.dark .hp-hero-blob-2 { opacity: 0.15; }
+.dark .hp-section-eyebrow-dot { filter: brightness(0) invert(1); }
+.dark .hp-hero-cards { background: rgba(255,255,255,0.05); border-color: var(--hp-border); }
+.dark .hp-hero-card { border-color: var(--hp-border); }
+.dark .hp-hero-card:hover { background: rgba(160,110,255,0.08); }
+.dark .hp-hero-card-icon { background: rgba(160,110,255,0.15); }
+.dark .hp-code-block { background: linear-gradient(180deg, #0D1020, #080B14); }
+.dark .hp-lf { background: #060812; }
+.dark .hp-footer { background: #060812; }
+
+/* Reset some Hextra defaults for the landing page */
+.hp-page { font-family: var(--hp-font-b); color: var(--hp-text-2); background: var(--hp-bg-0); }
+.hp-page *, .hp-page *::before, .hp-page *::after { box-sizing: border-box; }
+.hp-page img { display: block; max-width: 100%; }
+.hp-page a { text-decoration: none; }
+.hp-page ::selection { background: rgba(138,63,252,0.25); }
+.hp-wrap { max-width: 1240px; margin: 0 auto; padding: 0 32px; }
+
+/* ===== HERO ===== */
+.hp-hero {
+  position: relative; padding: 140px 0 80px; overflow: hidden; isolation: isolate;
+}
+.hp-hero-bg {
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, var(--hp-bg-0) 0%, var(--hp-bg-1) 60%, var(--hp-bg-2) 100%);
+}
+.hp-hero-grid-pattern {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(15,19,35,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(15,19,35,0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 100% 90% at 50% 30%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 100% 90% at 50% 30%, black 30%, transparent 75%);
+}
+.hp-hero-blob {
+  position: absolute; border-radius: 50%; filter: blur(90px); opacity: 0.5; pointer-events: none;
+}
+.hp-hero-blob-1 {
+  width: 600px; height: 600px; top: -200px; right: -120px;
+  background: radial-gradient(circle, rgba(138,63,252,0.28), transparent 65%);
+}
+.hp-hero-blob-2 {
+  width: 480px; height: 480px; top: 40%; left: -160px;
+  background: radial-gradient(circle, rgba(32,183,243,0.18), transparent 65%);
+}
+.hp-hero-cols {
+  display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 48px; align-items: center;
+}
+.hp-hero-tiles {
+  display: flex; flex-direction: column; gap: 16px;
+}
+.hp-hero-tile {
+  padding: 24px; border-radius: 16px;
+  background: var(--hp-bg-0); border: 1px solid var(--hp-border);
+  transition: border-color 200ms, box-shadow 200ms;
+}
+.hp-hero-tile:hover { border-color: var(--hp-border-2); box-shadow: 0 4px 16px rgba(15,19,35,0.06); }
+.hp-hero-tile h3 {
+  font-family: var(--hp-font-h); font-weight: 600; font-size: 18px;
+  margin: 0 0 6px; color: var(--hp-text-2); letter-spacing: -0.01em;
+}
+.hp-hero-tile p {
+  font-family: var(--hp-font-b); font-size: 14px; line-height: 1.5; color: var(--hp-text-4); margin: 0;
+}
+@media (max-width: 980px) {
+  .hp-hero-cols { grid-template-columns: 1fr; gap: 32px; }
+  .hp-hero-cards { grid-template-columns: 1fr !important; }
+  .hp-hero-card { border-right: none !important; border-bottom: 1px solid var(--hp-border); }
+  .hp-hero-card:last-child { border-bottom: none; }
+}
+.hp-eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: var(--hp-font-m); font-size: 12px; font-weight: 500;
+  letter-spacing: 0.14em; text-transform: uppercase; color: var(--hp-accent); margin-bottom: 36px;
+}
+.hp-eyebrow-dot { width: 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center; }
+.hp-eyebrow-dot img { width: 22px; height: 22px; }
+.hp-hero-title {
+  margin: 0 0 28px; line-height: 1;
+}
+.hp-hero-logo { height: clamp(100px, 12vw, 160px); width: auto; margin-left: -24px; }
+.hp-page .hp-hero-logo-light { display: block; }
+.hp-page .hp-hero-logo-dark { display: none; }
+.dark .hp-page .hp-hero-logo-light { display: none; }
+.dark .hp-page .hp-hero-logo-dark { display: block; }
+.hp-hero-lede {
+  font-family: var(--hp-font-h); font-weight: 600;
+  font-size: clamp(26px, 2.6vw, 36px); line-height: 1.18; letter-spacing: -0.02em;
+  color: var(--hp-text-2); max-width: 760px; margin: 0 0 28px;
+}
+.hp-hero-body {
+  font-family: var(--hp-font-b); font-size: 17px; line-height: 1.6;
+  color: var(--hp-text-4); max-width: 720px; margin: 0 0 40px;
+}
+.hp-hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 0; }
+
+/* Buttons */
+.hp-btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 16px 26px; font-family: var(--hp-font-h); font-weight: 600; font-size: 16px;
+  border-radius: 999px; text-decoration: none; white-space: nowrap;
+  transition: all .18s cubic-bezier(.2,.6,.2,1); border: 1px solid transparent; cursor: pointer;
+}
+.hp-btn-primary {
+  background: var(--hp-accent); color: #FFFFFF;
+  box-shadow: 0 4px 14px -4px rgba(138,63,252,0.5), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+.hp-btn-primary:hover {
+  background: #9D5BFD; color: #fff; transform: translateY(-1px);
+  box-shadow: 0 8px 24px -6px rgba(138,63,252,0.55), inset 0 1px 0 rgba(255,255,255,0.18);
+}
+.hp-btn-ghost {
+  background: var(--hp-bg-0); color: var(--hp-text-2); border-color: var(--hp-border-2);
+  box-shadow: 0 1px 2px rgba(15,19,35,0.04);
+}
+.hp-btn-ghost:hover {
+  border-color: rgba(15,19,35,0.20); transform: translateY(-1px);
+  box-shadow: 0 4px 12px -4px rgba(15,19,35,0.10); color: var(--hp-text-2);
+}
+.hp-btn-ghost svg { flex-shrink: 0; }
+
+/* Hero cards */
+.hp-hero-cards {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+  border: 1px solid var(--hp-border); border-radius: 18px;
+  background: rgba(255,255,255,0.6); backdrop-filter: blur(12px); overflow: hidden; max-width: 920px;
+  margin: 0 auto;
+}
+.hp-hero-card {
+  padding: 26px 24px 28px; border-right: 1px solid var(--hp-border);
+  transition: background .2s ease;
+}
+.hp-hero-card:last-child { border-right: none; }
+.hp-hero-card:hover { background: rgba(138,63,252,0.04); }
+.hp-hero-card-icon {
+  width: 36px; height: 36px; display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(138,63,252,0.10); color: var(--hp-accent); border-radius: 10px; margin-bottom: 16px;
+}
+.hp-hero-card-icon img { width: 20px; height: 20px; object-fit: contain; }
+.dark .hp-hero-card-icon img { filter: brightness(0) invert(1); opacity: 0.9; }
+.hp-hero-card h3 {
+  font-family: var(--hp-font-h); font-weight: 600; font-size: 22px;
+  margin: 0 0 8px; color: var(--hp-text-2); letter-spacing: -0.01em;
+}
+.hp-hero-card p {
+  font-family: var(--hp-font-b); font-size: 14px; line-height: 1.5; color: var(--hp-text-4); margin: 0;
+}
+
+/* Mini diagram */
+.hp-hero-right { position: sticky; top: 100px; padding-top: 60px; }
+.hp-mini {
+  background: linear-gradient(180deg, var(--hp-bg-0), var(--hp-bg-1));
+  border: 1px solid var(--hp-border); border-radius: 20px; padding: 24px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 24px 48px -24px rgba(15,19,35,0.18), 0 4px 12px -6px rgba(15,19,35,0.08);
+}
+.hp-mini-row { display: flex; flex-direction: column; gap: 10px; }
+.hp-mini-label {
+  font-family: var(--hp-font-m); font-size: 10px; letter-spacing: 0.16em;
+  text-transform: uppercase; color: var(--hp-text-5); text-align: center;
+}
+.hp-mini-pills { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.hp-mini-pill {
+  background: var(--hp-bg-0); border: 1px solid var(--hp-border); border-radius: 10px;
+  padding: 12px 8px; font-family: var(--hp-font-h); font-weight: 600; font-size: 13px;
+  color: var(--hp-text-2); text-align: center; transition: all .25s ease;
+}
+.hp-mini-pill.lit {
+  border-color: var(--hp-accent); background: rgba(138,63,252,0.06);
+  box-shadow: 0 0 0 3px rgba(138,63,252,0.10);
+}
+.hp-mini-pill-meta {
+  display: block; font-family: var(--hp-font-m); font-size: 9px; font-weight: 400;
+  color: var(--hp-text-5); letter-spacing: 0.06em; margin-top: 2px; text-transform: uppercase;
+}
+.hp-mini-flow { width: 100%; height: 56px; margin: 6px 0; }
+.hp-mini-center {
+  background: linear-gradient(180deg, rgba(138,63,252,0.10), rgba(138,63,252,0.04));
+  border: 1.5px solid var(--hp-accent); border-radius: 14px; padding: 14px 16px; text-align: center;
+  box-shadow: 0 0 0 4px rgba(138,63,252,0.08), 0 8px 24px -10px rgba(138,63,252,0.32);
+}
+.hp-mini-center-inner {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: var(--hp-font-h); font-weight: 600; font-size: 16px; color: var(--hp-text-2);
+}
+.hp-mini-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: var(--hp-accent);
+  box-shadow: 0 0 8px rgba(138,63,252,0.6); animation: hp-pulse 1.6s ease-in-out infinite;
+}
+@keyframes hp-pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.45; } }
+.hp-mini-center-meta {
+  font-family: var(--hp-font-m); font-size: 10px; letter-spacing: 0.08em;
+  color: var(--hp-accent-deep); margin-top: 6px; text-transform: uppercase;
+}
+.hp-flow-dot { transition: cy .9s cubic-bezier(.4,.6,.2,1); }
+
+/* ===== FLOW DIAGRAM ===== */
+.hp-diagram-wrap {
+  position: relative; background: transparent;
+  border-radius: 24px; overflow: hidden;
+}
+.hp-diagram-bg {
+  position: absolute; inset: 0; pointer-events: none; overflow: hidden;
+}
+.hp-diagram-bg::before {
+  content: ""; position: absolute; inset: 0;
+  background-image: repeating-linear-gradient(90deg, transparent 0 39px, rgba(15,19,35,0.04) 39px 40px);
+  opacity: 0.6;
+  mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 20%, #000 80%, transparent 100%);
+}
+.dark .hp-diagram-bg::before {
+  background-image: repeating-linear-gradient(90deg, transparent 0 39px, rgba(255,255,255,0.03) 39px 40px);
+}
+.hp-diagram-bg-halo {
+  position: absolute; left: 50%; top: 50%; width: 720px; height: 720px;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(closest-side, rgba(138,63,252,0.25) 0%, transparent 70%),
+              radial-gradient(closest-side, rgba(32,183,243,0.08) 0%, transparent 80%);
+  filter: blur(40px); opacity: 0.85;
+}
+.dark .hp-diagram-bg-halo {
+  background: radial-gradient(closest-side, rgba(138,63,252,0.55) 0%, transparent 70%),
+              radial-gradient(closest-side, rgba(32,183,243,0.18) 0%, transparent 80%);
+}
+.hp-diagram-svg { display: block; width: 100%; height: auto; position: relative; }
+
+/* SVG traces */
+.hp-page .trace-base { fill: none; stroke: rgba(15,19,35,0.18); stroke-width: 1.25; }
+.dark .trace-base { stroke: rgba(255,255,255,0.12); }
+.hp-page .trace-pulse {
+  fill: none; stroke: #8A3FFC; stroke-width: 1.5; stroke-linecap: round;
+  stroke-dasharray: 4 320; filter: drop-shadow(0 0 4px rgba(138,63,252,0.40));
+  animation: hp-pulse-flow var(--pulse-duration, 3.6s) linear infinite;
+  animation-delay: var(--pulse-delay, 0s);
+}
+.hp-page .trace-pulse-rev {
+  fill: none; stroke: #8A3FFC; stroke-width: 1.5; stroke-linecap: round;
+  stroke-dasharray: 4 320; filter: drop-shadow(0 0 4px rgba(138,63,252,0.40));
+  animation: hp-pulse-flow-rev var(--pulse-duration, 3.6s) linear infinite;
+  animation-delay: var(--pulse-delay, 0s);
+}
+.hp-diagram-wrap.pulse-off .trace-pulse,
+.hp-diagram-wrap.pulse-off .trace-pulse-rev { animation: none; opacity: 0; }
+@keyframes hp-pulse-flow { from { stroke-dashoffset: 324; } to { stroke-dashoffset: 0; } }
+@keyframes hp-pulse-flow-rev { from { stroke-dashoffset: 0; } to { stroke-dashoffset: 324; } }
+
+/* SVG nodes */
+.hp-page .node-rect { fill: #FFFFFF; stroke: #DEE0EE; stroke-width: 1; }
+.dark .node-rect { fill: #1A1F30; stroke: rgba(255,255,255,0.10); }
+.hp-page .node-label {
+  fill: var(--hp-text-1); font-family: var(--hp-font-b); font-size: 14px;
+  font-weight: 500; dominant-baseline: middle;
+}
+.hp-page .node-icon-bg { fill: #F6F7FB; stroke: #DEE0EE; stroke-width: 1; }
+.dark .node-icon-bg { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.10); }
+.hp-page .node-icon {
+  stroke: var(--hp-text-1); stroke-width: 1.5;
+  stroke-linecap: round; stroke-linejoin: round; fill: none;
+}
+.hp-page .node-icon-fill { fill: var(--hp-text-1); }
+.dark .node-brand-icon { filter: brightness(0) invert(1); }
+.hp-page .node-sub {
+  fill: var(--hp-text-5); font-family: var(--hp-font-b); font-size: 10px;
+  font-weight: 400; dominant-baseline: middle;
+}
+
+/* Chip */
+.hp-page .chip-rect { fill: #151927; stroke: rgba(138,63,252,0.6); stroke-width: 1.25; }
+.dark .chip-rect { fill: #0B0E18; stroke: rgba(255,255,255,0.18); }
+.hp-page .chip-corner {
+  fill: none; stroke: #8A3FFC; stroke-width: 1.5; stroke-linecap: round; opacity: 0.85;
+}
+.hp-page .chip-pin { fill: rgba(15,19,35,0.18); }
+.dark .chip-pin { fill: rgba(255,255,255,0.12); }
+
+/* Capability pills */
+.hp-page .cap-pill-rect { fill: #FFFFFF; stroke: #DEE0EE; stroke-width: 1; }
+.dark .cap-pill-rect { fill: rgba(255,255,255,0.04); stroke: rgba(255,255,255,0.14); }
+.hp-page .cap-pill-label {
+  fill: var(--hp-text-1); font-family: var(--hp-font-b); font-size: 13px;
+  font-weight: 500; dominant-baseline: middle;
+}
+.hp-page .cap-leader { stroke: #B0B4C8; stroke-width: 1; stroke-dasharray: 2 4; fill: none; }
+.dark .cap-leader { stroke: rgba(255,255,255,0.18); }
+.hp-page .cap-bullet { fill: #8A3FFC; }
+
+/* Column eyebrows */
+.hp-page .col-eyebrow {
+  fill: #8B90A3; font-family: var(--hp-font-m); font-size: 11px; letter-spacing: 0.12em;
+}
+.dark .col-eyebrow { fill: #676D84; }
+
+@media (max-width: 720px) {
+  .hp-diagram-wrap { border-radius: 16px; }
+  .hp-diagram-svg { min-height: 320px; }
+}
+
+/* ===== QUICK LINKS ===== */
+/* ===== CONTRIBUTING COMPANIES ===== */
+.hp-contributing { padding: 48px 0; background: var(--hp-bg-0); }
+.hp-contributing-label {
+  font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+  color: var(--hp-text-5); text-align: center; margin-bottom: 32px;
+}
+.hp-logo-track {
+  overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 0, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, black 5%, black 95%, transparent);
+}
+.hp-logo-scroll {
+  display: flex; gap: 5rem; width: max-content;
+  animation: hp-scroll-left 40s linear infinite;
+  will-change: transform; backface-visibility: hidden; transform: translateZ(0);
+}
+.hp-logo-scroll:hover { animation-play-state: paused; }
+.hp-logo-item {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.75rem; min-width: 140px; flex-shrink: 0;
+}
+.hp-logo-item span { color: var(--hp-text-5); font-size: 0.875rem; font-weight: 500; font-family: var(--hp-font-b); }
+.hp-logo-item img { height: 56px; width: auto; max-width: 160px; object-fit: contain; }
+.hp-logo-img { filter: brightness(0); }
+.dark .hp-logo-img { filter: brightness(0) invert(1); }
+@keyframes hp-scroll-left {
+  0% { transform: translate3d(0,0,0); }
+  100% { transform: translate3d(-50%,0,0); }
+}
+
+/* ===== SECTION SHARED ===== */
+.hp-section {
+  padding: 100px 0; position: relative;
+}
+.hp-section-alt { background: var(--hp-bg-1); }
+.hp-section-title {
+  font-family: var(--hp-font-h); font-weight: 600;
+  font-size: clamp(32px, 4vw, 48px); line-height: 1.08; letter-spacing: -0.02em;
+  color: var(--hp-text-1); margin: 0 0 16px;
+}
+.hp-section-sub {
+  font-family: var(--hp-font-b); font-size: 18px; line-height: 1.55;
+  color: var(--hp-text-4); max-width: 640px;
+}
+.hp-section-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px;
+  font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--hp-accent-deep);
+}
+.hp-section-eyebrow-dot {
+  width: 18px; height: 18px; display: inline-block;
+  background: url('/agentgateway-logo.svg') center/contain no-repeat;
+}
+
+/* ===== FEATURES ===== */
+.hp-features { display: flex; flex-direction: column; gap: 8px; margin-top: 48px; }
+.hp-feat {
+  background: var(--hp-bg-0); border: 1px solid var(--hp-border); border-radius: 14px;
+  overflow: hidden; transition: border-color 200ms, box-shadow 200ms;
+}
+.hp-feat:hover { border-color: var(--hp-border-2); box-shadow: 0 4px 16px rgba(15,19,35,0.06); }
+.hp-feat.open { border-color: var(--hp-accent); }
+.hp-feat-head {
+  display: flex; align-items: center; gap: 16px; padding: 20px 24px; cursor: pointer;
+  transition: background 200ms; width: 100%; border: none; background: transparent; text-align: left;
+}
+.hp-feat-head:hover { background: rgba(138,63,252,0.02); }
+.hp-feat-icon {
+  width: 36px; height: 36px; border-radius: 10px; background: var(--hp-accent-soft);
+  display: flex; align-items: center; justify-content: center; color: var(--hp-accent); flex-shrink: 0;
+}
+.hp-feat-icon img { width: 18px; height: 18px; object-fit: contain; }
+.dark .hp-feat-icon img { filter: brightness(0) invert(1); }
+.dark .hp-feat-icon img.color-icon { filter: none; }
+.hp-feat-title { font-family: var(--hp-font-h); font-weight: 600; font-size: 16px; color: var(--hp-text-2); }
+.hp-feat-sub { font-family: var(--hp-font-b); font-size: 14px; color: var(--hp-text-4); margin-top: 2px; }
+.hp-feat-toggle {
+  margin-left: auto; width: 28px; height: 28px; border-radius: 8px;
+  background: var(--hp-bg-1); display: flex; align-items: center; justify-content: center;
+  color: var(--hp-text-5); transition: transform 300ms; flex-shrink: 0;
+}
+.hp-feat.open .hp-feat-toggle { transform: rotate(45deg); color: var(--hp-accent); }
+.hp-feat-body {
+  display: none; padding: 0 24px 24px 76px;
+}
+.hp-feat.open .hp-feat-body { display: block; }
+.hp-feat-body p { font-size: 14px; line-height: 1.6; color: var(--hp-text-4); margin: 0 0 16px; }
+.hp-feat-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.hp-feat-tag {
+  padding: 4px 10px; border-radius: 6px; font-family: var(--hp-font-m);
+  font-size: 11px; background: rgba(15,19,35,0.04); color: var(--hp-text-4);
+}
+.hp-feat-links { display: flex; gap: 20px; margin-top: 12px; }
+.hp-feat-link { color: var(--hp-accent); font-size: 14px; font-weight: 500; text-decoration: none; }
+.hp-feat-link:hover { text-decoration: underline; }
+
+/* ===== GETTING STARTED ===== */
+.hp-gs-wrap {
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; margin-top: 32px;
+}
+@media (max-width: 860px) { .hp-gs-wrap { grid-template-columns: 1fr; } }
+.hp-code-block {
+  background: linear-gradient(180deg, #0B0E18, #080B14);
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; overflow: hidden;
+  font-family: var(--hp-font-m); font-size: 12.5px; line-height: 1.65;
+}
+.hp-code-tabs {
+  display: flex; align-items: center; padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.02); gap: 4px; flex-wrap: wrap;
+}
+.hp-code-tab {
+  padding: 6px 12px; border-radius: 8px; cursor: pointer;
+  font-family: var(--hp-font-m); font-size: 12px; color: rgba(255,255,255,0.45);
+  transition: color 200ms, background 200ms; border: none; background: transparent;
+}
+.hp-code-tab.active { color: #fff; background: rgba(255,255,255,0.08); }
+.hp-code-copy {
+  margin-left: auto; padding: 4px 10px; border-radius: 6px;
+  font-family: var(--hp-font-m); font-size: 11px; color: rgba(255,255,255,0.45);
+  cursor: pointer; transition: color 200ms; border: none; background: transparent;
+}
+.hp-code-copy:hover { color: #fff; }
+.hp-code-body { padding: 18px 20px; color: #C8CCDB; }
+.hp-code-panel { display: none; }
+.hp-code-panel.active { display: block; }
+.hp-code-body .com { color: #5A6078; font-style: italic; }
+.hp-code-body .prompt-char { color: var(--hp-accent); }
+
+.hp-gs-side { display: flex; flex-direction: column; gap: 16px; }
+.hp-gs-item {
+  display: flex; gap: 16px; padding: 18px; border-radius: 12px;
+  background: var(--hp-bg-0); border: 1px solid var(--hp-border);
+  transition: border-color 200ms, box-shadow 200ms; text-decoration: none;
+}
+.hp-gs-item:hover { border-color: var(--hp-border-2); box-shadow: 0 4px 16px rgba(15,19,35,0.06); }
+.hp-gs-ico {
+  width: 32px; height: 32px; border-radius: 8px; background: var(--hp-accent-soft);
+  display: flex; align-items: center; justify-content: center; color: var(--hp-accent); flex-shrink: 0;
+}
+.hp-gs-ico img { width: 16px; height: 16px; object-fit: contain; }
+.dark .hp-gs-ico img { filter: brightness(0) invert(1); }
+.dark .hp-gs-ico img.color-icon { filter: none; }
+.hp-gs-item h4 { font-family: var(--hp-font-h); font-weight: 600; font-size: 15px; color: var(--hp-text-2); margin: 0 0 4px; }
+.hp-gs-item p { font-size: 13px; line-height: 1.5; color: var(--hp-text-4); margin: 0; }
+.hp-gs-links { display: flex; gap: 16px; margin-top: 8px; }
+
+/* ===== COMMUNITY ===== */
+.hp-community {
+  border-radius: 20px; border: 1px solid var(--hp-border);
+  background: linear-gradient(180deg, var(--hp-bg-0), var(--hp-bg-1));
+  padding: 56px 40px; text-align: center;
+}
+.hp-cm-actions { display: flex; gap: 12px; justify-content: center; margin-top: 32px; }
+
+/* ===== INTEGRATIONS (scrolling pills) ===== */
+.hp-integ-marquee { margin-top: 40px; display: flex; flex-direction: column; gap: 20px; }
+.hp-integ-row { display: flex; align-items: center; gap: 20px; overflow: hidden; }
+.hp-integ-label {
+  flex-shrink: 0; width: 160px; font-family: var(--hp-font-h); font-weight: 700;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--hp-text-5); text-align: right;
+}
+.hp-integ-track {
+  flex: 1; overflow: hidden;
+  mask-image: linear-gradient(90deg, transparent 0, black 5%, black 95%, transparent);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, black 5%, black 95%, transparent);
+}
+.hp-integ-scroll {
+  display: flex; gap: 14px; width: max-content;
+  will-change: transform; backface-visibility: hidden; transform: translateZ(0);
+}
+.hp-integ-slow { animation: hpMarqueeScroll 65s linear infinite; }
+.hp-integ-medium { animation: hpMarqueeScroll 55s linear infinite; }
+.hp-integ-fast { animation: hpMarqueeScroll 45s linear infinite; }
+.hp-integ-reverse { animation-direction: reverse; }
+@keyframes hpMarqueeScroll {
+  0% { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+.hp-integ-scroll:hover { animation-play-state: paused; }
+@media (max-width: 980px) {
+  .hp-integ-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .hp-integ-label { width: auto; text-align: left; }
+}
+.hp-integ-pill {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 12px 20px; border-radius: 999px;
+  background: var(--hp-bg-0); border: 1px solid var(--hp-border);
+  white-space: nowrap; flex-shrink: 0;
+}
+.hp-integ-pill-icon {
+  width: 28px; height: 28px; border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
+}
+.hp-integ-pill-icon img { width: 22px; height: 22px; object-fit: contain; }
+.dark .hp-integ-pill-icon img { filter: brightness(0) invert(1); }
+.dark .hp-integ-pill-icon img.color-icon { filter: none; }
+.hp-integ-pill-icon svg { width: 18px; height: 18px; }
+.hp-integ-pill-name {
+  font-family: var(--hp-font-h); font-weight: 600; font-size: 14px; color: var(--hp-text-2);
+}
+.hp-integ-pill-meta {
+  font-family: var(--hp-font-m); font-size: 11px; color: var(--hp-text-5); letter-spacing: 0.04em;
+}
+
+/* ===== LF QUOTE ===== */
+.hp-lf {
+  background: #0B0E18; padding: 80px 0; color: #C8CCDB;
+}
+.hp-lf-grid { display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: center; }
+@media (max-width: 720px) { .hp-lf-grid { grid-template-columns: 1fr; text-align: center; } }
+.hp-lf-mark {
+  font-family: var(--hp-font-h); font-weight: 700; font-size: 24px;
+  color: #fff; line-height: 1.15; letter-spacing: -0.01em;
+}
+.hp-lf-mark-small {
+  display: block; font-family: var(--hp-font-m); font-size: 11px; font-weight: 400;
+  color: #5A6078; margin-top: 8px; letter-spacing: 0.06em;
+}
+.hp-lf-quote {
+  font-family: var(--hp-font-b); font-size: 18px; line-height: 1.65;
+  color: #C8CCDB; font-style: italic; margin: 0 0 16px;
+}
+.hp-lf-byline { font-family: var(--hp-font-m); font-size: 13px; color: #5A6078; }
+
+/* ===== FOOTER ===== */
+.hp-footer {
+  background: #0B0E18; padding: 64px 0 32px; color: #C8CCDB;
+}
+.hp-footer-grid {
+  display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 48px;
+}
+@media (max-width: 720px) { .hp-footer-grid { grid-template-columns: 1fr 1fr; gap: 32px; } }
+.hp-footer-brand p { font-size: 14px; line-height: 1.6; color: #5A6078; margin: 16px 0 0; }
+.hp-footer-brand img { height: 28px; width: auto; }
+.hp-footer-socials { display: flex; gap: 8px; margin-top: 16px; }
+.hp-footer-social {
+  width: 36px; height: 36px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; justify-content: center; background: transparent;
+  transition: background 200ms; cursor: pointer;
+}
+.hp-footer-social:hover { background: rgba(255,255,255,0.06); }
+.hp-footer-social img { width: 16px; height: 16px; filter: brightness(0) invert(1); opacity: 0.7; }
+.hp-footer-col h5 {
+  font-family: var(--hp-font-h); font-weight: 600; font-size: 14px; color: #fff; margin: 0 0 16px;
+}
+.hp-footer-col a {
+  display: block; font-size: 14px; color: #5A6078; padding: 4px 0;
+  transition: color 200ms; text-decoration: none;
+}
+.hp-footer-col a:hover { color: #C8CCDB; }
+.hp-footer-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  border-top: 1px solid rgba(255,255,255,0.08); margin-top: 48px; padding-top: 24px;
+  font-family: var(--hp-font-m); font-size: 12px; color: #5A6078;
+}
+@media (max-width: 540px) { .hp-footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
+</style>
+
+<div class="hp-page">
+
+<!-- ============ HERO ============ -->
+<section class="hp-hero">
+  <div class="hp-hero-bg">
+    <div class="hp-hero-grid-pattern"></div>
+    <div class="hp-hero-blob hp-hero-blob-1"></div>
+    <div class="hp-hero-blob hp-hero-blob-2"></div>
+  </div>
+
+  <div class="hp-wrap">
+    <div class="hp-hero-cols">
+      <div>
+        <h1 class="hp-hero-title">
+          <img src="/agw-light.svg" alt="agentgateway" class="hp-hero-logo hp-hero-logo-light">
+          <img src="/agw-dark.svg" alt="agentgateway" class="hp-hero-logo hp-hero-logo-dark">
+        </h1>
+
+        <div class="hp-eyebrow">
+          <span>Open source API and AI gateway</span>
+        </div>
+
+        <p class="hp-hero-lede">
+          One high-performance gateway for service, LLM, and MCP traffic.
+        </p>
+
+        <p class="hp-hero-body" style="max-width: 720px;">
+          An open source HTTP and gRPC gateway that handles traditional application traffic and AI-native protocols in one data plane. Route, secure, observe, and govern services, LLM provider traffic, MCP tools, and agent-to-agent communication without stitching together separate gateways.
+        </p>
+
+        <div class="hp-hero-ctas">
+          <a href="#getting-started" class="hp-btn hp-btn-primary">
+            Get Started <span style="display:inline-block;transition:transform .18s ease">→</span>
+          </a>
+          <a href="https://github.com/agentgateway/agentgateway" class="hp-btn hp-btn-ghost">
+            <svg width="18" height="18" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+            View on GitHub
+          </a>
+          <a href="https://discord.gg/y9efgEmppm" class="hp-btn hp-btn-ghost">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 00-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 00-4.8 0c-.14-.34-.35-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05a19.9 19.9 0 005.99 3.03c.03.01.06 0 .07-.02.46-.63.87-1.29 1.23-1.99.02-.04 0-.08-.04-.09-.65-.25-1.27-.55-1.87-.89-.04-.02-.04-.08-.01-.11.13-.09.25-.19.37-.29.02-.02.05-.02.07-.01 3.92 1.79 8.16 1.79 12.03 0 .02-.01.05 0 .07.01.12.1.24.2.37.3.04.03.04.09-.01.11-.6.35-1.22.64-1.87.89-.04.01-.05.06-.04.09.37.7.78 1.36 1.23 1.99.03.01.06.02.09.01a19.83 19.83 0 006-3.03c.02-.01.03-.03.03-.05.44-4.53-.74-8.46-3.13-11.95-.01-.01-.02-.02-.03-.02z M8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.91.96 1.89 2.12 0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.91.96 1.89 2.12 0 1.17-.83 2.12-1.89 2.12z"/></svg>
+            Discord
+          </a>
+        </div>
+      </div>
+
+      <div class="hp-hero-tiles">
+        <div class="hp-hero-tile">
+          <div class="hp-hero-card-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg>
+          </div>
+          <h3>LLM Gateway</h3>
+          <p>Route to OpenAI, Claude, Gemini, or any self-hosted model with credentialing and failover.</p>
+        </div>
+        <div class="hp-hero-tile">
+          <div class="hp-hero-card-icon">
+            <img src="/integrations/mcp.svg" alt="MCP" class="color-icon">
+          </div>
+          <h3>MCP / A2A</h3>
+          <p>Native protocol support for Model Context Protocol and agent-to-agent traffic.</p>
+        </div>
+        <div class="hp-hero-tile">
+          <div class="hp-hero-card-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/><path d="M2 12h20"/></svg>
+          </div>
+          <h3>Services</h3>
+          <p>HTTP, gRPC, and TCP traffic — observable by default with mTLS and OIDC built in.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hp-wrap" style="margin-top: 56px;">
+    <div class="hp-diagram-wrap" id="hp-diagram">
+      <div class="hp-diagram-bg"><div class="hp-diagram-bg-halo"></div></div>
+
+      <svg class="hp-diagram-svg" viewBox="0 0 1280 720" preserveAspectRatio="xMidYMid meet" aria-label="agentgateway flow diagram">
+        <defs>
+          <radialGradient id="chip-glow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#8A3FFC" stop-opacity="0.35"/>
+            <stop offset="60%" stop-color="#8A3FFC" stop-opacity="0.08"/>
+            <stop offset="100%" stop-color="#8A3FFC" stop-opacity="0"/>
+          </radialGradient>
+        </defs>
+
+        <!-- Chip glow halo -->
+        <circle cx="640" cy="360" r="260" fill="url(#chip-glow)" opacity="0.95"/>
+
+        <!-- Column eyebrows -->
+        <text x="64" y="120" class="col-eyebrow">SOURCES · CLIENTS</text>
+        <text x="640" y="120" class="col-eyebrow" text-anchor="middle">AGENTGATEWAY · CONTROL PLANE</text>
+        <text x="1216" y="120" class="col-eyebrow" text-anchor="end">DESTINATIONS · MODELS &amp; AGENTS</text>
+
+        <line x1="64" y1="100" x2="120" y2="100" class="trace-base"/>
+        <line x1="610" y1="100" x2="670" y2="100" class="trace-base"/>
+        <line x1="1160" y1="100" x2="1216" y2="100" class="trace-base"/>
+
+        <!-- LEFT TRACES -->
+        <g><path class="trace-base" d="M 304 256 H 420 Q 432 256 432 268 V 310 Q 432 322 444 322 H 560"/>
+           <path class="trace-pulse" style="--pulse-delay:0s;--pulse-duration:3.4s" d="M 304 256 H 420 Q 432 256 432 268 V 310 Q 432 322 444 322 H 560"/></g>
+        <g><path class="trace-base" d="M 304 360 H 560"/>
+           <path class="trace-pulse" style="--pulse-delay:0.6s;--pulse-duration:3.0s" d="M 304 360 H 560"/></g>
+        <g><path class="trace-base" d="M 304 464 H 420 Q 432 464 432 452 V 410 Q 432 398 444 398 H 560"/>
+           <path class="trace-pulse" style="--pulse-delay:1.2s;--pulse-duration:3.4s" d="M 304 464 H 420 Q 432 464 432 452 V 410 Q 432 398 444 398 H 560"/></g>
+
+        <!-- RIGHT TRACES -->
+        <g><path class="trace-base" d="M 720 288 H 830 Q 842 288 842 276 V 188 Q 842 176 854 176 H 976"/>
+           <path class="trace-pulse" style="--pulse-delay:0.2s;--pulse-duration:3.6s" d="M 720 288 H 830 Q 842 288 842 276 V 188 Q 842 176 854 176 H 976"/></g>
+        <g><path class="trace-base" d="M 720 324 H 860 Q 872 324 872 312 V 284 Q 872 272 884 272 H 976"/>
+           <path class="trace-pulse" style="--pulse-delay:0.8s;--pulse-duration:3.4s" d="M 720 324 H 860 Q 872 324 872 312 V 284 Q 872 272 884 272 H 976"/></g>
+        <g><path class="trace-base" d="M 720 360 H 976"/>
+           <path class="trace-pulse" style="--pulse-delay:1.4s;--pulse-duration:3.0s" d="M 720 360 H 976"/></g>
+        <g><path class="trace-base" d="M 720 396 H 860 Q 872 396 872 408 V 436 Q 872 448 884 448 H 976"/>
+           <path class="trace-pulse" style="--pulse-delay:2.0s;--pulse-duration:3.4s" d="M 720 396 H 860 Q 872 396 872 408 V 436 Q 872 448 884 448 H 976"/></g>
+        <g><path class="trace-base" d="M 720 432 H 830 Q 842 432 842 444 V 532 Q 842 544 854 544 H 976"/>
+           <path class="trace-pulse" style="--pulse-delay:2.6s;--pulse-duration:3.6s" d="M 720 432 H 830 Q 842 432 842 444 V 532 Q 842 544 854 544 H 976"/></g>
+
+        <!-- Chip pins -->
+        <g>
+          <rect x="554" y="319" width="8" height="6" rx="1" class="chip-pin"/>
+          <rect x="554" y="357" width="8" height="6" rx="1" class="chip-pin"/>
+          <rect x="554" y="395" width="8" height="6" rx="1" class="chip-pin"/>
+          <rect x="718" y="297" width="8" height="6" rx="1" class="chip-pin"/>
+          <rect x="718" y="327" width="8" height="6" rx="1" class="chip-pin"/>
+          <rect x="718" y="357" width="8" height="6" rx="1" class="chip-pin"/>
+          <rect x="718" y="387" width="8" height="6" rx="1" class="chip-pin"/>
+          <rect x="718" y="417" width="8" height="6" rx="1" class="chip-pin"/>
+        </g>
+
+        <!-- SOURCE NODES (left, x=64, w=240, h=64) -->
+        <g>
+          <g transform="translate(64, 224)">
+            <rect class="node-rect" x="0" y="0" width="240" height="64" rx="14"/>
+            <rect class="node-icon-bg" x="14" y="14" width="36" height="36" rx="10"/>
+            <g transform="translate(20, 20)" class="node-icon"><path d="M2 4h20v16H2z"/><path d="M6 9l3 3-3 3"/><path d="M12 15h6"/></g>
+            <text class="node-label" x="64" y="26">CLI / IDE</text>
+            <text class="node-sub" x="64" y="44">Claude, Codex, OpenCode</text>
+          </g>
+          <g transform="translate(64, 328)">
+            <rect class="node-rect" x="0" y="0" width="240" height="64" rx="14"/>
+            <rect class="node-icon-bg" x="14" y="14" width="36" height="36" rx="10"/>
+            <g transform="translate(20, 20)" class="node-icon"><rect x="3" y="6" width="18" height="14" rx="4"/><path d="M12 2v4"/><circle cx="9" cy="13" r="1.2" class="node-icon-fill" stroke="none"/><circle cx="15" cy="13" r="1.2" class="node-icon-fill" stroke="none"/><path d="M3 14h-1M22 14h-1"/></g>
+            <text class="node-label" x="64" y="26">AI agents</text>
+            <text class="node-sub" x="64" y="44">LangSmith, CrewAI, ADK</text>
+          </g>
+          <g transform="translate(64, 432)">
+            <rect class="node-rect" x="0" y="0" width="240" height="64" rx="14"/>
+            <rect class="node-icon-bg" x="14" y="14" width="36" height="36" rx="10"/>
+            <g transform="translate(20, 20)" class="node-icon"><circle cx="12" cy="9" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></g>
+            <text class="node-label" x="64" y="32">Apps &amp; clients</text>
+          </g>
+        </g>
+
+        <!-- DESTINATION NODES (right, x=976, w=240, h=56) -->
+        <g>
+          <g transform="translate(976, 148)">
+            <rect class="node-rect" x="0" y="0" width="240" height="56" rx="14"/>
+            <rect class="node-icon-bg" x="12" y="12" width="32" height="32" rx="9"/>
+            <g transform="translate(16, 16)" class="node-icon"><rect x="3" y="6" width="18" height="14" rx="4"/><path d="M12 2v4"/><circle cx="9" cy="13" r="1.2" class="node-icon-fill" stroke="none"/><circle cx="15" cy="13" r="1.2" class="node-icon-fill" stroke="none"/></g>
+            <text class="node-label" x="56" y="28">AI agents</text>
+          </g>
+          <g transform="translate(976, 244)">
+            <rect class="node-rect" x="0" y="0" width="240" height="56" rx="14"/>
+            <rect class="node-icon-bg" x="12" y="12" width="32" height="32" rx="9"/>
+            <image href="/integrations/openai.svg" x="16" y="16" width="24" height="24" class="node-brand-icon"/>
+            <text class="node-label" x="56" y="28">OpenAI</text>
+          </g>
+          <g transform="translate(976, 332)">
+            <rect class="node-rect" x="0" y="0" width="240" height="56" rx="14"/>
+            <rect class="node-icon-bg" x="12" y="12" width="32" height="32" rx="9"/>
+            <image href="/integrations/anthropic.svg" x="16" y="16" width="24" height="24" class="node-brand-icon"/>
+            <text class="node-label" x="56" y="28">Anthropic</text>
+          </g>
+          <g transform="translate(976, 420)">
+            <rect class="node-rect" x="0" y="0" width="240" height="56" rx="14"/>
+            <rect class="node-icon-bg" x="12" y="12" width="32" height="32" rx="9"/>
+            <image href="/integrations/mcp.svg" x="16" y="16" width="24" height="24"/>
+            <text class="node-label" x="56" y="28">MCP / A2A endpoints</text>
+          </g>
+          <g transform="translate(976, 516)">
+            <rect class="node-rect" x="0" y="0" width="240" height="56" rx="14"/>
+            <rect class="node-icon-bg" x="12" y="12" width="32" height="32" rx="9"/>
+            <g transform="translate(16, 16)" class="node-icon"><path d="M9 6L3 12l6 6"/><path d="M15 6l6 6-6 6"/><path d="M14 4l-4 16"/></g>
+            <text class="node-label" x="56" y="28">REST · MCP · API tools</text>
+          </g>
+        </g>
+
+        <!-- CHIP (center) -->
+        <g class="chip">
+          <rect class="chip-rect" x="560" y="280" width="160" height="160" rx="28"/>
+          <rect x="572" y="292" width="136" height="136" rx="20" fill="none" stroke="rgba(138,63,252,0.30)" stroke-width="1" stroke-dasharray="2 4"/>
+          <path class="chip-corner" d="M 582 296 L 576 296 L 576 302"/>
+          <path class="chip-corner" d="M 698 296 L 704 296 L 704 302"/>
+          <path class="chip-corner" d="M 582 424 L 576 424 L 576 418"/>
+          <path class="chip-corner" d="M 698 424 L 704 424 L 704 418"/>
+          <!-- agentgateway mark -->
+          <g transform="translate(592, 316) scale(3)">
+            <path d="M16.0042 21.5249C17.4421 21.5249 18.6077 22.7505 18.6078 24.2624C18.6078 25.7743 17.4421 27 16.0042 27C14.5663 27 13.4006 25.7743 13.4006 24.2624C13.4006 22.7505 14.5663 21.5249 16.0042 21.5249Z" fill="#8A3FFC"/>
+            <path d="M22.3964 9.12945C23.8344 9.12945 25 10.3551 25 11.8671C25 12.3939 24.8583 12.8858 24.613 13.3033C24.6128 13.3036 24.6129 13.304 24.6132 13.3042C24.6135 13.3044 24.6136 13.3048 24.6134 13.3052C24.1554 14.0927 23.8865 15.0178 23.8865 16.004C23.8865 16.9638 24.1374 17.8524 24.567 18.6214C24.8405 19.0546 25 19.5744 25 20.1333C25 21.6452 23.8344 22.8709 22.3964 22.8709C20.9585 22.8709 19.7929 21.6452 19.7929 20.1333C19.7929 19.5858 19.9458 19.0759 20.2091 18.6481C20.6479 17.8729 20.9048 16.975 20.9048 16.004C20.9048 15.0104 20.6359 14.0931 20.1782 13.3057C20.1778 13.3051 20.178 13.3043 20.1786 13.3039C20.1792 13.3035 20.1793 13.3027 20.179 13.302C19.9342 12.8848 19.7929 12.3933 19.7929 11.8671C19.7929 10.3551 20.9585 9.12945 22.3964 9.12945Z" fill="#8A3FFC"/>
+            <path d="M9.60356 9.12932C11.0415 9.12932 12.2071 10.3549 12.2071 11.8668C12.2071 12.3937 12.0653 12.8857 11.82 13.3033C11.8198 13.3036 11.8199 13.304 11.8203 13.3042C11.8206 13.3044 11.8207 13.3049 11.8205 13.3052C11.3625 14.0927 11.0936 15.0178 11.0936 16.004C11.0936 16.9634 11.3443 17.8515 11.7736 18.6203C12.0474 19.0537 12.2071 19.5738 12.2071 20.1332C12.2071 21.6451 11.0415 22.8708 9.60356 22.8708C8.16566 22.8708 7.00001 21.6451 7 20.1332C7 19.5851 7.15322 19.0747 7.41701 18.6466C7.85537 17.8718 8.1119 16.9743 8.1119 16.004C8.1119 15.0104 7.84307 14.0931 7.38531 13.3058C7.38494 13.3051 7.38513 13.3043 7.38575 13.3039C7.38637 13.3035 7.38656 13.3026 7.38618 13.302C7.14137 12.8847 7 12.3931 7 11.8668C7.00002 10.3549 8.16566 9.12933 9.60356 9.12932Z" fill="#8A3FFC"/>
+            <path d="M16.0042 5C17.4421 5 18.6078 6.22568 18.6078 7.7376C18.6077 8.29614 18.4485 8.81549 18.1754 9.24853C17.7453 10.0183 17.4942 10.9141 17.4942 11.8669C17.4942 12.8608 17.7632 13.7783 18.2212 14.5658C18.2213 14.5661 18.2212 14.5665 18.221 14.5666C18.2207 14.5668 18.2206 14.5672 18.2207 14.5675C18.466 14.985 18.6077 15.477 18.6078 16.0039C18.6078 17.5158 17.4421 18.7415 16.0042 18.7415C14.5663 18.7415 13.4006 17.5158 13.4006 16.0039C13.4006 15.4776 13.5419 14.986 13.7867 14.5687C13.7871 14.5681 13.7869 14.5674 13.7863 14.567C13.7857 14.5666 13.7855 14.5658 13.7859 14.5652C14.2437 13.7779 14.5125 12.8606 14.5125 11.8669C14.5125 10.8954 14.2554 9.99698 13.816 9.22149C13.5532 8.79396 13.4006 8.28453 13.4006 7.7376C13.4006 6.22569 14.5663 5.00001 16.0042 5Z" fill="#8A3FFC"/>
+          </g>
+        </g>
+
+        <!-- CAPABILITY PILLS -->
+        <g>
+          <g transform="translate(560, 158)">
+            <rect class="cap-pill-rect" x="0" y="0" width="160" height="44" rx="22"/>
+            <text class="cap-pill-label" x="80" y="22" text-anchor="middle">LLM Gateway</text>
+          </g>
+          <path class="cap-leader" d="M 640 202 L 640 250"/>
+          <g transform="translate(466, 492)">
+            <rect class="cap-pill-rect" x="0" y="0" width="164" height="38" rx="19"/>
+            <text class="cap-pill-label" x="82" y="19" text-anchor="middle">Inference Routing</text>
+          </g>
+          <path class="cap-leader" d="M 548 492 L 590 450"/>
+          <g transform="translate(650, 492)">
+            <rect class="cap-pill-rect" x="0" y="0" width="164" height="38" rx="19"/>
+            <text class="cap-pill-label" x="82" y="19" text-anchor="middle">MCP / A2A gateway</text>
+          </g>
+          <path class="cap-leader" d="M 732 492 L 690 450"/>
+        </g>
+
+        <!-- Bottom labels -->
+        <g>
+          <text x="184" y="640" class="col-eyebrow" text-anchor="middle">REQUEST · INBOUND</text>
+          <text x="640" y="640" class="col-eyebrow" text-anchor="middle">ROUTE · SECURE · OBSERVE · GOVERN</text>
+          <text x="1096" y="640" class="col-eyebrow" text-anchor="middle">RESPONSE · OUTBOUND</text>
+          <g class="trace-base" stroke-linecap="round">
+            <line x1="64" y1="660" x2="304" y2="660"/>
+            <line x1="500" y1="660" x2="780" y2="660"/>
+            <line x1="976" y1="660" x2="1216" y2="660"/>
+          </g>
+          <g fill="var(--hp-text-5)">
+            <path d="M 304 660 l -6 -3 v 6 z"/>
+            <path d="M 780 660 l -6 -3 v 6 z"/>
+            <path d="M 1216 660 l -6 -3 v 6 z"/>
+          </g>
+        </g>
+      </svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ CONTRIBUTING COMPANIES ============ -->
+<div class="hp-contributing">
+  <div class="hp-contributing-label">Contributing Companies</div>
+  <div class="hp-logo-track">
+    <div class="hp-logo-scroll">
+      <div class="hp-logo-item"><img src="/lf-logo.svg" alt="The Linux Foundation" class="hp-logo-img"><span>Linux Foundation</span></div>
+      <div class="hp-logo-item"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
+      <div class="hp-logo-item"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
+      <div class="hp-logo-item"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
+      <div class="hp-logo-item"><img src="/logos/alibaba.svg" alt="Alibaba" class="hp-logo-img"><span>Alibaba</span></div>
+      <div class="hp-logo-item"><img src="/logos/adobe.svg" alt="Adobe" class="hp-logo-img"><span>Adobe</span></div>
+      <div class="hp-logo-item"><img src="/logos/aws.svg" alt="AWS" class="hp-logo-img"><span>AWS</span></div>
+      <div class="hp-logo-item"><img src="/logos/cisco.svg" alt="Cisco" class="hp-logo-img"><span>Cisco</span></div>
+      <div class="hp-logo-item"><img src="/logos/salesforce.svg" alt="Salesforce" class="hp-logo-img"><span>Salesforce</span></div>
+      <div class="hp-logo-item"><img src="/logos/huawei.svg" alt="Huawei" class="hp-logo-img"><span>Huawei</span></div>
+      <div class="hp-logo-item"><img src="/logos/amdocs.svg" alt="Amdocs" class="hp-logo-img"><span>Amdocs</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/lf-logo.svg" alt="The Linux Foundation" class="hp-logo-img"><span>Linux Foundation</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/alibaba.svg" alt="Alibaba" class="hp-logo-img"><span>Alibaba</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/adobe.svg" alt="Adobe" class="hp-logo-img"><span>Adobe</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/aws.svg" alt="AWS" class="hp-logo-img"><span>AWS</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/cisco.svg" alt="Cisco" class="hp-logo-img"><span>Cisco</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/salesforce.svg" alt="Salesforce" class="hp-logo-img"><span>Salesforce</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/huawei.svg" alt="Huawei" class="hp-logo-img"><span>Huawei</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/amdocs.svg" alt="Amdocs" class="hp-logo-img"><span>Amdocs</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FEATURES ============ -->
+<section class="hp-section hp-section-alt" id="features">
+  <div class="hp-wrap">
+    <div style="text-align: center;">
+      <h2 class="hp-section-title" style="margin-left: auto; margin-right: auto; max-width: 760px;">Everything you need for agent traffic — in one binary.</h2>
+      <p class="hp-section-sub" style="margin: 18px auto 0; max-width: 640px; text-align: center;">
+        One control plane for service traffic, LLM routing, MCP, A2A, and inference — with policy and observability that the platform team actually trusts.
+      </p>
+    </div>
+
+    <div class="hp-features">
+      <div class="hp-feat" data-feat="svc">
+        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
+          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15 15 0 0 1 0 20 15 15 0 0 1 0-20"/><path d="M2 12h20"/></svg></div>
+          <div>
+            <div class="hp-feat-title">Service Gateway</div>
+            <div class="hp-feat-sub">HTTP, gRPC, TCP — observable by default.</div>
+          </div>
+          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="hp-feat-body">
+          <p>Run any north–south or east–west traffic through a single binary. Zero-config TLS, OIDC, mTLS-rotation, native Envoy compatibility for those who want it.</p>
+          <div class="hp-feat-tags"><span class="hp-feat-tag">HTTP/2</span><span class="hp-feat-tag">gRPC</span><span class="hp-feat-tag">mTLS</span><span class="hp-feat-tag">TLS-1.3</span></div>
+          <div class="hp-feat-links"><a href="/docs/standalone/latest/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+        </div>
+      </div>
+
+      <div class="hp-feat" data-feat="llm">
+        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
+          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3z"/><path d="M5 3v4M3 5h4M19 17v4M17 19h4"/></svg></div>
+          <div>
+            <div class="hp-feat-title">LLM Gateway</div>
+            <div class="hp-feat-sub">Route, fail over, and budget across 12+ model backends.</div>
+          </div>
+          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="hp-feat-body">
+          <p>Drop-in OpenAI-compatible API in front of OpenAI, Anthropic, Bedrock, Gemini, Vertex, Cohere, OSS Llama runs — with per-team token budgets, semantic caching and prompt redaction.</p>
+          <div class="hp-feat-tags"><span class="hp-feat-tag">OpenAI</span><span class="hp-feat-tag">Anthropic</span><span class="hp-feat-tag">Bedrock</span><span class="hp-feat-tag">Gemini</span><span class="hp-feat-tag">Vertex</span></div>
+          <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/llm/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+        </div>
+      </div>
+
+      <div class="hp-feat" data-feat="inf">
+        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
+          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M15 2v2M15 20v2M2 15h2M2 9h2M20 15h2M20 9h2M9 2v2M9 20v2"/></svg></div>
+          <div>
+            <div class="hp-feat-title">Inference Routing</div>
+            <div class="hp-feat-sub">Smart routing across self-hosted GPU pools.</div>
+          </div>
+          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="hp-feat-body">
+          <p>Latency-aware, cost-aware, model-aware routing for self-hosted inference. Plug-in vLLM, TGI, Triton; agentgateway picks the warmest replica.</p>
+          <div class="hp-feat-tags"><span class="hp-feat-tag">vLLM</span><span class="hp-feat-tag">TGI</span><span class="hp-feat-tag">Triton</span></div>
+          <div class="hp-feat-links"><a href="/docs/standalone/latest/inference/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/inference/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+        </div>
+      </div>
+
+      <div class="hp-feat" data-feat="mcp">
+        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
+          <div class="hp-feat-icon"><img src="/integrations/mcp.svg" alt="MCP" class="color-icon"></div>
+          <div>
+            <div class="hp-feat-title">MCP Gateway</div>
+            <div class="hp-feat-sub">A control plane for the Model Context Protocol.</div>
+          </div>
+          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="hp-feat-body">
+          <p>Discover, sign, scope and observe every tool call your agents make. Treat MCP servers like microservices — with versioning, RBAC, and audit trails out of the box.</p>
+          <div class="hp-feat-tags"><span class="hp-feat-tag">Discovery</span><span class="hp-feat-tag">RBAC</span><span class="hp-feat-tag">Audit</span></div>
+          <div class="hp-feat-links"><a href="/docs/standalone/latest/mcp/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/mcp/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+        </div>
+      </div>
+
+      <div class="hp-feat" data-feat="a2a">
+        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
+          <div class="hp-feat-icon"><img src="/integrations/a2a.svg" alt="A2A"></div>
+          <div>
+            <div class="hp-feat-title">A2A Gateway</div>
+            <div class="hp-feat-sub">Bridge agents written in any framework.</div>
+          </div>
+          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="hp-feat-body">
+          <p>agentgateway speaks the Agent-to-Agent protocol natively. Route invocations between LangChain, CrewAI, ADK and your own runtime — with identity, tracing, and replay.</p>
+          <div class="hp-feat-tags"><span class="hp-feat-tag">LangChain</span><span class="hp-feat-tag">CrewAI</span><span class="hp-feat-tag">ADK</span><span class="hp-feat-tag">Identity</span></div>
+          <div class="hp-feat-links"><a href="/docs/standalone/latest/agent/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/agent/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+        </div>
+      </div>
+
+      <div class="hp-feat" data-feat="sec">
+        <div class="hp-feat-head" onclick="hpToggleFeat(this)">
+          <div class="hp-feat-icon"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg></div>
+          <div>
+            <div class="hp-feat-title">Security &amp; Observability</div>
+            <div class="hp-feat-sub">Per-call traces, logs, and policy decisions.</div>
+          </div>
+          <div class="hp-feat-toggle"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1v10M1 6h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></div>
+        </div>
+        <div class="hp-feat-body">
+          <p>OpenTelemetry by default. Per-tool, per-agent, per-tenant counters. OPA-evaluated allow/deny on every hop, with tamper-evident audit logs.</p>
+          <div class="hp-feat-tags"><span class="hp-feat-tag">OTEL</span><span class="hp-feat-tag">OPA</span><span class="hp-feat-tag">Audit</span><span class="hp-feat-tag">PII-shield</span></div>
+          <div class="hp-feat-links"><a href="/docs/standalone/latest/operations/" class="hp-feat-link">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/security/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ GETTING STARTED ============ -->
+<section class="hp-section" id="getting-started">
+  <div class="hp-wrap">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 16px;">
+      <div>
+        <h2 class="hp-section-title">Getting started</h2>
+      </div>
+      <a class="hp-btn hp-btn-ghost" href="/docs/" style="padding: 10px 18px; font-size: 14px;">View all docs →</a>
+    </div>
+
+    <div class="hp-gs-wrap">
+      <div class="hp-code-block">
+        <div class="hp-code-tabs">
+          <button class="hp-code-tab active" data-code="install">Install script</button>
+          <button class="hp-code-tab" data-code="config">config.yaml</button>
+          <button class="hp-code-tab" data-code="helm">Kubernetes</button>
+          <button class="hp-code-tab" data-code="docker">Docker</button>
+          <button class="hp-code-copy" id="hp-code-copy-btn">Copy</button>
+        </div>
+        <div class="hp-code-body">
+          <div class="hp-code-panel active" id="hp-code-install">
+            <div class="com"># Install the agentgateway binary</div>
+            <div><span class="prompt-char">$</span> curl -sL https://agentgateway.dev/install | bash</div>
+            <div>&nbsp;</div>
+            <div class="com"># Run with a config file</div>
+            <div><span class="prompt-char">$</span> agentgateway -f config.yaml</div>
+            <div>&nbsp;</div>
+            <div class="com"># INFO agentgateway: Listening on 0.0.0.0:3000</div>
+            <div class="com"># INFO agentgateway: Admin UI at http://localhost:15000/ui/</div>
+          </div>
+          <div class="hp-code-panel" id="hp-code-config">
+            <div class="com"># yaml-language-server: $schema=https://agentgateway.dev/schema/config</div>
+            <div>binds:</div>
+            <div>  - port: 3000</div>
+            <div>    listeners:</div>
+            <div>      - routes:</div>
+            <div>          - policies:</div>
+            <div>              cors:</div>
+            <div>                allowOrigins: ["*"]</div>
+            <div>            a2a: {}</div>
+            <div>            backends:</div>
+            <div>              - host: localhost:9999</div>
+          </div>
+          <div class="hp-code-panel" id="hp-code-helm">
+            <div class="com"># Install Gateway API CRDs</div>
+            <div><span class="prompt-char">$</span> kubectl apply --server-side \</div>
+            <div>  -f https://github.com/kubernetes-sigs/gateway-api/.../experimental-install.yaml</div>
+            <div>&nbsp;</div>
+            <div class="com"># Install agentgateway via Helm</div>
+            <div><span class="prompt-char">$</span> helm upgrade -i agentgateway-crds \</div>
+            <div>  oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \</div>
+            <div>  --create-namespace -n agentgateway-system --version v2.2.1</div>
+            <div>&nbsp;</div>
+            <div><span class="prompt-char">$</span> helm upgrade -i agentgateway \</div>
+            <div>  oci://ghcr.io/kgateway-dev/charts/agentgateway \</div>
+            <div>  -n agentgateway-system --version v2.2.1</div>
+          </div>
+          <div class="hp-code-panel" id="hp-code-docker">
+            <div class="com"># Run agentgateway in a container</div>
+            <div><span class="prompt-char">$</span> docker run -p 3000:3000 -p 15000:15000 \</div>
+            <div>  -v $(pwd)/config.yaml:/etc/agentgateway/config.yaml \</div>
+            <div>  ghcr.io/agentgateway/agentgateway:latest \</div>
+            <div>  -f /etc/agentgateway/config.yaml</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hp-gs-side">
+        <div class="hp-gs-item">
+          <div class="hp-gs-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <div>
+            <h4>Quick start</h4>
+            <p>Get started with agentgateway in less than 5 minutes — local-first.</p>
+            <div class="hp-gs-links"><a href="/docs/standalone/latest/quickstart/" class="hp-feat-link">Standalone &rarr;</a><a href="/docs/kubernetes/latest/quickstart/" class="hp-feat-link">Kubernetes &rarr;</a></div>
+          </div>
+        </div>
+        <div class="hp-gs-item">
+          <div class="hp-gs-ico">
+            <img src="/integrations/mcp.svg" alt="MCP" class="color-icon">
+          </div>
+          <div>
+            <h4>MCP connectivity guide</h4>
+            <p>Connect agentgateway to MCP servers with built-in discovery and auth.</p>
+            <div class="hp-gs-links"><a href="/docs/standalone/latest/mcp/" class="hp-feat-link">Standalone &rarr;</a><a href="/docs/kubernetes/latest/mcp/" class="hp-feat-link">Kubernetes &rarr;</a></div>
+          </div>
+        </div>
+        <div class="hp-gs-item">
+          <div class="hp-gs-ico">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
+          </div>
+          <div>
+            <h4>Deployment options</h4>
+            <p>Binary, Docker, or Kubernetes — pick what fits your stack.</p>
+            <div class="hp-gs-links"><a href="/docs/standalone/latest/deployment/" class="hp-feat-link">Standalone &rarr;</a><a href="/docs/kubernetes/latest/install/" class="hp-feat-link">Kubernetes &rarr;</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ INTEGRATIONS ============ -->
+<section class="hp-section" id="integrations">
+  <div class="hp-wrap">
+    <h2 class="hp-section-title">Popular integrations</h2>
+    <div class="hp-integ-marquee">
+      <!-- Row 1: LLM Providers -->
+      <div class="hp-integ-row">
+        <div class="hp-integ-label">LLM Providers</div>
+        <div class="hp-integ-track"><div class="hp-integ-scroll hp-integ-slow">
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/openai.svg" alt="OpenAI"></div><span class="hp-integ-pill-name">OpenAI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/anthropic.svg" alt="Anthropic"></div><span class="hp-integ-pill-name">Anthropic</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/google-gemini.svg" alt="Gemini"></div><span class="hp-integ-pill-name">Gemini</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/bedrock.svg" alt="Bedrock"></div><span class="hp-integ-pill-name">Bedrock</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/azure-openai.svg" alt="Azure OpenAI"></div><span class="hp-integ-pill-name">Azure OpenAI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/mistral.svg" alt="Mistral"></div><span class="hp-integ-pill-name">Mistral</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/deepseek.svg" alt="DeepSeek"></div><span class="hp-integ-pill-name">DeepSeek</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/ollama.svg" alt="Ollama"></div><span class="hp-integ-pill-name">Ollama</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/vertex-ai.svg" alt="Vertex AI"></div><span class="hp-integ-pill-name">Vertex AI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/meta.svg" alt="Meta"></div><span class="hp-integ-pill-name">Meta / Llama</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/xai.svg" alt="xAI"></div><span class="hp-integ-pill-name">xAI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/perplexity.svg" alt="Perplexity"></div><span class="hp-integ-pill-name">Perplexity</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/replicate.svg" alt="Replicate"></div><span class="hp-integ-pill-name">Replicate</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/snowflake.svg" alt="Snowflake"></div><span class="hp-integ-pill-name">Snowflake</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/openai.svg" alt="OpenAI"></div><span class="hp-integ-pill-name">OpenAI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/anthropic.svg" alt="Anthropic"></div><span class="hp-integ-pill-name">Anthropic</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/google-gemini.svg" alt="Gemini"></div><span class="hp-integ-pill-name">Gemini</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/bedrock.svg" alt="Bedrock"></div><span class="hp-integ-pill-name">Bedrock</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/azure-openai.svg" alt="Azure OpenAI"></div><span class="hp-integ-pill-name">Azure OpenAI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/mistral.svg" alt="Mistral"></div><span class="hp-integ-pill-name">Mistral</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/deepseek.svg" alt="DeepSeek"></div><span class="hp-integ-pill-name">DeepSeek</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/ollama.svg" alt="Ollama"></div><span class="hp-integ-pill-name">Ollama</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/vertex-ai.svg" alt="Vertex AI"></div><span class="hp-integ-pill-name">Vertex AI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/meta.svg" alt="Meta"></div><span class="hp-integ-pill-name">Meta / Llama</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/xai.svg" alt="xAI"></div><span class="hp-integ-pill-name">xAI</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/perplexity.svg" alt="Perplexity"></div><span class="hp-integ-pill-name">Perplexity</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/replicate.svg" alt="Replicate"></div><span class="hp-integ-pill-name">Replicate</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/snowflake.svg" alt="Snowflake"></div><span class="hp-integ-pill-name">Snowflake</span><span class="hp-integ-pill-meta">Models</span></div>
+        </div></div>
+      </div>
+
+      <!-- Row 2: Frameworks + AI Coding Tools -->
+      <div class="hp-integ-row">
+        <div class="hp-integ-label">Agents &amp; Frameworks</div>
+        <div class="hp-integ-track"><div class="hp-integ-scroll hp-integ-medium hp-integ-reverse">
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/claude.svg" alt="Claude Code" class="color-icon"></div><span class="hp-integ-pill-name">Claude Code</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/cursor.svg" alt="Cursor"></div><span class="hp-integ-pill-name">Cursor</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/openai.svg" alt="Codex"></div><span class="hp-integ-pill-name">Codex</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/vscode.svg" alt="VS Code"></div><span class="hp-integ-pill-name">VS Code</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/opencode.svg" alt="OpenCode" class="color-icon"></div><span class="hp-integ-pill-name">OpenCode</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/openclaw.svg" alt="OpenClaw" class="color-icon"></div><span class="hp-integ-pill-name">OpenClaw</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/pi.svg" alt="Pi.dev"></div><span class="hp-integ-pill-name">Pi.dev</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/github.svg" alt="GitHub CLI"></div><span class="hp-integ-pill-name">GitHub CLI</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/crewai.svg" alt="CrewAI"></div><span class="hp-integ-pill-name">CrewAI</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/google-adk.svg" alt="Google ADK"></div><span class="hp-integ-pill-name">Google ADK</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/langgraph.svg" alt="LangGraph"></div><span class="hp-integ-pill-name">LangGraph</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/langchain.svg" alt="LangChain"></div><span class="hp-integ-pill-name">LangChain</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/hugging-face.svg" alt="Hugging Face"></div><span class="hp-integ-pill-name">Hugging Face</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/nvidia.svg" alt="NVIDIA"></div><span class="hp-integ-pill-name">NVIDIA NIM</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/databricks.svg" alt="Databricks"></div><span class="hp-integ-pill-name">Databricks</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/claude.svg" alt="Claude Code" class="color-icon"></div><span class="hp-integ-pill-name">Claude Code</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/cursor.svg" alt="Cursor"></div><span class="hp-integ-pill-name">Cursor</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/openai.svg" alt="Codex"></div><span class="hp-integ-pill-name">Codex</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/vscode.svg" alt="VS Code"></div><span class="hp-integ-pill-name">VS Code</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/opencode.svg" alt="OpenCode" class="color-icon"></div><span class="hp-integ-pill-name">OpenCode</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/openclaw.svg" alt="OpenClaw" class="color-icon"></div><span class="hp-integ-pill-name">OpenClaw</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/pi.svg" alt="Pi.dev"></div><span class="hp-integ-pill-name">Pi.dev</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/github.svg" alt="GitHub CLI"></div><span class="hp-integ-pill-name">GitHub CLI</span><span class="hp-integ-pill-meta">Tools</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/crewai.svg" alt="CrewAI"></div><span class="hp-integ-pill-name">CrewAI</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/google-adk.svg" alt="Google ADK"></div><span class="hp-integ-pill-name">Google ADK</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/langgraph.svg" alt="LangGraph"></div><span class="hp-integ-pill-name">LangGraph</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/langchain.svg" alt="LangChain"></div><span class="hp-integ-pill-name">LangChain</span><span class="hp-integ-pill-meta">Frameworks</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/hugging-face.svg" alt="Hugging Face"></div><span class="hp-integ-pill-name">Hugging Face</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/nvidia.svg" alt="NVIDIA"></div><span class="hp-integ-pill-name">NVIDIA NIM</span><span class="hp-integ-pill-meta">Models</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/databricks.svg" alt="Databricks"></div><span class="hp-integ-pill-name">Databricks</span><span class="hp-integ-pill-meta">Models</span></div>
+        </div></div>
+      </div>
+
+      <!-- Row 3: MCP + Protocols + Tools -->
+      <div class="hp-integ-row">
+        <div class="hp-integ-label">Dev Tools &amp; MCP</div>
+        <div class="hp-integ-track"><div class="hp-integ-scroll hp-integ-fast">
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/mcp.svg" alt="MCP"></div><span class="hp-integ-pill-name">MCP</span><span class="hp-integ-pill-meta">Protocol</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/a2a.svg" alt="A2A"></div><span class="hp-integ-pill-name">A2A</span><span class="hp-integ-pill-meta">Protocol</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/github.svg" alt="GitHub"></div><span class="hp-integ-pill-name">GitHub</span><span class="hp-integ-pill-meta">MCP</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/slack.svg" alt="Slack" class="color-icon"></div><span class="hp-integ-pill-name">Slack</span><span class="hp-integ-pill-meta">MCP</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/database.svg" alt="Postgres"></div><span class="hp-integ-pill-name">Postgres</span><span class="hp-integ-pill-meta">MCP</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/docker.svg" alt="Docker"></div><span class="hp-integ-pill-name">Docker</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/envoyproxy.svg" alt="Envoy"></div><span class="hp-integ-pill-name">Envoy</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/vault.svg" alt="Vault"></div><span class="hp-integ-pill-name">Vault</span><span class="hp-integ-pill-meta">Security</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/grafana.svg" alt="Grafana"></div><span class="hp-integ-pill-name">Grafana</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/mcp.svg" alt="MCP"></div><span class="hp-integ-pill-name">MCP</span><span class="hp-integ-pill-meta">Protocol</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/a2a.svg" alt="A2A"></div><span class="hp-integ-pill-name">A2A</span><span class="hp-integ-pill-meta">Protocol</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/github.svg" alt="GitHub"></div><span class="hp-integ-pill-name">GitHub</span><span class="hp-integ-pill-meta">MCP</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/slack.svg" alt="Slack" class="color-icon"></div><span class="hp-integ-pill-name">Slack</span><span class="hp-integ-pill-meta">MCP</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/database.svg" alt="Postgres"></div><span class="hp-integ-pill-name">Postgres</span><span class="hp-integ-pill-meta">MCP</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/docker.svg" alt="Docker"></div><span class="hp-integ-pill-name">Docker</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/envoyproxy.svg" alt="Envoy"></div><span class="hp-integ-pill-name">Envoy</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/vault.svg" alt="Vault"></div><span class="hp-integ-pill-name">Vault</span><span class="hp-integ-pill-meta">Security</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/grafana.svg" alt="Grafana"></div><span class="hp-integ-pill-name">Grafana</span><span class="hp-integ-pill-meta">Observability</span></div>
+        </div></div>
+      </div>
+
+      <!-- Row 4: Platform + Observability -->
+      <div class="hp-integ-row">
+        <div class="hp-integ-label">Infrastructure</div>
+        <div class="hp-integ-track"><div class="hp-integ-scroll hp-integ-slow hp-integ-reverse">
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/kubernetes.svg" alt="Kubernetes"></div><span class="hp-integ-pill-name">Kubernetes</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/opentelemetry.svg" alt="OpenTelemetry"></div><span class="hp-integ-pill-name">OpenTelemetry</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/aws.svg" alt="AWS"></div><span class="hp-integ-pill-name">AWS</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/google-cloud.svg" alt="Google Cloud" class="color-icon"></div><span class="hp-integ-pill-name">Google Cloud</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/gke.svg" alt="GKE" class="color-icon"></div><span class="hp-integ-pill-name">GKE</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/langfuse.svg" alt="Langfuse" class="color-icon"></div><span class="hp-integ-pill-name">Langfuse</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/prometheus.svg" alt="Prometheus"></div><span class="hp-integ-pill-name">Prometheus</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/datadog.svg" alt="Datadog"></div><span class="hp-integ-pill-name">Datadog</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/sentry.svg" alt="Sentry"></div><span class="hp-integ-pill-name">Sentry</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/pagerduty.svg" alt="PagerDuty"></div><span class="hp-integ-pill-name">PagerDuty</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/weightsandbiases.svg" alt="W&amp;B"></div><span class="hp-integ-pill-name">Weights &amp; Biases</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill"><div class="hp-integ-pill-icon"><img src="/integrations/hashicorp.svg" alt="HashiCorp"></div><span class="hp-integ-pill-name">HashiCorp</span><span class="hp-integ-pill-meta">Security</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/kubernetes.svg" alt="Kubernetes"></div><span class="hp-integ-pill-name">Kubernetes</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/opentelemetry.svg" alt="OpenTelemetry"></div><span class="hp-integ-pill-name">OpenTelemetry</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/aws.svg" alt="AWS"></div><span class="hp-integ-pill-name">AWS</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/google-cloud.svg" alt="Google Cloud" class="color-icon"></div><span class="hp-integ-pill-name">Google Cloud</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/gke.svg" alt="GKE" class="color-icon"></div><span class="hp-integ-pill-name">GKE</span><span class="hp-integ-pill-meta">Platform</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/langfuse.svg" alt="Langfuse" class="color-icon"></div><span class="hp-integ-pill-name">Langfuse</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/prometheus.svg" alt="Prometheus"></div><span class="hp-integ-pill-name">Prometheus</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/datadog.svg" alt="Datadog"></div><span class="hp-integ-pill-name">Datadog</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/sentry.svg" alt="Sentry"></div><span class="hp-integ-pill-name">Sentry</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/pagerduty.svg" alt="PagerDuty"></div><span class="hp-integ-pill-name">PagerDuty</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/weightsandbiases.svg" alt="W&amp;B"></div><span class="hp-integ-pill-name">Weights &amp; Biases</span><span class="hp-integ-pill-meta">Observability</span></div>
+          <div class="hp-integ-pill" aria-hidden="true"><div class="hp-integ-pill-icon"><img src="/integrations/hashicorp.svg" alt="HashiCorp"></div><span class="hp-integ-pill-name">HashiCorp</span><span class="hp-integ-pill-meta">Security</span></div>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ COMMUNITY ============ -->
+<section class="hp-section" id="community">
+  <div class="hp-wrap">
+    <div class="hp-community">
+      <div class="hp-section-eyebrow" style="justify-content: center;">
+        <span class="hp-section-eyebrow-dot"></span> Built in the open
+      </div>
+      <h2 class="hp-section-title" style="margin: 14px auto 0; text-align: center;">Join the community</h2>
+      <p class="hp-section-sub" style="margin: 18px auto 0; text-align: center; max-width: 580px;">
+        Calling all agent-curious tool-builders, platform engineers, and AI enthusiasts — come help shape the future of agentic connectivity.
+      </p>
+      <div class="hp-cm-actions">
+        <a href="https://discord.gg/y9efgEmppm" class="hp-btn hp-btn-primary" style="padding: 12px 22px; font-size: 14px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.27 5.33C17.94 4.71 16.5 4.26 15 4a.09.09 0 00-.07.03c-.18.33-.39.76-.53 1.09a16.09 16.09 0 00-4.8 0c-.14-.34-.35-.76-.54-1.09-.01-.02-.04-.03-.07-.03-1.5.26-2.93.71-4.27 1.33-.01 0-.02.01-.03.02-2.72 4.07-3.47 8.03-3.1 11.95 0 .02.01.04.03.05a19.9 19.9 0 005.99 3.03c.03.01.06 0 .07-.02.46-.63.87-1.29 1.23-1.99.02-.04 0-.08-.04-.09-.65-.25-1.27-.55-1.87-.89-.04-.02-.04-.08-.01-.11.13-.09.25-.19.37-.29.02-.02.05-.02.07-.01 3.92 1.79 8.16 1.79 12.03 0 .02-.01.05 0 .07.01.12.1.24.2.37.3.04.03.04.09-.01.11-.6.35-1.22.64-1.87.89-.04.01-.05.06-.04.09.37.7.78 1.36 1.23 1.99.03.01.06.02.09.01a19.83 19.83 0 006-3.03c.02-.01.03-.03.03-.05.44-4.53-.74-8.46-3.13-11.95-.01-.01-.02-.02-.03-.02z M8.52 14.91c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.91.96 1.89 2.12 0 1.17-.84 2.12-1.89 2.12zm6.97 0c-1.03 0-1.89-.95-1.89-2.12s.84-2.12 1.89-2.12c1.06 0 1.91.96 1.89 2.12 0 1.17-.83 2.12-1.89 2.12z"/></svg>
+          Discord
+        </a>
+        <a href="https://github.com/agentgateway/agentgateway" class="hp-btn hp-btn-ghost" style="padding: 12px 22px; font-size: 14px;">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+{{ partial "quotes-carousel.html" . }}
+
+<!-- ============ LF QUOTE ============ -->
+<div class="hp-lf">
+  <div class="hp-wrap">
+    <div class="hp-lf-grid">
+      <div class="hp-lf-mark">
+        THE LINUX<br>FOUNDATION
+        <span class="hp-lf-mark-small">agentgateway · incubation · 2024</span>
+      </div>
+      <div>
+        <p class="hp-lf-quote">
+          "One of the biggest open-source security problems today is how to do MCP security in production. We're hitting on a set of problems in this space that the community doesn't know how to address. agentgateway provides a first step toward addressing some of the important issues with built-in role-based access control and visibility of actions to MCP servers."
+        </p>
+        <div class="hp-lf-byline"><strong style="color:#fff;">Jamie Capper</strong> · published in The New York Times</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FOOTER ============ -->
+<footer class="hp-footer">
+  <div class="hp-wrap">
+    <div class="hp-footer-grid">
+      <div class="hp-footer-brand">
+        <img src="/logo-dark.svg" alt="agentgateway">
+        <p>The open-source data plane for AI traffic. Built in Rust by the team behind Istio. Linux Foundation incubation project.</p>
+        <div class="hp-footer-socials">
+          <a class="hp-footer-social" href="https://github.com/agentgateway/agentgateway" aria-label="GitHub"><img src="/github.svg" alt=""></a>
+          <a class="hp-footer-social" href="https://discord.gg/y9efgEmppm" aria-label="Discord"><img src="/discord.svg" alt=""></a>
+        </div>
+      </div>
+      <div class="hp-footer-col">
+        <h5>Product</h5>
+        <a href="#features">Overview</a>
+        <a href="#features">Features</a>
+        <a href="#integrations">Integrations</a>
+        <a href="/models/">Models</a>
+      </div>
+      <div class="hp-footer-col">
+        <h5>Resources</h5>
+        <a href="/docs/">Docs</a>
+        <a href="/tutorials/">Tutorials</a>
+        <a href="/blog/">Blog</a>
+        <a href="/docs/changelog/">Changelog</a>
+      </div>
+      <div class="hp-footer-col">
+        <h5>Community</h5>
+        <a href="https://github.com/agentgateway/agentgateway">GitHub</a>
+        <a href="https://discord.gg/y9efgEmppm">Discord</a>
+        <a href="#community">Meetings</a>
+        <a href="https://github.com/agentgateway/agentgateway/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>
+      </div>
+    </div>
+    <div class="hp-footer-bottom">
+      <span>&copy; 2026 agentgateway authors · A Linux Foundation Project</span>
+      <span>Apache 2.0</span>
+    </div>
+  </div>
+</footer>
+
+</div>
+
+<script>
+(function() {
+  // Code tabs
+  var codeTabs = document.querySelectorAll('.hp-code-tab');
+  for (var i = 0; i < codeTabs.length; i++) {
+    codeTabs[i].addEventListener('click', function() {
+      var code = this.getAttribute('data-code');
+      if (!code) return;
+      var allTabs = document.querySelectorAll('.hp-code-tab');
+      var allPanels = document.querySelectorAll('.hp-code-panel');
+      for (var j = 0; j < allTabs.length; j++) { allTabs[j].classList.remove('active'); }
+      for (var j = 0; j < allPanels.length; j++) { allPanels[j].classList.remove('active'); }
+      this.classList.add('active');
+      var panel = document.getElementById('hp-code-' + code);
+      if (panel) { panel.classList.add('active'); }
+    });
+  }
+
+  // Code copy
+  var copyBtn = document.getElementById('hp-code-copy-btn');
+  if (copyBtn) {
+    copyBtn.addEventListener('click', function() {
+      var activePanel = document.querySelector('.hp-code-panel.active');
+      if (activePanel && navigator.clipboard) {
+        navigator.clipboard.writeText(activePanel.textContent.trim());
+        copyBtn.textContent = 'Copied!';
+        setTimeout(function() { copyBtn.textContent = 'Copy'; }, 2000);
+      }
+    });
+  }
+
+})();
+
+// Feature accordion
+function hpToggleFeat(head) {
+  var feat = head.parentElement;
+  var isOpen = feat.classList.contains('open');
+  document.querySelectorAll('.hp-feat.open').forEach(function(f) { f.classList.remove('open'); });
+  if (!isOpen) feat.classList.add('open');
+}
+
+// Diagram pulse animation — respect reduced motion
+(function() {
+  var diagram = document.getElementById('hp-diagram');
+  if (!diagram) return;
+  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    diagram.classList.add('pulse-off');
+  }
+})();
+</script>
