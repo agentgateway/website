@@ -2007,7 +2007,7 @@ func main() {
 
 		if !isCRD(m) {
 			widgetID := fmt.Sprintf("ks-widget-%d", len(widgets)+1)
-			if widget, ok := renderJSONSchemaWidget(doc, widgetID, docsByPath, *titleOverride); ok {
+			if widget, ok := renderJSONSchemaWidget(doc, widgetID, *titleOverride, docsByPath); ok {
 				widgets = append(widgets, widget)
 			}
 			continue
