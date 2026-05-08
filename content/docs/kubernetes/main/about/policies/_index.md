@@ -5,4 +5,3 @@ description: Learn about how AgentgatewayPolicy sections target different Kubern
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/about/policies.md" >}}

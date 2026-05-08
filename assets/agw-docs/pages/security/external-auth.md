@@ -304,6 +304,12 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    ...
    ```
 
+{{< version include-if="1.2.x" >}}
+## Conditional execution
+
+To choose between multiple external authorization servers based on the request, use the `conditional` field on your `extAuth` policy. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
