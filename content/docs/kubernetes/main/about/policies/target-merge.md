@@ -1,16 +1,9 @@
-The {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} custom resource lets you apply traffic management, security, observability, and backend connection policies to your agentgateway resources.
-
-## Policy sections
-
-Each {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} has three top-level sections in the `spec` field that control different stages of request processing. You can include one or more of these sections in a single policy.
-
-| Section | Description | Available fields |
-| -- | -- | -- |
-| `frontend` | Controls how the gateway accepts incoming connections. Applies at the gateway level before routing decisions. | `tcp`, `tls`, `http`, `networkAuthorization`, `accessLog`, `tracing` |
-| `traffic` | Controls how agentgateway processes traffic. Applies at the listener, route, or route rule level. Fields are listed in execution order. | `cors`, `jwtAuthentication`, `basicAuthentication`, `apiKeyAuthentication`, `extAuth`, `authorization`, `rateLimit`, `extProc`, `transformation`, `csrf`, `headerModifiers`, `hostRewrite`, `directResponse`, `timeouts`, `retry` |
-| `backend` | Controls how agentgateway connects to destination backends. Applies at the backend, service, route, or gateway level. | `tcp`, `tls`, `http`, `tunnel`, `transformation`, `auth`, `extAuth`, `health`, `ai`, `mcp` |
-
-{{< reuse "agw-docs/pages/agentgateway/about/processing-order.md" >}}
+---
+title: Targeting and merging
+weight: 10
+description: Learn how to target and merge policies when multiple policies apply to the same resource.
+test: skip
+---
 
 ## Policy targeting {#targeting}
 
@@ -60,13 +53,3 @@ Each policy section follows a different precedence order based on the specificit
 | `backend` | Gateway < Listener < Route (targetRef) < Route rule (targetRef) < Backend (targetRef) < Backend (inline on the backend object) < Route backend ref (inline on the route) |
 
 For example, if a Gateway-level policy sets `backend.tcp` and `backend.tls`, and a Backend-level policy sets `backend.tls`, the effective policy uses `tcp` from the Gateway policy and `tls` from the Backend policy.
-
-## Example guides
-
-Check out the following sections for policy examples.
-
-{{< cards >}}
-  {{< card path="/security" title="Security" >}}
-  {{< card path="/traffic-management" title="Traffic management" >}}
-  {{< card path="/resiliency" title="Resiliency" >}}
-{{< /cards >}}

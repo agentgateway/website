@@ -37,9 +37,9 @@ graph TD
 
 The InferencePool groups together InferenceModels of LLM workloads into a routable backend resource that the Gateway API can route inference requests to. An InferenceModel represents not just a single LLM model, but a specific configuration that includes information such as the version and criticality. The InferencePool uses this information to ensure fair consumption of compute resources across competing LLM workloads and share routing decisions with the Gateway API.
 
-### {{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} with Inference Extension {#integration}
+### {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} with Inference Extension {#integration}
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} integrates with the Inference Extension as a supported Gateway API provider. A Gateway can route requests to InferencePools, as shown in the following diagram.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} integrates with the Inference Extension as a supported Gateway API provider. A Gateway can route requests to InferencePools, as shown in the following diagram.
 
 {{< reuse "agw-docs/snippets/inference-diagram.md" >}}
 
@@ -60,7 +60,7 @@ In this quickstart, you deploy the following components.
 - vLLM for model serving.
 - A local model configuration. Qwen is used in this example.
 - Kubernetes Gateway API Inference Extension.
-- {{< reuse "agw-docs/snippets/kgateway-capital.md" >}} with inference enabled.
+- {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} with inference enabled.
 - The llm-d InferencePool via Helm, configured for Qwen.
 
 Steps:

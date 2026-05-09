@@ -29,6 +29,12 @@ IGNORED_PREFIXES = (
     "status",
 )
 
+IGNORED_REFERENCE_PATH_PARTS = {
+    "api",
+    "api-kubespec",
+    "interactive-api",
+}
+
 
 class YamlCodeExtractor(HTMLParser):
     def __init__(self) -> None:
@@ -89,9 +95,26 @@ def build_report_key(html_file: Path, input_dir: Path) -> str:
     return html_file.relative_to(input_dir).as_posix()
 
 
+def should_include_html_file(html_file: Path, input_dir: Path) -> bool:
+    try:
+        relative_parts = html_file.relative_to(input_dir).parts
+    except ValueError:
+        relative_parts = html_file.parts
+
+    for index, part in enumerate(relative_parts):
+        if part != "reference" or index + 1 >= len(relative_parts):
+            continue
+        if relative_parts[index + 1] in IGNORED_REFERENCE_PATH_PARTS:
+            return False
+
+    return True
+
+
 def build_report(input_dir: Path) -> Dict[str, List[str]]:
     report: Dict[str, List[str]] = OrderedDict()
     for html_file in sorted(input_dir.rglob("*.html")):
+        if not should_include_html_file(html_file, input_dir):
+            continue
         snippets = extract_yaml_from_html(html_file.read_text(encoding="utf-8"))
         if not snippets:
             continue

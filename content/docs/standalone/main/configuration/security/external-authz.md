@@ -3,7 +3,7 @@ title: External authorization
 weight: 20
 ---
 
-Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
+Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
 
 When {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} decisions need to be made out-of-process, use an external authorization policy.
 This policy has agentgateway send the request to an external server, such as [Open Policy Agent](https://www.openpolicyagent.org/docs/envoy) which decides whether the request is allowed or denied.
@@ -98,3 +98,25 @@ extAuthz:
 | `policies.backendAuth` | Credentials to authenticate to the authorization service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). |
 | `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
+
+## Backend-level external authorization
+
+You can also attach an `extAuthz` policy directly to a backend. Backend-level external authorization runs after agentgateway selects the backend, so the policy applies even when a route load-balances or fails over across multiple backends. Attach at the backend level when the authorization service shapes the outgoing request, for example by inserting a token, rather than only deciding whether the incoming request is allowed.
+
+```yaml
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8080
+        policies:
+          extAuthz:
+            host: localhost:9000
+            protocol:
+              grpc: {}
+```
+
+## Conditional execution
+
+To choose between multiple external authorization servers based on the request, use the `conditional` field. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).

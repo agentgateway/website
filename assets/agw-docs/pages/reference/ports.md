@@ -17,11 +17,11 @@ The {{< reuse "agw-docs/snippets/kgateway.md" >}} installation process uses a He
 
 A standard installation of {{< reuse "agw-docs/snippets/kgateway.md" >}} includes the following components:
 
-* **{{< reuse "agw-docs/snippets/kgateway-capital.md" >}} control plane**
+* **{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} control plane**
   * Creates an Envoy configuration from multiple custom resources.
   * Serves Envoy configurations using xDS.
   * Validates Proxy configurations for the gateway proxy.
-* **{{< reuse "agw-docs/snippets/kgateway-capital.md" >}} data plane (gateway proxy)**
+* **{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} data plane (gateway proxy)**
   * Receives and loads configuration from kgateway xDS.
   * Proxies incoming traffic.
 

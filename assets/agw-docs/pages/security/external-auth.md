@@ -2,7 +2,7 @@ Bring your own {{< gloss "External Authorization" >}}external authorization{{< /
 
 ## About external auth {#about}
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway, based on the [Envoy external authorization filter](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ext_authz_filter). Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway, based on the [Envoy external authorization filter](https://www.envoyproxy.io/docs/envoy/latest/intro/arch_overview/security/ext_authz_filter). Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
 
 ```mermaid
 sequenceDiagram
@@ -303,6 +303,12 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    HTTP/1.1 200 OK
    ...
    ```
+
+{{< version include-if="1.2.x" >}}
+## Conditional execution
+
+To choose between multiple external authorization servers based on the request, use the `conditional` field on your `extAuth` policy. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies" >}}).
+{{< /version >}}
 
 ## Cleanup
 

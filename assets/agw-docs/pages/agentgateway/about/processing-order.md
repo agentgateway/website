@@ -25,14 +25,14 @@ graph LR
     postrouting --> backend
 
     subgraph backend ["Phase 4: Backend"]
-        be_fields["tls · tcp · http · tunnel<br/>auth · transformation<br/>health · ai · mcp"]
+        be_fields["tls · tcp · http · tunnel<br/>auth · extAuth · transformation<br/>health · ai · mcp"]
     end
 ```
 
 1. **Frontend policies:** Control how the gateway accepts incoming connections, including TLS settings, TCP configuration, and access logging. Frontend policies apply at the gateway level before any routing decisions.
 2. **PreRouting traffic policies:** Run before route selection. Only a subset of traffic filters is available in the [PreRouting phase](#prerouting).
 3. **PostRouting traffic policies:** Run after route selection. [PostRouting](#postrouting) is the default phase for traffic policies and supports all traffic filters.
-4. **Backend policies:** Run when the gateway connects to the destination backend, including backend TLS, authentication, and health checking.
+4. **Backend policies:** Run when the gateway connects to the destination backend, including backend TLS, authentication, external authorization, and health checking. Backend-level external authorization runs after backend selection, which is useful when the authorization service needs to shape the outgoing request (for example, by inserting a token) and the route has multiple backends.
 
 Within each phase, agentgateway merges all applicable policies with a shallow field-level merge. If two policies configure different fields, both apply. For example, if one policy sets `transformation` and another sets `extAuth`, both filters run. If two policies configure the same field, the higher-precedence policy takes effect.
 
