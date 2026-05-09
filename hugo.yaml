@@ -12,6 +12,10 @@ defaultContentLanguage: en
   
 module:
   imports:
+    # docs-theme-extras must come BEFORE hextra: it shadows hextra
+    # defaults with the module's overrides. agw-oss's own layouts/ still
+    # wins over both via Hugo's project-layout precedence.
+    - path: github.com/solo-io/docs-theme-extras
     - path: github.com/imfing/hextra
   mounts:
     - source: "assets"
@@ -84,6 +88,12 @@ menu:
 params:
   title: agentgateway
   description: Agentgateway is an open source HTTP and gRPC proxy and gateway that unifies everyday API traffic with LLM, MCP, and A2A workloads in one data plane — connecting, securing, and observing agent-to-agent, agent-to-tool, and agent-to-LLM communication across any agent framework and environment.
+
+  # Tells docs-theme-extras which brand CSS layer + font stack to load
+  # (see the module's layouts/partials/custom/head-end.html). "oss" loads
+  # brand-oss.css and Open Sans; "enterprise" loads brand-enterprise.css.
+  themeExtras:
+    brand: oss
   navbar:
     displayTitle: false
     displayLogo: true
