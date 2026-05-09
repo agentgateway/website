@@ -1,3 +1,4 @@
+{{- $prodHost := partial "utils/prod-host.html" . -}}
 # {{ .Site.Title }}
 
 > {{ .Site.Params.description | default "" }}
@@ -5,15 +6,16 @@
 This is the root documentation index. For detailed page listings, follow the section links below.
 
 {{ range where site.Sections "Params.llms" "ne" false }}
-{{- template "llms-root-index-tree" dict "context" . "level" 2 }}
+{{- template "llms-root-index-tree" dict "context" . "level" 2 "prodHost" $prodHost }}
 {{ end }}
 ---
 Generated on {{ now.Format "2006-01-02 15:04:05 UTC" }}
-Site: https://agentgateway.dev
+Site: {{ $prodHost }}
 
 {{- define "llms-root-index-tree" -}}
 {{- $s := .context -}}
 {{- $level := .level | default 2 -}}
+{{- $prodHost := .prodHost -}}
 {{- $depth := len (findRE "[^/]+" $s.RelPermalink) -}}
 {{- $hashes := strings.Repeat $level "#" -}}
 
@@ -21,18 +23,18 @@ Site: https://agentgateway.dev
 {{- /* Leaf section (e.g. blog, tutorials): inline pages */}}
 {{ "\n" }}{{ $hashes }} {{ $s.Title }}
 {{- range where $s.RegularPages "Params.llms" "ne" false }}
-- [{{ .Title }}]({{ print "https://agentgateway.dev" .RelPermalink }}): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
+- [{{ .Title }}]({{ print $prodHost .RelPermalink }}): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
 {{- end }}
 
 {{- else if ge $depth 3 }}
 {{- /* Version-level section (e.g. docs/kubernetes/1.0.x): link to its llms.txt */}}
-- [{{ $s.Title }}]({{ print "https://agentgateway.dev" $s.RelPermalink }}llms.txt)
+- [{{ $s.Title }}]({{ print $prodHost $s.RelPermalink }}llms.txt)
 
 {{- else }}
 {{- /* Intermediate section (e.g. docs, docs/kubernetes): add header and recurse */}}
 {{ "\n" }}{{ $hashes }} {{ $s.Title }}
 {{- range where $s.Sections "Params.llms" "ne" false }}
-{{ template "llms-root-index-tree" dict "context" . "level" (add $level 1) }}
+{{ template "llms-root-index-tree" dict "context" . "level" (add $level 1) "prodHost" $prodHost }}
 {{- end }}
 
 {{- end }}

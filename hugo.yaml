@@ -94,6 +94,13 @@ params:
   # brand-oss.css and Open Sans; "enterprise" loads brand-enterprise.css.
   themeExtras:
     brand: oss
+    # Canonical production host (scheme + hostname, no trailing slash, no path).
+    # Read by the docs-theme-extras module's `utils/prod-host` partial and reused
+    # across layouts (copy-markdown, llms.txt, page-to-markdown) that emit
+    # absolute URLs which need to resolve when pasted outside the build's
+    # preview URL. Set explicitly here because agw-oss's prod baseURL doesn't
+    # include the host.
+    prodHost: "https://agentgateway.dev"
   navbar:
     displayTitle: false
     displayLogo: true
