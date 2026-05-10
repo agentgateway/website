@@ -96,6 +96,64 @@ export ANTHROPIC_BASE_URL="http://localhost:4000"
 
    All requests, including prompts, tool calls, and file reads, flow through agentgateway.
 
+## Teams account
+
+If you have a Claude Teams or Pro account, use this configuration instead of the API key setup above. No API key is required — authentication is handled by your Claude subscription via OAuth.
+
+1. Create a configuration file. Agentgateway listens on port `4001` and exposes Claude at the `/claude` path.
+
+   ```yaml
+   cat > config.yaml << 'EOF'
+   binds:
+   - port: 4001
+     listeners:
+     - name: default
+       protocol: HTTP
+       routes:
+       - name: claude-agent
+         matches:
+         - path:
+             pathPrefix: /claude
+         policies:
+           urlRewrite:
+             path:
+               prefix: /
+         backends:
+         - ai:
+             name: claude-agent
+             provider:
+               anthropic: {}
+             policies:
+               ai:
+                 routes:
+                   /v1/messages: messages
+                   /v1/messages/count_tokens: anthropicTokenCount
+                   '*': passthrough
+   EOF
+   ```
+
+2. Start agentgateway.
+
+   ```bash
+   agentgateway -f config.yaml
+   ```
+
+3. Point Claude Code at the `/claude` path by adding the following to `~/.claude/settings.local.json`:
+
+   ```json
+   {
+     "env": {
+       "ANTHROPIC_BASE_URL": "http://localhost:4001/claude"
+     }
+   }
+   ```
+
+4. Verify the connection.
+
+   ```bash
+   claude -p "Hello"
+   ```
+
 ## Next steps
 
 {{< cards >}}
