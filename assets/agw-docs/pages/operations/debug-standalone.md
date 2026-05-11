@@ -1,5 +1,9 @@
 Use built-in tools to troubleshoot issues in your standalone agentgateway setup.
 
+## Trace live requests {#trace}
+
+Use `agctl trace` to inspect the next request handled by agentgateway in real time, including the route matched, policies applied, and the final response. See [Trace requests]({{< link-hextra path="/operations/agctl-trace/" >}}) for full details.
+
 ## Enable debug logs {#debug-logs}
 
 Enable debug logs in agentgateway. You can choose between two methods: using the logging endpoint or updating the config file.

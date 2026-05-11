@@ -1,5 +1,9 @@
 Use built-in tools to troubleshoot issues in your {{< reuse "/agw-docs/snippets/kgateway.md" >}} setup.
 
+## Trace live requests {#trace}
+
+Use `agctl trace` to inspect the next request handled by agentgateway in real time, including the route matched, policies applied, and the final response. See [Trace requests]({{< link-hextra path="/operations/agctl-trace/" >}}) for full details.
+
 {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} consists of the control plane and an {{< reuse "/agw-docs/snippets/data-plane.md" >}} data plane. If you experience issues in your environment, such as policies that are not applied or traffic that is not routed correctly, in a lot of cases, these errors can be observed at the proxy.
 
 ## Debug the control plane {#control-plane}
