@@ -1,10 +1,4 @@
 github.com/imfing/hextra v0.12.2 h1:qa+cHQ1LC/7ys9EhRNnHrRBAHu83Tm8rhh1oWO2a7cc=
 github.com/imfing/hextra v0.12.2/go.mod h1:vi+yhpq8YPp/aghvJlNKVnJKcPJ/VyAEcfC1BSV9ARo=
-github.com/solo-io/docs-theme-extras v0.0.0-20260508195738-b1d0ba8a0e3a h1:eWi19vNZc8tpfXC1mHDEUbw+7z69BTpwGyk7q6S8pw4=
-github.com/solo-io/docs-theme-extras v0.0.0-20260508195738-b1d0ba8a0e3a/go.mod h1:VZ5cnL7Z1fID9eYWbdvaSZtDbmE96sx8jUR67VCFZ1w=
-github.com/solo-io/docs-theme-extras v0.0.0-20260509103859-d9793aa9e6a7 h1:w592HZii67J8vSAzApjemnTcnrdncixGVxc31+SMnok=
-github.com/solo-io/docs-theme-extras v0.0.0-20260509103859-d9793aa9e6a7/go.mod h1:VZ5cnL7Z1fID9eYWbdvaSZtDbmE96sx8jUR67VCFZ1w=
-github.com/solo-io/docs-theme-extras v0.0.0-20260509110622-3e9791e9c691 h1:3Ise3YBUiOgLc7yP9PbpH/hPhadIqrDLtIMUSh9ggno=
-github.com/solo-io/docs-theme-extras v0.0.0-20260509110622-3e9791e9c691/go.mod h1:VZ5cnL7Z1fID9eYWbdvaSZtDbmE96sx8jUR67VCFZ1w=
-github.com/solo-io/docs-theme-extras v0.0.0-20260511133704-d31c6a661be0 h1:ICJKfBym6TPOQuETMLceBEAHziyj32mgnux6xRAnKwg=
-github.com/solo-io/docs-theme-extras v0.0.0-20260511133704-d31c6a661be0/go.mod h1:VZ5cnL7Z1fID9eYWbdvaSZtDbmE96sx8jUR67VCFZ1w=
+github.com/solo-io/docs-theme-extras v0.0.0-20260511144653-7f4c80f88935 h1:JKMVbsklB0mlhCjl8LZkedMJMcDhsmYlbUyePE2WJ8I=
+github.com/solo-io/docs-theme-extras v0.0.0-20260511144653-7f4c80f88935/go.mod h1:VZ5cnL7Z1fID9eYWbdvaSZtDbmE96sx8jUR67VCFZ1w=
