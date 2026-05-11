@@ -31,7 +31,7 @@ For a complete command reference, see [agctl CLI reference]({{< link-hextra path
 
 ### Policy targets
 
-Policies can now target resources by label selector in addition to explicit attachment points. This makes it easier to apply shared policy configuration across groups of listeners, routes, or backends. For more information, see [Attachment points]({{< link-hextra path="/configuration/policies/attachment/" >}}).
+Policies can now target resources by label selector in addition to explicit attachment points. This configuration makes it easier to apply shared policy configuration across groups of listeners, routes, or backends. For more information, see [Attachment points]({{< link-hextra path="/configuration/policies/attachment/" >}}).
 
 ### PROXY protocol support
 
@@ -77,7 +77,7 @@ The data plane now supports locality-aware load balancing and failover, improvin
 ### Telemetry
 
 - **Custom Prometheus labels**: Policies can add custom Prometheus metric labels using CEL expressions. For more information, see [Metrics]({{< link-hextra path="/reference/observability/metrics/" >}}).
-- **OpenTelemetry environment variables**: OTEL configuration now respects standard environment variables. For more information, see [Traces]({{< link-hextra path="/reference/observability/traces/" >}}).
+- **OpenTelemetry environment variables**: The OTEL configuration now respects standard environment variables. For more information, see [Traces]({{< link-hextra path="/reference/observability/traces/" >}}).
 
 ## 🪲 Notable fixes {#v12-fixes}
 

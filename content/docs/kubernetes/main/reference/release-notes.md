@@ -34,7 +34,7 @@ controller:
     mode: tls
 ```
 
-Supported values are `plaintext`, `tls`, and `either`. The chart now defaults to `tls`, and the controller can automatically manage xDS TLS material. If you have automation that sets `controller.xds.tls.enabled`, update it to use `controller.xds.mode`. For more information, see [TLS encryption]({{< link-hextra path="/install/tls/" >}}).
+Supported values are `plaintext`, `tls`, and `either`. The chart now defaults to `tls` to enable TLS encryption for the controller. If you have automation that sets `controller.xds.tls.enabled`, update it to use `controller.xds.mode`. For more information, see [TLS encryption]({{< link-hextra path="/install/tls/" >}}).
 
 ## 🌟 New features {#v12-new-features}
 
@@ -111,9 +111,9 @@ For a complete command reference, see [agctl CLI reference]({{< link-hextra path
 
 ### Policy targets
 
-`AgentgatewayPolicy` can now target resources by label selector in addition to explicit target references. This makes it easier to apply shared policy configuration across groups of Gateways, Routes, Services, or Backends.
+The `AgentgatewayPolicy` resource can now target resources by label selector in addition to explicit target references. This configuration makes it easier to apply shared policy configuration across groups of Gateways, Routes, Services, or Backends.
 
-Additionally, `AgentgatewayPolicy` can now target `ListenerSet` and `InferencePool` resources. For more information, see [Targeting and merging]({{< link-hextra path="/about/policies/target-merge/" >}}).
+Additionally, the `AgentgatewayPolicy` resource can now target `ListenerSet` and `InferencePool` resources. For more information, see [Targeting and merging]({{< link-hextra path="/about/policies/target-merge/" >}}).
 
 ### PROXY protocol support
 
@@ -162,7 +162,7 @@ The data plane now supports locality-aware load balancing and failover, improvin
 ### Telemetry
 
 - **Custom Prometheus labels**: `AgentgatewayPolicy` can add custom Prometheus metric labels using CEL expressions.
-- **OpenTelemetry environment variables**: OTEL configuration now respects standard environment variables. For more information, see [OTel stack]({{< link-hextra path="/observability/otel-stack/" >}}).
+- **OpenTelemetry environment variables**: The OTEL configuration now respects standard environment variables. For more information, see [OTel stack]({{< link-hextra path="/observability/otel-stack/" >}}).
 
 ## 🪲 Notable fixes {#v12-fixes}
 
