@@ -21,6 +21,14 @@ Policies can now be selected conditionally using CEL expressions. Conditional ex
 
 Agentgateway now supports route delegation, allowing parent routes to delegate portions of their routing tree to child routes. Platform teams can own shared parent routes while application teams manage delegated route fragments. For more information, see [Route delegation]({{< link-hextra path="/configuration/traffic-management/route-delegation/" >}}).
 
+### `agctl` CLI debugging tool
+
+A new experimental `agctl` command-line tool for inspecting and debugging agentgateway is now available. To install `agctl`, see [Install agctl]({{< link-hextra path="/operations/agctl/" >}}).
+- `agctl config` renders the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and policies, as a structured table, JSON, or YAML. `agctl config backends` shows per-backend health, request counts, and latency. For more information, see [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}).
+- `agctl trace` streams a step-by-step trace of how the proxy processes the next request, showing the matched route, applied policies, chosen backend, and response status. For more information, see [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests/" >}}).
+
+For a complete command reference, see [agctl CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
+
 ### Policy targets
 
 Policies can now target resources by label selector in addition to explicit attachment points. This makes it easier to apply shared policy configuration across groups of listeners, routes, or backends. For more information, see [Attachment points]({{< link-hextra path="/configuration/policies/attachment/" >}}).
@@ -63,9 +71,6 @@ The data plane now supports locality-aware load balancing and failover, improvin
 
 ### Operations
 
-- **`agctl` CLI**: A new experimental command-line tool for inspecting and debugging agentgateway is now available. To install `agctl`, see [Install agctl]({{< link-hextra path="/operations/agctl/" >}}).
-  - `agctl config` renders the runtime configuration that an agentgateway instance has loaded, including binds, listeners, routes, backends, and policies, as a structured table, JSON, or YAML. Pass the config dump as a file with `--file`. For more information, see [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}).
-  - `agctl trace` streams a step-by-step trace of how the proxy processes the next request, showing the matched route, applied policies, chosen backend, and response status. For more information, see [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests/" >}}).
 - Agentgateway's memory allocator performance is improved, resulting in increased runtime performance and decreased memory utilization.
 - A new `/debug/pprof/heap` endpoint is available to get a `pprof` snapshot of current and historical allocations.
 
