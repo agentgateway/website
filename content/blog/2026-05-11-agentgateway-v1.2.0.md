@@ -1,13 +1,13 @@
 ---
 title: "Agentgateway v1.2.0: we're shipping like the agents are watching"
-publishDate: 2026-05-11
+publishDate: 2026-05-14
 author: "Sebastian Maniak"
 description: "Agentgateway v1.2.0 lands route delegation, backend external auth, conditional policies with CEL, the new agctl debugger, and a stack of LLM gateway upgrades."
 ---
 
 The agent ecosystem isn't waiting for anyone. New models drop weekly. New protocols land monthly. New attack surfaces, new auth schemes, new deployment topologies — every quarter the ground shifts under whatever you built last year. A gateway that ships on a yearly cadence is a gateway that's already obsolete.
 
-So we don't.
+So we don't. Agentgateway ships on a monthly cadence — v1.2.0 lands roughly a month after v1.1.0, and the next minor will land a month after this one. The release train moves at the speed of the ecosystem, not the speed of a planning offsite.
 
 v1.2.0 packs twenty-plus new capabilities into one release: route delegation, backend external auth with credential exchange, conditional policies with CEL, an honest-to-god debugger CLI, automatic xDS TLS, PROXY protocol, locality-aware failover, post-quantum key exchange, and a stack of LLM gateway upgrades that finally make Azure and Copilot first-class.
 
@@ -144,23 +144,29 @@ For details, see the [conditional policies docs](https://agentgateway.dev/docs/k
 
 Real talk: debugging a gateway in production has historically been a mix of `kubectl logs`, hope, and human pattern matching. Envoy's admin interface gets you part of the way. The rest is detective work.
 
-The new experimental `agctl` CLI changes that. Two commands. Both useful on day one.
+The new experimental [`agctl` CLI](https://agentgateway.dev/docs/kubernetes/main/operations/agctl/) changes that. Two commands you'll reach for daily — and both auto-discover the proxy pod and set up the port-forward to the admin endpoint, so there's no `kubectl port-forward` dance every time.
 
 ```bash
-# What does the proxy actually think about my backends right now?
-agctl config
-# → live view of the proxy's current configuration, including
-#   resolved backends with health status and observed latency.
+# What did the proxy actually load? Binds, listeners, routes, backends, policies.
+agctl config all
+# → renders the running runtime config in table, JSON, or YAML.
+
+agctl config backends
+# → just the active backends, with health scores, request counts,
+#   and observed latency.
 
 # Trace a request end-to-end through filters, policies, and the upstream
 agctl trace
-# → complete dump of everything that happened to a specific request:
-#   CEL evaluations, policy hits, header mutations, upstream timing.
+# → step-by-step record of how the proxy handled a request:
+#   matched route, applied policies, selected backend, response status.
+#   Inject your own request, or watch traffic from real clients.
 ```
 
-When somebody pings you with "the gateway is returning 502s on /v1/checkout," you stop guessing. You run `agctl trace`, you see the JWT failed validation because the JWKS cache went stale, and you fix it before the standup ends.
+`agctl config` is the one most teams hit first. Your `HTTPRoute` reports `Accepted: true`, but traffic isn't doing what you expect — and now you can [see exactly what the proxy loaded](https://agentgateway.dev/docs/kubernetes/main/operations/inspect-config/) instead of guessing from CRD status.
 
-Pair it with the new `/debug/pprof/heap` endpoint — yes, you can pull heap snapshots now — and the gateway stops being a black box.
+Then when somebody pings you with "the gateway is returning 502s on /v1/checkout," you stop guessing there too. You run [`agctl trace`](https://agentgateway.dev/docs/kubernetes/main/operations/trace-requests/), you see the JWT failed validation because the JWKS cache went stale, and you fix it before the standup ends.
+
+Pair it with the proxy's admin endpoint on port 15000 — `/config_dump`, `/debug/trace`, `/logging` for live log-level changes, and `/debug/pprof/{profile,heap}` for CPU and heap profiles — and the gateway stops being a black box. See the [debug guide](https://agentgateway.dev/docs/kubernetes/main/operations/debug/) for the full playbook.
 
 ---
 
@@ -189,6 +195,14 @@ We shipped this in months, not quarters. The roadmap moves on the same cadence a
 Agentgateway v1.2.0 is available for download on [GitHub](https://github.com/agentgateway/agentgateway/releases).
 
 To get started with agentgateway, check out our getting started guide for [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/).
+
+## Contributors
+
+This release happened because **31 contributors** showed up across **166 commits** between v1.1.0 and v1.2.0 — code, reviews, docs, bug reports, and the unglamorous CI work that keeps a fast-moving project from face-planting.
+
+Top contributors by commit count this cycle: [@howardjohn](https://github.com/howardjohn), [@npolshakova](https://github.com/npolshakova), [@stevenctl](https://github.com/stevenctl), [@danehans](https://github.com/danehans), [@markuskobler](https://github.com/markuskobler), [@filintod](https://github.com/filintod), and [@syn-zhu](https://github.com/syn-zhu) — alongside two dozen more whose fixes, features, and feedback made the rest of the release possible.
+
+The full list of contributors is in the [v1.2.0 release notes](https://github.com/agentgateway/agentgateway/releases/tag/v1.2.0).
 
 ## Get involved
 
