@@ -78,7 +78,12 @@ jobs:
           cache-dependency-path: 'docs-theme-extras/package-lock.json'
 
       - name: Build site with Hugo
-        run: hugo --gc --minify
+        run: |
+          # PostCSS is invoked by Hugo's css.PostCSS for assets/css/styles.css
+          # but isn't installed by default in this runner. Mirror the
+          # install pattern from links.yml so Hugo can find it via npx.
+          npm i -D postcss postcss-cli autoprefixer
+          hugo --gc --minify
 
       - name: Install harness dependencies
         working-directory: docs-theme-extras
