@@ -12,11 +12,12 @@ defaultContentLanguage: en
   
 module:
   imports:
-    # docs-theme-extras must come BEFORE hextra: it shadows hextra
-    # defaults with the module's overrides. agw-oss's own layouts/ still
-    # wins over both via Hugo's project-layout precedence.
+    # hextra used to live here as a sibling import; docs-theme-extras
+    # now declares the hextra import itself, so consumers no longer
+    # need to list it separately. The shadowing order stays correct:
+    # docs-theme-extras's own layouts win over the transitively-imported
+    # hextra ones.
     - path: github.com/solo-io/docs-theme-extras
-    - path: github.com/imfing/hextra
   mounts:
     - source: "assets"
       target: "assets"

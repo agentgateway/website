@@ -1,4 +1,8 @@
 github.com/imfing/hextra v0.12.2 h1:qa+cHQ1LC/7ys9EhRNnHrRBAHu83Tm8rhh1oWO2a7cc=
 github.com/imfing/hextra v0.12.2/go.mod h1:vi+yhpq8YPp/aghvJlNKVnJKcPJ/VyAEcfC1BSV9ARo=
+github.com/imfing/hextra v0.12.3 h1:DZHY2rUWYteyzjlHi9r4n7Bb5e2Q+6LXe4C1Dqn0ZjM=
+github.com/imfing/hextra v0.12.3/go.mod h1:vi+yhpq8YPp/aghvJlNKVnJKcPJ/VyAEcfC1BSV9ARo=
 github.com/solo-io/docs-theme-extras v0.0.0-20260511155019-c92ce1dd2604 h1:6vcnrWe77hB7kD++WAoyY1yl4jq4p3ueOLDZkBNlqug=
 github.com/solo-io/docs-theme-extras v0.0.0-20260511155019-c92ce1dd2604/go.mod h1:VZ5cnL7Z1fID9eYWbdvaSZtDbmE96sx8jUR67VCFZ1w=
+github.com/solo-io/docs-theme-extras v0.0.0-20260511163457-a01f26ba50bd h1:FZE9jD05f9Gm6j+Q/HBCavE+ze3ZpdBhqnhJ5cAOwDU=
+github.com/solo-io/docs-theme-extras v0.0.0-20260511163457-a01f26ba50bd/go.mod h1:VZ5cnL7Z1fID9eYWbdvaSZtDbmE96sx8jUR67VCFZ1w=
