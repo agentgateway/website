@@ -1,5 +1,5 @@
 ---
-title: agctl
+title: agctl CLI reference
 weight: 25
 description: Reference for the agctl command-line tool.
 test: skip

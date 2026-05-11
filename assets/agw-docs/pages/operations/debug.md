@@ -1,156 +1,29 @@
-Inspect and troubleshoot agentgateway proxies through the admin endpoints and the [`agctl`]({{< link-hextra path="/operations/agctl" >}}) command-line tool.
+Use built-in tools to troubleshoot issues in your {{< reuse "/agw-docs/snippets/kgateway.md" >}} setup.
 
-## About
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} consists of the control plane and an {{< reuse "/agw-docs/snippets/data-plane.md" >}} data plane. If you experience issues in your environment, such as policies that are not applied or traffic that is not routed correctly, in a lot of cases, these errors can be observed at the proxy.
 
-Each agentgateway pod runs an admin server on port `15000`. The admin server provides the following endpoints for inspection and debugging.
+## Debug the control plane {#control-plane}
 
-| Endpoint | Description |
-| -- | -- |
-| `/config_dump` | Returns the runtime configuration that the proxy has loaded, including binds, listeners, routes, backends, workloads, services, and policies. |
-| `/debug/trace` | Streams a JSON-over-SSE trace of the next request that the proxy handles. The `agctl trace` command consumes this endpoint. |
-| `/logging` | Get and set the logging level at runtime. |
-| `/memory` | Dump allocator and process memory statistics. |
-| `/debug/pprof/profile` | Build a CPU profile by using the [pprof](https://github.com/google/pprof) profiler. Use `?seconds=N` to set the duration (1–300s, default 10s). |
-| `/debug/pprof/heap` | Collect heap profiling data. |
-| `/debug/tasks` | Inspect the live tokio task tree. |
-| `/quitquitquit` | Trigger a graceful shutdown of the proxy. |
-
-To inspect the configuration that a gateway proxy has loaded and to capture per-request traces, use the [`agctl`]({{< link-hextra path="/operations/agctl" >}}) command-line tool. `agctl` resolves the proxy pod for you, opens a port-forward, and renders the admin output in formats that are easier to scan than raw JSON.
-
-## Before you begin
-
-* [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
-* Make sure that your kubeconfig points at the cluster that runs the agentgateway proxy you want to debug.
-
-## Check the gateway, route, and policy status
-
-Most routing and policy issues surface in the status of the corresponding Kubernetes resource. Check these first.
-
-1. Verify that the agentgateway control plane and proxy pods are running.
+1. Enable port-forwarding on the control plane.
 
    ```sh
-   kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl port-forward deploy/{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} 9095
    ```
 
-2. Verify the Gateway is `Accepted` and `Programmed`.
+2. In your browser, open the admin server debugging interface: [http://localhost:9095/](http://localhost:9095/).
 
-   ```sh
-   kubectl get gateway -A
-   kubectl get gateway <name> -n <namespace> -o yaml
-   ```
+   {{< reuse-image src="img/admin-server-debug-ui.png" caption="Figure: Admin server debugging interface.">}}
+   {{< reuse-image-dark srcDark="img/admin-server-debug-ui.png" caption="Figure: Admin server debugging interface.">}}
 
-3. Check the HTTPRoute for `Accepted` and `ResolvedRefs` conditions.
+3. Select one of the endpoints to continue debugging. {{< reuse "agw-docs/snippets/review-table.md" >}} 
 
-   ```sh
-   kubectl get httproute -A
-   kubectl get httproute <name> -n <namespace> -o yaml
-   ```
+   | Endpoint | Description |
+   | -- | -- |
+   | `/debug/pprof` | View the pprof profile of the control plane. A profile shows you the stack traces of the call sequences, such as Go routines, that led to particular events, such as memory allocation. The endpoint includes descriptions of each available profile.|
+   | `/logging` | Review the current logging levels of each component in the control plane. You can also interactively set the log level by component, such as to enable `DEBUG` logs. |
+   | `/snapshots/krt` | View the current krt snapshot, or the point-in-time view of the transformed Kubernetes resources and their sync status that the control plane processed. These resources are then used to generate gateway configuration that is sent to the gateway proxies for routing decisions. |
+   | `/snapshots/xds` | The xDS snapshot is used for Envoy-based kgateway proxies, not agentgateway proxies. | 
 
-   Common issues to check for:
+## Debug your gateway setup
 
-   * The wrong backend is selected.
-   * The wrong parent Gateway is referenced.
-   * Multiple HTTPRoutes conflict by having identical matchers or by having no matchers (and so default to `/`).
-
-## Inspect the loaded configuration
-
-Sometimes a route is `Accepted` but the proxy still does not behave as expected. To see what the proxy actually loaded, dump its runtime configuration.
-
-1. Render a summary of the routes, backends, and policies that the gateway has loaded.
-
-   ```sh
-   agctl config all gateway/<gateway-name> -n <namespace> -o yaml
-   ```
-
-2. Inspect the backends that the gateway is sending traffic to and their endpoint health.
-
-   ```sh
-   agctl config backends gateway/<gateway-name> -n <namespace>
-   ```
-
-   Example output:
-
-   ```
-   TYPE     NAME       NAMESPACE            ENDPOINT                    HEALTH  REQUESTS  LATENCY
-   Backend  openai     agentgateway-system  backend                     0.70    1         0.00ms
-   Service  ext-authz  backend-extauth      ext-authz-7c7596b5f6-tvs28  1.00    4         0.00ms
-   Service  httpbin    backend-extauth      httpbin-7dc88b5fbc-zqrfn    1.00    2         3.06ms
-   ```
-
-For complete steps, see [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config" >}}).
-
-## Trace requests
-
-To see how a specific request flows through agentgateway, use `agctl trace`. The trace shows you the route that was selected, the policies that were applied, the backend that was chosen, and the response status. Tracing is invaluable for understanding why a request matched (or did not match) a route, why a policy was or was not applied, or why a request returned an unexpected status.
-
-```sh
-agctl trace gateway/<gateway-name> -n <namespace> --port <listener-port> -- http://<host>/<path>
-```
-
-`agctl` opens a port-forward to the proxy pod, captures the trace, sends the request, and renders the result in a TUI. Use `--raw` to print JSON Lines instead.
-
-For complete steps, see [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests" >}}).
-
-## Enable debug logs {#debug-logs}
-
-Agentgateway uses the same level syntax as [`RUST_LOG`](https://docs.rs/env_logger/latest/env_logger/#enabling-logging): `error`, `warn`, `info`, `debug`, and `trace`. You can change the level at runtime through the proxy's admin endpoint.
-
-1. Open a port-forward to the proxy.
-
-   ```sh
-   kubectl port-forward deploy/<gateway-name> -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000 &
-   ```
-
-2. Set the log level.
-
-   ```sh
-   curl -X POST "http://localhost:15000/logging?level=debug"
-   ```
-
-   Example output:
-
-   ```
-   current log level is typespec_client_core::http::policies::logging=warn,hickory_server::server::server_future=off,rmcp=warn,debug
-   ```
-
-3. Tail the proxy logs.
-
-   ```sh
-   kubectl logs -n {{< reuse "agw-docs/snippets/namespace.md" >}} deploy/<gateway-name> -f
-   ```
-
-You can also set fine-grained levels per module by using the same `RUST_LOG` filter syntax, such as `info,proxy::httpproxy=trace`.
-
-## Capture profiles
-
-Agentgateway includes pprof endpoints to help you investigate CPU and memory issues.
-
-1. Open a port-forward to the proxy.
-
-   ```sh
-   kubectl port-forward deploy/<gateway-name> -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000 &
-   ```
-
-2. Capture a CPU profile. The default duration is 10 seconds; the example uses 30 seconds.
-
-   ```sh
-   curl -o cpu.pprof "http://localhost:15000/debug/pprof/profile?seconds=30"
-   ```
-
-3. Capture a heap profile.
-
-   ```sh
-   curl -o heap.pprof http://localhost:15000/debug/pprof/heap
-   ```
-
-4. Inspect the profile with `go tool pprof`.
-
-   ```sh
-   go tool pprof -http=: cpu.pprof
-   ```
-
-## What's next
-
-* [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
-* [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests" >}}).
-* [Inspect agentgateway configuration with agctl]({{< link-hextra path="/operations/inspect-config" >}}).
+{{< reuse "agw-docs/snippets/debug-gateway.md" >}}

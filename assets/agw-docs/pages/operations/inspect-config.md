@@ -1,4 +1,4 @@
-Inspect the runtime configuration that an agentgateway proxy has loaded by using `agctl config`.
+Inspect the runtime configuration that an agentgateway proxy loaded by using `agctl config`.
 
 ## About
 
@@ -15,15 +15,11 @@ Inspect the runtime configuration that an agentgateway proxy has loaded by using
 
 ## Before you begin
 
-* [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
-* Install agentgateway and create a Gateway. The examples in this guide use the agentgateway proxy that the [Get started]({{< link-hextra path="/quickstart/" >}}) installs in the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace.
-* Have at least one HTTPRoute attached to the Gateway. The examples assume the `httpbin` HTTPRoute from the [non-agentic HTTP quickstart]({{< link-hextra path="/quickstart/non-agentic-http" >}}).
+1. [Install agctl]({{< link-hextra path="/operations/agctl" >}}).
+2. {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
+3. Have an HTTPRoute that the trace request matches. The examples assume the `httpbin` HTTPRoute from the [non-agentic HTTP quickstart]({{< link-hextra path="/quickstart/non-agentic-http" >}}), which routes `www.example.com` to the httpbin service.
 
-## Steps
-
-{{% steps %}}
-
-### Step 1: Render the full configuration
+## Render the full configuration
 
 Render the configuration that the proxy has loaded, as YAML.
 
@@ -40,7 +36,7 @@ agctl config all gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/name
 agctl config all --file /tmp/agw-dump.json -o yaml
 ```
 
-### Step 2: List active backends
+## List active backends
 
 Print a table of backends that the gateway is actively routing to, with endpoint health and request stats.
 
@@ -50,7 +46,7 @@ agctl config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets
 
 Example output:
 
-```
+```console
 TYPE     NAME       NAMESPACE            ENDPOINT                    HEALTH  REQUESTS  LATENCY
 Backend  openai     agentgateway-system  backend                     0.70    1         0.00ms
 Service  ext-authz  backend-extauth      ext-authz-7c7596b5f6-tvs28  1.00    4         0.00ms
@@ -61,7 +57,7 @@ The columns mean the following.
 
 | Column | Meaning |
 | -- | -- |
-| `TYPE` | `Backend` for an agentgateway `Backend` resource, `Service` for a Kubernetes Service resolved through xDS. |
+| `TYPE` | `Backend` for an {{< reuse "agw-docs/snippets/backend.md" >}} resource, `Service` for a Kubernetes Service resolved through xDS. |
 | `NAME` | The backend or service name. |
 | `NAMESPACE` | The namespace that the backend or service lives in. |
 | `ENDPOINT` | The pod or static target backing the entry. |
@@ -69,7 +65,7 @@ The columns mean the following.
 | `REQUESTS` | The number of requests sent to the endpoint since the proxy started. |
 | `LATENCY` | The mean upstream latency for the endpoint. |
 
-### Step 3: Include zero-request workloads
+## Include zero-request workloads
 
 By default, `agctl config backends` only shows backends that the proxy is actively routing to. To include every service and workload that the proxy knows about, including those with zero requests, pass `--all`.
 
@@ -79,44 +75,22 @@ agctl config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets
 
 The expanded view is useful for confirming that the proxy is aware of a service before you create an HTTPRoute that targets it.
 
-### Step 4: Use other output formats
+```console
+TYPE     NAME                NAMESPACE            ENDPOINT                                                      HEALTH  REQUESTS  LATENCY
+Backend  openai              agentgateway-system  backend                                                       1.00    1         4682.37ms
+Service  agentgateway        agentgateway-system  agentgateway-56b5fd7ffd-8r2nj                                 1.00    0         
+Service  agentgateway-proxy  agentgateway-system  agentgateway-proxy-784ffbfc76-pcpqk                           1.00    0         
+Service  kubernetes          default              discovery.k8s.io/EndpointSlice/default/kubernetes/172.18.0.3  1.00    0         
+Service  httpbin             httpbin              httpbin-6bc5b79755-bsmzr                                      1.00    5         1.54ms
+Service  kube-dns            kube-system          coredns-674b8bbfcf-gnqbg                                      1.00    0         
+Service  kube-dns            kube-system          coredns-674b8bbfcf-mfs4f                                      1.00    0         
+```
 
-Both subcommands accept the `-o` flag with `short`, `json`, and `yaml` values.
+## Use other output formats
+
+Both subcommands accept the `-o` flag with `short`, `json`, and `yaml` values. The `short` and `json` outputs both return the full pretty-printed configuration. Note that there is no compressed table view for the full configuration.
 
 ```sh
-# Backends as JSON, for piping to jq
+# Use jq to show backends where some requests failed
 agctl config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json | jq '.[] | select(.health < 1.0)'
 ```
-
-{{< callout type="note" >}}
-For `agctl config all`, the `short` and `json` outputs both return the full pretty-printed configuration. There is no compressed table view for the full configuration today.
-{{< /callout >}}
-
-{{% /steps %}}
-
-## Troubleshooting
-
-### `accepts at most 1 arg(s)`
-
-**What's happening**: `agctl config` returns this error.
-
-**Why it's happening**: You passed more than one resource argument or combined `--file` with a resource argument.
-
-**How to fix it**: Pass exactly one resource argument (`gateway/<name>`), or pass `--file <path>` instead.
-
-### Wrong proxy port
-
-**What's happening**: `agctl config` opens a port-forward but cannot reach the admin endpoint.
-
-**Why it's happening**: The proxy admin port is not the default `15000`. For example, you set a custom `adminAddr` in your gateway parameters.
-
-**How to fix it**: Pass `--proxy-admin-port` to point `agctl` at the right port.
-
-```sh
-agctl config all gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --proxy-admin-port 16000
-```
-
-## What's next
-
-* [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests" >}}).
-* [Debug your setup]({{< link-hextra path="/operations/debug" >}}).

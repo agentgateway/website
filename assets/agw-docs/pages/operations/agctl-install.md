@@ -8,7 +8,7 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 
 | Command | Description |
 | -- | -- |
-| `agctl trace` | Capture a tap-style trace of the next request that an agentgateway proxy handles. Renders the trace as a TUI by default, or as JSON Lines for piping to other tools. |
+| `agctl trace` | Capture a tap-style trace of the next request that an agentgateway proxy handles. Renders the trace as a text-based terminal user interface (TUI) by default, or as JSON Lines for piping to other tools. |
 | `agctl config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
 | `agctl completion` | Generate a shell completion script for `bash`, `zsh`, `fish`, or `powershell`. |
 
@@ -16,10 +16,11 @@ For a complete list of subcommands and flags, see the [`agctl` CLI reference]({{
 
 ## Before you begin
 
-For agentgateway 1.2.x, you build `agctl` from source. Make sure that you have the following tools installed.
+Build `agctl` from source. Make sure that you have the following tools installed.
 
-* [Go](https://go.dev/doc/install) 1.22 or later.
-* [Git](https://git-scm.com/downloads).
+* [Go](https://go.dev/doc/install) 1.22 or later
+* [Git](https://git-scm.com/downloads)
+* [Graphviz](https://graphviz.org/download/) for profile investigation
 
 ## Install agctl
 

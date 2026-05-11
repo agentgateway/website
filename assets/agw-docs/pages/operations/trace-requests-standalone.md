@@ -56,11 +56,7 @@ EOF
 agentgateway -f /tmp/agctl-trace-config.yaml --validate-only
 {{< /doc-test >}}
 
-## Steps
-
-{{% steps %}}
-
-### Step 1: Start agentgateway
+## Start agentgateway
 
 In one terminal, run agentgateway with your config file.
 
@@ -75,7 +71,7 @@ info  app  serving UI at http://localhost:15000/ui
 info  proxy::gateway  started bind  bind="bind/3000"
 ```
 
-### Step 2: Trace a request from another client (watch mode)
+## Trace a request from another client (watch mode)
 
 In a second terminal, start a watch.
 
@@ -119,7 +115,7 @@ The trace records the following stages for each request.
 | `responseSnapshot` | `final response` | The response as it is returned to the client. |
 | `requestFinished` | &mdash; | The proxy completed the request. |
 
-### Step 3: Trace a request that agctl sends (inject mode)
+## Trace a request that agctl sends (inject mode)
 
 Run `agctl trace` with `--port` and a request URL after `--`. `agctl` enables tracing and sends the request itself, so you do not need a separate client.
 
@@ -138,47 +134,40 @@ agctl trace --local --raw --port 3000 -- http://example.com/post \
   -d '{"key":"value"}'
 ```
 
-### Step 4: Open the interactive TUI
+## Open the interactive TUI
 
-Omit `--raw` to render the trace in an interactive terminal UI that lets you step through each event and drill into the request and response state.
+Omit `--raw` to render the trace in an interactive, text-based terminal user interface (TUI) that lets you step through each event and drill into the request and response state.
 
 ```sh
 agctl trace --local --port 3000 -- http://example.com/headers
 ```
 
-Press <kbd>q</kbd> to quit the TUI.
-
-{{% /steps %}}
-
-## Troubleshooting
-
-### `connection refused` from agctl trace --local
-
-**What's happening**: `agctl trace --local` cannot reach the admin endpoint on `127.0.0.1:15000`.
-
-**Why it's happening**: Agentgateway is not running, has not finished starting, or you have set a non-default `adminAddr`.
-
-**How to fix it**: Confirm that agentgateway is running and that the admin server is listening.
-
-```sh
-curl -s http://127.0.0.1:15000/config_dump | head
+Example TUI:
+```console
+╔═════════════════════Events gateway/agentgateway-proxy═════════════════════╗┌──────────────────── Raw Event ───────────────────┐
+║#  Type           Summary                                                  ║│eventEnd: 1112                                    │
+║1  Request Start  request started                                          ║│eventStart: null                                  │
+║2  Snapshot       initial request                                          ║│message:                                          │
+║3  Snapshot       gateway policies                                         ║│  type: requestFinished                           │
+║4  Route          selected "httpbin/httpbin.00.http" (2 evaluated)         ║│severity: info                                    │
+║5  Policies       effective policies: apiKey, authorization, basicAuth, co…║│                                                  │
+║6  Snapshot       route policies                                           ║│                                                  │
+║7  Snapshot       final request                                            ║│                                                  │
+║8  Backend Start  10.244.0.7:8080                                          ║│                                                  │
+║9  Backend Result status=200                                               ║│                                                  │
+║10 Snapshot       backend response ready                                   ║│                                                  │
+║11 Snapshot       final response                                           ║│                                                  │
+║12 Request Done   request finished                                         ║│                                                  │
+║                                                                           ║│                                                  │
+║                                                                           ║│                                                  │
+║                                                                           ║│                                                  │
+║                                                                           ║│                                                  │
+║                                                                           ║│                                                  │
+╚═══════════════════════════════════════════════════════════════════════════╝└──────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────Help──────────────────────────────────────────────────────────────┐
+│stream complete, press q to exit                                                                                               │
+│tab: switch pane (events)   arrows: scroll selected pane   e/s/d: detail mode   q: quit                                        │
+└───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-If you have set a custom admin address in your config file, pass `--proxy-admin-port` to point `agctl` at the right port.
-
-```sh
-agctl trace --local --proxy-admin-port 16000
-```
-
-### The trace never fires
-
-**What's happening**: `agctl trace` waits indefinitely and no events appear.
-
-**Why it's happening**: No request has reached the proxy yet, or your client is sending requests to a different port than the proxy listener.
-
-**How to fix it**: Confirm that requests are actually reaching agentgateway. The agentgateway logs print one `info request` line per accepted request. If you do not see those lines, the request is not making it to the proxy.
-
-## What's next
-
-* [Inspect agentgateway configuration with agctl]({{< link-hextra path="/operations/inspect-config" >}}).
-* [Debug your setup]({{< link-hextra path="/operations/debug" >}}).
+Press **q** to quit the TUI.
