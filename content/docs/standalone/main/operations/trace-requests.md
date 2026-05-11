@@ -8,4 +8,8 @@ test:
     path: trace-validate
 ---
 
+{{< callout type="warning">}}
+{{< reuse "agw-docs/snippets/feature-experimental.md">}}
+{{< /callout >}}
+
 {{< reuse "agw-docs/pages/operations/trace-requests-standalone.md" >}}
