@@ -169,7 +169,7 @@ The data plane now supports locality-aware load balancing and failover, improvin
 - Fixed A2A policy matching for agents hosted under sub-paths.
 - Fixed A2A and MCP handling of `X-Forwarded-Proto`.
 - Fixed service parents and arbitrary parents in route delegation.
-- Fixed phantom backend chains attaching policies to missing targets.
+- Fixed policies that target missing or non-existent backends from silently attaching to the gateway.
 - Fixed JWKS stale fetches, startup fetch behavior, cache cleanup, and orphan cleanup.
 - Fixed CEL property parsing after bracket accessors.
 - Fixed CEL `response.body` access when upstream responses are compressed.
