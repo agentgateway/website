@@ -101,7 +101,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{% tab tabName="UI" %}}
    1. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser. If the MCP inspector tool does not open automatically, run `mcp-inspector`. 
       ```sh
-      npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+      npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
       ```
    
    2. From the MCP Inspector menu, try to connect to your agentgateway address as follows:

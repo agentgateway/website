@@ -326,7 +326,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 2. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser.
    
    ```sh
-   npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+   npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
    ```
    
 3. From the MCP Inspector menu, connect to your agentgateway address as follows:
