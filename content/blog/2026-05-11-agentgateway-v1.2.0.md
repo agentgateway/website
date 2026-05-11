@@ -36,8 +36,12 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: parent
-  namespace: default
+  namespace: agentgateway-system
 spec:
+  hostnames:
+  - delegation.example
+  parentRefs:
+  - name: agentgateway-proxy
   rules:
   - matches:
     - path:
@@ -75,48 +79,61 @@ Here's the pattern everyone ends up building eventually: a user logs in, hits yo
 
 Until now, the "right" answer was a sidecar, an envoy filter chain held together with hope, or a homegrown proxy in front of your proxy. That's done.
 
-External auth can now run as a **backend policy after backend selection**. The gateway knows exactly which upstream is about to be called, calls out to your token-exchange service, gets the right credential, and injects it where that backend wants it — header, query param, or cookie. You configure it once. The gateway handles the per-backend dance.
+External auth can now run as a **backend policy after backend selection**. The gateway knows exactly which upstream is about to be called, calls out to your token-exchange service, and can place the returned credential where that backend expects it — header, query param, or cookie. You configure it once. The gateway handles the per-backend dance.
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1
 kind: AgentgatewayPolicy
 metadata:
   name: backend-token-exchange
+  namespace: agentgateway-system
 spec:
   targetRefs:
-  - kind: Backend
+  - group: agentgateway.dev
+    kind: Backend
     name: partner-api
-  extAuth:
-    backend: token-exchange-svc
-    forwardCredential:
-      location: header
-      name: Authorization
-      prefix: "Bearer "
+  traffic:
+    extAuth:
+      backendRef:
+        name: token-exchange-svc
+        namespace: agentgateway-system
+        port: 9000
+      grpc: {}
 ```
 
-Combine it with the new credential-location overrides (JWT, basic auth, API key, and backend auth can now read from or write to any of headers, query, or cookies) and explicit Secret-backed GCP credentials, and the awkward "auth proxy in front of the auth proxy" pattern just collapsed into one CRD.
+Combine it with the new credential-location overrides — JWT, basic auth, API key, and backend auth can now read from or write to headers, query params, or cookies — and explicit Secret-backed GCP credentials, and the awkward "auth proxy in front of the auth proxy" pattern just collapsed into one CRD.
 
 ## 3. Conditional policies: one block, many code paths
 
-You've all built this monstrosity: three near-identical rate-limit policies, gated by header matchers on the route, because the existing API made you express "if admin, do X; else do Y" by duplicating the entire policy block. Or worse — you punted to an ext-proc service just to get an `if` statement.
+You've all built this monstrosity: three near-identical rate-limit policies, gated by header matchers on the route, because the existing API made you express "if write, do X; else do Y" by duplicating the entire policy block. Or worse — you punted to an ext-proc service just to get an `if` statement.
 
 Now policies branch on CEL directly. External auth, transformations, rate limiting, ext-proc, and direct responses all support `conditional:` lists. The gateway walks them top-down, applies the first match, and falls back to the unconditional tail if nothing hits.
 
+Here's a real one — strict limits for writes, looser limits for everything else:
+
 ```yaml
-traffic:
-  transformation:
-    conditional:
-    - condition: request.headers["x-user"] == "admin"
-      policy:
-        request:
-          set:
-          - name: x-role
-            value: admin
-    - policy:
-        request:
-          set:
-          - name: x-role
-            value: user
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: conditional-ratelimit
+  namespace: default
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: my-route
+  traffic:
+    rateLimit:
+      conditional:
+      - condition: request.method == "POST" || request.method == "PUT" || request.method == "DELETE"
+        policy:
+          local:
+          - requests: 10
+            unit: Minutes
+      - policy:
+          local:
+          - requests: 100
+            unit: Minutes
 ```
 
 That's the whole pattern. One policy, two paths, zero duplication. And CEL means you can branch on anything in the request — headers, path, JWT claims, even response state for response-side policies.
@@ -131,17 +148,17 @@ The new experimental `agctl` CLI changes that. Two commands. Both useful on day 
 
 ```bash
 # What does the proxy actually think about my backends right now?
-agctl config backends
-# → live view of every backend the gateway sees, including
-#   resolved endpoints, current health, observed latency, circuit state.
+agctl config
+# → live view of the proxy's current configuration, including
+#   resolved backends with health status and observed latency.
 
-# Trace a single request end-to-end through filters, policies, and upstream
-agctl trace --request-id 7c1f...
-# → every CEL evaluation, policy hit, header mutation, retry attempt,
-#   and the exact bytes that left the gateway.
+# Trace a request end-to-end through filters, policies, and the upstream
+agctl trace
+# → complete dump of everything that happened to a specific request:
+#   CEL evaluations, policy hits, header mutations, upstream timing.
 ```
 
-When somebody slacks you "the gateway is returning 502s on /v1/checkout," you stop guessing. You run `agctl trace`, you see the JWT failed validation because the JWKS cache went stale at 03:14, and you fix it before the standup ends.
+When somebody pings you with "the gateway is returning 502s on /v1/checkout," you stop guessing. You run `agctl trace`, you see the JWT failed validation because the JWKS cache went stale, and you fix it before the standup ends.
 
 Pair it with the new `/debug/pprof/heap` endpoint — yes, you can pull heap snapshots now — and the gateway stops being a black box.
 
