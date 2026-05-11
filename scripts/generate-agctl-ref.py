@@ -86,11 +86,16 @@ def weight_for_filename(filename: str) -> int:
 
 
 def rewrite_file(path: Path) -> None:
-    """Add Hugo frontmatter and fix relative cross-links."""
+    """Fix relative cross-links in cobra-generated Markdown for Hugo reuse assets.
+
+    Asset files must NOT contain frontmatter — the reuse shortcode renders raw
+    file content, so any YAML front matter would appear as literal text on the page.
+    Frontmatter belongs only in the thin wrapper pages under content/.
+    """
     text = path.read_text(encoding="utf-8")
 
     # Cobra writes "## agctl trace\n\n<short>\n\n### Synopsis\n\n..."
-    # Strip the leading "## " heading so Hugo renders our title from frontmatter.
+    # Strip the leading "## " heading; the wrapper page supplies the title.
     text = re.sub(r"^## .+?\n+", "", text, count=1)
 
     # Rewrite relative .md links so they resolve under reference/agctl/.
@@ -104,20 +109,7 @@ def rewrite_file(path: Path) -> None:
 
     text = re.sub(r"\[([^\]]+)\]\(([a-zA-Z0-9_]+\.md)\)", link_sub, text)
 
-    title = title_for_filename(path.name)
-    weight = weight_for_filename(path.name)
-    description = f"Reference for the `{title}` command."
-
-    frontmatter = (
-        "---\n"
-        f"title: {title}\n"
-        f"weight: {weight}\n"
-        f"description: {description}\n"
-        "test: skip\n"
-        "---\n\n"
-    )
-
-    path.write_text(frontmatter + text.lstrip(), encoding="utf-8")
+    path.write_text(text.lstrip(), encoding="utf-8")
 
 
 CONTENT_MODES = ("standalone", "kubernetes")
