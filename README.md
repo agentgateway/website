@@ -32,9 +32,7 @@ blocks against a cluster. Framework targets are prefixed `framework-test-*`.
 
 ### One-time setup
 
-Clone `docs-theme-extras` as a sibling of this repo (or set
-`FRAMEWORK_EXTRAS_DIR=/abs/path` on each make call), then install harness
-deps and Playwright browser binaries:
+Clone `docs-theme-extras` as a sibling of this repo:
 
 ```sh
 cd ../
@@ -42,6 +40,26 @@ git clone https://github.com/solo-io/docs-theme-extras.git
 cd <agentgateway/website_clone_directory>
 make framework-test-install   # ~1-3 min, ~120-180 MB
 ```
+
+### If your clone lives somewhere else
+
+The Makefile defaults to `FRAMEWORK_EXTRAS_DIR=../docs-theme-extras`. Override
+it when your clone is at a different path. Three ways, pick whichever fits
+your workflow:
+
+```sh
+# 1. Per-command (no shell state):
+make framework-test-static FRAMEWORK_EXTRAS_DIR=/abs/path/to/docs-theme-extras
+
+# 2. Exported for the shell session (all subsequent `make` calls pick it up):
+export FRAMEWORK_EXTRAS_DIR=/abs/path/to/docs-theme-extras
+make framework-test-static
+
+# 3. Persistent: add the export to your ~/.zshrc (or ~/.bashrc).
+```
+
+The same variable works for `framework-test-install` and every other
+`framework-test-*` target.
 
 ### Day-to-day
 
