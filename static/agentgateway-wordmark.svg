@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 32" width="220" height="32" fill="none">
+  
+  <g transform="translate(2 2)" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none">
+    <circle cx="14" cy="14" r="13" opacity="0.18"></circle>
+    <circle cx="14" cy="14" r="9" opacity="0.45"></circle>
+    <circle cx="14" cy="14" r="5" opacity="0.85"></circle>
+    <circle cx="14" cy="14" r="1.6" fill="currentColor" stroke="none"></circle>
+  </g>
+  <text x="36" y="22" font-family="Figtree, ui-sans-serif, system-ui, -apple-system, sans-serif" font-weight="500" font-size="18" letter-spacing="-0.5" fill="currentColor">agentgateway</text>
+</svg>
