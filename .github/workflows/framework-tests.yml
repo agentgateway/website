@@ -41,14 +41,25 @@ jobs:
 
       - name: Resolve docs-theme-extras SHA from go.mod
         id: theme-sha
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # Pseudo-version format: v0.0.0-YYYYMMDDhhmmss-<12-char-sha>.
           # The 14-digit date contains 12 leading digits that ALSO match
           # [0-9a-f]{12}, so the regex finds two matches per line and the
           # first is the date prefix, not the SHA. Take the LAST match.
-          sha=$(grep "docs-theme-extras" go.mod | grep -oE '[0-9a-f]{12}' | tail -1)
+          short=$(grep "docs-theme-extras" go.mod | grep -oE '[0-9a-f]{12}' | tail -1)
+          if [ -z "$short" ]; then
+            echo "Could not extract docs-theme-extras short SHA from go.mod" >&2
+            exit 1
+          fi
+          # actions/checkout treats anything that isn't exactly 40 hex
+          # chars as a branch/tag name, so the 12-char short SHA from the
+          # pseudo-version fails to fetch. Resolve to the full 40-char
+          # SHA via the commits API before passing to checkout.
+          sha=$(gh api "repos/solo-io/docs-theme-extras/commits/${short}" --jq .sha)
           if [ -z "$sha" ]; then
-            echo "Could not extract docs-theme-extras SHA from go.mod" >&2
+            echo "Could not resolve full SHA for short=${short}" >&2
             exit 1
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
