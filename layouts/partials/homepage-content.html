@@ -1025,29 +1025,37 @@
           <div class="hp-code-panel" id="hp-code-config">
             <div class="com"># yaml-language-server: $schema=https://agentgateway.dev/schema/config</div>
             <div>binds:</div>
-            <div>  - port: 3000</div>
-            <div>    listeners:</div>
-            <div>      - routes:</div>
-            <div>          - policies:</div>
-            <div>              cors:</div>
-            <div>                allowOrigins: ["*"]</div>
-            <div>            a2a: {}</div>
-            <div>            backends:</div>
-            <div>              - host: localhost:9999</div>
+            <div>- port: 3000</div>
+            <div>  listeners:</div>
+            <div>  - routes:</div>
+            <div>    - policies:</div>
+            <div>        cors:</div>
+            <div>          allowOrigins: ["*"]</div>
+            <div>          allowHeaders: [content-type, cache-control]</div>
+            <div>        a2a: {}</div>
+            <div>      backends:</div>
+            <div>      - host: localhost:9999</div>
           </div>
           <div class="hp-code-panel" id="hp-code-helm">
             <div class="com"># Install Gateway API CRDs</div>
-            <div><span class="prompt-char">$</span> kubectl apply --server-side \</div>
-            <div>  -f https://github.com/kubernetes-sigs/gateway-api/.../experimental-install.yaml</div>
+            <div><span class="prompt-char">$</span> kubectl apply --server-side --force-conflicts \</div>
+            <div>  -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml</div>
+            <div>&nbsp;</div>
+            <div class="com"># Install agentgateway CRDs via Helm</div>
+            <div><span class="prompt-char">$</span> helm upgrade -i agentgateway-crds \</div>
+            <div>  oci://cr.agentgateway.dev/charts/agentgateway-crds \</div>
+            <div>  --create-namespace --namespace agentgateway-system \</div>
+            <div>  --version v1.1.0 \</div>
+            <div>  --set controller.image.pullPolicy=Always</div>
             <div>&nbsp;</div>
             <div class="com"># Install agentgateway via Helm</div>
-            <div><span class="prompt-char">$</span> helm upgrade -i agentgateway-crds \</div>
-            <div>  oci://ghcr.io/kgateway-dev/charts/agentgateway-crds \</div>
-            <div>  --create-namespace -n agentgateway-system --version v2.2.1</div>
-            <div>&nbsp;</div>
             <div><span class="prompt-char">$</span> helm upgrade -i agentgateway \</div>
-            <div>  oci://ghcr.io/kgateway-dev/charts/agentgateway \</div>
-            <div>  -n agentgateway-system --version v2.2.1</div>
+            <div>  oci://cr.agentgateway.dev/charts/agentgateway \</div>
+            <div>  --namespace agentgateway-system \</div>
+            <div>  --version v1.1.0 \</div>
+            <div>  --set controller.image.pullPolicy=Always \</div>
+            <div>  --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \</div>
+            <div>  --wait</div>
           </div>
           <div class="hp-code-panel" id="hp-code-docker">
             <div class="com"># Run agentgateway in a container</div>
@@ -1272,11 +1280,10 @@
     <div class="hp-lf-grid">
       <div class="hp-lf-mark">
         THE LINUX<br>FOUNDATION
-        <span class="hp-lf-mark-small">agentgateway · incubation · 2024</span>
       </div>
       <div>
         <p class="hp-lf-quote">
-          "One of the biggest open-source security problems today is how to do MCP security in production. We're hitting on a set of problems in this space that the community doesn't know how to address. agentgateway provides a first step toward addressing some of the important issues with built-in role-based access control and visibility of actions to MCP servers."
+          "One of the biggest open security problems today is how to do MCP security effectively. While there are a lot of problems in this space that the community doesn't know how to address, the agentgateway project provides a first step toward addressing some of the important issues with basic role-based access control and visibility of actions to MCP servers. I look forward to seeing how this project adapts and evolves to handle the complex, evolving threats in this space under open source governance."
         </p>
         <div class="hp-lf-byline"><strong style="color:#fff;">Jamie Capper</strong> · published in The New York Times</div>
       </div>
@@ -1290,7 +1297,7 @@
     <div class="hp-footer-grid">
       <div class="hp-footer-brand">
         <img src="/logo-dark.svg" alt="agentgateway">
-        <p>The open-source data plane for AI traffic. Built in Rust by the team behind Istio. Linux Foundation incubation project.</p>
+        <p>An open source HTTP and gRPC gateway that handles traditional application traffic and AI-native protocols in one data plane. Route, secure, observe, and govern services, LLM provider traffic, MCP tools, and agent-to-agent communication without stitching together separate gateways.</p>
         <div class="hp-footer-socials">
           <a class="hp-footer-social" href="https://github.com/agentgateway/agentgateway" aria-label="GitHub"><img src="/github.svg" alt=""></a>
           <a class="hp-footer-social" href="https://discord.gg/y9efgEmppm" aria-label="Discord"><img src="/discord.svg" alt=""></a>
