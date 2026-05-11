@@ -217,7 +217,7 @@ EOF
 
 1. Open the MCP inspector.
    ```sh
-   npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+   npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
    ```
 
 2. From the MCP Inspector menu, connect to your agentgateway address as follows:
