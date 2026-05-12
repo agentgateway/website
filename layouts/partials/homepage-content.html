@@ -342,6 +342,10 @@
   fill: #8B90A3; font-family: var(--hp-font-m); font-size: 11px; letter-spacing: 0.12em;
 }
 .dark .col-eyebrow { fill: #676D84; }
+.hp-page .col-eyebrow-strong {
+  fill: #2A2F45; font-family: var(--hp-font-b); font-size: 13px; font-weight: 700; letter-spacing: 0.16em;
+}
+.dark .col-eyebrow-strong { fill: #E6E8F2; }
 
 @media (max-width: 720px) {
   .hp-diagram-wrap { border-radius: 16px; }
@@ -784,13 +788,13 @@
             <rect class="node-rect" x="0" y="0" width="240" height="56" rx="14"/>
             <rect class="node-icon-bg" x="12" y="12" width="32" height="32" rx="9"/>
             <image href="/integrations/mcp.svg" x="16" y="16" width="24" height="24"/>
-            <text class="node-label" x="56" y="28">MCP / A2A endpoints</text>
+            <text class="node-label" x="56" y="28">MCP / A2A</text>
           </g>
           <g transform="translate(976, 516)">
             <rect class="node-rect" x="0" y="0" width="240" height="56" rx="14"/>
             <rect class="node-icon-bg" x="12" y="12" width="32" height="32" rx="9"/>
             <g transform="translate(16, 16)" class="node-icon"><path d="M9 6L3 12l6 6"/><path d="M15 6l6 6-6 6"/><path d="M14 4l-4 16"/></g>
-            <text class="node-label" x="56" y="28">REST · MCP · API tools</text>
+            <text class="node-label" x="56" y="28">APIs / Services</text>
           </g>
         </g>
 
@@ -813,11 +817,16 @@
 
         <!-- CAPABILITY PILLS -->
         <g>
-          <g transform="translate(560, 158)">
-            <rect class="cap-pill-rect" x="0" y="0" width="160" height="44" rx="22"/>
-            <text class="cap-pill-label" x="80" y="22" text-anchor="middle">LLM Gateway</text>
+          <g transform="translate(466, 230)">
+            <rect class="cap-pill-rect" x="0" y="0" width="164" height="38" rx="19"/>
+            <text class="cap-pill-label" x="82" y="19" text-anchor="middle">Traffic Management</text>
           </g>
-          <path class="cap-leader" d="M 640 202 L 640 250"/>
+          <path class="cap-leader" d="M 548 268 L 590 280"/>
+          <g transform="translate(650, 230)">
+            <rect class="cap-pill-rect" x="0" y="0" width="164" height="38" rx="19"/>
+            <text class="cap-pill-label" x="82" y="19" text-anchor="middle">LLM Gateway</text>
+          </g>
+          <path class="cap-leader" d="M 732 268 L 690 280"/>
           <g transform="translate(466, 492)">
             <rect class="cap-pill-rect" x="0" y="0" width="164" height="38" rx="19"/>
             <text class="cap-pill-label" x="82" y="19" text-anchor="middle">Inference Routing</text>
@@ -833,7 +842,7 @@
         <!-- Bottom labels -->
         <g>
           <text x="184" y="640" class="col-eyebrow" text-anchor="middle">REQUEST · INBOUND</text>
-          <text x="640" y="640" class="col-eyebrow" text-anchor="middle">ROUTE · SECURE · OBSERVE · GOVERN</text>
+          <text x="640" y="640" class="col-eyebrow col-eyebrow-strong" text-anchor="middle">ROUTE · SECURE · OBSERVE · GOVERN</text>
           <text x="1096" y="640" class="col-eyebrow" text-anchor="middle">RESPONSE · OUTBOUND</text>
           <g class="trace-base" stroke-linecap="round">
             <line x1="64" y1="660" x2="304" y2="660"/>
