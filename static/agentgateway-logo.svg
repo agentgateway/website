@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 32" width="240" height="32" fill="none">
+  <g transform="translate(3 3)" stroke="#ffffff" stroke-linecap="round" fill="none">
+    <circle cx="13" cy="13" r="12" stroke-width="1.4" opacity="0.22"></circle>
+    <circle cx="13" cy="13" r="8" stroke-width="1.6" opacity="0.55"></circle>
+    <circle cx="13" cy="13" r="4" stroke-width="2" opacity="0.95"></circle>
+    <circle cx="13" cy="13" r="1.4" fill="#ffffff" stroke="none"></circle>
+  </g>
+  <text x="36" y="23" font-family="Figtree, ui-sans-serif, system-ui, -apple-system, &#39;Segoe UI&#39;, sans-serif" font-weight="500" font-size="22" letter-spacing="-0.6" fill="#ffffff">agentgateway</text>
+</svg>

@@ -4,8 +4,7 @@ TLS encryption is disabled by default. When enabled, the control plane mounts a 
 
 ## Before you begin
 
-{{< conditional-text include-if="envoy" >}}{{< reuse "agw-docs/snippets/prereq.md" >}}{{< /conditional-text >}}
-{{< conditional-text include-if="agentgateway" >}}{{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}{{< /conditional-text >}}
+{{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
 
 ## Step 1: Set up cert-manager {#cert-manager}
 
