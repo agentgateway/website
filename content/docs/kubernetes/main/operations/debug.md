@@ -1,6 +1,7 @@
 ---
 title: Debug your setup
 weight: 15
+description: Debug your agentgateway environment.
 ---
 
 Inspect and troubleshoot agentgateway proxies through the admin endpoints and the [`agctl`]({{< link-hextra path="/operations/agctl" >}}) command-line tool.
@@ -32,7 +33,7 @@ Most routing and policy issues surface in the status of the corresponding Kubern
 
 1. Verify that the agentgateway control plane and proxy pods are running.
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    kubectl get pods -n <namespace>
@@ -47,7 +48,7 @@ Most routing and policy issues surface in the status of the corresponding Kubern
 
 2. Verify the Gateway is `Accepted` and `Programmed`.
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    kubectl get gateway -A
@@ -67,7 +68,7 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    kubectl get httproute -A
    ```
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    kubectl get httproute <name> -n <namespace> -o yaml
@@ -92,7 +93,7 @@ Sometimes a route is `Accepted` but the proxy still does not behave as expected.
 
 1. Render a summary of the routes, backends, and policies that the gateway has loaded.
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    agctl config all gateway/<gateway-name> -n <namespace> -o yaml
@@ -107,7 +108,7 @@ Sometimes a route is `Accepted` but the proxy still does not behave as expected.
 
 2. Inspect the backends that the gateway is sending traffic to and their endpoint health.
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    agctl config backends gateway/<gateway-name> -n <namespace>
@@ -135,7 +136,7 @@ For complete steps, see [Inspect agentgateway configuration]({{< link-hextra pat
 
 To see how a specific request flows through agentgateway, use `agctl trace`. The trace shows you the route that was selected, the policies that were applied, the backend that was chosen, and the response status. Tracing helps you understand why a request did or did not match a route, why a policy was or was not applied, or why a request returned an unexpected status.
 
-{{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+{{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
 {{% tab tabName="Replace with your own" %}}
 ```sh
 agctl trace gateway/<gateway-name> -n <namespace> --port <listener-port> -- http://<host>/<path>
@@ -159,7 +160,7 @@ Agentgateway uses the same level syntax as [`RUST_LOG`](https://docs.rs/env_logg
 
 1. Open a port-forward to the proxy.
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    kubectl port-forward deploy/<gateway-name> -n <namespace> 15000 &
@@ -186,7 +187,7 @@ Agentgateway uses the same level syntax as [`RUST_LOG`](https://docs.rs/env_logg
 
 3. Tail the proxy logs.
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    kubectl logs -n <namespace> deploy/<gateway-name> -f
@@ -209,7 +210,7 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
 2. Open a port-forward to the proxy.
 
-   {{< tabs tabTotal=2" items="Replace with your own, Quickstart example" >}}
+   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
    {{% tab tabName="Replace with your own" %}}
    ```sh
    kubectl port-forward deploy/<gateway-name> -n <namespace> 15000 &
