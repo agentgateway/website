@@ -13,8 +13,17 @@ flowchart LR
 
 You can run `agctl trace` in two modes:
 
-* **Watch mode**: `agctl trace` waits for the next request that arrives at the proxy and traces it. Send the request from any client, such as `curl` in another terminal.
-* **Inject mode**: `agctl trace --port <listener> -- <url>` enables tracing and sends the request itself. The host portion of the URL sets the `Host` header but is not used for DNS resolution.
+* **Inject mode**: Enables tracing and sends the request itself through the same port-forward. The host portion of the URL sets the `Host` header but is not used for DNS resolution.
+
+  ```sh
+  agctl trace gateway/<name> --port <listener> -- <url>
+  ```
+
+* **Watch mode**: Waits for the next request that arrives at the proxy and traces it. Send the request from any client.
+  
+  ```sh
+  agctl trace gateway/<name>
+  ```
 
 ## Before you begin
 
@@ -64,7 +73,7 @@ In one terminal, run agentgateway with your config file.
 agentgateway -f config.yaml
 ```
 
-You should see a log line that confirms the admin server is listening on port `15000`.
+Notice a log line that confirms the admin server is listening on port `15000`.
 
 ```
 info  app  serving UI at http://localhost:15000/ui
@@ -73,30 +82,32 @@ info  proxy::gateway  started bind  bind="bind/3000"
 
 ## Trace a request from another client (watch mode)
 
-In a second terminal, start a watch.
+After starting agentgateway, trace a request from another client.
 
-```sh
-agctl trace --local --raw
-```
+1. In a second terminal from where agentgateway runs, start a watch.
 
-In a third terminal, send a request to agentgateway.
+   ```sh
+   agctl trace --local --raw
+   ```
 
-```sh
-curl http://127.0.0.1:3000/headers
-```
+2. In a third terminal, send a request to agentgateway.
 
-The watch terminal prints a JSON Lines trace of the request, such as the following.
+   ```sh
+   curl http://127.0.0.1:3000/headers
+   ```
 
-```json
-{"eventStart":null,"eventEnd":5,"severity":"info","message":{"type":"requestStarted"}}
-{"eventStart":null,"eventEnd":69,"severity":"info","message":{"type":"requestSnapshot","stage":"initial request","requestState":{"request":{"method":"GET","uri":"http://127.0.0.1:3000/headers","path":"/headers","host":"127.0.0.1:3000",...}}}}
-{"eventStart":null,"eventEnd":100,"severity":"info","message":{"type":"routeSelection","selectedRoute":"default/default/bind/3000/listener0/default/httpbin","evaluatedRoutes":["default/default/bind/3000/listener0/default/httpbin"]}}
-{"eventStart":null,"eventEnd":117,"severity":"info","message":{"type":"policySelection","effectivePolicy":{"localRateLimit":null,"authorization":null,...}}}
-{"eventStart":null,"eventEnd":159,"severity":"info","message":{"type":"backendCallStart","target":"127.0.0.1:8000"}}
-{"eventStart":157,"eventEnd":9730,"severity":"info","message":{"type":"backendCallResult","status":200,"error":null}}
-{"eventStart":null,"eventEnd":9777,"severity":"info","message":{"type":"responseSnapshot","stage":"final response","requestState":{"response":{"code":200,...}}}}
-{"eventStart":null,"eventEnd":9800,"severity":"info","message":{"type":"requestFinished"}}
-```
+3. In the watch terminal, review the JSON trace output of the request, such as the following.
+
+   ```json
+   {"eventStart":null,"eventEnd":5,"severity":"info","message":{"type":"requestStarted"}}
+   {"eventStart":null,"eventEnd":69,"severity":"info","message":{"type":"requestSnapshot","stage":"initial request","requestState":{"request":{"method":"GET","uri":"http://127.0.0.1:3000/headers","path":"/headers","host":"127.0.0.1:3000",...}}}}
+   {"eventStart":null,"eventEnd":100,"severity":"info","message":{"type":"routeSelection","selectedRoute":"default/default/bind/3000/listener0/default/httpbin","evaluatedRoutes":["default/default/bind/3000/listener0/default/httpbin"]}}
+   {"eventStart":null,"eventEnd":117,"severity":"info","message":{"type":"policySelection","effectivePolicy":{"localRateLimit":null,"authorization":null,...}}}
+   {"eventStart":null,"eventEnd":159,"severity":"info","message":{"type":"backendCallStart","target":"127.0.0.1:8000"}}
+   {"eventStart":157,"eventEnd":9730,"severity":"info","message":{"type":"backendCallResult","status":200,"error":null}}
+   {"eventStart":null,"eventEnd":9777,"severity":"info","message":{"type":"responseSnapshot","stage":"final response","requestState":{"response":{"code":200,...}}}}
+   {"eventStart":null,"eventEnd":9800,"severity":"info","message":{"type":"requestFinished"}}
+   ```
 
 The trace records the following stages for each request.
 

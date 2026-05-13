@@ -8,9 +8,9 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 
 | Command | Description |
 | -- | -- |
-| `agctl trace` | Capture a tap-style trace of the next request that an agentgateway proxy handles. Renders the trace as a text-based terminal user interface (TUI) by default, or as JSON Lines for piping to other tools. |
+| `agctl trace` | Capture a tap-style trace to analyze a copy of the next request that an agentgateway proxy handles. Renders the trace in an interactive, text-based terminal user interface (TUI) by default. Alternatively, you can format the output as JSON for piping to other tools. |
 | `agctl config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
-| `agctl completion` | Generate a shell completion script for `bash`, `zsh`, `fish`, or `powershell`. |
+| `agctl completion` | Turn on autocompletion for your shell in `bash`, `zsh`, `fish`, or `powershell`. |
 
 For a complete list of subcommands and flags, see the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
 
@@ -70,7 +70,7 @@ Build `agctl` from source. Make sure that you have the following tools installed
 
 ## Enable shell completion
 
-`agctl` ships with a completion script for `bash`, `zsh`, `fish`, and `powershell`. Source the script for your shell to get tab-completion of subcommands, flags, and resource names.
+`agctl` ships with an autocompletion script for `bash`, `zsh`, `fish`, and `powershell`. Source the script for your shell to get tab-completion of subcommands, flags, and resource names.
 
 {{< tabs items="zsh,bash,fish,powershell" tabTotal="4" >}}
 {{% tab tabName="zsh" %}}

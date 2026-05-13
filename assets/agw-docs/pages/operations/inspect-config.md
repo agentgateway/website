@@ -21,7 +21,7 @@ Inspect the runtime configuration that an agentgateway proxy loaded by using `ag
 
 ## Render the full configuration
 
-Render the configuration that the proxy has loaded, as YAML.
+Render the configuration that the proxy loaded as YAML.
 
 ```sh
 agctl config all gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
@@ -53,7 +53,7 @@ Service  ext-authz  backend-extauth      ext-authz-7c7596b5f6-tvs28  1.00    4  
 Service  httpbin    backend-extauth      httpbin-7dc88b5fbc-zqrfn    1.00    2         3.06ms
 ```
 
-The columns mean the following.
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Column | Meaning |
 | -- | -- |
