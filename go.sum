@@ -22,3 +22,5 @@ github.com/solo-io/docs-theme-extras v0.0.0-20260512185601-0c90a9448680 h1:Esn0V
 github.com/solo-io/docs-theme-extras v0.0.0-20260512185601-0c90a9448680/go.mod h1:jjjYu/QoD+vMu30zgcpfEuTEGuJOJWs5qai/K18kltg=
 github.com/solo-io/docs-theme-extras v0.0.0-20260512193119-d8e44bed0ac4 h1:FH/7o5Lbze9xpGT5WfukabBLfhRHxn/4mjfEGNgESsQ=
 github.com/solo-io/docs-theme-extras v0.0.0-20260512193119-d8e44bed0ac4/go.mod h1:jjjYu/QoD+vMu30zgcpfEuTEGuJOJWs5qai/K18kltg=
+github.com/solo-io/docs-theme-extras v0.0.0-20260512201347-951707f54956 h1:aq+AmuqAxTikFzb7OdRC2gop/clrL0ayCmLtkPK45Kc=
+github.com/solo-io/docs-theme-extras v0.0.0-20260512201347-951707f54956/go.mod h1:jjjYu/QoD+vMu30zgcpfEuTEGuJOJWs5qai/K18kltg=
