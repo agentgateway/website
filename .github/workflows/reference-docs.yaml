@@ -208,6 +208,13 @@ jobs:
           KGATEWAY_DIR="agentgateway/controller" \
           python3 website/scripts/generate-ref-docs.py
 
+      - name: Generate agctl CLI reference
+        run: |
+          LINK_VERSION="${{ matrix.link_version }}" \
+          WEBSITE_DIR="website" \
+          KGATEWAY_DIR="agentgateway" \
+          python3 website/scripts/generate-agctl-ref.py
+
       - name: Build rendered docs for kubespec index
         working-directory: website
         run: hugo --config hugo.yaml
@@ -266,13 +273,13 @@ jobs:
             Generate reference documentation for agentgateway (${{ matrix.link_version }}).
 
             Source: agentgateway/agentgateway at `${{ matrix.ref }}`.
-            Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, Helm (agentgateway + agentgateway-crds), and control plane metrics for the ${{ matrix.link_version }} version.
+            Updates API reference (including shared types such as CEL expression) and interactive kubespec widgets, Helm (agentgateway + agentgateway-crds), control plane metrics, and the agctl CLI reference for the ${{ matrix.link_version }} version.
 
             This PR was created automatically by the reference-docs workflow.
 
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
           branch: ref-docs-${{ matrix.link_version }}
-          commit-message: 'docs: update API (incl. shared types), kubespec widgets, Helm, and metrics docs from agentgateway ${{ matrix.ref }}'
+          commit-message: 'docs: update API (incl. shared types), kubespec widgets, Helm, metrics, and agctl CLI docs from agentgateway ${{ matrix.ref }}'
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ matrix.link_version }}) from agentgateway ${{ matrix.ref }}'

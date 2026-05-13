@@ -27,4 +27,3 @@ Use built-in tools to troubleshoot issues in your {{< reuse "/agw-docs/snippets/
 ## Debug your gateway setup
 
 {{< reuse "agw-docs/snippets/debug-gateway.md" >}}
-
