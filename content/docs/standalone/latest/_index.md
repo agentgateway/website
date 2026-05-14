@@ -1,7 +1,7 @@
 ---
-linkTitle: "Latest"
-title: Latest
-description: Welcome to the latest standalone docs for agentgateway.
+linkTitle: "Main (in dev)"
+title: Main (dev)
+description: Welcome to the main (dev) standalone docs for agentgateway.
 test: skip
 ---
 

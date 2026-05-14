@@ -1,5 +1,5 @@
 ---
-title: Latest
+title: Main (in dev)
 weight: 460
 description: Use agentgateway in a Kubernetes environment. 
 test: skip
