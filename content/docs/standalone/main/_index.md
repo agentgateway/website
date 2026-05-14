@@ -1,7 +1,7 @@
 ---
 linkTitle: "Main (in dev)"
-title: Main (dev)
-description: Welcome to the main (dev) standalone docs for agentgateway.
+title: Main (in dev)
+description: Use agentgateway as a standalone binary.
 test: skip
 ---
 
