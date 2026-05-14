@@ -71,6 +71,10 @@
    {{< reuse-image src="img/agw-ui-landing.png" caption="Figure: Read-only agentgateway UI.">}}
    {{< reuse-image-dark srcDark="img/agw-ui-landing-dark.png" caption="Figure: Read-only agentgateway UI.">}}
 
+   {{< callout type="info" >}}
+   In agentgateway 1.2 and later, you can skip the `kubectl port-forward` step and use the [`agctl`]({{< link-hextra path="/operations/agctl" >}}) CLI to inspect the proxy's configuration and trace requests directly. For example, run `agctl config all gateway/agentgateway-proxy -n agentgateway-system -o yaml` to render the loaded configuration, or `agctl trace gateway/agentgateway-proxy -n agentgateway-system --port 80 -- http://<host>/<path>` to capture a per-request trace.
+   {{< /callout >}}
+
    {{< /conditional-text >}}
 
 4. Review the logs for each component. Each component logs the sync loops that it runs, such as syncing with various environment signals like the Kubernetes API. {{< conditional-text include-if="envoy" >}}You can fetch the latest logs for all the components with the following command.
