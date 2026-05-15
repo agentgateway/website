@@ -4,12 +4,12 @@
 #
 # Quick start:
 #   make help              List all targets with short descriptions
-#   make server             Run the site locally (drafts/future content included)
+#   make serve             Run the site locally (drafts/future content included)
 #   make build             Build the production site (public/)
 #
 # Common workflows:
-#   make fetch-test-artifacts-server   Use latest CI test results and run the site
-#   make test-run-server              Run doc tests locally, then run the site
+#   make fetch-test-artifacts-serve   Use latest CI test results and run the site
+#   make test-run-serve              Run doc tests locally, then run the site
 #   make fetch-test-artifacts-build  Use latest CI test results and build for prod
 #
 # First-time setup:
@@ -72,14 +72,22 @@ build:
 	hugo --gc --minify
 
 # Start local dev server (drafts and future-dated content shown)
-.PHONY: server
-server:
+.PHONY: serve
+serve:
 	hugo160 server --buildDrafts --buildFuture
 
 # Start local server with production-like build (GC, minify, no drafts)
-.PHONY: server-prod
-servr-prod:
+.PHONY: serve-prod
+serve-prod:
 	hugo160 server --gc --minify
+
+# Alias for serve (drafts and future-dated content shown)
+.PHONY: server
+server: serve
+
+# Alias for serve-prod (production-like build, no drafts)
+.PHONY: server-prod
+server-prod: serve-prod
 
 # Remove public/ and resources/ (Hugo output and cache)
 .PHONY: clean
@@ -186,7 +194,7 @@ _framework_test_preflight:
 #----------------------------------------------------------------------------------
 # Combined workflows
 #----------------------------------------------------------------------------------
-# One-step targets that chain: test data → inject status → build or server.
+# One-step targets that chain: test data → inject status → build or serve.
 #----------------------------------------------------------------------------------
 
 # Fetch CI test results, inject status, build site for production
@@ -197,13 +205,13 @@ fetch-test-artifacts-build: test-artifacts-fetch test-status build
 .PHONY: test-run-build
 test-run-build: test-run test-status build
 
-# Fetch CI test results, inject status, server site locally
-.PHONY: fetch-test-artifacts-server
-fetch-test-artifacts-server: test-artifacts-fetch test-status server
+# Fetch CI test results, inject status, serve site locally
+.PHONY: fetch-test-artifacts-serve
+fetch-test-artifacts-serve: test-artifacts-fetch test-status serve
 
-# Run doc tests locally, inject status, server site locally
-.PHONY: test-run-server
-test-run-server: test-run test-status server
+# Run doc tests locally, inject status, serve site locally
+.PHONY: test-run-serve
+test-run-serve: test-run test-status serve
 
 
 #----------------------------------------------------------------------------------
