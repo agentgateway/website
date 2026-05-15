@@ -1,3 +1,4 @@
+{{- $prodHost := partial "utils/prod-host.html" . -}}
 {{- $depth := len (findRE "[^/]+" .RelPermalink) -}}
 {{- if eq $depth 1 }}
 # {{ .Title }}
@@ -11,7 +12,7 @@
 
 {{- range where $product.Sections "Params.llms" "ne" false }}
 {{- if strings.HasSuffix .RelPermalink "/latest/" }}
-{{- template "llms-docs-section-tree" dict "context" . "level" 3 }}
+{{- template "llms-docs-section-tree" dict "context" . "level" 3 "prodHost" $prodHost }}
 {{- end }}
 {{- end }}
 
@@ -27,11 +28,11 @@ Generated on {{ now.Format "2006-01-02 15:04:05 UTC" }}
 {{ end }}
 {{- if and .Sections (lt $depth 3) }}
 {{- range where .Sections "Params.llms" "ne" false }}
-- [{{ .Title }}]({{ print "https://agentgateway.dev" .RelPermalink }}llms.txt)
+- [{{ .Title }}]({{ print $prodHost .RelPermalink }}llms.txt)
 {{- end }}
 
 {{- else }}
-{{- template "llms-docs-section-tree" dict "context" . "level" 2 }}
+{{- template "llms-docs-section-tree" dict "context" . "level" 2 "prodHost" $prodHost }}
 {{- end }}
 
 ---
@@ -41,13 +42,14 @@ Generated on {{ now.Format "2006-01-02 15:04:05 UTC" }}
 {{- define "llms-docs-section-tree" -}}
 {{- $context := .context -}}
 {{- $level := .level | default 2 -}}
+{{- $prodHost := .prodHost -}}
 {{- $hashes := strings.Repeat $level "#" -}}
 
 {{- range where $context.RegularPages "Params.llms" "ne" false }}
-- [{{ .Title }}]({{ print "https://agentgateway.dev" (.RelPermalink | strings.TrimSuffix "/") }}.md): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
+- [{{ .Title }}]({{ print $prodHost (.RelPermalink | strings.TrimSuffix "/") }}.md): {{ .Summary | plainify | truncate 100 | strings.TrimSpace }}{{ if .Date }} - Published {{ .Date.Format "2006-01-02" }}{{ end }}
 {{- end }}
 
 {{- range where $context.Sections "Params.llms" "ne" false }}
 {{ "\n" }}{{ $hashes }} {{ .Title }}
-{{ template "llms-docs-section-tree" dict "context" . "level" (add $level 1) }}
+{{ template "llms-docs-section-tree" dict "context" . "level" (add $level 1) "prodHost" $prodHost }}
 {{- end }}{{- end -}}

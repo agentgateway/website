@@ -5,6 +5,8 @@ menu:
   main:
     weight: 3
     identifier: docs
+cascade:
+  type: docs
 test: skip
 ---
 

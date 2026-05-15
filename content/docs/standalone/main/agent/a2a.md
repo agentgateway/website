@@ -66,7 +66,7 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
 
    Type a sample message, such as `hi`, press enter to skip select file, and then send the message by pressing enter again.
 
-   The agent responded with `Hello World` by taking a look at the end of the respond `{"kind":"text","text":"Hello World"}],"role":"agent"}`
+   The agent responded with `Hello World` by taking a look at the end of the response `{"kind":"text","text":"Hello World"}],"role":"agent"}`
 
 2. In another terminal tab, manually send a request to the agent card endpoint through agentgateway.
 

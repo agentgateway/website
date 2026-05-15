@@ -22,12 +22,9 @@
 {{- $md = $md | replaceRE `…` `...` -}}
 {{- $md = $md | replaceRE `–` `-` -}}
 {{- $md = $md | replaceRE `—` `--` -}}
-{{- /* Resolve URLs to absolute */ -}}
-{{- $siteBase := site.BaseURL | strings.TrimRight "/" -}}
-{{- $baseURL := $siteBase -}}
-{{- if not (or (hasPrefix $siteBase "http://") (hasPrefix $siteBase "https://")) -}}
-  {{- $baseURL = "https://agentgateway.dev" -}}
-{{- end -}}
+{{- /* Resolve URLs to absolute. Host comes from utils/prod-host (explicit
+       themeExtras.prodHost > site.BaseURL host > empty). */ -}}
+{{- $baseURL := partial "utils/prod-host.html" . -}}
 {{- $pagePath := .Permalink | replaceRE `^(https?:)?//[^/]+` "" -}}
 {{- $pageAbs := printf "%s%s" $baseURL $pagePath | strings.TrimRight "/" -}}
 {{- $md = $md | replaceRE `(!\[[^\]]*\]\()//localhost:\d+/` (printf "${1}%s/" $baseURL) -}}

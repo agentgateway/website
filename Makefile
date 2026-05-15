@@ -81,10 +81,114 @@ serve:
 serve-prod:
 	hugo160 server --gc --minify
 
+# Alias for serve (drafts and future-dated content shown)
+.PHONY: server
+server: serve
+
+# Alias for serve-prod (production-like build, no drafts)
+.PHONY: server-prod
+server-prod: serve-prod
+
 # Remove public/ and resources/ (Hugo output and cache)
 .PHONY: clean
 clean:
 	rm -rf public resources
+
+
+#----------------------------------------------------------------------------------
+# Framework tests
+#----------------------------------------------------------------------------------
+# Playwright HTML harness from github.com/solo-io/docs-theme-extras. The harness
+# does NOT build the site; these targets build first, then point Playwright at
+# public/ via .docs-test.toml. Distinct from the doc tests above: those run
+# code blocks against a cluster; these check rendered HTML quality.
+#
+# Targets are prefixed `framework-test-*` so they don't collide with the
+# doc-test `test-*` namespace above.
+#----------------------------------------------------------------------------------
+
+# Path to a docs-theme-extras checkout that hosts the harness. CI sets this
+# inside $GITHUB_WORKSPACE; locally it defaults to a sibling clone.
+# Override with: make framework-test FRAMEWORK_EXTRAS_DIR=/abs/path
+FRAMEWORK_EXTRAS_DIR ?= ../docs-theme-extras
+
+# One-time install: npm packages and Playwright browser binaries (chromium,
+# firefox, webkit) inside the docs-theme-extras checkout. ~120-180 MB of
+# downloads, ~1-3 minutes.
+.PHONY: framework-test-install
+framework-test-install:
+	@if [ ! -d "$(FRAMEWORK_EXTRAS_DIR)" ]; then \
+		echo "docs-theme-extras checkout not found at $(FRAMEWORK_EXTRAS_DIR)." >&2; \
+		echo "Clone it as a sibling, or set FRAMEWORK_EXTRAS_DIR=/path/to/docs-theme-extras." >&2; \
+		exit 1; \
+	fi
+	cd $(FRAMEWORK_EXTRAS_DIR) && npm install
+	cd $(FRAMEWORK_EXTRAS_DIR) && npx playwright install --with-deps chromium firefox webkit
+
+# Build the site and run the full framework suite (static + browser +
+# cross-browser). Always opens the HTML report after the run.
+.PHONY: framework-test
+framework-test:
+	@$(MAKE) _framework_test_preflight
+	hugo160 --gc --minify > .build.log 2>&1
+	cd $(FRAMEWORK_EXTRAS_DIR) && \
+		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test; \
+		result=$$?; npx playwright show-report; exit $$result)
+
+# Build the site and run only the static specs. Fastest iteration loop --
+# no browser launch.
+.PHONY: framework-test-static
+framework-test-static:
+	@$(MAKE) _framework_test_preflight
+	hugo160 --gc --minify > .build.log 2>&1
+	cd $(FRAMEWORK_EXTRAS_DIR) && \
+		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=static; \
+		result=$$?; npx playwright show-report; exit $$result)
+
+# Build the site and run chromium browser specs (tabs, mermaid, theme toggle,
+# copy-md, console errors, viewport, contrast).
+.PHONY: framework-test-browser
+framework-test-browser:
+	@$(MAKE) _framework_test_preflight
+	hugo160 --gc --minify > .build.log 2>&1
+	cd $(FRAMEWORK_EXTRAS_DIR) && \
+		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=browser; \
+		result=$$?; npx playwright show-report; exit $$result)
+
+# Build the site and run cross-browser desktop specs across chromium,
+# firefox, and webkit.
+.PHONY: framework-test-cross-browser
+framework-test-cross-browser:
+	@$(MAKE) _framework_test_preflight
+	hugo160 --gc --minify > .build.log 2>&1
+	cd $(FRAMEWORK_EXTRAS_DIR) && \
+		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test \
+			--project=cross-browser-chromium \
+			--project=cross-browser-firefox \
+			--project=cross-browser-webkit; \
+		result=$$?; npx playwright show-report; exit $$result)
+
+# Open the most recent Playwright HTML report. Handy when an earlier
+# framework-test target was interrupted before reaching the report step.
+.PHONY: framework-test-report
+framework-test-report:
+	@if [ ! -d "$(FRAMEWORK_EXTRAS_DIR)" ]; then \
+		echo "docs-theme-extras checkout not found at $(FRAMEWORK_EXTRAS_DIR)." >&2; \
+		exit 1; \
+	fi
+	cd $(FRAMEWORK_EXTRAS_DIR) && npx playwright show-report
+
+# Shared preflight for the framework-test-* targets.
+.PHONY: _framework_test_preflight
+_framework_test_preflight:
+	@if [ ! -d "$(FRAMEWORK_EXTRAS_DIR)" ]; then \
+		echo "docs-theme-extras checkout not found at $(FRAMEWORK_EXTRAS_DIR)." >&2; \
+		echo "Clone it as a sibling, or set FRAMEWORK_EXTRAS_DIR=/path/to/docs-theme-extras." >&2; \
+		exit 1; \
+	fi
+	@if [ ! -d "$(FRAMEWORK_EXTRAS_DIR)/node_modules" ]; then \
+		echo "Run 'make framework-test-install' first." >&2; exit 1; \
+	fi
 
 
 #----------------------------------------------------------------------------------
