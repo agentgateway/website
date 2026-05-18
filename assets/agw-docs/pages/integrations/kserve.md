@@ -10,7 +10,7 @@ Make sure you installed the Experimental Version.
 
 ## Step 1: Install cert-manager
 
-1. KServe requires cert-manager for webhook certificates.
+1. Install cert-manager, which KServe requires for webhook certificates.
    
    ```shell
    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.20.2/cert-manager.yaml
