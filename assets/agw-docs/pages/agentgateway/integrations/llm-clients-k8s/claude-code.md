@@ -316,14 +316,10 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
    EOF
    ```
 
-4. Point Claude Code at the `/claude` path by adding the following to `~/.claude/settings.local.json`:
+4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the `/claude` path.
 
-   ```json
-   {
-     "env": {
-       "ANTHROPIC_BASE_URL": "http://$INGRESS_GW_ADDRESS/claude"
-     }
-   }
+   ```bash
+   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS/claude"
    ```
 
 5. Verify the connection.

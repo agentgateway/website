@@ -70,7 +70,7 @@ policies:
 
    Copy the token printed to the terminal.
 
-2. Open Claude Desktop and enable developer mode: **Help → Developer Mode**.
+2. Open Claude Desktop and enable developer mode: **Help → Troubleshooting → Enable Developer Mode**. Then fully quit and relaunch Claude Desktop. A new **Developer** menu appears in the menu bar.
 
 3. In the menu bar, go to **Developer → Configure Third Party Inference → Gateway**.
 
@@ -86,11 +86,12 @@ policies:
 
 ## Verify the connection
 
-Send a message in Claude Desktop. If the connection is successful, responses flow through your agentgateway proxy and appear in the agentgateway logs.
+Send a message in Claude Desktop. If the connection is successful, responses flow through your agentgateway proxy and appear in the terminal where agentgateway is already running.
 
-```bash
-# In another terminal, watch the gateway logs
-agentgateway -f config.yaml 2>&1 | grep request
+Look for log entries like the following in your running agentgateway output:
+
+```
+info  request gateway=default/default listener=http route=claude-agent endpoint=api.anthropic.com:443 http.method=POST http.path=/v1/messages http.status=200 protocol=llm
 ```
 
 ## Next steps

@@ -138,14 +138,10 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
    agentgateway -f config.yaml
    ```
 
-3. Point Claude Code at the `/claude` path by adding the following to `~/.claude/settings.local.json`:
+3. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the `/claude` path.
 
-   ```json
-   {
-     "env": {
-       "ANTHROPIC_BASE_URL": "http://localhost:4001/claude"
-     }
-   }
+   ```bash
+   export ANTHROPIC_BASE_URL="http://localhost:4001/claude"
    ```
 
 4. Verify the connection.

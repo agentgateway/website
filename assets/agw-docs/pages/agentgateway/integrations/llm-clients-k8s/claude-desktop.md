@@ -110,7 +110,7 @@ backend:
 
    Copy the token printed to the terminal.
 
-2. Open Claude Desktop and enable developer mode: **Help → Developer Mode**.
+2. Open Claude Desktop and enable developer mode: **Help → Troubleshooting → Enable Developer Mode**. Then fully quit and relaunch Claude Desktop. A new **Developer** menu appears in the menu bar.
 
 3. In the menu bar, go to **Developer → Configure Third Party Inference → Gateway**.
 
