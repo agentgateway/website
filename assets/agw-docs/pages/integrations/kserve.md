@@ -191,9 +191,6 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
    EOF
    ```
 
-   {{< callout type="info" >}}
-   This extra `HTTPRoute` is a current workaround. Token-based rate limiting requires traffic to flow through an    `AgentgatewayBackend` so the proxy knows to inspect the response body for `usage.total_tokens`. A future    agentgateway release may support activating LLM-aware response parsing directly on an `AgentgatewayPolicy`,    which would remove the need for this step.
-   {{< /callout >}}
 
 ## Step 6: Apply token-based rate limiting
 How token counting works: Agentgateway reads `usage.total_tokens` from the JSON response body returned by the inference service. Each request deducts that many tokens from the bucket. When the bucket empties, subsequent requests receive `429 Too Many Requests` until the next fill interval.
