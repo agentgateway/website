@@ -132,7 +132,7 @@ Instead of a real model, this guide uses [httpbun](https://httpbun.com/) to serv
    kubectl get inferenceservices mock-llm -n kserve-test --watch
    ```
    
-   Once `READY` is `True`, KServe creates an `HTTPRoute` that attaches to the agentgateway. Verify it. The route attaches to `kserve/kserve-ingress-gateway` with hostname `mock-llm-kserve-test.example.com`.
+4. Verify that KServe created an HTTPRoute after the Gateway becomes `READY`. The route attaches to `kserve/kserve-ingress-gateway` with hostname `mock-llm-kserve-test.example.com`.
    
    ```shell
    kubectl get httproute mock-llm -n kserve-test -o yaml
