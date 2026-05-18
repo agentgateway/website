@@ -140,7 +140,7 @@ Instead of a real model, this guide uses [httpbun](https://httpbun.com/) to serv
 
 ## Step 5: Create an AgentgatewayBackend
 
-KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backendRef`. Agentgateway only applies token-based rate limiting to traffic that flows through an `AgentgatewayBackend` with `spec.ai.provider` configured, because that is what signals to the proxy that the backend is an LLM and that response bodies contain a `usage.total_tokens` field to count against the rate limit bucket.
+KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backendRef`. However, to apply a token-based rate limiting policy, agentgateway needs the backend to be an AgentgatewayBackend. This way, agentgateway knows that the backend is an LLM that has a response body with the `usage.total_tokens` field to count against the rate limit bucket. In the following steps, you create an AgentgatewayBackend and a second HTTPRoute to route to it as a workaround to the KServe-created, Service-based setup.
 
 1. Create an `AgentgatewayBackend` that points at the httpbun service.
    ```yaml
