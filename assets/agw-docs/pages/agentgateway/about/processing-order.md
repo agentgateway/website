@@ -61,9 +61,7 @@ PreRouting policies can only target a Gateway or ListenerSet.
 
 ### Supported PostRouting filters {#postrouting}
 
-The PostRouting phase supports only the following filters, in order of execution.
-
-By default, filters run in the PostRouting phase. If you mix pre- and post-routing filters, you might want to explicitly configure the filter to run in the PreRouting phase by settting `phase: PostRouting` on the traffic policy.
+By default, filters run in the PostRouting phase. The PostRouting phase supports only the following filters, in order of execution.
 
 PostRouting filters can target any of the supported targets for traffic policies (Gateway, HTTPRoute, GRPCRoute, or ListenerSet).
 
