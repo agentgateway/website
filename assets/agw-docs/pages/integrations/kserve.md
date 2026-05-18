@@ -198,7 +198,7 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
 ## Step 6: Apply token-based rate limiting
 How token counting works: Agentgateway reads `usage.total_tokens` from the JSON response body returned by the inference service. Each request deducts that many tokens from the bucket. When the bucket empties, subsequent requests receive `429 Too Many Requests` until the next fill interval.
 
-1. Apply an `AgentgatewayPolicy` that caps requests at **100 tokens per minute**. The policy targets the `mock-llm-ai` route that flows through the `AgentgatewayBackend`.
+1. Apply an `AgentgatewayPolicy` that caps requests at **100 tokens per minute**. The policy targets the `mock-llm-ai` route that selects the `AgentgatewayBackend`.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: agentgateway.dev/v1alpha1
