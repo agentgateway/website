@@ -126,7 +126,7 @@ Instead of a real model, this guide uses [httpbun](https://httpbun.com/) to serv
    EOF
    ```
 
-   Wait for the `InferenceService` to become ready.
+3. Wait for the `InferenceService` to become ready.
    
    ```shell
    kubectl get inferenceservices mock-llm -n kserve-test --watch
