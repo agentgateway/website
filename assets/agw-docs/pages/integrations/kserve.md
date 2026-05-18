@@ -1,4 +1,4 @@
-[KServe](https://kserve.github.io/website/) is a Kubernetes-native model inference platform. By fronting KServe with agentgateway, you can apply agent-aware policies, including token-based rate limiting, to your model serving endpoints without modifying your inference services.
+[KServe](https://kserve.github.io/website/) is a Kubernetes-native platform for serving machine learning models. With agentgateway in front of KServe, you can enforce traffic management policies, such as token-based rate limiting, for inference requests without modifying your inference services.
 
 ## Before you begin
 
