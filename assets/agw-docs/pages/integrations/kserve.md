@@ -2,10 +2,6 @@
 
 ## Before you begin
 
-{{< callout type="info" >}}
-Make sure you installed the Experimental Version.
-{{< /callout >}}
-
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
 ## Step 1: Install cert-manager
