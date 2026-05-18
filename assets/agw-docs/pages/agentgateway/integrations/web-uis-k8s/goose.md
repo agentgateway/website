@@ -1,10 +1,12 @@
-Route [Goose](https://github.com/block/goose) LLM traffic through agentgateway running in Kubernetes to centralize credentials and capture audit logs for every agent call.
+Route [Goose](https://github.com/aaif-goose/goose) LLM traffic through agentgateway running in Kubernetes to centralize credentials and capture audit logs for every agent call.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
-2. [Install Goose](https://github.com/block/goose/releases/latest) — download the CLI binary for your platform from the latest release.
+## Install Goose
+
+Install Goose by following the [Goose installation guide](https://goose-docs.ai/docs/getting-started/installation/).
 
 ## Get the gateway URL
 
@@ -81,7 +83,7 @@ Route [Goose](https://github.com/block/goose) LLM traffic through agentgateway r
 
 ## Configure Goose
 
-Point Goose at the agentgateway ingress address using environment variables. `GOOSE_MODEL` must be set; Goose will not start without a model configured.
+Point Goose at the agentgateway ingress address using environment variables.
 
 {{< tabs items="LoadBalancer,Port-forward" >}}
 
@@ -107,21 +109,34 @@ export OPENAI_API_KEY=placeholder
 
 {{< /tabs >}}
 
-`OPENAI_API_KEY` must be set for Goose to start, but it is not used to call OpenAI — agentgateway holds the real key.
+The following table describes each environment variable:
+
+| Variable | Description |
+|---|---|
+| `GOOSE_PROVIDER` | The LLM provider Goose uses. Set to `openai` so Goose speaks the OpenAI-compatible API. |
+| `GOOSE_MODEL` | The model to use. Must be set — Goose will not start without a model configured. |
+| `OPENAI_HOST` | The base URL of the agentgateway proxy. |
+| `OPENAI_API_KEY` | Must be non-empty for Goose to start, but it is not used to call OpenAI — agentgateway holds the real key. |
 
 ## Verify the connection
 
-Send a one-shot prompt to confirm requests flow through agentgateway.
+1. Send a one-shot prompt to confirm requests flow through agentgateway.
 
-```bash
-goose run --text "say hello"
-```
+   ```bash
+   goose run --text "say hello"
+   ```
 
-Then check the agentgateway proxy logs.
+2. Check the agentgateway proxy logs to confirm the request was routed through the gateway.
 
-```bash
-kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
-```
+   ```bash
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
+   ```
+
+   You should see a log entry showing the request was forwarded to the OpenAI endpoint with the configured model:
+
+   ```
+   info  request gateway=agentgateway-system/agentgateway-proxy listener=http route=agentgateway-system/openai endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4569 gen_ai.usage.output_tokens=10 duration=2242ms
+   ```
 
 ## Next steps
 

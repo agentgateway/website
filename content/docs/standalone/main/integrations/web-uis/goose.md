@@ -3,7 +3,7 @@ title: Goose
 description: Route Goose's LLM traffic through agentgateway to govern an autonomous agent's model and tool calls.
 ---
 
-[Goose](https://github.com/block/goose) is an open-source, on-machine AI agent from Block that combines LLM reasoning with tool execution via the Model Context Protocol (MCP). Routing Goose's LLM calls through agentgateway gives you a single place to apply rate limits, capture audit logs, and switch providers without reconfiguring the agent.
+[Goose](https://github.com/aaif-goose/goose) is an open-source, on-machine AI agent from Block that combines LLM reasoning with tool execution via the Model Context Protocol (MCP). Routing Goose's LLM calls through agentgateway gives you a single place to apply rate limits, capture audit logs, and switch providers without reconfiguring the agent.
 
 ## What you get
 
@@ -23,7 +23,7 @@ description: Route Goose's LLM traffic through agentgateway to govern an autonom
 ## Before you begin
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
-2. [Install Goose](https://github.com/block/goose/releases/latest) — download the CLI binary for your platform from the latest release.
+2. Install Goose by following the [Goose installation guide](https://goose-docs.ai/docs/getting-started/installation/).
 3. Have an LLM provider API key, such as an [OpenAI API key](https://platform.openai.com/api-keys).
 
 ## Steps
@@ -64,7 +64,14 @@ export OPENAI_HOST=http://localhost:3000
 export OPENAI_API_KEY=placeholder
 ```
 
-`OPENAI_API_KEY` must be set for Goose to start, but it is not used to call OpenAI — agentgateway holds the real key. `GOOSE_MODEL` must also be set; Goose will not start without a model configured.
+The following table describes each environment variable:
+
+| Variable | Description |
+|---|---|
+| `GOOSE_PROVIDER` | The LLM provider Goose uses. Set to `openai` so Goose speaks the OpenAI-compatible API. |
+| `GOOSE_MODEL` | The model to use. Must be set — Goose will not start without a model configured. |
+| `OPENAI_HOST` | The base URL of the agentgateway proxy. |
+| `OPENAI_API_KEY` | Must be non-empty for Goose to start, but it is not used to call OpenAI — agentgateway holds the real key. |
 
 Equivalent `~/.config/goose/config.yaml`:
 
@@ -88,7 +95,11 @@ Or send a one-shot prompt to verify the connection:
 goose run --text "say hello"
 ```
 
-Watch the agentgateway logs as Goose makes LLM calls to confirm requests are flowing through the gateway.
+Watch the agentgateway logs as Goose makes LLM calls. You should see a log entry showing the request was forwarded to the OpenAI endpoint with the configured model:
+
+```
+info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4419 gen_ai.usage.output_tokens=10 duration=2195ms
+```
 
 {{% /steps %}}
 

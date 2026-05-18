@@ -76,7 +76,7 @@ endpoints:
 
 `apiKey` must be set, but it is not used to call the upstream provider — agentgateway holds the real key. Set it to any non-empty value or to a key you require LibreChat clients to present (and validate at the gateway).
 
-Set `fetch: false` and list your models explicitly in `models.default`. Agentgateway does not expose a `/v1/models` endpoint, so `fetch: true` will result in an empty model list.
+Set `fetch: false` and list your models explicitly in `models.default`. When agentgateway is configured with a wildcard (`*`) model, the `/v1/models` endpoint returns only the wildcard entry, which LibreChat cannot use to populate its model list.
 
 {{< callout type="info" >}}
 If LibreChat runs in Docker and agentgateway runs on your host machine, replace `localhost` with `host.docker.internal`:
@@ -94,7 +94,11 @@ By default LibreChat disables new user registration. Add `ALLOW_REGISTRATION=tru
 ALLOW_REGISTRATION=true
 ```
 
-Restart your LibreChat stack so it picks up the updated `librechat.yaml` and `.env`. In the UI, select **agentgateway** from the endpoint switcher and start a conversation. Confirm in the agentgateway logs that the request was proxied upstream.
+Restart your LibreChat stack so it picks up the updated `librechat.yaml` and `.env`. In the UI, select **agentgateway** from the endpoint switcher and start a conversation. Confirm in the agentgateway logs that the request was proxied upstream. You should see a log entry similar to:
+
+```
+info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4419 gen_ai.usage.output_tokens=10 duration=2195ms
+```
 
 {{% /steps %}}
 

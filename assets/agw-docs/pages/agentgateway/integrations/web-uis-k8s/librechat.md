@@ -81,7 +81,7 @@ Deploy [LibreChat](https://github.com/danny-avila/LibreChat) in Kubernetes and r
 
 LibreChat requires MongoDB. Deploy both with a ConfigMap that points LibreChat at agentgateway.
 
-1. Create the LibreChat configuration. Set `fetch: false` and list models explicitly — agentgateway does not expose a `/v1/models` endpoint.
+1. Create the LibreChat configuration. Set `fetch: false` and list models explicitly. When agentgateway is configured with a wildcard (`*`) model, the `/v1/models` endpoint returns only the wildcard entry, which LibreChat cannot use to populate its model list.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -189,9 +189,9 @@ LibreChat requires MongoDB. Deploy both with a ConfigMap that points LibreChat a
            - name: JWT_REFRESH_SECRET
              value: "change-this-to-a-secure-random-value"
            - name: CREDS_KEY
-             value: "f34be427ebb29de8d88c107a71546019685ed8b241d8f2ed00c3df97ad2566f0"
+             value: "<generate-a-64-char-hex-string>"
            - name: CREDS_IV
-             value: "e2341419ec3dd3d19b13a1a87fafcbfb"
+             value: "<generate-a-32-char-hex-string>"
            volumeMounts:
            - name: librechat-config
              mountPath: /app/librechat.yaml
@@ -216,8 +216,14 @@ LibreChat requires MongoDB. Deploy both with a ConfigMap that points LibreChat a
    ```
 
 {{< callout type="warning" >}}
-Replace the `JWT_SECRET` and `JWT_REFRESH_SECRET` values with secure random strings before deploying to a shared or production environment. Use a Kubernetes Secret rather than plain env vars for production deployments.
+Replace `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CREDS_KEY`, and `CREDS_IV` with unique, secure random values before deploying to a shared or production environment. You can generate these with `openssl rand -hex 32` (for 64-char keys) or `openssl rand -hex 16` (for 32-char IVs). Use a Kubernetes Secret rather than plain env vars for production deployments.
 {{< /callout >}}
+
+The following table describes the relevant environment variable:
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_KEY` | Must be set for LibreChat to start, but it is not used to call OpenAI — agentgateway holds the real key. |
 
 ## Verify the connection
 
@@ -233,6 +239,12 @@ Replace the `JWT_SECRET` and `JWT_REFRESH_SECRET` values with secure random stri
 
    ```bash
    kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
+   ```
+
+   You should see a log entry showing the request was forwarded to the OpenAI endpoint with the configured model:
+
+   ```
+   info  request gateway=agentgateway-system/agentgateway-proxy listener=http route=agentgateway-system/openai endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4569 gen_ai.usage.output_tokens=10 duration=2242ms
    ```
 
 ## Next steps

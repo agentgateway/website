@@ -77,7 +77,12 @@ docker run -d \
   ghcr.io/open-webui/open-webui:main
 ```
 
-`OPENAI_API_KEY` is required by Open WebUI but is not used to call the upstream provider; agentgateway holds the real key. Set it to any non-empty value.
+The following table describes each environment variable:
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_BASE_URL` | The base URL of the agentgateway proxy. |
+| `OPENAI_API_KEY` | Required by Open WebUI but is not used to call the upstream provider; agentgateway holds the real key. Set it to any non-empty value. |
 
 ### Step 4: Send a chat from Open WebUI
 
@@ -87,7 +92,11 @@ docker run -d \
 
 ### Step 5: Verify the request reached agentgateway
 
-Watch the agentgateway logs as you send chat messages, or open the [agentgateway UI](http://localhost:15000/ui) to review live traffic.
+Watch the agentgateway logs as you send chat messages, or open the [agentgateway UI](http://localhost:15000/ui) to review live traffic. You should see a log entry similar to:
+
+```
+info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4419 gen_ai.usage.output_tokens=10 duration=2195ms
+```
 
 {{% /steps %}}
 

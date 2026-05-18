@@ -43,7 +43,7 @@ Deploy [Open WebUI](https://github.com/open-webui/open-webui) in Kubernetes and 
    spec:
      ai:
        provider:
-         openAI: {}
+         openai: {}
      policies:
        auth:
          secretRef:
@@ -129,7 +129,12 @@ spec:
 EOF
 ```
 
-`OPENAI_API_KEY` is required by Open WebUI but is not used to call the upstream provider — agentgateway holds the real key.
+The following table describes each environment variable:
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_BASE_URL` | The base URL of the agentgateway proxy. |
+| `OPENAI_API_KEY` | Required by Open WebUI to start, but it is not used to call OpenAI — agentgateway holds the real key. |
 
 ## Verify the connection
 
@@ -145,6 +150,12 @@ EOF
 
    ```bash
    kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
+   ```
+
+   You should see a log entry showing the request was forwarded to the OpenAI endpoint with the configured model:
+
+   ```
+   info  request gateway=agentgateway-system/agentgateway-proxy listener=http route=agentgateway-system/openai endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4569 gen_ai.usage.output_tokens=10 duration=2242ms
    ```
 
 ## Next steps

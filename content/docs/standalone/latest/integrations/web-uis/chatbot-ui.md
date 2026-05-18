@@ -62,24 +62,36 @@ OPENAI_API_HOST=http://localhost:3001
 OPENAI_API_KEY=placeholder
 ```
 
-`OPENAI_API_KEY` must be non-empty for Chatbot UI to start, but it is not used to call OpenAI — agentgateway holds the real key.
+The following table describes each environment variable:
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_HOST` | The base URL of the agentgateway proxy. |
+| `OPENAI_API_KEY` | Must be non-empty for Chatbot UI to start, but it is not used to call OpenAI — agentgateway holds the real key. |
 
 {{< callout type="info" >}}
 If you run Chatbot UI via Docker, replace `localhost` with `host.docker.internal` so the container can reach agentgateway on your host machine:
 
 ```sh
 docker run --rm -p 3000:3000 \
+  --add-host=host.docker.internal:host-gateway \
   -e OPENAI_API_KEY=placeholder \
   -e OPENAI_API_HOST=http://host.docker.internal:3001 \
   ghcr.io/mckaywrigley/chatbot-ui:main
 ```
+
+The `--add-host` flag ensures `host.docker.internal` resolves correctly on Linux.
 {{< /callout >}}
 
 If you are running a Supabase-backed build of Chatbot UI, the equivalent variable is the OpenAI base URL field in the user **Settings** screen; set it to `http://localhost:3001/v1`.
 
 ### Step 4: Send a message
 
-Open `http://localhost:3000` in your browser. Send a chat. Confirm in the agentgateway logs that the request was proxied to your LLM provider.
+Open `http://localhost:3000` in your browser. Send a chat. Confirm in the agentgateway logs that the request was proxied to your LLM provider. You should see a log entry similar to:
+
+```
+info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4419 gen_ai.usage.output_tokens=10 duration=2195ms
+```
 
 {{% /steps %}}
 

@@ -43,7 +43,7 @@ Deploy [Chatbot UI](https://github.com/mckaywrigley/chatbot-ui) in Kubernetes an
    spec:
      ai:
        provider:
-         openAI: {}
+         openai: {}
      policies:
        auth:
          secretRef:
@@ -123,7 +123,12 @@ spec:
 EOF
 ```
 
-`OPENAI_API_KEY` must be non-empty for Chatbot UI to start, but it is not used — agentgateway holds the real key.
+The following table describes each environment variable:
+
+| Variable | Description |
+|---|---|
+| `OPENAI_API_KEY` | Must be non-empty for Chatbot UI to start, but it is not used to call OpenAI — agentgateway holds the real key. |
+| `OPENAI_API_HOST` | The base URL of the agentgateway proxy. |
 
 ## Verify the connection
 
@@ -139,6 +144,12 @@ EOF
 
    ```bash
    kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
+   ```
+
+   You should see a log entry showing the request was forwarded to the OpenAI endpoint with the configured model:
+
+   ```
+   info  request gateway=agentgateway-system/agentgateway-proxy listener=http route=agentgateway-system/openai endpoint=api.openai.com:443 http.method=POST http.path=/v1/chat/completions http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-4o gen_ai.usage.input_tokens=4569 gen_ai.usage.output_tokens=10 duration=2242ms
    ```
 
 ## Next steps
