@@ -5,4 +5,4 @@ description: Reference for the `agctl trace` command.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/main/agctl-trace.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-trace.md" >}}
