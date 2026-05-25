@@ -1,5 +1,9 @@
 Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider in agentgateway.
 
+{{< callout type="info" >}}
+Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completions` request body shape) and returns OpenAI-formatted responses, regardless of the route path that you configure. Agentgateway translates between OpenAI and Bedrock formats internally. Bedrock-native APIs such as the [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html) request and response shapes are not supported. Usage fields in responses follow the OpenAI shape (`prompt_tokens`, `completion_tokens`, `total_tokens`), not the Bedrock shape (`inputTokens`, `outputTokens`, `totalTokens`).
+{{< /callout >}}
+
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}). 
@@ -85,30 +89,9 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    | `bedrock.region`    | The AWS region where your Bedrock model is deployed. Multiple regions are not supported. |
    | `policies.auth` | Provide the credentials to use to access the Amazon Bedrock API. The example refers to the secret that you previously created. To use implicit credentials from the workload or environment instead (for example IRSA{{< version exclude-if="1.1.x" >}} and AWS IAM Identity Center (SSO) profiles{{< /version >}}), omit the `auth` settings. |
 
-3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource. The default Bedrock route is `/model/${MODEL}/converse`, such as `/model/amazon.nova-micro-v1:0/converse`.
+3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Bedrock default" %}}
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: bedrock
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     parentRefs:
-       - name: agentgateway-proxy
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-     rules:
-     - backendRefs:
-       - name: bedrock
-         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
-         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-   EOF
-   ```
-   {{% /tab %}}
+   {{< tabs tabTotal="2" items="OpenAI-compatible v1/chat/completions, Custom route" >}}
    {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
    ```yaml
    kubectl apply -f- <<EOF
@@ -162,36 +145,9 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    {{< /tabs >}}
 
 
-4. Send a request to the LLM provider API along the route that you previously created, such as `/bedrock` or `/v1/chat/completions` depending on your route configuration. Verify that the request succeeds and that you get back a response from the chat completion API.
+4. Send a request to the LLM provider API along the route that you previously created, such as `/bedrock` or `/v1/chat/completions` depending on your route configuration. The request body must be in OpenAI chat-completions format. Verify that the request succeeds and that you get back a response from the chat completion API.
 
-   {{< tabs tabTotal="3" items="Bedrock default, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Bedrock default" %}}
-   **Cloud Provider LoadBalancer**:
-   ```sh
-   curl "$INGRESS_GW_ADDRESS/model/amazon.nova-micro-v1:0/converse" -H content-type:application/json -d '{
-       "model": "",
-       "messages": [
-         {
-           "role": "user",
-           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
-         }
-       ]
-     }' | jq
-   ```
-
-   **Localhost**:
-   ```sh
-   curl "localhost:8080/model/amazon.nova-micro-v1:0/converse" -H content-type:application/json -d '{
-       "model": "",
-       "messages": [
-         {
-           "role": "user",
-           "content": "You are a cloud native solutions architect, skilled in explaining complex technical concepts such as API Gateway, microservices, LLM operations, kubernetes, and advanced networking patterns. Write me a 20-word pitch on why I should use an AI gateway in my Kubernetes cluster."
-         }
-       ]
-     }' | jq
-   ```
-   {{% /tab %}}
+   {{< tabs tabTotal="2" items="OpenAI-compatible v1/chat/completions, Custom route" >}}
    {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
@@ -248,27 +204,27 @@ Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider i
    {{% /tab %}}
    {{< /tabs >}}
    
-   Example output: 
+   Example output. Note that agentgateway returns OpenAI-shaped responses, including OpenAI-style usage fields (`prompt_tokens`, `completion_tokens`, `total_tokens`), even though the upstream provider is Bedrock.
    ```json
    {
-     "metrics": {
-       "latencyMs": 2097
-     },
-     "output": {
-       "message": {
-         "content": [
-           {
-             "text": "\nAn AI gateway in your Kubernetes cluster can enhance performance, scalability, and security while simplifying complex operations. It provides a centralized entry point for AI workloads, automates deployment and management, and ensures high availability."
-           }
-         ],
-         "role": "assistant"
+     "id": "chatcmpl-abc123",
+     "object": "chat.completion",
+     "created": 1730000000,
+     "model": "amazon.nova-micro-v1:0",
+     "choices": [
+       {
+         "index": 0,
+         "message": {
+           "role": "assistant",
+           "content": "An AI gateway in your Kubernetes cluster can enhance performance, scalability, and security while simplifying complex operations. It provides a centralized entry point for AI workloads, automates deployment and management, and ensures high availability."
+         },
+         "finish_reason": "stop"
        }
-     },
-     "stopReason": "end_turn",
+     ],
      "usage": {
-       "inputTokens": 60,
-       "outputTokens": 47,
-       "totalTokens": 107
+       "prompt_tokens": 60,
+       "completion_tokens": 47,
+       "total_tokens": 107
      }
    }
    ```
@@ -355,49 +311,9 @@ Prompt caching is supported for Bedrock Claude 3+ and Nova models.
 
 ## Extended thinking and reasoning
 
-Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
+Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding the OpenAI `reasoning_effort` field to your request. Agentgateway translates this to Bedrock's native thinking budget automatically.
 
 **Note**: Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
-
-{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Bedrock default" %}}
-
-Use the `reasoning.effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
-
-| `reasoning.effort` value | Thinking budget |
-|---|---|
-| `minimal` or `low` | 1,024 tokens |
-| `medium` | 2,048 tokens |
-| `high` or `xhigh` | 4,096 tokens |
-
-**Cloud Provider LoadBalancer**:
-```sh
-curl "$INGRESS_GW_ADDRESS/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
-  -H content-type:application/json -d '{
-  "model": "",
-  "max_output_tokens": 5000,
-  "input": "Explain the trade-offs between consistency and availability in distributed systems.",
-  "reasoning": {
-    "effort": "high"
-  }
-}' | jq
-```
-
-**Localhost**:
-```sh
-curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
-  -H content-type:application/json -d '{
-  "model": "",
-  "max_output_tokens": 5000,
-  "input": "Explain the trade-offs between consistency and availability in distributed systems.",
-  "reasoning": {
-    "effort": "high"
-  }
-}' | jq
-```
-
-{{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
 
 Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
 
@@ -437,77 +353,9 @@ curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
 }' | jq
 ```
 
-{{% /tab %}}
-
-{{< /tabs >}}
-
 ## Structured outputs
 
-Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request. 
-
-{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Bedrock default" %}}
-
-Provide the JSON schema definition in the `text.format` field.
-
-**Cloud Provider LoadBalancer**:
-```sh
-curl "$INGRESS_GW_ADDRESS/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
-  -H content-type:application/json -d '{
-  "model": "",
-  "max_output_tokens": 256,
-  "input": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1.",
-  "text": {
-    "format": {
-      "type": "json_schema",
-      "json_schema": {
-        "name": "answer_schema",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "answer": { "type": "string" },
-            "confidence": { "type": "number" }
-          },
-          "required": ["answer", "confidence"],
-          "additionalProperties": false
-        }
-      }
-    }
-  }
-}' | jq
-```
-
-**Localhost**:
-```sh
-curl "localhost:8080/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
-  -H content-type:application/json -d '{
-  "model": "",
-  "max_output_tokens": 256,
-  "input": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1.",
-  "text": {
-    "format": {
-      "type": "json_schema",
-      "json_schema": {
-        "name": "answer_schema",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "answer": { "type": "string" },
-            "confidence": { "type": "number" }
-          },
-          "required": ["answer", "confidence"],
-          "additionalProperties": false
-        }
-      }
-    }
-  }
-}' | jq
-```
-
-{{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
-
-Provide the schema definition in the `response_format` field. Agentgateway translates this to Bedrock's native format automatically.
+Structured outputs constrain the model to respond with a specific JSON schema. Provide the schema definition in the OpenAI `response_format` field of your request. Agentgateway translates this to Bedrock's native format automatically.
 
 **Cloud Provider LoadBalancer**:
 ```sh
@@ -566,10 +414,5 @@ curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
   ]
 }' | jq
 ```
-
-
-{{% /tab %}}
-
-{{< /tabs >}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
