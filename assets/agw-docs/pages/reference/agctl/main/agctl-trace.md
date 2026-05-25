@@ -21,6 +21,9 @@ agctl trace [resource] [-- <curl args...>] [flags]
   agctl trace --port 80 -- http://host/some/path
   # Enable tracing and send a request to the gateway running locally.
   agctl trace --local --port 8080 -- http://host/some/path
+  # Render trace JSONL from a file or stdin instead of opening a live trace.
+  agctl trace --file trace.jsonl
+  agctl trace --file - --raw
   # Enable tracing and send a request to the gateway, with some curl arguments.
   agctl trace gateway/my-gateway --raw --port 80 -- http://host/some/path -H "Authorization: Bearer sk-123"
 ```
@@ -28,6 +31,7 @@ agctl trace [resource] [-- <curl args...>] [flags]
 ### Options
 
 ```
+  -f, --file string            Trace JSONL file to render, or - for stdin
   -h, --help                   help for trace
       --local                  Trace against a local agentgateway instance on 127.0.0.1
   -n, --namespace string       Namespace to use when resolving resources
