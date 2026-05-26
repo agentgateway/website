@@ -241,15 +241,15 @@ h6 {
 }
 
 /* Generated card grids — top-align content */
-.hextra-cards .hextra-card {
+.section-cards .section-card {
     justify-content: flex-start !important;
 }
-.hextra-cards .hextra-card > .hx\:mt-auto {
+.section-cards .section-card > .hx\:mt-auto {
     margin-top: 0 !important;
 }
 
 /* {{< cards >}} shortcode — responsive grid */
-.hextra-cards-grid {
+.section-cards {
   display: grid;
   gap: 1rem;
   margin-top: 1rem;
@@ -257,14 +257,14 @@ h6 {
 }
 
 @media (min-width: 640px) {
-  .hextra-cards-grid {
+  .section-cards {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (min-width: 1024px) {
-  .hextra-cards-grid {
-    grid-template-columns: repeat(var(--hextra-cols, 3), minmax(0, 1fr));
+  .section-cards {
+    grid-template-columns: repeat(var(--section-cards-cols, 3), minmax(0, 1fr));
   }
 }
 
