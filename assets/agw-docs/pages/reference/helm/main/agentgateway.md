@@ -73,7 +73,7 @@
 | proxy.image.registry | string | Set the default image registry. Set to override the global value. | `""` |
 | proxy.image.repository | string | Set the default image repository. | `"agentgateway"` |
 | proxy.image.tag | string | Set the default image tag. | `""` |
-| resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'. | `{}` |
+| resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'. | `{"requests":{"cpu":"100m","memory":"128Mi"}}` |
 | securityContext | object | Set the container-level security context, such as 'runAsNonRoot: true'. | `{}` |
 | serviceAccount | object | Configure the service account for the deployment. | `{"annotations":{},"create":true,"name":""}` |
 | serviceAccount.annotations | object | Add annotations to the service account. | `{}` |
