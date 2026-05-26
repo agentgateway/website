@@ -14,6 +14,7 @@ on:
   pull_request:
     paths:
       - 'layouts/**'
+      - 'static/**'
       - 'assets/css/**'
       - 'assets/js/**'
       - 'go.mod'
@@ -29,12 +30,12 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-go@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
         with:
           go-version: 'stable'
           cache: false
-      - uses: peaceiris/actions-hugo@v3
+      - uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f # v3
         with:
           hugo-version: '0.160.1'
           extended: true
@@ -44,35 +45,42 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version=$(grep "docs-theme-extras" go.mod | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+(-[0-9]+-[0-9a-f]+)?' | head -1)
+          # Pull the full version field as written in go.mod. Handles every
+          # form: tag (v0.0.2), prerelease tag (v0.0.2-beta.1, v0.0.2-rc.1),
+          # and Go pseudo-version (v0.0.2-0.20260522171640-df9722216725).
+          version=$(awk -v pkg="github.com/solo-io/docs-theme-extras" '
+            { for (i=1; i<=NF; i++) if ($i == pkg) { print $(i+1); exit } }
+          ' go.mod)
           if [ -z "$version" ]; then
             echo "Could not extract docs-theme-extras version from go.mod" >&2
             exit 1
           fi
-          if echo "$version" | grep -qE 'v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+-[0-9a-f]+'; then
-            # Pseudo-version: extract the 12-char SHA (last segment) and
-            # resolve to a full 40-char SHA, since actions/checkout treats
-            # short SHAs as branch names and fails to fetch them.
-            short=$(echo "$version" | grep -oE '[0-9a-f]+$')
+          # Pseudo-version shape: ends with .<14-digit timestamp>-<12-hex short SHA>
+          # (e.g. v0.0.2-0.20260522171640-df9722216725).
+          if echo "$version" | grep -qE -- '\.[0-9]{14}-[0-9a-f]{12}$'; then
+            # Extract the 12-char short SHA and resolve to a full 40-char SHA,
+            # since actions/checkout treats short SHAs as branch names and
+            # fails to fetch them.
+            short=$(echo "$version" | grep -oE '[0-9a-f]{12}$')
             ref=$(gh api "repos/solo-io/docs-theme-extras/commits/${short}" --jq .sha)
             if [ -z "$ref" ]; then
               echo "Could not resolve full SHA for short=${short}" >&2
               exit 1
             fi
           else
-            # Semver tag: actions/checkout accepts tag names directly.
+            # Semver tag (release or prerelease): actions/checkout accepts it directly.
             ref="$version"
           fi
           echo "ref=$ref" >> "$GITHUB_OUTPUT"
 
       - name: Check out docs-theme-extras at module pin
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           repository: solo-io/docs-theme-extras
           ref: ${{ steps.theme-sha.outputs.ref }}
           path: docs-theme-extras
 
-      - uses: actions/setup-node@v6
+      - uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
         with:
           node-version: '20'
           cache: 'npm'
@@ -111,7 +119,7 @@ jobs:
 
       - name: Upload report
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
           name: framework-test-static-report
           path: docs-theme-extras/playwright-report

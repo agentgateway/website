@@ -45,11 +45,8 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
-{{/* Glossary tooltip — CSS in <head> to prevent FOUC; JS defers and runs
-     after DCL. Specific to agw-oss; not part of the module. */}}
-<link rel="stylesheet" href="{{ "css/glossary.css" | absURL }}?v={{ now.Unix }}">
-<script src="{{ "js/glossary.js" | absURL }}" defer></script>
-<script src="{{ "js/sidebar.js" | absURL }}" defer></script>
+{{- /* Glossary tooltip + sidebar JS are now centralized in
+       docs-theme-extras (loaded from themeExtras/head-end.html above). */ -}}
 
 {{/* Search section priority: show current docs section (standalone/kubernetes) first */}}
 <script src="{{ "js/search-section-priority.js" | absURL }}" defer></script>
