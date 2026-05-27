@@ -129,6 +129,8 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
    {{< reuse-image-dark srcDark="img/kagent-default-k8s-agent.png" >}}
 
 ## Governance Capabilities
+
+Agentgateway provides policies that you can use to govern your kagent environment.
 ### Block requests with PII
 1. Create an `AgentgatewayPolicy` resource to deny requests to the LLM provider that include PII, such as a `email` string in the request body on. See the full [guardrails docs](docs/kubernetes/latest/llm/guardrails/regex/#block-requests-with-pii) for more options.
    ```yaml
