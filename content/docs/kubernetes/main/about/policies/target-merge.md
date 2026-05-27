@@ -36,7 +36,7 @@ Some `backend` sub-fields have additional targeting restrictions.
 
 The `traffic` section supports an optional `phase` field that controls when the policy runs. When you set the phase to `PreRouting`, the policy runs before route selection. Because of this timing, `PreRouting` policies can only target a Gateway or ListenerSet.
 
-For more information, see [Policy processing order](#processing-order) and [PreRouting filters](#prerouting).
+For more information, see [Policy processing order](../filter-order/#processing-order) and [PreRouting filters](../filter-order/#prerouting).
 
 ## Policy merging {#merging}
 

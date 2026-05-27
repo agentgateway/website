@@ -234,7 +234,7 @@ Example output:
 
 <!--TODO 1.3 release -->
 {{< callout type="info" >}}
-Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/install/">}}).
+Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/">}}).
 {{< /callout >}}
 
 {{< tabs tabTotal="2" items="API key, AWS SigV4" >}}
