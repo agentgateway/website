@@ -8,6 +8,7 @@ menu:
 cascade:
   type: docs
 test: skip
+disableCards: true
 ---
 
 Agentgateway can be deployed in two ways. Choose your deployment type to view the relevant documentation.
