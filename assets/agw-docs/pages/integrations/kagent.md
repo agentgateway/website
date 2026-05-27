@@ -71,7 +71,7 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
    kubectl get pods -n kagent
    ```
 
-   Example Output:
+   Example output:
    ```shell
    argo-rollouts-conversion-agent-7f8cdbd6f7-6tvl2   1/1     Running   0              5h2m
    cilium-debug-agent-6588998448-gr8tc               1/1     Running   0              5h2m
