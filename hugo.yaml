@@ -139,10 +139,17 @@ params:
 
     flexsearch:
       # index page by: content | summary | heading | title
-      index: summary
+      # `content` indexes the full body keyed by heading anchors, so users
+      # can find terms anywhere on a page (not just in the description) and
+      # results link directly to the matching section.
+      index: content
 
   feedback:
     enable: true
+    issueRepo: agentgateway/website
+
+  llms:
+    docsIntro: agentgateway is an open source proxy and gateway that unifies HTTP, gRPC, LLM, MCP, and A2A traffic in one data plane.
 
   editURL:
     enable: false

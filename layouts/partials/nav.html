@@ -14,27 +14,13 @@
   });
 
   function openMobileNav() {
+    /* toggleMobileSidebar / closeMobileSidebar are centralized in
+       docs-theme-extras's themeExtras/head-end.html. */
     closeMobileSidebar();
     document.querySelector('.mobile-nav').classList.toggle('visible');
     document.querySelector('.hamburger').classList.toggle('visible');
     document.querySelector('.x').classList.toggle('visible');
     document.querySelector('body').style.overflow = document.querySelector('body').style.overflow === 'hidden' ? 'scroll' : 'hidden';
-  }
-
-  function toggleMobileSidebar() {
-    var sidebar = document.querySelector('.sidebar-mobile-panel');
-    var overlay = document.querySelector('.sidebar-mobile-overlay');
-    if (sidebar && overlay) {
-      sidebar.classList.toggle('mobile-sidebar-open');
-      overlay.classList.toggle('active');
-    }
-  }
-
-  function closeMobileSidebar() {
-    var sidebar = document.querySelector('.sidebar-mobile-panel');
-    var overlay = document.querySelector('.sidebar-mobile-overlay');
-    if (sidebar) sidebar.classList.remove('mobile-sidebar-open');
-    if (overlay) overlay.classList.remove('active');
   }
 </script>
 
@@ -117,43 +103,14 @@
     display: none !important;
   }
 
-  .dropdown {
-    position: relative;
-    display: inline-block;
-  }
+  {{- /* .dropdown / .navbar-dropdown-content rules now live in
+         docs-theme-extras/assets/css/docs-theme-extras.css. The
+         centralized version uses a white popover (the local copy here
+         briefly used #1c2029 but was overridden by a later white rule
+         further down anyway). Requires extras > v0.0.1 — until the
+         next release bump in this repo's go.mod, dropdown chrome will
+         be unstyled. */ -}}
 
-  .dropdown-content {
-    display: none;
-    min-width: 160px;
-  }
-
-  .dropdown:hover .dropdown-content {display: block;}
-  
-  .navbar-dropdown-content {
-    position: absolute;
-    top: calc(100% + 0.25rem);
-    right: 0;
-    background-color: #1c2029; /* tertiary-bg - matches homepage dark theme */
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 0.5rem;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    z-index: 50;
-    padding-top: 0.25rem;
-    min-width: 180px;
-  }
-  
-  /* Create a hover bridge between trigger and dropdown */
-  .dropdown::before {
-    content: '';
-    position: absolute;
-    top: 100%;
-    right: 0;
-    left: 0;
-    height: 0.5rem;
-    z-index: 49;
-  }
-  
-  
   /* Constrain logo size */
   .navbar #logo,
   .navbar a[href="/"] svg,
@@ -201,19 +158,9 @@
     color: rgb(209, 213, 219); /* gray-300 - visible on dark backgrounds */
   }
   
-  /* Ensure dropdown content works in both modes */
-  .navbar-dropdown-content {
-    background-color: white;
-    border: 1px solid rgba(0, 0, 0, 0.1);
-  }
-  
-  .dark .navbar-dropdown-content {
-    background-color: rgb(17, 24, 39); /* gray-900 */
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-  
-  /* Ensure dropdown links are readable in light mode */
-  
+  /* .navbar-dropdown-content base styles centralized in docs-theme-extras.css. */
+
+
   {{- /* Only add GitHub icon CSS on docs pages */ -}}
   {{- $isDocsPage := false -}}
   {{- if .RelPermalink -}}
@@ -238,23 +185,7 @@
     color: rgb(209, 213, 219) !important;
   }
   {{- end -}}
-  .navbar-dropdown-content a {
-    color: rgb(17, 24, 39) !important; /* gray-900 - very dark, high contrast */
-  }
-  
-  .dark .navbar-dropdown-content a {
-    color: rgb(209, 213, 219) !important; /* gray-300 - light, visible on dark */
-  }
-  
-  .navbar-dropdown-content a:hover {
-    background-color: rgb(243, 244, 246) !important; /* gray-100 */
-    color: rgb(17, 24, 39) !important;
-  }
-  
-  .dark .navbar-dropdown-content a:hover {
-    background-color: rgb(31, 41, 55) !important; /* gray-800 */
-    color: rgb(255, 255, 255) !important;
-  }
+  /* .navbar-dropdown-content a + hover styles centralized in docs-theme-extras.css. */
 
   /* Mobile nav bar: force background so it stays light in light mode */
   .mobile-nav-bar {
@@ -363,12 +294,25 @@
     .landing-navbar {
       background: rgba(255,255,255,0.78);
       border: 1px solid rgba(15,19,35,0.08);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      /* backdrop-filter intentionally omitted here: applying it directly on
+         .landing-navbar would make it the containing block for position:fixed
+         descendants (per CSS spec), breaking the hextra-theme-toggle-options
+         dropdown positioning.  The blur is applied via ::before instead. */
       border-radius: 999px;
       box-shadow: 0 1px 0 rgba(15,19,35,0.02), 0 8px 24px -16px rgba(15,19,35,0.06);
       padding: 8px 8px 8px 22px;
       max-width: fit-content;
+      position: relative;
+    }
+    .landing-navbar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      z-index: -1;
+      pointer-events: none;
     }
     .landing-navbar .link {
       font-family: 'Figtree', system-ui, sans-serif;
@@ -455,18 +399,50 @@
     .dark .navbar.landing-navbar.scrolled .link { color: #B0B4C4 !important; }
     .dark .landing-navbar a[href="/"] img { content: url('/logo-dark.svg'); }
 
-    .landing-theme-toggle {
-      display: inline-flex; align-items: center; justify-content: center;
-      width: 34px; height: 34px; border-radius: 8px; border: 1px solid rgba(21,25,39,0.12);
-      background: transparent; color: #3E4254; cursor: pointer;
-      transition: border-color 200ms, background 200ms, color 200ms;
+    /* .landing-theme-toggle + .theme-icon-{sun,moon} removed when the
+       custom button was replaced with Hextra's theme-toggle dropdown
+       partial. */
+
+    /* Mobile landing nav — backdrop blur via ::before for the same reason
+       as .landing-navbar above: backdrop-filter directly on the nav element
+       makes it the containing block for position:fixed descendants, breaking
+       the hextra-theme-toggle-options dropdown positioning. */
+    .landing-mobile-nav {
+      position: relative;
     }
-    .landing-theme-toggle:hover { background: rgba(21,25,39,0.06); }
-    .dark .landing-theme-toggle { border-color: rgba(255,255,255,0.14); color: #B0B4C4; }
-    .dark .landing-theme-toggle:hover { background: rgba(255,255,255,0.06); }
-    .theme-icon-moon { display: none; }
-    .dark .theme-icon-sun { display: none; }
-    .dark .theme-icon-moon { display: block; }
+    .landing-mobile-nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Logo height — Tailwind v3 preflight sets height:auto on img which
+       overrides the HTML height attribute, causing the SVG (natural size
+       4496×1064) to render enormous. Force it to match the design spec. */
+    .landing-mobile-nav a img {
+      height: 28px !important;
+      width: auto !important;
+    }
+
+    /* Hamburger/X icon color — icons have hardcoded fill:#030712.  Override
+       with currentColor so the button's text-color controls the icon in
+       both light and dark mode. */
+    .landing-mobile-nav button svg path {
+      fill: currentColor;
+    }
+    .landing-mobile-nav button {
+      color: #374151; /* gray-700 — visible on the bg-gray-100 button in light mode */
+    }
+    /* dark:bg-white/10 doesn't compile (PurgeCSS misses it), so set both
+       the background and icon color explicitly here. */
+    .dark .landing-mobile-nav button {
+      background-color: rgba(255,255,255,0.1);
+      color: #e5e7eb; /* gray-200 — visible on the near-black nav in dark mode */
+    }
   </style>
   <div class="fixed top-5 left-0 right-0 flex justify-center z-50 pointer-events-none hidden lg:flex">
     <nav class="navbar landing-navbar pointer-events-auto flex items-center gap-7">
@@ -502,10 +478,10 @@
         <a class="link whitespace-nowrap" href="https://discord.gg/y9efgEmppm">Community</a>
       </div>
       <div class="flex items-center gap-2 ml-1">
-        <button type="button" class="landing-theme-toggle" aria-label="Toggle theme" onclick="(function(){var t=document.documentElement,isDark=t.classList.contains('dark'),c=isDark?'light':'dark';t.classList.remove('light','dark');t.classList.add(c);t.style.colorScheme=c;try{localStorage.setItem('color-theme',c)}catch(e){}})()">
-          <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-        </button>
+        {{- /* Hextra dropdown (light/dark/system) — replaces the older
+               simple sun/moon button so the landing nav matches the
+               docs nav. */ -}}
+        {{- partial "theme-toggle.html" (dict "hideLabel" true "iconHeight" 16 "location" "top" "class" "hx:p-2") -}}
         <a class="landing-nav-btn landing-nav-btn-ghost" href="#getting-started">Get Started</a>
         <a class="landing-nav-btn landing-nav-btn-primary" href="https://github.com/agentgateway/agentgateway">
           <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
@@ -515,15 +491,15 @@
     </nav>
   </div>
 
-  <nav class="absolute top-0 w-full block lg:hidden z-50 bg-white/80 dark:bg-[#0B0E18]/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-white/8">
+  <nav class="landing-mobile-nav absolute top-0 w-full block lg:hidden z-50 bg-white/80 dark:bg-[#0B0E18]/80 border-b border-gray-200/50 dark:border-white/8">
     <div class="py-4 px-4 flex justify-between items-center">
       <a href="/" class="flex items-center"><img src="/logo.svg" alt="agentgateway logo" height="28" class="dark:hidden" /><img src="/logo-dark.svg" alt="agentgateway logo" height="28" class="hidden dark:block" /></a>
       <div class="flex items-center gap-2">
-        <button type="button" class="landing-theme-toggle" aria-label="Toggle theme" onclick="(function(){var t=document.documentElement,isDark=t.classList.contains('dark'),c=isDark?'light':'dark';t.classList.remove('light','dark');t.classList.add(c);t.style.colorScheme=c;try{localStorage.setItem('color-theme',c)}catch(e){}})()">
-          <svg class="theme-icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
-          <svg class="theme-icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
-        </button>
-        <button class="p-3 bg-gray-900 dark:bg-white/10 rounded-lg flex items-center" onClick="openMobileNav()">
+        {{- /* Hextra dropdown (light/dark/system) — replaces the older
+               simple sun/moon button so the landing nav matches the
+               docs nav. */ -}}
+        {{- partial "theme-toggle.html" (dict "hideLabel" true "iconHeight" 16 "location" "top" "class" "hx:p-2") -}}
+        <button class="p-3 bg-gray-100 dark:bg-white/10 rounded-lg flex items-center" onClick="openMobileNav()">
           <div class="visible hamburger hidden">
             {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
           </div>
@@ -692,12 +668,9 @@
           {{- end -}}
         {{- end -}}
         {{- if (.Site.Params.theme.displayToggle | default true) -}}
-          <button type="button" class="p-2 text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100" aria-label="Toggle theme" onclick="(function(){var t=document.documentElement,isDark=t.classList.contains('dark'),c=isDark?'light':'dark';t.classList.remove('light','dark');t.classList.add(c);t.style.colorScheme=c;try{localStorage.setItem('color-theme',c)}catch(e){}})()">
-            {{- /* Sun icon (shown in dark mode) */ -}}
-            <svg class="w-5 h-5 hidden dark:block" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
-            {{- /* Moon icon (shown in light mode) */ -}}
-            <svg class="w-5 h-5 block dark:hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
-          </button>
+          {{- /* Hextra dropdown (light/dark/system) — replaces the older
+                 simple sun/moon button so this menu matches the docs nav. */ -}}
+          {{- partial "theme-toggle.html" (dict "hideLabel" true "iconHeight" 20 "location" "top" "class" "hx:p-2") -}}
         {{- end -}}
       </div>
     </div>
