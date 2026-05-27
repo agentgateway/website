@@ -1,6 +1,6 @@
 [Kagent](https://github.com/kagent-dev/kagent) is a Kubernetes-native AI agent framework that brings autonomous agents to cloud-native environments. It leverages Kubernetes primitives for agent lifecycle management, scaling, and orchestration.
 
-## What is Kagent?
+## What is kagent?
 
 Kagent provides a Kubernetes-native approach to running AI agents:
 
@@ -10,7 +10,7 @@ Kagent provides a Kubernetes-native approach to running AI agents:
 - **A2A Communication** - Agent-to-agent messaging via Kubernetes services
 - **GitOps Ready** - Declarative agent definitions for Flux/ArgoCD
 
-## Why Use agentgateway with Kagent?
+## Why use agentgateway with kagent?
 
 Kagent agents running in Kubernetes need enterprise governance:
 
@@ -46,17 +46,17 @@ This guide sets up kagent and agentgateway in a kind cluster, as shown in the fo
 └───────────────────────────────────────────┘
 ```
 
-## Install Kagent
+## Install kagent
 
 Install kagent in your cluster. For more information, see the [kagent docs](https://kagent.dev/docs/kagent/introduction/installation).
-1. Install Kagent CRDs.
+1. Install kagent CRDs.
    ```shell
    helm install kagent-crds oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds \
        --namespace kagent \
        --create-namespace
    ```
 
-2. Install Kagent.
+2. Install kagent.
    ```shell
    helm install kagent oci://ghcr.io/kagent-dev/kagent/helm/kagent \
      --namespace kagent \
@@ -92,7 +92,7 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
    promql-agent-5499d6db5-lvf77                      1/1     Running   0              5h2m
    ```
 
-## Setup Kagent
+## Setup kagent
 1. Create a `ModelConfig` that points to Ollama.
    ```yaml
    kubectl apply -f- <<EOF
@@ -109,7 +109,7 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
    EOF
    ```
 
-2. Verify that Kagent is accessible and correctly functioning.
+2. Verify that kagent is accessible and correctly functioning.
    {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
@@ -124,7 +124,7 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
    {{% /tab %}}
    {{< /tabs >}}
 
-3. Open the Kagent UI and try the default `k8s-agent` to confirm everything works end-to-end.
+3. Open the kagent UI and try the default `k8s-agent` to confirm everything works end-to-end.
    {{< reuse-image src="img/kagent-default-k8s-agent.png" >}}
    {{< reuse-image-dark srcDark="img/kagent-default-k8s-agent.png" >}}
 
