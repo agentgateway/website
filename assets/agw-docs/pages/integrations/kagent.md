@@ -158,7 +158,7 @@ Agentgateway provides policies that you can use to govern your kagent environmen
    EOF
    ```
 
-2. Verify the policy by sending a prompt that includes the word `email`. And you shpuld get an `403`
+2. Verify the policy by sending a prompt to your agent through the kagent UI that includes the word `email`. You get a `403` response.
    {{< reuse-image src="img/kagent-rejected-content.png" >}}
    {{< reuse-image-dark srcDark="img/kagent-rejected-content.png" >}}
 
