@@ -28,6 +28,8 @@ Kagent agents running in Kubernetes need enterprise governance:
 4. Follow the [Ollama]({{< link-hextra path="llm/providers/ollama/">}}) guide to install and setup Ollama.
 
 ## Architecture
+
+This guide sets up kagent and agentgateway in a kind cluster, as shown in the following diagram.
 ```
 ┌───────────────────────────────────────────┐
 │              kind cluster                 │
