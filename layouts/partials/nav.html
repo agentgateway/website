@@ -294,12 +294,25 @@
     .landing-navbar {
       background: rgba(255,255,255,0.78);
       border: 1px solid rgba(15,19,35,0.08);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
+      /* backdrop-filter intentionally omitted here: applying it directly on
+         .landing-navbar would make it the containing block for position:fixed
+         descendants (per CSS spec), breaking the hextra-theme-toggle-options
+         dropdown positioning.  The blur is applied via ::before instead. */
       border-radius: 999px;
       box-shadow: 0 1px 0 rgba(15,19,35,0.02), 0 8px 24px -16px rgba(15,19,35,0.06);
       padding: 8px 8px 8px 22px;
       max-width: fit-content;
+      position: relative;
+    }
+    .landing-navbar::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      z-index: -1;
+      pointer-events: none;
     }
     .landing-navbar .link {
       font-family: 'Figtree', system-ui, sans-serif;
@@ -389,6 +402,47 @@
     /* .landing-theme-toggle + .theme-icon-{sun,moon} removed when the
        custom button was replaced with Hextra's theme-toggle dropdown
        partial. */
+
+    /* Mobile landing nav — backdrop blur via ::before for the same reason
+       as .landing-navbar above: backdrop-filter directly on the nav element
+       makes it the containing block for position:fixed descendants, breaking
+       the hextra-theme-toggle-options dropdown positioning. */
+    .landing-mobile-nav {
+      position: relative;
+    }
+    .landing-mobile-nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Logo height — Tailwind v3 preflight sets height:auto on img which
+       overrides the HTML height attribute, causing the SVG (natural size
+       4496×1064) to render enormous. Force it to match the design spec. */
+    .landing-mobile-nav a img {
+      height: 28px !important;
+      width: auto !important;
+    }
+
+    /* Hamburger/X icon color — icons have hardcoded fill:#030712.  Override
+       with currentColor so the button's text-color controls the icon in
+       both light and dark mode. */
+    .landing-mobile-nav button svg path {
+      fill: currentColor;
+    }
+    .landing-mobile-nav button {
+      color: #374151; /* gray-700 — visible on the bg-gray-100 button in light mode */
+    }
+    /* dark:bg-white/10 doesn't compile (PurgeCSS misses it), so set both
+       the background and icon color explicitly here. */
+    .dark .landing-mobile-nav button {
+      background-color: rgba(255,255,255,0.1);
+      color: #e5e7eb; /* gray-200 — visible on the near-black nav in dark mode */
+    }
   </style>
   <div class="fixed top-5 left-0 right-0 flex justify-center z-50 pointer-events-none hidden lg:flex">
     <nav class="navbar landing-navbar pointer-events-auto flex items-center gap-7">
@@ -437,7 +491,7 @@
     </nav>
   </div>
 
-  <nav class="absolute top-0 w-full block lg:hidden z-50 bg-white/80 dark:bg-[#0B0E18]/80 backdrop-blur-lg border-b border-gray-200/50 dark:border-white/8">
+  <nav class="landing-mobile-nav absolute top-0 w-full block lg:hidden z-50 bg-white/80 dark:bg-[#0B0E18]/80 border-b border-gray-200/50 dark:border-white/8">
     <div class="py-4 px-4 flex justify-between items-center">
       <a href="/" class="flex items-center"><img src="/logo.svg" alt="agentgateway logo" height="28" class="dark:hidden" /><img src="/logo-dark.svg" alt="agentgateway logo" height="28" class="hidden dark:block" /></a>
       <div class="flex items-center gap-2">
@@ -445,7 +499,7 @@
                simple sun/moon button so the landing nav matches the
                docs nav. */ -}}
         {{- partial "theme-toggle.html" (dict "hideLabel" true "iconHeight" 16 "location" "top" "class" "hx:p-2") -}}
-        <button class="p-3 bg-gray-900 dark:bg-white/10 rounded-lg flex items-center" onClick="openMobileNav()">
+        <button class="p-3 bg-gray-100 dark:bg-white/10 rounded-lg flex items-center" onClick="openMobileNav()">
           <div class="visible hamburger hidden">
             {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
           </div>
@@ -616,7 +670,7 @@
         {{- if (.Site.Params.theme.displayToggle | default true) -}}
           {{- /* Hextra dropdown (light/dark/system) — replaces the older
                  simple sun/moon button so this menu matches the docs nav. */ -}}
-          {{- partial "theme-toggle.html" (dict "hideLabel" true "iconHeight" 18 "location" "top" "class" "hx:p-2") -}}
+          {{- partial "theme-toggle.html" (dict "hideLabel" true "iconHeight" 20 "location" "top" "class" "hx:p-2") -}}
         {{- end -}}
       </div>
     </div>
