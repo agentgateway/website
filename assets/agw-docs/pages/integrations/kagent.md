@@ -45,14 +45,14 @@ Kagent agents running in Kubernetes need enterprise governance:
 ```
 
 ## Install Kagent
-1. install kagent crds.
+1. Install Kagent CRDs.
    ```shell
    helm install kagent-crds oci://ghcr.io/kagent-dev/kagent/helm/kagent-crds \
        --namespace kagent \
        --create-namespace
    ```
 
-2. install kagent.
+2. Install Kagent.
    ```shell
    helm install kagent oci://ghcr.io/kagent-dev/kagent/helm/kagent \
      --namespace kagent \
@@ -62,7 +62,7 @@ Kagent agents running in Kubernetes need enterprise governance:
      --set providers.ollama.apiKey=dummy
    ```
 
-3. Make sure erverthing is up and running.
+3. Verify everything is up and running.
    ```shell
    kubectl get pods -n kagent
    ```
@@ -89,18 +89,19 @@ Kagent agents running in Kubernetes need enterprise governance:
    ```
 
 ## Setup Kagent
-1. Create a ModelConfig that points to Ollama:
+1. Create a `ModelConfig` that points to Ollama.
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: kagent.dev/v1alpha2
    kind: ModelConfig
    metadata:
-     name: ollama-model-config
+     name: llama3-model-config
      namespace: kagent
    spec:
+     model: llama3
      provider: Ollama
-     model: llama3.2
-     baseUrl: http://agentgateway-proxy.agentgateway-system.svc.cluster.local/v1
+     ollama:
+       host: agentgateway-proxy.agentgateway-system.svc.cluster.local
    EOF
    ```
 
@@ -119,35 +120,41 @@ Kagent agents running in Kubernetes need enterprise governance:
    {{% /tab %}}
    {{< /tabs >}}
 
-3. Open the Kagent GUI and try defult Kagent for example k8s-agent.
+3. Open the Kagent UI and try the default `k8s-agent` to confirm everything works end-to-end.
    {{< reuse-image src="img/kagent-default-k8s-agent.png" >}}
    {{< reuse-image-dark srcDark="img/kagent-default-k8s-agent.png" >}}
 
 ## Governance Capabilities
-### Apply Ratelimiting
-1. Create an `AgentgatewayPolicy` resource to apply token based rateliming on the agentgateway.
+### Block requests with PII
+1. Create an `AgentgatewayPolicy` resource to deny requests to the LLM provider that include PII, such as a `email` string in the request body on. See the full [guardrails docs](docs/kubernetes/latest/llm/guardrails/regex/#block-requests-with-pii) for more options.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: AgentgatewayPolicy
    metadata:
-     name: llm-token-budget
+     name: prompt-guard
      namespace: agentgateway-system
    spec:
      targetRefs:
-       - group: gateway.networking.k8s.io
-         kind: HTTPRoute
-         name: ollama
-     traffic:
-       rateLimit:
-         local:
-           - tokens: 1
-             unit: Hours
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: ollama
+     backend:
+       ai:
+         promptGuard:
+           request:
+           - response:
+               message: "Rejected due to inappropriate content"
+             regex:
+               action: Reject
+               matches:
+               - "email"
    EOF
    ```
 
-2. Verify
-   What would be the best method?
+2. Verify the policy by sending a prompt that includes the word `email`. And you shpuld get an `403`
+   {{< reuse-image src="img/kagent-rejected-content.png" >}}
+   {{< reuse-image-dark srcDark="img/kagent-rejected-content.png" >}}
 
 ## Best Practices
 
@@ -157,4 +164,11 @@ Kagent agents running in Kubernetes need enterprise governance:
 4. **GitOps Policies** - Manage authorization policies declaratively
 
 ## Cleanup
-To be done
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+```shell
+kubectl delete agentgatewaypolicy prompt-guard -n agentgateway-system
+kubectl delete modelconfig llama3-model-config -n kagent
+helm uninstall kagent --namespace kagent
+helm uninstall kagent-crds --namespace kagent
+kubectl delete namespace kagent
+```
