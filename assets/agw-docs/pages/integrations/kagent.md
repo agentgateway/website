@@ -30,20 +30,24 @@ Kagent agents running in Kubernetes need enterprise governance:
 ## Architecture
 
 This guide sets up kagent and agentgateway in a kind cluster, as shown in the following diagram.
-```
-┌───────────────────────────────────────────┐
-│              kind cluster                 │
-│                                           │
-│  ┌──────────┐    ┌─────────────────────┐  │   ┌────────────┐
-│  │  kagent  │───▶│   agentgateway      │──│──▶│   Ollama   │
-│  │  agent   │    │   (agentgateway-    │  │   │   (host)   │
-│  │  pods    │    │    system ns)       │  │   └────────────┘
-│  └──────────┘    │  - auth / authz     │  │
-│                  │  - rate limiting    │  │
-│                  │  - audit logging    │  │
-│                  │  - observability    │  │
-│                  └─────────────────────┘  │
-└───────────────────────────────────────────┘
+```mermaid
+flowchart LR
+ subgraph KindCluster["kind cluster"]
+        kagentPods["kagent agent pods"]
+        agentGateway["agentgateway<br>(agentgateway-system ns)<br>• auth / authz<br>• rate limiting<br>• audit logging<br>• observability"]
+  end
+    kagentPods --> agentGateway
+    agentGateway --> ollama["Ollama<br>(host)"]
+     kagentPods:::internal
+     agentGateway:::internal
+     ollama:::external
+    classDef cluster stroke:#818cf8,fill:#eef2ff
+    classDef internal stroke:#a78bfa,fill:#f5f3ff
+    classDef external stroke:#fb923c,fill:#fff7ed
+    style kagentPods stroke:#a78bfa,fill:#ffffff
+    style agentGateway fill:#ffffff,stroke:#AA00FF
+    style ollama fill:#ffffff,stroke:#00C853
+    style KindCluster stroke:#2962FF,fill:#ffffff
 ```
 
 ## Install kagent
