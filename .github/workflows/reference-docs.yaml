@@ -10,12 +10,20 @@ name: Generate API reference docs for agentgateway
 on:
   release:
     types: [created]
+  schedule:
+    # Nightly at 06:00 UTC: regenerate docs for every version (incl. main) so docs don't drift from code.
+    - cron: '0 6 * * *'
   workflow_dispatch:
     inputs:
       doc_version:
         description: 'Doc version to generate (must match a version in hugo.yaml), e.g. 1.0.x, or "all"'
         required: true
         default: '1.0.x'
+
+# Queue overlapping runs (e.g. nightly cron + a manual dispatch) so they don't force-push the same PR branches concurrently.
+concurrency:
+  group: reference-docs
+  cancel-in-progress: false
 
 jobs:
   setup:
@@ -37,6 +45,9 @@ jobs:
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]; then
             input_version="1.0.x"
+          elif [[ "${{ github.event_name }}" == "schedule" ]]; then
+            # Scheduled events carry no inputs; regenerate every version.
+            input_version="all"
           else
             input_version="${{ inputs.doc_version }}"
           fi
