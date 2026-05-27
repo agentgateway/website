@@ -25,7 +25,7 @@ Agentgateway continues to deepen its native support for the emerging [Model Cont
 * Protocol-aware routing, telemetry, and tracing
 * Support for MCP server/tool aggregation (virtualized MCP servers)
 * Updated MCP Authorization support per the June 2025 spec
-* Native authorization policy engine using [Cedar](https://www.cedarpolicy.com/) for fine-grained authorizations
+* Native authorization policy engine using [Cedar](https://cedarpolicy.com/) for fine-grained authorizations
 * Support for exposing local stdio-based MCP servers as remote targets
 
 Agentgateway can be used to implement authentication and authorization for your MCP servers with minimal set up. We will keep agentgateway updated as these specs continue to evolve.

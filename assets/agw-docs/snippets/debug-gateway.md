@@ -4,7 +4,7 @@
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
    
-2. Check the HTTPRoutes for the status of the route and any attached policies. For more information about how routes work, review the [Gateway API docs](https://gateway-api.sigs.k8s.io/api-types/httproute/).
+2. Check the HTTPRoutes for the status of the route and any attached policies. For more information about how routes work, review the [Gateway API docs](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/).
    
    ```sh
    kubectl get httproutes -A

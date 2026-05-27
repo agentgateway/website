@@ -59,7 +59,7 @@ Each AI provider has a different way of handling function calling. For example, 
 * [Gemini](https://ai.google.dev/gemini-api/docs/function-calling)
 * [Mistral AI](https://docs.mistral.ai/studio-api/agents/agent-tools/function-calling)
 * [OpenAI](https://developers.openai.com/api/docs/guides/function-calling)
-* [Vertex AI](https://docs.cloud.google.com/vertex-ai/docs/reference/rest/v1beta1/FunctionDeclaration?hl=en)
+* [Vertex AI](https://docs.cloud.google.com/gemini-enterprise-agent-platform/reference/rest?hl=en)
 
 ## Before you begin
 

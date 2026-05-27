@@ -1,4 +1,4 @@
-Configure [Vertex AI](https://cloud.google.com/vertex-ai) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-platform) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 ## Before you begin
 
