@@ -30,27 +30,57 @@ Create a `config.yaml` that defines an MCP target for the `server-everything` te
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
-mcp:
-  port: 3000
-  targets:
-  - name: server-everything
-    stdio:
-      cmd: npx
-      args:
-      - -y
-      - "@modelcontextprotocol/server-everything"
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        cors:
+          allowOrigins:
+          - "*"
+          allowHeaders:
+          - content-type
+          - cache-control
+          - mcp-protocol-version
+          - mcp-session-id
+          exposeHeaders:
+          - mcp-session-id
+      backends:
+      - mcp:
+          targets:
+          - name: server-everything
+            stdio:
+              cmd: npx
+              args:
+              - -y
+              - "@modelcontextprotocol/server-everything"
 EOF
 ```
 
 You can also connect to a remote MCP server by using the `mcp` transport instead of `stdio`:
 
 ```yaml
-mcp:
-  port: 3000
-  targets:
-  - name: remote-mcp
-    mcp:
-      host: http://localhost:3005/mcp/
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        cors:
+          allowOrigins:
+          - "*"
+          allowHeaders:
+          - content-type
+          - cache-control
+          - mcp-protocol-version
+          - mcp-session-id
+          exposeHeaders:
+          - mcp-session-id
+      backends:
+      - mcp:
+          targets:
+          - name: remote-mcp
+            mcp:
+              host: http://localhost:3005/mcp/
 ```
 
 ### Step 2: Review the configuration
