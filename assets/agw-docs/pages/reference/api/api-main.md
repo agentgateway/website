@@ -330,7 +330,7 @@ _Appears in:_
 AgentgatewayParameters are configuration that is used to dynamically
 provision the agentgateway data plane. Labels and annotations that apply to
 all resources may be specified at a higher level; see
-https://gateway-api.sigs.k8s.io/reference/spec/#gatewayinfrastructure
+https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#gatewayinfrastructure
 
 
 
@@ -1260,6 +1260,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `status` _integer_ | StatusCode defines the HTTP status code to return for this route. |  | Maximum: 599 <br />Minimum: 200 <br /> |
 | `body` _string_ | Body defines the content to be returned in the HTTP response body.<br />The maximum length of the body is restricted to prevent excessively large responses.<br />If this field is omitted, no body is included in the response. |  | MaxLength: 4096 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `bodyExpression` _[CELExpression](#celexpression)_ | BodyExpression is a CEL expression that produces the HTTP response body.<br />Strings and bytes are written directly; other values are serialized as JSON.<br />If this field is omitted, no expression body is included in the response. |  | Optional: \{\} <br /> |
+| `headers` _[DirectResponseHeader](#directresponseheader) array_ | Headers defines response headers to set on the direct response. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
 #### DirectResponseConditional
@@ -1279,6 +1281,24 @@ _Appears in:_
 | `policy` _[DirectResponse](#directresponse)_ | `policy` definition. |  | Required: \{\} <br /> |
 
 
+#### DirectResponseHeader
+
+
+
+
+
+
+
+_Appears in:_
+- [DirectResponse](#directresponse)
+- [DirectResponseOrConditional](#directresponseorconditional)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _[HTTPHeaderName](#httpheadername)_ | The name of the header to set. |  | MaxLength: 256 <br />MinLength: 1 <br />Pattern: `^[A-Za-z0-9!#$%&'*+\-.^_\x60\|~]+$` <br />Required: \{\} <br /> |
+| `value` _[CELExpression](#celexpression)_ | `value` is the CEL expression to apply to generate the output value for<br />the header. |  | Required: \{\} <br /> |
+
+
 #### DirectResponseOrConditional
 
 
@@ -1294,6 +1314,8 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `status` _integer_ | StatusCode defines the HTTP status code to return for this route. |  | Maximum: 599 <br />Minimum: 200 <br /> |
 | `body` _string_ | Body defines the content to be returned in the HTTP response body.<br />The maximum length of the body is restricted to prevent excessively large responses.<br />If this field is omitted, no body is included in the response. |  | MaxLength: 4096 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `bodyExpression` _[CELExpression](#celexpression)_ | BodyExpression is a CEL expression that produces the HTTP response body.<br />Strings and bytes are written directly; other values are serialized as JSON.<br />If this field is omitted, no expression body is included in the response. |  | Optional: \{\} <br /> |
+| `headers` _[DirectResponseHeader](#directresponseheader) array_ | Headers defines response headers to set on the direct response. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `conditional` _[DirectResponseConditional](#directresponseconditional) array_ | `conditional`, if set, will enable conditional policy execution. You must either set this, or set the top level directResponse fields.<br />The first matching policy will be executed.<br />A single policy may be provided without a condition set; if so, it must be the last policy and will be the fallback<br />in case no conditions are met. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
@@ -1740,6 +1762,22 @@ _Appears in:_
 | `projectId` _[ShortString](#shortstring)_ | ProjectID is the Google Cloud project ID. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `location` _[ShortString](#shortstring)_ | Location is the Google Cloud location (for example, `us-central1`).<br />Defaults to `us-central1` if not specified. | us-central1 | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `policies` _[BackendSimple](#backendsimple)_ | policies controls policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
+
+
+#### HTTPHeaderName
+
+_Underlying type:_ _string_
+
+An HTTP header name. Unlike HeaderName, this does not allow pseudo-headers.
+
+_Validation:_
+- MaxLength: 256
+- MinLength: 1
+- Pattern: `^[A-Za-z0-9!#$%&'*+\-.^_\x60|~]+$`
+
+_Appears in:_
+- [DirectResponseHeader](#directresponseheader)
+
 
 
 #### HTTPVersion
