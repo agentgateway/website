@@ -47,7 +47,8 @@ jobs:
             input_version="1.0.x"
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             # Scheduled events carry no inputs; regenerate every version.
-            input_ve          else
+            input_version="all"
+          else
             input_version="${{ inputs.doc_version }}"
           fi
 
