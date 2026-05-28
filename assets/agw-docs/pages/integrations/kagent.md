@@ -166,13 +166,6 @@ Agentgateway provides policies that you can use to govern your kagent environmen
    {{< reuse-image src="img/kagent-rejected-content.png" >}}
    {{< reuse-image-dark srcDark="img/kagent-rejected-content.png" >}}
 
-## Best Practices
-
-1. **Namespace Isolation** - Separate teams with namespace-aware policies
-2. **Resource Quotas** - Set token budgets per namespace
-3. **Audit Everything** - Log all LLM, MCP, and A2A traffic
-4. **GitOps Policies** - Manage authorization policies declaratively
-
 ## Cleanup
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 ```shell
