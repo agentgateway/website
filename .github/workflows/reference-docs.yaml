@@ -47,8 +47,7 @@ jobs:
             input_version="1.0.x"
           elif [[ "${{ github.event_name }}" == "schedule" ]]; then
             # Scheduled events carry no inputs; regenerate every version.
-            input_version="all"
-          else
+            input_ve          else
             input_version="${{ inputs.doc_version }}"
           fi
 
@@ -294,7 +293,7 @@ jobs:
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ matrix.link_version }}) from agentgateway ${{ matrix.ref }}'
-          token: ${{ secrets.CREATE_PR_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Output PR URL
         run: |
