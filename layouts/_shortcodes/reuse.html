@@ -28,5 +28,33 @@
   {{- errorf "The %q shortcode was unable to find %q. See %s" .Name $asset .Position}}
 {{- end }}
 
+{{- $content := $r.Content }}
+
+{{- /* Table-row exception: an inline {{< version >}} that wraps a single
+       pipe-delimited row needs the percent form so the shortcode output
+       re-enters the markdown stream and the pipes get parsed as cell
+       delimiters. Angle form would emit opaque HTML inline and Goldmark
+       would treat the whole pipe-string as one <td>. The pattern is narrow
+       (opening tag, content with leading + trailing `|`, closing tag, all
+       on the same line), so it won't affect the indented-list or
+       fence-adjacent cases that rely on staying in angle form. Mirrors
+       the same conversion in docs-theme-extras's reuse.html. */}}
+{{- $content = replaceRE `\{\{<\s*(version\s+(?:include|exclude)-if="[^"]+"[^>]*?)\s*>}}(\s*\|[^\n]*?\|\s*)\{\{<\s*/version\s*>}}` "{{% $1 %}}$2{{% /version %}}" $content }}
+
+{{- /* List-item exception: a version block whose inner content starts with
+       a bullet or numbered list marker at column 0 needs the percent form
+       so the marker re-enters the markdown stream as a real list item.
+       Angle form would emit the marker as literal text in the surrounding
+       placeholder context — when the version wraps a single bullet adjacent
+       to other bullets, Goldmark lazy-continues the prior `<li>` and the
+       `* [link](url)` survives as raw markdown (the agentgateway
+       `bedrock.md` "Optional: ... configure AWS IAM Identity Center"
+       leak). Matches same-line and newline-prefixed forms. Content must
+       start at column 0 (no leading spaces before the marker) so we don't
+       trip deeply-indented version blocks where percent form's
+       4-space-code-block rule would wrap the inner in <pre><code>.
+       Mirrors the same conversion in docs-theme-extras's reuse.html. */}}
+{{- $content = replaceRE `\{\{<\s*(version\s+(?:include|exclude)-if="[^"]+"[^>]*?)\s*>}}((?:\r?\n)?(?:[*+\-]|[0-9]+\.)[ \t][\s\S]*?)\{\{<\s*/version\s*>}}` "{{% $1 %}}$2{{% /version %}}" $content }}
+
 {{- /* Render resource content. */}}
-{{- $r.Content | .Page.RenderString | chomp }}
+{{- $content | .Page.RenderString | chomp }}
