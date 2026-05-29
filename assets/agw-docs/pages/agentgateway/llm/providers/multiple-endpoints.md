@@ -2,7 +2,7 @@ Configure access to multiple OpenAI API endpoints such as for chat completions, 
 
 ## About
 
-To set up multiple LLM endpoints, use the `ai.llm.routes` field. This field maps the API paths to supported route types. The keys are URL suffix matches, like `/v1/models`. The values are the route types, like `Completions` or `Passthrough`.
+To set up multiple LLM endpoints, use the `ai.routes` field in the `policies` section of the AgentgatewayBackend resource. This field maps the API paths to supported route types. The keys are URL suffix matches, like `/v1/models`. The values are the route types, like `Completions` or `Passthrough`.
 
 - `Completions`: Transforms to the LLM provider format and processes the request with the LLM provider. This route type supports full LLM features such as tokenization, rate limiting, transformations, and other policies like prompt guards.
 - `Passthrough`: Forwards the request to the LLM provider as-is. This route type does not support LLM features like route processing and policies. You might use this route type for non-chat endpoints such as health checks, `GET` requests like listing models, or custom endpoints that you want to pass traffic through to.
