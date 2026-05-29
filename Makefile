@@ -130,6 +130,7 @@ framework-test-install:
 .PHONY: framework-test
 framework-test:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test; \
@@ -140,6 +141,7 @@ framework-test:
 .PHONY: framework-test-static
 framework-test-static:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=static; \
@@ -150,6 +152,7 @@ framework-test-static:
 .PHONY: framework-test-browser
 framework-test-browser:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=browser; \
@@ -160,6 +163,7 @@ framework-test-browser:
 .PHONY: framework-test-cross-browser
 framework-test-cross-browser:
 	@$(MAKE) _framework_test_preflight
+	rm -rf public
 	hugo160 --gc --minify > .build.log 2>&1
 	cd $(FRAMEWORK_EXTRAS_DIR) && \
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test \
