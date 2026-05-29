@@ -2,10 +2,10 @@ Configure access to multiple OpenAI API endpoints such as for chat completions, 
 
 ## About
 
-To set up multiple LLM endpoints, use the `ai.routes` field in the `policies` section of the AgentgatewayBackend resource. This field maps the API paths to supported route types. The keys are URL suffix matches, like `/v1/models`. The values are the route types, like `Completions` or `Passthrough`.
+To set up multiple LLM endpoints, use the `ai.routes` field in the `policies` section of the {{< reuse "agw-docs/snippets/backend.md" >}} resource. This field maps the API paths to supported route types. The keys are URL suffix matches, like `/v1/models`. The values are the route types, like `Completions` or `Passthrough`.
 
 - `Completions`: Parses the request, translates it to the LLM provider format, and fully processes it as an LLM request. This route type unlocks the full set of {{< reuse "agw-docs/snippets/agentgateway.md" >}} LLM features, such as tokenization and token-based rate limiting, prompt guards, prompt enrichment, model aliasing, transformations, cost tracking, and detailed observability.
-- `Detect`: Forwards the request as-is, but makes a best effort to extract the model and token counts so that a subset of policies still apply, specifically token-based rate limiting and telemetry. Guardrails and other request-shaping policies do not apply. Use this route type for endpoints whose format {{< reuse "agw-docs/snippets/agentgateway.md" >}} does not natively parse, but where you still want metrics and rate limiting.
+- `Detect`: Forwards the request as-is, but makes a best effort to extract the model and token counts so that a subset of policies still applies, specifically token-based rate limiting and telemetry. Guardrails and other request-shaping policies do not apply. Use this route type for endpoints with a format that cannot be automatically parsed by {{< reuse "agw-docs/snippets/agentgateway.md" >}}, but where you still want metrics and rate limiting.
 - `Passthrough`: Forwards the request to the LLM provider as-is, with no parsing, processing, or policies. Use this route type for endpoints that you want to proxy without any LLM features, such as health checks or custom endpoints.
 
 Paths are matched in order, and the first match determines how the request is handled. The wildcard character `*` can be used to match anything. If no route is set, the route defaults to the Completions endpoint.
