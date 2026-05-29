@@ -2,4 +2,4 @@ module github.com/agentgateway/website
 
 go 1.21
 
-require github.com/solo-io/docs-theme-extras v0.0.3-beta.5 // indirect
+require github.com/solo-io/docs-theme-extras v0.1.0 // indirect
