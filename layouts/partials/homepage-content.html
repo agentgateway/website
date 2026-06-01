@@ -136,6 +136,14 @@
 .hp-page .hp-hero-logo-dark { display: none; }
 .dark .hp-page .hp-hero-logo-light { display: none; }
 .dark .hp-page .hp-hero-logo-dark { display: block; }
+.hp-page .hp-aaif-badge { height: 26px; width: auto; opacity: 0.6; filter: brightness(0); }
+.dark .hp-page .hp-aaif-badge { filter: brightness(0) invert(1); }
+.hp-page .hp-aaif-link {
+  font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.06em;
+  color: var(--hp-text-5); text-decoration: none;
+  border-bottom: 1px solid transparent; transition: color .18s ease, border-color .18s ease;
+}
+.hp-page .hp-aaif-link:hover { color: var(--hp-text-2); border-bottom-color: currentColor; }
 .hp-hero-lede {
   font-family: var(--hp-font-h); font-weight: 600;
   font-size: clamp(26px, 2.6vw, 36px); line-height: 1.18; letter-spacing: -0.02em;
@@ -657,9 +665,10 @@
       An open source HTTP and gRPC gateway that handles traditional application traffic and AI-native protocols in one data plane. Route, secure, observe, and govern services, LLM provider traffic, MCP tools, and agent-to-agent communication without stitching together separate gateways.
     </p>
 
-    <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 32px;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;">
       <span style="font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.06em; color: var(--hp-text-5);">Part of</span>
-      <img src="/lf-logo.svg" alt="The Linux Foundation" style="height: 28px; width: auto; opacity: 0.55;">
+      <img src="/aaif-light.svg" alt="AAIF" class="hp-aaif-badge">
+      <a href="https://aaif.io/" target="_blank" rel="noopener" class="hp-aaif-link">Visit the AAIF project →</a>
     </div>
 
     <div class="hp-hero-ctas" style="justify-content: center;">
@@ -887,7 +896,7 @@
   <div class="hp-contributing-label">Contributing Companies</div>
   <div class="hp-logo-track">
     <div class="hp-logo-scroll">
-      <div class="hp-logo-item"><img src="/lf-logo.svg" alt="The Linux Foundation" class="hp-logo-img"><span>Linux Foundation</span></div>
+      <div class="hp-logo-item"><img src="/aaif-light.svg" alt="AAIF" class="hp-logo-img"><span>AAIF</span></div>
       <div class="hp-logo-item"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
       <div class="hp-logo-item"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
       <div class="hp-logo-item"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
@@ -898,7 +907,7 @@
       <div class="hp-logo-item"><img src="/logos/salesforce.svg" alt="Salesforce" class="hp-logo-img"><span>Salesforce</span></div>
       <div class="hp-logo-item"><img src="/logos/huawei.svg" alt="Huawei" class="hp-logo-img"><span>Huawei</span></div>
       <div class="hp-logo-item"><img src="/logos/amdocs.svg" alt="Amdocs" class="hp-logo-img"><span>Amdocs</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/lf-logo.svg" alt="The Linux Foundation" class="hp-logo-img"><span>Linux Foundation</span></div>
+      <div class="hp-logo-item" aria-hidden="true"><img src="/aaif-light.svg" alt="AAIF" class="hp-logo-img"><span>AAIF</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
@@ -1357,7 +1366,7 @@
       </div>
     </div>
     <div class="hp-footer-bottom">
-      <span>&copy; 2026 agentgateway authors · A Linux Foundation Project</span>
+      <span>&copy; 2026 agentgateway authors · An AAIF Project</span>
       <span>Apache 2.0</span>
     </div>
   </div>
