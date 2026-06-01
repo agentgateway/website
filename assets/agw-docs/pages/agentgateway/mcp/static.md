@@ -106,10 +106,11 @@ spec:
   mcp:
     targets:
     - name: mcp-target
-      backendRef:
-        name: mcp-website-fetcher
-      port: 80
-      protocol: SSE
+      static:
+        backendRef:
+          name: mcp-website-fetcher
+        port: 80
+        protocol: SSE
 ```
 {{% /tab %}}
 {{< /tabs >}}
