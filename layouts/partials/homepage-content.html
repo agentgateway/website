@@ -136,10 +136,15 @@
 .hp-page .hp-hero-logo-dark { display: none; }
 .dark .hp-page .hp-hero-logo-light { display: none; }
 .dark .hp-page .hp-hero-logo-dark { display: block; }
-.hp-page .hp-aaif-badge { height: 44px; width: auto; opacity: 0.6; filter: brightness(0); }
-.dark .hp-page .hp-aaif-badge { filter: brightness(0) invert(1); }
+.hp-page .hp-aaif-badge {
+  display: inline-block; width: 124px; height: 30px;
+  background-color: var(--hp-text-2);
+  -webkit-mask: url(/aaif-light.svg) center / contain no-repeat;
+          mask: url(/aaif-light.svg) center / contain no-repeat;
+  transition: opacity .18s ease;
+}
 .hp-page .hp-aaif-link { display: inline-flex; align-items: center; line-height: 0; }
-.hp-page .hp-aaif-link:hover .hp-aaif-badge { opacity: 0.9; }
+.hp-page .hp-aaif-link:hover .hp-aaif-badge { opacity: 0.7; }
 .hp-hero-lede {
   font-family: var(--hp-font-h); font-weight: 600;
   font-size: clamp(26px, 2.6vw, 36px); line-height: 1.18; letter-spacing: -0.02em;
@@ -662,9 +667,9 @@
     </p>
 
     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;">
-      <span style="font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.06em; color: var(--hp-text-5);">Part of</span>
+      <span style="font-family: var(--hp-font-m); font-size: 13px; letter-spacing: 0.08em; color: var(--hp-text-5);">Part of</span>
       <a href="https://aaif.io/" target="_blank" rel="noopener" class="hp-aaif-link" aria-label="Visit the AAIF project">
-        <img src="/aaif-light.svg" alt="AAIF" class="hp-aaif-badge">
+        <span class="hp-aaif-badge" aria-hidden="true"></span>
       </a>
     </div>
 
