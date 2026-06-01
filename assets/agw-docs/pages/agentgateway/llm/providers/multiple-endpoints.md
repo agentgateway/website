@@ -6,13 +6,9 @@ To set up multiple LLM endpoints, use the `ai.routes` field in the `policies` se
 
 - `Completions`: Parses the request, translates it to the LLM provider format, and fully processes it as an LLM request. This route type unlocks the full set of {{< reuse "agw-docs/snippets/agentgateway.md" >}} LLM features, such as tokenization and token-based rate limiting, prompt guards, prompt enrichment, model aliasing, transformations, cost tracking, and detailed observability.
 - `Detect`: Forwards the request as-is, but makes a best effort to extract the model and token counts so that a subset of policies still applies, specifically token-based rate limiting and telemetry. Guardrails and other request-shaping policies do not apply. Use this route type for endpoints with a format that cannot be automatically parsed by {{< reuse "agw-docs/snippets/agentgateway.md" >}}, but where you still want metrics and rate limiting.
-- `Passthrough`: Forwards the request to the LLM provider as-is, with no parsing, processing, or policies. Use this route type for endpoints that you want to proxy without any LLM features, such as health checks or custom endpoints.
+- `Passthrough`: Forwards the request to the LLM provider as-is, with no parsing, processing, or policies. Use passthrough for endpoints that do not need any traffic policy or manipulation, such as health checks or custom endpoints. Otherwise, use the other route types.
 
 Paths are matched in order, and the first match determines how the request is handled. The wildcard character `*` can be used to match anything. If no route is set, the route defaults to the Completions endpoint.
-
-It might seem simpler to set `"*": "Passthrough"` and forward everything to the provider. However, `Passthrough` turns {{< reuse "agw-docs/snippets/agentgateway.md" >}} into a plain proxy that cannot see or shape the traffic. You lose the LLM features that are the reason to put a gateway in front of your provider in the first place, including the following.
-
-Per-route configuration lets you apply this full processing to the endpoints that need it, such as `/v1/chat/completions`, while passing through the endpoints that don't. This way, you get a graduated security and observability posture instead of an all-or-nothing choice. For example, you can enforce prompt guards and token-based rate limits on chat completions, while simply forwarding requests to a model-listing endpoint that doesn't need any of those policies.
 
 ## Before you begin
 
