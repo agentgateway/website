@@ -136,14 +136,10 @@
 .hp-page .hp-hero-logo-dark { display: none; }
 .dark .hp-page .hp-hero-logo-light { display: none; }
 .dark .hp-page .hp-hero-logo-dark { display: block; }
-.hp-page .hp-aaif-badge { height: 26px; width: auto; opacity: 0.6; filter: brightness(0); }
+.hp-page .hp-aaif-badge { height: 44px; width: auto; opacity: 0.6; filter: brightness(0); }
 .dark .hp-page .hp-aaif-badge { filter: brightness(0) invert(1); }
-.hp-page .hp-aaif-link {
-  font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.06em;
-  color: var(--hp-text-5); text-decoration: none;
-  border-bottom: 1px solid transparent; transition: color .18s ease, border-color .18s ease;
-}
-.hp-page .hp-aaif-link:hover { color: var(--hp-text-2); border-bottom-color: currentColor; }
+.hp-page .hp-aaif-link { display: inline-flex; align-items: center; line-height: 0; }
+.hp-page .hp-aaif-link:hover .hp-aaif-badge { opacity: 0.9; }
 .hp-hero-lede {
   font-family: var(--hp-font-h); font-weight: 600;
   font-size: clamp(26px, 2.6vw, 36px); line-height: 1.18; letter-spacing: -0.02em;
@@ -667,8 +663,9 @@
 
     <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 32px; flex-wrap: wrap;">
       <span style="font-family: var(--hp-font-m); font-size: 12px; letter-spacing: 0.06em; color: var(--hp-text-5);">Part of</span>
-      <img src="/aaif-light.svg" alt="AAIF" class="hp-aaif-badge">
-      <a href="https://aaif.io/" target="_blank" rel="noopener" class="hp-aaif-link">Visit the AAIF project →</a>
+      <a href="https://aaif.io/" target="_blank" rel="noopener" class="hp-aaif-link" aria-label="Visit the AAIF project">
+        <img src="/aaif-light.svg" alt="AAIF" class="hp-aaif-badge">
+      </a>
     </div>
 
     <div class="hp-hero-ctas" style="justify-content: center;">
@@ -1319,7 +1316,7 @@
   <div class="hp-wrap">
     <div class="hp-lf-grid">
       <div class="hp-lf-mark">
-        THE LINUX<br>FOUNDATION
+        <img src="/aaif-dark.svg" alt="AAIF" style="height: 48px; width: auto;">
       </div>
       <div>
         <p class="hp-lf-quote">
