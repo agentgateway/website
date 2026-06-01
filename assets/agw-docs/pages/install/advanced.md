@@ -16,13 +16,15 @@ You can update several installation settings in your Helm values file. For examp
 
 For more information, see the [Helm reference docs]({{< link-hextra path="/reference/helm/" >}}).
 
+{{< conditional-text include-if="kubernetes" >}}
+
 ## Development builds
 
 When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add `--set controller.image.pullPolicy=Always` to ensure you get the latest image. For production environments, this setting is not recommended as it might impact performance.
 
+{{< /conditional-text >}}
 
-
-### Experimental Gateway API features {#experimental-gateway-api-features}
+## Experimental Gateway API features {#experimental-gateway-api-features}
 
 To use experimental Gateway API features, you must enable the experimental feature gate, `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES`. This setting defaults to `false` and must be explicitly enabled to use experimental features such as the following:
 
