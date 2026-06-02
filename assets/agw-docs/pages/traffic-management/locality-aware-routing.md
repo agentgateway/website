@@ -537,7 +537,7 @@ The example uses Istio `WorkloadEntry` resources to override locality on each ba
     Example output:
 
     ```
-   20 backend-region-b-5d46cfc8b5-xmfnc
+    20 backend-region-b-5d46cfc8b5-xmfnc
     ```
 
    {{< doc-test paths="locality-aware-routing" >}}

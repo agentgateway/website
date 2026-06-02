@@ -1,4 +1,4 @@
-The following ports are reserved by {{< reuse "agw-docs/snippets/kgateway-capital.md" >}} and cannot be used when configuring your gateway proxy.  
+The following ports are reserved by {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} and cannot be used when configuring your gateway proxy.  
 
 | Port | Description | 
 | -- | -- | 

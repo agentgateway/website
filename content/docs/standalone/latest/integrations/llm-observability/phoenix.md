@@ -4,7 +4,7 @@ weight: 30
 description: Integrate agentgateway with Arize Phoenix for LLM tracing and evaluation
 ---
 
-[Arize Phoenix](https://phoenix.arize.com/) is an open-source LLM observability platform for tracing, evaluation, and debugging.
+[Arize Phoenix](https://arize.com/phoenix/) is an open-source LLM observability platform for tracing, evaluation, and debugging.
 
 ## Features
 

@@ -2,7 +2,7 @@ Decide how to load balance incoming requests to backend services.
 
 ## About simple load balancing
 
-{{< reuse "agw-docs/snippets/kgateway-capital.md" >}} supports multiple load balancing algorithms for selecting backend services to forward incoming requests to. By default, incoming requests are forwarded to the instance with the least requests. You can change this behavior and instead use a round robin algorithm to forward the request to a backend service. 
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} supports multiple load balancing algorithms for selecting backend services to forward incoming requests to. By default, incoming requests are forwarded to the instance with the least requests. You can change this behavior and instead use a round robin algorithm to forward the request to a backend service. 
 
 ### Least request
 

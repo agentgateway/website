@@ -6,6 +6,10 @@ description: Configuration and setup for Amazon Bedrock provider
 
 Configure Amazon Bedrock as an LLM provider in agentgateway.
 
+{{< callout type="info" >}}
+Agentgateway accepts only OpenAI-formatted requests (such as the `/v1/chat/completions` request body shape) and returns OpenAI-formatted responses, regardless of the route path that you configure. Agentgateway translates between OpenAI and Bedrock formats internally. Bedrock's native [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html) request and response shapes are not supported. Usage fields in responses follow the OpenAI shape (`prompt_tokens`, `completion_tokens`, `total_tokens`), not the Bedrock shape (`inputTokens`, `outputTokens`, `totalTokens`).
+{{< /callout >}}
+
 ## Authentication
 
 Before you can use Bedrock as an LLM provider, you must authenticate by using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html).
@@ -90,43 +94,7 @@ curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
 
 ## Structured outputs
 
-Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request.
-
-{{< tabs tabTotal="2" items="Bedrock default, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Bedrock default" %}}
-
-Provide the JSON schema definition in the `text.format` field.
-
-```sh
-curl "localhost:3000/model/us.anthropic.claude-opus-4-20250514-v1:0/converse" \
-  -H content-type:application/json -d '{
-  "model": "",
-  "max_output_tokens": 256,
-  "input": "Is the sky blue? Respond with your answer and a confidence score between 0 and 1.",
-  "text": {
-    "format": {
-      "type": "json_schema",
-      "json_schema": {
-        "name": "answer_schema",
-        "schema": {
-          "type": "object",
-          "properties": {
-            "answer": { "type": "string" },
-            "confidence": { "type": "number" }
-          },
-          "required": ["answer", "confidence"],
-          "additionalProperties": false
-        }
-      }
-    }
-  }
-}' | jq
-```
-
-{{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
-
-Provide the schema definition in the `response_format` field. Agentgateway translates this to Bedrock's native format automatically.
+Structured outputs constrain the model to respond with a specific JSON schema. Provide the schema definition in the OpenAI `response_format` field of your request. Agentgateway translates this to Bedrock's native format automatically.
 
 ```sh
 curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
@@ -155,7 +123,3 @@ curl "localhost:3000/v1/chat/completions" -H content-type:application/json -d '{
   ]
 }' | jq
 ```
-
-{{% /tab %}}
-
-{{< /tabs >}}

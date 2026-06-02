@@ -1,6 +1,7 @@
 ---
 title: agentgateway
 weight: 30
+description: Review Helm values for the agentgateway Helm chart.
 test: skip
 ---
 

@@ -156,7 +156,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
    for i in $(seq 1 20); do
-     npx @modelcontextprotocol/inspector \
+     npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://$INGRESS_GW_ADDRESS/mcp" \
        --transport http \
        --method tools/call \
@@ -168,7 +168,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
    for i in $(seq 1 20); do
-     npx @modelcontextprotocol/inspector \
+     npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://localhost:8080/mcp" \
        --transport http \
        --method tools/call \
@@ -397,7 +397,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    ```sh
    # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
    for i in $(seq 1 5); do
-     npx @modelcontextprotocol/inspector \
+     npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://$INGRESS_GW_ADDRESS/mcp" \
        --transport http \
        --method tools/call \
@@ -408,7 +408,7 @@ The following steps show how to set up global rate limiting infrastructure and c
 
    # echo: 10/min limit — all 5 pass through
    for i in $(seq 1 5); do
-     npx @modelcontextprotocol/inspector \
+     npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://$INGRESS_GW_ADDRESS/mcp" \
        --transport http \
        --method tools/call \
@@ -421,7 +421,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    ```sh
    # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
    for i in $(seq 1 5); do
-     npx @modelcontextprotocol/inspector \
+     npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://localhost:8080/mcp" \
        --transport http \
        --method tools/call \
@@ -432,7 +432,7 @@ The following steps show how to set up global rate limiting infrastructure and c
 
    # echo: 10/min limit — all 5 pass through
    for i in $(seq 1 5); do
-     npx @modelcontextprotocol/inspector \
+     npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
        --cli "http://localhost:8080/mcp" \
        --transport http \
        --method tools/call \

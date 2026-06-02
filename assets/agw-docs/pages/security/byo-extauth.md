@@ -2,7 +2,7 @@ Bring your own external authorization service to protect requests that go throug
 
 ## About external auth {#about}
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway. Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} lets you integrate your own external authorization service to your Gateway. Then, this external authorization service makes authorization decisions for requests that go through the Gateway, as shown in the following diagram.
 
 Review the following diagram to understand the flow of a request: 
 
@@ -100,7 +100,9 @@ Keep in mind that your external authorization service must conform to the [Envoy
 
 ## Create external auth policy {#create-policy}
 
-You can apply a policy at two levels: the Gateway level or the HTTPRoute level. If you apply the policy at both levels, the request must pass both policies to be authorized.
+You can attach an external authorization policy to a Gateway, HTTPRoute, or backend (an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} or a Kubernetes Service). If you attach policies at multiple levels, the request must pass each one to be authorized.
+
+Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authorization runs before the proxy selects a backend. Backend targets use the `backend.extAuth` section so that authorization runs after backend selection, which is useful when the authorization service shapes the outgoing request, for example by inserting a token, or when a route load-balances or fails over across multiple backends.
 
 1. Send a test request to the OpenAI backend. Verify that you get back a 200 HTTP response code and that no authorization is required.
 
@@ -148,8 +150,10 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    ...
    ```
 
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies to the Gateway and references the external authorization service that you created. Note that you can also set the `targetRefs` to select an HTTPRoute, which is demonstrated in later steps.
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references the external authorization service. Choose the tab for the target you want to attach the policy to. The Gateway and HTTPRoute tabs apply external authorization before backend selection. The {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} tab applies it after backend selection.
 
+   {{< tabs tabTotal="3" items="Gateway,HTTPRoute,AgentgatewayBackend" >}}
+   {{% tab tabName="Gateway" %}}
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -173,6 +177,60 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
          grpc: {}
    EOF
    ```
+   {{% /tab %}}
+   {{% tab tabName="HTTPRoute" %}}
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     name: route-ext-auth-policy
+     labels:
+       app: ext-authz
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: HTTPRoute
+       name: openai
+     traffic:
+       extAuth:
+         backendRef:
+           name: ext-authz
+           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+           port: 4444
+         grpc: {}
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="AgentgatewayBackend" %}}
+   
+   Backend-level policies can also target a Kubernetes Service. To target a Service, set `kind: Service` and `group: ""` in `targetRefs`, and use the same `backend.extAuth` configuration shown in the {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} tab.
+
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     name: backend-ext-auth-policy
+     labels:
+       app: ext-authz
+   spec:
+     targetRefs:
+     - group: agentgateway.dev
+       kind: AgentgatewayBackend
+       name: openai
+     backend:
+       extAuth:
+         backendRef:
+           name: ext-authz
+           port: 4444
+         grpc: {}
+   EOF
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 3. Repeat your request to the OpenAI backend and verify that the request is denied.
 
@@ -270,14 +328,12 @@ You can apply a policy at two levels: the Gateway level or the HTTPRoute level. 
    {{% /tab %}}
    {{< /tabs >}}
 
- 
-
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} gateway-ext-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete deployment ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-authz -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

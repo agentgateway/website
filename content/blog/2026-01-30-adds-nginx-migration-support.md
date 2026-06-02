@@ -668,6 +668,6 @@ ingress2gateway print --providers=ingress-nginx --emitter=agentgateway --input-f
 
 We invite you to go further and review the project's [migration documentation](https://agentgateway.dev/docs/kubernetes/latest/migrate/) which covers an even wider range of scenarios ranging from basic ingress, to session affinity, rate limiting, and more.
 
-The agentgateway project has [full conformance with the Gateway API](https://gateway-api.sigs.k8s.io/implementations/#conformant).  The companion tool ingress2gateway makes short work of translating your existing `ingress-nginx` Ingress configurations to agentgateway configuration resources, with support for all of these scenarios.
+The agentgateway project has [full conformance with the Gateway API](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformant).  The companion tool ingress2gateway makes short work of translating your existing `ingress-nginx` Ingress configurations to agentgateway configuration resources, with support for all of these scenarios.
 
 If you have any questions or need help migrating, we're here to help.  You will find all of the documentation, community and other support pages directly from the [agentgateway website](https://agentgateway.dev/).  

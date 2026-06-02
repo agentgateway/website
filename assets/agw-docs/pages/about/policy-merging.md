@@ -1,4 +1,4 @@
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} lets you define how policies are merged when they are applied to a parent and child resource. 
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} lets you define how policies are merged when they are applied to a parent and child resource. 
 
 ## About
 
