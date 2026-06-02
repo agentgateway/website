@@ -47,22 +47,15 @@ hugoWarnings = [
   "'items' parameter of the 'tabs' shortcode is deprecated",
 ]
 
-# Hextra main.min.js throws on two null-dereferences because agw-oss ships a
-# custom navbar that omits the Hextra toggle markup main.js expects:
-#
-#   - Pages without .hextra-sidebar-container (homepage, blog, categories):
-#     querySelector returns null → e.removeAttribute("aria-hidden") throws.
-#   - Pages with .hextra-sidebar-container but no .hextra-hamburger-menu
-#     (docs pages): querySelector returns null → t.addEventListener throws.
-#
-# Both patterns scope to the Hextra bundle filename so they won't suppress the
-# same property-of-null error if it ever comes from extras or consumer JS.
+# NOTE: agw-oss previously allowlisted two Hextra main.min.js null-dereferences
+# (reading 'removeAttribute' / 'addEventListener') caused by its custom navbar
+# omitting Hextra's toggle markup. Those are now FIXED at the source: hidden
+# stand-in elements (.hextra-hamburger-menu wrapping an <svg>, and
+# .hextra-sidebar-container) render on every page via custom/footer.html, so
+# main.js no longer null-derefs. The allowlist entries were removed so this
+# console guard is re-armed — if the stand-ins regress, the error surfaces here
+# (and in the static "Hextra hamburger toggle target" guard in docs-theme-extras).
 consoleErrors = [
-  # Hextra main.min.js null-dereferences (no hextra-hamburger-menu / no
-  # hextra-sidebar-container in the custom agw navbar). Scoped to the Hextra
-  # bundle filename so the same null error from extras or agw JS is not hidden.
-  "reading 'removeAttribute'\\)[\\s\\S]*main\\.min\\.[0-9a-f]+\\.js",
-  "reading 'addEventListener'\\)[\\s\\S]*main\\.min\\.[0-9a-f]+\\.js",
   # Chatbot widget makes a backend API call on every page initialization;
   # the call fails in the test environment and surfaces as a bare pageerror
   # with no stack ("pageerror: invalid_request"). Not fixable without a live

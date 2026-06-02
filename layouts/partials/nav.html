@@ -690,7 +690,7 @@
         {{- $mobileLogoParams := dict "Page" $page "attributes" "height=\"50\"" -}}
         <a href="/">{{ partial "utils/logo.html" $mobileLogoParams }}</a>
       </div>
-      <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">
+      <button class="p-4 text-gray-700 dark:text-gray-300 rounded-lg flex items-center" onClick="openMobileNav()">
         <div class="visible hamburger hidden">
           {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
         </div>
