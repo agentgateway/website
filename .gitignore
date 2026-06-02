@@ -12,3 +12,5 @@ out/
 **/__pycache__/
 config.yaml
 _vendor/
+scripts/kubespec-render/render
+.build.log

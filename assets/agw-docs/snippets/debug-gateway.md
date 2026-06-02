@@ -4,7 +4,7 @@
    kubectl get pods -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
    
-2. Check the HTTPRoutes for the status of the route and any attached policies. For more information about how routes work, review the [Gateway API docs](https://gateway-api.sigs.k8s.io/api-types/httproute/).
+2. Check the HTTPRoutes for the status of the route and any attached policies. For more information about how routes work, review the [Gateway API docs](https://gateway-api.sigs.k8s.io/reference/api-types/httproute/).
    
    ```sh
    kubectl get httproutes -A
@@ -70,6 +70,10 @@
 
    {{< reuse-image src="img/agw-ui-landing.png" caption="Figure: Read-only agentgateway UI.">}}
    {{< reuse-image-dark srcDark="img/agw-ui-landing-dark.png" caption="Figure: Read-only agentgateway UI.">}}
+
+   {{< callout type="info" >}}
+   In agentgateway 1.2 and later, you can skip the `kubectl port-forward` step and use the [`agctl`]({{< link-hextra path="/operations/agctl" >}}) CLI to inspect the proxy's configuration and trace requests directly. For example, run `agctl config all gateway/agentgateway-proxy -n agentgateway-system -o yaml` to render the loaded configuration, or `agctl trace gateway/agentgateway-proxy -n agentgateway-system --port 80 -- http://<host>/<path>` to capture a per-request trace.
+   {{< /callout >}}
 
    {{< /conditional-text >}}
 
