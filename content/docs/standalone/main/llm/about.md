@@ -13,17 +13,11 @@ Agentgateway provides seamless integration with various Large Language Model (LL
 
 ## Supported providers
 
-Agentgateway supports three categories of LLM providers:
+Agentgateway supports native, OpenAI-compatible, and self-hosted LLM providers.
 
 ### Native providers
 
-These providers have first-class support with dedicated configuration:
-- [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}})
-- [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}})
-- [Google Gemini]({{< link-hextra path="/llm/providers/gemini/" >}})
-- [Google Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}})
-- [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}})
-- [Azure]({{< link-hextra path="/llm/providers/azure/" >}})
+{{< reuse "agw-docs/snippets/llm-comparison.md" >}}
 
 ### OpenAI-compatible providers
 
@@ -43,12 +37,6 @@ Run models locally or in your own infrastructure:
 - [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}})
 - [vLLM]({{< link-hextra path="/llm/providers/openai-compatible/#vllm" >}})
 - [LM Studio]({{< link-hextra path="/llm/providers/openai-compatible/#lm-studio" >}})
-
-{{< callout type="info" >}}
-Don't see your provider? You might still be able to use it with agentgateway! Many LLM providers offer OpenAI-compatible APIs. To get started, follow the [OpenAI compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) docs.
-{{< /callout >}}
-
-{{< reuse "agw-docs/snippets/llm-comparison.md" >}}
 
 ## Using the API
 

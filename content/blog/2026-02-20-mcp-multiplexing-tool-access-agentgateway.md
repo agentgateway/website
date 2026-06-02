@@ -301,7 +301,7 @@ kubectl port-forward -n agentgateway-system deployment/mcp-gateway 8080:80
 ### Test with MCP Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector@latest
+npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}}
 ```
 
 Connect with:

@@ -1,7 +1,7 @@
 ---
-linkTitle: "Latest"
-title: Latest
-description: Welcome to the latest standalone docs for agentgateway.
+linkTitle: "Version 1.2.x"
+title: Version 1.2.x
+description: Use agentgateway as a standalone binary.
 test: skip
 ---
 

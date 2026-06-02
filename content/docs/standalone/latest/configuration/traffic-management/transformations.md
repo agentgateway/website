@@ -58,6 +58,7 @@ binds:
             - x-content-type-options
 ```
 
+
 ### Body transformation
 
 You can provide a custom body for a request or response. 
@@ -75,4 +76,8 @@ transformations:
     body:
       '"This is a custom response body."'
 ```
+
+## Conditional execution
+
+To run a transformation only when a CEL expression matches, use the `conditional` field. For example, you can transform internal traffic only and leave external traffic untouched. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).
 

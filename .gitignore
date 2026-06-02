@@ -13,3 +13,4 @@ out/
 config.yaml
 _vendor/
 scripts/kubespec-render/render
+.build.log
