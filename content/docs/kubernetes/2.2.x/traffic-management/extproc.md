@@ -8,7 +8,7 @@ Modify aspects of an HTTP request or response with an external processing server
 
 ## About external processing
 
-With the external processing, you can implement an external gRPC processing server that can read and modify all aspects of an HTTP request or response, and add that server to the agentgateway proxy processing chain. The external service can manipulate headers, body, and trailers of a request or response before it is forwarded to an upstream or downstream service. The request or response can also be terminated at any given time.
+With the external processing, you can implement an external gRPC processing server that can read and modify all aspects of an HTTP request or response, and add that server to the agentgateway proxy processing chain. The external service can manipulate headers of a request before it is forwarded to an upstream or downstream service. The request or response can also be terminated at any given time.
 
 With this approach, you have the flexibility to apply your requirements to all types of apps, without the need to run WebAssembly or other custom scripts.
 
