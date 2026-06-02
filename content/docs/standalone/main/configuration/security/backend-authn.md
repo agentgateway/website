@@ -24,7 +24,7 @@ backendAuth:
       file: /path/to/my/key
 ```
 
-By default, the key is sent as the `Authorization` header value. Use the `location` field to change where the key is sent:
+By default, the proxy retrieves the key from the `Authorization` header value. To use a different header name, use the `location` field as shown in the following example:
 
 ```yaml
 backendAuth:
@@ -57,8 +57,8 @@ backendAuth:
         name: api_key
 ```
 
-When using any form of incoming authentication (such as [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), or [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}})), the original credential is removed from the request by default before forwarding to the backend.
-To pass the original credential through to the backend unchanged, use the `passthrough` method:
+When using any form of incoming authentication, such as [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), or [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}}), the original credential is removed from the request by default before forwarding to the backend.
+To pass the original credential through to the backend, use the `passthrough` method:
 
 ```yaml
 backendAuth:
