@@ -63,30 +63,6 @@ binds:
             - x-content-type-options
 ```
 
-#### Listener-level header transformation
-
-Transform headers before route selection by attaching the policy at the listener level:
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      transformations:
-        request:
-          add:
-            x-gateway: '"agentgateway"'
-      backendAuth:
-        key: "$OPEN_AI_APIKEY"
-    routes:
-    - backends:
-      - ai:
-         name: openai
-         provider:
-           openAI:
-             model: gpt-3.5-turbo
-```
 
 ### Body transformation
 
@@ -105,3 +81,8 @@ transformations:
     body: |
       "Response code: " + string(response.code)
 ```
+
+## Conditional execution
+
+To run a transformation only when a CEL expression matches, use the `conditional` field. For example, you can transform internal traffic only and leave external traffic untouched. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).
+

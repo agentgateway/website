@@ -6,4 +6,5 @@ test: skip
 
 Modify the headers of HTTP requests and responses.
 
+## Guides
 

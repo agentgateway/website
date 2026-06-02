@@ -16,13 +16,15 @@ You can update several installation settings in your Helm values file. For examp
 
 For more information, see the [Helm reference docs]({{< link-hextra path="/reference/helm/" >}}).
 
+{{< conditional-text include-if="kubernetes" >}}
+
 ## Development builds
 
 When using the development build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add `--set controller.image.pullPolicy=Always` to ensure you get the latest image. For production environments, this setting is not recommended as it might impact performance.
 
+{{< /conditional-text >}}
 
-
-### Experimental Gateway API features {#experimental-gateway-api-features}
+## Experimental Gateway API features {#experimental-gateway-api-features}
 
 To use experimental Gateway API features, you must enable the experimental feature gate, `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES`. This setting defaults to `false` and must be explicitly enabled to use experimental features such as the following:
 
@@ -52,8 +54,7 @@ controller:
   disableLeaderElection: true
 ```
 
-
-
+{{< version exclude-if="2.2.x,1.0.x,1.1.x" >}}
 ## Namespace discovery {#namespace-discovery}
 
 You can limit the namespaces that {{< reuse "/agw-docs/snippets/kgateway.md" >}} watches for gateway configuration. For example, you might have a multi-tenant cluster with different namespaces for different tenants. You can limit {{< reuse "/agw-docs/snippets/kgateway.md" >}} to only watch a specific namespace for gateway configuration.
@@ -84,6 +85,8 @@ discoveryNamespaceSelectors:
 - matchLabels:
     version: v3
 ```
+
+{{< /version >}}
 
 <!-- TODO conditional-text oss-only -->
 {{< conditional-text include-if="kubernetes" >}}

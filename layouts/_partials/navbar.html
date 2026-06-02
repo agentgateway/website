@@ -1,0 +1,15 @@
+{{- /*
+  agw-oss: suppress the Hextra / docs-theme-extras auto-rendered navbar.
+
+  Hextra's baseof.html always calls `partial "navbar.html"`. docs-theme-extras
+  ships a full navbar there (logo, menu links, search, and an auto-injected
+  theme toggle). agw-oss uses its own nav.html, called directly from every
+  page template, so the docs-theme-extras navbar is redundant — and its
+  auto-injected hextra-theme-toggle button conflicts with the one in nav.html,
+  producing two .hextra-theme-toggle elements in the DOM.  Having two toggles
+  confuses the Hextra dropdown JS (which selects all .hextra-theme-toggle nodes)
+  and prevents the light/dark/system dropdown from working correctly.
+
+  This empty override prevents the duplicate.  All real navigation is rendered
+  by layouts/partials/nav.html (called per-template).
+*/ -}}

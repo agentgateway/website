@@ -105,3 +105,8 @@ transformations:
     body: |
       "Response code: " + string(response.code)
 ```
+
+## Conditional execution
+
+To run a transformation only when a CEL expression matches, use the `conditional` field. For example, you can transform internal traffic only and leave external traffic untouched. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).
+

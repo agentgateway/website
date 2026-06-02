@@ -1,4 +1,4 @@
-Use the `uuid()` and `random()` [CEL functions]({{< link-hextra path="/reference/cel/#functions-policy-all" >}}) to inject dynamically generated values into request headers. `uuid()` generates a unique UUIDv4 string on each request, useful for correlation IDs in distributed tracing. `random()` returns a float between `0.0` and `1.0`, useful for probabilistic sampling decisions.
+Use the `uuid()` and `random()` [CEL functions]({{< link-hextra path="/reference/cel/variables/#functions-policy-all" >}}) to inject dynamically generated values into request headers. `uuid()` generates a unique UUIDv4 string on each request, useful for correlation IDs in distributed tracing. `random()` returns a float between `0.0` and `1.0`, useful for probabilistic sampling decisions.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
