@@ -8,7 +8,7 @@ Originate a one-way TLS connection from the Gateway to a backend.
 
 When you configure a TLS listener on your Gateway, the Gateway typically terminates incoming TLS traffic and forwards the unencrypted traffic to the backend service. However, you might have a service that only accepts TLS connections, or you want to forward traffic to a secured backend service that is external to the cluster.
 
-You can use the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} BackendTLSPolicy](https://gateway-api.sigs.k8s.io/api-types/backendtlspolicy/) to configure TLS origination from the Gateway to a service in the cluster. This policy supports simple, one-way TLS use cases. 
+You can use the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} BackendTLSPolicy](https://gateway-api.sigs.k8s.io/reference/api-types/policy/backendtlspolicy/) to configure TLS origination from the Gateway to a service in the cluster. This policy supports simple, one-way TLS use cases. 
 
 ## About this guide
 
@@ -111,12 +111,12 @@ Create a BackendTLSPolicy for the NGINX workload.
    EOF
    ```
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} docs](https://gateway-api.sigs.k8s.io/api-types/backendtlspolicy/).
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} docs](https://gateway-api.sigs.k8s.io/reference/api-types/policy/backendtlspolicy/).
 
    | Setting | Description |
    |---------|-------------|
    | `targetRefs` | The service that you want the Gateway to originate a TLS connection to, such as the NGINX server. <br><br>**Agentgateway proxies**: Even if you use a Backend for selector-based destinations, you still need to target the backing Service and the `sectionName` of the port that you want the policy to apply to.  |
-   | `validation.hostname` | The hostname that matches the NGINX server certificate. |
+   | `validation.hostname` | The hostname that matches the NGINX server certificate. The gateway verifies this hostname against the Subject Alternative Names (SANs) or Common Name (CN) in the server certificate. |
    | `validation.caCertificateRefs` | The ConfigMap that has the certificate used to verify the backend. For the NGINX deployment in this guide, the server uses a self-signed certificate, so use that same certificate as the trust anchor. |
 
 3. Create an HTTPRoute that routes traffic to the NGINX server on the `example.com` hostname and HTTPS port 8443. Note that the parent Gateway is the sample `http` Gateway resource that you created [before you began](#before-you-begin).

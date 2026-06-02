@@ -1,1 +1,1 @@
-[Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane]({{< link-hextra path="/quickstart/" >}}).
+[Install the {{< reuse "/agw-docs/snippets/agentgateway.md" >}} control plane]({{< link-hextra path="/quickstart/" >}}).

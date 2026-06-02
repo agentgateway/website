@@ -181,3 +181,7 @@ remoteRateLimit:
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |
+
+## Conditional execution
+
+To apply different rate limits based on the request, use the `conditional` field. For example, you can apply stricter limits on writes than on reads. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).

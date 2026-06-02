@@ -14,15 +14,15 @@ The best gateway proxies offer you ways to configure advanced routing, load bala
 
 ## Architecture
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} is a control plane that manages the lifecycle of gateway proxies that adhere to the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io) spec.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} is a control plane that manages the lifecycle of gateway proxies that adhere to the [Kubernetes Gateway API](https://gateway-api.sigs.k8s.io) spec.
 
-When you install {{< reuse "/agw-docs/snippets/kgateway.md" >}}, you automatically get GatewayClasses out of the box. When you create a Gateway resource based on one of these GatewayClasses, {{< reuse "/agw-docs/snippets/kgateway.md" >}} automatically spins up a gateway proxy for you. The gateway proxy controls the data plane that routes traffic to the backend services. {{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} then configures the data plane based on the Gateway API and {{< reuse "/agw-docs/snippets/kgateway.md" >}} custom resources that you configure, such as HTTPRoutes and TrafficPolicies. This way, you can standardize the configuration of your gateway proxies with the same set of open source resources.
+When you install {{< reuse "/agw-docs/snippets/kgateway.md" >}}, you automatically get GatewayClasses out of the box. When you create a Gateway resource based on one of these GatewayClasses, {{< reuse "/agw-docs/snippets/kgateway.md" >}} automatically spins up a gateway proxy for you. The gateway proxy controls the data plane that routes traffic to the backend services. {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} then configures the data plane based on the Gateway API and {{< reuse "/agw-docs/snippets/kgateway.md" >}} custom resources that you configure, such as HTTPRoutes and TrafficPolicies. This way, you can standardize the configuration of your gateway proxies with the same set of open source resources.
 
 For more information, see the other docs in this [About]({{< link-hextra path="/">}}) section.
 
 ## Supported gateway proxies {#supported}
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} supports the following gateway proxies. You can use both gateway proxies in the same Kubernetes cluster, depending on your use case.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} supports the following gateway proxies. You can use both gateway proxies in the same Kubernetes cluster, depending on your use case.
 
 {{< reuse "agw-docs/snippets/control-plane-note.md" >}}
 

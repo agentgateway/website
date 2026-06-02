@@ -1,6 +1,6 @@
 ## About AWS Elastic Load Balancers (ELBs)
 
-{{< reuse "agw-docs/snippets/kgateway-capital.md" >}} is an application (L7) proxy based on Envoy and the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} that can act as both a secure edge router and as a developer-friendly Kubernetes ingress/egress (north-south traffic) gateway. You can get many benefits by pairing {{< reuse "agw-docs/snippets/kgateway.md" >}} with an AWS Elastic Load Balancer (ELB), including better cross availability zone failover and deeper integration with AWS services like AWS Certificate Manager, AWS CLI & CloudFormation, and Route 53 (DNS).
+{{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} is an application (L7) proxy based on Envoy and the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} that can act as both a secure edge router and as a developer-friendly Kubernetes ingress/egress (north-south traffic) gateway. You can get many benefits by pairing {{< reuse "agw-docs/snippets/kgateway.md" >}} with an AWS Elastic Load Balancer (ELB), including better cross availability zone failover and deeper integration with AWS services like AWS Certificate Manager, AWS CLI & CloudFormation, and Route 53 (DNS).
 
 AWS provides the following types of ELBs:
 

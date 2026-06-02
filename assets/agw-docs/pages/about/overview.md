@@ -76,7 +76,7 @@ The Gateway API is an API which can be used to program an ingress or an API gate
 
 ## Extensions
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} provides the following extensions on top of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} to configure advanced routing, security, and resiliency capabilities.
 
 {{< cards >}}
   {{< card path="/security/access-logging/" title="Access logging" tag="Security" >}}
@@ -94,6 +94,6 @@ The Gateway API is an API which can be used to program an ingress or an API gate
 
 ## Default gateway proxy setup
 
-{{< reuse "/agw-docs/snippets/kgateway-capital.md" >}} automatically spins up, bootstraps, and manages gateway proxy deployments when you create a Kubernetes Gateway resource. To do that, a combination of kgateway and Kubernetes resources are used, such as GatewayClass, GatewayParameters, and a gateway proxy template that includes the Envoy configuration that each proxy is bootstrapped with. 
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} automatically spins up, bootstraps, and manages gateway proxy deployments when you create a Kubernetes Gateway resource. To do that, a combination of kgateway and Kubernetes resources are used, such as GatewayClass, GatewayParameters, and a gateway proxy template that includes the Envoy configuration that each proxy is bootstrapped with. 
 
 To learn more about the default setup and how these resources interact with each other, see the [Default gateway proxy setup]({{< link-hextra path="/setup/default/" >}}).

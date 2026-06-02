@@ -3,11 +3,11 @@ title: Request matching
 weight: 9
 ---
 
-Based on the [route schema](https://github.com/agentgateway/agentgateway/blob/main/schema/config.json), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.
+Based on the route schema (see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}) for the full field reference and [schema validation]({{< link-hextra path="/reference/configuration/validation/" >}}) for IDE integration), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.
 
 ## HTTP routes
 
-For routes configured with [HTTP, HTTPS, or TLS listeners](../../listeners/), you can configure the following matching conditions.
+For routes configured with [HTTP or HTTPS listeners]({{< link-hextra path="/configuration/listeners/" >}}), you can configure the following matching conditions. These matching conditions do not apply to [TLS listeners]({{< link-hextra path="/configuration/listeners#tls-listeners" >}}), which use TCP routes and only support hostname-based matching.
 
 ### Path matching
 
@@ -268,7 +268,7 @@ routes:
 
 ## TCP routes
 
-For routes configured with [TCP listeners](../../routes/#tcp-routes), you can configure the following matching conditions.
+For routes configured with [TCP listeners]({{< link-hextra path="/configuration/routes#tcp-routes" >}}), you can configure the following matching conditions.
 
 ### Hostname matching
 
@@ -291,7 +291,7 @@ Higher weights receive more traffic. Each new TCP connection is assigned to a ba
 
 In the following example, traffic is load balanced across the three backends in the ratio 1:2:1. The first backend receives 25% of the traffic, the second backend receives 50% of the traffic, and the third backend receives 25% of the traffic.
 
-If no weight is specified, the default is 1. Backends with a weight of 0 receive no traffic. TCP connections are not sticky to specific backends.
+If no weight is specified, the default is 1. Backends with a weight of 0 receive no traffic. Each incoming TCP connection maintains a 1:1 mapping with an outgoing backend connection; once a connection is established, it remains bound to its assigned backend for the lifetime of that connection.
 
 ```yaml
 tcpRoutes:

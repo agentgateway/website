@@ -85,7 +85,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{% tab tabName="CLI" %}}
    1. Send a request to the MCP server.   
       ```sh
-      npx @modelcontextprotocol/inspector@0.18.0 \
+      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
       --cli http://localhost:8080/mcp-github \
       --transport http \
       --header "mcp-protocol-version: 2024-11-05" \
@@ -101,7 +101,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{% tab tabName="UI" %}}
    1. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser. If the MCP inspector tool does not open automatically, run `mcp-inspector`. 
       ```sh
-      npx modelcontextprotocol/inspector#{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
+      npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
       ```
    
    2. From the MCP Inspector menu, try to connect to your agentgateway address as follows:
@@ -125,7 +125,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< tabs tabTotal="2" items="CLI,UI" >}}
    {{% tab tabName="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -166,7 +166,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< tabs tabTotal="2" items="CLI,UI" >}}
    {{% tab tabName="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -207,7 +207,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< tabs tabTotal="2" items="CLI,UI" >}}
    {{% tab tabName="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -287,7 +287,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    {{< tabs tabTotal="2" items="CLI,UI" >}}
    {{% tab tabName="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
@@ -328,7 +328,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    {{< tabs tabTotal="2" items="CLI,UI" >}}
    {{% tab tabName="CLI" %}}
    ```sh
-   npx @modelcontextprotocol/inspector@0.18.0 \
+   npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
    --transport http \
    --header "mcp-protocol-version: 2024-11-05" \
