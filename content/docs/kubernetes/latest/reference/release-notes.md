@@ -11,99 +11,172 @@ Review the release notes for agentgateway.
 For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases)
 {{< /callout >}}
 
-## 🔥 Breaking changes {#v11-breaking-changes}
+## 🔥 Breaking changes {#v12-breaking-changes}
 
-### MCP authentication moved to route level
+### xDS Helm configuration changed
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1357 -->
+The controller Helm value for xDS TLS changed from a boolean to an explicit transport mode.
 
-MCP authentication is configured at the traffic (route) level using `traffic.jwtAuthentication` with the `mcp` extension field, instead of the previous `backend.mcp.authentication` field. The route-level placement aligns MCP auth with standard JWT authentication and allows JWT claims to be used in other traffic policies such as authorization, rate limiting, and transformations.
-
-* **Before**: MCP authentication was configured under `backend.mcp.authentication`, targeting an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}. This previous `backend.mcp.authentication` field is deprecated but continues to work for backward compatibility. If both are set on the same route, the backend-level configuration is ignored.
-* **After**: MCP authentication is configured under `traffic.jwtAuthentication` with an `mcp` field, targeting an HTTPRoute, such as in the following example. For more information, see [Set up MCP auth]({{< link-hextra path="/mcp/auth/setup/" >}}).
+Before:
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: mcp-authn
-spec:
-  targetRefs:
-  - group: gateway.networking.k8s.io
-    kind: HTTPRoute
-    name: mcp
-  traffic:
-    jwtAuthentication:
-      mode: Strict
-      providers:
-      - issuer: http://keycloak.example.com/realms/myrealm
-        audiences:
-        - http://localhost:8080/mcp
-        jwks:
-          remote:
-            backendRef:
-              name: keycloak
-              kind: Service
-              namespace: keycloak
-              port: 8080
-            jwksPath: /realms/master/protocol/openid-connect/certs
-      mcp:
-        provider: Keycloak
-        resourceMetadata:
-          resource: http://localhost:8080/mcp
-          scopesSupported:
-          - email
-          bearerMethodsSupported:
-          - header
+controller:
+  xds:
+    tls:
+      enabled: true
 ```
 
-## 🌟 New features {#v11-new-features}
+Now:
 
-### Network authorization
+```yaml
+controller:
+  xds:
+    mode: tls
+```
 
-A new `networkAuthorization` field in the `frontend` policy section enables Layer 4 network authorization based on source IP, port, and mTLS client identity. You can enforce policies for non-HTTP traffic and layer L4+L7 controls. For more information, see [Policies]({{< link-hextra path="/about/policies/" >}}).
+Supported values are `plaintext`, `tls`, and `either`. The chart now defaults to `tls` to enable TLS encryption for the controller. If you have automation that sets `controller.xds.tls.enabled`, update it to use `controller.xds.mode`. For more information, see [TLS encryption]({{< link-hextra path="/install/tls/" >}}).
 
-### Authorization require rules
+## 🌟 New features {#v12-new-features}
 
-Authorization policies now support `Require` as an action in addition to `Allow` and `Deny`. All `Require` rules must match for the request to proceed, providing clearer semantics than double-negative deny rules. For more information, see [Policies]({{< link-hextra path="/about/policies/" >}}).
+### Conditional policy execution
 
-### MCP improvements
+Policies can now be selected conditionally using CEL expressions. Conditional execution is supported for external auth, transformations, rate limiting, external processing, and direct responses. The first matching policy is applied, with an optional final fallback entry. For more information, see [Conditional policies]({{< link-hextra path="/about/policies/conditional-policies/" >}}).
 
-- **Stateless sessions**: MCP upstreams can now use stateless sessions. For more information, see [Stateful MCP]({{< link-hextra path="/mcp/session/" >}}).
-- **Explicit service reference lists**: MCP backends can specify targets with explicit service references. For more information, see [Static MCP]({{< link-hextra path="/mcp/static-mcp/" >}}).
-- **Tool payloads in CEL context**: Tool names and payloads are available in logging CEL expressions.
+```yaml
+traffic:
+  transformation:
+    conditional:
+    - condition: request.headers["x-user"] == "admin"
+      policy:
+        request:
+          set:
+          - name: x-role
+            value: admin
+    - policy:
+        request:
+          set:
+          - name: x-role
+            value: user
+```
+
+### Automatic xDS TLS management
+
+Kubernetes installs can now run xDS over TLS without requiring users to pre-create serving certificates. The controller creates and rotates a local CA and short-lived serving certificates, while still supporting user-provided certificates. For more information, see [TLS encryption]({{< link-hextra path="/install/tls/" >}}).
+
+### Route delegation
+
+Agentgateway now supports Gateway API route delegation, allowing parent routes to delegate portions of their routing tree to child routes. Platform teams can own shared parent routes while application teams manage delegated route fragments. For more information, see [Route delegation]({{< link-hextra path="/traffic-management/route-delegation/overview/" >}}).
+
+```yaml
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: parent
+  namespace: default
+spec:
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /anything/team1
+    backendRefs:
+    - group: gateway.networking.k8s.io
+      kind: HTTPRoute
+      name: "*"
+      namespace: team1
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: child-team1-foo
+  namespace: team1
+spec:
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /anything/team1/foo
+    backendRefs:
+    - name: httpbin
+      port: 8000
+```
+
+### `agctl` CLI debugging tool
+
+A new experimental `agctl` command-line tool for inspecting and debugging agentgateway is now available. To install `agctl`, see [Install agctl]({{< link-hextra path="/operations/agctl/" >}}).
+- `agctl config` renders the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and policies, as a structured table, JSON, or YAML. `agctl config backends` shows per-backend health, request counts, and latency. For more information, see [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}).
+- `agctl trace` streams a step-by-step trace of how the proxy processes the next request, showing the matched route, applied policies, chosen backend, and response status. For more information, see [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests/" >}}).
+
+For a complete command reference, see [agctl CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
+
+### Policy targets
+
+The `AgentgatewayPolicy` resource can now target resources by label selector in addition to explicit target references. This configuration makes it easier to apply shared policy configuration across groups of Gateways, Routes, Services, or Backends.
+
+Additionally, the `AgentgatewayPolicy` resource can now target `ListenerSet` and `InferencePool` resources. For more information, see [Targeting and merging]({{< link-hextra path="/about/policies/target-merge/" >}}).
+
+### PROXY protocol support
+
+Kubernetes and proxy listeners now support downstream PROXY protocol handling, including strict and optional modes and PROXY protocol v1/v2 selection. For more information, see [Listener overview]({{< link-hextra path="/setup/listeners/overview/" >}}).
+
+### Locality load balancing and failover
+
+The data plane now supports locality-aware load balancing and failover, improving traffic placement for multi-zone and multi-region deployments. For more information, see [Locality-aware routing]({{< link-hextra path="/traffic-management/locality-aware-routing/" >}}).
 
 ### LLM gateway enhancements
 
-- **Path prefixes**: LLM providers now support path prefixes for custom API base paths.
-- **Azure default authentication**: Azure OpenAI providers can use platform-default authentication. For more information, see [Azure OpenAI]({{< link-hextra path="/llm/providers/azure/" >}}).
-- **Vertex region optional**: Vertex AI region configuration is now optional with a global default. For more information, see [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}}).
+- **Azure provider**: A new Azure provider supports both Azure OpenAI and Azure AI Foundry style resources. For more information, see [Azure]({{< link-hextra path="/llm/providers/azure/" >}}).
+- **Copilot support**: Added Copilot authentication and LLM provider support.
+- **Gemini Responses API**: Responses API requests can now be routed to Gemini. For more information, see [Gemini]({{< link-hextra path="/llm/providers/gemini/" >}}).
+- **Path prefixes**: Custom path prefixes now work across all LLM providers, including Gemini, Vertex, Bedrock, and Azure.
+- **OpenAI compatibility**: OpenAI chat completion requests now normalize `max_tokens` to `max_completion_tokens`.
+- **Azure Content Safety guardrails**: Prompt and response guardrails can now use Azure AI Content Safety. For more information, see [Guardrails]({{< link-hextra path="/llm/guardrails/overview/" >}}).
+- **Bedrock guardrails masking**: Bedrock guardrails now support masking. For more information, see [AWS Bedrock Guardrails]({{< link-hextra path="/llm/guardrails/bedrock-guardrails/" >}}).
 
-### Gateway and routing improvements
+### MCP improvements
 
-- **Automatic protocol detection**: A new `auto` bind protocol auto-detects TLS vs HTTP connections.
-- **Service SANs for upstream TLS**: Upstream TLS now respects Subject Alternative Names from Kubernetes Services. For more information, see [BackendTLS]({{< link-hextra path="/security/backendtls/" >}}).
-- **TLSRoute v1 status**: Status is now written using the `TLSRoute v1` API version.
-- **CEL hash functions**: New `sha1.encode`, `sha256.encode`, and `md5.encode` functions are available in CEL expressions.
+- **Session TTL**: MCP sessions can now be configured with an idle TTL. For more information, see [MCP sessions]({{< link-hextra path="/mcp/session/" >}}).
+- **Stateless MCP**: Stateless MCP initialization and shutdown behavior is improved.
+- **List resources with multiplexing**: `ListResourcesRequest` now works with multiplexed MCP targets.
 
-## 🗑️ Deprecated or removed features
+### Authentication and authorization
 
-### MCP authentication on backend AgentgatewayPolicy
+- **Backend external auth**: External auth can now run as a backend policy after backend selection. For more information, see [External auth]({{< link-hextra path="/security/extauth/" >}}).
+- **Auth credential locations**: JWT, basic auth, API key, and backend auth can now override where credentials are read from or inserted, including headers, query parameters, and cookies. For more information, see [JWT auth]({{< link-hextra path="/security/jwt/" >}}) and [API key auth]({{< link-hextra path="/security/apikey/" >}}).
+- **Explicit GCP credentials**: GCP backend auth can now use explicit Secret-backed credentials.
 
-As described in the breaking changes section, MCP authentication is now configured at the route level using `traffic.jwtAuthentication` with the `mcp` extension field, instead of the previous `backend.mcp.authentication` field.
+### Traffic, TLS, and networking
 
-The `backend.mcp.authentication` field on the AgentgatewayPolicy resource is deprecated and will be removed in a future release.
+- **Post-quantum TLS**: TLS configuration now supports post-quantum key exchange groups, including `X25519_MLKEM768`. For more information, see [Additional TLS settings]({{< link-hextra path="/setup/listeners/tls-settings/" >}}).
+- **Istio workload TLS**: Listeners can use Istio workload certificates for simple TLS or mutual TLS. For more information, see [mTLS]({{< link-hextra path="/setup/listeners/mtls/" >}}).
+- **HBONE gateway tunnel protocol**: Controller support was added for the `HBONE_GATEWAY` tunnel protocol.
+- **Unix Domain Socket backends**: Kubernetes static backends can now target Unix Domain Sockets.
+- **Max connection duration**: HTTP listeners can now enforce a maximum connection duration.
+- **HTTP/2 pooling**: HTTP/2 connection pooling is improved to avoid the single-connection bottleneck.
 
-### MCP policy on AgentgatewayBackend
+### Operations
 
-<!-- PR https://github.com/agentgateway/agentgateway/pull/1437 -->
+- Agentgateway's memory allocator performance is improved, resulting in increased runtime performance and decreased memory utilization.
+- A new `/debug/pprof/heap` endpoint is available to get a `pprof` snapshot of current and historical allocations.
 
-Previously, AgentgatewayBackend resources had fields for `spec.mcp.targets.static.policies.mcp.{authentication,authorization}`.
+### Telemetry
 
-These fields were not intended to be set, and had no impact on the behavior of the proxy.
+- **Custom Prometheus labels**: `AgentgatewayPolicy` can add custom Prometheus metric labels using CEL expressions.
+- **OpenTelemetry environment variables**: The OTEL configuration now respects standard environment variables. For more information, see [OTel stack]({{< link-hextra path="/observability/otel-stack/" >}}).
 
-As such, these fields are now removed.
+## 🪲 Notable fixes {#v12-fixes}
 
-If you previously set these fields which had no behavioral impact and were ignored, the configuration now fails to be applied.
-
-Instead, use the `jwtAuthentication.mcp` field on the AgentgatewayPolicy resource, which ensures authentication runs before other policies such as transformation and rate limiting.
+- Fixed A2A policy matching for agents hosted under sub-paths.
+- Fixed A2A and MCP handling of `X-Forwarded-Proto`.
+- Fixed service parents and arbitrary parents in route delegation.
+- Fixed policies that target missing or non-existent backends from silently attaching to the gateway.
+- Fixed JWKS stale fetches, startup fetch behavior, cache cleanup, and orphan cleanup.
+- Fixed CEL property parsing after bracket accessors.
+- Fixed CEL `response.body` access when upstream responses are compressed.
+- Fixed request body buffering when CEL expressions do not need the body.
+- Fixed `Host` and `:authority` alignment after header mutation.
+- Fixed stripping of hop-by-hop connection headers and encoding headers for more consistent behavior.
+- Improved xDS error semantics for regex, CEL, and rate-limit-service failures.
+- Improved Gateway status updates to avoid unnecessary churn while preserving transition times.
+- Fixed invalid htpasswd entries to fail gracefully instead of breaking basic auth handling.
+- Fixed active stream accounting in the connection pool when debug assertions are disabled.

@@ -9,7 +9,7 @@
 <div class='mx-auto flex bg-primary-bg text-primary-dark'>
     {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
     <article class="w-full break-words flex justify-center">
-        <main class="w-full relative overflow-hidden">
+        <main id="content" class="w-full relative overflow-hidden">
             {{ partial "nav.html" .}}
             <section class="text-white pt-[7.875rem]">
               <div class="py-16 lg:py-24 px-6 border-b-[1px] border-b-secondary-border">
