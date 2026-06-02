@@ -111,6 +111,18 @@ commonLabels:
   agw-managed: "true"
 ```
 
+## PodDisruptionBudget
+
+Configure a Pod Disruption Budget to ensure that a minimum number of control plane instances are up and running at any given time during voluntary disruptions, such as upgrades. In this example, 50% of your control plane instances must be running.
+
+```yaml
+
+controller: 
+  podDisruptionBudget:
+    minAvailable: 50%
+```
+
+
 
 
 

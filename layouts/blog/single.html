@@ -2,7 +2,7 @@
 <div class='mx-auto flex bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100'>
     {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
     <article class="w-full break-words flex justify-center">
-        <main class="w-full relative overflow-hidden">
+        <main id="content" class="w-full relative overflow-hidden">
             {{ partial "nav.html" . }}
             <section class="bg-primary-bg dark:bg-gray-900 text-white pb-12 lg:pb-16 px-4 lg:px-12 xl:px-25 bg-[url(/hero-background.svg)] bg-center bg-no-repeat pt-[9.875rem] lg:pt-40 bg-[length:61.85319rem_60.14119rem] lg:bg-auto">
                 <div class="mx-auto max-w-3xl flex flex-col">

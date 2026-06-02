@@ -7,7 +7,6 @@ test: skip
 
 Agentgateway can send LLM telemetry to specialized observability platforms for prompt logging (request/response logging), cost tracking, audit trail, and performance monitoring.
 
-
 ## How it works
 
 Agentgateway exports LLM telemetry via OpenTelemetry, which can be forwarded to LLM-specific observability platforms. These platforms provide the following.

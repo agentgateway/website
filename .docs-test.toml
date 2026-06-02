@@ -1,0 +1,75 @@
+# Configuration for the docs-theme-extras harness when run against agw-oss.
+#
+# The harness lives in github.com/solo-io/docs-theme-extras and reads this
+# file via the DOCS_TEST_CONFIG env var (set by the Makefile or CI). All
+# relative paths are resolved against this file's directory.
+#
+# First-pass config: covers structural HTML quality (no shortcode leaks,
+# no markdown bleed, image alt text, etc.) against the production build.
+# Tighten or expand as the suite stabilizes.
+
+version = "1"
+name    = "agw-oss"
+brand   = "oss"
+
+# Where the consumer's built HTML lives. Everything operates on this tree.
+# The harness does NOT build the site — `make build` (Hugo) runs first
+# and writes here.
+builtRoot = "./public"
+baseURL   = "/"
+
+# Source-tree roots for author-side lints (curl-quotes scans markdown
+# directly). Narrowed to docs content so the lint doesn't trip on blog
+# posts and marketing copy that follow looser conventions.
+scanRoots = [
+  "./content/docs",
+]
+
+# URL versioning. agw-oss versions Kubernetes docs at
+# /docs/kubernetes/<version>/...; standalone docs are unversioned and
+# the spec gracefully skips pages that don't match.
+[versioning]
+versionFromPath = "^/docs/kubernetes/(?<version>[^/]+)/"
+versions        = ["main", "latest", "2.2.x", "1.0.x"]
+
+# All checks default to enabled. Turn off the slow / opt-in projects.
+[checks]
+# Smoke is for cross-product runs (SMOKE_PRODUCT env); agw-oss is a
+# single site, so skip.
+smoke        = false
+crossBrowser = false
+
+# Allowlists for known-benign noise that surfaces against real product
+# content (test fixture has none of this). Tighten as content is fixed.
+[allowlists]
+hugoWarnings = [
+  "\\.Site\\.Data was deprecated",
+  "'items' parameter of the 'tabs' shortcode is deprecated",
+]
+
+# Hextra main.min.js throws on two null-dereferences because agw-oss ships a
+# custom navbar that omits the Hextra toggle markup main.js expects:
+#
+#   - Pages without .hextra-sidebar-container (homepage, blog, categories):
+#     querySelector returns null → e.removeAttribute("aria-hidden") throws.
+#   - Pages with .hextra-sidebar-container but no .hextra-hamburger-menu
+#     (docs pages): querySelector returns null → t.addEventListener throws.
+#
+# Both patterns scope to the Hextra bundle filename so they won't suppress the
+# same property-of-null error if it ever comes from extras or consumer JS.
+consoleErrors = [
+  # Hextra main.min.js null-dereferences (no hextra-hamburger-menu / no
+  # hextra-sidebar-container in the custom agw navbar). Scoped to the Hextra
+  # bundle filename so the same null error from extras or agw JS is not hidden.
+  "reading 'removeAttribute'\\)[\\s\\S]*main\\.min\\.[0-9a-f]+\\.js",
+  "reading 'addEventListener'\\)[\\s\\S]*main\\.min\\.[0-9a-f]+\\.js",
+  # Chatbot widget makes a backend API call on every page initialization;
+  # the call fails in the test environment and surfaces as a bare pageerror
+  # with no stack ("pageerror: invalid_request"). Not fixable without a live
+  # backend — suppress until the chatbot is refactored to not throw on init.
+  "invalid_request",
+  # hero-background.svg is referenced by the blog templates but the file is
+  # missing from the source tree. Browsers log the 404 as a console.error.
+  # Track as a bug to restore the asset; suppress here until that is fixed.
+  "hero-background\\.svg",
+]

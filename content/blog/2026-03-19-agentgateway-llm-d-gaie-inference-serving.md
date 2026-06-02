@@ -83,7 +83,7 @@ That makes the stack easier to understand and evolve over time.
 
 ## Why this combination matters right now
 
-The [llm-d inference scheduler](https://github.com/llm-d/llm-d-inference-scheduler) makes this relationship explicit. Its Endpoint Picker
+The [llm-d inference scheduler](https://github.com/llm-d/llm-d-router) makes this relationship explicit. Its Endpoint Picker
 extends GIE and adds llm-d-specific capabilities such as P/D disaggregation. At the same time, the [llm-d architecture](https://llm-d.ai/docs/architecture)
 leans into the exact optimizations that operators care about most:
 

@@ -1,6 +1,6 @@
 Redirect requests to a different path prefix. 
 
-For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/spec/#httprequestredirectfilter).
+For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} documentation](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#httprequestredirectfilter).
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
