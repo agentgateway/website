@@ -1,6 +1,6 @@
 ---
 title: Authentication & identity
-weight: 40
+weight: 10
 description: Integrate agentgateway with identity providers and authentication systems
 test: skip
 ---

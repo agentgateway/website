@@ -1,6 +1,6 @@
 ---
 title: VS Code Continue
-weight: 20
+weight: 10
 description: Configure VS Code Continue to use agentgateway running in Kubernetes
 ---
 
