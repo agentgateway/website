@@ -9,6 +9,8 @@ Configure [Claude Desktop](https://claude.ai/download) to route requests through
 
 ## Get the gateway URL
 
+Note that Claude Desktop expects `https` URLs, unless you are port-forwarding the localhost.
+
 {{< reuse "agw-docs/snippets/agw-get-gateway-url-k8s.md" >}}
 
 ## Set up the Anthropic backend
@@ -118,7 +120,7 @@ Configure [Claude Desktop](https://claude.ai/download) to route requests through
 
    {{% tab tabName="LoadBalancer" %}}
    ```
-   http://$INGRESS_GW_ADDRESS/claude
+   https://$INGRESS_GW_ADDRESS/claude
    ```
    {{% /tab %}}
 
