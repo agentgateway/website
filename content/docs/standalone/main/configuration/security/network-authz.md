@@ -67,7 +67,7 @@ The following CEL variables are available in network authorization rules:
 frontendPolicies:
   networkAuthorization:
     rules:
-    - allow: 'source.address.startsWith("10.") || source.address.startsWith("172.16.") || source.address.startsWith("192.168.")'
+    - allow: 'cidr("10.0.0.0/8").containsIP(source.address) || cidr("172.16.0.0/12").containsIP(source.address) || cidr("192.168.0.0/16").containsIP(source.address)'
 ```
 
 ### Require mTLS client identity
@@ -87,7 +87,7 @@ Combine network authorization with HTTP authorization for defense in depth.
 frontendPolicies:
   networkAuthorization:
     rules:
-    - allow: 'source.address.startsWith("10.")'
+    - allow: 'cidr("10.0.0.0/8").containsIP(source.address)'
 
 binds:
 - port: 3000
