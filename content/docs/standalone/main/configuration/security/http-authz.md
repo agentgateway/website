@@ -21,7 +21,7 @@ Policies can define `allow`, `deny`, and `require` rules. Rules are evaluated in
    - If `allow` rules are configured, the request is denied (allowlist semantics: only explicitly allowed requests are permitted).
 
 {{< callout type="warning" >}}
-A CEL expression that cannot be evaluated — for example, referencing `jwt.aud` when the request has no JWT — is treated as `false`. The effect depends on the rule type:
+A CEL expression that cannot be evaluated is treated as `false`. For example, if the expression refers to `jwt.aud`, but the request has no JWT. The effect depends on the rule type:
 - A `require` expression that is `false` (or errors) denies the request (fail-closed).
 - A `deny` expression that errors does not match, so it does not deny the request (fail-open).
 - An `allow` expression that errors does not match, so it does not allow the request.
@@ -56,6 +56,11 @@ authorization:
   - deny: 'jwt.aud != "my-service"'
 ```
 
-These behave the same when a JWT with an audience claim is present, but they differ when the claim is missing. With no JWT, `jwt.aud` is undefined and both expressions error. A failed `require` expression denies the request (fail-closed), but a failed `deny` expression does not match and therefore does not deny the request (fail-open) — the request may be allowed by other rules. For mandatory conditions such as "all requests must have a valid audience claim," prefer `require`, which fails closed.
+These behave the same when a JWT with an audience claim is present, but they differ when the claim is missing. With no JWT, `jwt.aud` is undefined and both expressions error:
+
+- A failed `require` expression denies the request (fail-closed).
+- A failed `deny` expression does not match and therefore does not deny the request (fail-open). The request might be allowed by other rules. 
+
+For mandatory conditions such as "all requests must have a valid audience claim," prefer `require`, which fails closed.
 
 Unlike `allow` rules (where any one match permits the request), all `require` rules must match for the request to proceed.
