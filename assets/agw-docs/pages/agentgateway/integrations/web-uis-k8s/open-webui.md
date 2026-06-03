@@ -161,7 +161,7 @@ The following table describes each environment variable:
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/spending/" title="Control spending" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
+  {{< card path="/llm/budget-limits/" title="Control spending" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
   {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
   {{< card path="/llm/providers/" title="LLM providers" subtitle="Configure additional upstream providers." >}}
 {{< /cards >}}
