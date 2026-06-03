@@ -533,14 +533,14 @@
   </div>
 {{- else -}}
   {{- /* Docs/blog/enterprise/models navbar with dropdown, search, and dark/light toggle */ -}}
-  <nav class="navbar desktop-navbar py-4 px-2 xl:px-4 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden lg:block z-20 bg-white dark:bg-[#030712]">
+  <nav class="navbar desktop-navbar py-4 px-2 xl:px-4 fixed top-0 border-b border-gray-200 dark:border-white/10 w-full hidden xl:block z-20 bg-white dark:bg-[#030712]">
     <div class="flex max-w-[1440px] mx-auto content-center items-center justify-between gap-6">
       <div class="flex items-center gap-8">
         {{- $page := . -}}
         {{- $logoParams := dict "Page" $page "attributes" "id=\"logo\"" -}}
         <a href="/">{{ partial "utils/logo.html" $logoParams }}</a>
       </div>
-      <div class="flex flex-grow lg:flex-grow-0 items-center align-center justify-between gap-4">
+      <div class="flex flex-grow xl:flex-grow-0 items-center align-center justify-between gap-4">
         {{- /* Extract version and section for version dropdown */ -}}
         {{- $path := .RelPermalink -}}
         {{- $segments := split $path "/" -}}
@@ -676,7 +676,7 @@
     </div>
   </nav>
 
-  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block lg:hidden z-[100] bg-white dark:bg-[#030712]">
+  <nav class="mobile-nav-bar fixed top-0 left-0 right-0 border-b border-gray-200 dark:border-white/10 w-full block xl:hidden z-[100] bg-white dark:bg-[#030712]">
     <div class="py-3 px-4 flex justify-between items-center">
       <div class="flex items-center gap-1">
         {{- if $isDocsPage -}}
@@ -690,7 +690,7 @@
         {{- $mobileLogoParams := dict "Page" $page "attributes" "height=\"50\"" -}}
         <a href="/">{{ partial "utils/logo.html" $mobileLogoParams }}</a>
       </div>
-      <button class="p-4 bg-primary-text rounded-lg flex items-center" onClick="openMobileNav()">
+      <button class="p-4 text-gray-700 dark:text-gray-300 rounded-lg flex items-center" onClick="openMobileNav()">
         <div class="visible hamburger hidden">
           {{ partial "utils/icon.html" (dict "name" "hamburger" ) }}
         </div>
@@ -701,7 +701,7 @@
     </div>
   </nav>
 
-  <div class="mobile-nav-overflow-wrapper block lg:hidden">
+  <div class="mobile-nav-overflow-wrapper block xl:hidden">
   <div class="mobile-nav docs-mobile-nav w-screen z-40">
     <div class="h-full flex flex-col px-4 items-stretch pt-20 pb-8 overflow-y-auto w-screen">
       {{- /* Search bar */ -}}
