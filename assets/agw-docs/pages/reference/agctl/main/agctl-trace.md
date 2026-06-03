@@ -24,6 +24,8 @@ agctl trace [resource] [-- <curl args...>] [flags]
   # Render trace JSONL from a file or stdin instead of opening a live trace.
   agctl trace --file trace.jsonl
   agctl trace --file - --raw
+  # Watch for the next request matching a CEL expression.
+  agctl trace --expression 'request.path == "/healthz"'
   # Enable tracing and send a request to the gateway, with some curl arguments.
   agctl trace gateway/my-gateway --raw --port 80 -- http://host/some/path -H "Authorization: Bearer sk-123"
 ```
@@ -31,6 +33,7 @@ agctl trace [resource] [-- <curl args...>] [flags]
 ### Options
 
 ```
+      --expression string      CEL expression for selecting which request to trace
   -f, --file string            Trace JSONL file to render, or - for stdin
   -h, --help                   help for trace
       --local                  Trace against a local agentgateway instance on 127.0.0.1
