@@ -356,9 +356,11 @@ def find_referenced_types(agentgateway_file: Path, all_types: list[TypeInfo]) ->
         # Check if there's a link to this type that doesn't resolve
         # Pattern: [TypeName](#typename) where the anchor doesn't exist in the file
         link_pattern = f"[{name}](#{name.lower()})"
-        anchor_pattern = f"#### {name}"
-        
-        if link_pattern in content and anchor_pattern not in content:
+        # Match the heading on its own line, not as a substring, so a longer
+        # type sharing the prefix (e.g. AuthorizationCookieLocation) doesn't
+        # mask a missing shorter one (Authorization).
+        anchor_present = re.search(rf"^#### {re.escape(name)}\s*$", content, re.MULTILINE)
+        if link_pattern in content and not anchor_present:
             referenced.add(name)
     
     # Recursively find types referenced by the referenced types
@@ -399,9 +401,12 @@ def find_all_broken_links(doc_file: Path) -> set[str]:
         type_name = match.group(1)
         anchor = match.group(2)
         
-        # Check if the anchor exists in the document
-        anchor_pattern = f"#### {type_name}"
-        if anchor_pattern not in content:
+        # Check if the anchor exists in the document. Match the heading on its
+        # own line: a plain substring check treats `#### Authorization` as
+        # present when only `#### AuthorizationCookieLocation` (or another
+        # longer type sharing the prefix) exists, so the shorter type's section
+        # is never rendered and its `#anchor` stays broken.
+        if not re.search(rf"^#### {re.escape(type_name)}\s*$", content, re.MULTILINE):
             broken.add(type_name)
     
     return broken
