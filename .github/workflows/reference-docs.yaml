@@ -298,7 +298,10 @@ jobs:
 
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
           branch: ref-docs-${{ matrix.link_version }}
-          commit-message: 'docs: update API (incl. shared types), kubespec widgets, Helm, metrics, and agctl CLI docs from agentgateway ${{ matrix.ref }}'
+          commit-message: |
+            docs: update API (incl. shared types), kubespec widgets, Helm, metrics, and agctl CLI docs from agentgateway ${{ matrix.ref }}
+
+            Signed-off-by: GitHub Action <action@github.com>
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ matrix.link_version }}) from agentgateway ${{ matrix.ref }}'
