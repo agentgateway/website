@@ -111,10 +111,7 @@ EOF
    {{% /tab %}}
    {{< /tabs >}}
 
-   {{< callout type="info" >}}
-   The Dynamic Forward Proxy resolves any reachable host, including in-cluster services. To verify the proxy without depending on an external site, send a request with the host header set to an in-cluster service, such as `httpbin.httpbin.svc.cluster.local:8000`.
-   {{< /callout >}}
-   
+  
    Example output: 
    ```console
    * Request completely sent off
