@@ -35,11 +35,11 @@ Install Goose by following the [Goose installation guide](https://goose-docs.ai/
    EOF
    ```
 
-3. Create an AgentgatewayBackend for OpenAI.
+3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for OpenAI.
 
    ```bash
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
@@ -76,7 +76,7 @@ Install Goose by following the [Goose installation guide](https://goose-docs.ai/
          backendRefs:
          - name: openai
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
