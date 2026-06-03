@@ -35,7 +35,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    EOF
    ```
 
-3. Create an AgentgatewayBackend with the `/v1/messages` route and any other details such as models that you want to configure.
+3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with the `/v1/messages` route and any other details such as models that you want to configure.
 
    {{< tabs items="Flexible model (recommended),Fixed model" >}}
 
@@ -44,7 +44,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
    ```bash {paths="claude-code-k8s"}
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic
@@ -70,7 +70,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
    ```bash
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic
@@ -99,7 +99,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    - name: wait for anthropic backend to be accepted
      wait:
        target:
-         kind: AgentgatewayBackend
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          metadata:
            namespace: agentgateway-system
            name: anthropic
@@ -134,7 +134,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
          backendRefs:
          - name: anthropic
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -242,11 +242,11 @@ kubectl delete secret anthropic-secret -n agentgateway-system --ignore-not-found
 
 If you have a Claude Teams or Pro account, use this configuration instead of the API key setup above. No API key is required — authentication is handled by your Claude subscription via OAuth.
 
-1. Create an `AgentgatewayBackend` for the Anthropic provider. No `auth` secret is needed.
+1. Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` for the Anthropic provider. No `auth` secret is needed.
 
    ```bash
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic-teams
@@ -305,7 +305,7 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
          backendRefs:
          - name: anthropic-teams
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          filters:
          - type: URLRewrite
