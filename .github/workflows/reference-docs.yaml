@@ -25,6 +25,14 @@ concurrency:
   group: reference-docs
   cancel-in-progress: false
 
+# create-pull-request pushes a branch and opens a PR, so the GITHUB_TOKEN needs write on both.
+# Without this block the token is read-only and the push fails with a 403.
+# Note: this still requires "Allow GitHub Actions to create and approve pull requests"
+# to be enabled in repo Settings -> Actions -> General (or a CREATE_PR_TOKEN PAT).
+permissions:
+  contents: write
+  pull-requests: write
+
 jobs:
   setup:
     name: Setup and validate
