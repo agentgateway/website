@@ -1,6 +1,6 @@
 ---
 title: Web UIs & agent frameworks
-weight: 1
+weight: 10
 description: Integrate agentgateway with popular web interfaces and agent frameworks for enterprise governance
 test: skip
 ---
