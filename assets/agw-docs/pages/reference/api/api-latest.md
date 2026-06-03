@@ -554,7 +554,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[HTTPHeaderName](#httpheadername)_ |  |  | MaxLength: 256 <br />MinLength: 1 <br />Pattern: `^[A-Za-z0-9!#$%&'*+\-.^_\x60\|~]+$` <br />Required: \{\} <br /> |
+| `name` _[HTTPHeaderName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#httpheadername)_ |  |  | MaxLength: 256 <br />MinLength: 1 <br />Pattern: `^[A-Za-z0-9!#$%&'*+\-.^_\x60\|~]+$` <br />Required: \{\} <br /> |
 | `prefix` _string_ |  |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -2951,6 +2951,29 @@ _Appears in:_
 ## Shared Types
 
 The following types are defined in the shared package and used across multiple APIs.
+
+#### Authorization
+
+Authorization defines the configuration for role-based access control.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `policy` | [AuthorizationPolicy](#authorizationpolicy) | `policy` specifies the authorization rule to evaluate.  * For `Allow` rules: any policy allows the request. * For `Require` rules: all policies must match for the request to be allowed. * For `Deny` rules: any matching policy denies the request. Note: a CEL expression that fails to evaluate is not considered to match, making this a risky policy; prefer to use `Require`.  The presence of at least one `Allow` rule triggers a deny-by-default policy, requiring at least 1 match to allow. With no rules, all requires are allowed. **Required.** |
+| `action` | [AuthorizationPolicyAction](#authorizationpolicyaction) | `action` defines whether the rule allows, denies, or requires the request if matched. If unspecified, the default is `Allow`. Require policies are conjunctive across merged policies: all require policies must match. |
+
+#### AuthorizationPolicy
+
+AuthorizationPolicy defines a single authorization rule.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `matchExpressions` | [][CELExpression](#celexpression) | MatchExpressions defines a set of conditions that must be satisfied for the rule to match. These expressions should be in the form of a Common Expression Language (`CEL`) expression.  **Required.** |
+
+#### AuthorizationPolicyAction
+
+_Underlying type:_ _string_
+
+AuthorizationPolicyAction defines the action to take when the `RBACPolicies` matches.
 
 #### CELExpression
 
