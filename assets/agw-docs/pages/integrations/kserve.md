@@ -179,8 +179,8 @@ headers — without touching the inference service itself.
 4. Apply a transformation policy that reads the model name from the request and response body and injects them as response headers.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: model-echo-headers
      namespace: kserve-test
@@ -251,8 +251,8 @@ headers — without touching the inference service itself.
 4. Apply a transformation policy that reads the model name from the request and response body and injects them as response headers.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: model-echo-headers
      namespace: kserve-test
@@ -296,15 +296,15 @@ headers — without touching the inference service itself.
 {{< /tabs >}}
 
 
-## Step 5: Create an AgentgatewayBackend
+## Step 5: Create a backend
 
-KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backendRef`. However, to apply a token-based rate limiting policy, agentgateway needs the backend to be an AgentgatewayBackend. This way, agentgateway knows that the backend is an LLM that has a response body with the `usage.total_tokens` field to count against the rate limit bucket. In the following steps, you create an AgentgatewayBackend and a second HTTPRoute to route to it as a workaround to the KServe-created, Service-based setup.
+KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backendRef`. However, to apply a token-based rate limiting policy, agentgateway needs the backend to be an {{< reuse "agw-docs/snippets/backend.md" >}}. This way, agentgateway knows that the backend is an LLM that has a response body with the `usage.total_tokens` field to count against the rate limit bucket. In the following steps, you create an {{< reuse "agw-docs/snippets/backend.md" >}} and a second HTTPRoute to route to it as a workaround to the KServe-created, Service-based setup.
 
-1. Create an `AgentgatewayBackend` that points at the llm-d-inference-sim service.
+1. Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` that points at the llm-d-inference-sim service.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayBackend
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: mock-llm-backend
      namespace: kserve-test
@@ -319,7 +319,7 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
    EOF
    ```
 
-2. Create a second `HTTPRoute` that routes to the `AgentgatewayBackend`. This route uses the same hostname as the KServe-generated route but matches only the `/v1/chat/completions` path, so the gateway prefers it for LLM traffic.
+2. Create a second `HTTPRoute` that routes to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. This route uses the same hostname as the KServe-generated route but matches only the `/v1/chat/completions` path, so the gateway prefers it for LLM traffic.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -343,8 +343,8 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
          backendRefs:
            - name: mock-llm-backend
              namespace: kserve-test
-             group: agentgateway.dev
-             kind: AgentgatewayBackend
+             group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
+             kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
@@ -455,11 +455,11 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
 
 How token counting works: Agentgateway reads `usage.total_tokens` from the JSON response body returned by the inference service. Each request deducts that many tokens from the bucket. When the bucket empties, subsequent requests receive `429 Too Many Requests` until the next fill interval.
 
-1. Apply an `AgentgatewayPolicy` that caps requests at **70 tokens per minute**. The policy targets the `mock-llm-ai` route that selects the `AgentgatewayBackend`.
+1. Apply an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that caps requests at **70 tokens per minute**. The policy targets the `mock-llm-ai` route that selects the `{{< reuse "agw-docs/snippets/backend.md" >}}`.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: AgentgatewayPolicy
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
    metadata:
      name: llm-token-budget
      namespace: kserve-test
@@ -565,7 +565,7 @@ How token counting works: Agentgateway reads `usage.total_tokens` from the JSON 
 Remove the resources created in this guide.
    ```shell
    kubectl delete agentgatewaypolicy llm-token-budget -n kserve-test
-   kubectl delete AgentgatewayPolicy -n kserve-test model-echo-headers
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n kserve-test model-echo-headers
    kubectl delete httproute mock-llm-ai -n kserve-test
    kubectl delete agentgatewaybackend mock-llm-backend -n kserve-test
    kubectl delete inferenceservice mock-llm -n kserve-test
