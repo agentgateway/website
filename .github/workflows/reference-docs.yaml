@@ -49,7 +49,7 @@ jobs:
       - name: Build version matrix
         id: build_matrix
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]; then
             input_version="1.0.x"
