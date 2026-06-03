@@ -1,6 +1,6 @@
 ---
 title: Networking
-weight: 35
+weight: 10
 description: Integrate agentgateway with networking tools
 test: skip
 ---

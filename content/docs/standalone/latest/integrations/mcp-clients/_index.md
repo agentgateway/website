@@ -1,6 +1,6 @@
 ---
 title: MCP clients
-weight: 15
+weight: 10
 description: Connect AI coding assistants and tools to agentgateway
 test: skip
 ---

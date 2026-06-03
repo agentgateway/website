@@ -1,6 +1,6 @@
 ---
 title: Claude Desktop
-weight: 6
+weight: 10
 description: Configure Claude Desktop to use agentgateway running in Kubernetes
 ---
 

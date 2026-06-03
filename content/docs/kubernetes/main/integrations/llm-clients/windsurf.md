@@ -1,6 +1,6 @@
 ---
 title: Windsurf
-weight: 15
+weight: 10
 description: Configure Windsurf AI code editor to use agentgateway running in Kubernetes
 ---
 

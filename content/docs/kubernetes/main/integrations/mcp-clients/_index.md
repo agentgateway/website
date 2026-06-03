@@ -1,6 +1,6 @@
 ---
 title: MCP clients
-weight: 15
+weight: 10
 description: Connect AI coding assistants to MCP servers exposed through agentgateway on Kubernetes
 test:
   mcp-clients-k8s:

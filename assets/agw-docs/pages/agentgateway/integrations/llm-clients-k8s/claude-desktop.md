@@ -13,7 +13,7 @@ Configure [Claude Desktop](https://claude.ai/download) to route requests through
 
 ## Set up the Anthropic backend
 
-1. Create an `AgentgatewayBackend` for the Anthropic provider. No API key is needed — authentication uses your Claude subscription via OAuth.
+1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the Anthropic provider. No API key is needed because authentication uses your Claude subscription via OAuth.
 
    ```bash
    kubectl apply -f- <<EOF
@@ -55,6 +55,19 @@ Configure [Claude Desktop](https://claude.ai/download) to route requests through
    EOF
    ```
 
+   {{< callout type="info" >}}
+   Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop might require this header to be set as well depending on your client version. If requests fail with a 400 error, add a request transformation to the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that injects the header.
+   
+   ```yaml
+   backend:
+     transformation:
+       request:
+         set:
+         - name: anthropic-beta
+           value: oauth-2025-04-20
+   ```
+   {{< /callout >}}
+
 3. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend.
 
    ```bash
@@ -76,7 +89,7 @@ Configure [Claude Desktop](https://claude.ai/download) to route requests through
          backendRefs:
          - name: anthropic-desktop
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          filters:
          - type: URLRewrite
@@ -87,34 +100,19 @@ Configure [Claude Desktop](https://claude.ai/download) to route requests through
    EOF
    ```
 
-{{< callout type="info" >}}
-Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add a request transformation to the `AgentgatewayPolicy` that injects the header:
-
-```yaml
-backend:
-  transformation:
-    request:
-      set:
-      - name: anthropic-beta
-        value: oauth-2025-04-20
-```
-{{< /callout >}}
-
 ## Configure Claude Desktop
 
-1. Get a bearer token for your Claude account.
+1. Get a bearer token for your Claude account. Store the value in a safe place.
 
    ```bash
    claude setup-token
    ```
 
-   Copy the token printed to the terminal.
-
-2. Open Claude Desktop and enable developer mode: **Help → Troubleshooting → Enable Developer Mode**. Then fully quit and relaunch Claude Desktop. A new **Developer** menu appears in the menu bar.
+2. Open Claude Desktop and enable developer mode from the menu bar: **Help → Troubleshooting → Enable Developer Mode**. Then fully quit and relaunch Claude Desktop. A new **Developer** menu appears in the menu bar.
 
 3. In the menu bar, go to **Developer → Configure Third Party Inference → Gateway**.
 
-4. Enter the gateway URL. Use `127.0.0.1` rather than `localhost`.
+4. Enter the **Gateway base URL**.
 
    {{< tabs items="LoadBalancer,Port-forward" >}}
 
@@ -125,10 +123,12 @@ backend:
    {{% /tab %}}
 
    {{% tab tabName="Port-forward" %}}
+   Use `127.0.0.1` rather than `localhost`.
+   
    ```bash
    kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 4001:80 &
    ```
-   Then enter:
+   For the gateway address in Claude Desktop, enter:
    ```
    http://127.0.0.1:4001/claude
    ```
@@ -136,25 +136,32 @@ backend:
 
    {{< /tabs >}}
 
-5. Enter the bearer token you copied in step 1.
+5. For the **Credential kind** dropdown, select `Static API key` and then in the **Gateway API key** field, enter the bearer token you copied in step 1.
 
-6. Click **Save** and restart Claude Desktop.
+6. Click **Save Changes** and restart Claude Desktop.
 
 ## Verify the connection
 
-Send a message in Claude Desktop, then check the proxy logs to confirm traffic is flowing through agentgateway.
+1. Send a message in Claude Desktop, such as `test`.
 
-```bash
-kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
-```
+2. Check the proxy logs to confirm traffic is flowing through agentgateway.
+
+   ```bash
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --tail=5
+   ```
 
 ## Cleanup
 
-```bash
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} claude-desktop-buffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete httproute claude-desktop -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} anthropic-desktop -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-```
+1. Remove the resources that you created.
+
+   ```bash
+   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} claude-desktop-buffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete httproute claude-desktop -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} anthropic-desktop -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   ```
+
+2. Restore Claude Desktop to your original settings. For example, you might delete the `~/Library/Application Support/Claude-3p/` direcotry to remove third-party inference settings and use the default `~/Library/Application Support/Claude/` settings. For more information, see the [Claude docs](https://claude.com/docs/cowork/3p/overview).
+
 
 ## Next steps
 

@@ -1,6 +1,6 @@
 ---
 title: Claude Code
-weight: 5
+weight: 10
 description: Configure Claude Code CLI to use agentgateway running in Kubernetes
 test:
   claude-code-k8s:

@@ -1,6 +1,6 @@
 ---
 title: OpenAI SDK
-weight: 30
+weight: 10
 description: Use the OpenAI Python and Node.js SDKs with agentgateway running in Kubernetes
 ---
 
