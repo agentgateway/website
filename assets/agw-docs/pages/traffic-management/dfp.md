@@ -78,13 +78,13 @@ EOF
 
 {{< doc-test paths="dfp" >}}
 YAMLTest -f - <<'EOF'
-- name: dfp - request with host httpbin.org returns 200
+- name: dfp - request with host httpbin.httpbin.svc.cluster.local returns 200
   retries: 5
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80"
     method: GET
     headers:
-      host: httpbin.org
+      host: httpbin.httpbin.svc.cluster.local:8000
   source:
     type: local
   expect:
@@ -92,20 +92,26 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-3. Send a request to a hostname of your choice, such as `httpbin.org`. Verify that your gateway proxy successfully resolves the `httpbin.org` host and returns its welcome page.
+3. Send a request to a hostname of your choice, such as `httpbin.org`. The Dynamic Forward Proxy resolves the host at request time and forwards the request to it, so the host's welcome page is returned. Because no upstream hosts are pre-defined in the Backend, you can send a request to any reachable host without changing the configuration. For example, for quick testing, you might send a request with the host header set to an in-cluster service, such as `httpbin.httpbin.svc.cluster.local:8000`.
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl -vik http://$INGRESS_GW_ADDRESS:8080 -H "host: httpbin.org" 
+   curl -vik http://$INGRESS_GW_ADDRESS:80 -H "host: httpbin.org" 
    ```
    {{% /tab %}}
    {{% tab tabName="Port forward for local testing" %}}
-   ```sh
-   curl -vik http://localhost:8080 -H "host: httpbin.org"
-   ```
+   1. Port-forward the gateway proxy on port 8080.
+      ```sh
+      kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
+      ```
+   2. Send a request to the gateway proxy.
+      ```sh
+      curl -vik http://localhost:8080 -H "host: httpbin.org"
+      ```
    {{% /tab %}}
    {{< /tabs >}}
-   
+
+  
    Example output: 
    ```console
    * Request completely sent off
@@ -118,8 +124,6 @@ EOF
    <head>
         <meta charset="UTF-8">
         <title>httpbin.org</title>
-        <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700"
-            rel="stylesheet">
         <link rel="stylesheet" type="text/css" href="/flasgger_static/swagger-ui.css">
         <link rel="icon" type="image/png" href="/static/favicon.ico" sizes="64x64 32x32 16x16" />
         <style>
