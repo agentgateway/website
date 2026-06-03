@@ -25,6 +25,10 @@ You can add, set, or remove request and response headers with agentgateway's tra
 To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 {{< /callout >}}
 
+#### Route-level header transformation
+
+Transform headers after route selection:
+
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -49,10 +53,11 @@ binds:
         transformations:
           request:
             add:
-              x-gateway: '"agentgateway"'
+              x-request-path: request.path
+              x-client-ip: source.address
           response:
             add:
-              x-served-by: '"agentgateway"'
+              x-response-code: 'string(response.code)'
             remove:
             - server
             - x-content-type-options
@@ -70,11 +75,11 @@ To provide a specific string value, add your string in single quotes `'` followe
 ```yaml
 transformations:
   request:
-    body:
-      '"This is a custom request body."'
+    body: |
+      "Hello " + default(request.headers["x-user-name"], "guest")
   response:
-    body:
-      '"This is a custom response body."'
+    body: |
+      "Response code: " + string(response.code)
 ```
 
 ## Conditional execution

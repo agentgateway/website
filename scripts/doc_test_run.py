@@ -384,6 +384,55 @@ def collect_cluster_context(cluster_name: str, context_dir: Path) -> None:
         os.unlink(kubeconfig_path)
 
 
+# Number of times to retry "kind create cluster" when it fails pulling the node
+# image from Docker Hub. These are transient registry timeouts/rate-limits, not
+# test failures, so a short retry avoids spurious red runs (see nightly run flakes
+# where 13 unrelated tests all died on "failed to pull image kindest/node").
+CLUSTER_CREATE_ATTEMPTS = 3
+CLUSTER_CREATE_RETRY_DELAY_SECONDS = 15
+
+# Substrings that mark a cluster-creation failure as a transient image-pull issue
+# rather than a real problem with the test or cluster config. Matching is
+# case-insensitive. We deliberately keep this narrow so genuine failures fail fast.
+_TRANSIENT_PULL_MARKERS = (
+    "failed to pull image",
+    "registry-1.docker.io",
+    "context deadline exceeded",
+    "request canceled while waiting for connection",
+    "i/o timeout",
+    "tls handshake timeout",
+)
+
+
+def _is_transient_pull_failure(output: str) -> bool:
+    lowered = output.lower()
+    return any(marker in lowered for marker in _TRANSIENT_PULL_MARKERS)
+
+
+def create_cluster_with_retries(cluster_name: str, repo_root: Path) -> Tuple[int, str]:
+    """Create a kind cluster, retrying only on transient Docker Hub image-pull failures.
+
+    The first successful pull seeds the local Docker image cache, so later clusters
+    in the same job reuse it. A failed attempt may leave a partial cluster behind,
+    so we delete by name before retrying. Returns the last (code, output) pair.
+    """
+    create_code, create_output = 0, ""
+    for attempt in range(1, CLUSTER_CREATE_ATTEMPTS + 1):
+        create_code, create_output = run_command(["kind", "create", "cluster", "--name", cluster_name], repo_root)
+        if create_code == 0:
+            return create_code, create_output
+        if attempt == CLUSTER_CREATE_ATTEMPTS or not _is_transient_pull_failure(create_output):
+            break
+        logger.warning(
+            "Transient image-pull failure creating cluster '%s' (attempt %d/%d); retrying in %ds",
+            cluster_name, attempt, CLUSTER_CREATE_ATTEMPTS, CLUSTER_CREATE_RETRY_DELAY_SECONDS,
+        )
+        # Clean up any partial cluster so the retry starts from a clean slate.
+        run_command(["kind", "delete", "cluster", "--name", cluster_name], repo_root)
+        time.sleep(CLUSTER_CREATE_RETRY_DELAY_SECONDS)
+    return create_code, create_output
+
+
 def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
@@ -412,7 +461,7 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
             "error": "Test shell script contains 'kubectl port-forward', which is not supported in automated tests.",
         }
 
-    create_code, create_output = run_command(["kind", "create", "cluster", "--name", cluster_name], repo_root)
+    create_code, create_output = create_cluster_with_retries(cluster_name, repo_root)
     if create_code != 0:
         # Best-effort context collection even if cluster creation partially failed
         if context_base_dir is not None:
