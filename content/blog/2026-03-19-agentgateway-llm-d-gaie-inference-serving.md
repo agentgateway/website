@@ -3,6 +3,7 @@ title: "Inference Serving with Superpowers"
 toc: false
 publishDate: 2026-03-23
 author: "Daneyon Hansen"
+category: "LLM"
 description: "Agentgateway, llm-d, and Gateway API Inference Extension combine gateway policy,
 smart inference scheduling, and Kubernetes-native standards for production quality inference serving."
 ---

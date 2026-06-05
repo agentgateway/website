@@ -1,0 +1,57 @@
+{{- /*
+  Partial: blog-category
+  Renders a small colored category pill.
+
+  Usage:
+    {{ partial "blog-category.html" .Params.category }}                    → auto (respects global dark mode)
+    {{ partial "blog-category.html" (dict "category" .Params.category "variant" "light") }}  → always light colors (for light illustration areas)
+    {{ partial "blog-category.html" (dict "category" . "variant" "dark") }} → always dark/subtle colors (for dark hero areas)
+
+  The "light" variant is used on blog listing cards because the image area is intentionally light cream/beige
+  even in dark mode. "dark" or "auto" is used in the post hero.
+*/ -}}
+{{- $cat := .category | default . | default "Blog" -}}
+{{- $variant := .variant | default "auto" -}}
+
+{{- $lightColors := dict
+    "Release"      "bg-orange-200 text-orange-800"
+    "Tutorial"     "bg-indigo-200 text-indigo-800"
+    "Announcement" "bg-violet-200 text-violet-800"
+    "Community"    "bg-emerald-200 text-emerald-800"
+    "Engineering"  "bg-sky-200 text-sky-800"
+    "Security"     "bg-rose-200 text-rose-800"
+    "LLM"          "bg-amber-200 text-amber-800"
+    "Architecture" "bg-teal-200 text-teal-800"
+-}}
+
+{{- $darkColors := dict
+    "Release"      "bg-orange-500/15 text-orange-300"
+    "Tutorial"     "bg-indigo-500/15 text-indigo-300"
+    "Announcement" "bg-violet-500/15 text-violet-300"
+    "Community"    "bg-emerald-500/15 text-emerald-300"
+    "Engineering"  "bg-sky-500/15 text-sky-300"
+    "Security"     "bg-rose-500/15 text-rose-300"
+    "LLM"          "bg-amber-500/15 text-amber-300"
+    "Architecture" "bg-teal-500/15 text-teal-300"
+-}}
+
+{{- $cls := "" -}}
+{{- if eq $variant "light" -}}
+  {{- $cls = index $lightColors $cat | default "bg-gray-100 text-gray-700" -}}
+{{- else if eq $variant "dark" -}}
+  {{- $cls = index $darkColors $cat | default "bg-gray-700/30 text-gray-300" -}}
+{{- else -}}
+  {{- /* auto: original behavior with dark: variants for global theme */ -}}
+  {{- $cls = index (dict
+      "Release"      "bg-orange-100 text-orange-700 dark:bg-orange-500/15 dark:text-orange-300"
+      "Tutorial"     "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300"
+      "Announcement" "bg-violet-100 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300"
+      "Community"    "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+      "Engineering"  "bg-sky-100 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300"
+      "Security"     "bg-rose-100 text-rose-700 dark:bg-rose-500/15 dark:text-rose-300"
+      "LLM"          "bg-amber-100 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
+      "Architecture" "bg-teal-100 text-teal-700 dark:bg-teal-500/15 dark:text-teal-300"
+    ) $cat | default "bg-gray-100 text-gray-700 dark:bg-gray-700/30 dark:text-gray-300" -}}
+{{- end -}}
+
+<span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide {{ $cls }}">{{ $cat }}</span>

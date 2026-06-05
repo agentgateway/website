@@ -2,6 +2,7 @@
 title: "Open Source LLM Observability: Tracing AI Calls with AgentGateway and Langfuse"
 publishDate: 2026-02-18
 author: "Sebastian Maniak"
+category: "Tutorial"
 description: "How to automatically capture, monitor, and debug every LLM API call flowing through Solo AgentGateway using Langfuse — with zero application code changes."
 ---
 

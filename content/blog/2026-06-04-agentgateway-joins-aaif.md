@@ -2,6 +2,7 @@
 title: "agentgateway Joins AAIF as an Open Gateway for Agentic AI Infrastructure"
 publishDate: 2026-06-04
 author: "Agentic AI Foundation"
+category: "Announcement"
 description: "agentgateway joins the Agentic AI Foundation as the fourth hosted initiative under the Linux Foundation — an open, high-performance gateway for MCP, A2A, LLM inference, and conventional API traffic."
 toc: false
 ---

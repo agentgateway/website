@@ -3,6 +3,8 @@ title: Announcing A2A, MCP, and Kubernetes Gateway API support
 toc: false
 publishDate: 2025-07-14T00:00:00-00:00
 author: Christian Posta, John Howard
+category: "Release"
+description: "agentgateway adds deep native support for A2A and MCP, full Kubernetes Gateway API (all core routes + policies), advanced rate limiting/auth, OpenTelemetry, and unified LLM routing in a Rust-based AI-native gateway."
 ---
 
 > Today, we're excited to share the next major milestone: agentgateway is now a full-featured, AI-native gateway that combines deep MCP and A2A protocol awareness, robust traffic policy controls, inference gateway support, Kubernetes Gateway API support, and unified access to major LLMs, all purpose-built with Rust for real-world agentic systems.

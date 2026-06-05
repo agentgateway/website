@@ -4,11 +4,20 @@ toc: false
 description: ""
 ---
 
-<section class="bg-primary-bg text-white pb-[4.375rem] lg:pb-28 px-4 lg:px-12 xl:px-25 bg-[url(/hero-background.svg)] bg-center bg-no-repeat pt-[9.875rem] lg:pt-50 bg-[length:61.85319rem_60.14119rem] lg:bg-auto">
-  <div class="mx-auto max-w-[1440px] flex flex-row justify-center">
-    <h1 class="text-[2.1875rem] lg:text-[4.0625rem] font-semibold leading-[2.40625rem] lg:leading-[4.46875rem] font-headings tracking-tight">
-      Agentgateway Blog
+<section class="relative pb-10 md:pb-12 px-6 lg:px-8 overflow-hidden pt-20 md:pt-24">
+  <!-- Matching main site hero background (adapts to light/dark mode via hp- vars) -->
+  <div class="hp-hero-bg"></div>
+  <div class="hp-hero-grid-pattern"></div>
+  <div class="hp-hero-blob hp-hero-blob-1"></div>
+  <div class="hp-hero-blob hp-hero-blob-2"></div>
+
+  <div class="mx-auto max-w-5xl relative z-10">
+    <h1 class="text-4xl md:text-5xl font-semibold tracking-tight text-gray-900 dark:text-white">
+      Blog
     </h1>
+    <p class="mt-3 text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl">
+      Latest updates, deep dives, and announcements from the agentgateway community.
+    </p>
   </div>
 </section>
 

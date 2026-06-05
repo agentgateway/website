@@ -278,7 +278,7 @@
 </style>
 
 {{- /* Determine if we're on the landing page or docs */ -}}
-{{- $isLandingPage := eq .RelPermalink "/" -}}
+{{- $isLandingPage := or (eq .RelPermalink "/") (hasPrefix .RelPermalink "/blog") -}}
 {{- $isDocsPage := false -}}
 {{- if .RelPermalink -}}
   {{- $path := .RelPermalink -}}

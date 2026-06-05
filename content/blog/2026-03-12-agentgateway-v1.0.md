@@ -2,6 +2,7 @@
 title: "A Year In: agentgateway Hits v1.0.0 — and the Pieces Are Converging"
 publishDate: 2026-03-16
 author: "Sebastian Maniak"
+category: "Release"
 description: "A Year In: agentgateway Hits v1.0.0 — and the Pieces Are Converging"
 ---
 

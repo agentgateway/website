@@ -3,6 +3,8 @@ title: MCP Authorization the Easy Way
 toc: false
 publishDate: 2025-08-12T00:00:00-00:00
 author: Christian Posta, Rinor Maloku
+category: "Security"
+description: "Handle the updated MCP Authorization spec (OAuth, Protected Resource Metadata, WWW-Authenticate) at the gateway so your MCP servers don't have to. agentgateway makes spec-compliant auth simple via config."
 ---
 
 

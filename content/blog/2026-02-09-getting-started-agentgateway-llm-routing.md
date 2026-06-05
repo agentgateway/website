@@ -2,7 +2,9 @@
 title: Getting started with Multi-LLM provider routing
 toc: false
 publishDate: 2026-02-09
-author: Sebastian
+author: "Sebastian Maniak"
+category: "Tutorial"
+description: "Route to multiple LLM providers (OpenAI, Anthropic, xAI, etc) through one agentgateway using Kubernetes Gateway API. Step-by-step on Kind with HTTPRoutes and AgentgatewayBackend for unified, observable LLM access."
 ---
 
 # How to: Building Agentgateway to support Multi-LLM providers.

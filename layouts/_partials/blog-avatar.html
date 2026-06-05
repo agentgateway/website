@@ -1,0 +1,29 @@
+{{- /*
+  Partial: blog-avatar
+  Renders a round author avatar. Uses a real photo from
+  /img/blog/authors/<author-slug>.(png|jpg) when present, otherwise a colored
+  initials circle. For multi-author bylines, the first author is used.
+
+  Params (dict):
+    name  - author string (required), e.g. "Lin Sun" or "Christian Posta, John Howard"
+    size  - Tailwind size classes (optional), default "h-9 w-9 text-xs"
+*/ -}}
+{{- $name := .name | default "" -}}
+{{- $size := .size | default "h-9 w-9 text-xs" -}}
+{{- $primary := trim (index (split (replaceRE "&" "," $name) ",") 0) " " -}}
+{{- $slug := anchorize $primary -}}
+{{- $png := printf "/img/blog/authors/%s.png" $slug -}}
+{{- $jpg := printf "/img/blog/authors/%s.jpg" $slug -}}
+{{- $photo := "" -}}
+{{- if fileExists (printf "static%s" $png) }}{{ $photo = $png }}{{ end -}}
+{{- if and (not $photo) (fileExists (printf "static%s" $jpg)) }}{{ $photo = $jpg }}{{ end -}}
+{{- if $photo -}}
+  <img src="{{ $photo | relURL }}" alt="{{ $primary }}" class="{{ $size }} rounded-full object-cover ring-2 ring-white dark:ring-gray-900 shrink-0" />
+{{- else -}}
+  {{- $words := split $primary " " -}}
+  {{- $initials := "" -}}
+  {{- range first 2 $words }}{{ $initials = printf "%s%s" $initials (substr . 0 1) }}{{ end -}}
+  {{- $palette := slice "bg-indigo-500" "bg-orange-500" "bg-emerald-500" "bg-rose-500" "bg-sky-500" "bg-violet-500" "bg-amber-500" "bg-teal-500" -}}
+  {{- $color := index $palette (mod (len $primary) (len $palette)) -}}
+  <span class="{{ $size }} {{ $color }} rounded-full flex items-center justify-center font-semibold text-white ring-2 ring-white dark:ring-gray-900 shrink-0 uppercase" aria-label="{{ $primary }}">{{ $initials }}</span>
+{{- end -}}

@@ -3,6 +3,8 @@ title: agentgateway adds support for migrating from ingress-nginx
 toc: false
 publishDate: 2026-01-30T00:00:00-00:00
 author: Eitan Suez
+category: "Release"
+description: "With ingress-nginx retiring, easily migrate your Ingress resources to Kubernetes Gateway API + agentgateway using the updated ingress2gateway tool. Get production-grade AI-aware traffic management without rewriting routes."
 ---
 
 ## ingress-nginx retirement

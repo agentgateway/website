@@ -3,6 +3,8 @@ title: Enterprise MCP SSO With Microsoft Entra and Agentgateway
 toc: false
 publishDate: 2026-01-26T00:00:00-00:00
 author: Christian Posta
+category: "Tutorial"
+description: "Secure internal MCP servers and clients with enterprise SSO using Microsoft Entra ID (OIDC) through agentgateway. Apply identity, policy, and access controls consistently for AI agents and desktop MCP clients without browser flows."
 ---
 
 

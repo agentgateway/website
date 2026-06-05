@@ -1041,7 +1041,6 @@
       <div class="hp-code-block">
         <div class="hp-code-tabs">
           <button class="hp-code-tab active" data-code="install">Install script</button>
-          <button class="hp-code-tab" data-code="config">config.yaml</button>
           <button class="hp-code-tab" data-code="helm">Kubernetes</button>
           <button class="hp-code-tab" data-code="docker">Docker</button>
           <button class="hp-code-copy" id="hp-code-copy-btn">Copy</button>
@@ -1051,25 +1050,14 @@
             <div class="com"># Install the agentgateway binary</div>
             <div><span class="prompt-char">$</span> curl -sL https://agentgateway.dev/install | bash</div>
             <div>&nbsp;</div>
-            <div class="com"># Run with a config file</div>
+            <div class="com"># Download sample config</div>
+            <div><span class="prompt-char">$</span> curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml</div>
+            <div>&nbsp;</div>
+            <div class="com"># Run with the config</div>
             <div><span class="prompt-char">$</span> agentgateway -f config.yaml</div>
             <div>&nbsp;</div>
             <div class="com"># INFO agentgateway: Listening on 0.0.0.0:3000</div>
             <div class="com"># INFO agentgateway: Admin UI at http://localhost:15000/ui/</div>
-          </div>
-          <div class="hp-code-panel" id="hp-code-config">
-            <div class="com"># yaml-language-server: $schema=https://agentgateway.dev/schema/config</div>
-            <div>binds:</div>
-            <div>- port: 3000</div>
-            <div>  listeners:</div>
-            <div>  - routes:</div>
-            <div>    - policies:</div>
-            <div>        cors:</div>
-            <div>          allowOrigins: ["*"]</div>
-            <div>          allowHeaders: [content-type, cache-control]</div>
-            <div>        a2a: {}</div>
-            <div>      backends:</div>
-            <div>      - host: localhost:9999</div>
           </div>
           <div class="hp-code-panel" id="hp-code-helm">
             <div class="com"># Install Gateway API CRDs</div>
@@ -1080,14 +1068,14 @@
             <div><span class="prompt-char">$</span> helm upgrade -i agentgateway-crds \</div>
             <div>  oci://cr.agentgateway.dev/charts/agentgateway-crds \</div>
             <div>  --create-namespace --namespace agentgateway-system \</div>
-            <div>  --version v1.1.0 \</div>
+            <div>  --version v1.2.1 \</div>
             <div>  --set controller.image.pullPolicy=Always</div>
             <div>&nbsp;</div>
             <div class="com"># Install agentgateway via Helm</div>
             <div><span class="prompt-char">$</span> helm upgrade -i agentgateway \</div>
             <div>  oci://cr.agentgateway.dev/charts/agentgateway \</div>
             <div>  --namespace agentgateway-system \</div>
-            <div>  --version v1.1.0 \</div>
+            <div>  --version v1.2.1 \</div>
             <div>  --set controller.image.pullPolicy=Always \</div>
             <div>  --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \</div>
             <div>  --wait</div>

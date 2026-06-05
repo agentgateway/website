@@ -1,46 +1,61 @@
 {{- /*
   Shortcode: lp-list
-  Renders a list of child pages as styled article cards showing the date, author, title, summary, and a "Read full article" link.
+  Responsive 3-column card grid for the blog listing.
+  Cards with cover images, category pill overlaid, title, excerpt, and meta.
+  Uses simpler minimalist covers. Tailwind utilities; dark mode supported.
 
-  Parameters:
-    (none -- iterates over child pages of the current page)
+  Prefers .Params.description for excerpt (good for listing), falls back to .Summary.
+  Cover image: uses the page's `coverImage` param when set, otherwise falls
+  back to /img/blog/covers/<slug>.jpg (or .png).
 
   Example: {{< lp-list >}}
 */ -}}
-<section class="px-6 md:px-10 py-20 md:py-28 max-w-6xl mx-auto bg-gray-50">
-  <div class="flex flex-col gap-8">
-    {{ range $.Page.Pages }}
-      <article class="group bg-white border-2 border-gray-200 rounded-2xl p-8 md:p-10 hover:border-purple-400 hover:shadow-[0_20px_60px_-15px_rgba(139,92,246,0.4)] transition-all duration-300 hover:scale-[1.01] text-left">
-        
-        <!-- Date and Author -->
-        <div class="flex items-center gap-3 text-sm font-medium text-gray-600 mb-5 tracking-wide">
-          <time datetime="{{ .PublishDate }}">
-            {{ .PublishDate | time.Format "Jan 2, 2006" }}
-          </time>
-          <span class="text-gray-400 opacity-50">•</span>
-          <span>{{ .Params.Author }}</span>
+{{ $pages := $.Page.Pages }}
+<section class="px-4 md:px-6 lg:px-8 py-10 md:py-14 max-w-6xl mx-auto bg-gray-50 dark:bg-gray-950">
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
+    {{ range $pages }}
+      {{ $cover := .Params.coverImage }}
+      {{ if not $cover }}
+        {{ $base := .File.ContentBaseName }}
+        {{ $pngPath := printf "/img/blog/covers/%s.png" $base }}
+        {{ $jpgPath := printf "/img/blog/covers/%s.jpg" $base }}
+        {{ if fileExists (printf "static%s" $jpgPath) }}
+          {{ $cover = $jpgPath }}
+        {{ else if fileExists (printf "static%s" $pngPath) }}
+          {{ $cover = $pngPath }}
+        {{ else }}
+          {{ $cover = $pngPath }}
+        {{ end }}
+      {{ end }}
+      {{ $excerpt := .Params.description | default .Summary | plainify | truncate 140 "…" }}
+      <a href="{{ .RelPermalink }}" class="group flex flex-col bg-white dark:bg-gray-900 rounded-2xl border border-gray-200 dark:border-gray-800 overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 text-left">
+        <div class="relative aspect-video overflow-hidden bg-gray-100 dark:bg-gray-800">
+          <img
+            src="{{ $cover | relURL }}"
+            alt="Cover illustration for {{ .LinkTitle }}"
+            loading="lazy"
+            class="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+          <div class="absolute top-3 left-3">{{ partial "blog-category.html" (dict "category" .Params.category "variant" "light") }}</div>
         </div>
-        
-        <!-- Title -->
-        <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6 group-hover:text-purple-700 transition-colors duration-200 leading-tight font-sans tracking-normal text-left">
-          <a href="{{ .RelPermalink }}" class="hover:underline decoration-purple-600 decoration-2 underline-offset-4">
+
+        <div class="flex flex-col flex-1 p-5">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-gray-100 leading-snug mb-2 group-hover:text-[#E9622E] transition-colors duration-200 line-clamp-2">
             {{ .LinkTitle }}
-          </a>
-        </h2>
-        
-        <!-- Excerpt/Description -->
-        <div class="text-gray-600 text-lg leading-relaxed mb-8 line-clamp-3">
-          {{ .Summary }}
+          </h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed mb-4 line-clamp-3">{{ $excerpt }}</p>
+
+          <div class="mt-auto flex items-center gap-2.5 text-xs text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-800 pt-4">
+            {{ partial "blog-avatar.html" (dict "name" .Params.Author "size" "h-6 w-6 text-[10px]") }}
+            <span class="font-medium text-gray-700 dark:text-gray-300 truncate">{{ .Params.Author }}</span>
+            <span class="text-gray-300 dark:text-gray-600">·</span>
+            <time datetime="{{ .PublishDate | time.Format "2006-01-02" }}" class="whitespace-nowrap">{{ .PublishDate | time.Format "Jan 2" }}</time>
+            <span class="text-gray-300 dark:text-gray-600">·</span>
+            <span class="whitespace-nowrap">{{ .ReadingTime }} min</span>
+          </div>
         </div>
-        
-        <!-- Read more indicator -->
-        <a href="{{ .RelPermalink }}" class="inline-flex items-center gap-2 text-purple-600 font-bold text-base group-hover:gap-4 transition-all duration-200 hover:underline decoration-2 underline-offset-4">
-          <span>Read full article</span>
-          <svg class="w-5 h-5 transform group-hover:translate-x-2 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
-          </svg>
-        </a>
-      </article>
+      </a>
     {{ end }}
   </div>
 </section>

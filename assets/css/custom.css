@@ -395,3 +395,77 @@ h6 {
   /* Avoid breaking inside short blocks; don't force headings to next page */
   blockquote, figure, img { break-inside: avoid; }
 }
+
+/* ===== Landing page hero background (for consistency on blog too) ===== */
+:root {
+  --hp-accent: #8A3FFC;
+  --hp-accent-soft: rgba(138,63,252,0.12);
+  --hp-accent-glow: rgba(138,63,252,0.35);
+  --hp-accent-deep: #6E29E0;
+  --hp-text-1: #0B0E18;
+  --hp-text-2: #151927;
+  --hp-text-3: #4A5068;
+  --hp-text-4: #5A6078;
+  --hp-text-5: #9AA0B5;
+  --hp-bg-0: #FFFFFF;
+  --hp-bg-1: #F6F7FB;
+  --hp-bg-2: #EDEEF7;
+  --hp-border: rgba(15,19,35,0.08);
+  --hp-border-2: rgba(15,19,35,0.14);
+  --hp-font-h: 'Figtree', system-ui, sans-serif;
+  --hp-font-b: 'DM Sans', system-ui, sans-serif;
+  --hp-font-m: 'DM Mono', ui-monospace, monospace;
+}
+
+.dark {
+  --hp-accent: #A06EFF;
+  --hp-accent-soft: rgba(160,110,255,0.14);
+  --hp-accent-glow: rgba(160,110,255,0.40);
+  --hp-accent-deep: #B48CFF;
+  --hp-text-1: #F0F1F5;
+  --hp-text-2: #E4E5EB;
+  --hp-text-3: #B0B4C4;
+  --hp-text-4: #8A8FA5;
+  --hp-text-5: #5E6378;
+  --hp-bg-0: #0B0E18;
+  --hp-bg-1: #111422;
+  --hp-bg-2: #181C2E;
+  --hp-border: rgba(255,255,255,0.08);
+  --hp-border-2: rgba(255,255,255,0.14);
+}
+
+.hp-hero-bg {
+  position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, var(--hp-bg-0) 0%, var(--hp-bg-1) 60%, var(--hp-bg-2) 100%);
+}
+
+.hp-hero-grid-pattern {
+  position: absolute; inset: 0;
+  background-image: linear-gradient(rgba(15,19,35,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(15,19,35,0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 100% 90% at 50% 30%, black 30%, transparent 75%);
+  -webkit-mask-image: radial-gradient(ellipse 100% 90% at 50% 30%, black 30%, transparent 75%);
+}
+
+.hp-hero-blob {
+  position: absolute; border-radius: 50%; opacity: 0.5; pointer-events: none;
+}
+
+.hp-hero-blob-1 {
+  width: 600px; height: 600px; top: -200px; right: -120px;
+  background: radial-gradient(circle, rgba(138,63,252,0.28), transparent 65%);
+}
+
+.hp-hero-blob-2 {
+  width: 480px; height: 480px; top: 40%; left: -160px;
+  background: radial-gradient(circle, rgba(32,183,243,0.18), transparent 65%);
+}
+
+.dark .hp-hero-grid-pattern {
+  background-image: linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+}
+
+.dark .hp-hero-blob-1 { opacity: 0.3; }
+.dark .hp-hero-blob-2 { opacity: 0.15; }
