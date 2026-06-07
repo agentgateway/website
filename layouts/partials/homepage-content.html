@@ -487,6 +487,13 @@
 .hp-code-body { padding: 18px 20px; color: #C8CCDB; }
 .hp-code-panel { display: none; }
 .hp-code-panel.active { display: block; }
+.hp-code-pre {
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  line-height: inherit;
+  white-space: pre-wrap;
+}
 .hp-code-body .com { color: #5A6078; font-style: italic; }
 .hp-code-body .prompt-char { color: var(--hp-accent); }
 
@@ -1058,18 +1065,18 @@
             <div class="com"># INFO agentgateway: Admin UI at http://localhost:15000/ui/</div>
           </div>
           <div class="hp-code-panel" id="hp-code-config">
-            <div class="com"># yaml-language-server: $schema=https://agentgateway.dev/schema/config</div>
-            <div>binds:</div>
-            <div>- port: 3000</div>
-            <div>  listeners:</div>
-            <div>  - routes:</div>
-            <div>    - policies:</div>
-            <div>        cors:</div>
-            <div>          allowOrigins: ["*"]</div>
-            <div>          allowHeaders: [content-type, cache-control]</div>
-            <div>        a2a: {}</div>
-            <div>      backends:</div>
-            <div>      - host: localhost:9999</div>
+<pre class="hp-code-pre"><span class="com"># yaml-language-server: $schema=https://agentgateway.dev/schema/config</span>
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        cors:
+          allowOrigins: ["*"]
+          allowHeaders: [content-type, cache-control]
+        a2a: {}
+      backends:
+      - host: localhost:9999</pre>
           </div>
           <div class="hp-code-panel" id="hp-code-helm">
             <div class="com"># Install Gateway API CRDs</div>
