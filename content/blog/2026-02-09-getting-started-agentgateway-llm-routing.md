@@ -1,5 +1,6 @@
 ---
 title: Getting started with Multi-LLM provider routing
+category: "Tutorial"
 toc: false
 publishDate: 2026-02-09
 author: Sebastian
