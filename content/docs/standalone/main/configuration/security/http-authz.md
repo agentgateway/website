@@ -56,7 +56,7 @@ authorization:
   - deny: 'jwt.aud != "my-service"'
 ```
 
-These behave the same when a JWT with an audience claim is present, but they differ when the claim is missing. With no JWT, `jwt.aud` is undefined and both expressions error:
+These rules behave the same when a JWT with an audience claim is present, but they differ when the claim is missing. With no JWT, `jwt.aud` is undefined and both expressions error:
 
 - A failed `require` expression denies the request (fail-closed).
 - A failed `deny` expression does not match and therefore does not deny the request (fail-open). The request might be allowed by other rules. 
