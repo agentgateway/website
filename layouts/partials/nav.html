@@ -288,13 +288,12 @@
   {{- end -}}
 {{- end -}}
 
-{{- /* The blog list, enterprise, and models pages use the floating pill navbar
-       like the landing page (single blog posts keep the standard navbar over
-       their dark hero). */ -}}
-{{- $isBlogList := and (eq .Section "blog") (eq .Kind "section") -}}
+{{- /* The blog (list + posts), enterprise, and models pages use the floating
+       pill navbar like the landing page. */ -}}
+{{- $isBlog := hasPrefix .RelPermalink "/blog" -}}
 {{- $isEnterprise := hasPrefix .RelPermalink "/enterprise" -}}
 {{- $isModels := hasPrefix .RelPermalink "/models" -}}
-{{- $useLandingNav := or $isLandingPage $isBlogList $isEnterprise $isModels -}}
+{{- $useLandingNav := or $isLandingPage $isBlog $isEnterprise $isModels -}}
 
 {{- if $useLandingNav -}}
   {{- /* Landing page navbar — light pill-style nav */ -}}
