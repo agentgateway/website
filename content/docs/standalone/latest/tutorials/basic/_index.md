@@ -28,7 +28,7 @@ curl -sL https://agentgateway.dev/install | bash
 ## Step 2: Download the example config
 
 ```bash
-curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml
+curl -sL https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
 ```
 
 ## Step 3: Start agentgateway
@@ -95,25 +95,7 @@ You see the response in the **Response** panel.
 
 ## What's in the config?
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000              # Listen on port 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:             # Allow browser connections
-          allowOrigins: ["*"]
-          allowHeaders: [mcp-protocol-version, content-type, cache-control]
-          exposeHeaders: ["Mcp-Session-Id"]
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:        # Run a local MCP server
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-```
+{{% github-yaml url="https://agentgateway.dev/examples/basic/config.yaml" %}}
 
 - **Listens on port 3000** for MCP client connections
 - **Enables CORS** so browser-based clients can connect
