@@ -1,5 +1,6 @@
 ---
 title: agentgateway adds support for migrating from ingress-nginx
+category: "Feature"
 toc: false
 publishDate: 2026-01-30T00:00:00-00:00
 author: Eitan Suez

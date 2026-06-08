@@ -1,5 +1,6 @@
 ---
 title: Provider Rate Limiting is Not Enough for Enterprise LLM Usage
+category: "Deep Dive"
 toc: false
 publishDate: 2025-11-02T00:00:00-00:00
 author: Christian Posta, Michael Levan
