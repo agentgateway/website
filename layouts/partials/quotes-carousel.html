@@ -16,7 +16,8 @@
 .hp-quotes-left {
   display: flex; flex-direction: column; align-items: flex-start; gap: 20px;
 }
-.hp-quotes-logo { height: 64px; width: auto; }
+.hp-quotes-logo { height: 64px; width: auto; filter: brightness(0); opacity: 0.7; }
+.dark .hp-quotes-logo { filter: brightness(0) invert(1); }
 @media (min-width: 1024px) { .hp-quotes-logo { height: 80px; } }
 .hp-quotes-nav { display: flex; gap: 10px; }
 .hp-quotes-nav button {
@@ -64,7 +65,7 @@
 <div class="hp-quotes">
   <div class="hp-quotes-inner">
     <div class="hp-quotes-left">
-      <img src="/lf-logo.svg" alt="agentgateway logo" class="hp-quotes-logo" loading="lazy">
+      <img src="/aaif-light.svg" alt="AAIF" class="hp-quotes-logo" loading="lazy">
       <div class="hp-quotes-nav">
         <button id="hpQuotesPrev" aria-label="Previous quote">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.78 4.22a.75.75 0 010 1.06L8.06 10l4.72 4.72a.75.75 0 11-1.06 1.06l-5.25-5.25a.75.75 0 010-1.06l5.25-5.25a.75.75 0 011.06 0z" clip-rule="evenodd"/></svg>

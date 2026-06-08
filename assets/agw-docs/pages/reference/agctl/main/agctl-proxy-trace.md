@@ -5,7 +5,7 @@ Trace the next request handled by an Agentgateway pod or local instance
 Start an Agentgateway debug trace, render it in a TUI or JSONL, and optionally trigger the traced request against a pod or a local instance.
 
 ```
-agctl trace [resource] [-- <curl args...>] [flags]
+agctl proxy trace [resource] [-- <curl args...>] [flags]
 ```
 
 ### Examples
@@ -51,5 +51,5 @@ agctl trace [resource] [-- <curl args...>] [flags]
 
 ### SEE ALSO
 
-* [agctl](../agctl/)	 - agctl controls and inspects Agentgateway resources
+* [agctl proxy](../agctl-proxy/)	 - Inspect and manage the Agentgateway proxy
 

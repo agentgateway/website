@@ -1,0 +1,71 @@
+{{- /*
+  AAIF announcement banner — a dismissible, goose-style fixed bar pinned to the
+  top of the viewport. This partial is included from every page template
+  (homepage, docs, tutorials, enterprise, blog), so the banner is site-wide.
+
+  Dismissal is remembered in localStorage. When the banner is showing, the
+  `agw-has-banner` class on <html> shifts the fixed navbars and page content
+  down by the banner height so nothing is covered.
+*/ -}}
+<style>
+  :root { --agw-banner-h: 40px; }
+
+  .agw-banner {
+    position: fixed; top: 0; left: 0; right: 0; height: var(--agw-banner-h);
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: linear-gradient(90deg, #6c2bbd 0%, #8A3FFC 100%);
+    color: #fff; padding: 0 44px; text-align: center;
+    font-family: 'Figtree', system-ui, sans-serif; font-size: 0.875rem;
+    line-height: 1.2; z-index: 200;
+  }
+  .agw-banner a {
+    color: #fff; font-weight: 600; text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+  .agw-banner a:hover { opacity: 0.85; }
+  .agw-banner-close {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 26px; height: 26px; padding: 0; border: none; background: none;
+    color: #fff; font-size: 20px; line-height: 1; cursor: pointer; opacity: 0.8;
+    border-radius: 6px;
+  }
+  .agw-banner-close:hover { opacity: 1; background: rgba(255,255,255,0.15); }
+
+  /* Push fixed navs + in-flow content down so the banner doesn't cover them. */
+  html.agw-has-banner body { padding-top: var(--agw-banner-h); }
+  html.agw-has-banner .navbar.desktop-navbar,
+  html.agw-has-banner .mobile-nav-bar,
+  html.agw-has-banner .landing-mobile-nav { top: var(--agw-banner-h); }
+  html.agw-has-banner .agw-landing-nav-wrap { top: calc(1.25rem + var(--agw-banner-h)); }
+
+  @media (max-width: 640px) {
+    :root { --agw-banner-h: 52px; }
+    .agw-banner { font-size: 0.78rem; padding: 0 40px; }
+  }
+</style>
+
+<div class="agw-banner" id="agwBanner" role="region" aria-label="Site announcement">
+  <span>&#10024; agentgateway has joined the <strong>Agentic AI Foundation</strong> (AAIF) &mdash; <a href="https://aaif.io/blog/agentgateway-joins-aaif-as-an-open-gateway-for-agentic-ai-infrastructure/" target="_blank" rel="noopener">Learn more</a> &#10024;</span>
+  <button type="button" class="agw-banner-close" aria-label="Dismiss announcement" onclick="agwDismissBanner()">&times;</button>
+</div>
+
+<script>
+  (function () {
+    try {
+      if (localStorage.getItem('agw-aaif-banner') === 'dismissed') {
+        var b = document.getElementById('agwBanner');
+        if (b) { b.style.display = 'none'; }
+        return;
+      }
+    } catch (e) {}
+    document.documentElement.classList.add('agw-has-banner');
+  })();
+
+  function agwDismissBanner() {
+    var b = document.getElementById('agwBanner');
+    if (b) { b.remove(); }
+    document.documentElement.classList.remove('agw-has-banner');
+    try { localStorage.setItem('agw-aaif-banner', 'dismissed'); } catch (e) {}
+  }
+</script>
