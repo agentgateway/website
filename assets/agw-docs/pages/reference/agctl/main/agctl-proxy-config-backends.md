@@ -5,7 +5,7 @@ Retrieve Agentgateway backend endpoint status
 Retrieve Agentgateway backend endpoint status.
 
 ```
-agctl config backends [flags]
+agctl proxy config backends [flags]
 ```
 
 ### Options
@@ -22,10 +22,10 @@ agctl config backends [flags]
   -k, --kubeconfig string      kubeconfig
   -n, --namespace string       Namespace to use when resolving resources
   -o, --output string          Output format: one of short|json|yaml (default "short")
-      --proxy-admin-port int   Envoy admin port (default 15000)
+      --proxy-admin-port int   Agentgateway admin port (default 15000)
 ```
 
 ### SEE ALSO
 
-* [agctl config](../agctl-config/)	 - Retrieve Agentgateway configuration for a resource
+* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve Agentgateway configuration for a resource
 
