@@ -430,4 +430,4 @@ kind delete cluster --name agentgateway
 - [Langfuse Docs](https://langfuse.com/docs)
 - [Langfuse OpenTelemetry Integration](https://langfuse.com/integrations/native/opentelemetry)
 - [OpenTelemetry GenAI Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-- [Source Code for This Guide](https://github.com/sebastianmaniak/agentgateway-langfuse)
+- [Source Code for This Guide](https://github.com/sebbycorp/agentgateway-langfuse)
