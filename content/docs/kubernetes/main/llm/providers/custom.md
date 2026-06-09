@@ -54,15 +54,15 @@ non-default path for that format.
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
 
-Agentgateway chooses the provider-native format from the formats that you
-declare. For example, if the client sends an OpenAI chat completions request and
-the custom provider supports only `Messages`, agentgateway translates the
-request to the Anthropic messages format before sending it upstream.
+Agentgateway chooses from the provider-native formats that you declare. For
+example, if a custom provider supports OpenAI chat completions but not OpenAI
+responses, declare only `Completions`. If the provider exposes multiple API
+shapes, declare each supported format and optionally set a per-format path.
 
 | Client request format | Preferred custom provider format |
 |-----------------------|----------------------------------|
-| OpenAI chat completions | `Completions`, then `Messages` |
-| Anthropic messages | `Messages`, then `Completions` |
+| OpenAI chat completions | `Completions` |
+| Anthropic messages | `Messages` |
 | OpenAI responses | `Responses`, then `Completions` |
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
