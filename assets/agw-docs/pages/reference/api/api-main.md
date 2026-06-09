@@ -501,6 +501,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `targetRefs` _LocalPolicyTargetReferenceWithSectionName array_ | `targetRefs` specifies the target resources by reference to attach the<br />policy to. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `targetSelectors` _LocalPolicyTargetSelectorWithSectionName array_ | `targetSelectors` specifies the target selectors used to select resources<br />to attach the policy to. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `strategy` _[PolicyStrategy](#policystrategy)_ | strategy defines how this policy participates in policy merging and conflict resolution.<br />Strategy settings apply to the policy object as a whole. Individual strategy fields may<br />only be valid for specific policy kinds; for example, inheritance is only valid when this<br />policy contains traffic settings. |  | Optional: \{\} <br /> |
 | `frontend` _[Frontend](#frontend)_ | frontend defines settings for how to handle incoming traffic.<br />A frontend policy can only target a `Gateway`. `Listener` and<br />`ListenerSet` are not valid targets.<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. For example, policy A sets `tcp` and `tls`, and policy B sets<br />`tls`; the effective policy would be `tcp` from policy A, and `tls` from<br />policy B. |  | Optional: \{\} <br /> |
 | `traffic` _[Traffic](#traffic)_ | traffic defines settings for how process traffic.<br />A traffic policy can target a `Gateway` (optionally, with a<br />`sectionName` indicating the listener), `ListenerSet`, or `Route`<br />(optionally, with a `sectionName` indicating the route rule).<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. Precedence is given to more precise policies: `Gateway` <<br />`Listener` < `Route` < `Route Rule`. For example, policy A sets<br />`timeouts` and `retries`, and policy B sets `retries`; the effective<br />policy would be `timeouts` from policy A, and `retries` from policy B. |  | Optional: \{\} <br /> |
 | `backend` _[BackendFull](#backendfull)_ | backend defines settings for how to connect to destination backends.<br />A backend policy can target a `Gateway` (optionally, with a<br />`sectionName` indicating the listener), `ListenerSet`, `Route`<br />(optionally, with a `sectionName` indicating the route rule), or a<br />`Service` or `Backend` (optionally, with a `sectionName` indicating the<br />port for `Service`, or sub-backend for `Backend`).<br />Note that a backend policy applies when connecting to a specific destination backend. Targeting a higher level<br />resource, like `Gateway`, is just a way to easily apply a policy to a<br />group of backends.<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. Precedence is given to more precise policies: `Gateway` <<br />`Listener` < `Route` < `Route Rule` < `Backend` or `Service`. For<br />example, if a `Gateway` policy sets `tcp` and `tls`, and a `Backend`<br />policy sets `tls`, the effective policy would be `tcp` from the<br />`Gateway`, and `tls` from the `Backend`. |  | Optional: \{\} <br /> |
@@ -1166,6 +1167,39 @@ _Appears in:_
 | `FullDuplexStreamed` | BodySendModeFullDuplexStreamed streams the body to the external processor.<br /> |
 
 
+#### Buffer
+
+
+
+
+
+
+
+_Appears in:_
+- [Traffic](#traffic)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `request` _[BufferBody](#bufferbody)_ | `request` configures buffering of the request body. |  | Optional: \{\} <br /> |
+| `response` _[BufferBody](#bufferbody)_ | `response` configures buffering of the response body. |  | Optional: \{\} <br /> |
+
+
+#### BufferBody
+
+
+
+
+
+
+
+_Appears in:_
+- [Buffer](#buffer)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `maxBytes` _[ByteSize](#bytesize)_ | `maxBytes` specifies the maximum number of bytes to buffer of the request/response body.<br />if unset, defaults to the global proxy setting, which defaults to 2Mi. |  | MaxLength: 32 <br />MinLength: 1 <br />Pattern: `^[+-]?([0-9]+(\.[0-9]*)?\|\.[0-9]+)(([KMGTPE]i)\|[numkMGTPE]\|[eE](\+?0*([0-9]\|1[0-8])\|-0*[0-9]))?$` <br />XIntOrString: \{\} <br />Optional: \{\} <br /> |
+
+
 #### BuiltIn
 
 _Underlying type:_ _string_
@@ -1201,6 +1235,7 @@ _Validation:_
 - XIntOrString: {}
 
 _Appears in:_
+- [BufferBody](#bufferbody)
 - [ExtAuthBody](#extauthbody)
 - [FrontendHTTP](#frontendhttp)
 
@@ -1280,7 +1315,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | BackendRef references the Kubernetes backend that serves this provider.<br />backendRef may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
+| `backendRef` _[LocalBackendObjectReference](#localbackendobjectreference)_ | BackendRef references the Kubernetes backend that serves this provider.<br />backendRef may target only a namespace-local Service or InferencePool.<br />If unset, host and port must be set on the parent provider. |  | Optional: \{\} <br /> |
 | `model` _[ShortString](#shortstring)_ | Optional: Override the model name, such as `gpt-oss`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `formats` _[ProviderFormatConfig](#providerformatconfig) array_ | Formats declares the provider-native API formats this provider supports. |  | MaxItems: 6 <br />MinItems: 1 <br />Required: \{\} <br /> |
 
@@ -2235,6 +2270,28 @@ _Appears in:_
 | `pathPrefix` _[LongString](#longstring)_ | PathPrefix overrides the default base path prefix (e.g. "/v1") for upstream requests.<br />Path translation for cross-format requests still applies using this prefix.<br />Only supported for OpenAI and Anthropic providers. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
+#### LocalBackendObjectReference
+
+
+
+LocalBackendObjectReference references a namespace-local backend resource.
+
+This mirrors Gateway API BackendObjectReference but intentionally omits the
+namespace field so locality is enforced by the schema instead of CEL.
+
+
+
+_Appears in:_
+- [CustomProvider](#customprovider)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `group` _string_ | Group is the group of the referent. For example, "gateway.networking.k8s.io".<br />When unspecified or empty string, core API group is inferred. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
+| `kind` _string_ | Kind is the Kubernetes resource kind of the referent. For example "Service".<br />Defaults to "Service" when not specified. | Service | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Optional: \{\} <br /> |
+| `name` _string_ | Name is the name of the referent. |  | MaxLength: 253 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `port` _integer_ | Port specifies the destination port number to use for this resource.<br />Port is required when the referent is a Kubernetes Service. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+
+
 #### LocalRateLimit
 
 
@@ -2578,6 +2635,24 @@ _Appears in:_
 | `path` _[LongString](#longstring)_ | `path` specifies the OTLP/HTTP path to use. This is only applicable<br />when `protocol` is `HTTP`. If unset, this defaults to `/v1/logs`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
+#### PolicyInheritance
+
+_Underlying type:_ _string_
+
+PolicyInheritance defines how a traffic policy affects policy inheritance across attachment
+specificity levels.
+
+
+
+_Appears in:_
+- [PolicyStrategy](#policystrategy)
+
+| Field | Description |
+| --- | --- |
+| `Default` | PolicyInheritanceDefault allows the normal traffic policy merge order, where more-specific<br />policies may override fields from less-specific policies.<br /> |
+| `Override` | PolicyInheritanceOverride makes the policy authoritative for lower levels, excluding<br />more-specific traffic policies from the effective policy.<br /> |
+
+
 #### PolicyPhase
 
 _Underlying type:_ _string_
@@ -2593,6 +2668,22 @@ _Appears in:_
 | --- | --- |
 | `PreRouting` |  |
 | `PostRouting` |  |
+
+
+#### PolicyStrategy
+
+
+
+
+
+
+
+_Appears in:_
+- [AgentgatewayPolicySpec](#agentgatewaypolicyspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `inheritance` _[PolicyInheritance](#policyinheritance)_ | inheritance controls whether less-specific traffic policies prevent more-specific traffic policies<br />from contributing to the effective policy.<br />This field is only valid on traffic policies. Frontend and backend policy merging does not use<br />inheritance.<br />When unset or set to `Default`, traffic policy fields are merged by specificity, with more-specific<br />attachment points such as routes and route rules able to override fields from less-specific<br />attachment points such as gateways and listeners.<br />In other words, this policy provides `Default`s that can be overridden. For example, you may provide a `Default`<br />timeout policy for the entire Gateway that is overridden by specific routes.<br />When set to `Override`, this policy blocks traffic policies at more-specific attachment points from<br />being included in the effective policy. This is useful when a gateway-level policy must remain<br />authoritative for all routes below it. |  | Optional: \{\} <br /> |
 
 
 #### PriorityGroup
@@ -3141,6 +3232,7 @@ _Appears in:_
 | `basicAuthentication` _[BasicAuthentication](#basicauthentication)_ | `basicAuthentication` authenticates users based on the `Basic`<br />authentication scheme (RFC 7617), where a username and password are<br />encoded in the request. |  | ExactlyOneOf: [users secretRef] <br />Optional: \{\} <br /> |
 | `apiKeyAuthentication` _[APIKeyAuthentication](#apikeyauthentication)_ | `apiKeyAuthentication` authenticates users based on a configured API<br />key. |  | ExactlyOneOf: [secretRef secretSelector] <br />Optional: \{\} <br /> |
 | `directResponse` _[DirectResponseOrConditional](#directresponseorconditional)_ | `directResponse` configures the policy to send a direct response to the<br />client. |  | Optional: \{\} <br /> |
+| `buffer` _[Buffer](#buffer)_ | `buffer` defines the policy for buffer requests and responses bodies. Buffered bodies will be accumulated in memory<br />by the proxy until completion before being forwarded. This changes the proxies default behavior, which streams bodies.<br />Warning: large bodies can lead to excessive memory usage in the proxy. Utilize with care, or with strict limits. |  | Optional: \{\} <br /> |
 
 
 #### TrailerSendMode
