@@ -8,7 +8,7 @@ description: Front Chatbot UI with agentgateway to keep API keys server-side and
 ## What you get
 
 - Browser users no longer hold the OpenAI API key — agentgateway does.
-- A consistent place to apply [rate limits]({{< link-hextra path="/llm/spending/" >}}) and capture [observability data]({{< link-hextra path="/llm/observability/" >}}).
+- A consistent place to apply [rate limits]({{< link-hextra path="/llm/virtual-keys/" >}}) and capture [observability data]({{< link-hextra path="/llm/observability/" >}}).
 - The same gateway can later front additional providers without changing Chatbot UI.
 
 ## Architecture
@@ -98,7 +98,7 @@ info  request gateway=default/default listener=llm route=internal/model:* endpoi
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/spending/" title="Control spending" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
+  {{< card path="/llm/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
   {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
   {{< card path="/integrations/auth/" title="Add authentication" subtitle="Require JWTs from your IdP before calls reach the LLM." >}}
 {{< /cards >}}

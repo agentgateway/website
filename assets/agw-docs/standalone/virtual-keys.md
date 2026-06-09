@@ -194,13 +194,171 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+## Configure token budgets
+
+LLMs typically charge per input and output token. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. To protect against unexpected bills, scaling surprises, and abuse, use token-based rate limits to cap the number of tokens that can be used.
+
+### How rate limiting works
+
+Agentgateway checks token-based rate limits in two phases:
+
+**At request time:**
+
+{{< reuse "agw-docs/snippets/ratelimit-requesttime.md" >}}
+
+**At response time:**
+
+{{< reuse "agw-docs/snippets/ratelimit-responsetime.md" >}}
+
+### Step 1: Add a token budget
+
+Update your configuration to include a `localRateLimit` policy. The following example builds on the virtual keys configuration from the previous section and adds a token budget.
+
+```yaml
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-alice-abc123def456
+        metadata:
+          user: alice
+      - key: sk-bob-xyz789uvw012
+        metadata:
+          user: bob
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: tokens
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+```
+
+| Setting | Description |
+| -- | -- |
+| `localRateLimit` | Applies a token-based rate limit to all incoming LLM requests. |
+| `maxTokens` | The maximum number of tokens that are available to use. |
+| `tokensPerFill` | The number of tokens that are added during a refill. |
+| `fillInterval` | The number of seconds after which the token bucket is refilled. |
+| `type` | The type of rate limiting to apply. Use `tokens` for token-based rate limiting, or `requests` for request-based rate limiting. |
+
+### Step 2: Verify rate limits
+
+1. Start agentgateway with the updated configuration.
+   ```sh
+   agentgateway -f config.yaml
+   ```
+
+2. Send a prompt to the LLM. At the time the prompt is sent, the number of tokens required for the completion is unknown. Because `tokenize: true` is not set on the model, the prompt count is not estimated. As a result, the prompt is allowed.
+
+   {{< callout type="info">}}
+   The LLM typically returns the number of tokens required for completion in its response. Agentgateway uses this number and counts it against the rate limit.
+   {{< /callout >}}
+
+   ```sh
+   curl http://localhost:4000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Tell me a short story"
+         }
+       ]
+     }'
+   ```
+
+   Example output:
+   ```json
+   {
+     "choices": [
+       {
+         "message": {
+           "content": "Once upon a time, in a small village nestled between towering mountains...",
+           "role": "assistant"
+         },
+         "finish_reason": "stop"
+       }
+     ],
+     "usage": {
+       "prompt_tokens": 12,
+       "completion_tokens": 248,
+       "total_tokens": 260
+     }
+   }
+   ```
+
+3. Repeat the same request. This time, the request is rate limited because the tokens used in the first request exceeded the budget.
+   ```sh
+   curl http://localhost:4000/v1/chat/completions \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "model": "gpt-3.5-turbo",
+       "messages": [
+         {
+           "role": "user",
+           "content": "Tell me a short story"
+         }
+       ]
+     }'
+   ```
+
+   Example output:
+   ```
+   rate limit exceeded
+   ```
+
+### Step 3: Enable request-time token estimation
+
+By default, agentgateway does not estimate token counts at request time. To reject requests before they reach the LLM, set `tokenize: true` on your model.
+
+```yaml
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-alice-abc123def456
+        metadata:
+          user: alice
+      - key: sk-bob-xyz789uvw012
+        metadata:
+          user: bob
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: tokens
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+      tokenize: true
+EOF
+```
+
+With this setting, requests are denied immediately if the estimated prompt token count exceeds the available budget.
+
 ## Add a global token budget
 
 {{< callout type="warning" >}}
 `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
 {{< /callout >}}
 
-To add a token budget that limits total token usage across all requests, use the routing-based configuration format with `localRateLimit`.
+To add a token budget that limits total token usage across all requests using more advanced routing options, use the routing-based configuration format with `localRateLimit`.
 
 {{< callout type="info" >}}
 Rate limiting requires the `binds/listeners/routes` configuration format because `localRateLimit` is an HTTP-level policy. For more information, see the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).
@@ -249,7 +407,7 @@ EOF
 | `fillInterval` | The interval between refills. Use `86400s` for a daily budget. |
 | `type` | Set to `tokens` for token-based limits. Use `requests` for request-based limits. |
 
-For more details on rate limiting, see [Control spend]({{< link-hextra path="/llm/spending/" >}}).
+For more information about rate limiting configuration options, see [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
 
 ## Monitor per-key spending
 
@@ -278,10 +436,8 @@ Track token usage and spending for each virtual key using Prometheus metrics exp
    )
    ```
 
-For more information on cost tracking, see the [Control spend guide]({{< link-hextra path="/llm/spending/" >}}).
-
 ## What's next
 
 - [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for detailed authentication configuration
-- [Control spend]({{< link-hextra path="/llm/spending/" >}}) for token-based rate limiting
+- [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for advanced rate limiting configuration
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs
