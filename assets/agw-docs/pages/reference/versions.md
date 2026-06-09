@@ -9,7 +9,7 @@ Review the following information about supported release versions for the [agent
 | 1.0.x | 16 Mar 2026 | 1.31 - 1.35 | 1.3 - 1.5`‡` | 2025-06-18 | >= 3.12 | 1.23 - 1.29 |
 | 2.2.x | 09 Feb 2026 | 1.31 - 1.35 | 1.2 - 1.4 | 2025-06-18 | >= 3.12 | 1.23 - 1.27 |
 
-`*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/implementations/#agentgateway) and agentgateway conformance report per version, such as Gateway API [v1.5.0](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.5.0/agentgateway-agentgateway).
+`*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#agentgateway) and agentgateway conformance report per version, such as Gateway API [v1.5.0](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.5.0/agentgateway-agentgateway).
 
 `†` Agentgateway supports the MCP spec at the listed version. Earlier versions might also work, but are not guaranteed. Make sure that your MCP clients are not running at a more recent version than your MCP servers.
 
