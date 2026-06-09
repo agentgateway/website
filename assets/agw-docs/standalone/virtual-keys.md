@@ -197,7 +197,7 @@ EOF
 ## Add a global token budget
 
 {{< callout type="warning" >}}
-`localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys. Independent per-key token budgets are not supported in standalone mode.
+`localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
 {{< /callout >}}
 
 To add a token budget that limits total token usage across all requests, use the routing-based configuration format with `localRateLimit`.
