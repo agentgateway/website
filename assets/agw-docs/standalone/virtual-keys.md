@@ -196,7 +196,11 @@ EOF
 
 ## Add a global token budget
 
-To add a token budget that limits total token usage across all keys, use the routing-based configuration format with `localRateLimit`. Local rate limits apply to the gateway as a whole, not per key.
+{{< callout type="warning" >}}
+`localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys. Independent per-key token budgets are not supported in standalone mode.
+{{< /callout >}}
+
+To add a token budget that limits total token usage across all requests, use the routing-based configuration format with `localRateLimit`.
 
 {{< callout type="info" >}}
 Rate limiting requires the `binds/listeners/routes` configuration format because `localRateLimit` is an HTTP-level policy. For more information, see the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).
@@ -238,8 +242,9 @@ EOF
 
 | Setting | Description |
 | -- | -- |
-| `localRateLimit` | Token-based rate limiting applied to all requests through this route. |
-| `maxTokens` | The maximum number of tokens available in the budget. |
+| `backendAuth` | The API key used to authenticate with the LLM provider backend. For configuration options, see [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}). |
+| `localRateLimit` | Token-based rate limiting applied globally to **all** requests through this route, regardless of which API key is used. |
+| `maxTokens` | The maximum number of tokens available in the shared budget. |
 | `tokensPerFill` | The number of tokens added during each refill. |
 | `fillInterval` | The interval between refills. Use `86400s` for a daily budget. |
 | `type` | Set to `tokens` for token-based limits. Use `requests` for request-based limits. |
