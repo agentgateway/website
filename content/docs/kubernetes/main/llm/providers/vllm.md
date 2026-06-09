@@ -12,4 +12,11 @@ test:
     path: vllm-provider-setup
 ---
 
+{{< callout type="info" >}}
+This guide shows the simple OpenAI-compatible configuration for vLLM. If you
+want to declare explicit format support, set per-format paths, or route to vLLM
+through an InferencePool, use a
+[custom provider]({{< link-hextra path="/llm/providers/custom/" >}}).
+{{< /callout >}}
+
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/vllm.md" >}}
