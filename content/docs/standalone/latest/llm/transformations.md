@@ -137,7 +137,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 Use a CEL expression in the model-level `transformation` field to dynamically set `max_tokens` based on the caller's identity from a request header. This example gives admin users a higher token limit than regular users.
 
-```yaml
+```yaml {paths="transformations"}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
@@ -156,9 +156,16 @@ EOF
 | -- | -- |
 | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
 
+{{< doc-test paths="transformations" >}}
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
 Send a request as an admin user and verify the response uses the higher token limit.
 
-```sh
+```sh {paths="transformations"}
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: admin" \
@@ -170,7 +177,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 Send a request as a regular user and verify the response is capped at the lower token limit.
 
-```sh
+```sh {paths="transformations"}
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: alice" \
@@ -179,6 +186,54 @@ curl -s http://localhost:4000/v1/chat/completions \
     "messages": [{"role": "user", "content": "Tell me a story"}]
   }' | jq .
 ```
+
+{{< doc-test paths="transformations" >}}
+YAMLTest -f - <<'EOF'
+- name: admin user gets higher token limit
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+      x-user-id: admin
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Tell me a story"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.usage.completion_tokens"
+        comparator: equals
+        value: 100
+
+- name: regular user gets lower token limit
+  http:
+    url: "http://localhost:4000"
+    path: /v1/chat/completions
+    method: POST
+    headers:
+      content-type: application/json
+      x-user-id: alice
+    body: |
+      {
+        "model": "gpt-3.5-turbo",
+        "messages": [{"role": "user", "content": "Tell me a story"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.usage.completion_tokens"
+        comparator: equals
+        value: 10
+EOF
+{{< /doc-test >}}
 
 In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
 
@@ -247,4 +302,4 @@ llm:
 ## Next steps
 
 - Learn about [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) for advanced expression logic.
-- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) to use JWT claims in transformations.
+- Set up [authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) to use JWT claims in transformations.
