@@ -1,4 +1,4 @@
-Configure [Windsurf](https://windsurf.com/editor), the AI code editor by Codeium, to route requests to your LLM through your agentgateway proxy.
+Configure [Windsurf](https://devin.ai/desktop), the AI code editor by Codeium, to route requests to your LLM through your agentgateway proxy.
 
 ## Before you begin
 
@@ -10,7 +10,7 @@ Configure [Windsurf](https://windsurf.com/editor), the AI code editor by Codeium
 
 ## Configure Windsurf
 
-Configure Windsurf to route LLM requests through agentgateway. For more information, review the [Windsurf documentation](https://docs.windsurf.com/troubleshooting/windsurf-proxy-configuration).
+Configure Windsurf to route LLM requests through agentgateway. For more information, review the [Windsurf documentation](https://docs.devin.ai/desktop/troubleshooting/windsurf-proxy-configuration).
 
 1. Open Windsurf Settings.
    - **macOS**: `Cmd + ,` or **Windsurf** > **Settings**

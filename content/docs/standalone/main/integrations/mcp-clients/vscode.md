@@ -16,7 +16,7 @@ Configure Visual Studio Code to use **agentgateway** via GitHub Copilot's native
 
 ## Server configuration
 
-Configure your MCP server in the `mcp.json` file in the root directory of your project. For more locations, refer to the [VS Code](https://code.visualstudio.com/docs/copilot/customization/mcp-servers) docs. If your MCP server is running on a different host and port, update the URL accordingly.
+Configure your MCP server in the `mcp.json` file in the root directory of your project. For more locations, refer to the [VS Code](https://code.visualstudio.com/docs/agent-customization/mcp-servers) docs. If your MCP server is running on a different host and port, update the URL accordingly.
 
 ```json
 {

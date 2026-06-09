@@ -24,7 +24,7 @@ description: Front Open WebUI with agentgateway to centralize auth, audit, and r
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}) or have a container image available.
 2. Get an API key from your LLM provider, such as an [OpenAI API key](https://platform.openai.com/api-keys).
-3. Install [Docker](https://docs.docker.com/get-docker/) for running Open WebUI.
+3. Install [Docker](https://docs.docker.com/get-started/get-docker/) for running Open WebUI.
 
 ## Steps
 
