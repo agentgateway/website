@@ -2,6 +2,7 @@
 title: Transform requests
 weight: 55
 description: Dynamically compute and set LLM request fields using CEL expressions.
+aliases: ["/docs/standalone/latest/llm/prompt-templates/"]
 test:
   transformations:
   - file: content/docs/standalone/latest/llm/transformations.md
@@ -131,3 +132,119 @@ chmod +x "$HOME/.local/bin/agentgateway"
    ```
 
    In the response, the `completion_tokens` value reflects a completion capped at 10 tokens.
+
+## Conditionally set fields based on headers
+
+Use a CEL expression in the model-level `transformation` field to dynamically set `max_tokens` based on the caller's identity from a request header. This example gives admin users a higher token limit than regular users.
+
+```yaml
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      max_tokens: "request.headers['x-user-id'] == 'admin' ? 100 : 10"
+EOF
+```
+
+| Setting | Description |
+| -- | -- |
+| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
+
+Send a request as an admin user and verify the response uses the higher token limit.
+
+```sh
+curl -s http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-user-id: admin" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Tell me a story"}]
+  }' | jq .
+```
+
+Send a request as a regular user and verify the response is capped at the lower token limit.
+
+```sh
+curl -s http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "x-user-id: alice" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Tell me a story"}]
+  }' | jq .
+```
+
+In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
+
+## Available CEL variables
+
+You can use these variables in your CEL transformation expressions.
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `request.headers["name"]` | Request header values | `request.headers["x-user-id"]` |
+| `request.path` | Request path | `request.path` returns `/` |
+| `request.method` | HTTP method | `request.method` returns `POST` |
+| `llmRequest.max_tokens` | Original max_tokens from the request | `min(llmRequest.max_tokens, 100)` |
+| `llmRequest.model` | Requested model name | `llmRequest.model` |
+
+For a complete list of available variables and functions, see the [CEL reference documentation]({{< link-hextra path="/reference/cel/" >}}).
+
+## Common transformation patterns
+
+### Cap token usage
+
+Enforce a maximum token limit regardless of what the client requests.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      max_tokens: "min(llmRequest.max_tokens, 1024)"
+```
+
+### Set temperature based on headers
+
+Allow callers to control creativity through a header while enforcing bounds.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      temperature: "request.headers['x-creativity'] == 'high' ? 0.9 : 0.1"
+```
+
+### Combine multiple transformations
+
+Apply several field-level transformations in a single configuration.
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+    transformation:
+      max_tokens: "request.headers['x-user-tier'] == 'premium' ? 4096 : 256"
+      temperature: "request.headers['x-user-tier'] == 'premium' ? 0.8 : 0.3"
+```
+
+## Next steps
+
+- Learn about [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) for advanced expression logic.
+- Set up [authentication](https://agentgateway.dev/docs/standalone/latest/configuration/security/jwt-authn/) to use JWT claims in transformations.
