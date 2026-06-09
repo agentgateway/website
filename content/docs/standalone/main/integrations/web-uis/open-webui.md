@@ -138,7 +138,7 @@ volumes:
 Layer policies and observability on top of the basic setup.
 
 {{< cards >}}
-  {{< card path="/llm/spending/" title="Control spending" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
+  {{< card path="/llm/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets to LLM traffic." >}}
   {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
   {{< card path="/llm/providers/" title="LLM providers" subtitle="Configure additional upstream providers." >}}
 {{< /cards >}}

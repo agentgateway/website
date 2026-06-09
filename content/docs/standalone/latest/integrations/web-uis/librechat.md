@@ -105,7 +105,7 @@ info  request gateway=default/default listener=llm route=internal/model:* endpoi
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/spending/" title="Control spending" subtitle="Apply rate limits and token budgets across providers." >}}
+  {{< card path="/llm/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits and token budgets across providers." >}}
   {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs for every LLM call." >}}
   {{< card path="/llm/providers/" title="LLM providers" subtitle="Add additional upstream providers behind the same endpoint." >}}
 {{< /cards >}}
