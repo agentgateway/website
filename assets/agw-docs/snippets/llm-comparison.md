@@ -1,13 +1,13 @@
 Review the following table to compare agentgateway's support of different LLM provider APIs.
 
-| API | OpenAI | Anthropic | Amazon Bedrock | Azure | Google Gemini | Google Vertex AI |
-|-----|:------:|:---------:|:--------------:|:------------:|:-------------:|:----------------:|
-| Completions<br>`/v1/chat/completions` | ✅ Native | ✅ Translation | ✅ Translation| ✅ Native | ✅ Native`*`| ✅ Native`†` | 
-| Responses<br>`/v1/responses` | ✅ Native  | ❌ No |  ✅ Translation| ✅ Native| ❌ No | ❌ No |
-| Messages<br>`/v1/messages` |  ✅ Translation  | ✅ Native |  ✅ Translation | ✅ Translation | ✅ Translation | ✅ Native`†` |
-| Embeddings<br>`/v1/embeddings` | ✅ Native | ❌ No |  ✅ Translation | ✅ Native | ❌ No | ✅ Translation |
-| Realtime<br>`/v1/realtime` | ✅ Native  | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
-| Token Count<br>`/v1/messages/count_tokens` | ❌ No | ✅ Native|  ✅ Translation | ❌ No| ❌ No | ✅ Translation |
+| API | OpenAI | Anthropic | Amazon Bedrock | Azure | Google Gemini | Google Vertex AI | GitHub Copilot |
+|-----|:------:|:---------:|:--------------:|:------------:|:-------------:|:----------------:|:---------------:|
+| Completions<br>`/v1/chat/completions` | ✅ Native | ✅ Translation | ✅ Translation| ✅ Native | ✅ Native`*`| ✅ Native`†` | ✅ Native |
+| Responses<br>`/v1/responses` | ✅ Native  | ❌ No |  ✅ Translation| ✅ Native| ❌ No | ❌ No | ❌ No |
+| Messages<br>`/v1/messages` |  ✅ Translation  | ✅ Native |  ✅ Translation | ✅ Translation | ✅ Translation | ✅ Native`†` | ✅ Translation |
+| Embeddings<br>`/v1/embeddings` | ✅ Native | ❌ No |  ✅ Translation | ✅ Native | ❌ No | ✅ Translation | ❌ No |
+| Realtime<br>`/v1/realtime` | ✅ Native  | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
+| Token Count<br>`/v1/messages/count_tokens` | ❌ No | ✅ Native|  ✅ Translation | ❌ No| ❌ No | ✅ Translation | ❌ No |
 
 **Notes**:
 - **✅ Native**: Agentgateway has complete support for the API, and the provider supports the API natively. This allows Agentgateway to passthrough unknown fields without change. As such, even if you use extra fields or new models, the proxying likely works.
