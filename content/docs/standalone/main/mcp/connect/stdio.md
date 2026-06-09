@@ -6,8 +6,6 @@ description: Expose MCP servers through the agentgateway.
 
 An MCP backend allows exposing MCP servers through the agentgateway using {{< gloss "STDIO (Standard Input/Output)" >}}STDIO{{< /gloss >}}.
 
-{{< reuse "agw-docs/snippets/kgateway-callout.md" >}}
-
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
