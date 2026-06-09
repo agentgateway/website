@@ -1,5 +1,6 @@
 ---
 title: "Your First AI Route: Connecting to OpenAI with AgentGateway"
+category: "Tutorial"
 publishDate: 2026-02-11
 author: "Sebastian Maniak"
 description: "Step-by-step guide to connecting open source AgentGateway to OpenAI API with cost tracking, monitoring, security best practices, and production-ready configurations."

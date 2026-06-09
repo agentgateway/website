@@ -1,5 +1,6 @@
 ---
 title: "Designing agentgateway: A Unified High-Performance Gateway for AI and API Traffic"
+category: "Deep Dive"
 publishDate: 2026-06-04
 author: "Lin Sun"
 description: "Why we built agentgateway as a unified control plane and data plane for HTTP, gRPC, MCP, A2A, and LLM traffic — the design decisions, the choice of Rust, the performance numbers, and the road to AAIF."

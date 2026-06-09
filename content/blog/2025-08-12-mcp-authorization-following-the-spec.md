@@ -1,5 +1,6 @@
 ---
 title: MCP Authorization the Easy Way
+category: "Tutorial"
 toc: false
 publishDate: 2025-08-12T00:00:00-00:00
 author: Christian Posta, Rinor Maloku

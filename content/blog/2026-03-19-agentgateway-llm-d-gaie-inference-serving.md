@@ -1,5 +1,6 @@
 ---
 title: "Inference Serving with Superpowers"
+category: "Feature"
 toc: false
 publishDate: 2026-03-23
 author: "Daneyon Hansen"

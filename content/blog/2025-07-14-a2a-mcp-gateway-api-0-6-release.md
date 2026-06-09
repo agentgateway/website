@@ -1,5 +1,6 @@
 ---
 title: Announcing A2A, MCP, and Kubernetes Gateway API support
+category: "Announcement"
 toc: false
 publishDate: 2025-07-14T00:00:00-00:00
 author: Christian Posta, John Howard
