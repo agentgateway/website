@@ -50,7 +50,7 @@ This allows you to continue using existing code and SDKs.
 {{% tab %}}
 
 ```shell
-curl 'http://0.0.0.0:3000/' \
+curl 'http://localhost:4000/' \
 --header 'Content-Type: application/json' \
 --data ' {
   "model": "gpt-3.5-turbo",
@@ -77,7 +77,7 @@ import openai
 
 client = openai.OpenAI(
     api_key="anything",
-    base_url="http://0.0.0.0:3000"
+    base_url="http://localhost:4000"
 )
 
 response = client.chat.completions.create(model="gpt-4o-mini", messages = [
@@ -98,7 +98,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: "anything",
-  baseURL: "http://0.0.0.0:3000",
+  baseURL: "http://localhost:4000",
 });
 const response = await openai.chat.completions.create({
   model: "gpt-4o-mini",
