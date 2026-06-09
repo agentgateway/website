@@ -385,29 +385,29 @@ This example shows routing based on a custom `priority` field in the request bod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `has()` macro to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
+3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `coalesce()` function to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
-   ```yaml
-   kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-   metadata:
-     name: extract-priority
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   spec:
-     targetRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: agentgateway-proxy
-     traffic:
-       phase: PreRouting
-       transformation:
-         request:
-           set:
-           - name: "x-priority"
-             value: 'has(json(request.body).priority) ? json(request.body).priority : "standard"'
-   EOF
-   ```
+    ```yaml
+    kubectl apply -f- <<EOF
+    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+    kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+    metadata:
+      name: extract-priority
+      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+    spec:
+      targetRefs:
+      - group: gateway.networking.k8s.io
+        kind: Gateway
+        name: agentgateway-proxy
+      traffic:
+        phase: PreRouting
+        transformation:
+          request:
+            set:
+            - name: "x-priority"
+              value: 'coalesce(json(request.body).priority, "standard")'
+    EOF
+    ```
 
 4. Test the routing by sending requests with different priority values.
 
