@@ -385,7 +385,7 @@ This example shows routing based on a custom `priority` field in the request bod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `has()` macro to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
+3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `coalesce()` function to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -405,7 +405,7 @@ This example shows routing based on a custom `priority` field in the request bod
          request:
            set:
            - name: "x-priority"
-             value: 'has(json(request.body).priority) ? json(request.body).priority : "standard"'
+             value: 'coalesce(json(request.body).priority, "standard")'
    EOF
    ```
 
