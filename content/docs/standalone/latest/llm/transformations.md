@@ -2,7 +2,6 @@
 title: Transform requests
 weight: 55
 description: Dynamically compute and set LLM request fields using CEL expressions.
-aliases: ["/docs/standalone/latest/llm/prompt-templates/"]
 test:
   transformations:
   - file: content/docs/standalone/latest/llm/transformations.md
