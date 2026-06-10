@@ -154,7 +154,7 @@ Steps:
 2. Install the CRDs for the Kubernetes Gateway API Inference Extension.
 
    ```bash
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.4.0/manifests.yaml
+   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
    ```
 
 3. Install the Kubernetes Gateway API CRDs, {{< reuse "agw-docs/snippets/kgateway.md" >}}, and the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs.
@@ -183,7 +183,7 @@ Steps:
    {{< /callout >}}
 
    ```bash
-   export IGW_CHART_VERSION=v1.1.0
+   export IGW_CHART_VERSION=v1.5.0
    export GATEWAY_PROVIDER=none
 
    helm install vllm-qwen25-15b-instruct \
