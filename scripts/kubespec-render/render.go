@@ -1913,6 +1913,9 @@ func renderJSONSchemaWidget(doc crdDocument, widgetID string, titleOverride stri
 		return "", false
 	}
 	pm := toPropertyMapWithResolver(root, required, &schemaResolver{root: root}, nil)
+	if title == "LocalConfig" || titleOverride == "Configuration schema" {
+		preferRootKeys(pm, []string{"config", "frontendPolicies", "binds", "llm", "mcp"})
+	}
 
 	// When a title override is provided, use it and suppress the root description
 	// and $schema URL (which are often internal implementation details, e.g. Rust doc comments).
@@ -1923,6 +1926,26 @@ func renderJSONSchemaWidget(doc crdDocument, widgetID string, titleOverride stri
 	}
 
 	return renderWidget(title, "", schemaVersion, "Schema", pm, widgetID, docsByPath), true
+}
+
+func preferRootKeys(pm *propertyMap, preferred []string) {
+	if pm == nil || len(pm.keys) == 0 {
+		return
+	}
+	seen := map[string]bool{}
+	next := make([]string, 0, len(pm.keys))
+	for _, key := range preferred {
+		if _, ok := pm.props[key]; ok {
+			next = append(next, key)
+			seen[key] = true
+		}
+	}
+	for _, key := range pm.keys {
+		if !seen[key] {
+			next = append(next, key)
+		}
+	}
+	pm.keys = next
 }
 
 func normalizePath(value string) string {

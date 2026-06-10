@@ -26,8 +26,7 @@
           {{- with .Description }}<p class="page-description">{{ . | markdownify }}</p>{{ end }}
           {{- /*
             Split .Content on the widget slot sentinel so the kubespec HTML can
-            be injected between the "Interactive reference" and "Field reference"
-            headings without passing through Goldmark (which corrupts <script>).
+            be injected without passing through Goldmark (which corrupts <script>).
           */}}
           {{- $content := replace .Content "<div id=ks-widget-slot></div>" "<div id=\"ks-widget-slot\"></div>" }}
           {{- $sentinel := "<div id=\"ks-widget-slot\"></div>" }}
