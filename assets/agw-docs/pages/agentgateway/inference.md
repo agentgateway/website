@@ -46,7 +46,7 @@ The client sends an inference request to get a response from a local LLM workloa
 
 ## Set up Inference Extension {#setup}
 
-Refer to the **Kgateway** tabs in the **Getting started** guide in the Inference Extension docs.
+Refer to the **Agentgateway** tabs in the **Getting started** guide in the Inference Extension docs.
 
 {{< cards >}}
   {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/guides/" title="Inference Extension getting started guide" icon="external-link">}}
