@@ -1,6 +1,6 @@
 ---
 title: OpenAI Realtime
-weight: 20
+weight: 40
 description: Proxy OpenAI Realtime API WebSocket traffic and track token usage.
 test:
   realtime-standalone:

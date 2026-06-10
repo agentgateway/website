@@ -1,7 +1,7 @@
 ---
-title: OpenAI Realtime (Moved)
-aliases:
-  - /docs/standalone/latest/llm/realtime/
+title: OpenAI Realtime
+weight: 55
+description: Proxy OpenAI Realtime API WebSocket traffic and track token usage.
 ---
 
-This page has moved to [API types > Realtime](/llm/api-types/realtime/).
+{{< redirect path="/llm/api-types/realtime/" >}}

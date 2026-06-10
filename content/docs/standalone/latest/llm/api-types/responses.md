@@ -1,21 +1,19 @@
 ---
-title: Chat completions
-weight: 10
-description: Send chat completion requests through agentgateway using the OpenAI Chat Completions API.
+title: Responses
+weight: 20
+description: Send requests through agentgateway using the OpenAI Responses API.
 test: skip
 ---
 
-The OpenAI Chat Completions API (`/v1/chat/completions`) is the primary interface for text generation and chat applications in agentgateway.
+The OpenAI Responses API (`/v1/responses`) is OpenAI's interface for stateful, multi-step model interactions.
 
 ## About
 
-The [OpenAI Chat Completions API](https://platform.openai.com/docs/guides/chat-completions) is the most widely used LLM endpoint. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement.
-
-By default, requests to agentgateway use the Chat Completions API. These requests are translated to the upstream provider's native API format when necessary.
+The [OpenAI Responses API](https://platform.openai.com/docs/api-reference/responses) is a unified interface that supports text and multimodal generation, built-in tools, and multi-turn conversation state. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement.
 
 ## Route type configuration
 
-In the simplified `llm` configuration, agentgateway automatically maps `/v1/chat/completions` requests to the `completions` route type, so no explicit route configuration is required.
+In the simplified `llm` configuration, agentgateway automatically maps `/v1/responses` requests to the `responses` route type, so no explicit route configuration is required.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -27,7 +25,7 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-To configure the route type explicitly, use the `binds/listeners/routes` format and set the `completions` route type in the `policies.ai.routes` map.
+To configure the route type explicitly, use the `binds/listeners/routes` format and set the `responses` route type in the `policies.ai.routes` map.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -43,7 +41,7 @@ binds:
       policies:
         ai:
           routes:
-            "/v1/chat/completions": "completions"
+            "/v1/responses": "responses"
         backendAuth:
           key: "$OPENAI_API_KEY"
 ```
@@ -54,22 +52,17 @@ For detailed information about model routing and configuration modes, see [Model
 
 ## Using the API
 
-Using the Chat Completions API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
+Using the Responses API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
 
 {{< tabs items="Curl,Python,JavaScript" >}}
 {{% tab %}}
 
 ```shell
-curl 'http://localhost:4000/v1/chat/completions' \
+curl 'http://localhost:4000/v1/responses' \
 --header 'Content-Type: application/json' \
 --data '{
   "model": "gpt-4o-mini",
-  "messages": [
-    {
-      "role": "user",
-      "content": "Tell me a story"
-    }
-  ]
+  "input": "Tell me a story"
 }'
 ```
 
@@ -88,14 +81,9 @@ client = openai.OpenAI(
     base_url="http://localhost:4000"
 )
 
-response = client.chat.completions.create(
+response = client.responses.create(
     model="gpt-4o-mini",
-    messages=[
-        {
-            "role": "user",
-            "content": "this is a test request, write a short poem"
-        }
-    ]
+    input="this is a test request, write a short poem"
 )
 
 print(response)
@@ -112,9 +100,9 @@ const openai = new OpenAI({
   baseURL: "http://localhost:4000",
 });
 
-const response = await openai.chat.completions.create({
+const response = await openai.responses.create({
   model: "gpt-4o-mini",
-  messages: [{ role: "user", content: "this is a test request, write a short poem" }]
+  input: "this is a test request, write a short poem"
 });
 
 console.log(response);
@@ -125,7 +113,7 @@ console.log(response);
 
 ## Token usage tracking
 
-After sending Chat Completions requests, verify that agentgateway recorded token usage metrics.
+After sending Responses requests, verify that agentgateway recorded token usage metrics.
 
 1. Open the agentgateway [metrics endpoint](http://localhost:15020/metrics).
 2. Look for the `agentgateway_gen_ai_client_token_usage` metric. The metric includes labels for the token type (`input` or `output`) and the model used.

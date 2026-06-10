@@ -15,7 +15,7 @@ By default, requests to agentgateway use the Chat Completions API. These request
 
 ## Route type configuration
 
-When using the traditional `binds/listeners/routes` configuration format, configure the `completions` route type to handle Chat Completions API requests.
+In the simplified `llm` configuration, agentgateway automatically maps `/v1/chat/completions` requests to the `completions` route type, so no explicit route configuration is required.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -25,13 +25,28 @@ llm:
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
-    policies:
-      ai:
-        routes:
-          "/v1/chat/completions": "completions"
 ```
 
-Alternatively, in the simplified LLM configuration mode, Chat Completions are handled automatically without explicit route configuration.
+To configure the route type explicitly, use the `binds/listeners/routes` format and set the `completions` route type in the `policies.ai.routes` map.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 4000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+          name: openai
+          provider:
+            openAI: {}
+      policies:
+        ai:
+          routes:
+            "/v1/chat/completions": "completions"
+        backendAuth:
+          key: "$OPENAI_API_KEY"
+```
 
 {{< callout type="info" >}}
 For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
