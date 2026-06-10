@@ -1,28 +1,28 @@
-Capture a per-request trace as a standalone agentgateway instance handles the request, by using `agctl proxy trace`.
+Capture a per-request trace as a standalone agentgateway instance handles the request, by using `agctl trace`.
 
 ## About
 
-`agctl proxy trace` taps the agentgateway admin endpoint at `/debug/trace` and streams a step-by-step record of how the proxy processes the next request that arrives. The trace shows you the matched route, the policies that were applied, the backend that was chosen, and the response status. Tracing helps you understand why a request matched or did not match a route, why a policy was or was not applied, or why a request returned an unexpected status.
+`agctl trace` taps the agentgateway admin endpoint at `/debug/trace` and streams a step-by-step record of how the proxy processes the next request that arrives. The trace shows you the matched route, the policies that were applied, the backend that was chosen, and the response status. Tracing helps you understand why a request matched or did not match a route, why a policy was or was not applied, or why a request returned an unexpected status.
 
 ```mermaid
 flowchart LR
     A[client] -->|:3000| B[agentgateway]
     B -->|:8000| C[httpbin]
-    B -.->|/debug/trace SSE| D[agctl proxy trace --local]
+    B -.->|/debug/trace SSE| D[agctl trace --local]
 ```
 
-You can run `agctl proxy trace` in two modes:
+You can run `agctl trace` in two modes:
 
 * **Inject mode**: Enables tracing and sends the request itself through the same port-forward. The host portion of the URL sets the `Host` header but is not used for DNS resolution.
 
   ```sh
-  agctl proxy trace gateway/<name> --port <listener> -- <url>
+  agctl trace gateway/<name> --port <listener> -- <url>
   ```
 
 * **Watch mode**: Waits for the next request that arrives at the proxy and traces it. Send the request from any client.
   
   ```sh
-  agctl proxy trace gateway/<name>
+  agctl trace gateway/<name>
   ```
 
 ## Before you begin
@@ -87,7 +87,7 @@ After starting agentgateway, trace a request from another client.
 1. In a second terminal from where agentgateway runs, start a watch.
 
    ```sh
-   agctl proxy trace --local --raw
+   agctl trace --local --raw
    ```
 
 2. In a third terminal, send a request to agentgateway.
@@ -99,51 +99,39 @@ After starting agentgateway, trace a request from another client.
 3. In the watch terminal, review the JSON trace output of the request, such as the following.
 
    ```json
-   {"eventStart":null,"eventEnd":3,"severity":"info","message":{"type":"requestStarted"}}
-   {"eventStart":null,"eventEnd":462,"severity":"info","message":{"type":"requestSnapshot","stage":"initial request","requestState":{"request":{"method":"GET","uri":"http://127.0.0.1:3000/headers","path":"/headers","host":"127.0.0.1:3000",...},"env":{},"source":{"address":"::1","port":50946,...}}}}
-   {"eventStart":null,"eventEnd":484,"severity":"info","message":{"type":"policySelection","phase":"gateway","effectivePolicy":{...}}}
-   {"eventStart":null,"eventEnd":499,"severity":"info","message":{"type":"requestSnapshot","stage":"gateway policies","requestState":{...}}}
-   {"eventStart":null,"eventEnd":507,"severity":"info","message":{"type":"routeSelection","selectedRoute":"default/default/bind/3000/listener0/default/httpbin","evaluatedRoutes":["default/default/bind/3000/listener0/default/httpbin"]}}
-   {"eventStart":null,"eventEnd":522,"severity":"info","message":{"type":"policySelection","phase":"route","effectivePolicy":{...}}}
-   {"eventStart":null,"eventEnd":537,"severity":"info","message":{"type":"requestSnapshot","stage":"route policies","requestState":{...}}}
-   {"eventStart":null,"eventEnd":550,"severity":"info","message":{"type":"policySelection","phase":"backend","effectivePolicy":{...}}}
-   {"eventStart":null,"eventEnd":1440,"severity":"info","message":{"type":"requestSnapshot","stage":"final request","requestState":{...,"backend":{"name":"default/default/bind/3000/listener0/default/httpbin/backend0","type":"static","protocol":"http"}}}}
-   {"eventStart":null,"eventEnd":1457,"severity":"info","message":{"type":"backendCallStart","target":"127.0.0.1:8000"}}
-   {"eventStart":null,"eventEnd":3080,"severity":"info","message":{"type":"bodySnapshot","stage":"final request","body":""}}
-   {"eventStart":1470,"eventEnd":4890,"severity":"info","message":{"type":"backendCallResult","status":200,"error":null}}
-   {"eventStart":null,"eventEnd":4905,"severity":"info","message":{"type":"responseSnapshot","stage":"raw response","requestState":{"response":{"code":200,...},"proxy":{"requestProcessingDuration":"0.001454916s","upstreamDuration":"0.003417333s"},"env":{}}}}
-   {"eventStart":null,"eventEnd":4921,"severity":"info","message":{"type":"responseSnapshot","stage":"backend response ready","requestState":{"response":{"code":200,...}}}}
-   {"eventStart":null,"eventEnd":4933,"severity":"info","message":{"type":"responseSnapshot","stage":"final response","requestState":{"response":{"code":200,...}}}}
-   {"eventStart":null,"eventEnd":5300,"severity":"info","message":{"type":"bodySnapshot","stage":"response","body":"PCFET0NUWVBFIEhUTUw+Cjxod...(base64, truncated)"}}
-   {"eventStart":null,"eventEnd":5305,"severity":"info","message":{"type":"requestFinished"}}
+   {"eventStart":null,"eventEnd":5,"severity":"info","message":{"type":"requestStarted"}}
+   {"eventStart":null,"eventEnd":69,"severity":"info","message":{"type":"requestSnapshot","stage":"initial request","requestState":{"request":{"method":"GET","uri":"http://127.0.0.1:3000/headers","path":"/headers","host":"127.0.0.1:3000",...}}}}
+   {"eventStart":null,"eventEnd":100,"severity":"info","message":{"type":"routeSelection","selectedRoute":"default/default/bind/3000/listener0/default/httpbin","evaluatedRoutes":["default/default/bind/3000/listener0/default/httpbin"]}}
+   {"eventStart":null,"eventEnd":117,"severity":"info","message":{"type":"policySelection","effectivePolicy":{"localRateLimit":null,"authorization":null,...}}}
+   {"eventStart":null,"eventEnd":159,"severity":"info","message":{"type":"backendCallStart","target":"127.0.0.1:8000"}}
+   {"eventStart":157,"eventEnd":9730,"severity":"info","message":{"type":"backendCallResult","status":200,"error":null}}
+   {"eventStart":null,"eventEnd":9777,"severity":"info","message":{"type":"responseSnapshot","stage":"final response","requestState":{"response":{"code":200,...}}}}
+   {"eventStart":null,"eventEnd":9800,"severity":"info","message":{"type":"requestFinished"}}
    ```
 
-The trace records the following events for each request. Some events depend on the build and the policies that you configure, so a given trace might not include every row.
+The trace records the following stages for each request.
 
 | Event type | Stage | What it tells you |
 | -- | -- | -- |
 | `requestStarted` | &mdash; | The proxy accepted a new request. |
 | `requestSnapshot` | `initial request` | The request as it arrived, before any processing. |
-| `policySelection` | &mdash; | The merged effective policy that applies to the request. Newer builds report this once per phase (`gateway`, `route`, and `backend`). |
 | `requestSnapshot` | `gateway policies` | The request after gateway-level policies ran. |
 | `routeSelection` | &mdash; | The route that matched the request, and the routes that were evaluated. |
+| `policySelection` | &mdash; | The merged effective policy that applies to the matched route. |
 | `requestSnapshot` | `route policies` | The request after route-level policies ran. |
 | `requestSnapshot` | `final request` | The request as it is sent to the backend, including the resolved backend. |
 | `backendCallStart` | &mdash; | The proxy began the upstream call. |
-| `bodySnapshot` | `final request` | The request body sent to the backend, base64-encoded. Emitted when a body is present. |
 | `backendCallResult` | &mdash; | The upstream returned a status. The `error` field carries any transport error. |
-| `responseSnapshot` | `raw response` | The response exactly as the backend returned it. Includes a `proxy` block with `requestProcessingDuration` and `upstreamDuration` timings. |
 | `responseSnapshot` | `backend response ready` | The response from the backend, before any response processing. |
 | `responseSnapshot` | `final response` | The response as it is returned to the client. |
-| `bodySnapshot` | `response` | The response body, base64-encoded. Emitted when a body is present. |
 | `requestFinished` | &mdash; | The proxy completed the request. |
 
 ## Trace a request that agctl sends (inject mode)
 
-Run `agctl proxy trace` with `--port` and a request URL after `--`. `agctl` enables tracing and sends the request itself, so you do not need a separate client.
+Run `agctl trace` with `--port` and a request URL after `--`. `agctl` enables tracing and sends the request itself, so you do not need a separate client.
 
 ```sh
-agctl proxy trace --local --raw --port 3000 -- http://example.com/headers
+agctl trace --local --raw --port 3000 -- http://example.com/headers
 ```
 
 The host portion of the URL (`example.com`) sets the `Host` header on the request but is not used for DNS resolution. `agctl` always sends the request to `127.0.0.1:<port>`.
@@ -151,7 +139,7 @@ The host portion of the URL (`example.com`) sets the `Host` header on the reques
 You can pass extra `curl` arguments after the URL, such as headers or a request body.
 
 ```sh
-agctl proxy trace --local --raw --port 3000 -- http://example.com/post \
+agctl trace --local --raw --port 3000 -- http://example.com/post \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"key":"value"}'
@@ -162,7 +150,7 @@ agctl proxy trace --local --raw --port 3000 -- http://example.com/post \
 Omit `--raw` to render the trace in an interactive, text-based terminal user interface (TUI) that lets you step through each event and drill into the request and response state.
 
 ```sh
-agctl proxy trace --local --port 3000 -- http://example.com/headers
+agctl trace --local --port 3000 -- http://example.com/headers
 ```
 
 Example TUI:
