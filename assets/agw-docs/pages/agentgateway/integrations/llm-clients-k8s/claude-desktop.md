@@ -1,9 +1,9 @@
-Configure [Claude Desktop](https://claude.ai/download) to route requests through your agentgateway proxy running in Kubernetes using a Claude Teams or Pro account.
+Configure [Claude Desktop](https://claude.com/download) to route requests through your agentgateway proxy running in Kubernetes using a Claude Teams or Pro account.
 
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
-2. Install [Claude Desktop](https://claude.ai/download).
+2. Install [Claude Desktop](https://claude.com/download).
 3. Install the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`). This is required to run `claude setup-token` and obtain your bearer token.
 4. Have a Claude Teams or Pro subscription.
 
