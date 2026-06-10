@@ -1,11 +1,10 @@
 ---
 title: OpenAI Realtime
-weight: 55
+weight: 40
 description: Proxy OpenAI Realtime API WebSocket traffic and track token usage.
-prev: /llm/observability
 test:
   realtime-standalone:
-  - file: content/docs/standalone/latest/llm/realtime.md
+  - file: content/docs/standalone/main/llm/api-types/realtime.md
     path: realtime-standalone
 ---
 
@@ -13,7 +12,7 @@ Proxy OpenAI Realtime API traffic through agentgateway to get token usage tracki
 
 ## About
 
-The [OpenAI Realtime API](https://platform.openai.com/docs/guides/realtime) uses WebSocket connections for low-latency, multimodal interactions. Agentgateway can proxy these WebSocket connections and parse the `response.done` events to extract token usage data, including input tokens, output tokens, and cached token counts.
+The [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime) uses WebSocket connections for low-latency, multimodal interactions. Agentgateway can proxy these WebSocket connections and parse the `response.done` events to extract token usage data, including input tokens, output tokens, and cached token counts.
 
 To enable token usage tracking, you must prevent the client and server from negotiating WebSocket frame compression. When the `sec-websocket-extensions: permessage-deflate` header is present, the WebSocket frames are compressed and agentgateway cannot parse the token usage data. Remove this header from the request so that frames remain uncompressed and parseable.
 
