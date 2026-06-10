@@ -9,7 +9,7 @@ Unlike other implementations of Gateway API, agentgateway is the only data plane
 Kubernetes.
 As a result, agentgateway offers some of the most comprehensive support for the Gateway API.
 
-You can review the conformance test results by version in the [Gateway API docs](https://gateway-api.sigs.k8s.io/implementations/#conformance-levels). For example, as of the time of this writing, agentgateway is the only implementation of Gateway API that passes all conformance tests for Gateway API v1.3. 
+You can review the conformance test results by version in the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformance-levels). For example, as of the time of this writing, agentgateway is the only implementation of Gateway API that passes all conformance tests for Gateway API v1.3. 
 
 In addition to supporting all Core and Extended Gateway API features, Gateway API has a number of "experimental"
 features that are in development.
@@ -51,12 +51,12 @@ When a feature is implemented in both the core Gateway API and an extension, you
 
 ## Comparison with other implementations {#implementations}
 
-The Kubernetes Gateway API has more than 40 [implementations](https://gateway-api.sigs.k8s.io/implementations/) at the time of this writing.
+The Kubernetes Gateway API has more than 40 [implementations](https://gateway-api.sigs.k8s.io/docs/implementations/list/) at the time of this writing.
 If you are in the process of evaluating a Gateway API implementation, consider the following factors:
 
 
 
-**Conformance level**: Is the implementation up to date? The Gateway API docs [set three levels of conformance](https://gateway-api.sigs.k8s.io/implementations/#conformance-levels), depending on the level of commitment to the Gateway API by version.
+**Conformance level**: Is the implementation up to date? The Gateway API docs [set three levels of conformance](https://gateway-api.sigs.k8s.io/docs/implementations/list/#conformance-levels), depending on the level of commitment to the Gateway API by version.
 - Prefer conformant implementations that pass tests for the past two releases of the Gateway API, such as kgateway with agentgateway.
 - Review the release version-specific conformance reports. If an implementation is not listed, then it might be stale. Many implementations have not been updated for years, making them incompatible with the latest API.
 - Confirm that the implementation is generally available. Some implementations might be in beta or alpha, and not yet ready for production use.

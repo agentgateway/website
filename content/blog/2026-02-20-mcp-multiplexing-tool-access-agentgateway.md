@@ -1,5 +1,6 @@
 ---
 title: "MCP Multiplexing with AgentGateway"
+category: "Tutorial"
 publishDate: 2026-02-20
 author: "Sebastian Maniak"
 description: "Federate multiple MCP servers behind a single endpoint with AgentGateway OSS so clients connect once and see all available tools."

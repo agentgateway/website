@@ -1,5 +1,6 @@
 ---
 title: "Designing agentgateway: A Unified High-Performance Gateway for AI and API Traffic"
+category: "Deep Dive"
 publishDate: 2026-06-04
 author: "Lin Sun"
 description: "Why we built agentgateway as a unified control plane and data plane for HTTP, gRPC, MCP, A2A, and LLM traffic — the design decisions, the choice of Rust, the performance numbers, and the road to AAIF."
@@ -152,7 +153,7 @@ Some planned areas include:
 * Expanding our inference workload support through integration with LLM-d and vLLM Semantic Router
 * Continuing to engage with, and implement, new MCP proposals such as Stateless MCP
 * Expanding MCP functionality with richer guardrails and cost optimization features such as progressive disclosure and code mode
-* Integration with [Agent Client Protocol (ACP)](https://agentclientprotocol.com/)
+* Integration with [Agent Client Protocol (ACP)](https://agentclientprotocol.com/get-started/introduction)
 * Publishing more production case studies and architecture patterns
 * Expanding internationalization and community-driven translation workflows
 * Continuing collaboration with the Kubernetes community on [agentic networking](https://github.com/kubernetes-sigs/kube-agentic-networking/) and [AI Gateway](https://github.com/kubernetes-sigs/wg-ai-gateway) APIs
