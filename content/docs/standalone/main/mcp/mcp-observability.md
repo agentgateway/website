@@ -72,12 +72,28 @@ Agentgateway includes the following MCP-specific fields in structured logs:
 | `mcp.resource.type` | The type of resource, such as a tool, prompt, resource, or templates. |
 | `mcp.resource.name` | The name of the specific resource being accessed. |
 
-These fields can be used in CEL expressions for access logging policies. For example, you can filter access logs to only emit entries for tool calls and add custom fields that are not captured by default structured logging, such as the arguments passed to the tool:
+These fields are part of default structured logging and are emitted automatically for every MCP request. To customize access logs further, you can use [CEL expressions]({{< link-hextra path="/reference/cel/variables" >}}) to filter which requests are logged and add post-request fields that are not captured by default. For example, the following access log policy filters access log entries to only tool calls and adds the tool arguments and result to each log entry:
 
 ```yaml
 frontendPolicies:
   accessLog:
-    filter: 'mcp.method == "call_tool"'
+    filter: 'mcp.methodName == "tools/call"'
     add:
       tool_args: 'mcp.tool.arguments'
+      tool_result: 'mcp.tool.result'
+      tool_error: 'mcp.tool.error'
 ```
+
+The following CEL variables are available in access log policies but are **not** included in default structured logs:
+
+| Variable | Availability | Description |
+|----------|-------------|-------------|
+| `mcp.methodName` | Post-request | The MCP JSON-RPC method name, such as `tools/call` or `tools/list`. |
+| `mcp.sessionId` | Post-request | The MCP session ID. |
+| `mcp.tool.name` | Request-time | The name of the tool being called. |
+| `mcp.tool.target` | Request-time | The target backend handling the tool call. |
+| `mcp.tool.arguments` | Request-time | The JSON arguments passed to the tool call. |
+| `mcp.tool.result` | Post-request | The tool call result payload. |
+| `mcp.tool.error` | Post-request | The tool call error payload. |
+
+For the full list of CEL variables, see the [CEL variables reference]({{< link-hextra path="/reference/cel/variables" >}}).
