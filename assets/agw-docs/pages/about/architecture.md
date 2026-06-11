@@ -1,6 +1,6 @@
 Learn about the components that make up agentgateway and how they work together to translate Kubernetes Gateway API resources into the runtime configuration that powers traffic management, security, and resiliency for your apps and agents.
 
-In Kubernetes mode, agentgateway is a complete gateway that ships with its own {{< gloss "Control Plane" >}}control plane{{< /gloss >}} and {{< gloss "Data Plane" >}}data plane{{< /gloss >}}. You do not need a separate control plane project to run it.
+In Kubernetes mode, agentgateway is a complete gateway that ships with its own {{< gloss "Control Plane" >}}control plane{{< /gloss >}} and {{< gloss "Data Plane" >}}data plane{{< /gloss >}}.
 
 * The **control plane** is a Kubernetes controller that watches Gateway API and agentgateway resources, translates them into agentgateway's configuration model, and serves that configuration to proxies over xDS.
 * The **data plane** is the agentgateway {{< gloss "Proxy" >}}proxy{{< /gloss >}}: a high-performance HTTP, gRPC, MCP, A2A, and LLM proxy that applies the configuration it receives and routes traffic to your backends.
@@ -37,7 +37,7 @@ flowchart LR
     PROXY -->|"routes to"| BACKENDS["Backends, Services,<br/>LLM providers,<br/>MCP & A2A targets"]
 ```
 
-1. You create or update Kubernetes Gateway API resources (such as Gateways, HTTPRoutes, and GRPCRoutes) and agentgateway resources (such as `AgentgatewayBackend` and `AgentgatewayPolicy`).
+1. You create or update Kubernetes Gateway API resources (such as Gateways, HTTPRoutes, and GRPCRoutes) and agentgateway resources (such as AgentgatewayBackend and AgentgatewayPolicy).
 2. The **syncer** in the control plane watches the cluster for these resources by using [krt](https://github.com/istio/istio/tree/master/pkg/kube/krt) collections. When a relevant resource changes, the affected collections are recomputed.
 3. The **translator** converts the Gateway API and agentgateway resources into agentgateway's configuration resources, such as Binds, Listeners, Routes, Backends, and Policies. It also resolves service and workload addresses for endpoint discovery.
 4. The **xDS server** serves this configuration to proxies over a streaming gRPC connection. The control plane also writes status back to the Kubernetes resources so that you can see whether your configuration was accepted.
@@ -51,21 +51,21 @@ The control plane is a Kubernetes controller that turns your declarative Gateway
 
 ### Syncer
 
-The syncer is the heart of the control plane. It watches the cluster for Kubernetes Gateway API resources (Gateways, HTTPRoutes, GRPCRoutes, TCPRoutes, and TLSRoutes), agentgateway custom resources (`AgentgatewayBackend` and `AgentgatewayPolicy`), and supporting resources (such as Services, ReferenceGrants, and Secrets).
+The syncer is the heart of the control plane. It watches the cluster for Kubernetes Gateway API resources (Gateways, HTTPRoutes, GRPCRoutes, TCPRoutes, and TLSRoutes), agentgateway custom resources (AgentgatewayBackends, AgentgatewayParameters, and AgentgatewayPolicies), and supporting resources (such as Services, ReferenceGrants, and Secrets).
 
 The syncer organizes this state into **krt collections**, a reactive collection library. When any watched resource changes, only the collections that depend on it are recomputed, which keeps the control plane efficient even in large clusters.
 
 ### Translator
 
-The translator converts the krt collections into agentgateway's configuration model. agentgateway uses purpose-built resource types rather than Envoy types, with a design philosophy of keeping a near one-to-one mapping between the user-facing API, the configuration sent over xDS, and the proxy's internal representation. This mapping keeps the configuration easy to reason about and the control plane simple, because most translations are mechanical rather than complex joins.
+The translator converts the krt collections into agentgateway's configuration model. Agentgateway uses purpose-built resource types rather than Envoy types, with a design philosophy of keeping a near one-to-one mapping between the user-facing API, the configuration sent over xDS, and the proxy's internal representation. This mapping keeps the configuration easy to reason about and the control plane simple, because most translations are mechanical rather than complex joins.
 
 The translator produces the following resources:
 
-* **Binds**: A port binding that listeners attach to. agentgateway creates one Bind per unique port across all listeners.
+* **Binds**: A port binding that listeners attach to. Agentgateway creates one Bind per unique port across all listeners.
 * **Listeners**: An individual gateway listener, including its hostname, protocol, and TLS settings, derived from a Gateway listener specification.
 * **Routes**: Routing rules with match conditions, filters, and backend references, translated from HTTPRoute, GRPCRoute, TCPRoute, and TLSRoute resources.
-* **Backends**: The destinations that traffic is routed to, translated from `AgentgatewayBackend` resources through a plugin system. Backend types include AI/LLM providers (such as OpenAI, Anthropic, Azure OpenAI, and Bedrock), MCP servers, and static and dynamic backends.
-* **Policies**: Traffic, security, and transformation rules translated from `AgentgatewayPolicy` resources, such as header modification, redirects, URL rewrites, request mirroring, CORS, authentication, timeouts, retries, and CEL-based transformations.
+* **Backends**: The destinations that traffic is routed to, translated from AgentgatewayBackend resources through a plugin system. Backend types include AI/LLM providers (such as OpenAI, Anthropic, Azure OpenAI, and Bedrock), MCP servers, and static and dynamic backends.
+* **Policies**: Traffic, security, and transformation rules translated from AgentgatewayPolicy resources, such as header modification, redirects, URL rewrites, request mirroring, CORS, authentication, timeouts, retries, and CEL-based transformations.
 * **Addresses**: Service and workload addresses used for endpoint discovery. These are global resources shared across all proxies.
 
 Because the cardinality of agentgateway's resources mirrors the user-facing API, a change to one Gateway API resource produces a small, targeted update. For example, one HTTPRoute rule maps to one Route, and one Pod maps to one Workload, so editing a single field does not force the control plane to recompute and re-send unrelated configuration.
@@ -76,11 +76,11 @@ Policies are sent to the proxy with a reference to where they apply, rather than
 
 The xDS server delivers the translated configuration to the proxies in the data plane. It uses the [xDS transport protocol](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol) over a streaming gRPC connection (Aggregated Discovery Service), but it serves agentgateway's own [purpose-built resource types](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/proto/resource.proto) instead of Envoy types.
 
-Each proxy subscribes to the configuration that is scoped to its Gateway, plus the shared address resources used for service discovery. The server sends incremental (Delta) updates, so when configuration changes, only the resources that changed are sent. Connections can be authenticated with Kubernetes service account tokens and secured with TLS.
+Each proxy subscribes to the configuration that is scoped to its Gateway, plus the shared address resources used for service discovery. The server sends incremental (delta) updates, so when configuration changes, only the resources that changed are sent. Connections can be authenticated with Kubernetes service account tokens and secured with TLS.
 
 ### Deployer
 
-The deployer manages the lifecycle of the proxy deployments. When you create a Gateway that uses the `agentgateway` GatewayClass, the deployer provisions and configures an agentgateway proxy for it. You can customize the generated deployment, such as the proxy image and logging settings, through the `AgentgatewayParameters` resource referenced by the GatewayClass.
+The deployer manages the lifecycle of the proxy deployments. When you create a Gateway that uses the `agentgateway` GatewayClass, the deployer provisions and configures an agentgateway proxy for it. You can customize the generated deployment, such as the proxy image and logging settings, through the AgentgatewayParameters resource referenced by the GatewayClass.
 
 ### Status
 
