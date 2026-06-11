@@ -16,7 +16,6 @@ agctl controller log [flags]
 ### Examples
 
 ```
-
 agctl controller log                               # show current levels
 agctl controller log --level debug                 # set all components to debug
 agctl controller log --set reconciler=debug        # set a single component

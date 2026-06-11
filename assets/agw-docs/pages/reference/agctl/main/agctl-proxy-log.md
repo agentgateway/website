@@ -22,7 +22,6 @@ agctl proxy log [resource] [flags]
 ### Examples
 
 ```
-
 agctl proxy log                                      # show current directive
 agctl proxy log --level debug                        # set global level
 agctl proxy log --set agentgateway::proxy=debug      # set a single module
