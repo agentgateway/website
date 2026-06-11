@@ -46,6 +46,10 @@ These requests are translated to the upstream provider's API.
 Using the Chat Completions API works exactly the same as consuming OpenAI, with a change to the base URL.
 This allows you to continue using existing code and SDKs.
 
+{{< callout type="info" >}}
+For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
+{{< /callout >}}
+
 {{< tabs items="Curl,Python,JavaScript" >}}
 {{% tab %}}
 
