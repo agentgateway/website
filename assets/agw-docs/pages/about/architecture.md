@@ -12,13 +12,13 @@ The following diagram shows the components that make up the agentgateway control
 ```mermaid
 flowchart LR
     subgraph k8s["Kubernetes API"]
-        GW["Gateway API resources<br/>Gateways, HTTPRoutes,<br/>GRPCRoutes, TCPRoutes"]
-        AGW["agentgateway resources<br/>AgentgatewayBackend,<br/>AgentgatewayPolicy,<br/>AgentgatewayParameters"]
+        GW["Gateway API resources"]
+        AGW["Agentgateway resources"]
     end
 
     subgraph cp["Control plane (controller)"]
         SYNC["Syncer<br/>(krt collections)"]
-        TRANS["Translator<br/>build agentgateway resources"]
+        TRANS["Translator"]
         XDS["xDS server (gRPC ADS)"]
         DEP["Deployer"]
         SYNC --> TRANS --> XDS
@@ -31,10 +31,10 @@ flowchart LR
     GW --> SYNC
     AGW --> SYNC
     DEP -->|"deploys & configures"| PROXY
-    XDS <-->|"streaming xDS<br/>(Delta updates)"| PROXY
+    XDS <-->|"streaming xDS<br/>(delta updates)"| PROXY
     TRANS -->|"status"| k8s
     CLIENT["Clients"] -->|"requests"| PROXY
-    PROXY -->|"routes to"| BACKENDS["Backends<br/>services, LLM providers,<br/>MCP & A2A targets"]
+    PROXY -->|"routes to"| BACKENDS["Backends, Services,<br/>LLM providers,<br/>MCP & A2A targets"]
 ```
 
 1. You create or update Kubernetes Gateway API resources (such as Gateways, HTTPRoutes, and GRPCRoutes) and agentgateway resources (such as `AgentgatewayBackend` and `AgentgatewayPolicy`).
@@ -104,9 +104,4 @@ Although Kubernetes mode delivers configuration over xDS, the proxy itself can b
 * **Local configuration**: A YAML or JSON file that defines the full feature set (backends, routes, and policies). The file is watched for changes and reloaded dynamically. This lets you run agentgateway as a standalone proxy without a control plane.
 * **xDS configuration**: Dynamic configuration delivered by a control plane, such as the agentgateway control plane in Kubernetes mode.
 
-For more details on the configuration model, see the [agentgateway configuration reference](https://github.com/agentgateway/agentgateway/blob/main/architecture/configuration.md).
-
-## Related resources
-
-* [Custom resources]({{< link-hextra path="/about/custom-resources/" >}})
-* [Proxies]({{< link-hextra path="/about/proxies/" >}})
+For more details on the configuration model, see the [agentgateway repository](https://github.com/agentgateway/agentgateway/blob/main/architecture/configuration.md).
