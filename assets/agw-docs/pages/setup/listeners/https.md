@@ -16,7 +16,7 @@ Set up an HTTPS listener on your Gateway.
 
    {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
-   ```yaml
+   ```yaml {paths="https-listener"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
@@ -141,7 +141,7 @@ Set up an HTTPS listener on your Gateway.
    
    {{< tabs items="Gateway listeners,ListenerSets" tabTotal="2" >}}
    {{% tab tabName="Gateway listeners" %}}
-   ```yaml
+   ```yaml {paths="https-listener"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -189,6 +189,70 @@ Set up an HTTPS listener on your Gateway.
    ```
    {{% /tab %}}
    {{< /tabs >}}
+
+{{< doc-test paths="https-listener" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for https deployment to be ready
+  wait:
+    target:
+      kind: Deployment
+      metadata:
+        namespace: agentgateway-system
+        name: https
+    jsonPath: "$.status.availableReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: wait for https service LB address
+  wait:
+    target:
+      kind: Service
+      metadata:
+        namespace: agentgateway-system
+        name: https
+    jsonPath: "$.status.loadBalancer.ingress[0].ip"
+    jsonPathExpectation:
+      comparator: exists
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+
+- name: wait for httpbin-https HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: httpbin
+        name: httpbin-https
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+
+export INGRESS_GW_ADDRESS_HTTPS=$(kubectl get svc -n agentgateway-system https -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+{{< /doc-test >}}
+
+{{< doc-test paths="https-listener" >}}
+for i in $(seq 1 90); do
+  code=$(curl -sk --max-time 30 --resolve "https.example.com:8443:${INGRESS_GW_ADDRESS_HTTPS}" -o /dev/null -w "%{http_code}" https://https.example.com:8443/status/200 || true)
+  [ "$code" = "200" ] && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="https-listener" >}}
+HTTP_CODE=$(curl -sk --max-time 30 --resolve "https.example.com:8443:${INGRESS_GW_ADDRESS_HTTPS}" -o /dev/null -w "%{http_code}" https://https.example.com:8443/status/200)
+echo "HTTPS listener returned status code: ${HTTP_CODE}"
+test "${HTTP_CODE}" = "200"
+{{< /doc-test >}}
 
 4. Verify that the HTTPRoute is applied successfully. 
    ```sh
@@ -332,7 +396,7 @@ Set up an HTTPS listener on your Gateway.
 
 {{< tabs items="Gateway listeners,ListenerSet" tabTotal="2" >}}
 {{% tab tabName="Gateway listeners" %}}
-```sh
+```sh {paths="https-listener"}
 kubectl delete -A gateways,httproutes,secret -l example=httpbin-https
 rm -rf example_certs
 ```
