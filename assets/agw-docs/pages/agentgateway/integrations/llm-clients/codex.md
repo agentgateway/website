@@ -7,17 +7,16 @@ Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to r
 
 ## Configure agentgateway
 
-Start agentgateway with an OpenAI backend configuration. Do not pin a specific model so that Codex's model choice is used.
+Start agentgateway with an OpenAI backend configuration. The wildcard `*` model name accepts any model. Codex sends the model in each request, so you do not need to pin a specific model.
 
 1. Create a configuration file.
 
    ```yaml
    cat > config.yaml << 'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
    llm:
      models:
-     - name: openai
+     - name: "*"
        provider: openAI
        params:
          apiKey: "$OPENAI_API_KEY"
@@ -70,6 +69,22 @@ base_url = "http://localhost:4000/v1"
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## Verify the connection
+
+1. Send a test prompt through agentgateway.
+
+   ```bash
+   codex "Hello"
+   ```
+
+2. Verify that the request appears in the agentgateway logs.
+
+   Example output:
+
+   ```
+   info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
+   ```
 
 ## Next steps
 
