@@ -1,6 +1,6 @@
 ---
 title: agctl proxy log
-weight: 33
+weight: 10
 description: Reference for the `agctl proxy log` command.
 test: skip
 ---

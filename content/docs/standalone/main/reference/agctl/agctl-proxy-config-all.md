@@ -1,6 +1,6 @@
 ---
 title: agctl proxy config all
-weight: 99
+weight: 10
 description: Reference for the `agctl proxy config all` command.
 test: skip
 ---

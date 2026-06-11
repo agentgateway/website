@@ -27,5 +27,5 @@ agctl proxy config backends [flags]
 
 ### SEE ALSO
 
-* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve Agentgateway configuration for a resource
+* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve agentgateway configuration for a resource
 
