@@ -15,7 +15,7 @@ Complete an MCP guide, such as the [stdio](../connect/stdio) guide. This guide u
 You can access the agentgateway metrics endpoint to view MCP-specific metrics, such as the number of tool calls that were performed. 
 
 1. Open the agentgateway [metrics endpoint](http://localhost:15020/metrics). 
-2. Look for the `list_calls_total` metric. This metric shows the number of tool calls that were performed and includes important information about the call, such as:
+2. Look for the `tool_calls_total` metric. This metric shows the number of tool calls that were performed and includes important information about the call, such as:
    * `server`: The MCP server that was used for the tool call.  
    * `name`: The name of the tool that was used.
 
@@ -55,13 +55,9 @@ You can access the agentgateway metrics endpoint to view MCP-specific metrics, s
 
 Agentgateway automatically logs information to stdout. When you run agentgateway on your local machine, you can view a log entry for each request that is sent to agentgateway in your CLI output. 
 
-Example for a successful MCP tool call: 
+Example for a successful MCP tool call:
 ```
-2025-09-04T20:01:40.493660Z	info	mcp::sse	new client message for /sse	
-session_id="6b497ee9-3710-428a-96d2-31ebeab73dcd"Request(JsonRpcRequest 
-{ jsonrpc: JsonRpcVersion2_0, id: Number(4), request: CallToolRequest(Request
-{ method: CallToolRequestMethod, params: CallToolRequestParam { name: "echo", 
-arguments: Some({"message": String("hello world")}) }, extensions: Extensions }) })	
+INFO request ... protocol=mcp mcp.method=call_tool mcp.target=everything mcp.resource.name=echo mcp.session.id=6b497ee9-3710-428a-96d2-31ebeab73dcd trace.id=286cb6c44380a45e1f77f29ce4d146fd span.id=f7f30629c29d9089
 ```
 
 ### MCP logging fields
@@ -76,13 +72,12 @@ Agentgateway includes the following MCP-specific fields in structured logs:
 | `mcp.resource.type` | The type of resource, such as a tool, prompt, resource, or templates. |
 | `mcp.resource.name` | The name of the specific resource being accessed. |
 
-These fields can be used in CEL expressions for access logging policies. For example:
+These fields can be used in CEL expressions for access logging policies. For example, you can filter access logs to only emit entries for tool calls and add custom fields that are not captured by default structured logging, such as the arguments passed to the tool:
 
 ```yaml
-accessLog:
-  filter: 'mcp.method == "call_tool"'
-  fields:
+frontendPolicies:
+  accessLog:
+    filter: 'mcp.method == "call_tool"'
     add:
-      tool_name: 'mcp.resource.name'
-      session: 'mcp.session.id'
+      tool_args: 'mcp.tool.arguments'
 ```
