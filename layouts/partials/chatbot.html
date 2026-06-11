@@ -1,7 +1,7 @@
-<!-- Hidden mobile menu elements to prevent Hextra theme main.js errors -->
-<div class="mobile-menu-overlay hx:hidden" style="display: none !important;"></div>
-<div class="hamburger-menu hx:hidden" style="display: none !important;"><svg></svg></div>
-<div class="sidebar-container hx:hidden" style="display: none !important;"></div>
+<!-- The hidden Hextra main.js stand-in elements (.hextra-hamburger-menu /
+     .hextra-sidebar-container) that prevent main.js null-derefs now live in
+     custom/footer.html, which renders on every page (not just chatbot pages),
+     so they are no longer duplicated here. -->
 
 <!-- Hide Alpine.js elements until initialized to prevent flash -->
 <style>[x-cloak] { display: none !important; }</style>

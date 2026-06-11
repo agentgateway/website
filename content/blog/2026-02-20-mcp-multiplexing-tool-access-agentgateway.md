@@ -1,5 +1,6 @@
 ---
 title: "MCP Multiplexing with AgentGateway"
+category: "Tutorial"
 publishDate: 2026-02-20
 author: "Sebastian Maniak"
 description: "Federate multiple MCP servers behind a single endpoint with AgentGateway OSS so clients connect once and see all available tools."
@@ -301,7 +302,7 @@ kubectl port-forward -n agentgateway-system deployment/mcp-gateway 8080:80
 ### Test with MCP Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector@latest
+npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}}
 ```
 
 Connect with:

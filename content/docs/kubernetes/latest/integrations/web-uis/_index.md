@@ -1,6 +1,6 @@
 ---
 title: Web UIs & agent frameworks
-weight: 1
+weight: 10
 description: Integrate agentgateway with popular web interfaces and agent frameworks for enterprise governance
 test: skip
 ---
@@ -8,7 +8,7 @@ test: skip
 Agentgateway provides a unified control plane to secure, observe, and audit all AI communications from web UIs and agent frameworks. By routing LLM, A2A, and MCP traffic through agentgateway, enterprises gain complete visibility and governance over their AI infrastructure.
 
 {{< callout type="info" >}}
-Looking for a UI to review your agentgateway resources such as routes and policies? Check out the [agentgateway Admin UI]({{< link-hextra path="/operations/ui/" >}}) guide.
+Looking for a UI to review your agentgateway resources such as routes and policies? Check out the [agentgateway Admin UI]({{< link-hextra path="/observability/ui/" >}}) guide.
 
 On this page, you learn about connecting other AI web UI tools to agentgateway instead of directly to the backing LLM providers.
 {{< /callout >}}

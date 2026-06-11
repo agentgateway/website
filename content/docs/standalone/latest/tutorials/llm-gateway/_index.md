@@ -451,6 +451,6 @@ curl http://localhost:4000/v1/chat/completions \
 
 {{< cards >}}
   {{< card path="/llm/" title="LLM Overview" subtitle="Understanding LLM gateway features" >}}
-  {{< card path="/llm/spending" title="Cost Tracking" subtitle="Monitor LLM spending" >}}
+  {{< card path="/llm/virtual-keys/" title="Virtual key management" subtitle="Manage API keys and control spending" >}}
   {{< card path="/configuration/resiliency/rate-limits" title="Rate Limiting" subtitle="Configure rate limits" >}}
 {{< /cards >}}

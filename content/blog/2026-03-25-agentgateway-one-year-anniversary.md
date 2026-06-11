@@ -1,5 +1,6 @@
 ---
 title: "Happy 1st birthday, agentgateway!"
+category: "Community"
 publishDate: 2026-03-25
 author: "Lin Sun"
 description: "Agentgateway celebrates 1 million pulls, 175+ contributors, and 2,000+ stars in 1 year"

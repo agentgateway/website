@@ -35,7 +35,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    EOF
    ```
 
-3. Create an AgentgatewayBackend with the `/v1/messages` route and any other details such as models that you want to configure.
+3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with the `/v1/messages` route and any other details such as models that you want to configure.
 
    {{< tabs items="Flexible model (recommended),Fixed model" >}}
 
@@ -44,7 +44,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
    ```bash {paths="claude-code-k8s"}
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic
@@ -70,7 +70,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
    ```bash
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: anthropic
@@ -99,7 +99,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    - name: wait for anthropic backend to be accepted
      wait:
        target:
-         kind: AgentgatewayBackend
+         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
          metadata:
            namespace: agentgateway-system
            name: anthropic
@@ -134,7 +134,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
          backendRefs:
          - name: anthropic
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -237,6 +237,96 @@ kubectl delete agentgatewaybackend anthropic -n agentgateway-system --ignore-not
 kubectl delete httproute claude -n agentgateway-system --ignore-not-found
 kubectl delete secret anthropic-secret -n agentgateway-system --ignore-not-found
 {{< /doc-test >}}
+
+## Teams account
+
+If you have a Claude Teams or Pro account, use this configuration instead of the API key setup above. No API key is required — authentication is handled by your Claude subscription via OAuth.
+
+1. Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` for the Anthropic provider. No `auth` secret is needed.
+
+   ```bash
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: anthropic-teams
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         anthropic: {}
+     policies:
+       ai:
+         routes:
+           '/v1/messages': Messages
+           '/v1/messages/count_tokens': AnthropicTokenCount
+           '*': Passthrough
+   EOF
+   ```
+
+2. Create an `{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}` to raise the body buffer limit to 10 MB, which is required for Claude's OAuth token flow.
+
+   ```bash
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: claude-buffer
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     frontend:
+       http:
+         maxBufferSize: 10485760
+   EOF
+   ```
+
+3. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend.
+
+   ```bash
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: claude-teams
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+       - name: agentgateway-proxy
+         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+       - matches:
+         - path:
+             type: PathPrefix
+             value: /claude
+         backendRefs:
+         - name: anthropic-teams
+           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
+           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+         filters:
+         - type: URLRewrite
+           urlRewrite:
+             path:
+               type: ReplacePrefixMatch
+               replacePrefixMatch: /
+   EOF
+   ```
+
+4. Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at the `/claude` path.
+
+   ```bash
+   export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS/claude"
+   ```
+
+5. Verify the connection.
+
+   ```bash
+   claude -p "Hello"
+   ```
 
 ## Next steps
 

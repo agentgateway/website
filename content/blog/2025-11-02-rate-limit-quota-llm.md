@@ -1,11 +1,12 @@
 ---
 title: Provider Rate Limiting is Not Enough for Enterprise LLM Usage
+category: "Deep Dive"
 toc: false
 publishDate: 2025-11-02T00:00:00-00:00
 author: Christian Posta, Michael Levan
 ---
 
-Hosted LLM providers like OpenAI and Anthropic have [rate limiting capabilities](https://platform.openai.com/docs/guides/rate-limits) centered around requests per minute (RPM) and tokens per minute (TPM). These are specified at the "organization" level and "project" level. API keys are associated with an organization or project, and each call is subject to token or rate limit restrictions. The actual limits are set by the provider, not you. They will depend on what tier you pay for, but generally not directly configurable. For example:
+Hosted LLM providers like OpenAI and Anthropic have [rate limiting capabilities](https://developers.openai.com/api/docs/guides/rate-limits) centered around requests per minute (RPM) and tokens per minute (TPM). These are specified at the "organization" level and "project" level. API keys are associated with an organization or project, and each call is subject to token or rate limit restrictions. The actual limits are set by the provider, not you. They will depend on what tier you pay for, but generally not directly configurable. For example:
 
 | Provider  | Model             | Typical TPM Limit (per project, tier 1 example) | Notes                          |
 | --------- | ----------------- | ----------------------------------------------- | ------------------------------ |

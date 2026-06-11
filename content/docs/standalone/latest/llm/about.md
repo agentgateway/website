@@ -46,11 +46,15 @@ These requests are translated to the upstream provider's API.
 Using the Chat Completions API works exactly the same as consuming OpenAI, with a change to the base URL.
 This allows you to continue using existing code and SDKs.
 
+{{< callout type="info" >}}
+For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
+{{< /callout >}}
+
 {{< tabs items="Curl,Python,JavaScript" >}}
 {{% tab %}}
 
 ```shell
-curl 'http://0.0.0.0:3000/' \
+curl 'http://localhost:4000/' \
 --header 'Content-Type: application/json' \
 --data ' {
   "model": "gpt-3.5-turbo",
@@ -77,7 +81,7 @@ import openai
 
 client = openai.OpenAI(
     api_key="anything",
-    base_url="http://0.0.0.0:3000"
+    base_url="http://localhost:4000"
 )
 
 response = client.chat.completions.create(model="gpt-4o-mini", messages = [
@@ -98,7 +102,7 @@ import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: "anything",
-  baseURL: "http://0.0.0.0:3000",
+  baseURL: "http://localhost:4000",
 });
 const response = await openai.chat.completions.create({
   model: "gpt-4o-mini",
@@ -112,6 +116,8 @@ console.log(response);
 {{< /tabs >}}
 
 ## Model routing and aliases
+
+Model routing is configured within the `llm` section of your agentgateway configuration file. The top-level configuration file is organized into sections such as `config`, `binds`, `llm`, `mcp`, `services`, and `workloads`; for a complete overview, see [Configuration overview]({{< link-hextra path="/configuration/overview/" >}}). The `llm` section offers a simplified, model-centric approach compared to the traditional `binds/listeners/routes` model; for more details on the two approaches, see [LLM configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}). The model configurations shown in this section live under the `llm.models` key.
 
 When you configure a model in the `llm` section, two fields control how requests are routed, as shown in the following table.
 

@@ -185,7 +185,7 @@ binds:
         transformations:
           request:
             set:
-              x-priority: 'has(json(request.body).priority) ? json(request.body).priority : "standard"'
+              x-priority: 'coalesce(json(request.body).priority, "standard")'
         cors:
           allowOrigins:
             - "*"
@@ -207,7 +207,7 @@ binds:
         transformations:
           request:
             set:
-              x-priority: 'has(json(request.body).priority) ? json(request.body).priority : "standard"'
+              x-priority: 'coalesce(json(request.body).priority, "standard")'
         cors:
           allowOrigins:
             - "*"
@@ -217,7 +217,7 @@ EOF
 ```
 
 {{< callout type="info" >}}
-The `has()` macro checks if a field exists in the JSON body before accessing it. This provides a default value if the field is missing, preventing errors when the custom field is not included in requests.
+The `coalesce()` function returns the first non-null value from its arguments. This provides a default value if the field is missing, preventing errors when the custom field is not included in requests.
 {{< /callout >}}
 
 Test the routing by sending requests with different priority values:
@@ -255,4 +255,4 @@ When implementing content-based routing, be aware of these limitations:
 
 - Learn about [transformations](../../configuration/traffic-management/transformations/) for more advanced request manipulation
 - Set up [backend routing](../../configuration/routes/) for multiple backends
-- Configure [rate limiting]({{< link-hextra path="/llm/spending/" >}}) to control costs per route
+- Configure [rate limiting]({{< link-hextra path="/llm/virtual-keys/" >}}) to control costs per route

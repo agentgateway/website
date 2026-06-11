@@ -1,5 +1,6 @@
 ---
 title: "Open Source LLM Observability: Tracing AI Calls with AgentGateway and Langfuse"
+category: "Tutorial"
 publishDate: 2026-02-18
 author: "Sebastian Maniak"
 description: "How to automatically capture, monitor, and debug every LLM API call flowing through Solo AgentGateway using Langfuse — with zero application code changes."
@@ -429,4 +430,4 @@ kind delete cluster --name agentgateway
 - [Langfuse Docs](https://langfuse.com/docs)
 - [Langfuse OpenTelemetry Integration](https://langfuse.com/integrations/native/opentelemetry)
 - [OpenTelemetry GenAI Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-- [Source Code for This Guide](https://github.com/sebastianmaniak/agentgateway-langfuse)
+- [Source Code for This Guide](https://github.com/sebbycorp/agentgateway-langfuse)

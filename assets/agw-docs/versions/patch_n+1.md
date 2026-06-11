@@ -1,1 +1,1 @@
-{{< version include-if="1.1.x" >}}1.2.1{{< /version >}}{{< version include-if="1.2.x" >}}1.2.1{{< /version >}}{{< version include-if="1.3.x" >}}1.2.1{{< /version >}}
+{{< version include-if="1.1.x" >}}1.2.1{{< /version >}}{{< version include-if="1.2.x" >}}1.3.0-alpha.1{{< /version >}}{{< version include-if="1.3.x" >}}1.3.0-alpha.1{{< /version >}}

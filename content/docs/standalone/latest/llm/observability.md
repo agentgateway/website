@@ -8,7 +8,7 @@ Get prompt logging, cost tracking, and a full audit trail: review LLM-specific m
 
 ## Before you begin
 
-Complete an LLM guide, such as the [control spend]({{< link-hextra path="/llm/spending/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
+Complete an LLM guide, such as the [virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
 
 ## View LLM metrics
 
@@ -75,15 +75,17 @@ Agentgateway automatically logs information to stdout. When you run agentgateway
 
 Example for a successful request to the OpenAI LLM: 
 ```
-2025-09-03T20:30:08.686967Z	info	request gateway=bind/3000 listener=listener0 route_rule=route0/default
-route=route0 endpoint=api.openai.com:443 src.addr=127.0.0.1:54140 http.method=POST http.host=0.0.0.0 http.
-path=/ http.version=HTTP/1.1 http.status=200 llm.provider=openai llm.request.model=gpt-3.5-turbo llm.
-request.tokens=11 llm.response.model=gpt-3.5-turbo-0125 llm.response.tokens=331 duration=4305ms
+2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
+src.addr=127.0.0.1:60862 http.method=POST http.host=localhost http.path=/openai http.version=HTTP/1.1
+http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
+gen_ai.request.model=gpt-3.5-turbo gen_ai.response.model=gpt-3.5-turbo-0125
+gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 ```
 
 Example for a rate limited request: 
 ```
-2025-09-03T19:40:18.687849Z	info	request gateway=bind/3000 listener=listener0 route_rule=route0/default
-route=route0 endpoint=api.openai.com:443 src.addr=127.0.0.1:51794 http.method=POST http.host=0.0.0.0 http.
-path=/ http.version=HTTP/1.1 http.status=429 error=rate limit exceeded duration=206ms
+2025-12-12T21:40:18.687849Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
+src.addr=127.0.0.1:51794 http.method=POST http.host=localhost http.path=/openai http.version=HTTP/1.1
+http.status=429 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
+gen_ai.request.model=gpt-3.5-turbo error=rate limit exceeded duration=206ms
 ```

@@ -1,6 +1,6 @@
 ---
 title: LLM observability
-weight: 25
+weight: 10
 description: Send LLM telemetry for prompt logging, cost tracking, and audit trail.
 test: skip
 ---
