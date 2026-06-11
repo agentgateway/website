@@ -56,99 +56,72 @@ Refer to the **Agentgateway** tabs in the **Getting started** guide in the Infer
 
 In this quickstart, you deploy the following components.
 
-- vLLM for model serving.
-- A local model configuration. Qwen is used in this example.
+- llm-d-inference-sim for simulated model serving.
+- A local model configuration. Qwen3 is used in this example.
 - Kubernetes Gateway API Inference Extension.
 - {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} with inference enabled.
-- The llm-d InferencePool via Helm, configured for Qwen.
+- The llm-d InferencePool via Helm, configured for Qwen3.
 
 Steps:
 
-1. Deploy the Qwen vLLM instance. The container image uses CPU instead of GPU, which makes for easier local or small cluster testing.
+1. Deploy the Qwen3 model server simulator. The
+   [llm-d-inference-sim](https://github.com/llm-d/llm-d-inference-sim)
+   container mimics a vLLM model server without downloading model weights or
+   requiring GPUs.
 
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: apps/v1
    kind: Deployment
    metadata:
-     name: vllm-qwen25-15b-instruct
+     name: vllm-qwen3-32b
    spec:
-     replicas: 1
+     replicas: 3
      selector:
        matchLabels:
-         app: vllm-qwen25-15b-instruct
+         app: vllm-qwen3-32b
      template:
        metadata:
          labels:
-           app: vllm-qwen25-15b-instruct
+           app: vllm-qwen3-32b
+           inference.networking.k8s.io/engine-type: vllm
        spec:
          containers:
-           - name: vllm
-             image: "vllm/vllm-openai-cpu:v0.18.0" # CPU image for local testing; pin tag to avoid drift
-             imagePullPolicy: IfNotPresent
-             command: ["python3", "-m", "vllm.entrypoints.openai.api_server"]
+           - name: vllm-sim
+             image: "ghcr.io/llm-d/llm-d-inference-sim:v0.8.2"
+             imagePullPolicy: Always
              args:
              - "--model"
-             - "Qwen/Qwen2.5-1.5B-Instruct"
+             - "Qwen/Qwen3-32B"
              - "--port"
              - "8000"
+             - "--max-loras"
+             - "2"
+             - "--lora-modules"
+             - '{"name": "food-review-1"}'
              env:
-               - name: PORT
-                 value: "8000"
-               - name: VLLM_CPU_KVCACHE_SPACE
-                 value: "4"
+               - name: POD_NAME
+                 valueFrom:
+                   fieldRef:
+                     fieldPath: metadata.name
+               - name: NAMESPACE
+                 valueFrom:
+                   fieldRef:
+                     fieldPath: metadata.namespace
              ports:
                - containerPort: 8000
                  name: http
                  protocol: TCP
-             livenessProbe:
-               failureThreshold: 240
-               httpGet:
-                 path: /health
-                 port: http
-                 scheme: HTTP
-               initialDelaySeconds: 180
-               periodSeconds: 5
-               successThreshold: 1
-               timeoutSeconds: 1
-             readinessProbe:
-               failureThreshold: 600
-               httpGet:
-                 path: /health
-                 port: http
-                 scheme: HTTP
-               initialDelaySeconds: 180
-               periodSeconds: 5
-               successThreshold: 1
-               timeoutSeconds: 1
              resources:
-                limits:
-                  cpu: "11"
-                  memory: "10Gi"
                 requests:
-                  cpu: "11"
-                  memory: "10Gi"
-             volumeMounts:
-               - mountPath: /data
-                 name: data
-               - mountPath: /dev/shm
-                 name: shm
-         restartPolicy: Always
-         schedulerName: default-scheduler
-         terminationGracePeriodSeconds: 30
-         volumes:
-           - name: data
-             emptyDir: {}
-           - name: shm
-             emptyDir:
-               medium: Memory
+                  cpu: 10m
    EOF
    ```
 
-   Wait about 2-3 minutes for the Qwen model to download. Verify that the pod is running.
+   Verify that the simulator deployment is available.
 
    ```bash
-   kubectl get pods -w
+   kubectl wait --for=condition=available --timeout=60s deployment/vllm-qwen3-32b
    ```
 
 2. Install the CRDs for the Kubernetes Gateway API Inference Extension.
@@ -176,7 +149,7 @@ Steps:
      --set inferenceExtension.enabled=true
    ```
 
-4. Deploy the InferencePool and the Endpoint Picker extension (EPP/llm-d) via Helm. The InferencePool acts as a logical grouping of AI model servers for load balancing and routing inference requests. The EPP provides intelligent selection among available model servers.
+4. Deploy the InferencePool and the Endpoint Picker extension (EPP/llm-d) via Helm. The InferencePool acts as a logical grouping of simulated AI model servers for load balancing and routing inference requests. The EPP provides intelligent selection among available model servers.
 
    {{< callout type="info" >}}
    The `GATEWAY_PROVIDER` is set to `none` because you install your own gateway provider, {{< reuse "agw-docs/snippets/kgateway.md" >}}.
@@ -186,8 +159,8 @@ Steps:
    export IGW_CHART_VERSION=v1.5.0
    export GATEWAY_PROVIDER=none
 
-   helm install vllm-qwen25-15b-instruct \
-     --set inferencePool.modelServers.matchLabels.app=vllm-qwen25-15b-instruct \
+   helm install vllm-qwen3-32b \
+     --set inferencePool.modelServers.matchLabels.app=vllm-qwen3-32b \
      --set provider.name=$GATEWAY_PROVIDER \
      --version $IGW_CHART_VERSION \
      oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
@@ -199,7 +172,7 @@ Steps:
    kubectl get inferencepool
    ```
 
-5. Deploy a Gateway and HTTPRoute for inference routing. The HTTPRoute routes to the InferencePool that you created in the previous step. The `inferencePool.modelServers.matchLabels.app` selector matches any pod with the `vllm-qwen25-15b-instruct` label from step 1.
+5. Deploy a Gateway and HTTPRoute for inference routing. The HTTPRoute routes to the InferencePool that you created in the previous step. The `inferencePool.modelServers.matchLabels.app` selector matches any pod with the `vllm-qwen3-32b` label from step 1.
 
    ```yaml
    kubectl apply -f - <<EOF
@@ -227,7 +200,7 @@ Steps:
      - backendRefs:
        - group: inference.networking.k8s.io
          kind: InferencePool
-         name: vllm-qwen25-15b-instruct
+         name: vllm-qwen3-32b
        matches:
        - path:
            type: PathPrefix
@@ -244,8 +217,8 @@ Steps:
        Client -->|curl| Gateway
        Gateway -->|path prefix /| HTTPRoute
        HTTPRoute --> InferencePool
-       InferencePool -->|selects model server| vLLM["vLLM pod"]
-       vLLM -->|response| Client
+       InferencePool -->|selects model server| Sim["simulator pod"]
+       Sim -->|response| Client
    ```
 
    Send a test request to the inference gateway.
@@ -255,7 +228,7 @@ Steps:
    PORT=80
 
    curl -i ${IP}:${PORT}/v1/completions -H 'Content-Type: application/json' -d '{
-     "model": "Qwen/Qwen2.5-1.5B-Instruct",
+     "model": "Qwen/Qwen3-32B",
      "prompt": "What is the warmest city in the USA?",
      "max_tokens": 100,
      "temperature": 0.5
@@ -271,5 +244,5 @@ Steps:
    content-type: application/json
    transfer-encoding: chunked
 
-   {"choices":[{"finish_reason":"length","index":0,"text":" The warmest city in the United States is Phoenix, Arizona..."}],"model":"Qwen/Qwen2.5-1.5B-Instruct","object":"text_completion","usage":{"completion_tokens":100,"prompt_tokens":10,"total_tokens":110}}
+   {"choices":[{"finish_reason":"length","index":0,"text":" The warmest city in the United States is Phoenix, Arizona..."}],"model":"Qwen/Qwen3-32B","object":"text_completion","usage":{"completion_tokens":100,"prompt_tokens":10,"total_tokens":110}}
    ```
