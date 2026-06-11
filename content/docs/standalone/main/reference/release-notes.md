@@ -36,4 +36,4 @@ The reorganization also introduces the following new capabilities:
 - `agctl version` prints version information for the `agctl` CLI.
 - `agctl proxy log` and `agctl controller log` get or set log levels at runtime for agentgateway running in Kubernetes.
 
-For more information, see [Install agctl]({{< link-hextra path="/operations/agctl/" >}}), [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}), [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests/" >}}), and the [agctl CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
+For more information, see [Install `agctl`]({{< link-hextra path="/operations/agctl/" >}}), [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}), [Trace requests with `agctl`]({{< link-hextra path="/operations/trace-requests/" >}}), and the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
