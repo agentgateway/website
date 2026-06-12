@@ -92,6 +92,10 @@
 /docs/tutorials /docs/standalone/latest/quickstart 301
 /docs/tutorials/ /docs/standalone/latest/quickstart 301
 /docs/tutorials/* /docs/standalone/latest/quickstart 301
+# Removed top-level Tutorials landing page
+/tutorials /docs 301
+/tutorials/ /docs 301
+/tutorials/* /docs 301
 
 # LLM consumption
 /docs/llm /docs/standalone/latest/llm 301

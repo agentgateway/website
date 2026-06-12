@@ -64,9 +64,6 @@ menu:
     - name: Docs
       url: /docs
       weight: 2
-    - name: Tutorials
-      url: /tutorials
-      weight: 3
     - name: Models
       weight: 5
       url: /models
