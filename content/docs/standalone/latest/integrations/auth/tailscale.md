@@ -6,6 +6,13 @@ description: Authenticate users with their Tailscale identity for zero-trust acc
 
 Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, which enables zero-trust access to your MCP servers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/configuration/security/external-authz" >}}) policy to call the local Tailscale daemon's `whois` API and identify the user behind each connection.
 
+## How it works
+
+1. The client connects from its Tailscale IP address (`100.x.x.x`).
+2. Agentgateway calls the Tailscale local `whois` API with the source IP address.
+3. Tailscale returns the node and user information.
+4. Agentgateway allows or denies the request and logs the identity.
+
 ## Before you begin
 
 - [Install agentgateway]({{< link-hextra path="/quickstart/" >}}).
@@ -126,6 +133,18 @@ The following table describes the key settings in the configuration.
 | `metadata.tailscaleNode` | Extracts the machine name from the Tailscale response. |
 | `metadata.tailscaleEmail` | Extracts the user email from the Tailscale response. |
 
+The value for `extAuthz.host` is the path to the Tailscale daemon's local socket, which differs by platform. Use the path that matches the platform where agentgateway runs.
+
+| Platform | Socket path |
+|----------|-------------|
+| Linux | `/run/tailscale/tailscaled.sock` |
+| macOS | `/var/run/tailscale/tailscaled.sock` |
+| Windows | Named pipe (not supported through a Unix socket) |
+
+{{< callout type="info" >}}
+On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
+{{< /callout >}}
+
 ## Step 3: Start agentgateway
 
 ```bash
@@ -182,25 +201,6 @@ info proxy::gateway started bind bind="bind/3000"
    ```
    info request ... tailscale.node=your-machine-name tailscale.email=you@example.com
    ```
-
-## How it works
-
-1. The client connects from its Tailscale IP address (`100.x.x.x`).
-2. Agentgateway calls the Tailscale local `whois` API with the source IP address.
-3. Tailscale returns the node and user information.
-4. Agentgateway allows or denies the request and logs the identity.
-
-## Tailscale socket locations
-
-| Platform | Socket path |
-|----------|-------------|
-| Linux | `/run/tailscale/tailscaled.sock` |
-| macOS | `/var/run/tailscale/tailscaled.sock` |
-| Windows | Named pipe (not supported through a Unix socket) |
-
-{{< callout type="info" >}}
-On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
-{{< /callout >}}
 
 ## Troubleshooting
 
