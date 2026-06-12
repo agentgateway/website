@@ -1012,6 +1012,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `authorization` _[Authorization](#authorization)_ | MCP backend authorization. Unlike authorization at the HTTP level, which rejects<br />unauthorized requests with a `403` error, this policy works at the<br />`MCPBackend` level.<br />List operations, such as `list_tools`, will have each item evaluated.<br />Items that do not meet the rule will be filtered.<br />Get or call operations, such as `call_tool`, will evaluate the specific<br />item and reject requests that do not meet the rule. |  | Optional: \{\} <br /> |
 | `authentication` _[MCPAuthentication](#mcpauthentication)_ | MCP backend-specific authentication rules.<br />This field is deprecated; prefer to use traffic policy `jwtAuthentication.mcp`, which ensures authentication runs before<br />other policies such as transformation and rate limiting. |  | Optional: \{\} <br /> |
+| `guardrails` _[MCPGuardrails](#mcpguardrails)_ | `guardrails` routes selected JSON-RPC methods through a remote policy server. |  | Optional: \{\} <br /> |
 
 
 #### BackendSimple
@@ -1322,10 +1323,12 @@ _Appears in:_
 - [FieldTransformation](#fieldtransformation)
 - [HeaderTransformation](#headertransformation)
 - [Health](#health)
+- [MCPGuardrailsRemote](#mcpguardrailsremote)
 - [RateLimitDescriptor](#ratelimitdescriptor)
 - [RateLimitDescriptorEntry](#ratelimitdescriptorentry)
 - [RateLimitsConditional](#ratelimitsconditional)
 - [ResourceAdd](#resourceadd)
+- [Retry](#retry)
 - [Tracing](#tracing)
 - [Transform](#transform)
 - [TransformationConditional](#transformationconditional)
@@ -1682,6 +1685,7 @@ _Appears in:_
 - [ExtAuthOrConditional](#extauthorconditional)
 - [GlobalRateLimit](#globalratelimit)
 - [MCPBackend](#mcpbackend)
+- [MCPGuardrailsRemote](#mcpguardrailsremote)
 - [Webhook](#webhook)
 
 | Field | Description |
@@ -2068,6 +2072,7 @@ _Validation:_
 
 _Appears in:_
 - [HeaderTransformation](#headertransformation)
+- [MCPGuardrailsRemote](#mcpguardrailsremote)
 - [Transform](#transform)
 
 
@@ -2640,6 +2645,80 @@ _Appears in:_
 | `targets` _[McpTargetSelector](#mcptargetselector) array_ | MCP targets to use for this backend. Policies<br />targeting MCP targets must use `targetRefs[].sectionName` to select<br />the target by name. |  | ExactlyOneOf: [selector static] <br />MaxItems: 32 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `sessionRouting` _[SessionRouting](#sessionrouting)_ | MCP session routing behavior.<br />Defaults to `Stateful` if not set. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when MCP targets fail to initialize or<br />become unavailable at runtime. `FailOpen` skips failed targets and<br />continues serving from healthy ones. `FailClosed` (default) fails the<br />entire session if any target fails. |  | Optional: \{\} <br /> |
+
+
+#### MCPGuardrails
+
+
+
+MCPGuardrails is the MCP-layer analog of Envoy ext_authz: an ordered chain of
+policy processors invoked per JSON-RPC method.
+
+
+
+_Appears in:_
+- [BackendMCP](#backendmcp)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `processors` _[MCPGuardrailsProcessor](#mcpguardrailsprocessor) array_ | `processors` is the ordered list of policy processors applied to matched<br />methods. Processors run in the order listed; the first to reject a request<br />short-circuits the chain. |  | ExactlyOneOf: [remote] <br />MaxItems: 16 <br />MinItems: 1 <br />Required: \{\} <br /> |
+
+
+#### MCPGuardrailsProcessor
+
+
+
+MCPGuardrailsProcessor selects a single policy processor. Exactly one variant must be set.
+
+_Validation:_
+- ExactlyOneOf: [remote]
+
+_Appears in:_
+- [MCPGuardrails](#mcpguardrails)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `remote` _[MCPGuardrailsRemote](#mcpguardrailsremote)_ | `remote` configures a gRPC policy server. |  | Optional: \{\} <br /> |
+| `methods` _object (keys:string, values:[MCPMethodPhase](#mcpmethodphase))_ | `methods` is the allowlist of JSON-RPC methods (e.g. `tools/call`,<br />`tools/list`) routed through this processor, keyed by method name with the<br />phase it runs in. Keys may be exact, a prefix wildcard (`tools/*`), a suffix<br />wildcard (`*/list`), or `*` for all methods; the most specific match wins.<br />Methods matching no key, including unknown ones, bypass this processor. |  | MaxProperties: 64 <br />MinProperties: 1 <br />Required: \{\} <br /> |
+
+
+#### MCPGuardrailsRemote
+
+
+
+
+
+
+
+_Appears in:_
+- [MCPGuardrailsProcessor](#mcpguardrailsprocessor)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | `backendRef` references the remote guardrails policy server.<br />Supported types: `Service` and `Backend`. |  | Required: \{\} <br /> |
+| `failureMode` _[FailureMode](#failuremode)_ | `failureMode` controls behavior when the policy server is unreachable<br />or returns an error. `FailOpen` allows the request; `FailClosed`<br />(default) denies it. |  | Optional: \{\} <br /> |
+| `metadata` _object (keys:string, values:[CELExpression](#celexpression))_ | Refer to Kubernetes API documentation for fields of `metadata`. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `allowedRequestHeaders` _[HeaderName](#headername) array_ | `allowedRequestHeaders` lists the incoming request headers forwarded to<br />the policy server in `McpRequest.headers`. If empty, all headers and<br />pseudo-headers (`:authority`, `:method`, ...) are forwarded. Matching is<br />case-insensitive. |  | MaxItems: 64 <br />MaxLength: 256 <br />MinLength: 1 <br />Pattern: `^:?[A-Za-z0-9!#$%&'*+\-.^_\x60\|~]+$` <br />Optional: \{\} <br /> |
+| `disallowedRequestHeaders` _[HeaderName](#headername) array_ | `disallowedRequestHeaders` lists header names never forwarded to the<br />policy server, even if listed in `allowedRequestHeaders`. Matching is<br />case-insensitive. |  | MaxItems: 64 <br />MaxLength: 256 <br />MinLength: 1 <br />Pattern: `^:?[A-Za-z0-9!#$%&'*+\-.^_\x60\|~]+$` <br />Optional: \{\} <br /> |
+
+
+#### MCPMethodPhase
+
+_Underlying type:_ _string_
+
+MCPMethodPhase controls when an MCP method is run through the guardrails pipeline.
+
+
+
+_Appears in:_
+- [MCPGuardrailsProcessor](#mcpguardrailsprocessor)
+
+| Field | Description |
+| --- | --- |
+| `Off` |  |
+| `Request` |  |
+| `Response` |  |
+| `Full` |  |
 
 
 #### MCPProtocol
@@ -3342,6 +3421,10 @@ Retry policy.
 _Appears in:_
 - [Traffic](#traffic)
 
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `precondition` _[CELExpression](#celexpression)_ | `precondition` is a CEL expression evaluated against the request before any<br />attempt is made. When it evaluates to `false`, retries are disabled and only<br />the initial attempt is made, for example `request.method == "GET"`.<br />Retrying requires buffering the request body in memory for replay, so this lets<br />us skip that cost when the request is known to be non-retriable (for example<br />streaming uploads or long-lived connections like websockets). |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `condition` _[CELExpression](#celexpression)_ | `condition` is a CEL expression evaluated against each response to decide<br />whether to retry. A response is retried when its status code is in `codes` or<br />this expression evaluates to `true`. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### RouteType
