@@ -2,7 +2,7 @@ Print agctl version information
 
 ### Synopsis
 
-Print agctl version information.
+Print information for agctl, such as the version and build date.
 
 ```
 agctl version [flags]

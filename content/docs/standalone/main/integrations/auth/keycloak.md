@@ -101,4 +101,4 @@ policies:
 ## Learn more
 
 - [Keycloak Documentation](https://www.keycloak.org/documentation)
-- [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})
+- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
