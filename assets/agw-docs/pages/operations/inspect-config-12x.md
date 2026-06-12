@@ -1,17 +1,17 @@
-Inspect the runtime configuration that an agentgateway proxy loaded by using `agctl proxy config`.
+Inspect the runtime configuration that an agentgateway proxy loaded by using `agctl config`.
 
 ## About
 
-`agctl proxy config` reads an agentgateway proxy's admin endpoint at `/config_dump` and renders the result as a structured table or as JSON or YAML. Use it to confirm what the proxy actually loaded, especially when an HTTPRoute or policy is `Accepted` but the proxy does not behave as expected.
+`agctl config` reads an agentgateway proxy's admin endpoint at `/config_dump` and renders the result as a structured table or as JSON or YAML. Use it to confirm what the proxy actually loaded, especially when an HTTPRoute or policy is `Accepted` but the proxy does not behave as expected.
 
-`agctl proxy config` resolves the proxy pod for you, opens a port-forward to its admin port, and renders the output. You do not need to manage `kubectl port-forward` yourself.
+`agctl config` resolves the proxy pod for you, opens a port-forward to its admin port, and renders the output. You do not need to manage `kubectl port-forward` yourself.
 
-`agctl proxy config` includes the following subcommands.
+`agctl config` includes the following subcommands.
 
 | Subcommand | What it returns |
 | -- | -- |
-| `agctl proxy config all` | The full runtime configuration: binds, listeners, routes, backends, workloads, services, and policies. |
-| `agctl proxy config backends` | A table of backends with their endpoint health, request counts, and latency, scoped to the backends that the proxy is actually routing to. Pass `--all` to include every workload that the proxy knows about, including those with zero requests. |
+| `agctl config all` | The full runtime configuration: binds, listeners, routes, backends, workloads, services, and policies. |
+| `agctl config backends` | A table of backends with their endpoint health, request counts, and latency, scoped to the backends that the proxy is actually routing to. Pass `--all` to include every workload that the proxy knows about, including those with zero requests. |
 
 ## Before you begin
 
@@ -24,7 +24,7 @@ Inspect the runtime configuration that an agentgateway proxy loaded by using `ag
 Render the configuration that the proxy loaded as YAML.
 
 ```sh
-agctl proxy config all gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+agctl config all gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
 ```
 
 The output includes every `bind`, `listener`, `route`, `backend`, `workload`, `service`, and `policy` that the proxy knows about, along with the agentgateway build info. Use it to confirm that your route and policy resources actually translated to the configuration you expected.
@@ -32,8 +32,8 @@ The output includes every `bind`, `listener`, `route`, `backend`, `workload`, `s
 You can also dump the configuration to a file and inspect it offline.
 
 ```sh
-agctl proxy config all gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json > /tmp/agw-dump.json
-agctl proxy config all --file /tmp/agw-dump.json -o yaml
+agctl config all gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json > /tmp/agw-dump.json
+agctl config all --file /tmp/agw-dump.json -o yaml
 ```
 
 ## List active backends
@@ -41,7 +41,7 @@ agctl proxy config all --file /tmp/agw-dump.json -o yaml
 Print a table of backends that the gateway is actively routing to, with endpoint health and request stats.
 
 ```sh
-agctl proxy config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+agctl config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 Example output:
@@ -67,10 +67,10 @@ Service  httpbin    backend-extauth      httpbin-7dc88b5fbc-zqrfn    1.00    2  
 
 ## Include zero-request workloads
 
-By default, `agctl proxy config backends` only shows backends that the proxy is actively routing to. To include every service and workload that the proxy knows about, including those with zero requests, pass `--all`.
+By default, `agctl config backends` only shows backends that the proxy is actively routing to. To include every service and workload that the proxy knows about, including those with zero requests, pass `--all`.
 
 ```sh
-agctl proxy config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --all
+agctl config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --all
 ```
 
 The expanded view is useful for confirming that the proxy is aware of a service before you create an HTTPRoute that targets it.
@@ -92,5 +92,5 @@ Both subcommands accept the `-o` flag with `short`, `json`, and `yaml` values. T
 
 ```sh
 # Use jq to show backends where some requests failed
-agctl proxy config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json | jq '.[] | select(.health < 1.0)'
+agctl config backends gateway/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json | jq '.[] | select(.health < 1.0)'
 ```
