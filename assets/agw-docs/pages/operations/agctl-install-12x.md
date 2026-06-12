@@ -2,17 +2,14 @@ Install `agctl`, the command-line tool that you use to inspect and debug agentga
 
 ## About
 
-`agctl` is the agentgateway command-line interface. Use `agctl` to inspect the configuration that an agentgateway proxy has loaded, capture detailed traces of requests as the proxy handles them, and manage proxy and controller log levels. The CLI works against agentgateway running in Kubernetes or as a standalone binary on your workstation.
+`agctl` is the agentgateway command-line interface. Use `agctl` to inspect the configuration that an agentgateway proxy has loaded and to capture detailed traces of requests as the proxy handles them. The CLI works against agentgateway running in Kubernetes or as a standalone binary on your workstation.
 
 `agctl` includes the following subcommands.
 
 | Command | Description |
 | -- | -- |
-| `agctl proxy trace` | Capture a tap-style trace to analyze a copy of the next request that an agentgateway proxy handles. Renders the trace in an interactive, text-based terminal user interface (TUI) by default. Alternatively, you can format the output as JSON for piping to other tools. |
-| `agctl proxy config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
-| `agctl proxy log` | Get or set log levels for the agentgateway proxy at runtime. |
-| `agctl controller log` | Get or set log levels for the agentgateway controller at runtime. |
-| `agctl version` | Print version information for the `agctl` CLI. |
+| `agctl trace` | Capture a tap-style trace to analyze a copy of the next request that an agentgateway proxy handles. Renders the trace in an interactive, text-based terminal user interface (TUI) by default. Alternatively, you can format the output as JSON for piping to other tools. |
+| `agctl config` | Retrieve the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and services. |
 | `agctl completion` | Turn on autocompletion for your shell in `bash`, `zsh`, `fish`, or `powershell`. |
 
 For a complete list of subcommands and flags, see the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
@@ -62,16 +59,13 @@ Build `agctl` from source. Make sure that you have the following tools installed
 
    Available Commands:
      completion  Generate the autocompletion script for the specified shell
-     controller  Inspect and manage the Agentgateway controller
+     config      Retrieve Agentgateway configuration for a resource
      help        Help about any command
-     proxy       Inspect and manage the Agentgateway proxy
-     version     Print agctl version information
+     trace       Trace the next request handled by an Agentgateway pod or local instance
 
    Flags:
      -h, --help                help for agctl
      -k, --kubeconfig string   kubeconfig
-
-   Use "agctl [command] --help" for more information about a command.
    ```
 
 ## Enable shell completion
