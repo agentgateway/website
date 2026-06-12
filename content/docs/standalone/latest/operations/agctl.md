@@ -9,4 +9,4 @@ test: skip
 {{< reuse "agw-docs/snippets/feature-experimental.md">}}
 {{< /callout >}}
 
-{{< reuse "agw-docs/pages/operations/agctl-install.md" >}}
+{{< reuse "agw-docs/pages/operations/agctl-install-12x.md" >}}
