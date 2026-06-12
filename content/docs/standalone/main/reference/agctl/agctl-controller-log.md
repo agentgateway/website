@@ -1,6 +1,6 @@
 ---
 title: agctl controller log
-weight: 47
+weight: 10
 description: Reference for the `agctl controller log` command.
 test: skip
 ---

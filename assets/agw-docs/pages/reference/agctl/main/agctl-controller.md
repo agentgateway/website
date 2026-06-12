@@ -1,8 +1,8 @@
-Inspect and manage the Agentgateway controller
+Inspect and manage the agentgateway controller
 
 ### Synopsis
 
-Inspect and manage the Agentgateway controller admin API.
+Inspect and manage the agentgateway controller admin API.
 
 ### Options
 

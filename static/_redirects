@@ -37,10 +37,65 @@
 /docs/configuration/ /docs/standalone/latest/configuration 301
 /docs/configuration/* /docs/standalone/latest/configuration/:splat 301
 
-# Tutorials
-/docs/tutorials /docs/standalone/latest/tutorials 301
-/docs/tutorials/ /docs/standalone/latest/tutorials 301
-/docs/tutorials/* /docs/standalone/latest/tutorials/:splat 301
+# Tutorials (removed in solo-io/docs#1872 — content consolidated into other sections)
+# Standalone latest
+/docs/standalone/latest/tutorials /docs/standalone/latest/quickstart 301
+/docs/standalone/latest/tutorials/ /docs/standalone/latest/quickstart 301
+/docs/standalone/latest/tutorials/a2a /docs/standalone/latest/agent/a2a 301
+/docs/standalone/latest/tutorials/a2a/ /docs/standalone/latest/agent/a2a 301
+/docs/standalone/latest/tutorials/ai-prompt-guard /docs/standalone/latest/llm/prompt-guards/ 301
+/docs/standalone/latest/tutorials/ai-prompt-guard/ /docs/standalone/latest/llm/prompt-guards/ 301
+/docs/standalone/latest/tutorials/authorization /docs/standalone/latest/configuration/security/mcp-authz 301
+/docs/standalone/latest/tutorials/authorization/ /docs/standalone/latest/configuration/security/mcp-authz 301
+/docs/standalone/latest/tutorials/basic /docs/standalone/latest/quickstart/mcp 301
+/docs/standalone/latest/tutorials/basic/ /docs/standalone/latest/quickstart/mcp 301
+/docs/standalone/latest/tutorials/http-routing /docs/standalone/latest/configuration/routes 301
+/docs/standalone/latest/tutorials/http-routing/ /docs/standalone/latest/configuration/routes 301
+/docs/standalone/latest/tutorials/llm-gateway /docs/standalone/latest/llm 301
+/docs/standalone/latest/tutorials/llm-gateway/ /docs/standalone/latest/llm 301
+/docs/standalone/latest/tutorials/mcp-authentication /docs/standalone/latest/configuration/security/mcp-authn 301
+/docs/standalone/latest/tutorials/mcp-authentication/ /docs/standalone/latest/configuration/security/mcp-authn 301
+/docs/standalone/latest/tutorials/mcp-federation /docs/standalone/latest/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials/mcp-federation/ /docs/standalone/latest/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials/multiplex /docs/standalone/latest/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials/multiplex/ /docs/standalone/latest/mcp/connect/virtual 301
+/docs/standalone/latest/tutorials/oauth2-proxy /docs/standalone/latest/integrations/auth/oauth2-proxy 301
+/docs/standalone/latest/tutorials/oauth2-proxy/ /docs/standalone/latest/integrations/auth/oauth2-proxy 301
+/docs/standalone/latest/tutorials/openapi /docs/standalone/latest/mcp/connect/openapi 301
+/docs/standalone/latest/tutorials/openapi/ /docs/standalone/latest/mcp/connect/openapi 301
+/docs/standalone/latest/tutorials/tailscale-auth /docs/standalone/latest/integrations/auth/tailscale 301
+/docs/standalone/latest/tutorials/tailscale-auth/ /docs/standalone/latest/integrations/auth/tailscale 301
+/docs/standalone/latest/tutorials/telemetry /docs/standalone/latest/integrations/observability/opentelemetry 301
+/docs/standalone/latest/tutorials/telemetry/ /docs/standalone/latest/integrations/observability/opentelemetry 301
+/docs/standalone/latest/tutorials/tls /docs/standalone/latest/configuration/listeners 301
+/docs/standalone/latest/tutorials/tls/ /docs/standalone/latest/configuration/listeners 301
+# Kubernetes latest
+/docs/kubernetes/latest/tutorials /docs/kubernetes/latest/quickstart 301
+/docs/kubernetes/latest/tutorials/ /docs/kubernetes/latest/quickstart 301
+/docs/kubernetes/latest/tutorials/azure-ai-foundry /docs/kubernetes/latest/llm/providers/azure 301
+/docs/kubernetes/latest/tutorials/azure-ai-foundry/ /docs/kubernetes/latest/llm/providers/azure 301
+/docs/kubernetes/latest/tutorials/basic /docs/kubernetes/latest/quickstart/mcp 301
+/docs/kubernetes/latest/tutorials/basic/ /docs/kubernetes/latest/quickstart/mcp 301
+/docs/kubernetes/latest/tutorials/claude-code-proxy /docs/kubernetes/latest/integrations/llm-clients/claude-code 301
+/docs/kubernetes/latest/tutorials/claude-code-proxy/ /docs/kubernetes/latest/integrations/llm-clients/claude-code 301
+/docs/kubernetes/latest/tutorials/jwt-authorization /docs/kubernetes/latest/security/jwt/setup 301
+/docs/kubernetes/latest/tutorials/jwt-authorization/ /docs/kubernetes/latest/security/jwt/setup 301
+/docs/kubernetes/latest/tutorials/llm-gateway /docs/kubernetes/latest/quickstart/llm 301
+/docs/kubernetes/latest/tutorials/llm-gateway/ /docs/kubernetes/latest/quickstart/llm 301
+/docs/kubernetes/latest/tutorials/mcp-federation /docs/kubernetes/latest/mcp/virtual 301
+/docs/kubernetes/latest/tutorials/mcp-federation/ /docs/kubernetes/latest/mcp/virtual 301
+/docs/kubernetes/latest/tutorials/prompt-enrichment /docs/kubernetes/latest/llm/prompt-templates 301
+/docs/kubernetes/latest/tutorials/prompt-enrichment/ /docs/kubernetes/latest/llm/prompt-templates 301
+/docs/kubernetes/latest/tutorials/telemetry /docs/kubernetes/latest/observability/tracing 301
+/docs/kubernetes/latest/tutorials/telemetry/ /docs/kubernetes/latest/observability/tracing 301
+# Legacy unversioned tutorial paths
+/docs/tutorials /docs/standalone/latest/quickstart 301
+/docs/tutorials/ /docs/standalone/latest/quickstart 301
+/docs/tutorials/* /docs/standalone/latest/quickstart 301
+# Removed top-level Tutorials landing page
+/tutorials /docs 301
+/tutorials/ /docs 301
+/tutorials/* /docs 301
 
 # LLM consumption
 /docs/llm /docs/standalone/latest/llm 301
