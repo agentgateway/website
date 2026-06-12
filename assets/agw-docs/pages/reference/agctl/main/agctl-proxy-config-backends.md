@@ -1,8 +1,8 @@
-Retrieve Agentgateway backend endpoint status
+Retrieve agentgateway backend endpoint status
 
 ### Synopsis
 
-Retrieve Agentgateway backend endpoint status.
+Get the status of agentgateway backend endpoints.
 
 ```
 agctl proxy config backends [flags]
@@ -27,5 +27,5 @@ agctl proxy config backends [flags]
 
 ### SEE ALSO
 
-* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve Agentgateway configuration for a resource
+* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve agentgateway configuration for a resource
 
