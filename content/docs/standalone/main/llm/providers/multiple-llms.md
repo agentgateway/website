@@ -1,9 +1,11 @@
 ---
 title: Multiple LLM providers
-weight: 40
+weight: 90
 ---
 
-Create a group of LLM providers for the same route. Then, agentgateway automatically load balances requests across the providers using the Power of Two Choices (P2C) algorithm. This intelligent load balancing strategy picks two random providers and selects the one with the highest score based on health, latency, and pending requests to return the response. If a provider fails, traffic is automatically routed to healthy providers.
+Create a group of LLM providers for the same route. agentgateway automatically load balances requests across the providers in the group using the **Power of Two Choices (P2C)** algorithm. This algorithm picks two random providers, scores each one based on health, latency, and pending requests, and routes the request to the higher-scoring provider. All providers in a single group are treated as equally preferred — P2C distributes traffic across healthy providers but does not implement failover.
+
+**Load balancing vs. failover:** The single-group configuration on this page is load balancing, not failover. Failover requires multiple priority groups and a health/eviction policy. When all providers in a priority group are evicted (for example, due to repeated errors or rate limiting), the gateway automatically routes to the next priority group. For a failover example, see the [Kubernetes deployment of agentgateway](https://agentgateway.dev/docs/kubernetes/latest/llm/failover/).
 
 The P2C algorithm provides better performance than simple round-robin, random, or least-connections strategies by adapting in real-time to each provider's health and performance characteristics.
 

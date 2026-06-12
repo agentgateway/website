@@ -467,18 +467,6 @@
             <a href="/docs/kubernetes/latest/" class="px-4 py-3 block text-left">Kubernetes</a>
           </div>
         </div>
-        <div class="dropdown">
-          <a class="link whitespace-nowrap flex items-center gap-1" href="/tutorials/">
-            Tutorials
-            <svg class="w-3.5 h-3.5 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-            </svg>
-          </a>
-          <div class="dropdown-content navbar-dropdown-content rounded-lg absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
-            <a href="/docs/standalone/latest/tutorials" class="px-4 py-3 block text-left">Standalone</a>
-            <a href="/docs/kubernetes/latest/tutorials" class="px-4 py-3 block text-left">Kubernetes</a>
-          </div>
-        </div>
         <a class="link whitespace-nowrap" href="/models">Models</a>
         <a class="link whitespace-nowrap" href="/blog">Blog</a>
         <a class="link whitespace-nowrap" href="/enterprise">Enterprise</a>
@@ -527,9 +515,6 @@
       <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/docs/">Docs</a>
       <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/standalone/latest/">Standalone</a>
       <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/kubernetes/latest/">Kubernetes</a>
-      <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/tutorials/">Tutorials</a>
-      <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/standalone/latest/tutorials">Standalone</a>
-      <a class="whitespace-nowrap text-lg text-gray-500 dark:text-gray-400 py-2 pl-6" href="/docs/kubernetes/latest/tutorials">Kubernetes</a>
       <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/models">Models</a>
       <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/blog">Blog</a>
       <a class="whitespace-nowrap text-xl font-medium text-gray-900 dark:text-gray-100 py-4" href="/enterprise">Enterprise</a>
@@ -639,20 +624,6 @@
             </div>
           {{- else if eq .Name "Docs" -}}
             {{- /* Skip duplicate Docs menu items */ -}}
-          {{- else if eq .Name "Tutorials" -}}
-            {{- /* Tutorials dropdown */ -}}
-            <div class="dropdown">
-              <a class="link whitespace-nowrap text-gray-700 dark:text-gray-300 flex items-center gap-1" href="{{ .URL }}">
-                {{ .Name }}
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                </svg>
-              </a>
-              <div class="dropdown-content navbar-dropdown-content rounded-l bg-white dark:bg-gray-900 absolute" style="top: calc(100% + 0.25rem); padding-top: 0.25rem;">
-                <a href="/docs/standalone/latest/tutorials" class="px-4 py-3 block text-left">Standalone</a>
-                <a href="/docs/kubernetes/latest/tutorials" class="px-4 py-3 block text-left">Kubernetes</a>
-              </div>
-            </div>
           {{- else if .Params.icon -}}
             {{- /* Icon menu item (like GitHub) */ -}}
             {{- $external := strings.HasPrefix .URL "http" -}}
@@ -737,9 +708,6 @@
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/docs/">Docs</a>
       <a class="whitespace-nowrap text-[1.25rem] nav-link-secondary py-3 pl-6" href="/docs/standalone/latest/">Standalone</a>
       <a class="whitespace-nowrap text-[1.25rem] nav-link-secondary py-3 pl-6" href="/docs/kubernetes/latest/">Kubernetes</a>
-      <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/tutorials/">Tutorials</a>
-      <a class="whitespace-nowrap text-[1.25rem] nav-link-secondary py-3 pl-6" href="/docs/standalone/latest/tutorials">Standalone</a>
-      <a class="whitespace-nowrap text-[1.25rem] nav-link-secondary py-3 pl-6" href="/docs/kubernetes/latest/tutorials">Kubernetes</a>
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/models">Models</a>
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/blog">Blog</a>
       <a class="whitespace-nowrap text-[1.5625rem] nav-link-primary py-5" href="/enterprise">Enterprise</a>

@@ -1,8 +1,8 @@
-Inspect and manage the Agentgateway proxy
+Inspect and manage the agentgateway proxy
 
 ### Synopsis
 
-Inspect and manage the Agentgateway proxy admin API.
+Inspect and manage the agentgateway proxy admin API.
 
 ### Options
 
@@ -19,7 +19,7 @@ Inspect and manage the Agentgateway proxy admin API.
 ### SEE ALSO
 
 * [agctl](../agctl/)	 - agctl controls and inspects Agentgateway resources
-* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve Agentgateway configuration for a resource
+* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve agentgateway configuration for a resource
 * [agctl proxy log](../agctl-proxy-log/)	 - Get or set proxy log levels
-* [agctl proxy trace](../agctl-proxy-trace/)	 - Trace the next request handled by an Agentgateway pod or local instance
+* [agctl proxy trace](../agctl-proxy-trace/)	 - Trace the next request handled by an agentgateway pod or local instance.
 

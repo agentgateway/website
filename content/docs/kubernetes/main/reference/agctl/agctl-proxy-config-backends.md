@@ -1,6 +1,6 @@
 ---
 title: agctl proxy config backends
-weight: 113
+weight: 10
 description: Reference for the `agctl proxy config backends` command.
 test: skip
 ---

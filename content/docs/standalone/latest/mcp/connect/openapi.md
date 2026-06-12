@@ -181,6 +181,10 @@ Build the Docker image from the source code. The example builds the image for an
       {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
 
 
+## Tool names {#tool-names}
+
+Agentgateway generates one MCP tool for each operation in your OpenAPI spec. Each tool is named after the operation's `operationId` field. For example, an operation with `operationId: addPet` becomes an MCP tool named `addPet`. Make sure each operation in your spec defines a unique `operationId` so that the generated tool names are predictable and do not collide.
+
 ## Other configurations
 
 ### Schema URL
