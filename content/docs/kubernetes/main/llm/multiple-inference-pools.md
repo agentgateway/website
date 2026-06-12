@@ -27,7 +27,7 @@ For parser options, see the
 
 ## Agentgateway content routing and BBR
 
-Historically, Gateway API Inference Extension BBR handled model-name routing as
+Historically, Gateway API Inference Extension Body Based Router (BBR) handled model-name routing as
 a separate payload-processing service in the request path. The gateway called
 that processor through Envoy external processing, the processor parsed the body
 and added routing metadata, and the route matched on that metadata. That
