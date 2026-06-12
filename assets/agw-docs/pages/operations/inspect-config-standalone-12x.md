@@ -1,17 +1,17 @@
-Inspect the runtime configuration that a standalone agentgateway instance loaded by using `agctl proxy config`.
+Inspect the runtime configuration that a standalone agentgateway instance loaded by using `agctl config`.
 
 ## About
 
-`agctl proxy config` reads the agentgateway admin endpoint at `/config_dump` and renders the result as a structured table or as JSON or YAML. Use it to confirm what the proxy actually loaded, especially when a config change appears to apply but the proxy does not behave as expected.
+`agctl config` reads the agentgateway admin endpoint at `/config_dump` and renders the result as a structured table or as JSON or YAML. Use it to confirm what the proxy actually loaded, especially when a config change appears to apply but the proxy does not behave as expected.
 
-For a standalone agentgateway instance, you provide the config dump as a file. `agctl proxy config` does not have a `--local` flag. Instead, capture the dump from the admin port and pass it to `agctl proxy config all --file <path>`.
+For a standalone agentgateway instance, you provide the config dump as a file. `agctl config` does not have a `--local` flag. Instead, capture the dump from the admin port and pass it to `agctl config --file <path>`.
 
-`agctl proxy config` includes the following subcommands.
+`agctl config` includes the following subcommands.
 
 | Subcommand | What it returns |
 | -- | -- |
-| `agctl proxy config all` | The full runtime configuration: binds, listeners, routes, backends, workloads, services, and policies. |
-| `agctl proxy config backends` | A table of backends and their endpoint health, request counts, and latency. Most useful in Kubernetes mode where xDS feeds the service list. |
+| `agctl config all` | The full runtime configuration: binds, listeners, routes, backends, workloads, services, and policies. |
+| `agctl config backends` | A table of backends and their endpoint health, request counts, and latency. Most useful in Kubernetes mode where xDS feeds the service list. |
 
 ## Before you begin
 
@@ -33,7 +33,7 @@ If you set a custom admin address in your config file, replace `127.0.0.1:15000`
 Render the dump as YAML, which is easier to scan than JSON.
 
 ```sh
-agctl proxy config all --file /tmp/agw-dump.json -o yaml
+agctl config all --file /tmp/agw-dump.json -o yaml
 ```
 
 Example output (truncated):
@@ -74,14 +74,14 @@ The output includes the agentgateway version, build info, and all loaded `binds`
 
 ## Use other output formats
 
-`agctl proxy config all` accepts the `-o` flag with `short` (default), `json`, and `yaml` values. The `short` and `json` outputs both return the full pretty-printed configuration. Note that there is no compressed table view for the full configuration.
+`agctl config all` accepts the `-o` flag with `short` (default), `json`, and `yaml` values. The `short` and `json` outputs both return the full pretty-printed configuration. Note that there is no compressed table view for the full configuration.
 
 ```sh
 # Pretty-printed JSON
-agctl proxy config all --file /tmp/agw-dump.json -o json
+agctl config all --file /tmp/agw-dump.json -o json
 
 # YAML
-agctl proxy config all --file /tmp/agw-dump.json -o yaml
+agctl config all --file /tmp/agw-dump.json -o yaml
 ```
 
 ## Pipe the output to other tools
@@ -90,8 +90,8 @@ Pipe the JSON output through tools like `jq` to extract specific fields. The fol
 
 ```sh
 # List route names
-agctl proxy config all --file /tmp/agw-dump.json -o json | jq '.binds[].listeners[].routes[].name'
+agctl config all --file /tmp/agw-dump.json -o json | jq '.binds[].listeners[].routes[].name'
 
 # Show only the backends
-agctl proxy config all --file /tmp/agw-dump.json -o json | jq '.backends'
+agctl config all --file /tmp/agw-dump.json -o json | jq '.backends'
 ```

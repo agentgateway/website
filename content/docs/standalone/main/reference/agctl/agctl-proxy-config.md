@@ -1,6 +1,6 @@
 ---
 title: agctl proxy config
-weight: 41
+weight: 10
 description: Reference for the `agctl proxy config` command.
 test: skip
 ---

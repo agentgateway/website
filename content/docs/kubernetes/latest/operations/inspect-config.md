@@ -9,4 +9,4 @@ test: skip
 {{< reuse "agw-docs/snippets/feature-experimental.md">}}
 {{< /callout >}}
 
-{{< reuse "agw-docs/pages/operations/inspect-config.md" >}}
+{{< reuse "agw-docs/pages/operations/inspect-config-12x.md" >}}
