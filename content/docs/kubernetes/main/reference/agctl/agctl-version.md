@@ -1,6 +1,6 @@
 ---
 title: agctl version
-weight: 62
+weight: 10
 description: Reference for the `agctl version` command.
 test: skip
 ---

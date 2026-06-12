@@ -631,7 +631,8 @@
 </ul></div></li>
 <li class="ks-row" data-ks-path="extauthz"><div class="ks-row-line" id="ks-widget-1-node-114" data-ks-node-id="ks-widget-1-node-114" data-ks-path="extauthz"><span class="ks-name-toggle"><span class="ks-name">extauthz</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
 <li class="ks-row" data-ks-path="extproc"><div class="ks-row-line" id="ks-widget-1-node-115" data-ks-node-id="ks-widget-1-node-115" data-ks-path="extproc"><span class="ks-name-toggle"><span class="ks-name">extproc</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
-<li class="ks-row" data-ks-path="metadata"><div class="ks-row-line" id="ks-widget-1-node-116" data-ks-node-id="ks-widget-1-node-116" data-ks-path="metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="mcpGuardrails"><div class="ks-row-line" id="ks-widget-1-node-116" data-ks-node-id="ks-widget-1-node-116" data-ks-path="mcpGuardrails"><span class="ks-name-toggle"><span class="ks-name">mcpGuardrails</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
+<li class="ks-row" data-ks-path="metadata"><div class="ks-row-line" id="ks-widget-1-node-117" data-ks-node-id="ks-widget-1-node-117" data-ks-path="metadata"><span class="ks-name-toggle"><span class="ks-name">metadata</span></span><span class="ks-type-toggle"><span class="ks-type ks-type-object">object</span></span></div></li>
 </ul></div>
 <aside class="ks-detail-pane"><div data-ks-active-panel></div></aside>
 </div>
@@ -751,7 +752,8 @@
 <template data-ks-field-panel="ks-widget-1-node-113"><div class="ks-detail-card"><div class="ks-detail-path">backend.protocol</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-string">string</span></div><div class="ks-detail-desc"><div class="ks-rich-block">The protocol of backend.</div></div><details class="ks-validation"><summary class="ks-validation-summary">Validation</summary><div class="ks-validation-body"><div class="ks-validation-item"><span class="ks-validation-label">Enum</span><span class="ks-validation-value">http, tcp, a2a, mcp, llm</span></div><div class="ks-validation-item"><span class="ks-validation-label">Default</span><span class="ks-validation-value">http</span></div></div></details></div></template>
 <template data-ks-field-panel="ks-widget-1-node-114"><div class="ks-detail-card"><div class="ks-detail-path">extauthz</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">extauthz</code> contains dynamic metadata from ext_authz filters</div></div></div></template>
 <template data-ks-field-panel="ks-widget-1-node-115"><div class="ks-detail-card"><div class="ks-detail-path">extproc</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">extproc</code> contains dynamic metadata from ext_proc filters</div></div></div></template>
-<template data-ks-field-panel="ks-widget-1-node-116"><div class="ks-detail-card"><div class="ks-detail-path">metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> contains values set by transformation metadata expressions.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-116"><div class="ks-detail-card"><div class="ks-detail-path">mcpGuardrails</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">mcpGuardrails</code> contains dynamic metadata returned by mcpGuardrails policy processors.</div></div></div></template>
+<template data-ks-field-panel="ks-widget-1-node-117"><div class="ks-detail-card"><div class="ks-detail-path">metadata</div><div class="ks-detail-meta-line"><span class="ks-detail-type ks-type-object">object</span></div><div class="ks-detail-desc"><div class="ks-rich-block"><code class="ks-inline-code">metadata</code> contains values set by transformation metadata expressions.</div></div></div></template>
 
 </div>
 </template>
@@ -899,7 +901,8 @@
   { nodeId: "ks-widget-1-node-113", path: "backend.protocol", propType: "string" },
   { nodeId: "ks-widget-1-node-114", path: "extauthz", propType: "object" },
   { nodeId: "ks-widget-1-node-115", path: "extproc", propType: "object" },
-  { nodeId: "ks-widget-1-node-116", path: "metadata", propType: "object" }
+  { nodeId: "ks-widget-1-node-116", path: "mcpGuardrails", propType: "object" },
+  { nodeId: "ks-widget-1-node-117", path: "metadata", propType: "object" }
 ];
   const input = shadow.querySelector("[data-ks-search-input]");
   const results = shadow.querySelector("[data-ks-search-results]");
@@ -1375,6 +1378,7 @@ backend object
   protocol string
 extauthz object
 extproc object
+mcpGuardrails object
 metadata object
 ```
 ks-md-end-->

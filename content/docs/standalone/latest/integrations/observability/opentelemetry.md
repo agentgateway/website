@@ -23,7 +23,19 @@ frontendPolicies:
 | Setting | Description |
 |---------|-------------|
 | `otlpEndpoint` | The OTLP gRPC endpoint (e.g., `http://localhost:4317`) |
-| `randomSampling` | Enable random sampling for traces |
+| `randomSampling` | Set to `true` to sample every request. Useful in development when you want to capture all traces. |
+
+### Sampling strategies
+
+In development, set `randomSampling: true` to capture every trace. In production, sampling every request adds overhead, so sample a percentage of requests instead by setting `randomSampling` to a ratio between `0` and `1`. For example, the following configuration samples 10% of requests.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  tracing:
+    otlpEndpoint: http://localhost:4317
+    randomSampling: "0.1"
+```
 
 ## With Jaeger
 
@@ -106,6 +118,6 @@ Agentgateway includes the following attributes in traces:
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step telemetry setup" >}}
+  {{< card path="/integrations/observability/jaeger" title="Jaeger" subtitle="Distributed tracing with Jaeger" >}}
   {{< card path="/llm/observability" title="LLM Observability" subtitle="AI-specific observability" >}}
 {{< /cards >}}

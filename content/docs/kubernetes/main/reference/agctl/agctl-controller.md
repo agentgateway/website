@@ -1,6 +1,6 @@
 ---
 title: agctl controller
-weight: 80
+weight: 10
 description: Reference for the `agctl controller` command.
 test: skip
 ---
