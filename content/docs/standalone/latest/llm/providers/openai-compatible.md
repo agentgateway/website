@@ -8,7 +8,7 @@ test:
     path: openai-compat-validate
 ---
 
-Configure any LLM provider that implements the OpenAI API format with agentgateway. Use the `openAI` provider type with `hostOverride` to point to the provider's API host, and `pathOverride` if the provider uses a non-standard chat completions path.
+Configure any LLM provider that implements the OpenAI API format with agentgateway. Use the `openAI` provider type with `hostOverride` to point to the provider's API host, and `pathPrefix` if the provider uses a non-standard chat completions path.
 
 ## Before you begin
 
@@ -65,7 +65,7 @@ agentgateway -f /tmp/test-xai.yaml --validate-only
 
 ### Cohere
 
-[Cohere](https://cohere.com/) provides an OpenAI-compatible endpoint for their models. Cohere uses a custom API path, so `pathOverride` is required.
+[Cohere](https://cohere.com/) provides an OpenAI-compatible endpoint for their models. Cohere uses a custom API path, so `pathPrefix` is required.
 
 ```yaml {paths="openai-compat-validate"}
 cat > /tmp/test-cohere.yaml << 'EOF'
@@ -79,7 +79,7 @@ llm:
       model: command-r-plus
       apiKey: "$COHERE_API_KEY"
       hostOverride: "api.cohere.ai:443"
-      pathOverride: "/compatibility/v1/chat/completions"
+      pathPrefix: "/compatibility/v1/chat/completions"
     backendTLS: {}
 EOF
 ```
@@ -114,7 +114,7 @@ agentgateway -f /tmp/test-together.yaml --validate-only
 
 ### Groq
 
-[Groq](https://groq.com/) provides fast inference via OpenAI-compatible endpoints. Groq uses a custom API path, so `pathOverride` is required.
+[Groq](https://groq.com/) provides fast inference via OpenAI-compatible endpoints. Groq uses a custom API path, so `pathPrefix` is required.
 
 ```yaml {paths="openai-compat-validate"}
 cat > /tmp/test-groq.yaml << 'EOF'
@@ -128,7 +128,7 @@ llm:
       model: llama-3.3-70b-versatile
       apiKey: "$GROQ_API_KEY"
       hostOverride: "api.groq.com:443"
-      pathOverride: "/openai/v1/chat/completions"
+      pathPrefix: "/openai/v1/chat/completions"
     backendTLS: {}
 EOF
 ```
@@ -139,7 +139,7 @@ agentgateway -f /tmp/test-groq.yaml --validate-only
 
 ### Fireworks AI
 
-[Fireworks AI](https://fireworks.ai/) offers fast inference for open-source models via OpenAI-compatible API. Fireworks uses a custom API path, so `pathOverride` is required.
+[Fireworks AI](https://fireworks.ai/) offers fast inference for open-source models via OpenAI-compatible API. Fireworks uses a custom API path, so `pathPrefix` is required.
 
 ```yaml {paths="openai-compat-validate"}
 cat > /tmp/test-fireworks.yaml << 'EOF'
@@ -153,7 +153,7 @@ llm:
       model: accounts/fireworks/models/llama-v3p1-70b-instruct
       apiKey: "$FIREWORKS_API_KEY"
       hostOverride: "api.fireworks.ai:443"
-      pathOverride: "/inference/v1/chat/completions"
+      pathPrefix: "/inference/v1/chat/completions"
     backendTLS: {}
 EOF
 ```
@@ -322,7 +322,7 @@ llm:
     params:
       apiKey: "$PROVIDER_API_KEY"
       hostOverride: "<provider-host>:<port>"
-      pathOverride: "<custom-path>"  # only if non-standard
+      pathPrefix: "<custom-path>"  # only if non-standard
     backendTLS: {}  # only for HTTPS providers
 ```
 
@@ -335,5 +335,5 @@ llm:
 | `params.model` | The model name as expected by the provider. If omitted, the model from the client request is passed through. |
 | `params.apiKey` | The provider's API key. Reference environment variables with the `$VAR_NAME` syntax. |
 | `params.hostOverride` | The provider's API host and port (e.g., `api.example.com:443`). |
-| `params.pathOverride` | Override the request path for providers that use non-standard endpoints (e.g., `/openai/v1/chat/completions`). Omit for providers that use the standard `/v1/chat/completions` path. |
+| `params.pathPrefix` | The path prefix for providers that use non-standard endpoints (e.g., `/openai/v1/chat/completions`). Omit for providers that use the standard `/v1/chat/completions` path. |
 | `backendTLS` | Enable TLS for the upstream connection. Required for HTTPS providers, omit for local HTTP providers. |
