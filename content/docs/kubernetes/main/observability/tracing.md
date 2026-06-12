@@ -206,6 +206,21 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 
    ```
 
+## Production sampling
+
+The example sets `randomSampling: "true"` to capture every trace, which is useful in development. In production, sampling every request adds overhead, so sample a percentage of requests instead by setting `randomSampling` to a ratio between `0` and `1`. For example, the following snippet samples 10% of requests.
+
+```yaml
+frontend:
+  tracing:
+    backendRef:
+      name: opentelemetry-collector-traces
+      namespace: telemetry
+      port: 4317
+    protocol: GRPC
+    randomSampling: "0.1"
+```
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}

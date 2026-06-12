@@ -106,5 +106,5 @@ spec:
 
 {{< cards >}}
   {{< card path="/integrations/observability/grafana" title="Grafana" subtitle="Visualize metrics with Grafana" >}}
-  {{< card path="/tutorials/telemetry" title="Telemetry Tutorial" subtitle="Step-by-step observability setup" >}}
+  {{< card path="/integrations/observability/opentelemetry" title="OpenTelemetry" subtitle="Distributed tracing and metrics" >}}
 {{< /cards >}}
