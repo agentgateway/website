@@ -98,4 +98,4 @@ policies:
 ## Learn more
 
 - [Auth0 Documentation](https://auth0.com/docs)
-- [MCP Authentication Tutorial]({{< link-hextra path="/tutorials/mcp-authentication" >}})
+- [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})

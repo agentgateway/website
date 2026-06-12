@@ -31,6 +31,12 @@ listeners:
     key: examples/tls/certs/key.pem
 ```
 
+To generate a self-signed certificate for local testing, you can use `openssl`. Self-signed certificates trigger security warnings in browsers and clients, so use a certificate from a trusted certificate authority, such as Let's Encrypt, in production.
+
+```sh
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+```
+
 By default, a listener will match any traffic on the port.
 Requests can be routed based on the [hostname](https://en.wikipedia.org/wiki/Server_Name_Indication) using the `hostname` field.
 The most exact match will be used, as well as the corresponding TLS certificates.
@@ -49,6 +55,30 @@ listeners:
   tls:
     cert: examples/tls/certs/cert-wildcard.pem
     key: examples/tls/certs/key-wildcard.pem
+```
+
+### Redirect HTTP to HTTPS
+
+To serve both HTTP and HTTPS, configure an HTTP listener that redirects all traffic to the HTTPS listener with a `requestRedirect` policy. The following example listens for plaintext HTTP on port 80 and redirects it to HTTPS, while serving encrypted traffic on port 443.
+
+```yaml
+binds:
+- port: 80
+  listeners:
+  - name: http
+    protocol: HTTP
+    routes:
+    - policies:
+        requestRedirect:
+          scheme: https
+- port: 443
+  listeners:
+  - name: https
+    protocol: HTTPS
+    tls:
+      cert: ./certs/cert.pem
+      key: ./certs/key.pem
+    routes: []
 ```
 
 ## TCP Listeners
