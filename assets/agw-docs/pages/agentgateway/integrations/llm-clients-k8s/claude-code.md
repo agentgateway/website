@@ -331,6 +331,6 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/tutorials/claude-code-proxy" title="Claude Code Proxy Tutorial" subtitle="Full walkthrough with prompt guards and observability" >}}
+  {{< card path="/llm/guardrails/" title="Prompt guards" subtitle="Block sensitive content in CLI prompts with regex and built-in PII detectors" >}}
   {{< card path="/llm/providers/anthropic" title="Anthropic Provider" subtitle="Complete Anthropic provider configuration" >}}
 {{< /cards >}}

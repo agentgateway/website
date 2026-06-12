@@ -76,8 +76,8 @@
 /docs/kubernetes/latest/tutorials/azure-ai-foundry/ /docs/kubernetes/latest/llm/providers/azure 301
 /docs/kubernetes/latest/tutorials/basic /docs/kubernetes/latest/quickstart/mcp 301
 /docs/kubernetes/latest/tutorials/basic/ /docs/kubernetes/latest/quickstart/mcp 301
-/docs/kubernetes/latest/tutorials/claude-code-proxy /docs/kubernetes/latest/integrations/llm-clients/claude-code-proxy 301
-/docs/kubernetes/latest/tutorials/claude-code-proxy/ /docs/kubernetes/latest/integrations/llm-clients/claude-code-proxy 301
+/docs/kubernetes/latest/tutorials/claude-code-proxy /docs/kubernetes/latest/integrations/llm-clients/claude-code 301
+/docs/kubernetes/latest/tutorials/claude-code-proxy/ /docs/kubernetes/latest/integrations/llm-clients/claude-code 301
 /docs/kubernetes/latest/tutorials/jwt-authorization /docs/kubernetes/latest/security/jwt/setup 301
 /docs/kubernetes/latest/tutorials/jwt-authorization/ /docs/kubernetes/latest/security/jwt/setup 301
 /docs/kubernetes/latest/tutorials/llm-gateway /docs/kubernetes/latest/quickstart/llm 301
