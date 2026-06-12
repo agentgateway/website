@@ -17,49 +17,43 @@ flowchart LR
     end
 
     subgraph cp["Control plane (controller)"]
-        SYNC["Syncer<br/>(krt collections)"]
-        TRANS["Translator"]
+        KRT["krt collections<br/>(translate inputs to outputs)"]
         XDS["xDS server (gRPC ADS)"]
         DEP["Deployer"]
-        SYNC --> TRANS --> XDS
+        KRT --> XDS
     end
 
     subgraph dp["Data plane"]
         PROXY["agentgateway proxy<br/>internal representation (IR)"]
     end
 
-    GW --> SYNC
-    AGW --> SYNC
+    GW --> KRT
+    AGW --> KRT
     DEP -->|"deploys & configures"| PROXY
     XDS <-->|"streaming xDS<br/>(delta updates)"| PROXY
-    TRANS -->|"status"| k8s
+    KRT -->|"status"| k8s
     CLIENT["Clients"] -->|"requests"| PROXY
     PROXY -->|"routes to"| BACKENDS["Backends, Services,<br/>LLM providers,<br/>MCP & A2A targets"]
 ```
 
 1. You create or update Kubernetes Gateway API resources (such as Gateways, HTTPRoutes, and GRPCRoutes) and agentgateway resources (such as AgentgatewayBackend and AgentgatewayPolicy).
-2. The **syncer** in the control plane watches the cluster for these resources by using [krt](https://github.com/istio/istio/tree/master/pkg/kube/krt) collections. When a relevant resource changes, the affected collections are recomputed.
-3. The **translator** converts the Gateway API and agentgateway resources into agentgateway's configuration resources, such as Binds, Listeners, Routes, Backends, and Policies. It also resolves service and workload addresses for endpoint discovery.
-4. The **xDS server** serves this configuration to proxies over a streaming gRPC connection. The control plane also writes status back to the Kubernetes resources so that you can see whether your configuration was accepted.
-5. The **deployer** automatically provisions and configures an agentgateway proxy deployment for each Gateway that uses the `agentgateway` GatewayClass, including the address and credentials that the proxy uses to reach the xDS server.
-6. The agentgateway **proxy** in the data plane opens a streaming connection to the xDS server, receives configuration updates, and applies them to its in-memory internal representation.
-7. Clients send requests to the address that the proxy is exposed on. The proxy uses its listener, route, backend, and policy configuration to make routing decisions and forward requests to the appropriate destination, whether that is a Kubernetes service, an LLM provider, an MCP tool server, or an A2A agent.
+2. The control plane watches the cluster for these resources by using [krt](https://github.com/istio/istio/tree/master/pkg/kube/krt) collections. These collections translate the inputs into agentgateway's configuration resources, such as Binds, Listeners, Routes, Backends, and Policies, and resolve service and workload addresses for endpoint discovery. When a relevant resource changes, only the affected collections are recomputed.
+3. The **xDS server** pulls the translated configuration from these collections and serves it to proxies over a streaming gRPC connection. The control plane also writes status back to the Kubernetes resources so that you can see whether your configuration was accepted.
+4. The **deployer** automatically provisions and configures an agentgateway proxy deployment for each Gateway that uses the `agentgateway` GatewayClass, including the address and credentials that the proxy uses to reach the xDS server.
+5. The agentgateway **proxy** in the data plane opens a streaming connection to the xDS server, receives configuration updates, and applies them to its in-memory internal representation.
+6. Clients send requests to the address that the proxy is exposed on. The proxy uses its listener, route, backend, and policy configuration to make routing decisions and forward requests to the appropriate destination, whether that is a Kubernetes service, an LLM provider, an MCP tool server, or an A2A agent.
 
 ## Control plane
 
 The control plane is a Kubernetes controller that turns your declarative Gateway API and agentgateway resources into proxy configuration. It is made up of the following components.
 
-### Syncer
+### krt collections
 
-The syncer is the heart of the control plane. It watches the cluster for Kubernetes Gateway API resources (Gateways, HTTPRoutes, GRPCRoutes, TCPRoutes, and TLSRoutes), agentgateway custom resources (AgentgatewayBackends, AgentgatewayParameters, and AgentgatewayPolicies), and supporting resources (such as Services, ReferenceGrants, and Secrets).
+The heart of the control plane is a set of **krt collections**, a reactive collection library. The control plane watches the cluster for Kubernetes Gateway API resources (Gateways, HTTPRoutes, GRPCRoutes, TCPRoutes, and TLSRoutes), agentgateway custom resources (AgentgatewayBackends, AgentgatewayParameters, and AgentgatewayPolicies), and supporting resources (such as Services, ReferenceGrants, and Secrets), and organizes this state into collections. When any watched resource changes, only the collections that depend on it are recomputed, which keeps the control plane efficient even in large clusters.
 
-The syncer organizes this state into **krt collections**, a reactive collection library. When any watched resource changes, only the collections that depend on it are recomputed, which keeps the control plane efficient even in large clusters.
+The krt collections translate the inputs into agentgateway's configuration model. Agentgateway uses purpose-built resource types rather than Envoy types, with a design philosophy of keeping a near one-to-one mapping between the user-facing API, the configuration sent over xDS, and the proxy's internal representation. This mapping keeps the configuration easy to reason about and the control plane simple, because most translations are mechanical rather than complex joins.
 
-### Translator
-
-The translator converts the krt collections into agentgateway's configuration model. Agentgateway uses purpose-built resource types rather than Envoy types, with a design philosophy of keeping a near one-to-one mapping between the user-facing API, the configuration sent over xDS, and the proxy's internal representation. This mapping keeps the configuration easy to reason about and the control plane simple, because most translations are mechanical rather than complex joins.
-
-The translator produces the following resources:
+The collections produce the following resources:
 
 * **Binds**: A port binding that listeners attach to. Agentgateway creates one Bind per unique port across all listeners.
 * **Listeners**: An individual gateway listener, including its hostname, protocol, and TLS settings, derived from a Gateway listener specification.
@@ -84,7 +78,7 @@ The deployer manages the lifecycle of the proxy deployments. When you create a G
 
 ### Status
 
-As the translator processes your resources, the control plane reports status back to the Kubernetes API for Gateways, listeners, and routes. Invalid or rejected configuration is surfaced in the resource status so that you can correct it, while the rest of your valid configuration continues to be served.
+As the collections process your resources, the control plane reports status back to the Kubernetes API for Gateways, listeners, and routes. Invalid or rejected configuration is surfaced in the resource status so that you can correct it, while the rest of your valid configuration continues to be served.
 
 ## Data plane
 
