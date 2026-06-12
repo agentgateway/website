@@ -1,6 +1,6 @@
 ---
 title: agctl proxy trace
-weight: 38
+weight: 10
 description: Reference for the `agctl proxy trace` command.
 test: skip
 ---

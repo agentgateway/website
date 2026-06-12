@@ -77,12 +77,12 @@ def title_for_filename(filename: str) -> str:
 
 
 def weight_for_filename(filename: str) -> int:
-    """Order: agctl.md first (10), then by depth and name."""
-    stem = Path(filename).stem
-    if stem == "agctl":
-        return 10
-    parts = stem.split("_")
-    return 10 + len(parts) * 10 + sum(ord(c) for c in stem) % 100
+    """Use one shared weight for every command page.
+
+    With equal weights, Hugo/Hextra falls back to sorting siblings by title.
+    Every command title begins with "agctl", so the root `agctl` (shortest)
+    sorts first and the rest alphabetize (controller, proxy, version)."""
+    return 10
 
 
 def rewrite_file(path: Path) -> None:
