@@ -4,6 +4,7 @@ Agentgateway exposes an OpenAI-compatible API that works with any tool or SDK bu
 
 {{< cards >}}
   {{< card link="claude-code" title="Claude Code" subtitle="AI coding CLI by Anthropic" >}}
+  {{< card link="codex" title="Codex" subtitle="AI coding tool by OpenAI" >}}
   {{< card link="cursor" title="Cursor" subtitle="AI code editor with custom model support" >}}
   {{< card link="windsurf" title="Windsurf" subtitle="AI code editor by Codeium" >}}
   {{< card link="continue" title="VS Code Continue" subtitle="Open source AI code assistant" >}}
