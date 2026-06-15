@@ -55,14 +55,6 @@ Include authentication headers if required:
 }
 ```
 
-## SSE Transport (Deprecated)
-
-{{< notice warning >}}
-The SSE (Server-Sent Events) transport is deprecated and should not be used for new configurations. Use the streamable HTTP transport shown above for better performance and future compatibility.
-{{< /notice >}}
-
-The deprecated SSE endpoint is available at `http://localhost:15000/mcp/sse` for backward compatibility only.
-
 ## Verifying the Connection
 
 After configuration, restart Cursor and check that agentgateway tools appear in the MCP tools list. You can verify connectivity by asking Cursor to list available tools.

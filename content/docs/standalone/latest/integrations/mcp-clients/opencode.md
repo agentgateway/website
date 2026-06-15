@@ -12,16 +12,15 @@ Configure OpenCode, the open source AI coding assistant, to use agentgateway as 
 
 ## Configuration
 
-Add agentgateway to your OpenCode configuration file `~/.opencode/config.json`:
+Add agentgateway to your OpenCode configuration file `opencode.json`:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "servers": {
-      "agentgateway": {
-        "type": "http",
-        "url": "http://localhost:15000/mcp/http"
-      }
+    "agentgateway": {
+      "type": "remote",
+      "url": "http://localhost:15000/mcp/http"
     }
   }
 }
@@ -29,16 +28,15 @@ Add agentgateway to your OpenCode configuration file `~/.opencode/config.json`:
 
 ## Project-Level Configuration
 
-For project-specific configuration, create `.opencode/config.json` in your project root:
+For project-specific configuration, create `opencode.json` in your project root:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "servers": {
-      "agentgateway": {
-        "type": "http",
-        "url": "http://localhost:15000/mcp/http"
-      }
+    "agentgateway": {
+      "type": "remote",
+      "url": "http://localhost:15000/mcp/http"
     }
   }
 }
@@ -50,20 +48,15 @@ Include authentication if required:
 
 ```json
 {
+  "$schema": "https://opencode.ai/config.json",
   "mcp": {
-    "servers": {
-      "agentgateway": {
-        "type": "http",
-        "url": "http://localhost:15000/mcp/http",
-        "headers": {
-          "Authorization": "Bearer your-token-here"
-        }
+    "agentgateway": {
+      "type": "remote",
+      "url": "http://localhost:15000/mcp/http",
+      "headers": {
+        "Authorization": "Bearer your-token-here"
       }
     }
   }
 }
 ```
-
-{{< callout type="warning" >}}
-The SSE transport (`type: sse`, `/mcp/sse`) is deprecated and should not be used. Use the streamable HTTP transport shown above instead.
-{{< /callout >}}
