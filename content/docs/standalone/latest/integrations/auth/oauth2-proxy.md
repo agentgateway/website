@@ -4,9 +4,9 @@ weight: 25
 description: Add user authentication with GitHub, Google, Azure AD, and other OAuth providers by integrating agentgateway with OAuth2 Proxy.
 ---
 
-Agentgateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add user authentication through GitHub, Google, Azure AD, and other OAuth providers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/configuration/security/external-authz" >}}) policy to delegate authentication checks to OAuth2 Proxy, which redirects unauthenticated users to the provider's login page.
+Agentgateway can integrate with [OAuth2 Proxy](https://oauth2-proxy.github.io/oauth2-proxy/) to add browser authentication through GitHub, Google, Azure AD, and other OAuth providers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/configuration/security/external-authz" >}}) policy to send authentication checks to OAuth2 Proxy, which handles the redirect to the provider's login page.
 
-This guide uses GitHub as the example provider. For other providers, see [Use other OAuth providers](#other-providers).
+This guide uses GitHub as the example provider. If you use another provider, only the OAuth2 Proxy flags change.
 
 ## Before you begin
 
@@ -76,9 +76,9 @@ Create a `config.yaml` file. The configuration routes `/oauth2/*` requests to OA
 frontendPolicies:
   accessLog:
     add:
-      # Log the authenticated user's GitHub username and email
-      github.user: 'extauthz.githubUser'
-      github.email: 'extauthz.githubEmail'
+      # Log the authenticated user's identity and email
+      oauth.user: extauthz.oauthUser
+      oauth.email: extauthz.oauthEmail
 
 binds:
 - port: 3000
@@ -91,9 +91,6 @@ binds:
       matches:
       - path:
           pathPrefix: /oauth2
-      policies:
-        urlRewrite:
-          authority: none
       backends:
       - host: localhost:4180
 
@@ -121,26 +118,29 @@ binds:
               path: '"/oauth2/auth"'
               # Redirect unauthenticated users to login
               redirect: '"/oauth2/start?rd=" + request.path'
-              # Extract user info from OAuth2 Proxy response headers
-              metadata:
-                githubUser: response.headers["x-auth-request-user"]
-                githubEmail: response.headers["x-auth-request-email"]
               addRequestHeaders:
                 x-forwarded-host: request.host
               includeResponseHeaders:
               - x-auth-request-user
+              - x-auth-request-email
+              # Extract user info from OAuth2 Proxy response headers
+              metadata:
+                oauthUser: response.headers["x-auth-request-user"]
+                oauthEmail: response.headers["x-auth-request-email"]
 ```
 
 The following table describes the key settings in the configuration.
 
 | Setting | Description |
 |---------|-------------|
-| `frontendPolicies.accessLog.add` | Logs the GitHub username and email from authenticated requests. |
+| `frontendPolicies.accessLog.add` | Logs the authenticated user's identity and email. |
 | `routes` (`oauth2-proxy`) | Routes `/oauth2/*` requests to OAuth2 Proxy for login and callback handling. |
 | `routes` (`application`) | The protected MCP endpoint with external authorization. |
+| `extAuthz.includeRequestHeaders` | Forwards the browser session cookie to OAuth2 Proxy. |
 | `extAuthz.host` | The OAuth2 Proxy address for authentication checks. |
 | `extAuthz.protocol.http.path` | The endpoint that OAuth2 Proxy uses to validate authentication. |
 | `extAuthz.protocol.http.redirect` | Where to send unauthenticated users. |
+| `extAuthz.protocol.http.includeResponseHeaders` | Copies OAuth2 Proxy identity headers into the backend request. |
 | `extAuthz.protocol.http.metadata` | Extracts user information from the OAuth2 Proxy response headers. |
 
 ## Step 5: Start agentgateway
@@ -168,51 +168,11 @@ agentgateway -f config.yaml
    1. Open [http://localhost:3000/mcp](http://localhost:3000/mcp).
    2. You are redirected to GitHub for authentication.
    3. After you log in, you are redirected back to the MCP endpoint.
-   4. The agentgateway logs show your GitHub username and email in the `github.user` and `github.email` access log fields.
+   4. The agentgateway logs show the authenticated user's identity and email in the `oauth.user` and `oauth.email` access log fields.
 
-## Use other OAuth providers {#other-providers}
+## Other providers
 
-OAuth2 Proxy supports many providers. To use a different provider, update the Docker command from [Step 3](#step-3-start-oauth2-proxy).
-
-{{< tabs items="Google,Azure AD" >}}
-{{% tab %}}
-```bash
-docker run -d --name oauth2-proxy \
-  -p 4180:4180 \
-  --add-host=host.docker.internal:host-gateway \
-  -e OAUTH2_PROXY_CLIENT_ID=$GOOGLE_CLIENT_ID \
-  -e OAUTH2_PROXY_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET \
-  -e OAUTH2_PROXY_COOKIE_SECRET=$OAUTH2_PROXY_COOKIE_SECRET \
-  -e OAUTH2_PROXY_COOKIE_SECURE=false \
-  quay.io/oauth2-proxy/oauth2-proxy:latest \
-  --provider=google \
-  --email-domain=* \
-  --upstream=file:///dev/null \
-  --http-address=0.0.0.0:4180 \
-  --set-xauthrequest \
-  --reverse-proxy=true
-```
-{{% /tab %}}
-{{% tab %}}
-```bash
-docker run -d --name oauth2-proxy \
-  -p 4180:4180 \
-  --add-host=host.docker.internal:host-gateway \
-  -e OAUTH2_PROXY_CLIENT_ID=$AZURE_CLIENT_ID \
-  -e OAUTH2_PROXY_CLIENT_SECRET=$AZURE_CLIENT_SECRET \
-  -e OAUTH2_PROXY_COOKIE_SECRET=$OAUTH2_PROXY_COOKIE_SECRET \
-  -e OAUTH2_PROXY_COOKIE_SECURE=false \
-  quay.io/oauth2-proxy/oauth2-proxy:latest \
-  --provider=azure \
-  --oidc-issuer-url=https://login.microsoftonline.com/$AZURE_TENANT_ID/v2.0 \
-  --email-domain=* \
-  --upstream=file:///dev/null \
-  --http-address=0.0.0.0:4180 \
-  --set-xauthrequest \
-  --reverse-proxy=true
-```
-{{% /tab %}}
-{{< /tabs >}}
+OAuth2 Proxy supports many providers. The agentgateway configuration stays the same, but you should follow the OAuth2 Proxy documentation for the provider-specific flags and callback settings.
 
 ## Production considerations
 
