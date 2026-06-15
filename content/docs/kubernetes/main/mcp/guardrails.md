@@ -379,6 +379,64 @@ Verify that the policy server gates `tools/call` and mutates `tools/list` respon
    data: {"jsonrpc":"2.0","id":4,"result":{"content":[{"type":"text","text":"<!doctype html><html lang=\"en\">..."}]}}
    ```
 
+{{< doc-test paths="mcp-guardrails" >}}
+YAMLTest -f - <<'EOF'
+- name: MCP endpoint accepts initialize request
+  retries: 10
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /mcp
+    method: POST
+    headers:
+      content-type: application/json
+      accept: "application/json, text/event-stream"
+      mcp-protocol-version: "2025-03-26"
+    body: |
+      {"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="mcp-guardrails" >}}
+# Assert the guardrails behaviors end-to-end: response-phase mutation,
+# request-phase deny, and request-phase allow.
+MCP_ADDR="http://${INGRESS_GW_ADDRESS}:80/mcp"
+HDRS=(-H "Content-Type: application/json" -H "Accept: application/json, text/event-stream" -H "MCP-Protocol-Version: 2025-03-26")
+
+# Retry until the route is programmed and the policy-server connection is warm.
+LIST=""
+for attempt in $(seq 1 20); do
+  SID=$(curl -s --max-time 10 -D - "${HDRS[@]}" "$MCP_ADDR" \
+    -d '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}}}' \
+    | grep -i "mcp-session-id:" | sed 's/.*: //' | tr -d '\r')
+  if [ -z "$SID" ]; then sleep 5; continue; fi
+  curl -s --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
+    -d '{"jsonrpc":"2.0","method":"notifications/initialized"}' >/dev/null || true
+  LIST=$(curl -s --max-time 15 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
+    -d '{"jsonrpc":"2.0","id":2,"method":"tools/list","params":{}}')
+  echo "$LIST" | grep -q '\[extmcp\]' && break
+  sleep 5
+done
+
+# Response phase: the policy server appended " [extmcp]" to tool descriptions.
+echo "$LIST" | grep -q '\[extmcp\]' || { echo "FAIL: tools/list was not mutated: $LIST"; exit 1; }
+
+# Request phase: a tool whose name contains "forbidden" is denied.
+DENY=$(curl -s --max-time 10 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
+  -d '{"jsonrpc":"2.0","id":3,"method":"tools/call","params":{"name":"forbidden-tool","arguments":{}}}')
+echo "$DENY" | grep -q 'is not allowed' || { echo "FAIL: forbidden tool was not denied: $DENY"; exit 1; }
+
+# Request phase: the allowed "fetch" tool passes through and returns a result.
+ALLOW=$(curl -s --max-time 15 "${HDRS[@]}" -H "mcp-session-id: $SID" "$MCP_ADDR" \
+  -d '{"jsonrpc":"2.0","id":4,"method":"tools/call","params":{"name":"fetch","arguments":{"url":"https://example.com"}}}')
+echo "$ALLOW" | grep -q '"result"' || { echo "FAIL: allowed tool did not return a result: $ALLOW"; exit 1; }
+
+echo "PASS: MCP guardrails mutate, deny, and allow behaviors verified"
+{{< /doc-test >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
