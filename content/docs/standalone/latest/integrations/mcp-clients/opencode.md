@@ -20,7 +20,7 @@ Add agentgateway to your OpenCode configuration file `opencode.json`:
   "mcp": {
     "agentgateway": {
       "type": "remote",
-      "url": "http://localhost:15000/mcp/http"
+      "url": "http://localhost:3000/mcp/http"
     }
   }
 }
@@ -36,7 +36,7 @@ For project-specific configuration, create `opencode.json` in your project root:
   "mcp": {
     "agentgateway": {
       "type": "remote",
-      "url": "http://localhost:15000/mcp/http"
+      "url": "http://localhost:3000/mcp/http"
     }
   }
 }
@@ -52,7 +52,7 @@ Include authentication if required:
   "mcp": {
     "agentgateway": {
       "type": "remote",
-      "url": "http://localhost:15000/mcp/http",
+      "url": "http://localhost:3000/mcp/http",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }

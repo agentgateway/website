@@ -12,13 +12,13 @@ Configure Antigravity IDE to use agentgateway as an MCP server.
 
 ## Configuration
 
-Add agentgateway to your Antigravity IDE MCP configuration. Set the `serverUrl` to your agentgateway proxy address, which defaults to `http://localhost:15000/mcp/http` for local deployments:
+Add agentgateway to your Antigravity IDE MCP configuration. Set the `serverUrl` to your agentgateway proxy address, which defaults to `http://localhost:3000/mcp/http` for local deployments:
 
 ```json
 {
   "mcpServers": {
     "agentgateway": {
-      "serverUrl": "http://localhost:15000/mcp/http"
+      "serverUrl": "http://localhost:3000/mcp/http"
     }
   }
 }
