@@ -1,11 +1,13 @@
 ---
 title: Providers
 weight: 20
-description:
+description: Canonical provider list and configuration guides for standalone LLM backends
 test: skip
 ---
 
-Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}}provider{{< /gloss >}}.
+This is the canonical list of standalone LLM {{< gloss "Provider" >}}provider{{< /gloss >}} configuration guides.
+
+If you arrived from `/integrations/llm-providers/`, use this section for the complete provider directory and detailed setup for each backend.
 
 ## OpenAI-compatible providers
 
