@@ -36,45 +36,15 @@ For distributed tracing:
 4. Set URL to `http://jaeger:16686` (or your Jaeger URL)
 5. Click **Save & Test**
 
-## Sample dashboard
+## Agentgateway dashboard
 
-Create a dashboard with these panels:
+Import the pre-built Agentgateway Grafana dashboard JSON (maintained with the Agentgateway Helm chart):
 
-### Request rate
+1. Download `agentgateway.json` from [/docs/kubernetes/main/observability/agentgateway.json](/docs/kubernetes/main/observability/agentgateway.json)
+2. In Grafana, go to **Dashboards** → **New** → **Import**
+3. Upload the JSON file (or paste its contents), select your **Prometheus** data source when prompted, and click **Import**
 
-```promql
-rate(agentgateway_requests_total[5m])
-```
-
-### Request duration (p99)
-
-```promql
-histogram_quantile(0.99, rate(agentgateway_request_duration_seconds_bucket[5m]))
-```
-
-### Active connections
-
-```promql
-agentgateway_connections_active
-```
-
-### Error rate
-
-```promql
-rate(agentgateway_requests_total{status=~"5.."}[5m]) / rate(agentgateway_requests_total[5m])
-```
-
-### LLM token usage
-
-```promql
-rate(agentgateway_llm_tokens_total[5m])
-```
-
-### MCP sessions
-
-```promql
-agentgateway_mcp_sessions_active
-```
+If you're following the `latest` docs, download the dashboard from [/docs/kubernetes/latest/observability/agentgateway.json](/docs/kubernetes/latest/observability/agentgateway.json) instead.
 
 ## Docker Compose example
 
