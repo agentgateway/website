@@ -110,14 +110,16 @@ binds:
           exposeHeaders: ["Mcp-Session-Id"]
         extAuthz:
           host: localhost:4180
-          includeRequestHeaders:
-          - cookie
           protocol:
+            includeRequestHeaders:
+            - cookie
             http:
               # Check authentication status
-              path: '"/oauth2/auth"'
+              path: |
+                "/oauth2/auth"
               # Redirect unauthenticated users to login
-              redirect: '"/oauth2/start?rd=" + request.path'
+              redirect: |
+                "/oauth2/start?rd=" + request.path
               addRequestHeaders:
                 x-forwarded-host: request.host
               includeResponseHeaders:
