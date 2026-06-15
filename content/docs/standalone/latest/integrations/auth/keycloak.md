@@ -4,7 +4,7 @@ weight: 20
 description: Validate Keycloak tokens with agentgateway
 ---
 
-[Keycloak](https://www.keycloak.org/) is an open-source identity and access management solution. agentgateway can validate tokens issued by Keycloak for MCP and HTTP routes.
+[Keycloak](https://www.keycloak.org/) is an open-source identity and access management solution. agentgateway can validate tokens issued by Keycloak for MCP routes, and it can use OIDC browser authentication for HTTP routes.
 
 ## Why use Keycloak with agentgateway?
 

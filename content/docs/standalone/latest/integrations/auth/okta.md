@@ -40,8 +40,6 @@ binds:
         mcpAuthentication:
           mode: strict
           issuer: https://your-org.okta.com/oauth2/default
-          audiences:
-          - api://agentgateway
           jwks:
             url: https://your-org.okta.com/oauth2/default/v1/keys
           resourceMetadata:

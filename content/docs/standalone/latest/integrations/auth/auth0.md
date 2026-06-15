@@ -39,8 +39,6 @@ binds:
       policies:
         mcpAuthentication:
           issuer: https://your-tenant.auth0.com/
-          audiences:
-          - https://api.example.com
           jwks:
             url: https://your-tenant.auth0.com/.well-known/jwks.json
           resourceMetadata:
