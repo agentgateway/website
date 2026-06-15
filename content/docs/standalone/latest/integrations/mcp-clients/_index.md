@@ -11,6 +11,4 @@ Configure popular AI coding assistants and tools to use agentgateway as their MC
 
 {{< reuse "agw-docs/standalone/prereq-mcp-clients.md" >}}
 
-## IDE Comparison
 
-{{< reuse "agw-docs/snippets/mcp-ide-comparison.md" >}}
