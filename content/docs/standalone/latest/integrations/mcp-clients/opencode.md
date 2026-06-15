@@ -19,8 +19,8 @@ Add agentgateway to your OpenCode configuration file `~/.opencode/config.json`:
   "mcp": {
     "servers": {
       "agentgateway": {
-        "type": "sse",
-        "url": "http://localhost:15000/mcp/sse"
+        "type": "http",
+        "url": "http://localhost:15000/mcp/http"
       }
     }
   }
@@ -30,23 +30,6 @@ Add agentgateway to your OpenCode configuration file `~/.opencode/config.json`:
 ## Project-Level Configuration
 
 For project-specific configuration, create `.opencode/config.json` in your project root:
-
-```json
-{
-  "mcp": {
-    "servers": {
-      "agentgateway": {
-        "type": "sse",
-        "url": "http://localhost:15000/mcp/sse"
-      }
-    }
-  }
-}
-```
-
-## Using Streamable HTTP
-
-For improved performance, use the streamable HTTP transport:
 
 ```json
 {
@@ -70,8 +53,8 @@ Include authentication if required:
   "mcp": {
     "servers": {
       "agentgateway": {
-        "type": "sse",
-        "url": "http://localhost:15000/mcp/sse",
+        "type": "http",
+        "url": "http://localhost:15000/mcp/http",
         "headers": {
           "Authorization": "Bearer your-token-here"
         }
@@ -80,3 +63,7 @@ Include authentication if required:
   }
 }
 ```
+
+{{< callout type="warning" >}}
+The SSE transport (`type: sse`, `/mcp/sse`) is deprecated and should not be used. Use the streamable HTTP transport shown above instead.
+{{< /callout >}}
