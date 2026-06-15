@@ -33,30 +33,9 @@ Access Phoenix at [http://localhost:6006](http://localhost:6006).
 
 ## Configuration
 
-Phoenix accepts OpenTelemetry traces natively:
+Phoenix accepts OpenTelemetry traces natively on port 4317 (gRPC) and port 6006 (HTTP), so agentgateway can export traces directly to Phoenix without an intermediate OpenTelemetry Collector.
 
-```yaml
-# otel-collector-config.yaml
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-
-exporters:
-  otlp:
-    endpoint: http://localhost:4317
-    tls:
-      insecure: true
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      exporters: [otlp]
-```
-
-Configure agentgateway:
+Configure agentgateway to send traces directly to Phoenix:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -82,6 +61,8 @@ binds:
 
 ## Docker Compose example
 
+Agentgateway exports traces directly to Phoenix without needing an OTel Collector:
+
 ```yaml
 version: '3'
 services:
@@ -91,14 +72,21 @@ services:
       - "3000:3000"
     volumes:
       - ./config.yaml:/etc/agentgateway/config.yaml
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://phoenix:4317
 
   phoenix:
     image: arizephoenix/phoenix:latest
     ports:
       - "6006:6006"
       - "4317:4317"
+```
+
+When using Docker Compose, update your config.yaml to use the Phoenix service name:
+
+```yaml
+config:
+  tracing:
+    otlpEndpoint: http://phoenix:4317
+    randomSampling: true
 ```
 
 ## Learn more
