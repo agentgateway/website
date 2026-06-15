@@ -1,5 +1,6 @@
 ---
 title: Debug your setup
+description: Inspect and troubleshoot a standalone agentgateway instance using admin endpoints and agctl.
 weight: 15
 ---
 

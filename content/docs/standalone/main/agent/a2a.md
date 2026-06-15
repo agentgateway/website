@@ -1,7 +1,7 @@
 ---
 title: Connect to an agent
 weight: 10
-description:
+description: Proxy requests to agents that communicate via the A2A protocol.
 ---
 
 Proxy requests to an agent that communicates via the agent-to-agent protocol (A2A).

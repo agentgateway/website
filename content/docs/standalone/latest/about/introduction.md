@@ -1,7 +1,7 @@
 ---
 title: Introduction
 weight: 10 
-description:
+description: Get started with agentgateway and explore its key features and policies.
 ---
 
 {{< reuse "agw-docs/snippets/about-agw.md" >}} The rest of this page covers the motivation behind agentgateway, the core problems it solves, and its key features.

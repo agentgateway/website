@@ -2,7 +2,7 @@
 title: Inference routing
 weight: 50
 icon: alt_route
-description:
+description: Configure Kubernetes Gateway API or standalone inference routing for AI workloads.
 test: skip
 ---
 
