@@ -1,0 +1,89 @@
+# Test dependencies for the MCP guardrails (ExtMCP) example.
+#
+#   * mcp-website-fetcher – the MCP target the gateway proxies to. Public image,
+#     exposes a "fetch" tool over SSE on container port 8000.
+#   * ext-mcp            – a sample gRPC ExtMCP policy server on container port
+#     9001. It denies tools/call when the tool name contains "forbidden", and on
+#     tools/list responses appends " [extmcp]" to every tool description. This
+#     comes from the agentgateway testbox image (sample/example server).
+#
+# Apply this first.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcp-website-fetcher
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: mcp-website-fetcher
+  template:
+    metadata:
+      labels:
+        app: mcp-website-fetcher
+    spec:
+      containers:
+      - name: mcp-website-fetcher
+        image: ghcr.io/peterj/mcp-website-fetcher:main
+        imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcp-website-fetcher
+  namespace: default
+  labels:
+    app: mcp-website-fetcher
+spec:
+  selector:
+    app: mcp-website-fetcher
+  ports:
+  - port: 80
+    targetPort: 8000
+    appProtocol: agentgateway.dev/mcp
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ext-mcp-server
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: ext-mcp-server
+  template:
+    metadata:
+      labels:
+        app: ext-mcp-server
+    spec:
+      securityContext:
+        sysctls:
+        - name: net.ipv4.ip_unprivileged_port_start
+          value: "0"
+      containers:
+      - image: ghcr.io/agentgateway/testbox:0.0.1
+        imagePullPolicy: IfNotPresent
+        name: ext-mcp-server
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          periodSeconds: 5
+          failureThreshold: 3
+---
+# gRPC ExtMCP policy server. appProtocol h2c selects cleartext HTTP/2 (gRPC).
+apiVersion: v1
+kind: Service
+metadata:
+  name: ext-mcp
+  namespace: default
+  labels:
+    app: ext-mcp
+spec:
+  ports:
+    - port: 4445
+      targetPort: 9001
+      protocol: TCP
+      appProtocol: kubernetes.io/h2c
+  selector:
+    app: ext-mcp-server
