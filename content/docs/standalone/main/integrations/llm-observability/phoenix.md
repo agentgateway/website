@@ -72,14 +72,21 @@ services:
       - "3000:3000"
     volumes:
       - ./config.yaml:/etc/agentgateway/config.yaml
-    environment:
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://phoenix:4317
 
   phoenix:
     image: arizephoenix/phoenix:latest
     ports:
       - "6006:6006"
       - "4317:4317"
+```
+
+When using Docker Compose, update your config.yaml to use the Phoenix service name:
+
+```yaml
+config:
+  tracing:
+    otlpEndpoint: http://phoenix:4317
+    randomSampling: true
 ```
 
 ## Learn more
