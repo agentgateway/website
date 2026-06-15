@@ -19,7 +19,7 @@ Route Claude Code to any OpenAI-compatible LLM provider (e.g., vLLM, Ollama, or 
    llm:
      models:
      - name: "*"
-       provider: openai
+       provider: openAI
        params:
          baseURL: "http://localhost:8000/v1"  # vLLM or similar OpenAI-compatible endpoint
          apiKey: "mock-key"  # Not used for local providers, but required by config
@@ -29,12 +29,6 @@ Route Claude Code to any OpenAI-compatible LLM provider (e.g., vLLM, Ollama, or 
    Replace `http://localhost:8000/v1` with your OpenAI-compatible provider's endpoint.
 
    {{< doc-test paths="claude-code-openai-validate" >}}
-   mkdir -p "$HOME/.local/bin"
-   export PATH="$HOME/.local/bin:$PATH"
-   VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-   BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-   curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-   chmod +x "$HOME/.local/bin/agentgateway"
    agentgateway -f config.yaml --validate-only
    {{< /doc-test >}}
 
@@ -89,12 +83,6 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
    ```
 
    {{< doc-test paths="claude-code-anthropic-validate" >}}
-   mkdir -p "$HOME/.local/bin"
-   export PATH="$HOME/.local/bin:$PATH"
-   VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-   BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-   curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-   chmod +x "$HOME/.local/bin/agentgateway"
    export ANTHROPIC_API_KEY="${ANTHROPIC_API_KEY:-test}"
    agentgateway -f config.yaml --validate-only
    {{< /doc-test >}}
@@ -192,5 +180,5 @@ If you have a Claude Teams or Pro account, you can use agentgateway for request 
 
 {{< cards >}}
   {{< card path="/llm/providers/anthropic" title="Anthropic provider" subtitle="Complete Anthropic provider configuration" >}}
-  {{< card path="/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardails for LLM requests and responses" >}}
+  {{< card path="/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}
