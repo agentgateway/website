@@ -1,6 +1,6 @@
 ---
 title: agctl config
-weight: 118
+weight: 10
 description: Reference for the `agctl config` command.
 test: skip
 ---

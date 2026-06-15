@@ -1,6 +1,6 @@
 ---
 title: agctl trace
-weight: 115
+weight: 10
 description: Reference for the `agctl trace` command.
 test: skip
 ---
