@@ -1,6 +1,7 @@
 ---
 title: Dynamic MCP
 weight: 20
+description: Route traffic to MCP servers dynamically using label selectors so backends can be updated without changing the Backend resource.
 test:
   dynamic-mcp:
   - file: content/docs/kubernetes/main/install/helm.md
