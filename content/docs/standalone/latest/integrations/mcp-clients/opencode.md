@@ -20,7 +20,7 @@ Add agentgateway to your OpenCode configuration file `~/.opencode/config.json`:
     "servers": {
       "agentgateway": {
         "type": "sse",
-        "url": "http://localhost:15000/mcp/sse"
+        "url": "http://localhost:3000/sse"
       }
     }
   }
@@ -37,7 +37,7 @@ For project-specific configuration, create `.opencode/config.json` in your proje
     "servers": {
       "agentgateway": {
         "type": "sse",
-        "url": "http://localhost:15000/mcp/sse"
+        "url": "http://localhost:3000/sse"
       }
     }
   }
@@ -54,7 +54,7 @@ For improved performance, use the streamable HTTP transport:
     "servers": {
       "agentgateway": {
         "type": "http",
-        "url": "http://localhost:15000/mcp/http"
+        "url": "http://localhost:3000/mcp/http"
       }
     }
   }
@@ -71,7 +71,7 @@ Include authentication if required:
     "servers": {
       "agentgateway": {
         "type": "sse",
-        "url": "http://localhost:15000/mcp/sse",
+        "url": "http://localhost:3000/sse",
         "headers": {
           "Authorization": "Bearer your-token-here"
         }
