@@ -35,36 +35,13 @@ Sign up at [langfuse.com](https://langfuse.com/) and get your API keys.
 
 ## Configuration
 
-Langfuse accepts OpenTelemetry traces. Configure an OTEL Collector to forward traces:
-
-```yaml
-# otel-collector-config.yaml
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-
-exporters:
-  otlphttp:
-    endpoint: https://cloud.langfuse.com/api/public/otel
-    headers:
-      Authorization: "Basic <base64-encoded-public-key:secret-key>"
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      exporters: [otlphttp]
-```
-
-Configure agentgateway:
+Langfuse accepts OpenTelemetry traces directly. Configure agentgateway to export traces directly to your Langfuse deployment:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 config:
   tracing:
-    otlpEndpoint: http://localhost:4317
+    otlpEndpoint: https://cloud.langfuse.com/api/public/otel
     randomSampling: true
 
 binds:
@@ -82,7 +59,31 @@ binds:
           key: "$OPENAI_API_KEY"
 ```
 
+### Authentication
+
+Langfuse Cloud requires Basic Authentication for direct OTLP export. To authenticate, set the `OTEL_EXPORTER_OTLP_HEADERS` environment variable with your Langfuse API credentials:
+
+```bash
+# Base64-encode your Langfuse public key and secret key
+export OTEL_EXPORTER_OTLP_HEADERS="Authorization=Basic $(echo -n 'your-public-key:your-secret-key' | base64)"
+
+# Also set the protocol to HTTP/protobuf (Langfuse Cloud requires HTTP, not gRPC)
+export OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+```
+
+If you're using a self-hosted Langfuse instance that doesn't require authentication, you can omit the `OTEL_EXPORTER_OTLP_HEADERS` variable and point directly to your instance:
+
+```yaml
+# For self-hosted Langfuse
+config:
+  tracing:
+    otlpEndpoint: http://localhost:4317  # or your self-hosted instance URL
+    randomSampling: true
+```
+
 ## Docker Compose example
+
+For **Langfuse Cloud**, agentgateway exports traces directly without needing an OTel Collector:
 
 ```yaml
 version: '3'
@@ -93,16 +94,22 @@ services:
       - "3000:3000"
     volumes:
       - ./config.yaml:/etc/agentgateway/config.yaml
-    depends_on:
-      - otel-collector
+    environment:
+      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic ${LANGFUSE_AUTH_HEADER}
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+```
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:latest
+For **self-hosted Langfuse**, you can point agentgateway directly to your instance:
+
+```yaml
+version: '3'
+services:
+  agentgateway:
+    image: ghcr.io/agentgateway/agentgateway:latest
     ports:
-      - "4317:4317"
+      - "3000:3000"
     volumes:
-      - ./otel-collector-config.yaml:/etc/otel/config.yaml
-    command: ["--config", "/etc/otel/config.yaml"]
+      - ./config.yaml:/etc/agentgateway/config.yaml
 
   langfuse:
     image: langfuse/langfuse:latest

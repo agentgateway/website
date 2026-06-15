@@ -83,25 +83,6 @@ services:
       - '--config.file=/etc/prometheus/prometheus.yml'
 ```
 
-## Kubernetes ServiceMonitor
-
-For Kubernetes deployments with Prometheus Operator:
-
-```yaml
-apiVersion: monitoring.coreos.com/v1
-kind: ServiceMonitor
-metadata:
-  name: agentgateway
-spec:
-  selector:
-    matchLabels:
-      app: agentgateway
-  endpoints:
-  - port: metrics
-    interval: 15s
-    path: /metrics
-```
-
 ## Learn more
 
 {{< cards >}}

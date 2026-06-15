@@ -73,47 +73,6 @@ services:
       - COLLECTOR_OTLP_ENABLED=true
 ```
 
-## Kubernetes deployment
-
-```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: jaeger
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: jaeger
-  template:
-    metadata:
-      labels:
-        app: jaeger
-    spec:
-      containers:
-      - name: jaeger
-        image: jaegertracing/all-in-one:latest
-        ports:
-        - containerPort: 16686
-        - containerPort: 4317
-        env:
-        - name: COLLECTOR_OTLP_ENABLED
-          value: "true"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: jaeger
-spec:
-  selector:
-    app: jaeger
-  ports:
-  - name: ui
-    port: 16686
-  - name: otlp
-    port: 4317
-```
-
 ## Learn more
 
 {{< cards >}}
