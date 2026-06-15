@@ -138,7 +138,7 @@ The following table describes the key settings in the configuration.
 | `frontendPolicies.accessLog.add` | Logs the authenticated user's identity and email. |
 | `routes` (`oauth2-proxy`) | Routes `/oauth2/*` requests to OAuth2 Proxy for login and callback handling. |
 | `routes` (`application`) | The protected MCP endpoint with external authorization. |
-| `extAuthz.includeRequestHeaders` | Forwards the browser session cookie to OAuth2 Proxy. |
+| `extAuthz.protocol.includeRequestHeaders` | Forwards the browser session cookie to OAuth2 Proxy. |
 | `extAuthz.host` | The OAuth2 Proxy address for authentication checks. |
 | `extAuthz.protocol.http.path` | The endpoint that OAuth2 Proxy uses to validate authentication. |
 | `extAuthz.protocol.http.redirect` | Where to send unauthenticated users. |
