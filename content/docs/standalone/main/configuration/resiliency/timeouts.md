@@ -1,6 +1,7 @@
 ---
 title: Timeouts
 weight: 10
+description: Set request and backend timeouts to prevent long-running requests.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}

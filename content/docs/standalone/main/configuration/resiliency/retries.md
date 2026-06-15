@@ -1,6 +1,7 @@
 ---
 title: Retries
 weight: 10
+description: Configure automatic retry attempts for failed backend requests.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}

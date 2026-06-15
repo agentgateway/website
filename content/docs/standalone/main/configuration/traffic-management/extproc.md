@@ -1,7 +1,7 @@
 ---
 title: External processing (ExtProc)
 weight: 16
-description: 
+description: Use external gRPC servers to modify HTTP requests and responses.
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}

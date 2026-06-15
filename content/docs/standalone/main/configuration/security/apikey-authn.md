@@ -1,6 +1,7 @@
 ---
 title: API Key authentication
 weight: 17
+description: Authenticate requests using API keys with configurable validation modes.
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}

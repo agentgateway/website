@@ -1,7 +1,7 @@
 ---
 title: Overview
 weight: 10
-description:
+description: Manage agentgateway through configuration files in JSON or YAML format.
 next: /configuration/listeners
 ---
 

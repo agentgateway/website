@@ -1,6 +1,7 @@
 ---
 title: Rewrites
 weight: 13
+description: Modify URL hostnames and paths of incoming requests dynamically.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}

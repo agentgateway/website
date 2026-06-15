@@ -1,6 +1,7 @@
 ---
 title: Backend authentication
 weight: 10
+description: Attach authentication tokens to outgoing backend requests.
 ---
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}

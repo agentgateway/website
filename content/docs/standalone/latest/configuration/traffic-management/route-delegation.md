@@ -1,7 +1,7 @@
 ---
 title: Route delegation
 weight: 15
-description: Delegate routing decisions to route groups so that different teams can independently manage their own routes.
+description: Delegate routing decisions to route groups for independent team management.
 ---
 
 Delegate routing decisions from a parent route to a set of child routes defined in a route group. Route delegation lets you break up large routing configurations into smaller, independently managed pieces.
