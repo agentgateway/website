@@ -46,7 +46,7 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-For other providers, see the [LLM provider integrations]({{< link-hextra path="/integrations/llm-providers/" >}}).
+For other providers, see the [LLM providers guide]({{< link-hextra path="/llm/providers/" >}}).
 
 ### Step 2: Start agentgateway
 
