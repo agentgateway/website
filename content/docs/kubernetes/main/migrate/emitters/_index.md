@@ -1,5 +1,6 @@
 ---
 title: "Emitters"
+description: Learn about the provider/emitter architecture for converting Ingress to Gateway API
 weight: 20
 test: skip
 ---
