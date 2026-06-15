@@ -1,10 +1,7 @@
 You can use the pre-built Grafana dashboards to observe the control and data plane statuses. 
 
-1. Create a Grafana dashboard for the control metrics. You can download the following sample Grafana dashboard configuration: 
-   * [Agentgateway dashboard](https://github.com/agentgateway/website/blob/main/content/docs/kubernetes/main/observability/agentgateway.json)
-     ```sh {paths="otel-stack"}
-     curl -L "https://agentgateway.dev/docs/kubernetes/main/observability/agentgateway.json" >> agentgateway.json 
-     ```
+1. Create a Grafana dashboard for the control metrics. Download the dashboard JSON for your current docs version:
+   * [Agentgateway dashboard](agentgateway.json)
 
 2. Import the Grafana dashboard.
    ```sh {paths="otel-stack"}
@@ -30,25 +27,8 @@ open "http://$(kubectl -n telemetry get svc kube-prometheus-stack-grafana -o jso
 {{% /tab %}}
    {{< /tabs >}}
             
-1. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the translation and reconciliation time, total number of operations, or the number of resources in your cluster. 
+1. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that panel data is being populated for your Agentgateway control plane and gateway traffic metrics.
       
    {{< reuse-image src="img/agentgateway-dashboard.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-dashboard.png" >}}
    
-   | Metric | Description |
-   | -- | -- |
-   | Number of translations running per translator | The number of active Kubernetes Gateway API translations. |
-   | Number of reconciliations running per controller | The number of active reconciliations for each controller. |
-   | Number of resources | The number of Kubernetes Gateway API and kgateway resources in your cluster. |
-   | Translations rate by results | The rate of translations in seconds and their statuses. |
-   | Reconciliation rate by results | The rate of reconciliations in seconds and their statuses. |
-   | Status syncs rate by results | The rate of status syncs in seconds and their statuses. |
-   | Total operations | The total number of reconciliations for each controller plus the total number of translations for each translator, and the total number of status syncs for each status syncer. |   
-   | XDS resources by gateway | The total number of resources in the XDS snapshot for each gateway, such as clusters, endpoints, listeners, and routes. |
-   | Routing domains per gateway port | The total number of routing domains for each gateway and port. |
-   | Reconciliation latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of reconciliation processes to finish. |
-   | Status Syncer Latency |  In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of status syncs to finish. | 
-   | Translation Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of translations to finish. |
-   | XDS Snapshot Sync Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of xDS snapshots to finish. |
-   | Resource Status Sync Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of resource status syncs to finish. |
-   | Status Syncs by Resource | The total number of status syncs completed by resource type. |
