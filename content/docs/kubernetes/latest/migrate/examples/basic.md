@@ -1,5 +1,6 @@
 ---
 title: "Basic Ingress"
+description: Convert a basic NGINX Ingress to Gateway API resources with the ingress2gateway tool.
 weight: 10
 ---
 
