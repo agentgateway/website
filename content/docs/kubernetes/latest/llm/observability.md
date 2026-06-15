@@ -1,7 +1,7 @@
 ---
 title: Metrics and logs
 weight: 95
-description:
+description: View LLM-specific metrics and access logs for token usage and request monitoring.
 test:
   llm-observability:
   - file: content/docs/kubernetes/latest/quickstart/install.md

@@ -1,7 +1,7 @@
 ---
 title: Mock LLM with httpbun
 weight: 100
-description:
+description: Set up httpbun as a mock OpenAI-compatible LLM backend for testing without API keys.
 test:
   setup-httpbun-llm:
   - file: content/docs/kubernetes/main/install/helm.md
