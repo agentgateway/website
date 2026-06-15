@@ -1,6 +1,7 @@
 ---
 title: Host
 weight: 10
+description: Match requests by hostname.
 test:
   host-match:
   - file: content/docs/kubernetes/latest/quickstart/install.md

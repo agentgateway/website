@@ -1,7 +1,7 @@
 ---
 title: gRPC routing
 weight: 10
-description:
+description: Route and configure gRPC traffic in agentgateway.
 test:
   grpc:
   - file: content/docs/kubernetes/main/quickstart/install.md

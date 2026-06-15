@@ -1,7 +1,7 @@
 ---
 title: Dynamic Forward Proxy (DFP)
 weight: 10
-description:
+description: Route traffic dynamically to upstream servers based on request characteristics.
 test:
   dfp:
   - file: content/docs/kubernetes/main/quickstart/install.md

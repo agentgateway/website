@@ -1,6 +1,7 @@
 ---
 title: Response headers
 weight: 20
+description: Add, set, or remove response headers.
 test:
   add-response-header:
   - file: content/docs/kubernetes/latest/quickstart/install.md
