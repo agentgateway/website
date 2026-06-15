@@ -26,7 +26,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse"
+      "url": "http://localhost:3000/sse"
     }
   }
 }
@@ -39,7 +39,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse"
+      "url": "http://localhost:3000/sse"
     }
   }
 }
@@ -52,7 +52,7 @@ Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 Configure Claude Code to connect to agentgateway.
 
 ```bash
-claude mcp add agentgateway --transport sse http://localhost:15000/mcp/sse
+claude mcp add agentgateway --transport sse http://localhost:3000/sse
 ```
 
 Or, add to your project's `.mcp.json`.
@@ -62,7 +62,7 @@ Or, add to your project's `.mcp.json`.
   "mcpServers": {
     "agentgateway": {
       "type": "sse",
-      "url": "http://localhost:15000/mcp/sse"
+      "url": "http://localhost:3000/sse"
     }
   }
 }
@@ -76,7 +76,7 @@ For better performance, use the streamable HTTP transport.
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/http"
+      "url": "http://localhost:3000/mcp/http"
     }
   }
 }
@@ -90,7 +90,7 @@ If agentgateway requires authentication, include the token in the URL or headers
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse",
+      "url": "http://localhost:3000/sse",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }

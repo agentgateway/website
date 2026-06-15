@@ -18,7 +18,7 @@ Add agentgateway to your Windsurf MCP configuration. Create or edit `~/.windsurf
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse"
+      "url": "http://localhost:3000/sse"
     }
   }
 }
@@ -32,7 +32,7 @@ For project-specific settings, create `.windsurf/mcp.json` in your project root:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse"
+      "url": "http://localhost:3000/sse"
     }
   }
 }
@@ -46,7 +46,7 @@ For improved performance, use the streamable HTTP transport:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/http"
+      "url": "http://localhost:3000/mcp/http"
     }
   }
 }
@@ -60,7 +60,7 @@ Include authentication headers if required:
 {
   "mcpServers": {
     "agentgateway": {
-      "url": "http://localhost:15000/mcp/sse",
+      "url": "http://localhost:3000/sse",
       "headers": {
         "Authorization": "Bearer your-token-here"
       }
