@@ -7,7 +7,7 @@ test: skip
 
 This is the canonical list of standalone LLM {{< gloss "Provider" >}}provider{{< /gloss >}} configuration guides.
 
-If you arrived from `/integrations/llm-providers/`, use this section for the complete provider directory and detailed setup for each backend.
+If you arrived from `/integrations/llm-providers/`, use this section for the complete provider directory and detailed setup for each backend. Those integration-oriented provider URLs are retained for compatibility, but this page is the source of truth for the standalone provider list.
 
 ## OpenAI-compatible providers
 
