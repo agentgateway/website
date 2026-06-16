@@ -65,7 +65,7 @@ open "http://$(kubectl -n telemetry get svc kube-prometheus-stack-grafana -o jso
 {{% /tab %}}
    {{< /tabs >}}
             
-1. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the request rate by gateway, LLM token consumption, or MCP tool calls. 
+4. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the proxy overview of CPU and memory usage, request rate by gateway, LLM token consumption, or MCP tool calls. 
       
    {{< reuse-image src="img/agentgateway-dashboard.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-dashboard.png" >}}

@@ -229,7 +229,7 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
                  regex: __meta_kubernetes_pod_label_(.+)
                - source_labels: [__meta_kubernetes_namespace]
                  action: replace
-                 target_label: kube_namespace
+                 target_label: namespace
                - source_labels: [__meta_kubernetes_pod_name]
                  action: replace
                  target_label: pod
@@ -265,7 +265,7 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
                  regex: __meta_kubernetes_pod_label_(.+)
                - source_labels: [__meta_kubernetes_namespace]
                  action: replace
-                 target_label: kube_namespace
+                 target_label: namespace
                - source_labels: [__meta_kubernetes_pod_name]
                  action: replace
                  target_label: pod
