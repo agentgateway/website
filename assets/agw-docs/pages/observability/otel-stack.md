@@ -269,6 +269,16 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
                - source_labels: [__meta_kubernetes_pod_name]
                  action: replace
                  target_label: pod
+     processors:
+       # The Prometheus receiver strips the `_info` suffix from OpenMetrics "info" metrics
+       # (such as agentgateway_build_info) and folds them into `target_info`. Some dashboards,
+       # including the Agentgateway dashboard's Memory and CPU panels, join on the original
+       # `*_info` series, so this processor restores the suffix for info-typed metrics.
+       transform/info-suffix:
+         metric_statements:
+           - context: metric
+             statements:
+               - set(metric.name, Concat([metric.name, "info"], "_")) where metric.metadata["prometheus.type"] == "info"
      exporters:
        prometheus:
          endpoint: 0.0.0.0:9099
@@ -280,7 +290,7 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
        pipelines:
          metrics:
            receivers: [prometheus/agentgateway-dataplane, prometheus/agentgateway-controlplane]
-           processors: [batch]
+           processors: [transform/info-suffix, batch]
            exporters: [debug, prometheusremotewrite/kube-prometheus-stack]
    EOF
    ```
@@ -546,6 +556,12 @@ EOF
 #   * Control plane metrics: the test confirms that `agentgateway_controller_reconciliations_total`,
 #     emitted by the agentgateway control plane and collected by the control-plane scrape
 #     job, is stored in Prometheus.
+#   * Overview dashboard panels: the test confirms that the data behind the "Memory" and "CPU"
+#     panels is in Prometheus, that is, the cAdvisor metrics (container_memory_working_set_bytes,
+#     container_cpu_usage_seconds_total) for the agentgateway namespace and the
+#     agentgateway_build_info series those panels join on. agentgateway_build_info only reaches
+#     Prometheus because of the transform/info-suffix processor in the metrics collector
+#     config; without it the Prometheus receiver folds info metrics into target_info.
 #   * Dashboard import: the "Explore Grafana dashboards" step confirms that Grafana loaded
 #     the imported Agentgateway dashboard (by uid).
 #   * Backend readiness: Loki, Tempo, the three OTel collectors, Prometheus, and Grafana
@@ -559,17 +575,11 @@ EOF
 #     requires extra proxy configuration covered on the access logging and tracing pages
 #     (an `OtlpAccessLog` access-log policy and a tracing policy). Only backend readiness is
 #     checked here.
-#   * The dashboard's "Memory" and "CPU" panels. Those panels join cAdvisor metrics on the
-#     `agentgateway_build_info` series. Under this guide's push model the OTel metrics
-#     collector folds `agentgateway_build_info` into `target_info` (OpenMetrics "info"
-#     handling), so it is not queryable as its own series in Prometheus and the join produces
-#     nothing. Confirmed on a live run: `agentgateway_build_info` returned 0 series while
-#     `target_info` returned 2. The raw cAdvisor data is present, but the panels do not render.
 #   * The dashboard's "LLM" and "MCP" panels (for example `agentgateway_gen_ai_*` and
 #     `agentgateway_mcp_requests_total`), which require LLM and MCP traffic that this guide
 #     does not generate.
 #   * Visual rendering of any panel. The test only confirms that the metrics behind the
-#     "Requests" panels exist in Prometheus and that Grafana loaded the dashboard.
+#     "Requests" and "Overview" panels exist in Prometheus and that Grafana loaded the dashboard.
 # ============================================================================
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 # Generate data-plane traffic through the agentgateway proxy, then allow time for the
@@ -615,6 +625,67 @@ YAMLTest -f - <<'EOF'
   retries: 5
   http:
     url: "http://localhost:9090/api/v1/query?query=agentgateway_controller_reconciliations_total"
+    method: GET
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: prometheus-kube-prometheus-stack-prometheus
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.data.result[0].value[1]"
+        comparator: exists
+# Overview panels: the Memory and CPU panels join cAdvisor metrics on agentgateway_build_info.
+# This series only survives the OTel pipeline because of the transform/info-suffix processor
+# (the Prometheus receiver otherwise folds info metrics into target_info). If this assertion
+# fails, that processor is missing or misconfigured and the Memory/CPU panels render nothing.
+- name: Overview panel join series (agentgateway_build_info) is stored in Prometheus
+  retries: 5
+  http:
+    url: "http://localhost:9090/api/v1/query?query=agentgateway_build_info"
+    method: GET
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: prometheus-kube-prometheus-stack-prometheus
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.data.result[0].value[1]"
+        comparator: exists
+# Overview "Memory" panel input: container_memory_working_set_bytes{namespace="agentgateway-system"}
+# ( %7B = "{", %3D = "=", %22 = '"', %7D = "}" )
+- name: Memory panel data (container_memory_working_set_bytes) is stored in Prometheus
+  retries: 5
+  http:
+    url: "http://localhost:9090/api/v1/query?query=container_memory_working_set_bytes%7Bnamespace%3D%22agentgateway-system%22%7D"
+    method: GET
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: prometheus-kube-prometheus-stack-prometheus
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.data.result[0].value[1]"
+        comparator: exists
+# Overview "CPU" panel input: container_cpu_usage_seconds_total{namespace="agentgateway-system"}
+- name: CPU panel data (container_cpu_usage_seconds_total) is stored in Prometheus
+  retries: 5
+  http:
+    url: "http://localhost:9090/api/v1/query?query=container_cpu_usage_seconds_total%7Bnamespace%3D%22agentgateway-system%22%7D"
     method: GET
   source:
     type: pod
