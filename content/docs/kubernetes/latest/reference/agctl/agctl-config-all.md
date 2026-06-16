@@ -1,6 +1,6 @@
 ---
 title: agctl config all
-weight: 76
+weight: 10
 description: Reference for the `agctl config all` command.
 test: skip
 ---

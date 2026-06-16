@@ -459,6 +459,7 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai-backend anthr
 ## Next steps
 
 - Learn about [transformations]({{< link-hextra path="/traffic-management/transformations/" >}}) for more advanced request manipulation
+- Route to [multiple inference pools]({{< link-hextra path="/llm/multiple-inference-pools/" >}}) with native body-based routing
 - Set up [load balancing]({{< link-hextra path="/llm/load-balancing/" >}}) across multiple providers
 - Configure [failover]({{< link-hextra path="/llm/failover/" >}}) for high availability
 - Use [cost tracking]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor spending per route
