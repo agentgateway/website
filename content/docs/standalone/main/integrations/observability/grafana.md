@@ -2,6 +2,10 @@
 title: Grafana
 weight: 30
 description: Visualize agentgateway metrics and traces with Grafana
+test:
+  grafana:
+  - file: content/docs/standalone/main/integrations/observability/grafana.md
+    path: grafana
 ---
 
 Use Grafana to create dashboards for agentgateway metrics and visualize distributed traces.
@@ -10,11 +14,21 @@ Use Grafana to create dashboards for agentgateway metrics and visualize distribu
 
 Run Grafana with Docker:
 
-```bash
+```bash {paths="grafana"}
 docker run -d --name grafana \
   -p 3001:3000 \
   grafana/grafana:latest
 ```
+
+{{< doc-test paths="grafana" >}}
+# Remove the Grafana container and downloaded dashboard when the test exits, then wait for the
+# Grafana API to become available before the dashboard import and verification steps.
+trap 'docker rm -f grafana >/dev/null 2>&1; rm -f agentgateway-dashboard.json' EXIT
+for i in $(seq 1 30); do
+  curl -sf http://localhost:3001/api/health >/dev/null 2>&1 && break
+  sleep 2
+done
+{{< /doc-test >}}
 
 Access Grafana at [http://localhost:3001](http://localhost:3001) (default credentials: admin/admin).
 
@@ -41,7 +55,7 @@ For distributed tracing:
 Instead of building panels by hand, import the pre-built agentgateway dashboard. This dashboard is maintained in the [agentgateway repository](https://github.com/agentgateway/agentgateway/blob/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json) and visualizes both the control and data plane metrics that agentgateway exposes.
 
 1. Download the agentgateway Grafana dashboard.
-   ```bash
+   ```bash {paths="grafana"}
    curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" -o agentgateway-dashboard.json
    ```
 
@@ -54,6 +68,38 @@ Instead of building panels by hand, import the pre-built agentgateway dashboard.
 5. Verify that you see metrics, such as the request rate by gateway, LLM token consumption, or MCP tool calls. The dashboard includes the following sections.
 
    {{< reuse "agw-docs/snippets/agentgateway/grafana-dashboard-metrics.md" >}}
+
+{{< doc-test paths="grafana" >}}
+# Confirm the downloaded file is the expected agentgateway dashboard (valid JSON with the
+# agentgateway uid), then import it into the running Grafana through the API. This mirrors the
+# manual "Upload dashboard JSON file" step so the test can verify the dashboard loads.
+jq -e '.uid == "agentgateway"' agentgateway-dashboard.json >/dev/null
+jq '{dashboard: ., overwrite: true}' agentgateway-dashboard.json \
+  | curl -sf -u admin:admin -H "Content-Type: application/json" \
+      -X POST http://localhost:3001/api/dashboards/db -d @- >/dev/null
+{{< /doc-test >}}
+
+{{< doc-test paths="grafana" >}}
+YAMLTest -f - <<'EOF'
+# Confirm that Grafana loaded the imported Agentgateway dashboard. The Authorization header is
+# "admin:admin" (the default Grafana credentials from the Quick start) base64-encoded for basic auth.
+- name: Agentgateway dashboard is loaded in Grafana
+  retries: 10
+  http:
+    url: "http://localhost:3001/api/dashboards/uid/agentgateway"
+    method: GET
+    headers:
+      authorization: "Basic YWRtaW46YWRtaW4="
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.dashboard.title"
+        comparator: contains
+        value: Agentgateway
+EOF
+{{< /doc-test >}}
 
 ## Build custom panels
 
