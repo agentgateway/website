@@ -126,9 +126,9 @@ Agentgateway includes the following attributes in traces. The list below is repr
 - `url.scheme` - URL scheme
 - `network.protocol.version` - Network protocol version
 
-For MCP-specific attributes such as `mcp.method.name` and `mcp.session.id`, see [MCP Observability](/mcp/mcp-observability/).
+For MCP-specific attributes such as `mcp.method.name` and `mcp.session.id`, see [MCP Observability]({{< link-hextra path="/mcp/mcp-observability/" >}}).
 
-For LLM-specific attributes such as `gen_ai.operation.name` and `gen_ai.request.model`, see [LLM Observability](/llm/observability/).
+For LLM-specific attributes such as `gen_ai.operation.name` and `gen_ai.request.model`, see [LLM Observability]({{< link-hextra path="/llm/observability/" >}}).
 
 ## Learn more
 
