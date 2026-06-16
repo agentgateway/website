@@ -10,6 +10,7 @@ agctl controls and inspects Agentgateway resources
 ### SEE ALSO
 
 * [agctl controller](../agctl-controller/)	 - Inspect and manage the agentgateway controller
+* [agctl costs](../agctl-costs/)	 - Manage model cost catalogs
 * [agctl proxy](../agctl-proxy/)	 - Inspect and manage the agentgateway proxy
 * [agctl version](../agctl-version/)	 - Print agctl version information
 
