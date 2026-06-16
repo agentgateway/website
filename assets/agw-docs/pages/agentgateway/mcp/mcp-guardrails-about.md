@@ -1,10 +1,10 @@
-Use MCP guardrails (also called ExtMCP) to apply external authorization and external processing to Model Context Protocol (MCP) requests. An external gRPC policy server inspects, allows, mutates, or denies individual MCP method calls, such as `tools/call` and `tools/list`, using MCP request context instead of generic HTTP metadata.
+Use MCP guardrails (also called ExtMCP) to apply external authorization and external processing to Model Context Protocol (MCP) requests. An external gRPC policy server inspects, allows, mutates, or denies individual MCP method calls, such as `tools/call` and `tools/list`, by using the MCP request context instead of generic HTTP metadata.
 
 ## About MCP guardrails
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} already supports [external authorization]({{< link-hextra path="/security/extauth/basic" >}}) and [external processing (ExtProc)]({{< link-hextra path="/traffic-management/extproc" >}}) for HTTP traffic. Both call out to an external gRPC server so that you can centralize authorization and request or response mutation outside the proxy. However, these integrations operate on raw HTTP. To make a decision about an MCP tool call, the external server must reassemble the HTTP body, parse the JSON-RPC envelope, and handle MCP framing itself.
 
-MCP guardrails solve this by calling out at the MCP method layer instead of the HTTP layer. The ExtMCP protocol is modeled on Envoy's ext_authz, but the external server receives a structured, MCP-native payload: the JSON-RPC method name, the target backend, the request or response parameters, and selected request headers. The server can then make a decision based on the actual tool, prompt, or resource being accessed, without re-implementing MCP semantics.
+MCP guardrails solve this challenge by calling out at the MCP method layer instead of the HTTP layer. The ExtMCP protocol is modeled on Envoy's `ext_authz` filter, but the external server receives a structured, MCP-native payload, including the JSON-RPC method name, the target backend, the request or response parameters, and selected request headers. The server can then make a decision based on the actual tool, prompt, or resource that is being accessed, without re-implementing MCP semantics.
 
 Common use cases include the following:
 
@@ -13,9 +13,9 @@ Common use cases include the following:
 * Rewrite request parameters or response results to redact sensitive data or inject context.
 * Centralize MCP authorization logic in an external service that you already operate.
 
-### Sequence diagram
+## How it works
 
-You attach a guardrails policy to an MCP backend. The policy defines an ordered list of *processors*. Each processor points to a remote gRPC server and a `methods` map that opts specific JSON-RPC methods into a *phase*. When a client calls an opted-in method, agentgateway calls the remote server before forwarding the request, after receiving the response, or both.
+When a client calls an MCP method that you opt in, agentgateway calls your ExtMCP server before it forwards the request, after it receives the response, or both. At each call, the server can pass the message through unchanged, return a mutated message, or deny the call with an error that agentgateway returns to the client as a JSON-RPC error.
 
 ```mermaid
 sequenceDiagram
@@ -23,44 +23,103 @@ sequenceDiagram
     participant Client as MCP client
     participant AGW as agentgateway
     participant Ext as ExtMCP server
-    participant MCP as MCP target
+    participant MCP as MCP backend
     Client->>AGW: tools/call (JSON-RPC)
     AGW->>Ext: CheckRequest (method, tool, params, headers)
-    alt Allowed or mutated
-        Ext-->>AGW: Pass or Mutated params
-        AGW->>MCP: Forward (possibly mutated) request
-        MCP-->>AGW: Result
-        AGW->>Ext: CheckResponse (result)
-        Ext-->>AGW: Pass or Mutated result
-        AGW-->>Client: Result
-    else Denied
+    alt Request denied
         Ext-->>AGW: AuthorizationError
         AGW-->>Client: JSON-RPC error
+    else Request passed or mutated
+        Ext-->>AGW: Pass request or return mutated params
+        AGW->>MCP: Forward request
+        MCP-->>AGW: Result
+        AGW->>Ext: CheckResponse (result)
+        alt Response denied
+            Ext-->>AGW: AuthorizationError
+            AGW-->>Client: JSON-RPC error
+        else Response passed or mutated
+            Ext-->>AGW: Pass or return mutated response
+            AGW-->>Client: Result
+        end
     end
 ```
 
-The remote server returns one of three outcomes for each call:
+The server returns one of three outcomes for each call:
 
 * **Pass**: Allow the request or response unchanged.
 * **Mutate**: Replace the JSON-RPC `params` (request phase) or `result` (response phase) before agentgateway forwards it.
-* **Deny**: Reject the call with a JSON-RPC error that is returned to the client.
+* **Deny**: Reject the call with a JSON-RPC error that is returned to the client. The server can deny a call in either the request phase or the response phase.
+
+## Configuration
+
+You configure MCP guardrails as an ordered list of *processors*. A processor defines the actions to take for a particular set of MCP methods, and each processor is enforced by an ExtMCP server. You can chain multiple processors, where each one calls a different ExtMCP server that performs a specific manipulation, such as one server for authorization and another for content redaction.
+
+The following example shows a guardrails policy with a single processor.
+
+{{< conditional-text include-if="kubernetes" >}}
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: mcp-guardrails
+spec:
+  targetRefs:
+    - group: agentgateway.dev
+      kind: AgentgatewayBackend
+      name: mcp-backend
+  backend:
+    mcp:
+      guardrails:
+        processors:
+        - remote:
+            backendRef:
+              name: ext-mcp
+              port: 4445
+            failureMode: FailClosed
+          methods:
+            tools/call: Request
+            tools/list: Response
+```
+{{< /conditional-text >}}
+{{< conditional-text include-if="standalone" >}}
+```yaml
+mcpGuardrails:
+  processors:
+  - kind: remote
+    host: "localhost:9001"
+    failureMode: failClosed
+    methods:
+      tools/call: request
+      tools/list: response
+```
+{{< /conditional-text >}}
+
+For each processor, you define the following settings:
+
+* **The ExtMCP server**: The {{< conditional-text include-if="kubernetes" >}}`remote.backendRef`{{< /conditional-text >}}{{< conditional-text include-if="standalone" >}}`remote` reference, such as `host`{{< /conditional-text >}} points to the gRPC server that enforces the processor. The server must implement the [ExtMCP protocol](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto).
+* **The methods and phases**: The `methods` map selects which MCP methods run through the processor and in which phase. See [Methods](#methods) and [Phases](#phases).
+* **The failure mode**: The `failureMode` setting controls what happens when the server is unreachable or returns an error. See [Failure modes](#failure-modes).
+
+### Methods
+
+The `methods` map keys are the JSON-RPC method names from the [MCP specification](https://modelcontextprotocol.io/specification), such as `tools/call`, `tools/list`, `prompts/get`, and `resources/read`. Each key maps to the phase in which agentgateway calls the processor for that method.
+
+Method keys can be exact (`tools/call`), a prefix wildcard (`tools/*`), a suffix wildcard (`*/list`), or `*` for all methods. The most specific match wins. Methods that match no key, including unknown methods, bypass the processor.
 
 ### Phases
 
-The `methods` map controls when each method runs through a processor. Set a phase for each method that you want to send to the server.
+The phase controls when agentgateway calls the processor for a method. Set a phase for each method that you want to send to the server.
 
 | Phase | When the server is called |
 |-------|---------------------------|
 | `Off` | Never. The method bypasses this processor. |
-| `Request` | Before the request reaches the MCP target. Use to gate or mutate the incoming call. |
-| `Response` | After the MCP target returns a result. Use to filter or rewrite the response. |
+| `Request` | Before the request reaches the MCP backend. Use to gate or mutate the incoming call. |
+| `Response` | After the MCP backend returns a result. Use to filter or rewrite the response. |
 | `Full` | Both the request and response phases. |
-
-Method keys can be exact (`tools/call`), a prefix wildcard (`tools/*`), a suffix wildcard (`*/list`), or `*` for all methods. The most specific match wins. Methods that match no key, including unknown methods, bypass the processor.
 
 ### Failure modes
 
-The `failureMode` setting controls what happens when the remote server is unreachable or returns an error.
+The `failureMode` setting controls what happens when the server is unreachable or returns an error.
 
 * **failClosed** (default): Deny the request. Use when the policy server must approve every call.
 * **failOpen**: Allow the request. Use when availability matters more than strict enforcement.

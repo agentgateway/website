@@ -1,6 +1,6 @@
 ---
-title: MCP guardrails
-weight: 45
+title: Set up MCP guardrails
+weight: 20
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 test:
   mcp-guardrails:
@@ -8,19 +8,19 @@ test:
     path: experimental
   - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/mcp/guardrails.md
+  - file: content/docs/kubernetes/main/mcp/guardrails/setup.md
     path: mcp-guardrails
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/mcp/mcp-guardrails-about.md" >}}
+Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}).
+
+In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
 ## Set up MCP guardrails
-
-In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
 {{% steps %}}
 
@@ -198,7 +198,7 @@ EOF
 
 ### Step 5: Apply the guardrails policy
 
-Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that attaches MCP guardrails to the {{< reuse "agw-docs/snippets/backend.md" >}}. The policy sends `tools/call` through the request phase and `tools/list` through the response phase. The `failureMode: FailClosed` setting denies requests if the policy server is unreachable.
+Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that attaches MCP guardrails to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 ```yaml {paths="mcp-guardrails"}
 kubectl apply -f- <<EOF
@@ -226,6 +226,14 @@ spec:
 EOF
 ```
 
+Review the following table to understand the policy.
+
+| Setting | Description |
+|---------|-------------|
+| `remote.backendRef` | The ExtMCP policy server that agentgateway calls. This example points to the `ext-mcp` Service from Step 2. |
+| `failureMode: FailClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `FailOpen`. |
+| `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: Request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: Response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}). |
+
 {{< doc-test paths="mcp-guardrails" >}}
 YAMLTest -f - <<'EOF'
 - name: wait for mcp-guardrails policy to be accepted
@@ -245,15 +253,13 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-### Step 6: Optional: Set a timeout for the policy server {#timeout}
+### Step 6: Set a timeout for the policy server (optional) {#timeout}
 
-The guardrails callout has no deadline by default. If the policy server is slow or cold, the request can hang instead of letting `failureMode` engage. To bound the call, set a request timeout on the policy server with a `backend.http.requestTimeout` policy.
+The guardrails callout has no deadline by default. If the policy server is slow or cold, the request can hang instead of letting `failureMode` engage. To bound the call, set a request timeout on the policy server with a `backend.http.requestTimeout` policy. When the timeout is reached, agentgateway applies the processor's `failureMode`: with `FailClosed`, the client receives a JSON-RPC error, and with `FailOpen`, the request proceeds without the guardrail.
 
-A backend policy that targets a `Service` only attaches once that Service is part of the dataplane config graph, which means it must be referenced by a route.
+The timeout policy targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder that is not used for MCP traffic, and clients continue to call the gateway on the `/mcp` path from Step 4.
 
-Create an HTTPRoute that references the `ext-mcp` Service so that the timeout policy attaches, then create the timeout policy.
-
-```yaml
+```yaml {paths="mcp-guardrails"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute

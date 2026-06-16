@@ -1,10 +1,12 @@
 ---
-title: MCP guardrails
-weight: 45
+title: Set up MCP guardrails
+weight: 20
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 ---
 
-{{< reuse "agw-docs/pages/agentgateway/mcp/mcp-guardrails-about.md" >}}
+Gate and mutate Model Context Protocol (MCP) method calls with an external policy server. For more information about how MCP guardrails work, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}).
+
+In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
 
 ## Before you begin
 
@@ -12,14 +14,12 @@ description: Gate and mutate MCP method calls with an external ExtMCP policy ser
 
 ## Set up MCP guardrails
 
-In this guide, you route `tools/call` and `tools/list` requests through a sample ExtMCP server that denies any tool whose name contains `forbidden` and annotates each tool description in `tools/list` responses.
-
 1. Start a sample ExtMCP policy server. This example uses a prebuilt gRPC server that denies `tools/call` when the tool name contains `forbidden`, and appends ` [extmcp]` to every tool description in `tools/list` responses. The server listens on port `9001`.
    ```sh
    docker run --rm -p 9001:9001 ghcr.io/agentgateway/testbox:0.0.1
    ```
 
-2. In another terminal, create a `config.yaml` file. The MCP backend exposes a local stdio MCP server, and the `mcpGuardrails` policy on the target routes `tools/call` through the request phase and `tools/list` through the response phase. The `failureMode: failClosed` setting denies requests if the policy server is unreachable.
+2. In another terminal, create a `config.yaml` file. The MCP backend exposes a local stdio MCP server, and the `mcpGuardrails` policy on the target routes selected MCP methods through the ExtMCP server.
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    binds:
@@ -53,6 +53,15 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
                        tools/call: request
                        tools/list: response
    ```
+
+   Review the following table to understand the `mcpGuardrails` policy.
+
+   | Setting | Description |
+   |---------|-------------|
+   | `kind: remote` | Use a remote gRPC ExtMCP server to enforce this processor. |
+   | `host` | The address of the ExtMCP policy server. This example points to the sample server from the previous step. |
+   | `failureMode: failClosed` | Deny requests if the policy server is unreachable or returns an error. To allow requests instead, set `failOpen`. |
+   | `methods` | The MCP methods to route through the policy server, and the phase for each. `tools/call: request` sends each tool call to the server *before* it reaches the MCP backend, so the server can allow, mutate, or deny the call. `tools/list: response` sends the tool listing to the server *after* the backend returns it, so the server can filter or annotate the list. For the full list of phases and method matching, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}). |
 
 3. Run agentgateway with the configuration file.
    ```sh
