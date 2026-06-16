@@ -114,6 +114,7 @@ EOF
 
 ## Step 2: Route with agentgateway {#agentgateway}
 
+{{< version exclude-if="1.3.x" >}}
 Create an HTTPRoute resource that routes incoming traffic to the A2A server.
 
 ```yaml {paths="a2a"}
@@ -132,6 +133,70 @@ spec:
         port: 9090
 EOF
 ```
+{{< /version >}}
+
+{{< version include-if="1.3.x" >}}
+Create an HTTPRoute resource that routes incoming traffic to the A2A server. You can route directly to the Service that you created, or route through an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource. The `a2a` backend type lets you select an A2A server by its host and port, including A2A servers that run outside your cluster.
+
+{{< tabs items="Route to the Service,Route with an AgentgatewayBackend" tabTotal="2" >}}
+{{% tab tabName="Route to the Service" %}}
+Create an HTTPRoute that routes directly to the A2A Service. The `appProtocol: kgateway.dev/a2a` setting on the Service configures {{< reuse "agw-docs/snippets/agentgateway.md" >}} to use the A2A protocol.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: a2a
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+  - backendRefs:
+      - name: a2a-agent
+        port: 9090
+EOF
+```
+{{% /tab %}}
+{{% tab tabName="Route with an AgentgatewayBackend" %}}
+First, create an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource that defines the A2A server as a backend. The `a2a` type configures {{< reuse "agw-docs/snippets/agentgateway.md" >}} to use the A2A protocol when it connects to the `host` and `port` that you specify.
+
+```yaml {paths="a2a"}
+kubectl apply -f- <<EOF
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+metadata:
+  name: a2a-backend
+spec:
+  a2a:
+    host: a2a-agent.default.svc.cluster.local
+    port: 9090
+EOF
+```
+
+Then, create an HTTPRoute that routes to the `{{< reuse "agw-docs/snippets/backend.md" >}}`.
+
+```yaml {paths="a2a"}
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: a2a
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  rules:
+  - backendRefs:
+      - name: a2a-backend
+        group: agentgateway.dev
+        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+EOF
+```
+{{% /tab %}}
+{{< /tabs >}}
+{{< /version >}}
 
 {{< doc-test paths="a2a" >}}
 kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
@@ -247,4 +312,5 @@ done
 kubectl delete Deployment a2a-agent --ignore-not-found
 kubectl delete Service a2a-agent --ignore-not-found
 kubectl delete HTTPRoute a2a --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} a2a-backend --ignore-not-found
 ```
