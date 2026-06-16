@@ -27,16 +27,16 @@ docker run -d --name grafana \
 # WHAT THIS TEST VALIDATES:
 #   * "Quick start": the docker run command starts Grafana and its API becomes healthy.
 #   * "Import the agentgateway dashboard" step 1: the curl download URL resolves and returns
-#     valid JSON whose uid is "agentgateway".
+#     valid JSON whose `uid` is "agentgateway".
 #   * Dashboard import (proxy for the manual UI steps 2-4): the dashboard imports into the
-#     running Grafana via the API, and Grafana loads it (uid "agentgateway", title "Agentgateway").
+#     running Grafana via the API, and Grafana loads it (`uid` "agentgateway", title "Agentgateway").
 #
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * "Add Prometheus data source" and "Add Jaeger data source" steps - UI-only click-throughs
-#     with no scriptable equivalent; the test also does not stand up Prometheus or Jaeger.
+#     with no command-line equivalent; the test also does not stand up Prometheus or Jaeger.
 #   * The manual "Upload dashboard JSON file" UI import - UI-only; the test imports the same
 #     JSON through the Grafana API as a proxy.
-#   * "Build custom panels" PromQL queries - display-only examples (promql language), not
+#   * "Build custom panels" `PromQL` queries - display-only examples (`promql` language), not
 #     runnable commands, and there is no metrics source to run them against.
 #   * "Docker Compose example" - display-only; it depends on a ./prometheus.yml that does not
 #     exist and is not meant to run in the test.
@@ -93,7 +93,7 @@ Instead of building panels by hand, import the pre-built agentgateway dashboard.
 
 {{< doc-test paths="grafana" >}}
 # Confirm the downloaded file is the expected agentgateway dashboard (valid JSON with the
-# agentgateway uid), then import it into the running Grafana through the API. This mirrors the
+# agentgateway `uid`), then import it into the running Grafana through the API. This mirrors the
 # manual "Upload dashboard JSON file" step so the test can verify the dashboard loads.
 jq -e '.uid == "agentgateway"' agentgateway-dashboard.json >/dev/null
 jq '{dashboard: ., overwrite: true}' agentgateway-dashboard.json \
