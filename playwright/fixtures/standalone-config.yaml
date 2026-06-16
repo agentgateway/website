@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Minimal standalone config for the screenshot POC. Mirrors the streamable-HTTP MCP
+# connect guide (content/docs/standalone/latest/mcp/connect/http.md) so the UI renders a
+# listener + backend the playground spec can drive.
+#
+# For a fully self-contained run, point `host` at a local MCP test server, e.g.:
+#   PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
+mcp:
+  port: 3000
+  policies:
+    cors:
+      # The UI playground (served from :15000) calls the listener — allow it.
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+      exposeHeaders:
+        - "Mcp-Session-Id"
+  targets:
+    - name: mcp
+      mcp:
+        host: http://localhost:3005/mcp/

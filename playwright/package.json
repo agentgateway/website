@@ -1,0 +1,16 @@
+{
+  "name": "agentgateway-ui-screenshots-poc",
+  "private": true,
+  "type": "module",
+  "description": "Proof of concept: Playwright screenshot automation for the agentgateway product UI",
+  "scripts": {
+    "test:standalone": "playwright test --project=standalone",
+    "test:kubernetes": "playwright test --project=kubernetes",
+    "update": "playwright test --update-snapshots",
+    "sync-docs": "node scripts/sync-docs-images.mjs",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "$comment": "Maps Playwright screenshot names (from toHaveScreenshot('NAME.png')) to doc image destinations under the repo's assets/img/ tree. `npm run sync-docs` copies the standalone-chromium baselines to these paths so committed doc images stay in sync with regression baselines. Paths are repo-relative. CONFIRM these against the real docs before committing regenerated images — some doc images are dark-mode or multi-step variants this POC does not capture.",
+  "images": {
+    "ui-playground-tools.png": "assets/img/ui-playground-tools.png",
+    "ui-playground-tool-echo.png": "assets/img/ui-playground-tool-echo.png",
+    "ui-overview.png": "assets/img/agentgateway-ui-config-overview.png"
+  }
+}
