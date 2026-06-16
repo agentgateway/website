@@ -1,5 +1,6 @@
 ---
 title: OTel stack
+description: Install an OpenTelemetry stack with Grafana, Loki, and Tempo for observability.
 weight: 10
 test:
   otel-stack:

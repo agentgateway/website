@@ -2,6 +2,7 @@
 title: Traffic management
 weight: 70
 icon: traffic
+description: Manage traffic with routing, matching, transformations, and traffic splitting.
 test: skip
 ---
 

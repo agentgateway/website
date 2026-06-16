@@ -1,7 +1,7 @@
 ---
 title: Static configuration
 weight: 10
-description:
+description: Configure static settings that are applied at startup time.
 ---
 
 Most agentgateway configurations dynamically update as you make changes to the binds, policies, backends, and so on. 

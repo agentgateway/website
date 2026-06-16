@@ -1,5 +1,6 @@
 ---
 title: "Backend TLS"
+description: Migrate NGINX backend TLS annotations to agentgateway backend TLS policies.
 weight: 80
 ---
 

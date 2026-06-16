@@ -1,6 +1,7 @@
 ---
 title: Basic authentication
 weight: 16
+description: Configure simple username and password authentication for your routes.
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}

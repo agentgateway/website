@@ -375,4 +375,4 @@ Build the agents. Put the gateway in front. Sleep at night.
 - [agentgateway](https://agentgateway.dev)
 - [agentgateway GitHub](https://github.com/agentgateway/agentgateway)
 - [agentgateway Docs — MCP](https://agentgateway.dev/docs/standalone/latest/about/introduction/)
-- [agentgateway Telemetry & Observability](https://agentgateway.dev/docs/standalone/latest/tutorials/telemetry/)
+- [agentgateway Telemetry & Observability](https://agentgateway.dev/docs/standalone/latest/integrations/observability/opentelemetry/)

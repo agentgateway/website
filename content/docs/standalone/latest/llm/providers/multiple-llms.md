@@ -1,6 +1,7 @@
 ---
 title: Multiple LLM providers
 weight: 90
+description: Configure load balancing across multiple LLM providers with Power of Two Choices algorithm
 ---
 
 Create a group of LLM providers for the same route. agentgateway automatically load balances requests across the providers in the group using the **Power of Two Choices (P2C)** algorithm. This algorithm picks two random providers, scores each one based on health, latency, and pending requests, and routes the request to the higher-scoring provider. All providers in a single group are treated as equally preferred — P2C distributes traffic across healthy providers but does not implement failover.

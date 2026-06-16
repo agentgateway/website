@@ -1,6 +1,7 @@
 ---
 title: Request headers
 weight: 10
+description: Add, set, or remove request headers.
 test:
   add-request-header:
   - file: content/docs/kubernetes/main/quickstart/install.md

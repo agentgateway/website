@@ -1,7 +1,7 @@
 ---
 title: Buffering
 weight: 10
-description:
+description: Buffer requests and responses for inspection or replay.
 test:
   buffering:
   - file: content/docs/kubernetes/latest/quickstart/install.md

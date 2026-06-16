@@ -1,5 +1,6 @@
 ---
 title: Control plane metrics
+description: Monitor control plane health and performance with Prometheus metrics.
 weight: 20
 test:
   control-plane-metrics:

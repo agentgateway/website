@@ -1,6 +1,7 @@
 ---
 title: Header
 weight: 10
+description: Match requests by header values using exact or regex patterns.
 test:
   header-match-exact:
   - file: content/docs/kubernetes/main/quickstart/install.md

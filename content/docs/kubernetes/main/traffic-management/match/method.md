@@ -1,6 +1,7 @@
 ---
 title: HTTP method
 weight: 10
+description: Match requests by HTTP method (GET, POST, PUT, PATCH, DELETE).
 test:
   method-match:
   - file: content/docs/kubernetes/main/quickstart/install.md

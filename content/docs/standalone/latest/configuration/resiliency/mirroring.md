@@ -1,6 +1,7 @@
 ---
 title: Mirroring
 weight: 10
+description: Send copies of requests to alternative backends for shadow testing.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}

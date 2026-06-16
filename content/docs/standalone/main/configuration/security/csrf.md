@@ -1,6 +1,7 @@
 ---
 title: CSRF
 weight: 11
+description: Protect against cross-site request forgery attacks with origin validation.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
