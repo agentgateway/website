@@ -1,7 +1,7 @@
 ---
 title: OpenAI
 weight: 20
-description:
+description: Configure OpenAI as an LLM provider for agentgateway.
 test:
   openai-setup:
   - file: content/docs/kubernetes/latest/quickstart/install.md

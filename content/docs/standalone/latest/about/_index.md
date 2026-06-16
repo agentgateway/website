@@ -2,7 +2,7 @@
 title: About
 weight: 20
 icon: info
-description: 
+description: Learn about agentgateway, its purpose, and core concepts.
 test: skip
 ---
 

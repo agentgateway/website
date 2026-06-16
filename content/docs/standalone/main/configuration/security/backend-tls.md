@@ -1,6 +1,7 @@
 ---
 title: Backend TLS
 weight: 10
+description: Configure TLS for secure connections to backend services.
 ---
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/">}}

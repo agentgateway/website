@@ -2055,8 +2055,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `request` _[HTTPHeaderFilter](#httpheaderfilter)_ | Header changes to apply before forwarding a request. |  | Optional: \{\} <br /> |
-| `response` _[HTTPHeaderFilter](#httpheaderfilter)_ | Header changes to apply before returning a response. |  | Optional: \{\} <br /> |
+| `request` _[HTTPHeaderFilter](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#httpheaderfilter)_ | Header changes to apply before forwarding a request. |  | Optional: \{\} <br /> |
+| `response` _[HTTPHeaderFilter](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#httpheaderfilter)_ | Header changes to apply before returning a response. |  | Optional: \{\} <br /> |
 
 
 #### HeaderName
@@ -2452,9 +2452,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `group` _[Group](#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
-| `kind` _[Kind](#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
-| `name` _[ObjectName](#objectname)_ | The name of the target resource. |  | Required: \{\} <br /> |
+| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
+| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | The name of the target resource. |  | Required: \{\} <br /> |
 
 
 #### LocalPolicyTargetReferenceWithSectionName
@@ -2472,9 +2472,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `group` _[Group](#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
-| `kind` _[Kind](#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
-| `name` _[ObjectName](#objectname)_ | The name of the target resource. |  | Required: \{\} <br /> |
+| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
+| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | The name of the target resource. |  | Required: \{\} <br /> |
 | `sectionName` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | The named section of the target resource. |  | Optional: \{\} <br /> |
 
 
@@ -2493,8 +2493,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `group` _[Group](#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
-| `kind` _[Kind](#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
+| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
+| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected target resource. |  | Required: \{\} <br /> |
 
 
@@ -2516,8 +2516,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `group` _[Group](#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
-| `kind` _[Kind](#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
+| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | The API group of the target resource.<br />For Kubernetes Gateway API resources, the group is `gateway.networking.k8s.io`. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Required: \{\} <br /> |
+| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected target resource. |  | Required: \{\} <br /> |
 | `sectionName` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | The named section of each selected target resource. |  | Optional: \{\} <br /> |
 
@@ -2582,7 +2582,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[ObjectName](#objectname)_ | The name of the referenced credential. |  | Required: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | The name of the referenced credential. |  | Required: \{\} <br /> |
 | `group` _string_ | The API group of the referenced credential.<br />Empty selects the core API group. |  | Optional: \{\} <br /> |
 | `kind` _string_ | The kind of the referenced credential.<br />Empty defaults to `Secret`. |  | Optional: \{\} <br /> |
 
@@ -2996,7 +2996,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `ancestorRef` _[ParentReference](#parentreference)_ | The ancestor resource that this status entry describes. |  | Required: \{\} <br /> |
+| `ancestorRef` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference)_ | The ancestor resource that this status entry describes. |  | Required: \{\} <br /> |
 | `controllerName` _string_ | The controller that wrote this status entry.<br />Example: `example.net/gateway-controller`. |  | Required: \{\} <br /> |
 | `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#condition-v1-meta) array_ | Conditions for this policy's effect on the specified ancestor. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 

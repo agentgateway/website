@@ -1,6 +1,7 @@
 ---
 title: Backend authentication
 weight: 10
+description: Attach authentication tokens to outgoing backend requests.
 ---
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
@@ -36,6 +37,23 @@ Google [Application Default Credentials](https://docs.cloud.google.com/docs/auth
 backendAuth:
   gcp: {}
 ```
+
+To request an access token (for most GCP services) or an ID token (for Cloud Run), set the `type` field:
+
+```yaml
+backendAuth:
+  gcp:
+    type: AccessToken
+```
+
+```yaml
+backendAuth:
+  gcp:
+    type: IdToken
+    audience: "https://my-cloudrun-service-xyz.run.app"
+```
+
+Credentials are sourced from the environment automatically (for example, via the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or a metadata server).
 
 AWS authentication can be used to sign requests to AWS services:
 

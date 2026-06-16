@@ -1,7 +1,7 @@
 ---
 title: Providers
 weight: 20
-description:
+description: Configure agentgateway for OpenAI-compatible and self-hosted LLM providers
 test: skip
 ---
 

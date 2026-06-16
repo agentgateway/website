@@ -9,7 +9,7 @@ The Anthropic Messages API (`/v1/messages`) is the native interface for Anthropi
 
 ## About
 
-The [Anthropic Messages API](https://docs.anthropic.com/en/api/messages) is the primary endpoint for Claude models. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement. Agentgateway automatically adds the `x-api-key` and `anthropic-version` headers that the Anthropic API requires.
+The [Anthropic Messages API](https://platform.claude.com/docs/en/api/messages) is the primary endpoint for Claude models. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement. Agentgateway automatically adds the `x-api-key` and `anthropic-version` headers that the Anthropic API requires.
 
 The related `/v1/messages/count_tokens` endpoint, which estimates token usage before sending a request, is handled by the `anthropicTokenCount` route type.
 
