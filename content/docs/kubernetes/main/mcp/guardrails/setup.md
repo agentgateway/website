@@ -70,6 +70,15 @@ Deploy a gRPC ExtMCP policy server. This example uses a prebuilt sample server t
 
 The Service uses `appProtocol: kubernetes.io/h2c` so that agentgateway connects to the policy server over cleartext HTTP/2 (gRPC).
 
+{{< callout type="info" >}}
+**Build your own ExtMCP server**: The sample server is for demonstration only. To build your own, implement the `ExtMcp` gRPC service from the [ExtMCP protocol definition](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto). The service has two methods:
+
+* `CheckRequest`: Called in the request phase, before the call reaches the MCP backend. Return the request unchanged, return mutated `params`, or return an `AuthorizationError` to deny the call.
+* `CheckResponse`: Called in the response phase, after the MCP backend returns a result. Return the response unchanged, return a mutated `result`, or return an `AuthorizationError` to deny the call.
+
+Generate gRPC bindings from the proto file in your language, implement the two methods, and serve them over cleartext HTTP/2 (h2c) on the port that your Service targets. For more information about the request and response messages, outcomes, and error codes, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}).
+{{< /callout >}}
+
 ```yaml {paths="mcp-guardrails"}
 kubectl apply -f- <<EOF
 apiVersion: apps/v1
@@ -255,9 +264,12 @@ EOF
 
 ### Step 6: Set a timeout for the policy server (optional) {#timeout}
 
-The guardrails callout has no deadline by default. If the policy server is slow or cold, the request can hang instead of letting `failureMode` engage. To bound the call, set a request timeout on the policy server with a `backend.http.requestTimeout` policy. When the timeout is reached, agentgateway applies the processor's `failureMode`: with `FailClosed`, the client receives a JSON-RPC error, and with `FailOpen`, the request proceeds without the guardrail.
+The guardrails callout has no deadline by default. If the policy server is slow or cold, the request can hang instead of letting `failureMode` engage. To bound the call, set a request timeout on the policy server with a `backend.http.requestTimeout` policy. When the timeout is reached, agentgateway applies the processor's `failureMode`.
 
-The timeout policy targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder that is not used for MCP traffic, and clients continue to call the gateway on the `/mcp` path from Step 4.
+- With `FailClosed`, the client receives a JSON-RPC error.
+- With `FailOpen`, the request proceeds without the guardrail.
+
+The timeout policy targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder for the ExtMCP server. The hostname is not used for traffic to your MCP servers such as the website fetcher example, and clients continue to call the gateway on the `/mcp` path from Step 4.
 
 ```yaml {paths="mcp-guardrails"}
 kubectl apply -f- <<EOF

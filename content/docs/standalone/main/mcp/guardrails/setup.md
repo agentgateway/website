@@ -19,6 +19,15 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
    docker run --rm -p 9001:9001 ghcr.io/agentgateway/testbox:0.0.1
    ```
 
+   {{< callout type="info" >}}
+   **Build your own ExtMCP server**: The sample server is for demonstration only. To build your own, implement the `ExtMcp` gRPC service from the [ExtMCP protocol definition](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto). The service has two methods:
+
+   * `CheckRequest`: Called in the request phase, before the call reaches the MCP backend. Return the request unchanged, return mutated `params`, or return an `AuthorizationError` to deny the call.
+   * `CheckResponse`: Called in the response phase, after the MCP backend returns a result. Return the response unchanged, return a mutated `result`, or return an `AuthorizationError` to deny the call.
+
+   Generate gRPC bindings from the proto file in your language, implement the two methods, and serve them over cleartext HTTP/2 (h2c) on the port that agentgateway connects to. For more information about the request and response messages, outcomes, and error codes, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}).
+   {{< /callout >}}
+
 2. In another terminal, create a `config.yaml` file. The MCP backend exposes a local stdio MCP server, and the `mcpGuardrails` policy on the target routes selected MCP methods through the ExtMCP server.
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
