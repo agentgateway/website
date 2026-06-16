@@ -1,5 +1,6 @@
 ---
 title: "Examples"
+description: Step-by-step migration examples for common Ingress NGINX configurations
 weight: 40
 test: skip
 ---

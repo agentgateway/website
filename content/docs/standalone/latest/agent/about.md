@@ -1,7 +1,7 @@
 ---
 title: About
 weight: 10
-description:
+description: Learn about AI agents, the A2A protocol, and how agents interact with tools.
 test: skip
 ---
 

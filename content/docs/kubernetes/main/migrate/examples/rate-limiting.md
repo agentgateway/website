@@ -1,5 +1,6 @@
 ---
 title: "Rate Limiting"
+description: Convert NGINX rate limiting annotations to agentgateway local rate limit policies.
 weight: 30
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: Request matching
 weight: 9
+description: Match incoming requests by path, headers, methods, and query parameters.
 ---
 
 Based on the route schema (see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}) for the full field reference and [schema validation]({{< link-hextra path="/reference/configuration/validation/" >}}) for IDE integration), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.

@@ -1,6 +1,7 @@
 ---
 title: Header control
 weight: 10
+description: Modify HTTP request and response headers.
 test: skip
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: Set up Keycloak
 weight: 20
+description: Deploy and configure Keycloak as an OAuth identity provider for MCP authentication with agentgateway.
 test:
   setup-keycloak:
   - file: content/docs/kubernetes/main/install/helm.md

@@ -1,6 +1,7 @@
 ---
 title: Network authorization
 weight: 13
+description: Enforce access control at the L4 level using CEL expressions.
 ---
 
 Attaches to: {{< badge content="Frontend" path="/configuration/overview/">}}

@@ -1,6 +1,7 @@
 ---
 title: Security
 weight: 60
+description: Secure backends and routes with authentication, authorization, and TLS policies.
 prev: /configuration/resiliency
 next: /reference
 test: skip

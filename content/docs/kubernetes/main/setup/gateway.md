@@ -1,7 +1,7 @@
 ---
 title: Set up an agentgateway proxy
 weight: 10
-description:
+description: Set up an agentgateway proxy with Gateway API resources and custom configuration.
 test:
   setup-gateway:
   - file: content/docs/kubernetes/main/quickstart/install.md

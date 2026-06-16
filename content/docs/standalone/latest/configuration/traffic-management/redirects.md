@@ -1,6 +1,7 @@
 ---
 title: Redirects
 weight: 11
+description: Return direct redirect responses to send users to another location.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}

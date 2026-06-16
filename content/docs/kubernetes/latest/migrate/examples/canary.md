@@ -1,5 +1,6 @@
 ---
 title: "Canary Deployments"
+description: Convert NGINX canary deployment annotations to Gateway API weighted backend routes.
 weight: 70
 ---
 

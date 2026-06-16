@@ -1,6 +1,7 @@
 ---
 title: Set up MCP auth
 weight: 40
+description: Secure MCP servers with OAuth 2.0 authentication using agentgateway and an identity provider like Keycloak.
 test:
   mcp-auth-setup:
   - file: content/docs/kubernetes/main/install/helm.md

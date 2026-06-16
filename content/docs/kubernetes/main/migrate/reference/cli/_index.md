@@ -1,5 +1,6 @@
 ---
 title: "CLI"
+description: CLI commands and flags for the ingress2gateway tool
 weight: 10
 test: skip
 ---

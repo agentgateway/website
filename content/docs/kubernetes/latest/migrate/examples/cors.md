@@ -1,5 +1,6 @@
 ---
 title: "CORS"
+description: Migrate NGINX CORS annotations to agentgateway CORS traffic policies.
 weight: 40
 ---
 
