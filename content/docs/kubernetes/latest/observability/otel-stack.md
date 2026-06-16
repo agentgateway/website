@@ -5,6 +5,10 @@ test:
   otel-stack:
   - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
+  - file: content/docs/kubernetes/latest/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/install/sample-app.md
+    path: install-httpbin
   - file: content/docs/kubernetes/latest/observability/otel-stack.md
     path: otel-stack
 ---

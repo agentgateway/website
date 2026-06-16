@@ -515,3 +515,57 @@ YAMLTest -f - <<'EOF'
       intervalSeconds: 5
 EOF
 {{< /doc-test >}}
+
+{{< doc-test paths="otel-stack" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for Prometheus StatefulSet to be ready
+  wait:
+    target:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: prometheus-kube-prometheus-stack-prometheus
+    jsonPath: "$.status.readyReplicas"
+    jsonPathExpectation:
+      comparator: greaterThan
+      value: 0
+    polling:
+      timeoutSeconds: 400
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
+
+{{< doc-test paths="otel-stack" >}}
+export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+# Generate data-plane traffic through the agentgateway proxy, then allow time for the
+# OTel metrics collector to scrape the proxy (default 60s interval) and remote-write the
+# metrics to Prometheus. The loop runs for more than two scrape intervals so that at least
+# one scrape lands after Prometheus is ready to receive remote-write data.
+for i in $(seq 1 30); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" || true
+  sleep 5
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="otel-stack" >}}
+YAMLTest -f - <<'EOF'
+- name: agentgateway data-plane metrics are stored in Prometheus
+  retries: 5
+  http:
+    url: "http://localhost:9090/api/v1/query?query=agentgateway_requests_total"
+    method: GET
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: prometheus-kube-prometheus-stack-prometheus
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.data.result[0].value[1]"
+        comparator: exists
+EOF
+{{< /doc-test >}}
