@@ -21,6 +21,28 @@ docker run -d --name grafana \
 ```
 
 {{< doc-test paths="grafana" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES:
+#   * "Quick start": the docker run command starts Grafana and its API becomes healthy.
+#   * "Import the agentgateway dashboard" step 1: the curl download URL resolves and returns
+#     valid JSON whose uid is "agentgateway".
+#   * Dashboard import (proxy for the manual UI steps 2-4): the dashboard imports into the
+#     running Grafana via the API, and Grafana loads it (uid "agentgateway", title "Agentgateway").
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * "Add Prometheus data source" and "Add Jaeger data source" steps - UI-only click-throughs
+#     with no scriptable equivalent; the test also does not stand up Prometheus or Jaeger.
+#   * The manual "Upload dashboard JSON file" UI import - UI-only; the test imports the same
+#     JSON through the Grafana API as a proxy.
+#   * "Build custom panels" PromQL queries - display-only examples (promql language), not
+#     runnable commands, and there is no metrics source to run them against.
+#   * "Docker Compose example" - display-only; it depends on a ./prometheus.yml that does not
+#     exist and is not meant to run in the test.
+#   * That the dashboard panels render data - this guide wires no agentgateway/Prometheus, so
+#     there are no metrics; only that Grafana loaded the dashboard definition is checked.
+# ============================================================================
 # Remove the Grafana container and downloaded dashboard when the test exits, then wait for the
 # Grafana API to become available before the dashboard import and verification steps.
 trap 'docker rm -f grafana >/dev/null 2>&1; rm -f agentgateway-dashboard.json' EXIT
