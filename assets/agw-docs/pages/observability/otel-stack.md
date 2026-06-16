@@ -536,6 +536,41 @@ EOF
 {{< /doc-test >}}
 
 {{< doc-test paths="otel-stack" >}}
+# ============================================================================
+# Doc test coverage for this guide (these comments are not rendered on the page)
+# ============================================================================
+# WHAT THIS TEST VALIDATES, end to end:
+#   * Data plane metrics: traffic is sent through the agentgateway proxy, then the
+#     test confirms that `agentgateway_requests_total` (behind the "Requests" panels) was
+#     scraped by the OTel metrics collector and remote-written into the Prometheus backend.
+#   * Control plane metrics: the test confirms that `agentgateway_controller_reconciliations_total`,
+#     emitted by the agentgateway control plane and collected by the control-plane scrape
+#     job, is stored in Prometheus.
+#   * Dashboard import: the "Explore Grafana dashboards" step confirms that Grafana loaded
+#     the imported Agentgateway dashboard (by uid).
+#   * Backend readiness: Loki, Tempo, the three OTel collectors, Prometheus, and Grafana
+#     are all confirmed to be running.
+#
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * Logs (Loki) and traces (Tempo) storage. This guide installs the Loki/Tempo backends and
+#     the logs/traces OTel collectors, but it does NOT wire the agentgateway proxy to export
+#     logs or traces to them, so both backends stay empty. Confirmed by querying Loki (no
+#     namespace label values) and Tempo (empty search) on a live run. Sending logs and traces
+#     requires extra proxy configuration covered on the access logging and tracing pages
+#     (an `OtlpAccessLog` access-log policy and a tracing policy). Only backend readiness is
+#     checked here.
+#   * The dashboard's "Memory" and "CPU" panels. Those panels join cAdvisor metrics on the
+#     `agentgateway_build_info` series. Under this guide's push model the OTel metrics
+#     collector folds `agentgateway_build_info` into `target_info` (OpenMetrics "info"
+#     handling), so it is not queryable as its own series in Prometheus and the join produces
+#     nothing. Confirmed on a live run: `agentgateway_build_info` returned 0 series while
+#     `target_info` returned 2. The raw cAdvisor data is present, but the panels do not render.
+#   * The dashboard's "LLM" and "MCP" panels (for example `agentgateway_gen_ai_*` and
+#     `agentgateway_mcp_requests_total`), which require LLM and MCP traffic that this guide
+#     does not generate.
+#   * Visual rendering of any panel. The test only confirms that the metrics behind the
+#     "Requests" panels exist in Prometheus and that Grafana loaded the dashboard.
+# ============================================================================
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 # Generate data-plane traffic through the agentgateway proxy, then allow time for the
 # OTel metrics collector to scrape the proxy (default 60s interval) and remote-write the
@@ -549,10 +584,37 @@ done
 
 {{< doc-test paths="otel-stack" >}}
 YAMLTest -f - <<'EOF'
+# Confirm that the metrics behind the dashboard reach the Prometheus backend. A non-empty
+# query result means the metric was scraped (from the proxy, the control plane, or cAdvisor)
+# and stored. The PromQL label matchers in some queries are URL-encoded
+# ( %7B = "{", %3D = "=", %22 = '"', %7D = "}" ).
+#
+# Data plane: the "Requests" dashboard panels use agentgateway_requests_total.
 - name: agentgateway data-plane metrics are stored in Prometheus
   retries: 5
   http:
     url: "http://localhost:9090/api/v1/query?query=agentgateway_requests_total"
+    method: GET
+  source:
+    type: pod
+    usePortForward: true
+    selector:
+      kind: StatefulSet
+      metadata:
+        namespace: telemetry
+        name: prometheus-kube-prometheus-stack-prometheus
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.data.result[0].value[1]"
+        comparator: exists
+# Control plane: emitted by the agentgateway controller and collected by the control-plane
+# scrape job. The controller reconciles resources on startup, so this is non-zero without
+# any data-plane traffic.
+- name: agentgateway control-plane metrics are stored in Prometheus
+  retries: 5
+  http:
+    url: "http://localhost:9090/api/v1/query?query=agentgateway_controller_reconciliations_total"
     method: GET
   source:
     type: pod
