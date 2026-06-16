@@ -9,7 +9,7 @@ The OpenAI Chat Completions API (`/v1/chat/completions`) is the primary interfac
 
 ## About
 
-The [OpenAI Chat Completions API](https://platform.openai.com/docs/guides/chat-completions) is the most widely used LLM endpoint. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement.
+The [OpenAI Chat Completions API](https://developers.openai.com/api/docs/guides/text) is the most widely used LLM endpoint. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement.
 
 By default, requests to agentgateway use the Chat Completions API. These requests are translated to the upstream provider's native API format when necessary.
 

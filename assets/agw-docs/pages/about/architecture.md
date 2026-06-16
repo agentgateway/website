@@ -68,7 +68,7 @@ Policies are sent to the proxy with a reference to where they apply, rather than
 
 ### xDS server
 
-The xDS server delivers the translated configuration to the proxies in the data plane. It uses the [xDS transport protocol](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol) over a streaming gRPC connection (Aggregated Discovery Service), but it serves agentgateway's own [purpose-built resource types](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/proto/resource.proto) instead of Envoy types.
+The xDS server delivers the translated configuration to the proxies in the data plane. It uses the [xDS transport protocol](https://www.envoyproxy.io/docs/envoy/latest/api-docs/xds_protocol) over a streaming gRPC connection (Aggregated Discovery Service), but it serves agentgateway's own [purpose-built resource types](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/resource.proto) instead of Envoy types.
 
 Each proxy subscribes to the configuration that is scoped to its Gateway, plus the shared address resources used for service discovery. The server sends incremental (delta) updates, so when configuration changes, only the resources that changed are sent. Connections can be authenticated with Kubernetes service account tokens and secured with TLS.
 
