@@ -1,6 +1,6 @@
 ---
 title: agctl config backends
-weight: 90
+weight: 10
 description: Reference for the `agctl config backends` command.
 test: skip
 ---

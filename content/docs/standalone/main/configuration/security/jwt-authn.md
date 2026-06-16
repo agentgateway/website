@@ -1,6 +1,7 @@
 ---
 title: JWT authentication
 weight: 15
+description: Verify JWT tokens from incoming requests using JWKS and configured issuers.
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}

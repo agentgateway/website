@@ -1,6 +1,7 @@
 ---
 title: External authorization
 weight: 20
+description: Delegate authorization decisions to external services like OPA.
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}

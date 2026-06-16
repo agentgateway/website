@@ -1,5 +1,6 @@
 ---
 title: "Windows installation"
+description: Install ingress2gateway on Windows systems
 weight: 30
 ---
 

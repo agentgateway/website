@@ -1,6 +1,7 @@
 ---
 title: CORS
 weight: 11
+description: Configure Cross-Origin Resource Sharing policies to control cross-domain requests.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}

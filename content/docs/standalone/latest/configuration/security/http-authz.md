@@ -1,6 +1,7 @@
 ---
 title: HTTP authorization
 weight: 12
+description: Define allow, deny, and require rules using CEL expressions.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}

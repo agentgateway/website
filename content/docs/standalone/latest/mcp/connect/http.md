@@ -1,7 +1,7 @@
 ---
 title: Streamable HTTP
 weight: 15
-description: 
+description: Connect to MCP servers via streamable HTTP with automatic session management
 ---
 
 Connect to an MCP server via streamable HTTP. 

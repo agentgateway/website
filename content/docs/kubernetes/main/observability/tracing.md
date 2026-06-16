@@ -1,5 +1,6 @@
 ---
 title: Tracing
+description: Integrate with OpenTelemetry to collect and analyze request traces.
 weight: 90
 test:
   tracing:

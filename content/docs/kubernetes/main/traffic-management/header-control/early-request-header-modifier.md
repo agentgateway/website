@@ -1,6 +1,7 @@
 ---
 title: Early request header modification
 weight: 30
+description: Modify request headers in the early phase of request processing.
 test:
   remove-reserved-header:
   - file: content/docs/kubernetes/main/quickstart/install.md

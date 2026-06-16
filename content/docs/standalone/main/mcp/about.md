@@ -1,7 +1,7 @@
 ---
 title: About
 weight: 10 
-description:
+description: Learn about Model Context Protocol and enterprise adoption challenges
 next: /mcp/connect
 test: skip
 ---

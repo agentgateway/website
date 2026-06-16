@@ -1,7 +1,7 @@
 ---
 title: About JWT auth
 weight: 10
-description:
+description: Learn how JWT authentication works and common use cases.
 test: skip
 ---
 

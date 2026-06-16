@@ -1,7 +1,7 @@
 ---
 title: Backends
 weight: 13
-description: 
+description: Configure backends to route traffic to hostnames, LLM providers, and MCP servers.
 prev: /configuration/listeners
 ---
 

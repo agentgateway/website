@@ -1,6 +1,7 @@
 ---
 title: OIDC browser authentication
 weight: 40
+description: Enable browser-based OpenID Connect authentication with encrypted session cookies.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
