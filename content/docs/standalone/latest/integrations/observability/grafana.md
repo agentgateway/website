@@ -36,9 +36,28 @@ For distributed tracing:
 4. Set URL to `http://jaeger:16686` (or your Jaeger URL)
 5. Click **Save & Test**
 
-## Sample dashboard
+## Import the agentgateway dashboard
 
-Create a dashboard with these panels:
+Instead of building panels by hand, import the pre-built agentgateway dashboard. This dashboard is maintained in the [agentgateway repository](https://github.com/agentgateway/agentgateway/blob/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json) and visualizes both the control and data plane metrics that agentgateway exposes.
+
+1. Download the agentgateway Grafana dashboard.
+   ```bash
+   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" -o agentgateway-dashboard.json
+   ```
+
+2. In Grafana, go to **Dashboards** > **New** > **Import**.
+
+3. Click **Upload dashboard JSON file** and select the `agentgateway-dashboard.json` file that you downloaded.
+
+4. Select your Prometheus data source, then click **Import**.
+
+5. Verify that you see metrics, such as the request rate by gateway, LLM token consumption, or MCP tool calls. The dashboard includes the following sections.
+
+   {{< reuse "agw-docs/snippets/agentgateway/grafana-dashboard-metrics.md" >}}
+
+## Build custom panels
+
+If you prefer to build your own dashboard, you can create panels from the metrics that agentgateway exposes. The following examples show common queries.
 
 ### Request rate
 
@@ -52,12 +71,6 @@ rate(agentgateway_requests_total[5m])
 histogram_quantile(0.99, rate(agentgateway_request_duration_seconds_bucket[5m]))
 ```
 
-### Active connections
-
-```promql
-agentgateway_connections_active
-```
-
 ### Error rate
 
 ```promql
@@ -68,12 +81,6 @@ rate(agentgateway_requests_total{status=~"5.."}[5m]) / rate(agentgateway_request
 
 ```promql
 rate(agentgateway_llm_tokens_total[5m])
-```
-
-### MCP sessions
-
-```promql
-agentgateway_mcp_sessions_active
 ```
 
 ## Docker Compose example
