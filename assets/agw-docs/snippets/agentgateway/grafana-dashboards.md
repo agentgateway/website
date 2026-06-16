@@ -30,25 +30,22 @@ open "http://$(kubectl -n telemetry get svc kube-prometheus-stack-grafana -o jso
 {{% /tab %}}
    {{< /tabs >}}
             
-1. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the translation and reconciliation time, total number of operations, or the number of resources in your cluster. 
+1. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the request rate by gateway, LLM token consumption, or MCP tool calls. 
       
    {{< reuse-image src="img/agentgateway-dashboard.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-dashboard.png" >}}
    
-   | Metric | Description |
-   | -- | -- |
-   | Number of translations running per translator | The number of active Kubernetes Gateway API translations. |
-   | Number of reconciliations running per controller | The number of active reconciliations for each controller. |
-   | Number of resources | The number of Kubernetes Gateway API and kgateway resources in your cluster. |
-   | Translations rate by results | The rate of translations in seconds and their statuses. |
-   | Reconciliation rate by results | The rate of reconciliations in seconds and their statuses. |
-   | Status syncs rate by results | The rate of status syncs in seconds and their statuses. |
-   | Total operations | The total number of reconciliations for each controller plus the total number of translations for each translator, and the total number of status syncs for each status syncer. |   
-   | XDS resources by gateway | The total number of resources in the XDS snapshot for each gateway, such as clusters, endpoints, listeners, and routes. |
-   | Routing domains per gateway port | The total number of routing domains for each gateway and port. |
-   | Reconciliation latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of reconciliation processes to finish. |
-   | Status Syncer Latency |  In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of status syncs to finish. | 
-   | Translation Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of translations to finish. |
-   | XDS Snapshot Sync Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of xDS snapshots to finish. |
-   | Resource Status Sync Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of resource status syncs to finish. |
-   | Status Syncs by Resource | The total number of status syncs completed by resource type. |
+   | Section | Metric | Description |
+   | -- | -- | -- |
+   | Overview | Memory | The working set memory that each agentgateway proxy pod consumes. |
+   | Overview | CPU | The CPU usage rate for each agentgateway proxy pod. |
+   | Requests | Requests (by Pod) | The request rate that each agentgateway proxy pod handles. |
+   | Requests | Requests (by Gateway) | The request rate for each gateway. |
+   | Requests | Requests (by Status) | The request rate grouped by HTTP response status. |
+   | Requests | Requests (by Reason) | The request rate grouped by the response reason. |
+   | LLM | Token Consumption | The rate of tokens that LLM requests consume, grouped by token type, model, and gateway. |
+   | LLM | Time To First Token | The time that it takes the LLM provider to return the first token of a response. |
+   | LLM | Request Time | The total duration of LLM requests. |
+   | LLM | Tokens Per Second | The rate at which the LLM provider returns output tokens. |
+   | MCP | MCP Calls (by method) | The rate of MCP requests grouped by JSON-RPC method. |
+   | MCP | Tool Calls (by tool) | The rate of MCP tool calls grouped by server, resource, and tool. |

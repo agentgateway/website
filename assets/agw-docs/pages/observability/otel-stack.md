@@ -197,21 +197,21 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
    
    config:
      receivers:
-       prometheus/kgateway-dataplane:
+       prometheus/agentgateway-dataplane:
          config:
            global:
              scrape_protocols: [ PrometheusProto, OpenMetricsText1.0.0, OpenMetricsText0.0.1, PrometheusText0.0.4 ]
            scrape_configs:
-           # Scrape the kgateway proxy pods
-           - job_name: kgateway-gateways
+           # Scrape the agentgateway proxy pods (data plane)
+           - job_name: agentgateway-dataplane
              honor_labels: true
              kubernetes_sd_configs:
              - role: pod
              relabel_configs:
                - action: keep
-                 regex: kube-gateway
+                 regex: agentgateway
                  source_labels:
-                 - __meta_kubernetes_pod_label_kgateway
+                 - __meta_kubernetes_pod_label_gateway_networking_k8s_io_gateway_class_name
                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
                  action: keep
                  regex: true
@@ -233,21 +233,21 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
                - source_labels: [__meta_kubernetes_pod_name]
                  action: replace
                  target_label: pod
-       prometheus/kgateway-controlplane:
+       prometheus/agentgateway-controlplane:
          config:
            global:
              scrape_protocols: [ PrometheusProto, OpenMetricsText1.0.0, OpenMetricsText0.0.1, PrometheusText0.0.4 ]
            scrape_configs:
-           # Scrape the kgateway controlplane pods
-           - job_name: kgateway-controlplane
+           # Scrape the agentgateway controller pods (control plane)
+           - job_name: agentgateway-controlplane
              honor_labels: true
              kubernetes_sd_configs:
              - role: pod
              relabel_configs:
                - action: keep
-                 regex: kgateway
+                 regex: agentgateway
                  source_labels:
-                 - __meta_kubernetes_pod_label_kgateway
+                 - __meta_kubernetes_pod_label_agentgateway
                - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
                  action: keep
                  regex: true
@@ -279,7 +279,7 @@ The example pipelines in all three OTel collectors set up the `debug` exporter. 
      service:
        pipelines:
          metrics:
-           receivers: [prometheus/kgateway-dataplane, prometheus/kgateway-controlplane]
+           receivers: [prometheus/agentgateway-dataplane, prometheus/agentgateway-controlplane]
            processors: [batch]
            exporters: [debug, prometheusremotewrite/kube-prometheus-stack]
    EOF
