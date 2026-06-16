@@ -2,7 +2,7 @@
 title: Install
 weight: 14
 icon: download
-description: Install the kgateway control plane to manage agentgateway data plane proxies.
+description: Install agentgateway on Kubernetes.
 test: skip
 ---
 
