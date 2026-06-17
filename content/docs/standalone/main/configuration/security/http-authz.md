@@ -65,3 +65,30 @@ These rules behave the same when a JWT with an audience claim is present, but th
 For mandatory conditions such as "all requests must have a valid audience claim," prefer `require`, which fails closed.
 
 Unlike `allow` rules (where any one match permits the request), all `require` rules must match for the request to proceed.
+
+## LLM model authorization
+
+In simplified LLM mode, you can apply authorization directly to an individual model with `llm.models[].authorization.rules`.
+
+Each rule in `llm.models[].authorization.rules` uses the same schema as route authorization:
+- A CEL string (legacy shorthand for `allow`)
+- An object with `allow`
+- An object with `deny`
+- An object with `require`
+
+```yaml
+llm:
+  models:
+  - name: gpt-4
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "$OPENAI_API_KEY"
+    authorization:
+      rules:
+      - require: 'jwt.aud == "llm-api"'
+      - deny: 'request.headers["x-org"] == "blocked"'
+      - 'request.headers["x-org"] == "engineering"'
+```
+
+The LLM models endpoint (`/v1/models`) is also gated by authorization. If a caller does not satisfy authorization rules for a model, that model is not returned.

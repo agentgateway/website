@@ -62,3 +62,39 @@ cors:
   - x-my-header
   maxAge: 100s
 ```
+
+## CORS for the simplified LLM listener
+
+The `cors` policy above applies to route-level routing configuration. In simplified LLM mode, configure CORS on the local listener with `llm.policies.cors`.
+
+The same fields are supported:
+- `allowOrigins`
+- `allowMethods`
+- `allowHeaders`
+- `exposeHeaders`
+- `allowCredentials`
+- `maxAge`
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    cors:
+      allowOrigins:
+      - https://chat.example.com
+      allowMethods:
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 10m
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```

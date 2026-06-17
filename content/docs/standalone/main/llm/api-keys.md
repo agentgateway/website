@@ -98,3 +98,28 @@ For more information, see the [agentgateway on Kubernetes docs](https://agentgat
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## Authenticate incoming LLM API calls
+
+In addition to sending provider API keys upstream, you can authenticate incoming requests on the local LLM listener with `llm.policies.apiKey`.
+
+Set `llm.policies.apiKey.mode: permissive` when you want to populate API key metadata for later policies (for example, authorization or logging), without rejecting requests based on authentication.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    apiKey:
+      mode: permissive
+      keys:
+      - key: sk-team-engineering
+        metadata:
+          team: engineering
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+
+For the authentication mode semantics (`strict`, `optional`, and `permissive`), see [API Key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) and [MCP authentication mode]({{< link-hextra path="/configuration/security/mcp-authn/#authentication-mode" >}}).

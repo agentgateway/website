@@ -93,6 +93,51 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
+### LLM listener ports and TLS
+
+In simplified LLM mode, the local listener uses `llm.port` (default `3000`). MCP uses `mcp.port` (default `3001`).
+
+When `llm.port` and `mcp.port` are set to the same value, agentgateway serves both protocols on a single shared listener.
+
+{{< callout type="warning" >}}
+You cannot share `llm.port` and `mcp.port` when `llm.tls` is configured. Use different ports if you enable `llm.tls`.
+{{< /callout >}}
+
+Use `llm.tls` to serve the local LLM listener over TLS:
+- `cert`
+- `key`
+- `root`
+- `cipherSuites`
+- `minTLSVersion`
+- `maxTLSVersion`
+- `keyExchangeGroups`
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 8443
+  tls:
+    cert: /etc/agentgateway/tls/tls.crt
+    key: /etc/agentgateway/tls/tls.key
+    root: /etc/agentgateway/tls/ca.crt
+    cipherSuites:
+    - TLS_AES_128_GCM_SHA256
+    minTLSVersion: "1.2"
+    maxTLSVersion: "1.3"
+    keyExchangeGroups:
+    - X25519
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+mcp:
+  # Keep a separate port when llm.tls is configured.
+  port: 3001
+```
+
+For a shared listener example without TLS, see [MCP overview]({{< link-hextra path="/mcp/" >}}).
+
 ## Traditional HTTP routing configuration
 
 The traditional `binds/listeners/routes` configuration provides full control over HTTP routing. Use this approach when you need advanced HTTP routing capabilities or non-LLM backends.
