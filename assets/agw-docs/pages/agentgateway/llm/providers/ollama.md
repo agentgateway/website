@@ -1,5 +1,9 @@
 Configure [Ollama](https://ollama.com/) to serve local models through {{< reuse "agw-docs/snippets/kgateway.md" >}}. Ollama runs on a machine outside your cluster, and agentgateway routes requests to it over the network.
 
+{{< callout type="info" >}}
+In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider: ollama` and automatically fills `params.baseUrl: http://localhost:11434/v1`. The current Kubernetes `AgentgatewayBackend` API still uses `ai.provider.openai` for Ollama's OpenAI-compatible `/v1/chat/completions` endpoint, so the examples below use that shape.
+{{< /callout >}}
+
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -87,7 +91,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
    EOF
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource. Use the first-class `ollama` provider and point `host` and `port` at the headless Service DNS name for your external Ollama instance.
+3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource. Standalone mode uses the first-class `ollama` provider shortcut, but Kubernetes still uses the `openai` compatibility shape for Ollama. Point `host` and `port` at the headless Service DNS name for your external Ollama instance.
 
    ```yaml {paths="ollama-provider-setup"}
    kubectl apply -f- <<EOF
@@ -99,10 +103,11 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
    spec:
      ai:
        provider:
-         ollama:
+         openai:
            model: llama3.2
          host: ollama.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
          port: 11434
+         path: /v1/chat/completions
    EOF
    ```
 
@@ -110,10 +115,13 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
    | Setting | Description |
    |---------|-------------|
-   | `ai.provider.ollama` | Uses the built-in Ollama provider shortcut. Agentgateway applies Ollama's default `/v1` API shape automatically. |
-   | `ollama.model` | The Ollama model to use. This must match a model you pulled with `ollama pull`. |
+   | Standalone shortcut | Use `provider: ollama` in standalone mode. |
+   | Standalone default base URL | `http://localhost:11434/v1` |
+   | `ai.provider.openai` | Current Kubernetes workaround for Ollama's OpenAI-compatible chat completions endpoint. |
+   | `ai.provider.openai.model` | The Ollama model to use. This must match a model you pulled with `ollama pull`. |
    | `host` | The in-cluster DNS name of the headless Service pointing to the external Ollama instance. |
    | `port` | The port Ollama listens on. The default is `11434`. |
+   | `path` | Targets Ollama's OpenAI-compatible chat completions endpoint at `/v1/chat/completions`. |
 
 4. Create an HTTPRoute to expose the Ollama backend through the gateway.
 
@@ -226,7 +234,7 @@ ports:
 - port: 3090
   protocol: TCP
 EOF
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"ollama":{"model":"llama3.2"},"port":3090,"path":"/llm/chat/completions"}}}}'
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"openai":{"model":"llama3.2"},"port":3090,"path":"/llm/chat/completions"}}}}'
 
 YAMLTest -f - <<'EOF'
 - name: wait for ollama HTTPRoute to be accepted

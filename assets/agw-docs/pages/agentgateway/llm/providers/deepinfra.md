@@ -47,9 +47,9 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
        provider:
          openai:
            model: meta-llama/Llama-3.3-70B-Instruct-Turbo
-           host: api.deepinfra.com
-           port: 443
-           path: /v1/openai/chat/completions
+         host: api.deepinfra.com
+         port: 443
+         path: /v1/openai/chat/completions
      policies:
        auth:
          secretRef:
@@ -66,7 +66,7 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    | Standalone shortcut | Use `provider: deepinfra` in standalone mode. |
    | Standalone default base URL | `https://api.deepinfra.com/v1/openai` |
    | `ai.provider.openai` | Current Kubernetes workaround for DeepInfra's OpenAI-compatible endpoint. |
-   | `openai.model` | Sets the default model. This example uses `meta-llama/Llama-3.3-70B-Instruct-Turbo`. |
+   | `ai.provider.openai.model` | Sets the default model. This example uses `meta-llama/Llama-3.3-70B-Instruct-Turbo`. |
    | `policies.auth.secretRef` | References the secret that contains your DeepInfra API key. |
 
 5. Create an HTTPRoute resource.

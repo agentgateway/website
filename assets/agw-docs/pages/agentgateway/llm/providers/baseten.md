@@ -47,9 +47,9 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
        provider:
          openai:
            model: <your-baseten-model-id>
-           host: inference.baseten.co
-           port: 443
-           path: /v1/chat/completions
+         host: inference.baseten.co
+         port: 443
+         path: /v1/chat/completions
      policies:
        auth:
          secretRef:
@@ -65,7 +65,7 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    |---------|-------------|
    | Standalone shortcut | Use `provider: baseten` in standalone mode. |
    | Standalone default base URL | `https://inference.baseten.co/v1` |
-   | `openai.model` | Replace `<your-baseten-model-id>` with the model or deployment ID exposed by your Baseten endpoint. |
+   | `ai.provider.openai.model` | Replace `<your-baseten-model-id>` with the model or deployment ID exposed by your Baseten endpoint. |
    | `ai.provider.openai` | Current Kubernetes workaround for Baseten's OpenAI-compatible endpoint. |
    | `policies.auth.secretRef` | References the secret that contains your Baseten API key. |
 

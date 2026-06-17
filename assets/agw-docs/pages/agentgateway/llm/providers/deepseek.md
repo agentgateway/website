@@ -47,9 +47,9 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
        provider:
          openai:
            model: deepseek-chat
-           host: api.deepseek.com
-           port: 443
-           path: /v1/chat/completions
+         host: api.deepseek.com
+         port: 443
+         path: /v1/chat/completions
      policies:
        auth:
          secretRef:
@@ -66,7 +66,7 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    | Standalone shortcut | Use `provider: deepseek` in standalone mode. |
    | Standalone default base URL | `https://api.deepseek.com/v1` |
    | `ai.provider.openai` | Current Kubernetes workaround for DeepSeek's OpenAI-compatible endpoint. |
-   | `openai.model` | Sets the default model. This example uses `deepseek-chat`. |
+   | `ai.provider.openai.model` | Sets the default model. This example uses `deepseek-chat`. |
    | `policies.auth.secretRef` | References the secret that contains your DeepSeek API key. |
 
 5. Create an HTTPRoute resource.

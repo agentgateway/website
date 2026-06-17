@@ -47,9 +47,9 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
        provider:
          openai:
            model: command-r-plus
-           host: api.cohere.ai
-           port: 443
-           path: /compatibility/v1/chat/completions
+         host: api.cohere.ai
+         port: 443
+         path: /compatibility/v1/chat/completions
      policies:
        auth:
          secretRef:
@@ -66,7 +66,7 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    | Standalone shortcut | Use `provider: cohere` in standalone mode. |
    | Standalone default base URL | `https://api.cohere.ai` |
    | `ai.provider.openai` | Current Kubernetes workaround for Cohere's compatibility endpoint. |
-   | `openai.path` | Uses Cohere's OpenAI-compatible chat endpoint at `/compatibility/v1/chat/completions`. |
+   | `path` | Uses Cohere's OpenAI-compatible chat endpoint at `/compatibility/v1/chat/completions`. |
    | `policies.auth.secretRef` | References the secret that contains your Cohere API key. |
 
 5. Create an HTTPRoute resource.

@@ -47,9 +47,9 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
        provider:
          openai:
            model: llama-3.3-70b
-           host: api.cerebras.ai
-           port: 443
-           path: /v1/chat/completions
+         host: api.cerebras.ai
+         port: 443
+         path: /v1/chat/completions
      policies:
        auth:
          secretRef:
@@ -66,7 +66,7 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    | Standalone shortcut | Use `provider: cerebras` in standalone mode. |
    | Standalone default base URL | `https://api.cerebras.ai/v1` |
    | `ai.provider.openai` | Current Kubernetes workaround for Cerebras' OpenAI-compatible endpoint. |
-   | `openai.model` | Sets the default Cerebras model. This example uses `llama-3.3-70b`. |
+   | `ai.provider.openai.model` | Sets the default Cerebras model. This example uses `llama-3.3-70b`. |
    | `policies.auth.secretRef` | References the secret that contains your Cerebras API key. |
 
 5. Create an HTTPRoute resource.

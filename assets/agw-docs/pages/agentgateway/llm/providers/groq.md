@@ -47,9 +47,9 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
        provider:
          openai:
            model: llama-3.3-70b-versatile
-           host: api.groq.com
-           port: 443
-           path: /openai/v1/chat/completions
+         host: api.groq.com
+         port: 443
+         path: /openai/v1/chat/completions
      policies:
        auth:
          secretRef:
@@ -66,7 +66,7 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    | Standalone shortcut | Use `provider: groq` in standalone mode. |
    | Standalone default base URL | `https://api.groq.com/openai/v1` |
    | `ai.provider.openai` | Current Kubernetes workaround for Groq's OpenAI-compatible endpoint. |
-   | `openai.model` | Sets the default model. This example uses `llama-3.3-70b-versatile`. |
+   | `ai.provider.openai.model` | Sets the default model. This example uses `llama-3.3-70b-versatile`. |
    | `policies.auth.secretRef` | References the secret that contains your Groq API key. |
 
 5. Create an HTTPRoute resource.
