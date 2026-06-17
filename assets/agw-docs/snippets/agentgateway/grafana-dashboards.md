@@ -1,10 +1,9 @@
 You can use the pre-built Grafana dashboards to observe the control and data plane statuses. 
 
-1. Create a Grafana dashboard for the control metrics. You can download the following sample Grafana dashboard configuration: 
-   * [Agentgateway dashboard](https://github.com/agentgateway/website/blob/main/content/docs/kubernetes/main/observability/agentgateway.json)
-     ```sh {paths="otel-stack"}
-     curl -L "https://agentgateway.dev/docs/kubernetes/main/observability/agentgateway.json" >> agentgateway.json 
-     ```
+1. Download the agentgateway Grafana dashboard. This dashboard is maintained in the [agentgateway repository](https://github.com/agentgateway/agentgateway/blob/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json) and monitors both the control and data planes.
+   ```sh {paths="otel-stack"}
+   curl -L "https://raw.githubusercontent.com/agentgateway/agentgateway/main/controller/install/helm/agentgateway/files/agentgateway-dashboard.json" -o agentgateway.json
+   ```
 
 2. Import the Grafana dashboard.
    ```sh {paths="otel-stack"}
@@ -12,6 +11,42 @@ You can use the pre-built Grafana dashboards to observe the control and data pla
    --from-file=agentgateway.json
    kubectl label -n telemetry cm agentgateway-dashboard grafana_dashboard=1
    ```
+
+   {{< doc-test paths="otel-stack" >}}
+   # Give the Grafana sidecar time to detect the labeled configmap and import the dashboard
+   # into Grafana before the next assertion queries for it.
+   sleep 45
+   {{< /doc-test >}}
+
+   {{< doc-test paths="otel-stack" >}}
+   YAMLTest -f - <<'EOF'
+   # Confirm that Grafana loaded the imported Agentgateway dashboard. This validates the import
+   # steps above (configmap -> Grafana sidecar). It does NOT verify that individual panels render
+   # or return data. The Authorization header is "admin:prom-operator" (the default Grafana
+   # credentials documented in this guide) base64-encoded for HTTP basic auth.
+   - name: Agentgateway dashboard is loaded in Grafana
+     retries: 30
+     http:
+       url: "http://localhost:3000/api/dashboards/uid/agentgateway"
+       method: GET
+       headers:
+         authorization: "Basic YWRtaW46cHJvbS1vcGVyYXRvcg=="
+     source:
+       type: pod
+       usePortForward: true
+       selector:
+         kind: Deployment
+         metadata:
+           namespace: telemetry
+           name: kube-prometheus-stack-grafana
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.dashboard.title"
+           comparator: contains
+           value: Agentgateway
+   EOF
+   {{< /doc-test >}}
 
 3. Open and log in to Grafana by using the username `admin` and password `prom-operator`. 
       
@@ -30,25 +65,9 @@ open "http://$(kubectl -n telemetry get svc kube-prometheus-stack-grafana -o jso
 {{% /tab %}}
    {{< /tabs >}}
             
-1. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the translation and reconciliation time, total number of operations, or the number of resources in your cluster. 
+4. Go to **Dashboards** > **Agentgateway** to open the Agentgateway dashboard that you imported. Verify that you see metrics, such as the proxy overview of CPU and memory usage, request rate by gateway, LLM token consumption, or MCP tool calls. 
       
    {{< reuse-image src="img/agentgateway-dashboard.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-dashboard.png" >}}
    
-   | Metric | Description |
-   | -- | -- |
-   | Number of translations running per translator | The number of active Kubernetes Gateway API translations. |
-   | Number of reconciliations running per controller | The number of active reconciliations for each controller. |
-   | Number of resources | The number of Kubernetes Gateway API and kgateway resources in your cluster. |
-   | Translations rate by results | The rate of translations in seconds and their statuses. |
-   | Reconciliation rate by results | The rate of reconciliations in seconds and their statuses. |
-   | Status syncs rate by results | The rate of status syncs in seconds and their statuses. |
-   | Total operations | The total number of reconciliations for each controller plus the total number of translations for each translator, and the total number of status syncs for each status syncer. |   
-   | XDS resources by gateway | The total number of resources in the XDS snapshot for each gateway, such as clusters, endpoints, listeners, and routes. |
-   | Routing domains per gateway port | The total number of routing domains for each gateway and port. |
-   | Reconciliation latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of reconciliation processes to finish. |
-   | Status Syncer Latency |  In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of status syncs to finish. | 
-   | Translation Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of translations to finish. |
-   | XDS Snapshot Sync Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of xDS snapshots to finish. |
-   | Resource Status Sync Latency | In the last 5 minutes, the amount of time that it took 70%, 90%, and 99% of resource status syncs to finish. |
-   | Status Syncs by Resource | The total number of status syncs completed by resource type. |
+   {{< reuse "agw-docs/snippets/agentgateway/grafana-dashboard-metrics.md" >}}
