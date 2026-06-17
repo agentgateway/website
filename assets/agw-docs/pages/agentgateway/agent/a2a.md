@@ -69,9 +69,9 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
    ```
 -->
 
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 ## Step 1: Deploy an A2A server {#a2a-server}
 
-{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 Deploy an A2A server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy to use the A2A protocol.
 
 ```yaml {paths="a2a"}
@@ -112,103 +112,9 @@ spec:
       appProtocol: kgateway.dev/a2a
 EOF
 ```
-{{< /version >}}
-
-{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
-Deploy an A2A server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The way that you expose the server depends on how you route to it in the next step.
-
-{{< tabs items="AgentgatewayBackend,Service" tabTotal="2" >}}
-{{% tab tabName="AgentgatewayBackend" %}}
-Deploy the A2A server with a Deployment and a Service. 
-
-Unlike Service-based routing, with an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource, the backend's `a2a` type signals the A2A protocol, so the Service does not need the `appProtocol` setting.
-
-```yaml {paths="a2a"}
-kubectl apply -f- <<EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: a2a-agent
-  labels:
-    app: a2a-agent
-spec:
-  selector:
-    matchLabels:
-      app: a2a-agent
-  template:
-    metadata:
-      labels:
-        app: a2a-agent
-    spec:
-      containers:
-        - name: a2a-agent
-          image: gcr.io/solo-public/docs/test-a2a-agent:latest
-          ports:
-            - containerPort: 9090
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: a2a-agent
-spec:
-  selector:
-    app: a2a-agent
-  type: ClusterIP
-  ports:
-    - protocol: TCP
-      port: 9090
-      targetPort: 9090
-EOF
-```
-{{% /tab %}}
-{{% tab tabName="Service" %}}
-Deploy the A2A server with a Deployment and a Service. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy to use the A2A protocol when you route directly to the Service.
-
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: a2a-agent
-  labels:
-    app: a2a-agent
-spec:
-  selector:
-    matchLabels:
-      app: a2a-agent
-  template:
-    metadata:
-      labels:
-        app: a2a-agent
-    spec:
-      containers:
-        - name: a2a-agent
-          image: gcr.io/solo-public/docs/test-a2a-agent:latest
-          ports:
-            - containerPort: 9090
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: a2a-agent
-spec:
-  selector:
-    app: a2a-agent
-  type: ClusterIP
-  ports:
-    - protocol: TCP
-      port: 9090
-      targetPort: 9090
-      appProtocol: kgateway.dev/a2a
-EOF
-```
-{{% /tab %}}
-{{< /tabs >}}
-{{< /version >}}
 
 ## Step 2: Route with agentgateway {#agentgateway}
 
-{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 Create an HTTPRoute resource that routes incoming traffic to the A2A server. The route matches the `/myagent` path so that the A2A server has a unique address on the gateway, and rewrites the path to `/` so that requests reach the A2A server, which listens on the root path.
 
 ```yaml {paths="a2a"}
@@ -240,13 +146,57 @@ EOF
 {{< /version >}}
 
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
-Create an HTTPRoute resource that routes incoming traffic to the A2A server. You can route through an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource, or directly to the Service that you created.
+## Step 1: Set up routing to an A2A server {#a2a-server}
+
+Deploy an A2A server, then create the resources that route traffic to it. You can route through an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource, or directly to the Service that exposes the server.
+
+We recommend the `{{< reuse "agw-docs/snippets/backend.md" >}}` approach. The `a2a` backend type represents the A2A server as a dedicated backend that you can further configure, such as by attaching policies, and it can select A2A servers that run outside your cluster.
 
 {{< tabs items="AgentgatewayBackend,Service" tabTotal="2" >}}
 {{% tab tabName="AgentgatewayBackend" %}}
-The `a2a` backend type lets you select an A2A server by its host and port, including A2A servers that run outside your cluster.
+Because the backend's `a2a` type signals the A2A protocol, the Service does not need the `appProtocol` setting.
 
-1. Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource that defines the A2A server as a backend. The `a2a` type configures {{< reuse "agw-docs/snippets/agentgateway.md" >}} to use the A2A protocol when it connects to the `host` and `port` that you specify.
+1. Deploy the A2A server with a Deployment and a Service.
+
+   ```yaml {paths="a2a"}
+   kubectl apply -f- <<EOF
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: a2a-agent
+     labels:
+       app: a2a-agent
+   spec:
+     selector:
+       matchLabels:
+         app: a2a-agent
+     template:
+       metadata:
+         labels:
+           app: a2a-agent
+       spec:
+         containers:
+           - name: a2a-agent
+             image: gcr.io/solo-public/docs/test-a2a-agent:latest
+             ports:
+               - containerPort: 9090
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: a2a-agent
+   spec:
+     selector:
+       app: a2a-agent
+     type: ClusterIP
+     ports:
+       - protocol: TCP
+         port: 9090
+         targetPort: 9090
+   EOF
+   ```
+
+2. Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource that defines the A2A server as a backend. The `a2a` type configures {{< reuse "agw-docs/snippets/agentgateway.md" >}} to use the A2A protocol when it connects to the `host` and `port` that you specify.
 
    ```yaml {paths="a2a"}
    kubectl apply -f- <<EOF
@@ -261,7 +211,7 @@ The `a2a` backend type lets you select an A2A server by its host and port, inclu
    EOF
    ```
 
-2. Create an HTTPRoute that routes to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The route matches the `/myagent` path so that the A2A server has a unique address on the gateway, and rewrites the path to `/` so that requests reach the A2A server, which listens on the root path.
+3. Create an HTTPRoute that routes traffic along the `/myagent` prefix path to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The prefix path exposes the A2A server under a unique address on the gateway. However, because the A2A server requires traffic to be sent along the root path (`/`), you add a `URLRewrite` filter to the HTTPRoute that rewrites the `/myagent` prefix to `/`.
 
    ```yaml {paths="a2a"}
    kubectl apply -f- <<EOF
@@ -292,34 +242,75 @@ The `a2a` backend type lets you select an A2A server by its host and port, inclu
    ```
 {{% /tab %}}
 {{% tab tabName="Service" %}}
-Create an HTTPRoute that routes directly to the A2A Service. This method requires the `appProtocol: kgateway.dev/a2a` setting on the Service, which configures {{< reuse "agw-docs/snippets/agentgateway.md" >}} to use the A2A protocol. The route matches the `/myagent` path so that the A2A server has a unique address on the gateway, and rewrites the path to `/` so that requests reach the A2A server, which listens on the root path.
+1. Deploy the A2A server with a Deployment and a Service. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting.
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: a2a
-spec:
-  parentRefs:
-  - name: agentgateway-proxy
-    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /myagent
-    filters:
-    - type: URLRewrite
-      urlRewrite:
-        path:
-          type: ReplacePrefixMatch
-          replacePrefixMatch: /
-    backendRefs:
-      - name: a2a-agent
-        port: 9090
-EOF
-```
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: apps/v1
+   kind: Deployment
+   metadata:
+     name: a2a-agent
+     labels:
+       app: a2a-agent
+   spec:
+     selector:
+       matchLabels:
+         app: a2a-agent
+     template:
+       metadata:
+         labels:
+           app: a2a-agent
+       spec:
+         containers:
+           - name: a2a-agent
+             image: gcr.io/solo-public/docs/test-a2a-agent:latest
+             ports:
+               - containerPort: 9090
+   ---
+   apiVersion: v1
+   kind: Service
+   metadata:
+     name: a2a-agent
+   spec:
+     selector:
+       app: a2a-agent
+     type: ClusterIP
+     ports:
+       - protocol: TCP
+         port: 9090
+         targetPort: 9090
+         appProtocol: kgateway.dev/a2a
+   EOF
+   ```
+
+2. Create an HTTPRoute that routes traffic along the `/myagent` prefix path directly to the Service that exposes your agent. Note that this configuration requires the `appProtocol: kgateway.dev/a2a` setting on the Service, which configures {{< reuse "agw-docs/snippets/agentgateway.md" >}} to use the A2A protocol when connecting to the Service. The `/myagent` prefix path exposes the A2A server under a unique address on the gateway. However, because the A2A server requires traffic to be sent along the root path (`/`), you add a `URLRewrite` filter to the HTTPRoute that rewrites the `/myagent` prefix to `/`.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: a2a
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /myagent
+       filters:
+       - type: URLRewrite
+         urlRewrite:
+           path:
+             type: ReplacePrefixMatch
+             replacePrefixMatch: /
+       backendRefs:
+         - name: a2a-agent
+           port: 9090
+   EOF
+   ```
 {{% /tab %}}
 {{< /tabs >}}
 {{< /version >}}
@@ -328,7 +319,12 @@ EOF
 kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
 {{< /doc-test >}}
 
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 ## Step 3: Verify the connection {#verify}
+{{< /version >}}
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+## Step 2: Verify the connection {#verify}
+{{< /version >}}
 
 1. Get the agentgateway address.
    
