@@ -71,7 +71,7 @@ Deploy an A2A server that you want agentgateway to proxy traffic to.
 
 ## Step 1: Deploy an A2A server {#a2a-server}
 
-{{< version exclude-if="1.3.x" >}}
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 Deploy an A2A server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting. This way, {{< reuse "agw-docs/snippets/kgateway.md" >}} configures the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy to use the A2A protocol.
 
 ```yaml {paths="a2a"}
@@ -114,7 +114,7 @@ EOF
 ```
 {{< /version >}}
 
-{{< version include-if="1.3.x" >}}
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 Deploy an A2A server that you want {{< reuse "agw-docs/snippets/agentgateway.md" >}} to proxy traffic to. The way that you expose the server depends on how you route to it in the next step.
 
 {{< tabs items="AgentgatewayBackend,Service" tabTotal="2" >}}
@@ -208,7 +208,7 @@ EOF
 
 ## Step 2: Route with agentgateway {#agentgateway}
 
-{{< version exclude-if="1.3.x" >}}
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 Create an HTTPRoute resource that routes incoming traffic to the A2A server. The route matches the `/myagent` path so that the A2A server has a unique address on the gateway, and rewrites the path to `/` so that requests reach the A2A server, which listens on the root path.
 
 ```yaml {paths="a2a"}
@@ -239,7 +239,7 @@ EOF
 ```
 {{< /version >}}
 
-{{< version include-if="1.3.x" >}}
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 Create an HTTPRoute resource that routes incoming traffic to the A2A server. You can route through an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource, or directly to the Service that you created.
 
 {{< tabs items="AgentgatewayBackend,Service" tabTotal="2" >}}
