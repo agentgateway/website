@@ -23,18 +23,37 @@ You can use the following values for the annotation:
 - `ShallowMergePreferChild` (default): Child policies take precedence over parent policies and the policies are shallow merged.
 - `ShallowMergePreferParent`: Parent policies take precedence over child policies and the policies are shallow merged.
 
-**Shallow merging** means that the policies are merged at the top level. Only the top-level fields of the policies are considered for merging. If a field is present in both parent and child policies, the value from the higher priority policy is used. Priority is typically determined by specificity and creation time. The more specific (such as HTTPRoute rule over all the routes in the HTTPRoute) and older (created-first) policy takes precedence. Consider the following shallow merge scenario:
+**Shallow merging** means that the policies are merged at the field level. Each field, including nested sub-fields, is treated as an atomic unit. If a field is present in both parent and child policies, the entire value from the higher priority policy is used for that field; nested fields are not recursively merged. Priority is typically determined by specificity and creation time. The more specific (such as HTTPRoute rule over all the routes in the HTTPRoute) and older (created-first) policy takes precedence. Consider the following shallow merge scenario:
 
 * Parent policy adds a `x-season=summer` header.
 * Child policy adds `x-season=winter` and `x-holiday=christmas` headers.
 * Merging annotation is the default value, `ShallowMergePreferChild`.
 
-Resulting merged policy: The parent's `x-season` header is not included in the merged policy because the strategy is `ShallowMergePreferChild`.
+Resulting merged policy: The parent's `x-season` header is not included in the merged policy because the strategy is `ShallowMergePreferChild`. Each header is treated as a separate field, and the child's values win for any overlapping fields.
 
 | Header | Value | Source |
 | -- | -- | -- |
 | `x-season` | `winter` | Child |
 | `x-holiday` | `christmas` | Child |
+
+### Nested field merge example
+
+The atomic field-level treatment applies to nested structures as well. For example, in policies with nested `backend.ai` configuration, each sub-field like `backend.ai.promptGuard`, `backend.ai.routes`, and `backend.ai.modelAliases` is treated as a separate atomic field. Different sub-fields can be provided by different policies and combine, but if multiple policies set the same sub-field, only the higher-precedence policy's value is used.
+
+Consider this nested field merge scenario with three policies and `ShallowMergePreferChild` precedence:
+
+* **Policy A** (higher precedence): Sets `backend.ai.promptGuard.enabled = true`
+* **Policy B** (medium precedence): Sets `backend.ai.routes.allowedOrigins = ["*"]`
+* **Policy C** (lower precedence): Sets both `backend.ai.promptGuard.enabled = false` and `backend.ai.routes.timeout = 30s`
+
+Resulting merged policy: Policy A's `backend.ai.promptGuard` entirely replaces Policy C's value for that same sub-field. Policy B's `backend.ai.routes` contributes its `allowedOrigins` field, but since Policy A doesn't set `backend.ai.routes`, there is no conflict. The final merged result includes Policy A's promptGuard settings and Policy B's routes settings.
+
+| Field | Value | Source |
+| -- | -- | -- |
+| `backend.ai.promptGuard.enabled` | `true` | Policy A |
+| `backend.ai.routes.allowedOrigins` | `["*"]` | Policy B |
+
+Note: Policy C's `backend.ai.promptGuard.enabled = false` and `backend.ai.routes.timeout = 30s` do not appear in the merged result because Policy A's promptGuard and Policy B's routes take full precedence over those same sub-fields.
 
 <!--TODO deep merge
 The annotation takes four values:
