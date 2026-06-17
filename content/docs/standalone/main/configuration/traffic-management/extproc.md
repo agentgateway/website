@@ -52,9 +52,9 @@ and includes a number of Envoy-specific fields that do not make sense outside of
 Although agentgateway aims to support the API as closely as possible, there are some gaps.
 
 A non-exhaustive list of these gaps is as follows:
-* Response header and response body modifications are supported, but apply only during the matching response phase.
+* Response header and response body modifications are supported, but only during the matching response phase.
 * `dynamic_metadata` is accepted from request and response header responses. `dynamic_metadata` sent after headers have already been processed is ignored.
-* `mode_override` is applied only when `processingOptions.allowModeOverride` is set to `true`, and only from the matching request or response header response. Body-phase `mode_override` values and overrides received after full-duplex streaming starts are ignored.
+* `mode_override` is applied only when `processingOptions.allowModeOverride` is set to `true`, and only from the matching request or response header phase. Body-phase `mode_override` values and overrides received after full-duplex streaming starts are ignored.
 * `override_message_timeout` is ignored in all responses.
 * `clear_route_cache` is ignored in responses. Agentgateway does not have a route cache.
 * `status.CONTINUE_AND_REPLACE` is ignored in responses.
