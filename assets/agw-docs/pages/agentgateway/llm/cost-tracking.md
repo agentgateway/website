@@ -1,5 +1,9 @@
 Track and monitor LLM costs per request using token usage metrics.
 
+{{< callout type="info" >}}
+This guide *estimates* cost from token usage metrics by applying your own pricing model in PromQL. To have {{< reuse "agw-docs/snippets/agentgateway.md" >}} compute the *realized* USD cost of each request from a model cost catalog—and expose it in logs, traces, metrics, and CEL—see [Model costs]({{< link-hextra path="/llm/costs/" >}}).
+{{< /callout >}}
+
 ## About
 
 Cost tracking (also known as spend monitoring or usage tracking) helps you monitor and control expenses from LLM API calls. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} automatically tracks token consumption for every request and response, allowing you to calculate costs based on your provider's pricing model.
