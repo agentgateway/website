@@ -319,12 +319,12 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
 kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
 {{< /doc-test >}}
 
-{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
+{{% version include-if="1.2.x,1.1.x,1.0.x" %}}
 ## Step 3: Verify the connection {#verify}
-{{< /version >}}
-{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+{{% /version %}}
+{{% version exclude-if="1.2.x,1.1.x,1.0.x" %}}
 ## Step 2: Verify the connection {#verify}
-{{< /version >}}
+{{% /version %}}
 
 1. Get the agentgateway address.
    
