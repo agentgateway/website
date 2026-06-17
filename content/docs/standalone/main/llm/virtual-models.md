@@ -8,9 +8,9 @@ Virtual models let you publish one client-facing model name and route requests a
 
 Use `llm.virtualModels[]` to define the virtual entrypoint and `llm.models[]` as the concrete upstream targets.
 
-## Model visibility
+## Public and internal models
 
-Use `llm.models[].visibility` to control whether a model is directly exposed to clients:
+Use `llm.models[].visibility` to control whether a model is directly exposed to clients or kept as an internal target.
 
 - `public`: The model can be requested directly by clients and can also be used as a virtual model target.
 - `internal`: The model is intended for internal routing targets and is not exposed as a direct client model.
@@ -18,6 +18,7 @@ Use `llm.models[].visibility` to control whether a model is directly exposed to 
 ## Route selection modes
 
 Each virtual model defines a `mode` and a list of `routes`.
+The routes in a virtual model point to concrete `llm.models[]` entries.
 
 ### Weighted routing
 
@@ -26,6 +27,12 @@ Use `mode: weighted` to split traffic between targets with `weight`.
 ```yaml
 llm:
   models:
+  - name: gpt-4o-public
+    visibility: public
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "$OPENAI_API_KEY"
   - name: gpt-4o-primary
     visibility: internal
     provider: openAI
@@ -56,6 +63,12 @@ Use `mode: failover` and `priority` to define ordered failover targets.
 ```yaml
 llm:
   models:
+  - name: claude-public
+    visibility: public
+    provider: anthropic
+    params:
+      model: claude-sonnet-4-0
+      apiKey: "$ANTHROPIC_API_KEY"
   - name: claude-primary
     visibility: internal
     provider: anthropic
@@ -86,6 +99,12 @@ Use `mode: conditional` and `when` expressions to select targets by request cont
 ```yaml
 llm:
   models:
+  - name: openai-public
+    visibility: public
+    provider: openAI
+    params:
+      model: gpt-4o-mini
+      apiKey: "$OPENAI_API_KEY"
   - name: openai-fast
     visibility: internal
     provider: openAI

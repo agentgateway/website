@@ -12,7 +12,7 @@ The P2C algorithm provides better performance than simple round-robin, random, o
 
 ## Reusable providers in simplified LLM mode
 
-For simplified `llm` configuration, you can define named provider defaults once in `llm.providers[]` and reference them from `llm.models[]`.
+For simplified `llm` configuration, you can define named provider defaults once in `llm.providers[]` and reference them from multiple `llm.models[]` entries. This is different from the P2C group above: the reusable provider acts as a preset, not as a load-balancing pool.
 
 ```yaml
 llm:
@@ -37,7 +37,7 @@ llm:
       model: gpt-4o
 ```
 
-When a model references a named provider, provider defaults are reused automatically. Model-level values override referenced provider defaults for that model.
+When a model references a named provider, provider defaults are reused automatically. Model-level values override referenced provider defaults for that model, so you can keep shared settings in one place and override only the fields that differ.
 
 ```yaml
 llm:
@@ -57,6 +57,8 @@ llm:
 ```
 
 In this example, `apiKey` comes from `llm.providers[]`, while `hostOverride` from `llm.models[]` takes precedence for `smart`.
+
+Named providers can hold any shared upstream settings you want to reuse, such as authentication, host overrides, path overrides, or other model defaults. Keep the shared values on `llm.providers[]` and only set per-model differences on `llm.models[]`.
 
 ## Configuration
 
