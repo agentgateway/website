@@ -8,7 +8,9 @@ test:
     path: openai-compat-validate
 ---
 
-Use this page for providers that implement the OpenAI API format but do not have a first-class `provider:` shortcut yet. For built-in providers such as [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}}), [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}}), [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
+Use this page for providers that implement the OpenAI API format but do not have a first-class `provider:` shortcut yet. For built-in providers such as [Baseten]({{< link-hextra path="/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}}), [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
+
+If you need a different upstream endpoint for one of those built-in standalone providers, keep the first-class `provider:` value and set `params.baseUrl` on that provider instead of switching to `provider: openAI`.
 
 ## Before you begin
 
@@ -121,7 +123,7 @@ llm:
     backendTLS: {}  # only for HTTPS providers
 ```
 
-Set `params.baseUrl` to the provider's API root. This can include provider-specific prefixes such as `/v1`, `/openai/v1`, or another base path.
+Set `params.baseUrl` to the provider's API root. This can include provider-specific prefixes such as `/v1`, `/openai/v1`, or another base path. If the provider already has a first-class page, use that provider shortcut and its documented default base URL instead.
 
 | Field | Description |
 |-------|-------------|

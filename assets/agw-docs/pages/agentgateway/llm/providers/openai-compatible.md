@@ -4,7 +4,7 @@ Configure OpenAI-compatible LLM providers that do not have a first-class page in
 
 Use the OpenAI-compatible provider when your upstream exposes the OpenAI Chat Completions API but does not have a dedicated agentgateway provider page.
 
-For providers with built-in shortcuts, prefer the dedicated pages instead. This includes [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}}), [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/llm/providers/groq/" >}}), [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/llm/providers/xai/" >}}), and the other first-class provider pages in this section.
+For providers with built-in shortcuts, prefer the dedicated pages instead. This includes [Baseten]({{< link-hextra path="/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}}), [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}}), [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}), [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/llm/providers/xai/" >}}), and the other first-class provider pages in this section.
 
 If the upstream does not match a built-in provider or an OpenAI-compatible API, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead.
 
@@ -144,8 +144,6 @@ spec:
         model: <upstream-model-name>
       host: api.example.com
       port: 443
-      # path: /v1/chat/completions
-      # pathPrefix: /openai/v1
   policies:
     auth:
       secretRef:
@@ -160,11 +158,9 @@ Use the following fields to adapt the template:
 |---------|-------------|
 | `ai.provider.openai.model` | Optional upstream model override. Omit it to pass the client-provided model through. |
 | `host` and `port` | Required target address for the external provider endpoint. |
-| `path` | Optional full upstream request path override. Use this when the provider expects a non-standard chat completions path. |
-| `pathPrefix` | Optional base path prefix when the provider serves the standard API under a prefixed route. |
 | `policies.auth` | Attach the provider API key secret to outbound requests. |
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 
-For cluster-local or self-hosted targets, prefer the dedicated [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) guides, or use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) when you need to declare supported API formats explicitly.
+If the upstream needs non-default paths, mixed API formats, or a cluster-local backend target, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead. For cluster-local or self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) pages.
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

@@ -9,7 +9,7 @@ Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}
 
 ## First-class providers
 
-Prefer the dedicated provider pages when agentgateway already knows the upstream base URL and request format:
+Prefer the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This includes the `cohere`, `baseten`, `cerebras`, `deepinfra`, `deepseek`, `groq`, `huggingface`, `mistral`, `openrouter`, `togetherai`, `xai`, `fireworks`, and `ollama` shortcuts:
 
 - [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}})
 - [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}})
@@ -33,7 +33,7 @@ Prefer the dedicated provider pages when agentgateway already knows the upstream
 
 ## OpenAI-compatible fallback
 
-Use [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes the OpenAI API format.
+Use [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes the OpenAI API format.
 
 ### Override the upstream base URL
 

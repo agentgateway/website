@@ -9,7 +9,7 @@ Learn how to configure agentgateway for a particular LLM.
 
 ## First-class providers
 
-Prefer the dedicated provider pages when agentgateway already knows the upstream host, path defaults, and request format:
+Prefer the dedicated provider pages when agentgateway already knows the upstream host, path defaults, and request format. This includes the `cohere`, `baseten`, `cerebras`, `deepinfra`, `deepseek`, `groq`, `huggingface`, `mistral`, `openrouter`, `togetherai`, `xai`, `fireworks`, and `ollama` provider types:
 
 - [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}})
 - [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}})
@@ -35,4 +35,4 @@ Prefer the dedicated provider pages when agentgateway already knows the upstream
 
 Use [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) for providers without built-in support that still expose the OpenAI API format, such as Perplexity.
 
-Use custom providers for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.
+Use custom providers only for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.
