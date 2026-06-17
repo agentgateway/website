@@ -4,9 +4,11 @@ Configure LLM providers that expose the OpenAI Chat Completions API but do not h
 
 In {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you configure an OpenAI-compatible provider by setting `ai.provider.openai` and pointing it at the provider's `host`, `port`, and `path`. Use the `path` field when the provider serves chat completions from a non-standard path.
 
+{{< version include-if="1.3.x" >}}
 {{< callout type="info" >}}
 In standalone mode, many of these providers have a first-class `provider:` shortcut, such as `provider: groq`, that automatically fills in the base URL. The Kubernetes {{< reuse "agw-docs/snippets/backend.md" >}} API does not yet expose those shortcuts, so in Kubernetes you configure them with the `ai.provider.openai` shape shown on this page.
 {{< /callout >}}
+{{< /version >}}
 
 ### Built-in OpenAI-compatible providers
 
@@ -27,7 +29,7 @@ The following providers expose an OpenAI-compatible chat completions endpoint. T
 | Together AI | `api.together.xyz` | `/v1/chat/completions` |
 | xAI | `api.x.ai` | `/v1/chat/completions` |
 
-If your provider is not in this list but still exposes the OpenAI Chat Completions API, use the [generic endpoint](#generic-openai-compatible-endpoint) template. If the upstream does not match the OpenAI API format, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead.
+If your provider is not in this list but still exposes the OpenAI Chat Completions API, use the [generic endpoint](#generic-openai-compatible-endpoint) template.{{< version include-if="1.3.x" >}} If the upstream does not match the OpenAI API format, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead.{{< /version >}}
 
 ## Before you begin
 
@@ -66,7 +68,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Baseten" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -91,7 +93,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Cerebras" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -116,7 +118,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Cohere" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -141,7 +143,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="DeepInfra" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -166,7 +168,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="DeepSeek" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -191,7 +193,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Fireworks AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -216,7 +218,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Groq" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -241,7 +243,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Hugging Face" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -266,7 +268,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Mistral" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -291,7 +293,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="OpenRouter" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -316,7 +318,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="Together AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -341,7 +343,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    {{% tab tabName="xAI" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: llm-backend
@@ -440,7 +442,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: perplexity
@@ -466,7 +468,7 @@ EOF
 Use this template when the provider exposes the OpenAI Chat Completions API but is not in the table.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: generic-openai
@@ -497,6 +499,6 @@ Use the following fields to adapt the template:
 | `policies.auth` | Attach the provider API key secret to outbound requests. |
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 
-If the upstream needs mixed API formats or a cluster-local backend target, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead. For self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) pages.
+{{< version include-if="1.3.x" >}}If the upstream needs mixed API formats or a cluster-local backend target, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead. {{< /version >}}For self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) pages.
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
