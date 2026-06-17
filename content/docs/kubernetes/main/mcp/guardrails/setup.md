@@ -262,47 +262,6 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-### Step 6: Set a timeout for the policy server (optional) {#timeout}
-
-The guardrails callout has no deadline by default. If the policy server is slow or cold, the request can hang instead of letting `failureMode` engage. To bound the call, set a request timeout on the policy server with a `backend.http.requestTimeout` policy. When the timeout is reached, agentgateway applies the processor's `failureMode`.
-
-- With `FailClosed`, the client receives a JSON-RPC error.
-- With `FailOpen`, the request proceeds without the guardrail.
-
-The timeout policy targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder for the ExtMCP server. The hostname is not used for traffic to your MCP servers such as the website fetcher example, and clients continue to call the gateway on the `/mcp` path from Step 4.
-
-```yaml {paths="mcp-guardrails"}
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: ext-mcp-route
-spec:
-  parentRefs:
-  - name: agentgateway-proxy
-    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  hostnames:
-    - "ext-mcp.internal"
-  rules:
-    - backendRefs:
-      - name: ext-mcp
-        port: 4445
----
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: ext-mcp-timeout
-spec:
-  targetRefs:
-    - group: ""
-      kind: Service
-      name: ext-mcp
-  backend:
-    http:
-      requestTimeout: 5s
-EOF
-```
-
 {{% /steps %}}
 
 ## Verify the guardrails
@@ -454,6 +413,56 @@ echo "$ALLOW" | grep -q '"result"' || { echo "FAIL: allowed tool did not return 
 
 echo "PASS: MCP guardrails mutate, deny, and allow behaviors verified"
 {{< /doc-test >}}
+
+## Troubleshooting
+
+### MCP requests hang when the policy server is slow or cold
+
+**What's happening:**
+
+A `tools/call` or `tools/list` request hangs instead of returning a result or an error.
+
+**Why it's happening:**
+
+The guardrails callout has no deadline by default. If the ExtMCP server is slow or its connection is cold, the request waits on the callout instead of letting `failureMode` engage.
+
+**How to fix it:**
+
+Bound the call with a `backend.http.requestTimeout` policy on the ExtMCP server. When the timeout is reached, agentgateway applies the processor's `failureMode`: with `FailClosed`, the client receives a JSON-RPC error, and with `FailOpen`, the request proceeds without the guardrail.
+
+The timeout policy targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder for the ExtMCP server. The hostname is not used for traffic to your MCP servers, and clients continue to call the gateway on the `/mcp` path from Step 4.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: ext-mcp-route
+spec:
+  parentRefs:
+  - name: agentgateway-proxy
+    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  hostnames:
+    - "ext-mcp.internal"
+  rules:
+    - backendRefs:
+      - name: ext-mcp
+        port: 4445
+---
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: ext-mcp-timeout
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: ext-mcp
+  backend:
+    http:
+      requestTimeout: 5s
+EOF
+```
 
 ## Cleanup
 
