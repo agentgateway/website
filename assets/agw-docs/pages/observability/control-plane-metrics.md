@@ -19,11 +19,11 @@ The following steps show you how to view the raw metrics endpoint of the control
    Example output:
 
    ```console
-   # HELP kgateway_controller_reconciliations_total Total controller reconciliations
-   # TYPE kgateway_controller_reconciliations_total counter
-   kgateway_controller_reconciliations_total{controller="gateway",result="success"} 1
-   kgateway_controller_reconciliations_total{controller="gatewayclass",result="success"} 2
-   kgateway_controller_reconciliations_total{controller="gatewayclass-provisioner",result="success"} 2
+   # HELP agentgateway_controller_reconciliations_total Total number of controller reconciliations
+   # TYPE agentgateway_controller_reconciliations_total counter
+   agentgateway_controller_reconciliations_total{controller="gateway",result="success"} 1
+   agentgateway_controller_reconciliations_total{controller="gatewayclass",result="success"} 2
+   agentgateway_controller_reconciliations_total{controller="gatewayclass-provisioner",result="success"} 2
    ```
 
 {{< doc-test paths="control-plane-metrics" >}}

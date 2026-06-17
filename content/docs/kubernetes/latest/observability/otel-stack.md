@@ -6,6 +6,10 @@ test:
   otel-stack:
   - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
+  - file: content/docs/kubernetes/latest/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/install/sample-app.md
+    path: install-httpbin
   - file: content/docs/kubernetes/latest/observability/otel-stack.md
     path: otel-stack
 ---
@@ -23,7 +27,7 @@ test:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Remove the configmap for the Envoy gateway proxy dashboard and delete the `envoy.json` file.
+1. Remove the configmap for the agentgateway dashboard and delete the `agentgateway.json` file.
    ```sh
    kubectl delete cm {{< reuse "agw-docs/snippets/pod-name.md" >}}-dashboard -n telemetry
    rm {{< reuse "agw-docs/snippets/pod-name.md" >}}.json
