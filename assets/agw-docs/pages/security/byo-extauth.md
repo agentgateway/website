@@ -174,6 +174,12 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
            name: ext-authz
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            port: 4444
+         cache:
+           key:
+             - request.path
+             - request.headers["authorization"]
+           ttl: 5m
+           maxEntries: 10000
          grpc: {}
    EOF
    ```
@@ -199,6 +205,12 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
            name: ext-authz
            namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
            port: 4444
+         cache:
+           key:
+             - request.path
+             - request.headers["authorization"]
+           ttl: 5m
+           maxEntries: 10000
          grpc: {}
    EOF
    ```
@@ -226,6 +238,12 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
          backendRef:
            name: ext-authz
            port: 4444
+         cache:
+           key:
+             - request.path
+             - request.headers["authorization"]
+           ttl: 5m
+           maxEntries: 10000
          grpc: {}
    EOF
    ```
