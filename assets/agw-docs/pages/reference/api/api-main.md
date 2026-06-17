@@ -367,6 +367,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | Compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Istio integration settings. If enabled, agentgateway can natively connect to Istio-enabled pods with mTLS. |  | Optional: \{\} <br /> |
+| `modelCatalog` _[ModelCatalogSpec](#modelcatalogspec)_ | Model cost catalog sources. Only effective when set on a Gateway-level<br />AgentgatewayParameters (via Gateway.spec.infrastructure.parametersRef);<br />ignored on GatewayClass-level parameters because ConfigMap references<br />are resolved from the Gateway's deployment namespace. |  | Optional: \{\} <br /> |
 
 
 #### AgentgatewayParametersLogging
@@ -444,6 +445,7 @@ _Appears in:_
 | `resources` _[ResourceRequirements](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#resourcerequirements-v1-core)_ | Compute resources required by this container. See<br />https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/<br />for details. |  | Optional: \{\} <br /> |
 | `shutdown` _[ShutdownSpec](#shutdownspec)_ | Shutdown delay configuration. How graceful planned or unplanned data<br />plane changes happen is in tension with how quickly rollouts of the data<br />plane complete. How long a data plane pod must wait for shutdown to be<br />perfectly graceful depends on how you have configured your `Gateway`<br />resources. |  | Optional: \{\} <br /> |
 | `istio` _[IstioSpec](#istiospec)_ | Istio integration settings. If enabled, agentgateway can natively connect to Istio-enabled pods with mTLS. |  | Optional: \{\} <br /> |
+| `modelCatalog` _[ModelCatalogSpec](#modelcatalogspec)_ | Model cost catalog sources. Only effective when set on a Gateway-level<br />AgentgatewayParameters (via Gateway.spec.infrastructure.parametersRef);<br />ignored on GatewayClass-level parameters because ConfigMap references<br />are resolved from the Gateway's deployment namespace. |  | Optional: \{\} <br /> |
 | `deployment` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`Deployment` resource. |  | Optional: \{\} <br /> |
 | `service` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated `Service`<br />resource. |  | Optional: \{\} <br /> |
 | `serviceAccount` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`ServiceAccount` resource. |  | Optional: \{\} <br /> |
@@ -2862,6 +2864,57 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `attributes` _[MetricAttributes](#metricattributes)_ | Customizations to the labels that are<br />added to Prometheus metrics. |  | Required: \{\} <br /> |
+
+
+#### ModelCatalogConfigMapRef
+
+
+
+ModelCatalogConfigMapRef identifies a ConfigMap holding model cost catalog JSON.
+The ConfigMap must be in the same namespace as the Gateway that references it.
+
+
+
+_Appears in:_
+- [ModelCatalogSource](#modelcatalogsource)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _string_ |  |  | MinLength: 1 <br />Required: \{\} <br /> |
+| `key` _string_ | Data key whose value is the catalog JSON. Defaults to "catalog.json". |  | Optional: \{\} <br /> |
+
+
+#### ModelCatalogSource
+
+
+
+ModelCatalogSource is a single source of model cost catalog data.
+
+
+
+_Appears in:_
+- [ModelCatalogSpec](#modelcatalogspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `configMap` _[ModelCatalogConfigMapRef](#modelcatalogconfigmapref)_ |  |  | Optional: \{\} <br /> |
+
+
+#### ModelCatalogSpec
+
+
+
+ModelCatalogSpec configures model cost catalog sources for the agentgateway proxy.
+
+
+
+_Appears in:_
+- [AgentgatewayParametersConfigs](#agentgatewayparametersconfigs)
+- [AgentgatewayParametersSpec](#agentgatewayparametersspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `sources` _[ModelCatalogSource](#modelcatalogsource) array_ |  |  | Optional: \{\} <br /> |
 
 
 #### NamedLLMProvider
