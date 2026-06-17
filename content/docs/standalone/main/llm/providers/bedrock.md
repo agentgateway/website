@@ -25,6 +25,9 @@ llm:
   models:
   - name: "*"
     provider: bedrock
+    auth:
+      aws:
+        serviceName: bedrock
     params:
       awsRegion: us-west-2
 ```

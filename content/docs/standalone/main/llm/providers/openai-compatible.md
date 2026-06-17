@@ -52,10 +52,12 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$XAI_API_KEY"
     params:
-      apiKey: "$XAI_API_KEY"
       hostOverride: "api.x.ai:443"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -75,12 +77,14 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$COHERE_API_KEY"
     params:
       model: command-r-plus
-      apiKey: "$COHERE_API_KEY"
       hostOverride: "api.cohere.ai:443"
       pathPrefix: "/compatibility/v1/chat/completions"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -100,11 +104,13 @@ llm:
   models:
   - name: llama-3.2-90b
     provider: openAI
+    auth:
+      key:
+        value: "$TOGETHER_API_KEY"
     params:
       model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
-      apiKey: "$TOGETHER_API_KEY"
       hostOverride: "api.together.xyz:443"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -124,12 +130,14 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$GROQ_API_KEY"
     params:
       model: llama-3.3-70b-versatile
-      apiKey: "$GROQ_API_KEY"
       hostOverride: "api.groq.com:443"
       pathPrefix: "/openai/v1/chat/completions"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -149,12 +157,14 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$FIREWORKS_API_KEY"
     params:
       model: accounts/fireworks/models/llama-v3p1-70b-instruct
-      apiKey: "$FIREWORKS_API_KEY"
       hostOverride: "api.fireworks.ai:443"
       pathPrefix: "/inference/v1/chat/completions"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -174,11 +184,13 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$DEEPSEEK_API_KEY"
     params:
       model: deepseek-chat
-      apiKey: "$DEEPSEEK_API_KEY"
       hostOverride: "api.deepseek.com:443"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -198,11 +210,13 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$MISTRAL_API_KEY"
     params:
       model: mistral-large-latest
-      apiKey: "$MISTRAL_API_KEY"
       hostOverride: "api.mistral.ai:443"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -222,11 +236,13 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$PERPLEXITY_API_KEY"
     params:
       model: llama-3.1-sonar-large-128k-online
-      apiKey: "$PERPLEXITY_API_KEY"
       hostOverride: "api.perplexity.ai:443"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -276,7 +292,7 @@ EOF
 ```
 
 {{< callout type="info" >}}
-If your vLLM server uses HTTPS, add `backendTLS: {}` to the model configuration and include the port `443` in `hostOverride`.
+If your vLLM server uses HTTPS, add `tls: {}` to the model configuration and include the port `443` in `hostOverride`.
 {{< /callout >}}
 
 {{< doc-test paths="openai-compat-validate" >}}
@@ -319,11 +335,13 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$PROVIDER_API_KEY"
     params:
-      apiKey: "$PROVIDER_API_KEY"
       hostOverride: "<provider-host>:<port>"
       pathPrefix: "<custom-path>"  # only if non-standard
-    backendTLS: {}  # only for HTTPS providers
+    tls: {}  # only for HTTPS providers
 ```
 
 {{% reuse "agw-docs/snippets/review-table.md" %}}
@@ -333,7 +351,7 @@ llm:
 | `name` | The model name to match in incoming requests. Use `*` to match any model name. |
 | `provider` | Set to `openAI` for OpenAI-compatible providers. |
 | `params.model` | The model name as expected by the provider. If omitted, the model from the client request is passed through. |
-| `params.apiKey` | The provider's API key. Reference environment variables with the `$VAR_NAME` syntax. |
+| `auth.key.value` | The provider's API key. Reference environment variables with the `$VAR_NAME` syntax. |
 | `params.hostOverride` | The provider's API host and port (e.g., `api.example.com:443`). |
 | `params.pathPrefix` | The path prefix for providers that use non-standard endpoints (e.g., `/openai/v1/chat/completions`). Omit for providers that use the standard `/v1/chat/completions` path. |
-| `backendTLS` | Enable TLS for the upstream connection. Required for HTTPS providers, omit for local HTTP providers. |
+| `tls` | Enable TLS for the upstream connection. Required for HTTPS providers, omit for local HTTP providers. |

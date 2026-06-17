@@ -7,6 +7,67 @@ test: skip
 
 Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}}provider{{< /gloss >}}.
 
+## Standalone authentication
+
+In standalone mode, upstream provider authentication is configured per model via `llm.models[].auth`. (In routing-based configurations, use `policies.backendAuth` on a route instead.)
+
+### API key
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openai
+    auth:
+      key:
+        value: "$OPENAI_API_KEY"
+```
+
+### Credential passthrough
+
+To forward the validated incoming JWT to the upstream provider, use `passthrough`:
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: openai
+    auth:
+      passthrough: {}
+```
+
+### Cloud provider auth
+
+- **Google Cloud**: `auth.gcp` uses Application Default Credentials (ADC) to fetch an access token or ID token.
+- **AWS**: `auth.aws` signs upstream requests with SigV4 using implicit or explicit AWS credentials.
+- **Azure**: `auth.azure` uses Entra ID (implicit or explicit configuration).
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: vertex
+    auth:
+      gcp:
+        type: accessToken
+  - name: "*"
+    provider: bedrock
+    auth:
+      aws:
+        serviceName: bedrock
+  - name: "*"
+    provider: azure
+    auth:
+      azure:
+        implicit: {}
+```
+
+## Standalone upstream TLS
+
+Use `llm.models[].tls` to configure TLS when connecting to an upstream provider (for example, to enable HTTPS for a self-hosted model endpoint). `backendTLS` is a deprecated alias for the same setting.
+
 ## OpenAI-compatible providers
 
 Popular OpenAI-compatible providers include xAI (Grok), Cohere, Together AI, Groq, DeepSeek, Mistral, Perplexity, and Fireworks AI.

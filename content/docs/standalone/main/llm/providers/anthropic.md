@@ -17,8 +17,9 @@ llm:
   models:
   - name: "*"
     provider: anthropic
-    params:
-      apiKey: "$ANTHROPIC_API_KEY"
+    auth:
+      key:
+        value: "$ANTHROPIC_API_KEY"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -28,7 +29,7 @@ llm:
 | `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `anthropic` for Claude models. |
 | `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.apiKey` | The Anthropic API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `auth.key.value` | The Anthropic API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
 ## Example request
 
@@ -256,9 +257,11 @@ llm:
       awsRegion: us-west-2
       hostOverride: aws-external-anthropic.us-west-2.api.aws:443
       pathPrefix: /v1
-      apiKey:
-        file: $HOME/.secrets/anthropic-aws
-    backendTLS: {}
+    auth:
+      key:
+        value:
+          file: $HOME/.secrets/anthropic-aws
+    tls: {}
 ```
 
 | Setting | Description |
@@ -266,8 +269,8 @@ llm:
 | `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
 | `params.hostOverride` | The Claude Platform endpoint host and port. Use the form `aws-external-anthropic.{region}.api.aws:443`. |
 | `params.pathPrefix` | The Anthropic API path prefix on Claude Platform, set to `/v1`. |
-| `params.apiKey.file` | A path to a file that contains the API key. |
-| `backendTLS: {}` | Enables TLS to the upstream host. Required because Claude Platform is served over HTTPS. |
+| `auth.key.value.file` | A path to a file that contains the API key. |
+| `tls: {}` | Enables TLS to the upstream host. Required because Claude Platform is served over HTTPS. |
 
 {{% /tab %}}
 {{% tab tabName="AWS SigV4" %}}
