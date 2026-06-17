@@ -8,6 +8,8 @@ Agentgateway can compute **realized USD cost** for LLM requests when you provide
 
 Agentgateway does **not** ship a built-in model catalog. You must provide one (for example, generated with `agctl costs import`).
 
+Catalog lookups are by **provider id** (for example `openai`, `anthropic`, or `gcp.gemini`) and **model name** (for example `gpt-4o-mini`).
+
 ## Configure catalog sources
 
 Configure one or more catalog sources under `config.modelCatalog`. Entries are merged in order, with later entries taking precedence.
@@ -117,8 +119,8 @@ For all options, see the [`agctl costs import`]({{< link-hextra path="/reference
 
 When a request matches an entry in the catalog, agentgateway populates:
 
-- `llm.cost` — realized USD cost for the request (unset when the model cannot be priced)
-- `llm.costRates` — effective USD-per-1M-token rates after tier selection (unset when the model cannot be priced)
+- `llm.cost` — realized USD cost for the request (unset when the model cannot be priced). Includes `total` plus per-token-type components like `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`.
+- `llm.costRates` — effective USD-per-1M-token rates after tier selection (unset when the model cannot be priced). Includes the same per-token-type fields when available.
 
 You can use these in CEL expressions for access logging, tracing, and metrics configuration.
 
@@ -130,11 +132,13 @@ frontendPolicies:
       llm.cost.total: 'llm.cost.total'
       llm.cost.input: 'llm.cost.input'
       llm.cost.output: 'llm.cost.output'
+      llm.cost.cacheRead: 'llm.cost.cacheRead'
   tracing:
     attributes:
       llm.cost.total: 'llm.cost.total'
       llm.costRates.input: 'llm.costRates.input'
       llm.costRates.output: 'llm.costRates.output'
+      llm.costRates.cacheRead: 'llm.costRates.cacheRead'
 
 config:
   metrics:
@@ -143,6 +147,7 @@ config:
         llm.cost.total: 'llm.cost.total'
         llm.costRates.input: 'llm.costRates.input'
         llm.costRates.output: 'llm.costRates.output'
+        llm.costRates.cacheRead: 'llm.costRates.cacheRead'
 ```
 
 This emits the selected cost values as access log fields, trace attributes, and metric fields. For more examples, see [LLM observability]({{< link-hextra path="/llm/observability/" >}}) and the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}).
