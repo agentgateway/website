@@ -150,7 +150,7 @@ EOF
 
 Deploy an A2A server, then create the resources that route traffic to it. You can route through an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource, or directly to the Service that exposes the server.
 
-We recommend the `{{< reuse "agw-docs/snippets/backend.md" >}}` approach. The `a2a` backend type represents the A2A server as a dedicated backend that you can further configure, such as by attaching policies, and it can select A2A servers that run outside your cluster.
+For most cases, use the `{{< reuse "agw-docs/snippets/backend.md" >}}` approach. The `a2a` backend type represents the A2A server as a dedicated backend that you can further configure, such as by attaching policies, and it can select A2A servers that run outside your cluster. The Service-based approach requires an update to your app (the `appProtocol` setting) and is the legacy way from an earlier version of agentgateway.
 
 {{< tabs items="AgentgatewayBackend,Service" tabTotal="2" >}}
 {{% tab tabName="AgentgatewayBackend" %}}
