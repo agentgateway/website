@@ -35,14 +35,14 @@ If your provider is not in this list but still exposes the OpenAI Chat Completio
 
 ## Set up access to an OpenAI-compatible provider
 
-The following example configures Groq. To configure a different provider from the table, substitute its `host` and `path` values.
+The following steps create a generic secret and {{< reuse "agw-docs/snippets/backend.md" >}} that you can use for any of the providers in the table. The model names in the tabs are examples; substitute a model that your provider supports.
 
-1. Get an API key for your provider. For example, get a [Groq API key](https://console.groq.com/keys).
+1. Get an API key for your provider. For example, get a [Groq API key](https://console.groq.com/keys) or a [Mistral API key](https://console.mistral.ai/api-keys).
 
 2. Save the API key in an environment variable.
 
    ```sh
-   export GROQ_API_KEY=<insert your API key>
+   export MY_API_KEY=<insert your API key>
    ```
 
 3. Create a Kubernetes secret to store your API key.
@@ -52,22 +52,174 @@ The following example configures Groq. To configure a different provider from th
    apiVersion: v1
    kind: Secret
    metadata:
-     name: groq-secret
+     name: llm-provider-secret
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    type: Opaque
    stringData:
-     Authorization: $GROQ_API_KEY
+     Authorization: $MY_API_KEY
    EOF
    ```
 
-4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that points the `openai` provider at the provider's host and path.
+4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that points the `openai` provider at your provider's host and path. Select the tab for your provider.
 
+   {{< tabs tabTotal="12" items="Baseten,Cerebras,Cohere,DeepInfra,DeepSeek,Fireworks AI,Groq,Hugging Face,Mistral,OpenRouter,Together AI,xAI" >}}
+   {{% tab tabName="Baseten" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
-     name: groq
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: meta-llama/Llama-3.1-8B-Instruct
+         host: inference.baseten.co
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: inference.baseten.co
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Cerebras" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: llama-3.3-70b
+         host: api.cerebras.ai
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.cerebras.ai
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Cohere" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: command-r-plus
+         host: api.cohere.ai
+         port: 443
+         path: /compatibility/v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.cohere.ai
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="DeepInfra" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: meta-llama/Meta-Llama-3.1-8B-Instruct
+         host: api.deepinfra.com
+         port: 443
+         path: /v1/openai/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.deepinfra.com
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="DeepSeek" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: deepseek-chat
+         host: api.deepseek.com
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.deepseek.com
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Fireworks AI" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: accounts/fireworks/models/llama-v3p1-70b-instruct
+         host: api.fireworks.ai
+         port: 443
+         path: /inference/v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.fireworks.ai
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Groq" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      ai:
@@ -80,11 +232,138 @@ The following example configures Groq. To configure a different provider from th
      policies:
        auth:
          secretRef:
-           name: groq-secret
+           name: llm-provider-secret
        tls:
          sni: api.groq.com
    EOF
    ```
+   {{% /tab %}}
+   {{% tab tabName="Hugging Face" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: meta-llama/Llama-3.1-8B-Instruct
+         host: router.huggingface.co
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: router.huggingface.co
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Mistral" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: mistral-large-latest
+         host: api.mistral.ai
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.mistral.ai
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="OpenRouter" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: openai/gpt-4o
+         host: openrouter.ai
+         port: 443
+         path: /api/v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: openrouter.ai
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="Together AI" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
+         host: api.together.xyz
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.together.xyz
+   EOF
+   ```
+   {{% /tab %}}
+   {{% tab tabName="xAI" %}}
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: llm-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai:
+           model: grok-2-latest
+         host: api.x.ai
+         port: 443
+         path: /v1/chat/completions
+     policies:
+       auth:
+         secretRef:
+           name: llm-provider-secret
+       tls:
+         sni: api.x.ai
+   EOF
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
    {{% reuse "agw-docs/snippets/review-table.md" %}}
 
@@ -103,7 +382,7 @@ The following example configures Groq. To configure a different provider from th
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
    metadata:
-     name: groq
+     name: llm-route
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      parentRefs:
@@ -113,22 +392,22 @@ The following example configures Groq. To configure a different provider from th
      - matches:
        - path:
            type: PathPrefix
-           value: /groq
+           value: /llm
        backendRefs:
-       - name: groq
+       - name: llm-backend
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          group: agentgateway.dev
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
 
-6. Send a request to verify the setup.
+6. Send a request to verify the setup. Replace the `model` value with the model that you configured on the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
    {{% tab tabName="Cloud Provider LoadBalancer" %}}
    ```sh
-   curl "$INGRESS_GW_ADDRESS/groq" -H content-type:application/json -d '{
-      "model": "llama-3.3-70b-versatile",
+   curl "$INGRESS_GW_ADDRESS/llm" -H content-type:application/json -d '{
+      "model": "<your-model>",
       "messages": [
         {
           "role": "user",
@@ -140,8 +419,8 @@ The following example configures Groq. To configure a different provider from th
    {{% /tab %}}
    {{% tab tabName="Port-forward for local testing" %}}
    ```sh
-   curl "localhost:8080/groq" -H content-type:application/json -d '{
-      "model": "llama-3.3-70b-versatile",
+   curl "localhost:8080/llm" -H content-type:application/json -d '{
+      "model": "<your-model>",
       "messages": [
         {
           "role": "user",
