@@ -25,12 +25,11 @@ Custom providers are useful when:
   {{< reuse "agw-docs/snippets/backend.md" >}} that routes to a Kubernetes
   Service or InferencePool.
 
-For managed providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure,
-Bedrock, Ollama, Baseten, Cerebras, Cohere, DeepInfra, DeepSeek, Fireworks AI,
-Groq, Hugging Face, Mistral, OpenRouter, Together AI, and xAI, use the
-dedicated provider page unless you need explicit format or backend target
-control. For providers that simply expose the standard OpenAI API shape without
-built-in support, use [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) before reaching for a custom provider.
+For first-class providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure,
+Bedrock, and Ollama, use the dedicated provider page unless you need explicit
+format or backend target control. For providers that expose the standard OpenAI
+API shape without a first-class type, such as Cohere, DeepSeek, Groq, Mistral,
+Together AI, and xAI, use [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) before reaching for a custom provider.
 
 ## Supported targets
 

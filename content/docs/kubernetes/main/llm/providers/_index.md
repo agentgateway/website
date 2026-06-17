@@ -1,15 +1,15 @@
 ---
 title: Providers
 weight: 15
-description: Configure agentgateway for first-class provider shortcuts and Kubernetes compatibility fallbacks.
+description: Configure agentgateway for first-class provider shortcuts and OpenAI-compatible fallbacks.
 test: skip
 ---
 
 Learn how to configure agentgateway for a particular LLM.
 
-## First-class provider shortcuts
+## First-class providers
 
-Prefer the dedicated provider pages when agentgateway already knows the upstream host, path defaults, and request format. These pages document the first-class standalone shortcuts (`provider: ...`) and the Kubernetes compatibility shape (`ai.provider.openai` with host/path overrides) until first-class CRD fields exist. This includes the `cohere`, `baseten`, `cerebras`, `deepinfra`, `deepseek`, `groq`, `huggingface`, `mistral`, `openrouter`, `togetherai`, `xai`, `fireworks`, and `ollama` provider types:
+Prefer the dedicated provider pages when the {{< reuse "agw-docs/snippets/backend.md" >}} API has a first-class provider type for the upstream, with built-in host, path, and request-format defaults.
 
 - [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}})
 - [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}})
@@ -18,21 +18,15 @@ Prefer the dedicated provider pages when agentgateway already knows the upstream
 - [Gemini]({{< link-hextra path="/llm/providers/gemini/" >}})
 - [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}})
 - [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}})
-- [Baseten]({{< link-hextra path="/llm/providers/baseten/" >}})
-- [Cerebras]({{< link-hextra path="/llm/providers/cerebras/" >}})
-- [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}})
-- [DeepInfra]({{< link-hextra path="/llm/providers/deepinfra/" >}})
-- [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}})
-- [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}})
-- [Groq]({{< link-hextra path="/llm/providers/groq/" >}})
-- [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}})
-- [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}})
-- [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}})
-- [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}})
-- [xAI]({{< link-hextra path="/llm/providers/xai/" >}})
 
-## Fallback options
+## OpenAI-compatible providers
 
-Use [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) for providers without built-in support that still expose the OpenAI API format, such as Perplexity.
+Many providers, such as Cohere, DeepSeek, Groq, Mistral, Together AI, and xAI, expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Configure these with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}).
 
-Use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) only for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.
+{{< callout type="info" >}}
+In standalone mode, several of these providers also have a first-class `provider:` shortcut, such as `provider: groq`. The Kubernetes {{< reuse "agw-docs/snippets/backend.md" >}} API does not yet expose those shortcuts.
+{{< /callout >}}
+
+## Custom providers
+
+Use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.
