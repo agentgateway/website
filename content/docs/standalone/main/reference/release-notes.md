@@ -36,4 +36,9 @@ The reorganization also introduces the following new capabilities:
 - `agctl version` prints version information for the `agctl` CLI.
 - `agctl proxy log` and `agctl controller log` get or set log levels at runtime for agentgateway running in Kubernetes.
 
+## Notable fixes
+
+- Fixed ext-authz scheme derivation so authorization checks use the correct request scheme. See #2002.
+- Fixed forwarding of non-UTF-8 header values to ext-authz. See #1931.
+
 For more information, see [Install `agctl`]({{< link-hextra path="/operations/agctl/" >}}), [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}), [Trace requests with `agctl`]({{< link-hextra path="/operations/trace-requests/" >}}), and the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
