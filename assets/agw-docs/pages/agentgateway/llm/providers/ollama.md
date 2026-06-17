@@ -87,7 +87,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
    EOF
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource. The `openai` provider type is used because Ollama exposes an OpenAI-compatible API. The `host` and `port` fields point to the headless Service DNS name.
+3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource. Use the first-class `ollama` provider and point `host` and `port` at the headless Service DNS name for your external Ollama instance.
 
    ```yaml {paths="ollama-provider-setup"}
    kubectl apply -f- <<EOF
@@ -99,7 +99,7 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
    spec:
      ai:
        provider:
-         openai:
+         ollama:
            model: llama3.2
          host: ollama.{{< reuse "agw-docs/snippets/namespace.md" >}}.svc.cluster.local
          port: 11434
@@ -110,8 +110,8 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
    | Setting | Description |
    |---------|-------------|
-   | `ai.provider.openai` | The OpenAI-compatible provider type. Ollama exposes an OpenAI-compatible API, so the `openai` type is used here. |
-   | `openai.model` | The Ollama model to use. This must match a model you pulled with `ollama pull`. |
+   | `ai.provider.ollama` | Uses the built-in Ollama provider shortcut. Agentgateway applies Ollama's default `/v1` API shape automatically. |
+   | `ollama.model` | The Ollama model to use. This must match a model you pulled with `ollama pull`. |
    | `host` | The in-cluster DNS name of the headless Service pointing to the external Ollama instance. |
    | `port` | The port Ollama listens on. The default is `11434`. |
 
@@ -226,7 +226,7 @@ ports:
 - port: 3090
   protocol: TCP
 EOF
-kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"openai":{"model":"gpt-4"},"port":3090,"path":"/llm/chat/completions"}}}}'
+kubectl patch {{< reuse "agw-docs/snippets/backend.md" >}} ollama -n {{< reuse "agw-docs/snippets/namespace.md" >}} --type merge -p '{"spec":{"ai":{"provider":{"ollama":{"model":"llama3.2"},"port":3090,"path":"/llm/chat/completions"}}}}'
 
 YAMLTest -f - <<'EOF'
 - name: wait for ollama HTTPRoute to be accepted
@@ -262,7 +262,7 @@ EOF
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n agentgateway-system agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
 
 YAMLTest -f - <<'EOF'
-- name: verify ollama route serves OpenAI-compatible responses
+- name: verify ollama route serves chat-completions responses
   http:
     url: "http://${INGRESS_GW_ADDRESS}:80/ollama"
     method: POST
@@ -270,7 +270,7 @@ YAMLTest -f - <<'EOF'
       content-type: application/json
     body: |
       {
-        "model": "gpt-4",
+        "model": "llama3.2",
         "messages": [
           {
             "role": "user",
