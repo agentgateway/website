@@ -9,27 +9,7 @@ Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}
 
 ## First-class providers
 
-Prefer the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This includes the `cohere`, `baseten`, `cerebras`, `deepinfra`, `deepseek`, `groq`, `huggingface`, `mistral`, `openrouter`, `togetherai`, `xai`, `fireworks`, and `ollama` shortcuts:
-
-- [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}})
-- [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}})
-- [Azure OpenAI]({{< link-hextra path="/llm/providers/azure/" >}})
-- [Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}})
-- [Gemini]({{< link-hextra path="/llm/providers/gemini/" >}})
-- [Vertex AI]({{< link-hextra path="/llm/providers/vertex/" >}})
-- [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}})
-- [Baseten]({{< link-hextra path="/llm/providers/baseten/" >}})
-- [Cerebras]({{< link-hextra path="/llm/providers/cerebras/" >}})
-- [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}})
-- [DeepInfra]({{< link-hextra path="/llm/providers/deepinfra/" >}})
-- [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}})
-- [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}})
-- [Groq]({{< link-hextra path="/llm/providers/groq/" >}})
-- [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}})
-- [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}})
-- [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}})
-- [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}})
-- [xAI]({{< link-hextra path="/llm/providers/xai/" >}})
+Prefer the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This includes Anthropic, OpenAI, and many OpenAI-compatible providers.
 
 ## OpenAI-compatible fallback
 
