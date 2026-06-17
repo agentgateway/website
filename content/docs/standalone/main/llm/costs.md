@@ -92,7 +92,7 @@ You can also load one or more catalog files via the `MODEL_CATALOG_PATHS` enviro
 
 ## Generate a catalog with agctl
 
-Use `agctl costs import` to generate a catalog JSON file.
+Use `agctl costs import` to generate a catalog JSON file, then reference that file from `config.modelCatalog` or `MODEL_CATALOG_PATHS`.
 
 ```sh
 agctl costs import --pretty --out ./catalog.json
@@ -104,6 +104,13 @@ To import a subset of providers:
 agctl costs import --pretty --providers openai,anthropic --out ./catalog.json
 ```
 
+Typical standalone workflow:
+
+1. Generate or refresh a catalog file with `agctl costs import`.
+2. Mount or place the resulting JSON somewhere agentgateway can read it.
+3. Load it with `config.modelCatalog[].file` or `MODEL_CATALOG_PATHS`.
+4. Add cost fields to access logs, traces, or metrics with CEL.
+
 For all options, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
 
 ## Use costs in CEL, logs, traces, and metrics
@@ -113,4 +120,29 @@ When a request matches an entry in the catalog, agentgateway populates:
 - `llm.cost` — realized USD cost for the request (unset when the model cannot be priced)
 - `llm.costRates` — effective USD-per-1M-token rates after tier selection (unset when the model cannot be priced)
 
-You can use these in CEL expressions for access logging, tracing, and metrics configuration. For examples, see [LLM observability]({{< link-hextra path="/llm/observability/" >}}) and the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}).
+You can use these in CEL expressions for access logging, tracing, and metrics configuration.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      llm.cost.total: 'llm.cost.total'
+      llm.cost.input: 'llm.cost.input'
+      llm.cost.output: 'llm.cost.output'
+  tracing:
+    attributes:
+      llm.cost.total: 'llm.cost.total'
+      llm.costRates.input: 'llm.costRates.input'
+      llm.costRates.output: 'llm.costRates.output'
+
+config:
+  metrics:
+    fields:
+      add:
+        llm.cost.total: 'llm.cost.total'
+        llm.costRates.input: 'llm.costRates.input'
+        llm.costRates.output: 'llm.costRates.output'
+```
+
+This emits the selected cost values as access log fields, trace attributes, and metric fields. For more examples, see [LLM observability]({{< link-hextra path="/llm/observability/" >}}) and the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}).
