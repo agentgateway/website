@@ -1,12 +1,12 @@
 ---
 title: Custom providers
 weight: 22
-description: Configure self-hosted and non-managed LLM providers with explicit API formats, paths, and backend targets.
+description: Configure unsupported, self-hosted, and non-standard LLM providers with explicit API formats, paths, and backend targets.
 test: skip
 ---
 
-Use custom providers for self-hosted, OpenAI-compatible, or non-managed LLM
-providers when you want to declare the provider target and supported API formats
+Use custom providers for unsupported, self-hosted, or non-standard LLM
+targets when you want to declare the provider target and supported API formats
 explicitly.
 
 Custom providers are useful when:
@@ -21,9 +21,11 @@ Custom providers are useful when:
   {{< reuse "agw-docs/snippets/backend.md" >}} that routes to a Kubernetes
   Service or InferencePool.
 
-For managed providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure, and
-Bedrock, use the managed provider type unless you need explicit format or
-backend target control.
+For managed providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure,
+Bedrock, Ollama, Baseten, Cerebras, Cohere, DeepInfra, DeepSeek, Fireworks AI,
+Groq, Hugging Face, Mistral, OpenRouter, Together AI, and xAI, use the
+dedicated provider page unless you need explicit format or backend target
+control.
 
 ## Supported targets
 

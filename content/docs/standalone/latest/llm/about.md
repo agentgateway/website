@@ -19,17 +19,22 @@ Agentgateway supports native, OpenAI-compatible, and self-hosted LLM providers.
 
 {{< reuse "agw-docs/snippets/llm-comparison.md" >}}
 
-### OpenAI-compatible providers
+### First-class providers
 
-Many providers offer OpenAI-compatible endpoints that work seamlessly with agentgateway:
-- [xAI (Grok)]({{< link-hextra path="/llm/providers/openai-compatible/#xai-grok" >}})
-- [Cohere]({{< link-hextra path="/llm/providers/openai-compatible/#cohere" >}})
-- [Together AI]({{< link-hextra path="/llm/providers/openai-compatible/#together-ai" >}})
-- [Groq]({{< link-hextra path="/llm/providers/openai-compatible/#groq" >}})
-- [DeepSeek]({{< link-hextra path="/llm/providers/openai-compatible/#deepseek" >}})
-- [Mistral]({{< link-hextra path="/llm/providers/openai-compatible/#mistral" >}})
-- [Perplexity]({{< link-hextra path="/llm/providers/openai-compatible/#perplexity" >}})
-- [Fireworks AI]({{< link-hextra path="/llm/providers/openai-compatible/#fireworks-ai" >}})
+Many providers now have dedicated integrations with preconfigured base URLs and request formats:
+- [xAI (Grok)]({{< link-hextra path="/llm/providers/xai/" >}})
+- [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}})
+- [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}})
+- [Groq]({{< link-hextra path="/llm/providers/groq/" >}})
+- [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}})
+- [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}})
+- [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}})
+- [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}})
+- [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}})
+
+### OpenAI-compatible fallback
+
+Use [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) for Perplexity, vLLM, LM Studio, or another provider without built-in support.
 
 ### Self-hosted solutions
 
@@ -203,4 +208,3 @@ In this example, both routes have one header matcher, so they have equal specifi
 {{< callout type="info" >}}
 For advanced routing based on request body fields like the `model` name, see [Content-based routing]({{< link-hextra path="/llm/content-routing/" >}}).
 {{< /callout >}}
-
