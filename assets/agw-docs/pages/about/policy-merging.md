@@ -42,18 +42,18 @@ The atomic field-level treatment applies to nested structures as well. For examp
 
 Consider this nested field merge scenario with three policies and `ShallowMergePreferChild` precedence:
 
-* **Policy A** (higher precedence): Sets `backend.ai.promptGuard.enabled = true`
-* **Policy B** (medium precedence): Sets `backend.ai.routes.allowedOrigins = ["*"]`
-* **Policy C** (lower precedence): Sets both `backend.ai.promptGuard.enabled = false` and `backend.ai.routes.timeout = 30s`
+* **Policy A** (higher precedence): Sets `backend.ai.promptGuard = {enabled: true}`
+* **Policy B** (medium precedence): Sets `backend.ai.routes = {allowedOrigins: ["*"]}`
+* **Policy C** (lower precedence): Sets both `backend.ai.promptGuard = {enabled: false}` and `backend.ai.routes = {timeout: 30s}`
 
-Resulting merged policy: Policy A's `backend.ai.promptGuard` entirely replaces Policy C's value for that same sub-field. Policy B's `backend.ai.routes` contributes its `allowedOrigins` field, but since Policy A doesn't set `backend.ai.routes`, there is no conflict. The final merged result includes Policy A's promptGuard settings and Policy B's routes settings.
+Resulting merged policy: Policy A's `backend.ai.promptGuard` entirely replaces Policy C's value for that same sub-field. Policy B's `backend.ai.routes` is included in the merged result because there is no conflict with Policy A. The final merged result includes Policy A's promptGuard settings and Policy B's routes settings.
 
 | Field | Value | Source |
 | -- | -- | -- |
-| `backend.ai.promptGuard.enabled` | `true` | Policy A |
-| `backend.ai.routes.allowedOrigins` | `["*"]` | Policy B |
+| `backend.ai.promptGuard` | `{enabled: true}` | Policy A |
+| `backend.ai.routes` | `{allowedOrigins: ["*"]}` | Policy B |
 
-Note: Policy C's `backend.ai.promptGuard.enabled = false` and `backend.ai.routes.timeout = 30s` do not appear in the merged result because Policy A's promptGuard and Policy B's routes take full precedence over those same sub-fields.
+Note: Policy C's `backend.ai.promptGuard` (`{enabled: false}`) and `backend.ai.routes` (`{timeout: 30s}`) do not appear in the merged result because Policy A's promptGuard and Policy B's routes take full precedence over those same sub-fields.
 
 <!--TODO deep merge
 The annotation takes four values:
