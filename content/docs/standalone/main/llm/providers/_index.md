@@ -25,6 +25,21 @@ llm:
         value: "$OPENAI_API_KEY"
 ```
 
+Use `auth.key.location` to place the credential somewhere other than the default header (for example, Azure often uses `api-key`):
+
+```yaml
+llm:
+  models:
+  - name: "*"
+    provider: azure
+    auth:
+      key:
+        value: "$AZURE_API_KEY"
+        location:
+          header:
+            name: api-key
+```
+
 ### Credential passthrough
 
 To forward the validated incoming JWT to the upstream provider, use `passthrough`:
@@ -40,9 +55,9 @@ llm:
 
 ### Cloud provider auth
 
-- **Google Cloud**: `auth.gcp` uses Application Default Credentials (ADC) to fetch an access token or ID token.
-- **AWS**: `auth.aws` signs upstream requests with SigV4 using implicit or explicit AWS credentials.
-- **Azure**: `auth.azure` uses Entra ID (implicit or explicit configuration).
+- **Google Cloud**: `auth.gcp` uses Application Default Credentials (ADC) and can fetch an access token or ID token (depending on the `type` you select).
+- **AWS**: `auth.aws` signs upstream requests with SigV4 using standard AWS credentials (for example, environment variables, an instance profile, or a shared config profile).
+- **Azure**: `auth.azure` uses Entra ID. `auth.azure.implicit` uses the Azure SDK's `DefaultAzureCredential` to discover credentials automatically.
 
 ```yaml
 llm:
@@ -66,7 +81,7 @@ llm:
 
 ## Standalone upstream TLS
 
-Use `llm.models[].tls` to configure TLS when connecting to an upstream provider (for example, to enable HTTPS for a self-hosted model endpoint). `backendTLS` is a deprecated alias for the same setting.
+Use `llm.models[].tls` to configure TLS when connecting to an upstream provider (for example, to trust a private CA when using a self-hosted HTTPS endpoint). In agentgateway versions prior to 1.3, this setting was called `backendTLS`.
 
 ## OpenAI-compatible providers
 

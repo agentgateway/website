@@ -10,6 +10,8 @@ test:
 
 Configure any LLM provider that implements the OpenAI API format with agentgateway. Use the `openAI` provider type with `hostOverride` to point to the provider's API host, and `pathPrefix` if the provider uses a non-standard chat completions path.
 
+In standalone mode, configure upstream authentication per model with `llm.models[].auth` and upstream TLS with `llm.models[].tls`. For an overview of the available auth and TLS options, see [Providers]({{< link-hextra path="/llm/providers/" >}}).
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}

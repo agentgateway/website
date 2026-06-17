@@ -40,6 +40,7 @@ llm:
 | `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
 | `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
+| `auth.aws.serviceName` | The SigV4 service name, typically `bedrock`. Agentgateway uses AWS credentials from the environment to sign each request. |
 
 ## Token counting
 
