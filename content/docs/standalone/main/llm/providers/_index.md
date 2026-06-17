@@ -19,7 +19,7 @@ In standalone mode, upstream provider authentication is configured per model via
 llm:
   models:
   - name: "*"
-    provider: openai
+    provider: openAI
     auth:
       key:
         value: "$OPENAI_API_KEY"
@@ -48,7 +48,7 @@ To forward the validated incoming JWT to the upstream provider, use `passthrough
 llm:
   models:
   - name: "*"
-    provider: openai
+    provider: openAI
     auth:
       passthrough: {}
 ```
@@ -81,7 +81,7 @@ llm:
 
 ## Standalone upstream TLS
 
-Use `llm.models[].tls` to configure TLS when connecting to an upstream provider (for example, to trust a private CA when using a self-hosted HTTPS endpoint). In agentgateway versions prior to 1.3, this setting was called `backendTLS`.
+Use `llm.models[].tls` to configure TLS when connecting to an upstream provider (for example, to trust a private CA when using a self-hosted HTTPS endpoint). Common fields include `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates, and `keyExchangeGroups` for TLS negotiation. In agentgateway versions prior to 1.3, this model-level setting was called `backendTLS`.
 
 ## OpenAI-compatible providers
 
