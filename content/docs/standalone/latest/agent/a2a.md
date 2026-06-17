@@ -1,7 +1,7 @@
 ---
 title: Connect to an agent
 weight: 10
-description:
+description: Route to A2A servers and securely expose their skills through agentgateway.
 ---
 
 Proxy requests to an agent that communicates via the agent-to-agent protocol (A2A).
