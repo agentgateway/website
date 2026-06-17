@@ -171,6 +171,118 @@ categories:
             "messages": [{"role": "user", "content": "Hello!"}]
           }' | jq
 
+      - name: "Baseten"
+        slug: "baseten"
+        model: "openai/gpt-oss-120b"
+        envVar: "BASETEN_API_KEY"
+        type: "native"
+        providerType: "baseten"
+        host: "inference.baseten.co"
+        path: "/v1"
+        endpoints:
+          - "chat"
+          - "completions"
+          - "embeddings"
+          - "models"
+        models:
+          - "openai/gpt-oss-120b"
+          - "openai/gpt-oss-20b"
+          - "openai/gpt-oss-safeguard"
+        standalone: |
+          llm:
+            models:
+            - name: "*"
+              provider: baseten
+              params:
+                model: openai/gpt-oss-120b
+                apiKey: "$BASETEN_API_KEY"
+                baseUrl: "https://inference.baseten.co/v1"
+        kubernetes: |
+          # Step 1: Gateway
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: Gateway
+          metadata:
+            name: agentgateway-proxy
+            namespace: agentgateway-system
+          spec:
+            gatewayClassName: agentgateway
+            listeners:
+            - protocol: HTTP
+              port: 8080
+              name: http
+              allowedRoutes:
+                namespaces:
+                  from: All
+          EOF
+
+
+          # Step 2: Secret
+          export BASETEN_API_KEY=<your-key>
+          kubectl apply -f- <<EOF
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: baseten-secret
+            namespace: agentgateway-system
+          type: Opaque
+          stringData:
+            Authorization: $BASETEN_API_KEY
+          EOF
+
+          # Step 3: Backend
+          kubectl apply -f- <<EOF
+          apiVersion: agentgateway.dev/v1alpha1
+          kind: AgentgatewayBackend
+          metadata:
+            name: baseten
+            namespace: agentgateway-system
+          spec:
+            ai:
+              provider:
+                baseten:
+                  model: openai/gpt-oss-120b
+                  apiKey: "$BASETEN_API_KEY"
+                  baseUrl: "https://inference.baseten.co/v1"
+            policies:
+              auth:
+                secretRef:
+                  name: baseten-secret
+              tls:
+                sni: inference.baseten.co
+          EOF
+
+          # Step 4: Route
+          kubectl apply -f- <<EOF
+          apiVersion: gateway.networking.k8s.io/v1
+          kind: HTTPRoute
+          metadata:
+            name: baseten
+            namespace: agentgateway-system
+          spec:
+            parentRefs:
+            - name: agentgateway-proxy
+              namespace: agentgateway-system
+            rules:
+            - matches:
+              - path:
+                  type: PathPrefix
+                  value: /baseten
+              backendRefs:
+              - name: baseten
+                namespace: agentgateway-system
+                group: agentgateway.dev
+                kind: AgentgatewayBackend
+          EOF
+
+          # Step 5: Port-forward to test
+          kubectl port-forward -n agentgateway-system svc/agentgateway-proxy 8080:8080 &
+        test: |
+          curl "localhost:3000/baseten" -H content-type:application/json -d '{
+            "model": "openai/gpt-oss-120b",
+            "messages": [{"role": "user", "content": "Hello from Baseten!"}]
+          }' | jq
+
       - name: "Anthropic"
         slug: "anthropic"
         model: "claude-sonnet-4-20250514"
@@ -922,7 +1034,7 @@ categories:
           }' | jq
 
   - name: "OpenAI-Compatible Providers"
-    description: "These providers expose an OpenAI-compatible API. Agentgateway routes to them using the openai provider type with custom host, port, and path overrides."
+    description: "These providers expose an OpenAI-compatible API. Agentgateway now prefers first-class provider shortcuts when available; use this section for providers that still need the openai provider type with custom baseUrl or host/path overrides."
     id: "openai-compatible"
     providers:
       - name: "Mistral AI"
@@ -979,13 +1091,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: mistral
               params:
                 model: mistral-medium-2505
-                host: api.mistral.ai
-                port: 443
-                path: "/v1/chat/completions"
                 apiKey: "$MISTRAL_API_KEY"
+                baseUrl: "https://api.mistral.ai/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1029,11 +1139,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                mistral:
                   model: mistral-medium-2505
-                  host: api.mistral.ai
-                  port: 443
-                  path: "/v1/chat/completions"
+                  baseUrl: "https://api.mistral.ai/v1"
             policies:
               auth:
                 secretRef:
@@ -1103,13 +1211,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: deepseek
               params:
                 model: deepseek-chat
-                host: api.deepseek.com
-                port: 443
-                path: "/v1/chat/completions"
                 apiKey: "$DEEPSEEK_API_KEY"
+                baseUrl: "https://api.deepseek.com/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1153,11 +1259,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                deepseek:
                   model: deepseek-chat
-                  host: api.deepseek.com
-                  port: 443
-                  path: "/v1/chat/completions"
+                  baseUrl: "https://api.deepseek.com/v1"
             policies:
               auth:
                 secretRef:
@@ -1230,13 +1334,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: xai
               params:
                 model: grok-2-latest
-                host: api.x.ai
-                port: 443
-                path: "/v1/chat/completions"
                 apiKey: "$XAI_API_KEY"
+                baseUrl: "https://api.x.ai/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1280,11 +1382,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                xai:
                   model: grok-2-latest
-                  host: api.x.ai
-                  port: 443
-                  path: "/v1/chat/completions"
+                  baseUrl: "https://api.x.ai/v1"
             policies:
               auth:
                 secretRef:
@@ -1367,13 +1467,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: groq
               params:
                 model: llama-3.3-70b-versatile
-                host: api.groq.com
-                port: 443
-                path: "/openai/v1/chat/completions"
                 apiKey: "$GROQ_API_KEY"
+                baseUrl: "https://api.groq.com/openai/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1417,11 +1515,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                groq:
                   model: llama-3.3-70b-versatile
-                  host: api.groq.com
-                  port: 443
-                  path: "/openai/v1/chat/completions"
+                  baseUrl: "https://api.groq.com/openai/v1"
             policies:
               auth:
                 secretRef:
@@ -1501,13 +1597,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: cohere
               params:
                 model: command-r-plus
-                host: api.cohere.ai
-                port: 443
-                path: "/compatibility/v1/chat/completions"
                 apiKey: "$COHERE_API_KEY"
+                baseUrl: "https://api.cohere.ai"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1551,11 +1645,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                cohere:
                   model: command-r-plus
-                  host: api.cohere.ai
-                  port: 443
-                  path: "/compatibility/v1/chat/completions"
+                  baseUrl: "https://api.cohere.ai"
             policies:
               auth:
                 secretRef:
@@ -1658,13 +1750,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: togetherai
               params:
                 model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
-                host: api.together.xyz
-                port: 443
-                path: "/v1/chat/completions"
                 apiKey: "$TOGETHER_API_KEY"
+                baseUrl: "https://api.together.xyz/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1708,11 +1798,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                togetherai:
                   model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
-                  host: api.together.xyz
-                  port: 443
-                  path: "/v1/chat/completions"
+                  baseUrl: "https://api.together.xyz/v1"
             policies:
               auth:
                 secretRef:
@@ -1816,13 +1904,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: fireworks
               params:
                 model: accounts/fireworks/models/llama-v3p1-70b-instruct
-                host: api.fireworks.ai
-                port: 443
-                path: "/inference/v1/chat/completions"
                 apiKey: "$FIREWORKS_API_KEY"
+                baseUrl: "https://api.fireworks.ai/inference/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -1866,11 +1952,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                fireworks:
                   model: accounts/fireworks/models/llama-v3p1-70b-instruct
-                  host: api.fireworks.ai
-                  port: 443
-                  path: "/inference/v1/chat/completions"
+                  baseUrl: "https://api.fireworks.ai/inference/v1"
             policies:
               auth:
                 secretRef:
@@ -2118,13 +2202,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: openrouter
               params:
                 model: anthropic/claude-sonnet-4-20250514
-                host: openrouter.ai
-                port: 443
-                path: "/api/v1/chat/completions"
                 apiKey: "$OPENROUTER_API_KEY"
+                baseUrl: "https://openrouter.ai/api/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2168,11 +2250,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                openrouter:
                   model: anthropic/claude-sonnet-4-20250514
-                  host: openrouter.ai
-                  port: 443
-                  path: "/api/v1/chat/completions"
+                  baseUrl: "https://openrouter.ai/api/v1"
             policies:
               auth:
                 secretRef:
@@ -2249,13 +2329,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: cerebras
               params:
                 model: llama-3.3-70b
-                host: api.cerebras.ai
-                port: 443
-                path: "/v1/chat/completions"
                 apiKey: "$CEREBRAS_API_KEY"
+                baseUrl: "https://api.cerebras.ai/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2299,11 +2377,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                cerebras:
                   model: llama-3.3-70b
-                  host: api.cerebras.ai
-                  port: 443
-                  path: "/v1/chat/completions"
+                  baseUrl: "https://api.cerebras.ai/v1"
             policies:
               auth:
                 secretRef:
@@ -2546,13 +2622,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: deepinfra
               params:
                 model: meta-llama/Llama-3.3-70B-Instruct-Turbo
-                host: api.deepinfra.com
-                port: 443
-                path: "/v1/openai/chat/completions"
                 apiKey: "$DEEPINFRA_API_KEY"
+                baseUrl: "https://api.deepinfra.com/v1/openai"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2596,11 +2670,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                deepinfra:
                   model: meta-llama/Llama-3.3-70B-Instruct-Turbo
-                  host: api.deepinfra.com
-                  port: 443
-                  path: "/v1/openai/chat/completions"
+                  baseUrl: "https://api.deepinfra.com/v1/openai"
             policies:
               auth:
                 secretRef:
@@ -2702,13 +2774,11 @@ categories:
           llm:
             models:
             - name: "*"
-              provider: openAI
+              provider: huggingface
               params:
                 model: meta-llama/Llama-3.1-70B-Instruct
-                host: api-inference.huggingface.co
-                port: 443
-                path: "/v1/chat/completions"
                 apiKey: "$HF_API_KEY"
+                baseUrl: "https://router.huggingface.co/v1"
         kubernetes: |
           # Step 1: Gateway
           kubectl apply -f- <<EOF
@@ -2752,11 +2822,9 @@ categories:
           spec:
             ai:
               provider:
-                openai:
+                huggingface:
                   model: meta-llama/Llama-3.1-70B-Instruct
-                  host: api-inference.huggingface.co
-                  port: 443
-                  path: "/v1/chat/completions"
+                  baseUrl: "https://router.huggingface.co/v1"
             policies:
               auth:
                 secretRef:
@@ -5786,4 +5854,3 @@ categories:
           curl "localhost:3000/triton" -H content-type:application/json -d '{
             "messages": [{"role": "user", "content": "Hello from Triton!"}]
           }' | jq
-
