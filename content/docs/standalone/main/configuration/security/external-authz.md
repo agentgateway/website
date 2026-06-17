@@ -37,8 +37,9 @@ extAuthz:
 
 You can cache gRPC external authorization decisions with `extAuthz.cache`. Caching is supported only for `protocol.grpc`; HTTP external authorization requests are always sent to the authorization service.
 
-> [!WARNING]
-> The cache key must include every request property that your authorization service uses to make a decision. For example, if the service evaluates both the request path and the `Authorization` header, include both values in `cache.key`. Otherwise, agentgateway can incorrectly reuse one request's authorization result for another request.
+{{< callout type="warning" >}}
+The cache key must include every request property that your authorization service uses to make a decision. For example, if the service evaluates both the request path and the `Authorization` header, include both values in `cache.key`. Otherwise, agentgateway can incorrectly reuse one request's authorization result for another request.
+{{< /callout >}}
 
 If any `cache.key` expression fails to evaluate or returns an unsupported value, agentgateway still sends the request to the authorization service, but skips both the cache lookup and the cache write for that request.
 
