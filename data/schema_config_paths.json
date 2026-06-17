@@ -85,6 +85,30 @@
       "policies[].policy.extAuthz.includeRequestBody",
       "routeGroups[].routes[].policies.extAuthz.includeRequestBody"
     ],
+    "Buffer": [
+      "binds[].listeners[].routes[].policies.buffer",
+      "mcp.policies.buffer",
+      "policies[].policy.buffer",
+      "routeGroups[].routes[].policies.buffer"
+    ],
+    "BufferBody": [
+      "binds[].listeners[].routes[].policies.buffer.request",
+      "binds[].listeners[].routes[].policies.buffer.response",
+      "mcp.policies.buffer.request",
+      "mcp.policies.buffer.response",
+      "policies[].policy.buffer.request",
+      "policies[].policy.buffer.response",
+      "routeGroups[].routes[].policies.buffer.request",
+      "routeGroups[].routes[].policies.buffer.response"
+    ],
+    "CacheConfig": [
+      "binds[].listeners[].policies.extAuthz.cache",
+      "binds[].listeners[].routes[].policies.extAuthz.cache",
+      "llm.policies.extAuthz.cache",
+      "mcp.policies.extAuthz.cache",
+      "policies[].policy.extAuthz.cache",
+      "routeGroups[].routes[].policies.extAuthz.cache"
+    ],
     "CorsSerde": [
       "binds[].listeners[].routes[].policies.cors",
       "mcp.policies.cors",
@@ -137,12 +161,24 @@
       "routeGroups[].routes[].policies.remoteRateLimit.policies.tcp.connectTimeout"
     ],
     "Expression": [
+      "binds[].listeners[].policies.extAuthz.cache.key[]",
+      "binds[].listeners[].policies.extAuthz.cache.ttl",
+      "binds[].listeners[].routes[].policies.extAuthz.cache.key[]",
+      "binds[].listeners[].routes[].policies.extAuthz.cache.ttl",
       "binds[].listeners[].routes[].policies.remoteRateLimit.descriptors[].limitOverride",
       "frontendPolicies.accessLog.filter",
       "frontendPolicies.tracing.clientSampling",
       "frontendPolicies.tracing.randomSampling",
+      "llm.policies.extAuthz.cache.key[]",
+      "llm.policies.extAuthz.cache.ttl",
       "mcp.policies.remoteRateLimit.descriptors[].limitOverride",
+      "mcp.policies.extAuthz.cache.key[]",
+      "mcp.policies.extAuthz.cache.ttl",
+      "policies[].policy.extAuthz.cache.key[]",
+      "policies[].policy.extAuthz.cache.ttl",
       "policies[].policy.remoteRateLimit.descriptors[].limitOverride",
+      "routeGroups[].routes[].policies.extAuthz.cache.key[]",
+      "routeGroups[].routes[].policies.extAuthz.cache.ttl",
       "routeGroups[].routes[].policies.remoteRateLimit.descriptors[].limitOverride"
     ],
     "ExtAuthz": [
@@ -160,6 +196,14 @@
       "mcp.policies.extProc",
       "policies[].policy.extProc",
       "routeGroups[].routes[].policies.extProc"
+    ],
+    "ProcessingOptions": [
+      "binds[].listeners[].policies.extProc.processingOptions",
+      "binds[].listeners[].routes[].policies.extProc.processingOptions",
+      "llm.policies.extProc.processingOptions",
+      "mcp.policies.extProc.processingOptions",
+      "policies[].policy.extProc.processingOptions",
+      "routeGroups[].routes[].policies.extProc.processingOptions"
     ],
     "FailureMode": [
       "binds[].listeners[].routes[].policies.remoteRateLimit.failureMode",
