@@ -9,8 +9,6 @@ test: skip
 
 Control traffic and route requests through agentgateway.
 
-For request and response body buffering, see [Body buffering]({{< link-hextra path="/configuration/traffic-management/buffer/" >}}).
-
 > [!TIP]
 > {{< reuse "agw-docs/snippets/policies-gateway-api.md" >}}
 
