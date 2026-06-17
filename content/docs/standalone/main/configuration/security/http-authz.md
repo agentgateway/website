@@ -91,4 +91,4 @@ llm:
       - 'request.headers["x-org"] == "engineering"'
 ```
 
-The LLM models endpoint (`/v1/models`) is also gated by authorization. If a caller does not satisfy authorization rules for a model, that model is not returned.
+The LLM models endpoint (`/v1/models`) is also gated by authorization. If a caller does not satisfy authorization rules for a model, that model is not returned. This authorization filtering is separate from [`llm.models[].visibility`]({{< link-hextra path="/llm/virtual-models/#public-and-internal-models" >}}), which controls whether a model is directly exposed or kept as an internal virtual-model target.

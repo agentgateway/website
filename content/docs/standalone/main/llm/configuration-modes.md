@@ -99,6 +99,24 @@ In simplified LLM mode, the local listener uses `llm.port` (default `3000`). MCP
 
 When `llm.port` and `mcp.port` are set to the same value, agentgateway serves both protocols on a single shared listener.
 
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  port: 3000
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+mcp:
+  port: 3000
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["-y", "@modelcontextprotocol/server-everything"]
+```
+
 {{< callout type="warning" >}}
 You cannot share `llm.port` and `mcp.port` when `llm.tls` is configured. Use different ports if you enable `llm.tls`.
 {{< /callout >}}
@@ -136,7 +154,7 @@ mcp:
   port: 3001
 ```
 
-For a shared listener example without TLS, see [MCP overview]({{< link-hextra path="/mcp/" >}}).
+For more MCP listener context, see [MCP overview]({{< link-hextra path="/mcp/" >}}).
 
 ## Traditional HTTP routing configuration
 
