@@ -430,7 +430,7 @@ The guardrails callout has no deadline by default. If the ExtMCP server is slow 
 
 Apply a request timeout to the ExtMCP server. When the timeout is reached, agentgateway applies the processor's `failureMode` configuration. If `failureMode` is set to `FailClosed`, the client receives a JSON-RPC error. If the mode is set to `FailOpen`, the request proceeds without the guardrail.
 
-The timeout policy targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder for the ExtMCP server. The hostname is not used for traffic to your MCP servers, and clients continue to call the gateway on the `/mcp` path from Step 4.
+The timeout policy must be configured in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder for the ExtMCP server. The hostname is not used for traffic to your MCP servers, and clients continue to call the gateway on the `/mcp` path from Step 4.
 
 ```yaml
 kubectl apply -f- <<EOF
