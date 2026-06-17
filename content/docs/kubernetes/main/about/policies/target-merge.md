@@ -42,7 +42,11 @@ For more information, see [Policy processing order](../filter-order/#processing-
 
 When multiple policies target the same resource, agentgateway merges the policy sections on a **field level** (shallow merge). If two policies set the same field, the more specific policy takes precedence.
 
+This field-level merge applies to all fields, including nested sub-fields. For example, `backend.ai.promptGuard` and `backend.ai.routes` are separate fields. If Policy A sets `backend.ai.promptGuard` and Policy B sets `backend.ai.routes`, both are included in the merged result. However, if both policies set the same nested sub-field such as `backend.ai.promptGuard`, only the higher-precedence policy's entire value for that sub-field is used—no recursive merge occurs within nested fields.
+
 ### Merge precedence {#merging-precedence}
+
+Conditional policies are selected first based on their conditions. Only the selected policies participate in merge precedence evaluation.
 
 Each policy section follows a different precedence order based on the specificity of the target. The more specific the target, the higher the precedence.
 
