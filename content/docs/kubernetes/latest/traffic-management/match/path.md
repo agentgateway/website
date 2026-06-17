@@ -1,6 +1,7 @@
 ---
 title: Path
 weight: 10
+description: Match requests by path using exact, prefix, or regex patterns.
 test:
   path-match-exact:
   - file: content/docs/kubernetes/latest/quickstart/install.md

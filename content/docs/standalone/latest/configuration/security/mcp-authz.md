@@ -1,6 +1,7 @@
 ---
 title: MCP authorization
 weight: 40
+description: Define authorization rules for MCP method invocations using CEL expressions.
 ---
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/">}} (MCP Backends only)

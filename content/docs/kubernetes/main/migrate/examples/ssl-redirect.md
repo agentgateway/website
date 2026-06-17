@@ -1,5 +1,6 @@
 ---
 title: "SSL Redirect"
+description: Convert NGINX SSL redirect annotations to Gateway API HTTP redirect filters.
 weight: 50
 ---
 

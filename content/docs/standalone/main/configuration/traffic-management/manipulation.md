@@ -1,6 +1,7 @@
 ---
 title: Header manipulation
 weight: 10
+description: Add, set, or remove HTTP request and response headers.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}

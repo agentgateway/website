@@ -1,7 +1,7 @@
 ---
 title: Idle timeouts
 weight: 20
-description:
+description: Set idle timeouts to terminate inactive HTTP/1 connections.
 test:
   idle-timeout:
   - file: content/docs/kubernetes/latest/quickstart/install.md

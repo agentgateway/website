@@ -1,6 +1,7 @@
 ---
 title: Direct Response
 weight: 14
+description: Return custom responses directly without forwarding to a backend.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}

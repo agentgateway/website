@@ -1,7 +1,7 @@
 ---
 title: MCP observability
 weight: 70
-description:
+description: Monitor MCP requests with metrics, logs, and distributed traces
 ---
 
 Review MCP-specific metrics, logs, and traces. 

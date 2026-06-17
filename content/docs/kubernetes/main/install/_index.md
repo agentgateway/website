@@ -2,6 +2,7 @@
 title: Install
 weight: 14
 icon: download
+description: Install agentgateway on Kubernetes.
 test: skip
 ---
 

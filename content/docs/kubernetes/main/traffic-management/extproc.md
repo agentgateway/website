@@ -1,7 +1,7 @@
 ---
 title: External processing (ExtProc)
 weight: 10
-description:
+description: Modify requests and responses with an external gRPC processing server.
 test:
   extproc:
   - file: content/docs/kubernetes/main/quickstart/install.md

@@ -1,6 +1,7 @@
 ---
 title: MCP authentication
 weight: 30
+description: Configure OAuth 2.0 protection for MCP servers with JWT validation.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
