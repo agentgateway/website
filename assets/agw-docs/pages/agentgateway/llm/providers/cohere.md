@@ -1,7 +1,7 @@
 Configure [Cohere](https://cohere.com/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 {{< callout type="info" >}}
-In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider: cohere` and automatically fills `params.baseUrl: https://api.cohere.ai`. The current Kubernetes `AgentgatewayBackend` API still uses `ai.provider.openai` for Cohere's compatibility endpoint, so the examples below use that shape.
+In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider: cohere` and automatically fills `params.baseUrl: https://api.cohere.ai`. In Kubernetes, the current `AgentgatewayBackend` API still uses `ai.provider.openai` for Cohere's compatibility endpoint, so the examples below use that shape.
 {{< /callout >}}
 
 ## Before you begin
@@ -65,7 +65,7 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    |---------|-------------|
    | Standalone shortcut | Use `provider: cohere` in standalone mode. |
    | Standalone default base URL | `https://api.cohere.ai` |
-   | `ai.provider.openai` | Current Kubernetes workaround for Cohere's compatibility endpoint. |
+   | `ai.provider.openai` | Kubernetes compatibility shape for Cohere's compatibility endpoint. |
    | `path` | Uses Cohere's OpenAI-compatible chat endpoint at `/compatibility/v1/chat/completions`. |
    | `policies.auth.secretRef` | References the secret that contains your Cohere API key. |
 

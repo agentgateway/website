@@ -1,15 +1,15 @@
 ---
 title: Providers
 weight: 15
-description: Configure agentgateway for first-class LLM providers and fallback compatibility options.
+description: Configure agentgateway for first-class provider shortcuts and Kubernetes compatibility fallbacks.
 test: skip
 ---
 
 Learn how to configure agentgateway for a particular LLM.
 
-## First-class providers
+## First-class provider shortcuts
 
-Prefer the dedicated provider pages when agentgateway already knows the upstream host, path defaults, and request format. This includes the `cohere`, `baseten`, `cerebras`, `deepinfra`, `deepseek`, `groq`, `huggingface`, `mistral`, `openrouter`, `togetherai`, `xai`, `fireworks`, and `ollama` provider types:
+Prefer the dedicated provider pages when agentgateway already knows the upstream host, path defaults, and request format. These pages document the first-class standalone shortcuts (`provider: ...`) and the Kubernetes compatibility shape (`ai.provider.openai` with host/path overrides) until first-class CRD fields exist. This includes the `cohere`, `baseten`, `cerebras`, `deepinfra`, `deepseek`, `groq`, `huggingface`, `mistral`, `openrouter`, `togetherai`, `xai`, `fireworks`, and `ollama` provider types:
 
 - [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}})
 - [Anthropic]({{< link-hextra path="/llm/providers/anthropic/" >}})

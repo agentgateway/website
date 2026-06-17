@@ -241,10 +241,11 @@ categories:
           spec:
             ai:
               provider:
-                baseten:
+                openai:
                   model: openai/gpt-oss-120b
-                  apiKey: "$BASETEN_API_KEY"
-                  baseUrl: "https://inference.baseten.co/v1"
+                  host: inference.baseten.co
+                  port: 443
+                  path: "/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -1142,9 +1143,11 @@ categories:
           spec:
             ai:
               provider:
-                mistral:
+                openai:
                   model: mistral-medium-2505
-                  baseUrl: "https://api.mistral.ai/v1"
+                  host: api.mistral.ai
+                  port: 443
+                  path: "/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -1264,9 +1267,11 @@ categories:
           spec:
             ai:
               provider:
-                deepseek:
+                openai:
                   model: deepseek-chat
-                  baseUrl: "https://api.deepseek.com/v1"
+                  host: api.deepseek.com
+                  port: 443
+                  path: "/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -1389,9 +1394,11 @@ categories:
           spec:
             ai:
               provider:
-                xai:
+                openai:
                   model: grok-2-latest
-                  baseUrl: "https://api.x.ai/v1"
+                  host: api.x.ai
+                  port: 443
+                  path: "/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -1524,9 +1531,11 @@ categories:
           spec:
             ai:
               provider:
-                groq:
+                openai:
                   model: llama-3.3-70b-versatile
-                  baseUrl: "https://api.groq.com/openai/v1"
+                  host: api.groq.com
+                  port: 443
+                  path: "/openai/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -1656,9 +1665,11 @@ categories:
           spec:
             ai:
               provider:
-                cohere:
+                openai:
                   model: command-r-plus
-                  baseUrl: "https://api.cohere.ai"
+                  host: api.cohere.ai
+                  port: 443
+                  path: "/compatibility/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -1811,9 +1822,11 @@ categories:
           spec:
             ai:
               provider:
-                togetherai:
+                openai:
                   model: meta-llama/Llama-3.2-90B-Vision-Instruct-Turbo
-                  baseUrl: "https://api.together.xyz/v1"
+                  host: api.together.xyz
+                  port: 443
+                  path: "/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -1967,9 +1980,11 @@ categories:
           spec:
             ai:
               provider:
-                fireworks:
+                openai:
                   model: accounts/fireworks/models/llama-v3p1-70b-instruct
-                  baseUrl: "https://api.fireworks.ai/inference/v1"
+                  host: api.fireworks.ai
+                  port: 443
+                  path: "/inference/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -2267,9 +2282,11 @@ categories:
           spec:
             ai:
               provider:
-                openrouter:
+                openai:
                   model: anthropic/claude-sonnet-4-20250514
-                  baseUrl: "https://openrouter.ai/api/v1"
+                  host: openrouter.ai
+                  port: 443
+                  path: "/api/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -2396,9 +2413,11 @@ categories:
           spec:
             ai:
               provider:
-                cerebras:
+                openai:
                   model: llama-3.3-70b
-                  baseUrl: "https://api.cerebras.ai/v1"
+                  host: api.cerebras.ai
+                  port: 443
+                  path: "/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -2691,9 +2710,11 @@ categories:
           spec:
             ai:
               provider:
-                deepinfra:
+                openai:
                   model: meta-llama/Llama-3.3-70B-Instruct-Turbo
-                  baseUrl: "https://api.deepinfra.com/v1/openai"
+                  host: api.deepinfra.com
+                  port: 443
+                  path: "/v1/openai/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -2845,9 +2866,11 @@ categories:
           spec:
             ai:
               provider:
-                huggingface:
+                openai:
                   model: meta-llama/Llama-3.1-70B-Instruct
-                  baseUrl: "https://router.huggingface.co/v1"
+                  host: router.huggingface.co
+                  port: 443
+                  path: "/v1/chat/completions"
             policies:
               auth:
                 secretRef:
@@ -5483,9 +5506,11 @@ categories:
           spec:
             ai:
               provider:
-                ollama:
+                openai:
                   model: llama3.2
-                  baseUrl: "http://ollama.agentgateway-system.svc.cluster.local:11434/v1"
+                  host: ollama.agentgateway-system.svc.cluster.local
+                  port: 11434
+                  path: "/v1/chat/completions"
           EOF
 
           # Step 4: Route
