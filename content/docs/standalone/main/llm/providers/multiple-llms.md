@@ -39,7 +39,12 @@ llm:
       model: gpt-4o
 ```
 
-When a model references a named provider with `provider.reference`, provider defaults are reused automatically. Model-level values override referenced provider defaults for that model, so you can keep shared settings in one place and override only the fields that differ.
+When a model references a named provider with `provider.reference`, the provider's settings are reused automatically. A named provider holds two kinds of reusable settings, and they merge differently:
+
+- **Connection settings (`params`)**: Fields like `apiKey`, `baseUrl`, and other request parameters are copied to every model that references the provider. A referencing model can set only `params.model` (to choose which upstream model to send). Setting any other `params` field on a referencing model is an error.
+- **Policy defaults (`defaults`)**: Fields like `auth`, `tls`, `health`, and request-body `defaults` or `overrides` are applied to referencing models, but a model can override them by setting the same field directly. For policy fields, the model-level value wins; for the `defaults` and `overrides` maps, model-level keys win on a per-key basis.
+
+The following example keeps a shared API key and a default request parameter on `llm.providers[]`, then overrides the default per model:
 
 ```yaml
 llm:
@@ -48,20 +53,28 @@ llm:
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
-      hostOverride: api.openai.com:443
+    defaults:
+      defaults:
+        temperature: 0.2
 
   models:
+  - name: fast
+    provider:
+      reference: openai-default
+    params:
+      model: gpt-4o-mini
   - name: smart
     provider:
       reference: openai-default
     params:
       model: gpt-4o
-      hostOverride: api.openai-proxy.internal:443
+    defaults:
+      temperature: 0.7
 ```
 
-In this example, `apiKey` comes from `llm.providers[]`, while `hostOverride` from `llm.models[]` takes precedence for `smart`.
+In this example, both models inherit `apiKey` from `llm.providers[]`. The `fast` model also inherits the provider's default `temperature` of `0.2`, while `smart` overrides it with `0.7`.
 
-Named providers can hold any shared upstream settings you want to reuse, such as authentication, host overrides, path overrides, or other model defaults. Keep the shared values on `llm.providers[]` and only set per-model differences on `llm.models[]`.
+Named providers can hold any shared connection settings (`params`, such as the API key or base URL) and policy defaults (`defaults`, such as authentication, TLS, or request defaults) that you want to reuse. Keep the shared values on `llm.providers[]`, and on referencing models set only `params.model` plus any policy fields you want to override.
 
 ## Configuration
 
