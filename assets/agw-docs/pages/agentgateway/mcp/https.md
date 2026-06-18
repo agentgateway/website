@@ -110,7 +110,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 5. Click **Run Tool**.
 6. Verify that you get back information about your username.
 
-   {{< reuse-image src="img/mcp-inspector-gh.png" >}}
+   {{< reuse-image-light src="img/mcp-inspector-gh.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-inspector-gh-dark.png" >}}
 
 ## Cleanup

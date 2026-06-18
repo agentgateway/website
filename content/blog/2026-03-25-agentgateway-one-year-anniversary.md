@@ -6,7 +6,7 @@ author: "Lin Sun"
 description: "Agentgateway celebrates 1 million pulls, 175+ contributors, and 2,000+ stars in 1 year"
 ---
 
-{{< reuse-image src="img/blog/1year-anniversary/agw-1year-hero-cake.png" width="800px" >}}
+{{< reuse-image-light src="img/blog/1year-anniversary/agw-1year-hero-cake.png" width="800px" >}}
 {{< reuse-image-dark srcDark="img/blog/1year-anniversary/agw-1year-hero-cake.png" width="800px" >}}
 
 On this day in 2025, we created agentgateway after first carefully evaluating Envoy Proxy. As a company deeply invested in Envoy, we initially didn’t want to start a new project, but we needed to keep pace with the rapid evolution of AI. Building on our success developing the new proxy for Istio Ambient, we ultimately decided to create agentgateway from the ground up.
@@ -15,12 +15,12 @@ On this day in 2025, we created agentgateway after first carefully evaluating En
 
 Since we donated the project to the Linux Foundation in August 2025, we have witnessed continued strong growth of the project. In the most recent quarter alone, we’ve reached 1 million image pulls of agentgateway.
 
-{{< reuse-image src="img/blog/1year-anniversary/agw-1M-img-pulls.png" width="800px" >}}
+{{< reuse-image-light src="img/blog/1year-anniversary/agw-1M-img-pulls.png" width="800px" >}}
 {{< reuse-image-dark srcDark="img/blog/1year-anniversary/agw-1M-img-pulls.png" width="800px" >}}
 
 We have over 2,000 GitHub stars on [agentgateway’s main repository](https://github.com/agentgateway/agentgateway), with continuing growth. Thank you everyone who starred the agentgateway repo.
 
-{{< reuse-image src="img/blog/1year-anniversary/star-history-2026331.png" width="800px" >}}
+{{< reuse-image-light src="img/blog/1year-anniversary/star-history-2026331.png" width="800px" >}}
 {{< reuse-image-dark srcDark="img/blog/1year-anniversary/star-history-2026331.png" width="800px" >}}
 
 Scroll through birthday wishes from some of our users and contributors.
@@ -44,7 +44,7 @@ Scroll through birthday wishes from some of our users and contributors.
 
 The [LFX Insights](https://insights.linuxfoundation.org/) provide project insight for many open source projects including agentgateway, and I was pleased to see the project currently has 179 active contributors:
 
-{{< reuse-image src="img/blog/1year-anniversary/agw-contributors.png" width="800px" >}}
+{{< reuse-image-light src="img/blog/1year-anniversary/agw-contributors.png" width="800px" >}}
 {{< reuse-image-dark srcDark="img/blog/1year-anniversary/agw-contributors.png" width="800px" >}}
 
 Since we created the project, we are thrilled to witness contributions from many companies including but not limited to Microsoft, Apple, Alibaba, AWS, Adobe, Huawei, Amdocs, Cisco, and Salesforce. 

@@ -208,12 +208,12 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 4. From the menu bar, click the **Tools** tab, then click **List Tools**.
 
-   {{< reuse-image src="img/mcp-tools-everything.png" >}}
+   {{< reuse-image-light src="img/mcp-tools-everything.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-tools-everything-dark.png" >}}
 
 5. Test the tools: Select a tool, such as `echo`. In the **message** field, enter a message, such as `Hello, world!`, and click **Run Tool**.
 
-   {{< reuse-image src="img/mcp-tool-echo.png" >}}
+   {{< reuse-image-light src="img/mcp-tool-echo.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-tool-echo-dark.png" >}}
 
 ## Cleanup

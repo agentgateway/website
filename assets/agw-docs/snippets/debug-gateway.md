@@ -29,7 +29,7 @@
    
    * [http://localhost:19000/](http://localhost:19000/)
 
-   {{< reuse-image src="img/gateway-admin-interface.png" caption="Figure: Debugging interface of the gateway proxy.">}}
+   {{< reuse-image-light src="img/gateway-admin-interface.png" caption="Figure: Debugging interface of the gateway proxy.">}}
    {{< reuse-image-dark srcDark="img/gateway-admin-interface.png" caption="Figure: Debugging interface of the gateway proxy.">}}
    
    Review the following table of common endpoints that can help troubleshoot your setup further.
@@ -68,7 +68,7 @@
    | [http://localhost:15000/config_dump](http://localhost:15000/config_dump) | Get the configuration that is available in the agentgateway proxy. Any custom resources that you create are translated in to agentgateway configuration. Depending on whether or not you enabled resource validation, you might have applied invalid configuration that is rejected in agentgateway. | 
    | [http://localhost:15000/ui](http://localhost:15000/ui) | A read-only user interface to review the agentgateway resources in your environment, such as listeners, routes, backends, and policies. | 
 
-   {{< reuse-image src="img/agw-ui-landing.png" caption="Figure: Read-only agentgateway UI.">}}
+   {{< reuse-image-light src="img/agw-ui-landing.png" caption="Figure: Read-only agentgateway UI.">}}
    {{< reuse-image-dark srcDark="img/agw-ui-landing-dark.png" caption="Figure: Read-only agentgateway UI.">}}
 
    {{< callout type="info" >}}

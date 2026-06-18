@@ -14,7 +14,7 @@ In this guide, you set up a route delegation chain where a child HTTPRoute inher
 
 The following image illustrates the route delegation hierarchy and policy inheritance:
 
-{{< reuse-image src="img/route-delegation-inheritance-native.svg" width="700px" >}}
+{{< reuse-image-light src="img/route-delegation-inheritance-native.svg" width="700px" >}}
 {{< reuse-image-dark srcDark="img/route-delegation-inheritance-native-dark.svg" width="700px" >}}
 
 **`parent` HTTPRoute**:
