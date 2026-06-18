@@ -26,7 +26,6 @@ chmod +x "$HOME/.local/bin/agentgateway"
 # Write and validate the ollama config from the guide
 cat > /tmp/test-ollama-standalone.yaml << 'EOF'
 llm:
-  port: 3000
   models:
   - name: "*"
     provider: ollama
