@@ -103,13 +103,12 @@ sleep 3
 {{< /doc-test >}}
 {{< /version >}}
 {{< version exclude-if="1.2.x,1.1.x,1.0,x" >}}
-You add the listener and route from the UI, so you can start agentgateway with an empty config file.
+You add the listener and route from the UI, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
 
 1. In a separate terminal, start agentgateway.
 
    ```sh
-   echo '{}' > config.yaml
-   agentgateway -f config.yaml
+   agentgateway
    ```
 
 2. Open the [agentgateway UI](http://localhost:15000/ui/). On the **Gateway Overview**, find the **Traffic** row and click **Enable Traffic**.

@@ -209,5 +209,5 @@ llm:
 In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
 
 {{< callout type="info" >}}
-For advanced routing based on request body fields like the `model` name, see [Content-based routing]({{< link-hextra path="/llm/content-routing/" >}}).
+For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/llm/virtual-models/" >}}).
 {{< /callout >}}

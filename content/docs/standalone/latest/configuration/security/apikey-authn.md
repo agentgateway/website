@@ -20,8 +20,6 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This setting is useful for usage of claims in later steps such as authorization or logging.  
   *Warning*: This allows requests without an API key!
 
-For a standalone LLM listener example using `llm.policies.apiKey.mode: permissive`, see [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}).
-
 ```yaml
 apiKey:
   mode: strict

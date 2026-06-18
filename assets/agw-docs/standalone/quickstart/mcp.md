@@ -134,11 +134,10 @@ PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp
 
 ### Step 2: Start agentgateway
 
-You add the MCP server from the UI in the next steps, so you can start agentgateway with an empty config file.
+You add the MCP server from the UI in the next steps, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
 
 ```sh
-echo '{}' > config.yaml
-agentgateway -f config.yaml
+agentgateway
 ```
 
 Example output:
