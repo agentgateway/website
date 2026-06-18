@@ -1,6 +1,6 @@
 ---
 title: OpenRouter
-weight: 67
+weight: 61
 description: Configuration and setup for OpenRouter LLM provider
 ---
 

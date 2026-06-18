@@ -1,6 +1,6 @@
 ---
 title: Fireworks AI
-weight: 70
+weight: 61
 description: Configuration and setup for Fireworks AI LLM provider
 ---
 

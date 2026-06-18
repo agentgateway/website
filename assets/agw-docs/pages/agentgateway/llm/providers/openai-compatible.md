@@ -366,9 +366,9 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
 
    | Setting | Description |
    |---------|-------------|
-   | `ai.provider.openai.model` | Optional upstream model override. Omit it to pass the client-provided model through. |
+   | `ai.provider.openai.model` | Optional upstream model override. Omit this parameter to pass the client-provided model through. |
    | `host` and `port` | The provider's API host and port. Use `443` for HTTPS endpoints. |
-   | `path` | The provider's chat completions path. Omit it for providers that use the standard `/v1/chat/completions` path. |
+   | `path` | The provider's chat completions path. Omit this parameter for providers that use the standard `/v1/chat/completions` path. |
    | `policies.auth.secretRef` | References the secret that contains your provider API key. |
    | `policies.tls.sni` | Enables TLS and sets the SNI value to the upstream hostname. |
 
@@ -460,7 +460,7 @@ EOF
 
 ### Generic OpenAI-compatible endpoint {#generic-openai-compatible-endpoint}
 
-Use this template when the provider exposes the OpenAI Chat Completions API but is not in the table.
+Use this template when the provider exposes the OpenAI Chat Completions API but is not listed in the [Built-in OpenAI-compatible providers](#built-in-openai-compatible-providers) table.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -488,9 +488,9 @@ Use the following fields to adapt the template:
 
 | Setting | Description |
 |---------|-------------|
-| `ai.provider.openai.model` | Optional upstream model override. Omit it to pass the client-provided model through. |
+| `ai.provider.openai.model` | Optional upstream model override. Omit this parameter to pass the client-provided model through. |
 | `host` and `port` | Required target address for the external provider endpoint. |
-| `path` | The provider's chat completions path. Omit it for the standard `/v1/chat/completions` path. |
+| `path` | The provider's chat completions path. Omit this parameter for the standard `/v1/chat/completions` path. |
 | `policies.auth` | Attach the provider API key secret to outbound requests. |
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 

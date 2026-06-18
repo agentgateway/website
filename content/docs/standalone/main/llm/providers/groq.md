@@ -1,6 +1,6 @@
 ---
 title: Groq
-weight: 65
+weight: 61
 description: Configuration and setup for Groq LLM provider
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: DeepInfra
-weight: 64
+weight: 61
 description: Configuration and setup for DeepInfra LLM provider
 ---
 

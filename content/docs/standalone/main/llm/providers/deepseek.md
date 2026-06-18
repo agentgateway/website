@@ -1,6 +1,6 @@
 ---
 title: DeepSeek
-weight: 66
+weight: 61
 description: Configuration and setup for DeepSeek LLM provider
 ---
 

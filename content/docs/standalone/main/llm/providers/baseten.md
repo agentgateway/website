@@ -1,6 +1,6 @@
 ---
 title: Baseten
-weight: 62
+weight: 61
 description: Configuration and setup for Baseten LLM provider
 ---
 

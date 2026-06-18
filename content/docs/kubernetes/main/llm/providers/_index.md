@@ -23,10 +23,6 @@ Prefer the dedicated provider pages when the {{< reuse "agw-docs/snippets/backen
 
 Many providers, such as Cohere, DeepSeek, Groq, Mistral, Together AI, and xAI, expose the OpenAI Chat Completions API but do not have a first-class type in the {{< reuse "agw-docs/snippets/backend.md" >}} API. Configure these with the `ai.provider.openai` shape. For the list of supported hosts and paths, see [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}).
 
-{{< callout type="info" >}}
-In standalone mode, several of these providers also have a first-class `provider:` shortcut, such as `provider: groq`. The Kubernetes {{< reuse "agw-docs/snippets/backend.md" >}} API does not yet expose those shortcuts.
-{{< /callout >}}
-
 ## Custom providers
 
 Use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) for unsupported, non-standard, or self-hosted targets when you need to declare formats, upstream paths, or backend targets explicitly.

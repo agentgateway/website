@@ -1,6 +1,6 @@
 ---
 title: Together AI
-weight: 68
+weight: 61
 description: Configuration and setup for Together AI LLM provider
 ---
 

@@ -1,6 +1,6 @@
 ---
 title: Cerebras
-weight: 63
+weight: 61
 description: Configuration and setup for Cerebras LLM provider
 ---
 

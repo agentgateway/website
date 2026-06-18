@@ -1,6 +1,6 @@
 ---
 title: Mistral
-weight: 66
+weight: 61
 description: Configuration and setup for Mistral LLM provider
 ---
 

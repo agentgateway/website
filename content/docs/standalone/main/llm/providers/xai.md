@@ -1,6 +1,6 @@
 ---
 title: xAI
-weight: 69
+weight: 61
 description: Configuration and setup for xAI (Grok) LLM provider
 ---
 
