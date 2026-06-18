@@ -93,6 +93,30 @@ npm run sync-docs
 The image's host port (default 15100) avoids colliding with a local agentgateway on
 :15000. Override with `UI_HOST_PORT` / `AGW_IMAGE` / `UI_BASE_URL`.
 
+## Populated MCP playground (real data, not the empty state)
+
+`smoke.spec.ts` works against the default empty gateway. `playground.spec.ts` needs a
+real MCP target so the playground can initialize a session, list tools, and run `echo`
+(the flow in `mcp/connect/{http,stdio}.md`). Two things must be true:
+
+1. An MCP test server runs on the host (`server-everything` on :3005).
+2. The gateway's MCP listener is reachable from the browser at the SAME port the
+   playground derives from `mcp.port` — so the port must be free on the host AND mapped
+   identically (here 3030). The sl8 image is distroless (no Node), so the gateway can't
+   spawn a stdio MCP server itself; hence the host server + `host.docker.internal`.
+
+`scripts/serve-populated-ui.sh` sets all this up (config in `fixtures/mcp-playground-config.yaml`):
+
+```sh
+./scripts/serve-populated-ui.sh        # starts server-everything + the UI, prints the URL
+# in another shell:
+UI_BASE_URL=http://localhost:15100 npm run test:standalone
+```
+
+The playground flow in the new UI is **Apply CORS → Initialize → (echo auto-selected) →
+fill MESSAGE → Call tool**, at route `/ui/mcp/playground` (the docs' `/ui/playground/` is
+stale). The dynamic session id is masked in `toHaveScreenshot` so it never breaks baselines.
+
 ### Theme (light/dark) — new UI specifics
 
 The new UI (sl8) does **not** honor `prefers-color-scheme`. Theme is `<html data-theme>`
@@ -126,28 +150,33 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 |---|---|
 | `playwright.config.ts` | `webServer` launcher, light/dark projects, screenshot/diff settings |
 | `provisioners/kubernetes.ts` | Notes only — the kind + port-forward reuse path |
+| `fixtures/mcp-playground-config.yaml` | Gateway config for the populated playground (port 3030 + host MCP target) |
 | `fixtures/standalone-config.yaml` | Minimal MCP config (used only with `AGENTGATEWAY_BIN`) |
 | `fixtures/test.ts` | Seeds `localStorage['theme']` per project; `dismissWelcome()` helper |
 | `tests/smoke.spec.ts` | Loads `/ui/`, dismisses welcome, screenshots — proves the loop |
-| `tests/playground.spec.ts` | Example interaction flow (selectors illustrative) |
+| `tests/playground.spec.ts` | Real MCP playground capture (tools-discovered + echo response) |
+| `scripts/serve-populated-ui.sh` | Brings up server-everything + the UI for the playground capture |
 | `scripts/probe-theme.mjs` | One-off diagnostic used to confirm the theme mechanism |
 | `scripts/sync-docs-images.mjs` | Copies captured PNGs → docs `img/` via a name→path map |
-| `docs-image-map.json` | Screenshot name → {light, dark} doc destinations |
-| `__screenshots__/` | Committed baselines (incl. proven `ui-landing` light/dark captures) |
+| `docs-image-map.json` | Screenshot name → {light, dark?} doc destinations |
+| `__screenshots__/` | Committed baselines (ui-landing + ui-playground-tools/-tool-echo, light+dark) |
 
 ## Status: what works and what's left
 
-**Proven working:** `npm run test:standalone` launches the sl8 image (new UI) → browser
-seeds theme + dismisses welcome → real Gateway Overview screenshot in both light and dark,
-deterministic against committed baselines. See `__screenshots__/smoke.spec.ts-snapshots/`.
+**Proven working:**
+- `npm run test:standalone` → sl8 image → Gateway Overview screenshot, light + dark.
+- `playground.spec.ts` → real MCP playground: initialize session, "N tools discovered",
+  run `echo`, HTTP 200 result — captured light + dark, against `ui-playground-tools.png`
+  and `ui-playground-tool-echo.png` (the images used in `mcp/connect/{http,stdio}.md`).
+  `npm run sync-docs` copies the light baselines to their `assets/img/` destinations.
 
 **Left to do for full doc-image regeneration:**
 
 - Not added to any GitHub Actions workflow.
 - Kubernetes mode is documented (notes), not automated.
-- `tests/playground.spec.ts` selectors are illustrative — match them to the real UI DOM.
-  The PR's own `ui/tests` Playwright e2e specs are a ready source of real selectors.
-- Give the gateway real config (listeners/routes/MCP targets) so captures show populated
-  screens, not the empty "no surfaces enabled" state.
-- Confirm `docs-image-map.json` destinations (and which pages actually have dark variants)
+- Remaining doc images (A2A, OpenAPI, time-tool, `operations/ui` debug shots) still need
+  specs + their own backends. The PR's own `ui/tests` e2e specs are a selector reference.
+- The populated playground requires the manual `serve-populated-ui.sh` setup; folding the
+  MCP server + correct port mapping into `webServer` would make it one command.
+- Confirm `docs-image-map.json` destinations (and which pages have dark variants)
   against the docs before committing regenerated images.

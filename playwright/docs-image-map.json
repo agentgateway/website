@@ -1,17 +1,11 @@
 {
-  "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to its doc image destinations under assets/img/. Each entry has a `light` and `dark` target; `npm run sync-docs` copies the standalone-light baseline to `light` and standalone-dark to `dark`. `dark` is optional — omit it for shots with no dark variant in the docs. CONFIRM these paths against the real docs before committing regenerated images. The agentgateway docs render dark variants via the {{< reuse-image-dark srcDark=... >}} shortcode; dark filenames here follow the existing -dark.png convention.",
+  "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to its doc image destinations under assets/img/. `npm run sync-docs` copies the standalone-light baseline to `light` and standalone-dark to `dark`. `dark` is OPTIONAL — omit it for shots the docs only use in light mode (most do). The MCP connect guides use these two images via {{< reuse-image src=... >}} (light only); the dark baselines are still captured + diffed for visual regression, just not published. Confirm paths before committing regenerated images.",
   "images": {
     "ui-playground-tools.png": {
-      "light": "assets/img/ui-playground-tools.png",
-      "dark": "assets/img/ui-playground-tools-dark.png"
+      "light": "assets/img/ui-playground-tools.png"
     },
     "ui-playground-tool-echo.png": {
-      "light": "assets/img/ui-playground-tool-echo.png",
-      "dark": "assets/img/ui-playground-tool-echo-dark.png"
-    },
-    "ui-overview.png": {
-      "light": "assets/img/agentgateway-ui-config-overview.png",
-      "dark": "assets/img/agentgateway-ui-config-overview-dark.png"
+      "light": "assets/img/ui-playground-tool-echo.png"
     }
   }
 }

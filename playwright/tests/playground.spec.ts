@@ -1,49 +1,68 @@
-import { test, expect } from '../fixtures/test';
+import { test, expect, dismissWelcome } from '../fixtures/test';
 
 /**
- * Example screenshot spec for the agentgateway product UI playground.
+ * Real capture of the MCP Tool Playground, matching the flow documented in
+ * content/docs/standalone/latest/mcp/connect/{http,stdio}.md (open playground, connect to
+ * the MCP target, list tools, run `echo`). Selectors verified against the new UI in
+ * howardjohn/agentgateway:sl8.
  *
- * Mirrors the manual flow documented in content/docs/standalone/latest/mcp/connect/http.md:
- *   open /ui/ -> Playground -> Connect -> see tools -> run a tool.
+ * Requires the gateway to have a reachable MCP target whose listener the browser can hit
+ * at the SAME port the playground derives from config (mcp.port). See README → "Populated
+ * MCP playground" for the docker + server-everything setup.
  *
- * SELECTORS ARE ILLUSTRATIVE. They must be matched to the real UI's DOM before this
- * runs green. Prefer role/text selectors (getByRole/getByText) over CSS so the specs
- * survive styling changes — exactly the kind of churn visual regression should ignore.
+ * New-UI flow (differs from the old "Connect" button in current docs):
+ *   /ui/mcp/playground → Apply CORS (allow the UI origin) → Initialize (opens session) →
+ *   tool auto-selected (echo) → fill MESSAGE → Call tool → Result shows HTTP 200 output.
  *
- * Each toHaveScreenshot() name maps to a doc image in docs-image-map.json, so `npm run
- * sync-docs` can refresh the committed doc images from the same captures.
+ * Two doc images are produced (light + dark per project):
+ *   ui-playground-tools.png      — session initialized, "N tools discovered"
+ *   ui-playground-tool-echo.png  — echo response in the Result panel
  */
 
-test.describe('MCP playground', () => {
-  test('listener and backend overview', async ({ page }) => {
-    await page.goto('/ui/');
-    await expect(page.getByRole('heading', { name: /listener|overview/i })).toBeVisible();
-    // -> docs-image-map.json maps "ui-overview.png" to the docs img/ destination.
-    await expect(page).toHaveScreenshot('ui-overview.png', { fullPage: true });
+// The session id is regenerated every run — mask it so it never breaks pixel baselines.
+const maskDynamic = (page: import('@playwright/test').Page) => ({
+  mask: [page.getByText(/^eyJ/)],
+});
+
+test.describe('MCP Tool Playground', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/ui/mcp/playground');
+    await page.waitForLoadState('networkidle');
+    await dismissWelcome(page);
+
+    // Allow the playground's browser origin on the MCP CORS policy if prompted.
+    const applyCors = page.getByRole('button', { name: /apply cors/i });
+    if (await applyCors.count()) {
+      await applyCors.click();
+      await expect(applyCors).toBeHidden();
+    }
+
+    // Open the MCP session; the button flips Initialize -> Reset when connected.
+    await page.getByRole('button', { name: /initialize/i }).click();
+    await expect(page.getByRole('button', { name: /^reset$/i })).toBeVisible({ timeout: 15_000 });
   });
 
-  test('playground connect shows tools', async ({ page }) => {
-    await page.goto('/ui/playground/');
-
-    // Connection settings: pick the listener + target, then Connect.
-    await page.getByRole('button', { name: /connect/i }).click();
-    await expect(page.getByText(/echo/i)).toBeVisible({ timeout: 15_000 });
-
+  test('tools discovered after initialize', async ({ page }) => {
+    await expect(page.getByText(/tools discovered/i)).toBeVisible();
     await expect(page).toHaveScreenshot('ui-playground-tools.png', {
       fullPage: true,
-      // Mask anything dynamic so traffic-derived values don't cause false diffs.
-      mask: [page.locator('[data-testid="session-id"], time, .timestamp')],
+      ...maskDynamic(page),
     });
   });
 
   test('run the echo tool', async ({ page }) => {
-    await page.goto('/ui/playground/');
-    await page.getByRole('button', { name: /connect/i }).click();
-    await page.getByText(/echo/i).click();
-    await page.getByLabel(/message/i).fill('hello from playwright');
-    await page.getByRole('button', { name: /run tool/i }).click();
-    await expect(page.getByText(/hello from playwright/i)).toBeVisible();
+    // echo is auto-selected as the first tool.
+    await expect(page.getByText(/echo - echoes/i)).toBeVisible();
+    await page.getByRole('textbox').first().fill('This is my first agentgateway setup.');
+    await page.getByRole('button', { name: /call tool/i }).click();
 
-    await expect(page).toHaveScreenshot('ui-playground-tool-echo.png', { fullPage: true });
+    // Result panel returns HTTP 200 with the echoed text (no validation error).
+    // HTTP 200 in the Result panel confirms the tool call succeeded (vs. a validation error).
+    await expect(page.getByText(/HTTP 200/)).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByText(/tool output/i)).toBeVisible();
+    await expect(page).toHaveScreenshot('ui-playground-tool-echo.png', {
+      fullPage: true,
+      ...maskDynamic(page),
+    });
   });
 });
