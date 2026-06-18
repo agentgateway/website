@@ -7,7 +7,7 @@ description: Price LLM requests with a model cost catalog and expose realized US
 # (1.3.0-beta.1 or later). To enable, replace `test: skip` with:
 #   test:
 #     costs:
-#     - file: content/docs/standalone/main/llm/costs.md
+#     - file: content/docs/standalone/latest/llm/costs.md
 #       path: costs
 test: skip
 ---

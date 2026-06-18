@@ -4,7 +4,7 @@ weight: 40
 description: Proxy OpenAI Realtime API WebSocket traffic and track token usage.
 test:
   realtime-standalone:
-  - file: content/docs/standalone/main/llm/api-types/realtime.md
+  - file: content/docs/standalone/latest/llm/api-types/realtime.md
     path: realtime-standalone
 ---
 
