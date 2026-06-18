@@ -30,16 +30,22 @@ test.describe('MCP Tool Playground', () => {
     await page.waitForLoadState('networkidle');
     await dismissWelcome(page);
 
-    // Allow the playground's browser origin on the MCP CORS policy if prompted.
+    // Allow the playground's browser origin on the MCP CORS policy if prompted. This
+    // rewrites the gateway config and triggers a hot reload, so let it settle before
+    // initializing — otherwise the first upstream MCP call can hit a dropped connection.
     const applyCors = page.getByRole('button', { name: /apply cors/i });
     if (await applyCors.count()) {
       await applyCors.click();
       await expect(applyCors).toBeHidden();
+      await page.waitForTimeout(2_000); // gateway reload settle
     }
 
-    // Open the MCP session; the button flips Initialize -> Reset when connected.
-    await page.getByRole('button', { name: /initialize/i }).click();
-    await expect(page.getByRole('button', { name: /^reset$/i })).toBeVisible({ timeout: 15_000 });
+    // Open the MCP session; the button flips Initialize -> Reset when connected. Retry
+    // once to absorb a reload-induced upstream blip.
+    await expect(async () => {
+      await page.getByRole('button', { name: /initialize/i }).click();
+      await expect(page.getByRole('button', { name: /^reset$/i })).toBeVisible({ timeout: 10_000 });
+    }).toPass({ timeout: 30_000 });
   });
 
   test('tools discovered after initialize', async ({ page }) => {

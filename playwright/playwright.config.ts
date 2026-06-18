@@ -20,31 +20,46 @@ import { defineConfig, devices } from '@playwright/test';
  *   UI_BASE_URL      full base URL; defaults to http://localhost:${UI_HOST_PORT}
  *   AGENTGATEWAY_BIN if set, launch this local binary instead of docker (e.g. a build
  *                    from a different branch). Serves on ADMIN_ADDR (default :15000).
+ *   CAPTURE_MODE     which environment webServer brings up:
+ *                      ''   (default) — empty-config UI (smoke / landing captures)
+ *                      mcp  — server-everything + MCP config (playground.spec.ts)
+ *                      a2a  — A2A guide config as a Traffic route (a2a-traffic.spec.ts)
+ *                      llm  — mock OpenAI provider + LLM config (llm-playground.spec.ts)
+ *                    The mcp/a2a/llm scripts under scripts/ are self-contained: they
+ *                    start any backing servers, run the container, and clean up on exit.
  *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
- *          so you can `docker run …` (or `npm run dev`) yourself and just point here.
+ *          so you can run a `scripts/serve-*.sh` (or `docker run …`) yourself and point here.
  */
 
 const HOST_PORT = process.env.UI_HOST_PORT || '15100';
 const IMAGE = process.env.AGW_IMAGE || 'howardjohn/agentgateway:sl8';
 const BIN = process.env.AGENTGATEWAY_BIN;
 const ADMIN_ADDR = process.env.ADMIN_ADDR || 'localhost:15000';
+const MODE = process.env.CAPTURE_MODE || '';
 
 const BASE_URL =
   process.env.UI_BASE_URL || (BIN ? `http://${ADMIN_ADDR}` : `http://localhost:${HOST_PORT}`);
 
-// Either launch the local binary, or (default) the docker image with the new UI. The
-// docker variant clears any stale container of the same name first and remaps ports.
+// Pick the launcher. A local binary, a mode-specific setup script (which starts its own
+// backends + the container and cleans up on teardown), or the default empty-config image.
+const SCRIPT_FOR = { mcp: 'serve-populated-ui.sh', a2a: 'serve-a2a-ui.sh', llm: 'serve-llm-ui.sh' };
 const command = BIN
   ? `"${BIN}" -f fixtures/standalone-config.yaml`
-  : `sh -c "docker rm -f agw-ui-pw 2>/dev/null; mkdir -p .agw-runtime; ` +
-    `exec docker run --rm --name agw-ui-pw --user $(id -u):$(id -g) ` +
-    `-v \\"$(pwd)/.agw-runtime:/config\\" ` +
-    `-p ${HOST_PORT}:15000 -p 4100:4000 -p 3100:3000 ${IMAGE}"`;
+  : MODE && SCRIPT_FOR[MODE]
+    ? `bash ./scripts/${SCRIPT_FOR[MODE]}`
+    : `sh -c "docker rm -f agw-ui-pw 2>/dev/null; mkdir -p .agw-runtime; ` +
+      `exec docker run --rm --name agw-ui-pw --user $(id -u):$(id -g) ` +
+      `-v \\"$(pwd)/.agw-runtime:/config\\" ` +
+      `-p ${HOST_PORT}:15000 -p 4100:4000 -p 3100:3000 ${IMAGE}"`;
 
 export default defineConfig({
   testDir: './tests',
   snapshotDir: './__screenshots__',
-  fullyParallel: false, // a single shared UI instance — keep captures deterministic
+  fullyParallel: false,
+  // One worker: all projects/specs share a single UI instance, and some captures mutate
+  // its config (e.g. the playground's "Apply CORS" hot-reloads the gateway). Serializing
+  // avoids concurrent config rewrites racing in-flight requests, and keeps captures stable.
+  workers: 1,
   forbidOnly: !!process.env.CI,
   reporter: [['html', { open: 'never' }], ['list']],
 

@@ -3,10 +3,11 @@
 #   1. an MCP test server (server-everything) on the host at :3005
 #   2. the new-UI image (sl8) wired to it, serving the UI at http://localhost:15100/ui/
 #
-# Then capture against it:
-#   UI_BASE_URL=http://localhost:15100 npm run test:standalone
+# Two ways to use it:
+#   - one command:  CAPTURE_MODE=mcp npm run test:mcp   (Playwright's webServer runs this)
+#   - manual:       ./scripts/serve-populated-ui.sh     then capture in another shell
 #
-# Ctrl-C tears both down. Requires Docker and Node 18+ (npx).
+# Ctrl-C (or Playwright's webServer teardown) tears both down. Requires Docker + Node 18+.
 set -euo pipefail
 
 IMAGE="${AGW_IMAGE:-howardjohn/agentgateway:sl8}"
@@ -40,7 +41,6 @@ docker run --rm --name agw-ui-populated --user "$(id -u):$(id -g)" \
 
 echo "→ waiting for UI…"
 until curl -sf -o /dev/null "http://localhost:$UI_PORT/ui/"; do sleep 1; done
-echo "✓ UI ready at http://localhost:$UI_PORT/ui/  — now run:"
-echo "    UI_BASE_URL=http://localhost:$UI_PORT npm run test:standalone"
-echo "(Ctrl-C to stop)"
+echo "✓ UI ready at http://localhost:$UI_PORT/ui/"
+# Stay foreground until killed (Ctrl-C, or Playwright's webServer teardown) so the trap fires.
 wait
