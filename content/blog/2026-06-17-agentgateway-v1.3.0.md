@@ -161,13 +161,13 @@ And like the LLM layer, MCP gets its own native policy views — access, traffic
 
 A handful of fixes worth calling out: TCP route precedence, Gateway status when no listeners are valid, route-level OIDC cookie handling, capacity-weighted load balancing, backend eviction retries, and streaming-completion capture across Bedrock, Messages, and Responses API paths.
 
-For the complete list of features and 50+ fixes, see the [GitHub release notes](https://github.com/agentgateway/agentgateway/releases/tag/v1.3.0).
+For the complete list of features and 50+ fixes, see the [GitHub release notes](https://github.com/agentgateway/agentgateway/releases).
 
 ---
 
 ## Availability
 
-Agentgateway v1.3.0 is available now. Grab the Docker images, Helm charts, and binaries from the [GitHub release page](https://github.com/agentgateway/agentgateway/releases/tag/v1.3.0), then follow the quick start guide for [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/) or [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/).
+Agentgateway v1.3.0 is available now. Grab the Docker images, Helm charts, and binaries from the [GitHub release page](https://github.com/agentgateway/agentgateway/releases), then follow the quick start guide for [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/) or [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/).
 
 ## Contributors
 
@@ -182,7 +182,7 @@ A special shout-out to the people who drove the most change this release:
 - [@TwilightTechie](https://github.com/TwilightTechie)
 - [@filintod](https://github.com/filintod)
 
-…alongside everyone whose fixes, features, and feedback made the rest of the release possible. The full list of contributors is in the [v1.3.0 release notes](https://github.com/agentgateway/agentgateway/releases/tag/v1.3.0).
+…alongside everyone whose fixes, features, and feedback made the rest of the release possible. The full list of contributors is in the [v1.3.0 release notes](https://github.com/agentgateway/agentgateway/releases).
 
 ## Get involved
 
