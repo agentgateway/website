@@ -35,7 +35,7 @@ llm:
 
 ## Example request
 
-After running agentgateway with the configuration from the previous section, you can send an OpenAI-compatible request to the `v1/chat/completions` endpoint (replace `<your-baseten-model-id>` with your Baseten model or deployment ID):
+After running agentgateway with the configuration from the previous section, you can send an OpenAI-compatible request to the `v1/chat/completions` endpoint by replacing `<your-baseten-model-id>` with your Baseten model or deployment ID:
 
 ```bash
 curl -X POST http://localhost:4000/v1/chat/completions \

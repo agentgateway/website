@@ -9,9 +9,9 @@ Use custom providers for unsupported, self-hosted, or non-standard LLM
 targets when you want to declare the provider target and supported API formats
 explicitly.
 
-If your upstream already matches a first-class provider page, or it is a
-generic OpenAI-compatible provider without special path or format handling,
-prefer those simpler options first.
+If your upstream already matches a first-class provider page, or the provider is 
+generic OpenAI-compatible without special path or format handling,
+use the standard provider guides instead of this custom provider guide.
 
 Custom providers are useful when:
 
@@ -29,7 +29,7 @@ For first-class providers such as OpenAI, Anthropic, Gemini, Vertex AI, Azure,
 Bedrock, and Ollama, use the dedicated provider page unless you need explicit
 format or backend target control. For providers that expose the standard OpenAI
 API shape without a first-class type, such as Cohere, DeepSeek, Groq, Mistral,
-Together AI, and xAI, use [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) before reaching for a custom provider.
+Together AI, and xAI, use [OpenAI-compatible providers]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) before using a custom provider.
 
 ## Supported targets
 

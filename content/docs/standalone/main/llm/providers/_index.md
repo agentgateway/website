@@ -9,7 +9,7 @@ Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}
 
 ## First-class providers
 
-Prefer the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This includes Anthropic, OpenAI, and many OpenAI-compatible providers.
+Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many OpenAI-compatible providers.
 
 ## OpenAI-compatible fallback
 
