@@ -5,7 +5,7 @@ Retrieve all Agentgateway configuration
 Retrieve all Agentgateway configuration.
 
 ```
-agctl config all [flags]
+agctl proxy config all [flags]
 ```
 
 ### Options
@@ -21,10 +21,10 @@ agctl config all [flags]
   -k, --kubeconfig string      kubeconfig
   -n, --namespace string       Namespace to use when resolving resources
   -o, --output string          Output format: one of short|json|yaml (default "short")
-      --proxy-admin-port int   Envoy admin port (default 15000)
+      --proxy-admin-port int   Agentgateway admin port (default 15000)
 ```
 
 ### SEE ALSO
 
-* [agctl config](../agctl-config/)	 - Retrieve Agentgateway configuration for a resource
+* [agctl proxy config](../agctl-proxy-config/)	 - Retrieve agentgateway configuration for a resource
 

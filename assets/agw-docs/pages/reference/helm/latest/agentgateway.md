@@ -57,6 +57,13 @@
 | imagePullSecrets | list | Set a list of image pull secrets for Kubernetes to use when pulling container images from your own private registry instead of the default agentgateway registry. | `[]` |
 | inferenceExtension | object | Configure the integration with the Gateway API Inference Extension project, which lets you use agentgateway to route to AI inference workloads like LLMs that run locally in your Kubernetes cluster. Documentation for Inference Extension can be found here: https://agentgateway.dev/docs/kubernetes/latest/inference/ | `{"enabled":false}` |
 | inferenceExtension.enabled | bool | Enable Inference Extension support in the agentgateway controller. | `false` |
+| istio | object | Control-plane-wide Istio mesh defaults. | `{"autoEnabled":false,"caAddress":"","clusterId":"","namespace":"","network":"","revision":""}` |
+| istio.autoEnabled | bool | Enable Istio integration by default on all built-in-class gateways.    When false (default), gateways opt in via AgentgatewayParameters spec.istio;    when true, individual gateways can opt out via spec.istio.enabled=false. | `false` |
+| istio.caAddress | string | Istio CA address override;    Defaults to "https://istiod.istio-system.svc:15012" | `""` |
+| istio.clusterId | string | Istio cluster ID (the istiod multiCluster clusterName) for mesh-integrated gateways. | `""` |
+| istio.namespace | string | Namespace where the Istio control plane the controller integrates with is installed.    Defaults to "istio-system". | `""` |
+| istio.network | string | Istio network for mesh-integrated gateways. | `""` |
+| istio.revision | string | Revision of the Istio control plane the controller integrates with.   If unset, the default revision is used. | `""` |
 | monitoring | object | Configure Prometheus and Grafana monitoring resources. | `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"namespaceSelector":{}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}` |
 | monitoring.enabled | bool | Create monitoring resources (ServiceMonitors and Grafana dashboard ConfigMap). Requires the Prometheus Operator CRDs to be installed in the cluster. | `false` |
 | monitoring.grafanaDashboard.enabled | bool | Create the Grafana dashboard ConfigMap. | `true` |
@@ -73,7 +80,7 @@
 | proxy.image.registry | string | Set the default image registry. Set to override the global value. | `""` |
 | proxy.image.repository | string | Set the default image repository. | `"agentgateway"` |
 | proxy.image.tag | string | Set the default image tag. | `""` |
-| resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'. | `{}` |
+| resources | object | Configure resource requests and limits for the container, such as 'limits.cpu: 100m' or 'requests.memory: 128Mi'. | `{"requests":{"cpu":"100m","memory":"128Mi"}}` |
 | securityContext | object | Set the container-level security context, such as 'runAsNonRoot: true'. | `{}` |
 | serviceAccount | object | Configure the service account for the deployment. | `{"annotations":{},"create":true,"name":""}` |
 | serviceAccount.annotations | object | Add annotations to the service account. | `{}` |
