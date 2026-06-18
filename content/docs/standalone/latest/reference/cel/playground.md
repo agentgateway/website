@@ -19,5 +19,5 @@ To open the playground:
 4. In the **Input Data (YAML)** box, paste the YAML file structure that the CEL expression is running against.
 5. To test your CEL expression, click **Evaluate**.
 
-{{< reuse-image src="img/cel-playground.png" >}}
-{{< reuse-image-dark srcDark="img/cel-playground-dark.png" >}}
+{{< reuse-image src="img/1.2-earlier/cel-playground.png" >}}
+{{< reuse-image-dark srcDark="img/1.2-earlier/cel-playground-dark.png" >}}

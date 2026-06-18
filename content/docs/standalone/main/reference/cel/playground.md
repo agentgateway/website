@@ -16,8 +16,8 @@ To open the playground:
 2. Open the [CEL playground](http://localhost:15000/ui/cel/).
 
 3. In the **Expression** box, enter the CEL expression that you want to test.
-4. In the **Input Data (YAML)** box, paste the YAML file structure that the CEL expression is running against.
-5. To test your CEL expression, click **Evaluate**.
+4. In the **Request Context YAML** box, edit the sample request context that the CEL expression is evaluated against.
+5. To test your CEL expression, click **Evaluate**. The **Result** card shows the value returned by the CEL evaluation.
 
 {{< reuse-image src="img/cel-playground.png" >}}
 {{< reuse-image-dark srcDark="img/cel-playground-dark.png" >}}

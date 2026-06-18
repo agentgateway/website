@@ -129,7 +129,7 @@ binds:
 
    3. Verify that you see a list of **Available Tools**. 
    
-      {{< reuse-image src="img/ui-playground-tools.png" >}}
+      {{< reuse-image src="img/1.2-earlier/ui-playground-tools.png" >}}
 
 3. Verify access to a tool. 
    1. From the **Available Tools** list, select the `echo` tool. 

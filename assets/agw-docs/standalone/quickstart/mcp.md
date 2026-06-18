@@ -106,7 +106,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 2. In the **Testing** card, check the **Connection** URL (such as `http://localhost:3000/`) and click **Connect**. The UI connects to the MCP target and lists its tools.
 3. Confirm that **Available Tools** shows tools from the server, such as `echo` or various `get` commands.
 
-{{< reuse-image src="img/ui-playground-tools.png" >}}
+{{< reuse-image src="img/1.2-earlier/ui-playground-tools.png" >}}
 
 ### Step 6: Run a tool
 
@@ -115,7 +115,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 3. Click **Run Tool**.
 4. Check the **Response** card for the echoed message.
 
-{{< reuse-image src="img/ui-playground-tool-echo.png" >}}
+{{< reuse-image src="img/1.2-earlier/ui-playground-tool-echo.png" >}}
 
 {{% /steps %}}
 
