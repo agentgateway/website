@@ -1,8 +1,17 @@
 {
-  "$comment": "Maps Playwright screenshot names (from toHaveScreenshot('NAME.png')) to doc image destinations under the repo's assets/img/ tree. `npm run sync-docs` copies the standalone-chromium baselines to these paths so committed doc images stay in sync with regression baselines. Paths are repo-relative. CONFIRM these against the real docs before committing regenerated images — some doc images are dark-mode or multi-step variants this POC does not capture.",
+  "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to its doc image destinations under assets/img/. Each entry has a `light` and `dark` target; `npm run sync-docs` copies the standalone-light baseline to `light` and standalone-dark to `dark`. `dark` is optional — omit it for shots with no dark variant in the docs. CONFIRM these paths against the real docs before committing regenerated images. The agentgateway docs render dark variants via the {{< reuse-image-dark srcDark=... >}} shortcode; dark filenames here follow the existing -dark.png convention.",
   "images": {
-    "ui-playground-tools.png": "assets/img/ui-playground-tools.png",
-    "ui-playground-tool-echo.png": "assets/img/ui-playground-tool-echo.png",
-    "ui-overview.png": "assets/img/agentgateway-ui-config-overview.png"
+    "ui-playground-tools.png": {
+      "light": "assets/img/ui-playground-tools.png",
+      "dark": "assets/img/ui-playground-tools-dark.png"
+    },
+    "ui-playground-tool-echo.png": {
+      "light": "assets/img/ui-playground-tool-echo.png",
+      "dark": "assets/img/ui-playground-tool-echo-dark.png"
+    },
+    "ui-overview.png": {
+      "light": "assets/img/agentgateway-ui-config-overview.png",
+      "dark": "assets/img/agentgateway-ui-config-overview-dark.png"
+    }
   }
 }

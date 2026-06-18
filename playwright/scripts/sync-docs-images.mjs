@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
  * Copies captured Playwright screenshots into the docs' assets/img/ tree, using the
- * name -> path map in docs-image-map.json. This is the "docs assets" half of the goal:
- * the SAME PNGs that act as regression baselines become the published doc images.
+ * name -> {light, dark} map in docs-image-map.json. This is the "docs assets" half of
+ * the goal: the SAME PNGs that act as regression baselines become the published doc
+ * images. The light baseline (standalone-light project) feeds the `light` destination;
+ * the dark baseline (standalone-dark project) feeds the `dark` destination.
  *
- * Source of truth: the committed baselines for the `standalone` Chromium project, i.e.
- *   __screenshots__/<spec>/<name>-standalone-<platform>.png
+ * Baselines live under:
+ *   __screenshots__/<spec>/<name>-<project>-<platform>.png
  *
  * Run after `npm run update` (which refreshes baselines from a fresh capture).
  *
@@ -24,16 +26,18 @@ const dryRun = process.argv.includes('--dry-run');
 const map = JSON.parse(readFileSync(join(pwRoot, 'docs-image-map.json'), 'utf8')).images;
 const snapDir = join(pwRoot, '__screenshots__');
 
-/** Find a baseline whose filename starts with the screenshot name (minus .png). */
-function findBaseline(name) {
+// Which project baseline feeds which destination key.
+const PROJECT_FOR = { light: 'standalone-light', dark: 'standalone-dark' };
+
+/** Find a baseline for screenshot `name` captured by `project`. */
+function findBaseline(name, project) {
   if (!existsSync(snapDir)) return null;
   const stem = name.replace(/\.png$/, '');
-  // Playwright nests baselines under per-spec folders; walk one level.
   for (const entry of readdirSync(snapDir, { withFileTypes: true })) {
     if (!entry.isDirectory()) continue;
     const specDir = join(snapDir, entry.name);
     const match = readdirSync(specDir).find(
-      (f) => f.startsWith(`${stem}-`) && f.includes('standalone') && f.endsWith('.png'),
+      (f) => f.startsWith(`${stem}-`) && f.includes(project) && f.endsWith('.png'),
     );
     if (match) return join(specDir, match);
   }
@@ -42,17 +46,20 @@ function findBaseline(name) {
 
 let copied = 0;
 let missing = 0;
-for (const [name, dest] of Object.entries(map)) {
-  const src = findBaseline(name);
-  const destAbs = resolve(repoRoot, dest);
-  if (!src) {
-    console.warn(`! no baseline found for ${name} (run \`npm run update\` first) — skipping`);
-    missing++;
-    continue;
+for (const [name, dests] of Object.entries(map)) {
+  for (const [variant, project] of Object.entries(PROJECT_FOR)) {
+    const dest = dests[variant];
+    if (!dest) continue; // no dark variant for this shot, e.g.
+    const src = findBaseline(name, project);
+    if (!src) {
+      console.warn(`! no ${variant} baseline for ${name} (project ${project}) — run \`npm run update\` first; skipping`);
+      missing++;
+      continue;
+    }
+    console.log(`${dryRun ? '[dry-run] ' : ''}${basename(src)} -> ${dest}`);
+    if (!dryRun) copyFileSync(src, resolve(repoRoot, dest));
+    copied++;
   }
-  console.log(`${dryRun ? '[dry-run] ' : ''}${basename(src)} -> ${dest}`);
-  if (!dryRun) copyFileSync(src, destAbs);
-  copied++;
 }
 
 console.log(`\n${dryRun ? 'would copy' : 'copied'} ${copied} image(s)${missing ? `, ${missing} missing` : ''}`);

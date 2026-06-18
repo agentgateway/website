@@ -36,19 +36,38 @@ export default defineConfig({
   },
 
   projects: [
+    // Light/dark are separate projects so each gets its own baseline set. The UI honors
+    // prefers-color-scheme (verified via scripts/probe-theme.mjs), so `colorScheme` is
+    // all that's needed — no theme-toggle clicking. fixtures/seed-theme.ts additionally
+    // clears the persisted `agentgateway-theme` localStorage key so a stray explicit
+    // choice can't override the requested scheme.
     {
-      name: 'standalone',
+      name: 'standalone-light',
       testMatch: /.*\.spec\.ts/,
       // Provisions the binary + config and tears it down. See provisioners/standalone.ts.
       globalSetup: './provisioners/standalone.ts',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], colorScheme: 'light' },
     },
     {
-      name: 'kubernetes',
+      name: 'standalone-dark',
+      testMatch: /.*\.spec\.ts/,
+      // Reuse the standalone provisioner; the binary is already up from the light project
+      // when both run, but globalSetup is idempotent (waits for an already-healthy UI).
+      globalSetup: './provisioners/standalone.ts',
+      use: { ...devices['Desktop Chrome'], colorScheme: 'dark' },
+    },
+    {
+      name: 'kubernetes-light',
       testMatch: /.*\.spec\.ts/,
       // STUB. See provisioners/kubernetes.ts — reuses scripts/TEST_FRAMEWORK.md machinery.
       globalSetup: './provisioners/kubernetes.ts',
-      use: { ...devices['Desktop Chrome'] },
+      use: { ...devices['Desktop Chrome'], colorScheme: 'light' },
+    },
+    {
+      name: 'kubernetes-dark',
+      testMatch: /.*\.spec\.ts/,
+      globalSetup: './provisioners/kubernetes.ts',
+      use: { ...devices['Desktop Chrome'], colorScheme: 'dark' },
     },
   ],
 });
