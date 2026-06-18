@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 470" font-family="Figtree, system-ui, -apple-system, Segoe UI, sans-serif">
+  <defs>
+    <linearGradient id="vmGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- connectors -->
+  <g fill="none" stroke="#94A3B8" stroke-width="2">
+    <line x1="208" y1="235" x2="250" y2="235" marker-end="url(#arrow)"/>
+    <line x1="470" y1="235" x2="512" y2="235" marker-end="url(#arrow)"/>
+    <path d="M678,235 C708,235 712,118 742,118" marker-end="url(#arrow)"/>
+    <line x1="678" y1="235" x2="742" y2="235" marker-end="url(#arrow)"/>
+    <path d="M678,235 C708,235 712,352 742,352" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Client -->
+  <g filter="url(#softShadow)">
+    <rect x="34" y="195" width="174" height="82" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  </g>
+  <text x="121" y="230" text-anchor="middle" font-size="19" font-weight="700" fill="#0F172A">Client</text>
+  <text x="121" y="256" text-anchor="middle" font-size="13.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7C3AED">model: my-router</text>
+
+  <!-- Virtual model (hero) -->
+  <g filter="url(#softShadow)">
+    <rect x="255" y="183" width="215" height="106" rx="16" fill="url(#vmGrad)"/>
+  </g>
+  <text x="362" y="223" text-anchor="middle" font-size="20" font-weight="800" fill="#FFFFFF">Virtual model</text>
+  <text x="362" y="251" text-anchor="middle" font-size="14" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#FFFFFF" opacity="0.9">my-router</text>
+  <text x="362" y="274" text-anchor="middle" font-size="11.5" fill="#FFFFFF" opacity="0.75" letter-spacing="0.5">picks the backend per request</text>
+
+  <!-- Strategy hub -->
+  <g filter="url(#softShadow)">
+    <rect x="513" y="206" width="165" height="58" rx="29" fill="#EEF2FF" stroke="#C7D2FE"/>
+  </g>
+  <text x="595" y="232" text-anchor="middle" font-size="14.5" font-weight="700" fill="#4338CA">Routing</text>
+  <text x="595" y="250" text-anchor="middle" font-size="14.5" font-weight="700" fill="#4338CA">strategy</text>
+
+  <!-- Strategy cards -->
+  <!-- Weighted -->
+  <g filter="url(#softShadow)">
+    <rect x="742" y="75" width="244" height="86" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  </g>
+  <rect x="742" y="75" width="6" height="86" rx="3" fill="#7C3AED"/>
+  <text x="766" y="106" font-size="16" font-weight="700" fill="#0F172A">Weighted</text>
+  <text x="766" y="129" font-size="12.5" fill="#64748B">70% claude-sonnet-4-6</text>
+  <text x="766" y="147" font-size="12.5" fill="#64748B">30% claude-opus-4-7</text>
+
+  <!-- Failover -->
+  <g filter="url(#softShadow)">
+    <rect x="742" y="192" width="244" height="86" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  </g>
+  <rect x="742" y="192" width="6" height="86" rx="3" fill="#7C3AED"/>
+  <text x="766" y="223" font-size="16" font-weight="700" fill="#0F172A">Failover</text>
+  <text x="766" y="246" font-size="12.5" fill="#64748B">primary &#8594; fallback</text>
+  <text x="766" y="264" font-size="12.5" fill="#64748B">on error / rate-limit</text>
+
+  <!-- Conditional -->
+  <g filter="url(#softShadow)">
+    <rect x="742" y="309" width="244" height="86" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  </g>
+  <rect x="742" y="309" width="6" height="86" rx="3" fill="#7C3AED"/>
+  <text x="766" y="340" font-size="16" font-weight="700" fill="#0F172A">Conditional</text>
+  <text x="766" y="363" font-size="12.5" fill="#64748B">CEL on user, prompt,</text>
+  <text x="766" y="381" font-size="12.5" fill="#64748B">headers &#8594; model</text>
+</svg>
