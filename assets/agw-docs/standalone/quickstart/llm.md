@@ -76,6 +76,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 Route to an OpenAI backend through agentgateway.
 
+{{< version exclude-if="1.3.x" >}}
 {{% steps %}}
 
 ### Step 1: Set your API key
@@ -155,24 +156,91 @@ Example output (abbreviated):
 }
 ```
 
-{{< version include-if="1.3.x" >}}
-### Step 5: Try the request in the UI playground
-
-You can also send a test request from the built-in LLM playground, without writing a `curl` command.
-
-1. Open the [LLM playground](http://localhost:15000/ui/llm/playground/).
-2. If you see a **Browser access is not allowed** notice, click **Apply CORS** so the playground can call the LLM listener from the UI.
-3. In the **Model** list, select a model. If your configuration uses a wildcard (`*`) model, enter a specific model name, such as `gpt-3.5-turbo`, in the **Specific model** field.
-4. In the **User message** box, enter a prompt, such as `Say hello in one sentence`, and click **Send**.
-5. Verify that the response appears in the chat panel, along with the provider, model, latency, and token usage.
-
-   {{< reuse-image-light src="img/ui-llm-playground.png" >}}
-   {{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
-
-For more information, see the [LLM playground]({{< link-hextra path="/llm/playground/" >}}) reference.
+{{% /steps %}}
 {{< /version >}}
 
+{{< version include-if="1.3.x" >}}
+{{% steps %}}
+
+### Step 1: Set your API key
+
+Store your OpenAI API key in an environment variable so agentgateway can authenticate to the API.
+
+```sh
+export OPENAI_API_KEY='<your-api-key>'
+```
+
+### Step 2: Start agentgateway
+
+You add the model from the UI in the next steps, so you can start agentgateway with an empty config file.
+
+```sh
+echo '{}' > config.yaml
+agentgateway -f config.yaml
+```
+
+Example output:
+
+```
+info  app  serving UI at http://localhost:15000/ui
+```
+
+{{< doc-test paths="llm" >}}
+# Hidden test: the UI steps below (Enable LLM -> Add model) are not scriptable, so this
+# block reproduces the equivalent config they produce, to keep the resulting setup tested.
+cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: gpt-3.5-turbo
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
+### Step 3: Enable LLM
+
+1. Open the [agentgateway UI](http://localhost:15000/ui/).
+2. On the **Gateway Overview**, find the **LLM** row and click **Enable LLM**.
+
+### Step 4: Add a model
+
+1. In the **LLM** section of the navigation menu, click **Models**, and then click **Add model**.
+2. For the **Incoming model match**, enter the model name that clients send, such as `gpt-3.5-turbo`.
+3. From the **Provider** list, select **OpenAI**.
+4. For the **Provider API key**, click **Env var** and enter `OPENAI_API_KEY` (the variable you set in Step 1).
+5. Click **Save model**.
+
+{{< reuse-image-light src="img/ui-llm-add-model.png" >}}
+{{< reuse-image-dark srcDark="img/ui-llm-add-model-dark.png" >}}
+
+### Step 5: Send a chat completion request
+
+Send a request from the command line, or try it in the built-in playground.
+
+From another terminal, send a request to the chat completions endpoint:
+
+```sh {paths="llm"}
+curl -s http://localhost:4000/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "gpt-3.5-turbo",
+    "messages": [{"role": "user", "content": "Say hello in one sentence."}]
+  }' | jq .
+```
+
+Or open the [LLM playground](http://localhost:15000/ui/llm/playground/), enter a prompt in the **User message** box, and click **Send**.
+
+{{< reuse-image-light src="img/ui-llm-playground.png" >}}
+{{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
 {{% /steps %}}
+{{< /version >}}
 
 ## Next steps
 
