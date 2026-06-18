@@ -1,17 +1,52 @@
 {
-  "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to its doc image destinations under assets/img/. Each entry has a `light` and `dark` target; `npm run sync-docs` copies the standalone-light baseline to `light` and standalone-dark to `dark`. `dark` is optional — omit it for shots with no dark variant in the docs. CONFIRM these paths against the real docs before committing regenerated images. The agentgateway docs render dark variants via the {{< reuse-image-dark srcDark=... >}} shortcode; dark filenames here follow the existing -dark.png convention.",
+  "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to the docs image destinations under assets/img/. Light and dark variants are copied separately by scripts/sync-docs-images.mjs.",
   "images": {
+    "agentgateway-ui-landing.png": {
+      "light": "assets/img/agentgateway-ui-landing.png",
+      "dark": "assets/img/agentgateway-ui-landing-dark.png"
+    },
+    "agentgateway-ui-playground.png": {
+      "light": "assets/img/agentgateway-ui-playground.png"
+    },
     "ui-playground-tools.png": {
-      "light": "assets/img/ui-playground-tools.png",
-      "dark": "assets/img/ui-playground-tools-dark.png"
+      "light": "assets/img/ui-playground-tools.png"
     },
     "ui-playground-tool-echo.png": {
-      "light": "assets/img/ui-playground-tool-echo.png",
-      "dark": "assets/img/ui-playground-tool-echo-dark.png"
+      "light": "assets/img/ui-playground-tool-echo.png"
     },
-    "ui-overview.png": {
-      "light": "assets/img/agentgateway-ui-config-overview.png",
-      "dark": "assets/img/agentgateway-ui-config-overview-dark.png"
+    "ui-playground-multi-tools.png": {
+      "light": "assets/img/ui-playground-multi-tools.png"
+    },
+    "ui-tool-time-current.png": {
+      "light": "assets/img/ui-tool-time-current.png"
+    },
+    "ui-a2a-listener.png": {
+      "light": "assets/img/ui-a2a-listener.png"
+    },
+    "ui-a2a-route.png": {
+      "light": "assets/img/ui-a2a-route.png"
+    },
+    "ui-a2a-skills.png": {
+      "light": "assets/img/ui-a2a-skills.png"
+    },
+    "ui-a2a-success.png": {
+      "light": "assets/img/ui-a2a-success.png"
+    },
+    "agentgateway-ui-tools-openapi.png": {
+      "light": "assets/img/agentgateway-ui-tools-openapi.png"
+    },
+    "agentgateway-ui-tools-openapi-success.png": {
+      "light": "assets/img/agentgateway-ui-tools-openapi-success.png"
+    },
+    "agentgateway-ui-tools-jwt.png": {
+      "light": "assets/img/agentgateway-ui-tools-jwt.png"
+    },
+    "agentgateway-ui-tool-echo-hello.png": {
+      "light": "assets/img/agentgateway-ui-tool-echo-hello.png"
+    },
+    "cel-playground.png": {
+      "light": "assets/img/cel-playground.png",
+      "dark": "assets/img/cel-playground-dark.png"
     }
   }
 }

@@ -1,0 +1,60 @@
+name: Playwright screenshots
+
+on:
+  schedule:
+    # Nightly at 06:00 UTC: regenerate and verify docs screenshots so image drift is caught early.
+    - cron: '0 6 * * *'
+  workflow_dispatch:
+
+# Keep nightly and manual runs from overlapping.
+concurrency:
+  group: playwright-screenshots
+  cancel-in-progress: false
+
+jobs:
+  screenshots:
+    name: Generate and verify UI screenshots
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout website repo
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'playwright/package-lock.json'
+
+      - name: Install Playwright dependencies
+        working-directory: playwright
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Run screenshot tests
+        working-directory: playwright
+        env:
+          CI: true
+        run: npm run test:standalone
+
+      - name: Sync screenshots into docs
+        working-directory: playwright
+        run: npm run sync-docs
+
+      - name: Verify docs images are clean
+        run: |
+          git diff --stat -- assets/img
+          git diff --exit-code -- assets/img
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshot-report
+          path: |
+            playwright/playwright-report
+            playwright/test-results
+          retention-days: 7

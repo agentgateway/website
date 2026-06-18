@@ -1,15 +1,16 @@
 {
-  "name": "agentgateway-ui-screenshots-poc",
+  "name": "agentgateway-ui-screenshots",
   "private": true,
   "type": "module",
-  "description": "Proof of concept: Playwright screenshot automation for the agentgateway product UI",
+  "description": "Playwright screenshot automation for the agentgateway Admin UI",
   "scripts": {
+    "test": "playwright test",
     "test:standalone": "playwright test --project=standalone-light --project=standalone-dark",
-    "update": "playwright test --update-snapshots",
+    "update": "playwright test --update-snapshots --project=standalone-light --project=standalone-dark",
     "sync-docs": "node scripts/sync-docs-images.mjs",
     "report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0"
+    "@playwright/test": "1.61.0"
   }
 }

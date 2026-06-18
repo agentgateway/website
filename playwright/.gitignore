@@ -1,5 +1,4 @@
 node_modules/
 playwright-report/
 test-results/
-# Keep __screenshots__/ committed — baselines are source of truth for diffs + doc images.
 .agw-runtime/
