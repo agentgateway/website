@@ -1,6 +1,6 @@
 ---
 title: Cerebras
-weight: 61
+weight: 20
 description: Configuration and setup for Cerebras LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: cerebras
     params:
       apiKey: "$CEREBRAS_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.cerebras.ai/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

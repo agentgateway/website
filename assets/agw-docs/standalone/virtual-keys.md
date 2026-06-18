@@ -198,6 +198,10 @@ EOF
 
 LLMs typically charge per input and output token. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. To protect against unexpected bills, scaling surprises, and abuse, use token-based rate limits to cap the number of tokens that can be used.
 
+{{< callout type="warning" >}}
+`localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
+{{< /callout >}}
+
 ### How rate limiting works
 
 Agentgateway checks token-based rate limits in two phases:
@@ -351,61 +355,6 @@ EOF
 ```
 
 With this setting, requests are denied immediately if the estimated prompt token count exceeds the available budget.
-
-## Add a global token budget
-
-{{< callout type="warning" >}}
-`localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
-{{< /callout >}}
-
-To add a token budget that limits total token usage across all requests using more advanced routing options, use the routing-based configuration format with `localRateLimit`.
-
-{{< callout type="info" >}}
-Rate limiting requires the `binds/listeners/routes` configuration format because `localRateLimit` is an HTTP-level policy. For more information, see the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}).
-{{< /callout >}}
-
-```yaml
-cat <<'EOF' > config.yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        apiKey:
-          mode: strict
-          keys:
-          - key: sk-alice-abc123def456
-            metadata:
-              user: alice
-          - key: sk-bob-xyz789uvw012
-            metadata:
-              user: bob
-        backendAuth:
-          key: "$OPENAI_API_KEY"
-        localRateLimit:
-        - maxTokens: 100000
-          tokensPerFill: 100000
-          fillInterval: 86400s
-          type: tokens
-EOF
-```
-
-| Setting | Description |
-| -- | -- |
-| `backendAuth` | The API key used to authenticate with the LLM provider backend. For configuration options, see [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}). |
-| `localRateLimit` | Token-based rate limiting applied globally to **all** requests through this route, regardless of which API key is used. |
-| `maxTokens` | The maximum number of tokens available in the shared budget. |
-| `tokensPerFill` | The number of tokens added during each refill. |
-| `fillInterval` | The interval between refills. Use `86400s` for a daily budget. |
-| `type` | Set to `tokens` for token-based limits. Use `requests` for request-based limits. |
 
 For more information about rate limiting configuration options, see [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
 

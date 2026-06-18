@@ -9,34 +9,15 @@ Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}
 
 ## First-class providers
 
-Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many OpenAI-compatible providers.
+Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many more!
 
-## OpenAI-compatible fallback
+## Custom providers
 
-Use [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes the OpenAI API format.
-
-### Override the upstream base URL
-
-When you need a custom upstream endpoint, set `params.baseUrl` on the model instead of older host or path override fields.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-
-llm:
-  models:
-  - name: "*"
-    provider: openAI
-    auth:
-      key:
-        value: "$PERPLEXITY_API_KEY"
-    params:
-      baseUrl: "https://api.perplexity.ai"
-    tls: {}
-```
+Use [Custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes a compatible [API format](../api-types).
 
 ## Authentication
 
-For simplified `llm` configuration, upstream provider authentication is configured per model via `llm.models[].auth`. In routing-based configurations, use `policies.backendAuth` on a route instead.
+For simplified `llm` configuration, upstream provider authentication is configured per model via `llm.models[]` (typically `params.apiKey` for API-key providers, and `auth` for cloud-native flows). In routing-based configurations, use `policies.backendAuth` on a route instead.
 
 ### API key
 
@@ -47,9 +28,8 @@ llm:
   models:
   - name: "*"
     provider: openAI
-    auth:
-      key:
-        value: "$OPENAI_API_KEY"
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
 Use `auth.key.location` only when a provider needs the credential somewhere other than its default location. For example, Azure often uses `api-key`:
@@ -58,10 +38,10 @@ Use `auth.key.location` only when a provider needs the credential somewhere othe
 llm:
   models:
   - name: "*"
-    provider: azure
+    provider: custom
     auth:
       key:
-        value: "$AZURE_API_KEY"
+        value: "$API_KEY"
         location:
           header:
             name: api-key
@@ -109,4 +89,8 @@ llm:
 
 ## Standalone upstream TLS
 
-Use `llm.models[].tls` to configure TLS when connecting to an upstream provider. You might use this configuration to trust a private CA when using a self-hosted HTTPS endpoint. Common fields include `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates, and `keyExchangeGroups` for TLS negotiation. In agentgateway versions prior to 1.3, this model-level setting was called `backendTLS`.
+Use `llm.models[].tls` to configure advanced TLS when connecting to an upstream provider.
+When using built in providers, default TLS settings are used.
+When using custom a `baseUrl`, the `https://` scheme will automatically use TLS.
+
+However, if you need advanced configurations such as client certificates or customized verification steps, you may set fields such as `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates.

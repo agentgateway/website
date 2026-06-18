@@ -4,7 +4,7 @@ To run agentgateway as a standalone binary, follow the steps to download, instal
 
 {{% steps %}}
 
-### Step 1: Download and install
+### Download and install
 
 Download and install the agentgateway binary. Alternatively, you can manually download the binary from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases/latest).
 
@@ -79,7 +79,7 @@ Password:
 agentgateway installed into /usr/local/bin/agentgateway
 ```
 
-### Step 2: Verify the installation
+### Verify the installation
 
 Verify that the `agentgateway` binary is installed.
 
@@ -99,26 +99,22 @@ Example output with the latest version, {{< reuse "agw-docs/versions/n-patch.md"
 }
 ```
 
-### Step 3: Create a configuration file
+### Run agentgateway
 
-Create a [configuration file]({{< link-hextra path="/configuration/" >}}) for agentgateway. In this example, `config.yaml` is used. You might start with [this simple example configuration file](https://agentgateway.dev/examples/basic/config.yaml).
+To run agentgateway, the binary can simply be executed. Configuration will be stored in `~/.config/agentgateway`
 
-```yaml
-{{< github url="https://agentgateway.dev/examples/basic/config.yaml" >}}
+```sh
+agentgateway
 ```
 
-### Step 4: Run agentgateway
+To specify an explicit configuration file, use `-f`:
 
 ```sh
 agentgateway -f config.yaml
 ```
 
-Example output:
+You might start with [this simple example configuration file](https://agentgateway.dev/examples/basic/config.yaml).
 
-```
-info  state_manager  loaded config from File("config.yaml")
-info  app            serving UI at http://localhost:15000/ui
-info  proxy::gateway started bind  bind="bind/3000"
-```
+Open <http://localhost:15000/ui> to get started!
 
 {{% /steps %}}
