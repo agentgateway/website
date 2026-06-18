@@ -6,6 +6,13 @@
     },
     "ui-playground-tool-echo.png": {
       "light": "assets/img/ui-playground-tool-echo.png"
+    },
+    "ui-a2a-route.png": {
+      "$note": "NEW image. The new UI has no A2A playground, so this (and ui-a2a-listener) replace the old ui-a2a-skills/ui-a2a-success playground shots once agent/a2a.md's UI section is rewritten around the Traffic route view. Destination is provisional.",
+      "light": "assets/img/ui-a2a-route.png"
+    },
+    "ui-a2a-listener.png": {
+      "light": "assets/img/ui-a2a-listener.png"
     }
   }
 }

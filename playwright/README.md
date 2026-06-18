@@ -117,6 +117,25 @@ The playground flow in the new UI is **Apply CORS → Initialize → (echo auto-
 fill MESSAGE → Call tool**, at route `/ui/mcp/playground` (the docs' `/ui/playground/` is
 stale). The dynamic session id is masked in `toHaveScreenshot` so it never breaks baselines.
 
+## A2A — no playground in the new UI
+
+The new UI has **no A2A playground**. Its only playgrounds are `/llm/playground` and
+`/mcp/playground`; the `a2a` route policy is not surfaced as its own type. So the old doc
+images `ui-a2a-skills.png` / `ui-a2a-success.png` (from the previous UI) cannot be
+regenerated — `agent/a2a.md`'s "Try out the playground" section needs rewriting around
+what the new UI shows: the A2A config as a **Traffic route/listener**.
+
+`a2a-traffic.spec.ts` captures that (static config views — no ADK agent needed):
+
+```sh
+./scripts/serve-a2a-ui.sh        # gateway with fixtures/a2a-config.yaml (localhost:9999)
+# in another shell:
+UI_BASE_URL=http://localhost:15100 npm run test:standalone -- a2a-traffic.spec.ts
+```
+
+Produces `ui-a2a-route.png` + `ui-a2a-listener.png` (light + dark). New image names with
+provisional destinations in `docs-image-map.json` pending the guide rewrite.
+
 ### Theme (light/dark) — new UI specifics
 
 The new UI (sl8) does **not** honor `prefers-color-scheme`. Theme is `<html data-theme>`
@@ -151,32 +170,38 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 | `playwright.config.ts` | `webServer` launcher, light/dark projects, screenshot/diff settings |
 | `provisioners/kubernetes.ts` | Notes only — the kind + port-forward reuse path |
 | `fixtures/mcp-playground-config.yaml` | Gateway config for the populated playground (port 3030 + host MCP target) |
+| `fixtures/a2a-config.yaml` | A2A guide config for the Traffic route/listener capture |
 | `fixtures/standalone-config.yaml` | Minimal MCP config (used only with `AGENTGATEWAY_BIN`) |
 | `fixtures/test.ts` | Seeds `localStorage['theme']` per project; `dismissWelcome()` helper |
 | `tests/smoke.spec.ts` | Loads `/ui/`, dismisses welcome, screenshots — proves the loop |
 | `tests/playground.spec.ts` | Real MCP playground capture (tools-discovered + echo response) |
+| `tests/a2a-traffic.spec.ts` | A2A config as Traffic route + listener (no A2A playground exists) |
 | `scripts/serve-populated-ui.sh` | Brings up server-everything + the UI for the playground capture |
+| `scripts/serve-a2a-ui.sh` | Brings up the UI with the A2A config for the traffic capture |
 | `scripts/probe-theme.mjs` | One-off diagnostic used to confirm the theme mechanism |
 | `scripts/sync-docs-images.mjs` | Copies captured PNGs → docs `img/` via a name→path map |
 | `docs-image-map.json` | Screenshot name → {light, dark?} doc destinations |
-| `__screenshots__/` | Committed baselines (ui-landing + ui-playground-tools/-tool-echo, light+dark) |
+| `__screenshots__/` | Committed baselines (ui-landing, ui-playground-*, ui-a2a-*; light+dark) |
 
 ## Status: what works and what's left
 
 **Proven working:**
 - `npm run test:standalone` → sl8 image → Gateway Overview screenshot, light + dark.
 - `playground.spec.ts` → real MCP playground: initialize session, "N tools discovered",
-  run `echo`, HTTP 200 result — captured light + dark, against `ui-playground-tools.png`
-  and `ui-playground-tool-echo.png` (the images used in `mcp/connect/{http,stdio}.md`).
-  `npm run sync-docs` copies the light baselines to their `assets/img/` destinations.
+  run `echo`, HTTP 200 result — light + dark, → `ui-playground-tools/-tool-echo.png`
+  (the images used in `mcp/connect/{http,stdio}.md`).
+- `a2a-traffic.spec.ts` → A2A config as Traffic route + listener, light + dark →
+  `ui-a2a-route/-listener.png` (the new UI has no A2A playground; see above).
+- `npm run sync-docs` copies the light baselines to their `assets/img/` destinations.
 
 **Left to do for full doc-image regeneration:**
 
 - Not added to any GitHub Actions workflow.
 - Kubernetes mode is documented (notes), not automated.
-- Remaining doc images (A2A, OpenAPI, time-tool, `operations/ui` debug shots) still need
-  specs + their own backends. The PR's own `ui/tests` e2e specs are a selector reference.
-- The populated playground requires the manual `serve-populated-ui.sh` setup; folding the
-  MCP server + correct port mapping into `webServer` would make it one command.
-- Confirm `docs-image-map.json` destinations (and which pages have dark variants)
-  against the docs before committing regenerated images.
+- `agent/a2a.md`'s playground section must be rewritten for the new UI (no A2A playground);
+  the `ui-a2a-route/-listener` destinations in `docs-image-map.json` are provisional.
+- Remaining doc images (OpenAPI, time-tool, `operations/ui` debug shots) need specs +
+  backends. The LLM playground (`/llm/playground`) is another candidate (needs a provider key).
+- Populated captures need the manual `serve-*.sh` setup; folding the MCP server + port
+  mapping into `webServer` would make the playground capture one command.
+- Confirm `docs-image-map.json` destinations against the docs before committing images.
