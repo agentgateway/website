@@ -166,7 +166,8 @@ You can also send a test request from the built-in LLM playground, without writi
 4. In the **User message** box, enter a prompt, such as `Say hello in one sentence`, and click **Send**.
 5. Verify that the response appears in the chat panel, along with the provider, model, latency, and token usage.
 
-   {{< reuse-image src="img/ui-llm-playground.png" >}}
+   {{< reuse-image-light src="img/ui-llm-playground.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
 
 For more information, see the [LLM playground]({{< link-hextra path="/llm/playground/" >}}) reference.
 {{< /version >}}

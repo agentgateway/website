@@ -36,7 +36,8 @@ The LLM playground is available in the agentgateway UI in version 1.3 and later.
 
 7. Verify that the gateway forwards the request to your provider and returns a response in the chat panel. Each response also shows the provider, model, latency, and token usage.
 
-   {{< reuse-image src="img/ui-llm-playground.png" >}}
+   {{< reuse-image-light src="img/ui-llm-playground.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-llm-playground-dark.png" >}}
 
 ## Next steps
 
