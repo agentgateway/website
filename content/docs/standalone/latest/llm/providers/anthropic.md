@@ -8,6 +8,8 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 
 ## Configuration
 
+For the common API key case, use the following config. Use the AWS SigV4 section later in the page only when you need Claude Platform on AWS or custom signing behavior.
+
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
@@ -28,7 +30,7 @@ llm:
 | `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `anthropic` for Claude models. |
 | `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `params.apiKey` | The Anthropic API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `params.apiKey` | The Anthropic API key for authentication. |
 
 ## Example request
 
@@ -227,6 +229,82 @@ Example output:
 }
 ```
 
+
+## Use Claude Platform on AWS
+
+[Claude Platform on AWS](https://docs.aws.amazon.com/claude-platform/latest/userguide/welcome.html) hosts Anthropic's native Messages API on AWS infrastructure at `aws-external-anthropic.{region}.api.aws`. Because the API is the same Anthropic Messages API, you point the `anthropic` provider at the AWS endpoint and choose either API-key or AWS SigV4 authentication.
+
+<!--TODO 1.3 release -->
+{{< callout type="info" >}}
+Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/">}}).
+{{< /callout >}}
+
+{{< tabs tabTotal="2" items="API key, AWS SigV4" >}}
+{{% tab tabName="API key" %}}
+
+Store your Anthropic-on-AWS API key in a file and reference it from the provider configuration. Override the upstream host to point at the Claude Platform endpoint.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: anthropic
+    requestHeaders:
+      set:
+        anthropic-workspace-id: wrkspc_XXXXX
+    params:
+      awsRegion: us-west-2
+      hostOverride: aws-external-anthropic.us-west-2.api.aws:443
+      pathPrefix: /v1
+    auth:
+      key:
+        value:
+          file: $HOME/.secrets/anthropic-aws
+    tls: {}
+```
+
+| Setting | Description |
+|---------|-------------|
+| `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
+| `params.hostOverride` | The Claude Platform endpoint host and port. Use the form `aws-external-anthropic.{region}.api.aws:443`. |
+| `params.pathPrefix` | The Anthropic API path prefix on Claude Platform, set to `/v1`. |
+| `auth.key.value.file` | A path to a file that contains the API key. |
+| `tls: {}` | Enables TLS to the upstream host. Required because Claude Platform is served over HTTPS. |
+
+{{% /tab %}}
+{{% tab tabName="AWS SigV4" %}}
+
+Use IAM credentials from the environment (for example IRSA, an EC2 instance profile, or an AWS SSO profile) and let agentgateway sign requests with SigV4. Set `auth.aws.serviceName` to `aws-external-anthropic`, which is the SigV4 service name that Claude Platform expects.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "claude-platform/*"
+    provider: anthropic
+    requestHeaders:
+      set:
+        anthropic-workspace-id: wrkspc_XXXXX
+    params:
+      awsRegion: us-west-2
+      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
+    auth:
+      aws:
+        serviceName: aws-external-anthropic
+```
+
+| Setting | Description |
+|---------|-------------|
+| `name` | Matches model names that start with `claude-platform/`, so you can route Claude Platform traffic alongside other Anthropic models. |
+| `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
+| `params.baseUrl` | The full Claude Platform base URL, including scheme and `/v1` path prefix. |
+| `auth.aws.serviceName` | The SigV4 service name. Claude Platform requires `aws-external-anthropic`. Implicit AWS credentials from the workload environment are used to sign each request. |
+
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Connect to Claude Code
 

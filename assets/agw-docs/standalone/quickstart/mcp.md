@@ -20,7 +20,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 ## Steps
 
-{{< version exclude-if="1.3.x" >}}
+{{< version include-if="1.2.x,1.1.x,1.0,x" >}}
 {{% steps %}}
 
 ### Step 1: Create the configuration
@@ -121,7 +121,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 {{% /steps %}}
 {{< /version >}}
 
-{{< version include-if="1.3.x" >}}
+{{< version exclude-if="1.2.x,1.1.x,1.0,x" >}}
 {{% steps %}}
 
 ### Step 1: Start the MCP test server

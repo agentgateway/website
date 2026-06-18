@@ -116,35 +116,18 @@ The following steps use the [A2A sample repository](https://github.com/a2aprojec
    2025-07-10T18:10:46.547567Z	info	request	gateway=bind/3000 listener=listener0 route=route0 endpoint=localhost:9999 src.addr=[::1]:59257 http.method=POST http.host=localhost http.path=/ http.version=HTTP/1.1 http.status=200 a2a.method=message/stream duration=3ms
    ```
 
-## Try out the playground {#playground}
+## View the A2A route in the UI {#ui}
 
-Use the agentgateway playground to send a request to the ADK agent that you set up earlier.
+The agentgateway UI shows the listener and route that serve your A2A traffic. To exercise the agent itself, use the A2A client as shown in the previous section.
 
 1. Open the [agentgateway UI on port 15000](http://localhost:15000/ui/).
 
-2. Connect to the MCP server with the agentgateway UI playground.
-   1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
+2. From the navigation menu under **Traffic**, click **Routes**. Verify that you see the route for your A2A listener, with the backend set to the ADK agent on `localhost:9999`.
 
-      ```yaml
-      binds:
-      - post: 3000
-        listeners:
-        - routes:
-          - policies:
-              cors:
-                allowOrigins:
-                  - "*"
-                allowHeaders:
-                  - "*"
-      ...
-      ```
-   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
-   2. In the **Connection Settings** card, select your listener and the **A2A target**, and click **Connect**. The agentgateway UI connects to the A2A target and retrieves all the skills that the target provides.
-   3. Verify that you see a list of **Available Skills**.
+   {{< reuse-image-light src="img/ui-a2a-route.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-a2a-route-dark.png" >}}
 
-      {{< reuse-image src="img/1.2-earlier/ui-a2a-skills.png" >}}
+3. Click **Listeners** to review the bind and listener that serve A2A traffic on port 3000.
 
-3. Select the **Returns hello world** skill. In the **Message** field, enter a prompt, such as `Say hello`, and click **Send Task**.
-
-4. Verify that you get back a message from the ADK agent stating that your request was processed successfully.
-   {{< reuse-image src="img/1.2-earlier/ui-a2a-success.png" >}}
+   {{< reuse-image-light src="img/ui-a2a-listener.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-a2a-listener-dark.png" >}}

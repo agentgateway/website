@@ -1,10 +1,10 @@
 ---
 title: Okta
 weight: 50
-description: Use Okta access tokens with agentgateway
+description: Integrate agentgateway with Okta for enterprise identity management
 ---
 
-[Okta](https://www.okta.com/) is an enterprise identity platform. agentgateway can validate access tokens issued by Okta with `mcpAuthentication`.
+[Okta](https://www.okta.com/) is an enterprise identity platform. agentgateway can validate JWTs issued by Okta for API authentication.
 
 ## Why use Okta with agentgateway?
 
@@ -12,11 +12,11 @@ description: Use Okta access tokens with agentgateway
 - **Directory integration** - Active Directory, LDAP sync
 - **Lifecycle management** - Automated provisioning/deprovisioning
 - **Compliance** - SOC 2, HIPAA, FedRAMP certified
-- **API protection** - JWT-based token validation for MCP services
+- **API Access Management** - OAuth2/OIDC for APIs
 
 ## Configuration
 
-Configure agentgateway to validate Okta tokens and publish MCP protected-resource metadata:
+Configure agentgateway to validate Okta JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -27,40 +27,31 @@ binds:
     - backends:
       - mcp:
           targets:
-          - name: tools
+          - name: my-server
             stdio:
               cmd: npx
               args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
       policies:
         mcpAuthentication:
           mode: strict
           issuer: https://your-org.okta.com/oauth2/default
+          audiences:
+          - api://agentgateway
           jwks:
             url: https://your-org.okta.com/oauth2/default/v1/keys
-          resourceMetadata:
-            resource: https://gateway.example.com/mcp
-            scopesSupported:
-            - agentgateway
-            bearerMethodsSupported:
-            - header
 ```
 
 ## Okta setup
 
-1. Create an Authorization Server or use `default`:
-   - Admin Console > Security > API > Authorization Servers
+1. Create an Authorization Server (or use `default`):
+   - Admin Console → Security → API → Authorization Servers
 
 2. Add a custom scope:
    - Name: `agentgateway`
    - Description: Access to agentgateway
 
 3. Create an API Services application:
-   - Applications > Create App Integration
+   - Applications → Create App Integration
    - Sign-in method: API Services
    - Note the Client ID and Client Secret
 
@@ -77,22 +68,25 @@ curl -X POST "https://your-org.okta.com/oauth2/default/v1/token" \
   -d "scope=agentgateway"
 ```
 
-## Using the token
+## Group-based authorization
 
-```bash
-curl http://localhost:3000/mcp \
-  -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"jsonrpc":"2.0","method":"initialize",...}'
+Use Okta groups with agentgateway authorization:
+
+```yaml
+policies:
+  mcpAuthentication:
+    mode: strict
+    issuer: https://your-org.okta.com/oauth2/default
+    audiences: [api://agentgateway]
+    jwks:
+      url: https://your-org.okta.com/oauth2/default/v1/keys
+  authorization:
+    rules:
+    # Check for Okta group membership
+    - '"AI-Users" in jwt.groups'
 ```
-
-## Authorization
-
-Okta does not require a provider-specific authorization schema in agentgateway. If you need authorization, use the generic [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}}) or [MCP authorization]({{< link-hextra path="/mcp/mcp-authz" >}}) policies against claims that your Okta authorization server actually emits. Avoid copying group-claim rules unless you have confirmed the claim is present in your tokens.
 
 ## Learn more
 
 - [Okta Developer Documentation](https://developer.okta.com/)
 - [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}})
-- [MCP authorization]({{< link-hextra path="/mcp/mcp-authz" >}})

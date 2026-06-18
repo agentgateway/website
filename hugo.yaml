@@ -174,22 +174,22 @@ params:
   sections:
     standalone:
       versions:
-        - version: "1.3.x"
+        - version: "1.4.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "1.2.x"
-          dropdown: "1.2 (latest)"
+        - version: "1.3.x"
+          dropdown: "1.3 (latest)"
           linkVersion: "latest"
           url: "/latest"
     kubernetes:
       versions:
-        - version: "1.3.x"
+        - version: "1.4.x"
           dropdown: "main"
           linkVersion: "main"
           url: "/main"
-        - version: "1.2.x"
-          dropdown: "1.2 (latest)"
+        - version: "1.3.x"
+          dropdown: "1.3 (latest)"
           linkVersion: "latest"
           url: "/latest"
 

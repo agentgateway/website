@@ -103,23 +103,23 @@ routes:
 
    1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
       
-      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-playground.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
 
    2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the targets that you configured and retrieves the tools that are exposed on the targets. 
    
    3. Verify that you see a list of **Available Tools**. Note that the tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
    
-      {{< reuse-image src="img/1.2-earlier/ui-playground-multi-tools.png" >}}
+      {{< reuse-image src="img/ui-playground-multi-tools.png" >}}
 
 3. Verify access to tools from both targets. 
    1. From the **Available Tools** list, select the `everything_echo` tool. 
    2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
    3. Verify that you see your message echoed in the **Response** card. 
    
-      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
    4. Repeat the steps with the `time_get_current_time` tool with your timezone, such as `America/New_York`. 
    
-      {{< reuse-image src="img/1.2-earlier/ui-tool-time-current.png" >}}
+      {{< reuse-image src="img/ui-tool-time-current.png" >}}
 
 ## Next steps
 

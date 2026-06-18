@@ -24,7 +24,7 @@ The following providers expose an OpenAI-compatible chat completions endpoint. T
 | Together AI | `api.together.xyz` | `/v1/chat/completions` |
 | xAI | `api.x.ai` | `/v1/chat/completions` |
 
-If your provider is not in this list but still exposes the OpenAI Chat Completions API, use the [generic endpoint](#generic-openai-compatible-endpoint) template.{{< version include-if="1.3.x" >}} If the upstream does not match the OpenAI API format, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead.{{< /version >}}
+If your provider is not in this list but still exposes the OpenAI Chat Completions API, use the [generic endpoint](#generic-openai-compatible-endpoint) template.{{< version exclude-if="1.2.x,1.1.x" >}} If the upstream does not match the OpenAI API format, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead.{{< /version >}}
 
 ## Before you begin
 
@@ -494,6 +494,6 @@ Use the following fields to adapt the template:
 | `policies.auth` | Attach the provider API key secret to outbound requests. |
 | `policies.tls.sni` | Enable TLS and set the SNI value to the upstream hostname. |
 
-{{< version include-if="1.3.x" >}}If the upstream needs mixed API formats or a cluster-local backend target, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead. {{< /version >}}For self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) pages.
+{{< version exclude-if="1.2.x,1.1.x" >}}If the upstream needs mixed API formats or a cluster-local backend target, use [custom providers]({{< link-hextra path="/llm/providers/custom/" >}}) instead. {{< /version >}}For self-hosted targets that already have guides, prefer the dedicated [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}) and [vLLM]({{< link-hextra path="/llm/providers/vllm/" >}}) pages.
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}

@@ -25,6 +25,16 @@ You can access the agentgateway metrics endpoint to view LLM-specific metrics, s
 
 For more information, see the [Semantic conventions for generative AI metrics](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-metrics/) in the OpenTelemetry docs.
 
+## View realized costs
+
+When you configure a [model cost catalog]({{< link-hextra path="/llm/costs/" >}}), agentgateway computes the realized USD cost of each LLM request and exposes it across the observability surface:
+
+* **Logs**: each LLM request log line includes `agw.ai.usage.cost.total`. Add the cost breakdown or applied rates with CEL `llm.cost` and `llm.costRates` fields.
+* **Metrics**: the `agentgateway_cost_catalog_lookups_total` counter tracks lookups by `status` (`Exact`, `Unpriced`, `Missing`, or `NoCatalog`) and by provider and model, so you can confirm that your catalog prices your traffic.
+* **Traces**: cost attributes are attached to the request span.
+
+For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/costs/" >}}).
+
 ## View traces
 
 1. {{< reuse "agw-docs/snippets/jaeger.md" >}}
