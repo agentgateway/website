@@ -12,9 +12,9 @@ description: Price LLM requests with a model cost catalog and expose realized US
 test: skip
 ---
 
-Agentgateway can compute the **realized USD cost** of each LLM request when you provide a **model cost catalog**. With a catalog in place, agentgateway attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
+Agentgateway can compute the realized USD cost of each LLM request when you provide a model cost catalog. With a catalog in place, agentgateway attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
 
-Agentgateway does **not** ship a built-in catalog. Costs are computed only when you configure one (for example, a catalog that you generate with [`agctl costs import`](#generate-a-catalog-with-agctl)).
+Agentgateway does not ship a built-in catalog. Costs are computed only when you configure one (for example, a catalog that you generate with [`agctl costs import`](#generate-a-catalog-with-agctl)).
 
 ## Before you begin
 
@@ -31,9 +31,37 @@ chmod +x "$HOME/.local/bin/agentgateway"
 export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
 {{< /doc-test >}}
 
-## Configure catalog sources
+## Step 1: Prepare a catalog
 
-Configure one or more catalog sources under `config.modelCatalog`. Sources are merged in order, with later sources taking precedence at the model level.
+Prepare a catalog by creating your own JSON file or using the `agctl costs import` command.
+
+### Catalog JSON format
+
+{{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
+
+### Generate a catalog with agctl
+
+Use `agctl costs import` to generate a catalog JSON file, then reference that file from `config.modelCatalog` or `MODEL_CATALOG_PATHS`.
+
+1. Generate a catalog from a supported source. By default, `agctl costs import` imports every provider that the proxy supports from [models.dev](https://models.dev).
+
+   ```sh
+   agctl costs import --pretty --out ./catalog.json
+   ```
+
+2. To import only a subset of providers, pass a comma-separated list to `--providers`.
+
+   ```sh
+   agctl costs import --pretty --providers openai,anthropic --out ./catalog.json
+   ```
+
+3. Reference the generated file from your configuration with `config.modelCatalog[].file` or `MODEL_CATALOG_PATHS`, then run agentgateway.
+
+For all options, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
+
+## Step 2: Configure catalog sources
+
+Configure one or more catalog sources for agentgateway with the `config.modelCatalog` config section. Sources are merged in order, with later sources taking precedence at the model level.
 
 ### Load a catalog from a file
 
@@ -80,31 +108,9 @@ MODEL_CATALOG_PATHS=./catalog.json,./overrides.json agentgateway -f config.yaml
 When `MODEL_CATALOG_PATHS` is set, it **replaces** any `config.modelCatalog` sources; the two are not merged. Use one mechanism or the other.
 {{< /callout >}}
 
-## Catalog JSON format
+## Step 3: Configure cost policies
 
-{{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
-
-## Generate a catalog with agctl
-
-Use `agctl costs import` to generate a catalog JSON file, then reference that file from `config.modelCatalog` or `MODEL_CATALOG_PATHS`.
-
-1. Generate a catalog from a supported source. By default, `agctl costs import` imports every provider that the proxy supports from [models.dev](https://models.dev).
-
-   ```sh
-   agctl costs import --pretty --out ./catalog.json
-   ```
-
-2. To import only a subset of providers, pass a comma-separated list to `--providers`.
-
-   ```sh
-   agctl costs import --pretty --providers openai,anthropic --out ./catalog.json
-   ```
-
-3. Reference the generated file from your configuration with `config.modelCatalog[].file` or `MODEL_CATALOG_PATHS`, then run agentgateway.
-
-For all options, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
-
-## Use costs in CEL, logs, traces, and metrics
+Use cost data in CEL, logs, traces, and metrics policies.
 
 When a request matches an entry in the catalog, agentgateway populates the following CEL fields:
 
@@ -145,7 +151,11 @@ gen_ai.usage.input_tokens=14 gen_ai.usage.output_tokens=6 agw.ai.usage.cost.tota
 
 For more examples, see [Observe traffic]({{< link-hextra path="/llm/observability/" >}}) and the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}).
 
-## Monitor catalog lookups
+## Step 4: Generate traffic
+
+Generate traffic through agentgateway that matches a model entry from the catalog. For example steps, try the [LLM getting started]({{< link-hextra path="/quickstart/llm/" >}}).
+
+## Step 5: Monitor catalog lookups
 
 Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` counter, labeled with the lookup `status` and the request's `gen_ai_system` (provider), `gen_ai_request_model`, and `gen_ai_response_model`. Use it to confirm that your catalog prices your traffic.
 
