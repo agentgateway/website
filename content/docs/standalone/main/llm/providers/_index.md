@@ -1,11 +1,38 @@
 ---
 title: Providers
 weight: 20
-description: Configure agentgateway for OpenAI-compatible and self-hosted LLM providers
+description: Configure agentgateway for first-class, OpenAI-compatible, and self-hosted LLM providers
 test: skip
 ---
 
 Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}}provider{{< /gloss >}}.
+
+## First-class providers
+
+Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many OpenAI-compatible providers.
+
+## OpenAI-compatible fallback
+
+Use [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes the OpenAI API format.
+
+### Override the upstream base URL
+
+When you need a custom upstream endpoint in standalone mode, set `params.baseUrl` on the model instead of older host or path override fields.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    auth:
+      key:
+        value: "$PERPLEXITY_API_KEY"
+    params:
+      baseUrl: "https://api.perplexity.ai"
+    tls: {}
+```
 
 ## Standalone authentication
 
@@ -82,26 +109,3 @@ llm:
 ## Standalone upstream TLS
 
 Use `llm.models[].tls` to configure TLS when connecting to an upstream provider (for example, to trust a private CA when using a self-hosted HTTPS endpoint). Common fields include `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates, and `keyExchangeGroups` for TLS negotiation. In agentgateway versions prior to 1.3, this model-level setting was called `backendTLS`.
-
-## OpenAI-compatible providers
-
-Popular OpenAI-compatible providers include xAI (Grok), Cohere, Together AI, Groq, DeepSeek, Mistral, Perplexity, and Fireworks AI.
-
-Additional self-hosted solutions like vLLM and LM Studio are also supported through the [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) configuration.
-
-### Path prefix
-
-When using the advanced `binds/listeners/routes` configuration, you can set `pathPrefix` on an AI provider to prepend a custom path to all API requests. Use `pathPrefix` when routing through a proxy or custom API endpoint that requires a different base path.
-
-```yaml
-backends:
-- ai:
-    name: openai
-    pathPrefix: /custom/v1
-    provider:
-      openAI:
-        model: gpt-4o-mini
-  policies:
-    backendAuth:
-      key: "$OPENAI_API_KEY"
-```

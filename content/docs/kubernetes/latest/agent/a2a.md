@@ -1,7 +1,7 @@
 ---
 title: Connect to an agent
 weight: 40
-description: Route traffic to agent-to-agent (A2A) servers and expose agent tools securely.
+description: Route to A2A servers and securely expose their skills through agentgateway.
 test:
   a2a:
   - file: content/docs/kubernetes/latest/quickstart/install.md

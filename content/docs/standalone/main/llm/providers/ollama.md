@@ -29,9 +29,9 @@ llm:
   port: 3000
   models:
   - name: "*"
-    provider: openAI
+    provider: ollama
     params:
-      hostOverride: "localhost:11434"
+      model: llama3.2
 EOF
 agentgateway -f /tmp/test-ollama-standalone.yaml --validate-only
 {{< /doc-test >}}
