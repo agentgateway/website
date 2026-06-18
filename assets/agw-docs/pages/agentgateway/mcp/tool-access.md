@@ -105,7 +105,7 @@ sequenceDiagram
       * Click **Connect**.
 
    2. Verify that the connection now succeeds because a valid token was provided in an `Authorization` header to your agentgateway proxy: 
-      {{< reuse-image src="img/mcp-github-success.png" >}}
+      {{< reuse-image-light src="img/mcp-github-success.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-success-dark.png" >}}
 
    {{% /tab %}}
@@ -203,7 +203,7 @@ sequenceDiagram
    {{% tab tabName="UI" %}}
    1. Go to the MCP inspector tool, and re-connect with Alice's token. From the **Tools** tab, click **Clear**. Then click **List Tools**. Verify that you can now only see the `get_me` tool that you authorized in your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. 
    
-      {{< reuse-image src="img/mcp-github-tool.png" >}}
+      {{< reuse-image-light src="img/mcp-github-tool.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-tool-dark.png" >}}
 
    2. Go back to the MCP inspector tool. In the **Authentication** > **Custom Headers** card enter the JWT token for Bob. Then, click **Re-connect**.
@@ -216,7 +216,7 @@ sequenceDiagram
       Verify that you cannot see any tools. Bob's JWT token does not contain the `sub=alice` claim that is required to access the `get_me` tool. Because no other matching condition is found in the RBAC rules that you defined in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, access to all tools is denied.  
    
    
-      {{< reuse-image src="img/mcp-github-no-tool.png" >}}
+      {{< reuse-image-light src="img/mcp-github-no-tool.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-no-tool-dark.png" >}}
 
 

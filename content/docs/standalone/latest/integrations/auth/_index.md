@@ -15,6 +15,6 @@ Agentgateway supports several authentication approaches.
 |--------|----------|-----------|
 | JWT validation | API authentication | [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn" >}}) |
 | OIDC browser auth | Browser-based user authentication | [OIDC browser authentication]({{< link-hextra path="/configuration/security/oidc" >}}) |
-| OAuth2 Proxy | Browser authentication via a proxy | [OAuth2 Proxy]({{< link-hextra path="/integrations/auth/oauth2-proxy" >}}) |
+| OAuth2/OIDC (external) | User authentication via proxy | [OAuth2 Proxy]({{< link-hextra path="/integrations/auth/oauth2-proxy" >}}) |
 | External authz | Custom auth services | [External authorization]({{< link-hextra path="/configuration/security/external-authz" >}}) |
 | Tailscale | Zero-trust networks | [Tailscale]({{< link-hextra path="/integrations/auth/tailscale" >}}) |

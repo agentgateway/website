@@ -227,28 +227,28 @@ EOF
 
    Verify that the connection fails, because authentication is required to access the MCP server.
 
-   {{< reuse-image src="img/mcp-auth-connect-error.png" >}}
+   {{< reuse-image-light src="img/mcp-auth-connect-error.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-auth-connect-error-dark.png" >}}
 
 3. Click **Open Auth Settings** to run through the MCP Auth flow that you configured with the agentgateway proxy.
 
 4. Run through the auth flow. You can decide to manually run through the auth flow or select **Quick OAuth Flow** to automatically run through all the auth steps automatically. This guide assumes that you run through the auth flow manually.
    1. In the **OAuth Flow Progress** card, click **Continue** to start the **Metadata Discovery** phase. Verify that the step succeeds and that you see the authorization server metadata. The metadata include information about the location of the authorization server, supported scopes, and ways to provide the bearer token.
-      {{< reuse-image src="img/oauth-resource-metadata.png" >}}
+      {{< reuse-image-light src="img/oauth-resource-metadata.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-resource-metadata-dark.png" >}}
    2. Click **Continue** to start the **Client registration** phase. Verify that the MCP inspector tool successfully registered as a client in Keycloak and is assigned a client ID.
-      {{< reuse-image src="img/oauth-client-registration.png" >}}
+      {{< reuse-image-light src="img/oauth-client-registration.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-client-registration-dark.png" >}}
    3. Click **Continue** to start the **Preparing Authorization** phase. Verify that you get back a URL to log in to Keycloak with your credentials. Open the link in your browser and log in with the user `user1` and password `password`.
-      {{< reuse-image src="img/oauth-prepare-auth.png" >}}
+      {{< reuse-image-light src="img/oauth-prepare-auth.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-prepare-auth-dark.png" >}}
 
       After you log in to Keycloak, an authorization code is displayed. Copy the authorization code and continue with the next step.
    4. Copy the authorization code into the **Authorization Code** field in the MCP inspector. Then, click **Continue** to start the **Request Authorization and acquire authorization code** phase.
-      {{< reuse-image src="img/oauth-auth-code.png" >}}
+      {{< reuse-image-light src="img/oauth-auth-code.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-auth-code-dark.png" >}}
    5. Click **Continue** to start the **Token Request** phase. In this phase, the authorization code is exchanged for a token. Verify that the **Authentication Complete** phase succeeds and that you get back a token from Keycloak.
-      {{< reuse-image src="img/oauth-token.png" >}}
+      {{< reuse-image-light src="img/oauth-token.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-token-dark.png" >}}
    6. Connect to your MCP server.
       1. Copy the `access_token` value from the **Authentication Complete** phase.
@@ -258,7 +258,7 @@ EOF
          * header name: `Authorization`
          * header value: `Bearer <value of access_token>`
       5. Click **Connect** to connect to your MCP server.
-      {{< reuse-image src="img/oauth-connect-to-server.png" >}}
+      {{< reuse-image-light src="img/oauth-connect-to-server.png" >}}
       {{< reuse-image-dark srcDark="img/oauth-connect-to-server-dark.png" >}}
 
 5. Verify that tool calls work without re-authentication. Because the client authenticates at connect time, tool calls succeed immediately without any additional login prompts.
@@ -268,7 +268,7 @@ EOF
    4. Click **Run Tool**.
    5. Verify that the tool call succeeds and returns the fetched content. No additional authentication is required because the token from the initial connection is reused for all tool calls within the session.
 
-      {{< reuse-image src="img/mcp-inspector-fetch.png" >}}
+      {{< reuse-image-light src="img/mcp-inspector-fetch.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-inspector-fetch-dark.png" >}}
 
 ## Clean up

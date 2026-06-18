@@ -1,0 +1,57 @@
+---
+title: OTel stack
+description: Install an OpenTelemetry stack with Grafana, Loki, and Tempo for observability.
+weight: 10
+test:
+  otel-stack:
+  - file: content/docs/kubernetes/latest/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/latest/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/latest/install/sample-app.md
+    path: install-httpbin
+  - file: content/docs/kubernetes/latest/observability/otel-stack.md
+    path: otel-stack
+---
+
+{{< reuse "agw-docs/snippets/agentgateway/otel-prereq.md" >}}
+
+{{< reuse "agw-docs/pages/observability/otel-stack.md" >}}
+
+## Step 4: Explore Grafana dashboards
+
+{{< reuse "agw-docs/snippets/agentgateway/grafana-dashboards.md" >}}
+
+
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+1. Remove the configmap for the agentgateway dashboard and delete the `agentgateway.json` file.
+   ```sh
+   kubectl delete cm {{< reuse "agw-docs/snippets/pod-name.md" >}}-dashboard -n telemetry
+   rm {{< reuse "agw-docs/snippets/pod-name.md" >}}.json
+   ```
+
+2. Uninstall the Grafana Loki and Tempo components. 
+   ```sh
+   helm uninstall loki -n telemetry
+   helm uninstall tempo -n telemetry
+   ```
+
+3. Uninstall the OpenTelemetry collectors. 
+   ```sh
+   helm uninstall opentelemetry-collector-metrics -n telemetry
+   helm uninstall opentelemetry-collector-logs -n telemetry
+   helm uninstall opentelemetry-collector-traces -n telemetry
+   ```
+
+4. Uninstall the Prometheus stack. 
+   ```sh
+   helm uninstall kube-prometheus-stack -n telemetry
+   ```
+
+5. Remove the `telemetry` namespace. 
+   ```sh
+   kubectl delete namespace telemetry
+   ```

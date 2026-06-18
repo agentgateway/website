@@ -14,6 +14,8 @@ Agentgateway accepts only OpenAI-formatted requests (such as the `/v1/chat/compl
 
 Before you can use Bedrock as an LLM provider, you must authenticate by using the standard [AWS authentication sources](https://docs.aws.amazon.com/sdkref/latest/guide/creds-config-files.html).
 
+The default SigV4 service name for Bedrock is handled automatically, so you do not need to set `auth.aws.serviceName`.
+
 ## Configuration
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

@@ -1,10 +1,10 @@
 ---
 title: Auth0
 weight: 30
-description: Use Auth0 access tokens with agentgateway
+description: Integrate agentgateway with Auth0 for identity management
 ---
 
-[Auth0](https://auth0.com/) is an identity platform that provides authentication and authorization services. agentgateway can validate access tokens issued by Auth0 with `mcpAuthentication`.
+[Auth0](https://auth0.com/) is an identity platform that provides authentication and authorization services. agentgateway can validate JWTs issued by Auth0.
 
 ## Why use Auth0 with agentgateway?
 
@@ -12,11 +12,11 @@ description: Use Auth0 access tokens with agentgateway
 - **Social login** - Google, GitHub, Microsoft, and more
 - **Enterprise SSO** - SAML, LDAP, Active Directory
 - **MFA** - Built-in multi-factor authentication
-- **API protection** - JWT-based token validation for MCP services
+- **API protection** - JWT-based API authentication
 
 ## Configuration
 
-Configure agentgateway to validate Auth0 tokens and publish MCP protected-resource metadata:
+Configure agentgateway to validate Auth0 JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -31,27 +31,19 @@ binds:
             stdio:
               cmd: npx
               args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
       policies:
         mcpAuthentication:
+          mode: strict
           issuer: https://your-tenant.auth0.com/
+          audiences:
+          - https://api.example.com
           jwks:
             url: https://your-tenant.auth0.com/.well-known/jwks.json
-          resourceMetadata:
-            resource: https://gateway.example.com/mcp
-            scopesSupported:
-            - read:all
-            bearerMethodsSupported:
-            - header
 ```
 
 ## Auth0 setup
 
-1. Create an API in the Auth0 Dashboard:
+1. Create an API in Auth0 Dashboard:
    - Name: `agentgateway API`
    - Identifier: `https://api.example.com`
 
@@ -59,7 +51,7 @@ binds:
    - Type: Single Page Application or Machine to Machine
    - Note the Client ID and Client Secret
 
-3. Configure the allowed callbacks and origins for any browser clients that will obtain tokens from Auth0.
+3. Configure allowed callbacks and origins
 
 ## Getting a token
 
@@ -85,13 +77,25 @@ curl http://localhost:3000/mcp \
   -d '{"jsonrpc":"2.0","method":"initialize",...}'
 ```
 
-## Authorization
+## Permission-based authorization
 
-Auth0 does not require a provider-specific authorization schema in agentgateway. If you need authorization, use the generic [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}}) or [MCP authorization]({{< link-hextra path="/mcp/mcp-authz" >}}) policies against claims that your Auth0 tenant actually emits.
+Use Auth0 permissions with agentgateway:
+
+```yaml
+policies:
+  mcpAuthentication:
+    mode: strict
+    issuer: https://your-tenant.auth0.com/
+    audiences: [https://api.example.com]
+    jwks:
+      url: https://your-tenant.auth0.com/.well-known/jwks.json
+  authorization:
+    rules:
+    # Check for specific permission
+    - '"read:tools" in jwt.permissions'
+```
 
 ## Learn more
 
 - [Auth0 Documentation](https://auth0.com/docs)
 - [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
-- [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}})
-- [MCP authorization]({{< link-hextra path="/mcp/mcp-authz" >}})

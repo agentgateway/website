@@ -27,7 +27,7 @@ The Admin UI is not exposed as a Kubernetes Service. To access it, use `kubectl 
 
    The Admin UI dashboard shows your configured listeners and port binding in **read-only** mode.
 
-   {{< reuse-image src="img/agentgateway-ui-kube-landing.png" >}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-landing-dark.png" >}}
 
 {{< doc-test paths="ui-k8s" >}}

@@ -10,7 +10,7 @@ Serving multiple hosts on a single listener is also referred to as Server Name I
 
 In this guide, you learn how to set up an HTTPS Gateway that serves two different domains, `httpbin.example.com` and `petstore.example.com` on the same port 443. When sending a request to the Gateway, you indicate the hostname you want to connect to. Based on the selected hostname, the Gateway presents the hostname-specific certificate. 
 
-{{< reuse-image src="img/sni-listener.svg" width="700px">}}
+{{< reuse-image-light src="img/sni-listener.svg" width="700px">}}
 {{< reuse-image-dark srcDark="img/sni-listener-dark.svg" width="700px" >}}
 
 ## Before you begin
