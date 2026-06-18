@@ -2,8 +2,6 @@ Configure authentication for backends in Google Cloud Platform (GCP) with an {{<
 
 By default, the proxy uses ambient credentials from the cluster provider environment, such as [Workload Identity on GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity), or the `GOOGLE_APPLICATION_CREDENTIALS` environment variable set to a service account key file. To use token-based credentials, apply an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} with GCP auth to your backend.
 
-## Before you begin
-
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Configure GCP backend authentication
