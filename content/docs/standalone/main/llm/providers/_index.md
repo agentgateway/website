@@ -36,7 +36,7 @@ llm:
 
 ## Standalone authentication
 
-In standalone mode, upstream provider authentication is configured per model via `llm.models[].auth`. (In routing-based configurations, use `policies.backendAuth` on a route instead.)
+In standalone mode, upstream provider authentication is configured per model via `llm.models[].auth`. In routing-based configurations, use `policies.backendAuth` on a route instead.
 
 ### API key
 
@@ -52,7 +52,7 @@ llm:
         value: "$OPENAI_API_KEY"
 ```
 
-Use `auth.key.location` to place the credential somewhere other than the default header (for example, Azure often uses `api-key`):
+Use `auth.key.location` to place the credential somewhere other than the default header. For example, Azure often uses `api-key`:
 
 ```yaml
 llm:
@@ -82,8 +82,8 @@ llm:
 
 ### Cloud provider auth
 
-- **Google Cloud**: `auth.gcp` uses Application Default Credentials (ADC) and can fetch an access token or ID token (depending on the `type` you select).
-- **AWS**: `auth.aws` signs upstream requests with SigV4 using standard AWS credentials (for example, environment variables, an instance profile, or a shared config profile).
+- **Google Cloud**: `auth.gcp` uses Application Default Credentials (ADC) and can fetch an access token or ID token, depending on the `type` you select.
+- **AWS**: `auth.aws` signs upstream requests with SigV4 using standard AWS credentials from environment variables, an instance profile, or a shared config profile.
 - **Azure**: `auth.azure` uses Entra ID. `auth.azure.implicit` uses the Azure SDK's `DefaultAzureCredential` to discover credentials automatically.
 
 ```yaml
@@ -108,4 +108,4 @@ llm:
 
 ## Standalone upstream TLS
 
-Use `llm.models[].tls` to configure TLS when connecting to an upstream provider (for example, to trust a private CA when using a self-hosted HTTPS endpoint). Common fields include `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates, and `keyExchangeGroups` for TLS negotiation. In agentgateway versions prior to 1.3, this model-level setting was called `backendTLS`.
+Use `llm.models[].tls` to configure TLS when connecting to an upstream provider. You might use this configuration to trust a private CA when using a self-hosted HTTPS endpoint. Common fields include `root` for a trusted CA bundle, `hostname` and `subjectAltNames` for upstream identity checks, `cert` and `key` for client certificates, and `keyExchangeGroups` for TLS negotiation. In agentgateway versions prior to 1.3, this model-level setting was called `backendTLS`.

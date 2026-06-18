@@ -8,7 +8,7 @@ Configure Microsoft Azure AI as an LLM provider in agentgateway.
 
 ## Authentication
 
-Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). In standalone mode, this is configured via `llm.models[].auth` (for example, `auth.azure.implicit` or `auth.key`). In routing-based configurations, use `policies.backendAuth.azure`.
+Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). In standalone mode, this authentication is configured via `llm.models[].auth` (for example, `auth.azure.implicit` or `auth.key`). In routing-based configurations, use `policies.backendAuth.azure`.
 
 ## Configuration
 
@@ -90,7 +90,7 @@ llm:
 | `params.azureProjectName` | The Foundry project name. Required for `foundry` type. If omitted, defaults to `azureResourceName`. |
 | `params.azureApiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2024-04-01-preview`. |
 | `params.model` | The specific Azure model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `auth` | Authentication for the upstream Azure endpoint. Use `auth.azure` for Entra ID auth, or `auth.key.value` for API key auth (set `auth.key.location.header.name: api-key` if needed). |
+| `auth` | Authentication for the upstream Azure endpoint. Use `auth.azure` for Entra ID auth, or `auth.key.value` for API key auth. Set `auth.key.location.header.name: api-key` if needed. |
 
 ## Advanced configuration
 
