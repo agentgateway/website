@@ -8,7 +8,7 @@ Use the label-selector pattern when you want to add new child HTTPRoutes to the 
 
 The following image illustrates the route delegation hierarchy:
 
-{{< reuse-image src="img/route-delegation-labels.svg" >}}
+{{< reuse-image-light src="img/route-delegation-labels.svg" >}}
 {{< reuse-image-dark srcDark="img/route-delegation-labels-dark.svg" >}}
 
 **`parent` HTTPRoute**:

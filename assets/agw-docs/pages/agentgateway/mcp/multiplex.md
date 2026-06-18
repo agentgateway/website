@@ -338,7 +338,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    * **`mcp-server-everything-3001_*`**: Tools from the `server-everything` MCP server, like `echo`, `add`, etc.
    * **`mcp-website-fetcher_fetch`**: The `fetch` tool from the website fetcher MCP server.
 
-   {{< reuse-image src="img/mcp-multiplex.png" >}}
+   {{< reuse-image-light src="img/mcp-multiplex.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-multiplex-dark.png" >}}
 
 5. Test the federated tools:

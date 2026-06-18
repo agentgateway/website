@@ -116,7 +116,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       Connection Error - Check if your MCP server is running and proxy token is correct
       ```
    
-      {{< reuse-image src="img/mcp-github-error.png" >}}
+      {{< reuse-image-light src="img/mcp-github-error.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-error-dark.png" >}}
    {{% /tab %}}
    {{< /tabs >}}
@@ -156,7 +156,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       * Click **Connect**.
 
    2. Verify that the connection now succeeds because a valid token was provided in an `Authorization` header to your agentgateway proxy: 
-      {{< reuse-image src="img/mcp-github-success.png" >}}
+      {{< reuse-image-light src="img/mcp-github-success.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-success-dark.png" >}}
 
    {{% /tab %}}
@@ -197,7 +197,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       * Click **Connect**.
 
    2. Verify that you can also connect to your MCP server successfully.
-      {{< reuse-image src="img/mcp-github-success.png" >}}
+      {{< reuse-image-light src="img/mcp-github-success.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-success-dark.png" >}}
 
    {{% /tab %}}
@@ -232,7 +232,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       * Click **Connect**.
 
    2. Verify that the connection fails, because no valid JWT token was provided. 
-      {{< reuse-image src="img/mcp-github-error.png" >}}
+      {{< reuse-image-light src="img/mcp-github-error.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-error-dark.png" >}}
 
    {{% /tab %}}
@@ -318,7 +318,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
       * Click **Connect**.
 
    2. Verify that the connection succeeds, because the JWT contains the `sub=alice` claim. 
-      {{< reuse-image src="img/mcp-github-success.png" >}}
+      {{< reuse-image-light src="img/mcp-github-success.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-success-dark.png" >}}
 
    {{% /tab %}}
@@ -353,7 +353,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
       * Click **Connect**.
 
    2. Verify that the request fails, because the JWT does not have the `sub=alice` claim. 
-      {{< reuse-image src="img/mcp-github-error.png" >}}
+      {{< reuse-image-light src="img/mcp-github-error.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-error-dark.png" >}}
 
    {{% /tab %}}
