@@ -12,6 +12,8 @@ Use this page for providers that implement the OpenAI API format but do not have
 
 If you need a different upstream endpoint for one of those built-in standalone providers, keep the first-class `provider:` value and set `params.baseUrl` on that provider instead of switching to `provider: openAI`.
 
+In standalone mode, configure upstream authentication per model with `llm.models[].auth` and upstream TLS with `llm.models[].tls`. For an overview of the available auth and TLS options, see [Providers]({{< link-hextra path="/llm/providers/" >}}).
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
@@ -47,10 +49,13 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$PERPLEXITY_API_KEY"
     params:
-      apiKey: "$PERPLEXITY_API_KEY"
+      model: llama-3.1-sonar-large-128k-online
       baseUrl: "https://api.perplexity.ai"
-    backendTLS: {}
+    tls: {}
 EOF
 ```
 
@@ -81,7 +86,7 @@ EOF
 agentgateway -f /tmp/test-vllm.yaml --validate-only
 {{< /doc-test >}}
 
-If your vLLM server uses HTTPS, set `params.baseUrl` to the HTTPS endpoint and add `backendTLS: {}` to the model configuration.
+If your vLLM server uses HTTPS, set `params.baseUrl` to the HTTPS endpoint and add `tls: {}` to the model configuration. (In agentgateway versions prior to 1.3, this model-level setting was called `backendTLS`.)
 
 ### LM Studio
 
@@ -116,11 +121,13 @@ llm:
   models:
   - name: "*"
     provider: openAI
+    auth:
+      key:
+        value: "$PROVIDER_API_KEY"
     params:
       model: "<upstream-model-name>"
-      apiKey: "$PROVIDER_API_KEY"
       baseUrl: "https://provider.example.com/v1"
-    backendTLS: {}  # only for HTTPS providers
+    tls: {}  # only for HTTPS providers
 ```
 
 Set `params.baseUrl` to the provider's API root. This can include provider-specific prefixes such as `/v1`, `/openai/v1`, or another base path. If the provider already has a first-class page, use that provider shortcut and its documented default base URL instead.
@@ -128,7 +135,7 @@ Set `params.baseUrl` to the provider's API root. This can include provider-speci
 | Field | Description |
 |-------|-------------|
 | `provider` | Set to `openAI` for OpenAI-compatible providers without a first-class shortcut. |
+| `auth.key.value` | Optional. The API key for the provider. Reference environment variables with the `$VAR_NAME` syntax. Omit for local endpoints that do not require authentication. |
 | `params.model` | Optional. Override the upstream model name. Omit to pass the client-provided model through. |
-| `params.apiKey` | The API key for the provider. Omit for local endpoints that do not require authentication. |
 | `params.baseUrl` | The provider's API root URL, including scheme and any required base path prefix. |
-| `backendTLS` | Enable TLS for the upstream connection. Required for HTTPS providers, omit for local HTTP providers. |
+| `tls` | Enable TLS for the upstream connection. Required for HTTPS providers, omit for local HTTP providers. (In agentgateway versions prior to 1.3, this model-level setting was called `backendTLS`.) |

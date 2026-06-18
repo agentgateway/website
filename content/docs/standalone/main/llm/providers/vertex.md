@@ -25,6 +25,9 @@ llm:
   models:
   - name: gemini-2.5-flash
     provider: vertex
+    auth:
+      gcp:
+        type: accessToken
     params:
       model: google/gemini-2.5-flash-lite-preview-06-17
       vertexProject: my-project-id
@@ -40,3 +43,4 @@ llm:
 | `params.model` | The specific Vertex AI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.vertexProject` | The Google Cloud project ID. |
 | `params.vertexRegion` | The Google Cloud region. Defaults to `global` if not specified. |
+| `auth.gcp` | Google Cloud authentication configuration. Uses Application Default Credentials (ADC) by default. |
