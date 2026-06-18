@@ -89,36 +89,3 @@ src.addr=127.0.0.1:51794 http.method=POST http.host=localhost http.path=/openai 
 http.status=429 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
 gen_ai.request.model=gpt-3.5-turbo error=rate limit exceeded duration=206ms
 ```
-
-### Add realized cost fields
-
-If you configure a [model cost catalog]({{< link-hextra path="/llm/costs/" >}}), agentgateway can compute realized USD cost for LLM requests. These values are available in CEL as `llm.cost` and `llm.costRates` (unset when the model cannot be priced).
-
-You can add them to access logs, traces, and metrics using CEL expressions. In addition to `total`, the cost objects include per-token-type fields like `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-frontendPolicies:
-  accessLog:
-    add:
-      llm.cost.total: 'llm.cost.total'
-      llm.cost.input: 'llm.cost.input'
-      llm.cost.output: 'llm.cost.output'
-      llm.cost.cacheRead: 'llm.cost.cacheRead'
-  tracing:
-    attributes:
-      llm.cost.total: 'llm.cost.total'
-      llm.costRates.input: 'llm.costRates.input'
-      llm.costRates.output: 'llm.costRates.output'
-      llm.costRates.cacheRead: 'llm.costRates.cacheRead'
-
-config:
-  metrics:
-    fields:
-      add:
-        llm.cost.total: 'llm.cost.total'
-        llm.costRates.input: 'llm.costRates.input'
-        llm.costRates.cacheRead: 'llm.costRates.cacheRead'
-```
-
-For the full list of cost fields, see the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}).

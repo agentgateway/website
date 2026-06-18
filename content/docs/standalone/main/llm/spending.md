@@ -6,4 +6,4 @@ aliases:
   - /llm/spending/
 ---
 
-{{< redirect path="/llm/costs/" >}}
+{{< redirect path="/llm/virtual-keys/" >}}
