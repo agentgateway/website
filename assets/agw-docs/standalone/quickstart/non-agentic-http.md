@@ -73,7 +73,7 @@ Example output:
 
 ### Step 2: Configure agentgateway to route to httpbin
 
-{{< version exclude-if="1.3.x" >}}
+{{< version include-if="1.2.x,1.1.x,1.0,x" >}}
 Create a `config.yaml` that listens on port 3000 and routes traffic to the httpbin host. Use a static `host` backend with the address and port where httpbin is reachable, such as `127.0.0.1:8000`.
 
 ```yaml {paths="httpbin"}
@@ -102,7 +102,7 @@ trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 {{< /version >}}
-{{< version include-if="1.3.x" >}}
+{{< version exclude-if="1.2.x,1.1.x,1.0,x" >}}
 You add the listener and route from the UI, so you can start agentgateway with an empty config file.
 
 1. In a separate terminal, start agentgateway.

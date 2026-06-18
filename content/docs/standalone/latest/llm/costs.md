@@ -2,14 +2,10 @@
 title: Model costs
 weight: 51
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, metrics, and CEL policies.
-# Doc tests for the `costs` scenario are authored below but skipped until the 1.3.x
-# release referenced by agw-docs/versions/n-patch.md includes the model cost catalog
-# (1.3.0-beta.1 or later). To enable, replace `test: skip` with:
-#   test:
-#     costs:
-#     - file: content/docs/standalone/latest/llm/costs.md
-#       path: costs
-test: skip
+test:
+  costs:
+  - file: content/docs/standalone/latest/llm/costs.md
+    path: costs
 ---
 
 Agentgateway can compute the realized USD cost of each LLM request when you provide a model cost catalog. With a catalog in place, agentgateway attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.

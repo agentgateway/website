@@ -44,13 +44,13 @@ sleep 3
 
 2. Open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
 
-   {{< version include-if="1.3.x" >}}
+   {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
    The Admin UI opens on the **Gateway Overview**, which lists the available capabilities (LLM, MCP, and Traffic) and lets you enable the ones you want to operate.
 
    {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
    {{< /version >}}
-   {{< version exclude-if="1.3.x" >}}
+   {{< version include-if="1.2.x,1.1.x,1.0,x" >}}
    The Admin UI dashboard shows your configured listeners and port bindings.
 
    {{< reuse-image-light src="img/1.2-earlier/agentgateway-ui-landing.png" >}}
