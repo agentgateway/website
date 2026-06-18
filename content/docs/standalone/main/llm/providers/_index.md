@@ -34,7 +34,7 @@ llm:
     tls: {}
 ```
 
-## Standalone authentication
+## Authentication
 
 For simplified `llm` configuration, upstream provider authentication is configured per model via `llm.models[].auth`. In routing-based configurations, use `policies.backendAuth` on a route instead.
 

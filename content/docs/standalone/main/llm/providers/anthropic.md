@@ -8,7 +8,7 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 
 ## Configuration
 
-For the common API-key case, the `auth.key.value` example below is the simple path. Use the AWS SigV4 section later in the page only when you need Claude Platform on AWS or custom signing behavior.
+For the common API key case, use the following config. Use the AWS SigV4 section later in the page only when you need Claude Platform on AWS or custom signing behavior.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
@@ -19,9 +19,8 @@ llm:
   models:
   - name: "*"
     provider: anthropic
-    auth:
-      key:
-        value: "$ANTHROPIC_API_KEY"
+    params:
+      apiKey: "$ANTHROPIC_API_KEY"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -31,7 +30,7 @@ llm:
 | `name` | The model name to match in incoming requests. When a client sends `"model": "<name>"`, the request is routed to this provider. Use `*` to match any model name. |
 | `provider` | The LLM provider, set to `anthropic` for Claude models. |
 | `params.model` | The specific Claude model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `auth.key.value` | The Anthropic API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `params.apiKey` | The Anthropic API key for authentication. |
 
 ## Example request
 

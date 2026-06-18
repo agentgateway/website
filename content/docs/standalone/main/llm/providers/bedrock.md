@@ -27,8 +27,6 @@ llm:
   models:
   - name: "*"
     provider: bedrock
-    auth:
-      aws: {}
     params:
       awsRegion: us-west-2
 ```
@@ -41,7 +39,6 @@ llm:
 | `provider` | The LLM provider, set to `bedrock` for Amazon Bedrock models. |
 | `params.model` | The specific Bedrock model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.awsRegion` | The AWS region where the Bedrock model is hosted. |
-| `auth.aws` | Uses AWS credentials from the environment to sign each request. |
 
 ## Token counting
 

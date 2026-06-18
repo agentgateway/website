@@ -97,38 +97,10 @@ llm:
 
 In simplified LLM mode, the local listener uses `llm.port` (default `4000`). MCP uses `mcp.port` (default `3000`).
 
-When `llm.port` and `mcp.port` are set to the same value, agentgateway serves both protocols on a single shared listener.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  port: 4000
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      apiKey: "$OPENAI_API_KEY"
-mcp:
-  port: 4000
-  targets:
-  - name: everything
-    stdio:
-      cmd: npx
-      args: ["-y", "@modelcontextprotocol/server-everything"]
-```
-
-{{< callout type="warning" >}}
-You cannot share `llm.port` and `mcp.port` when `llm.tls` is configured. Use different ports if you enable `llm.tls`.
-{{< /callout >}}
-
-Use `llm.tls` to serve the local LLM listener over TLS. Most deployments only need `cert` and `key`; use `root` for a custom trust bundle or mTLS, and treat the remaining fields as advanced TLS tuning options:
-- `cert`
-- `key`
-- `root`
-- `cipherSuites`
-- `minTLSVersion`
-- `maxTLSVersion`
-- `keyExchangeGroups`
+Use `llm.tls` to serve the local LLM listener over TLS. 
+- Most deployments only need `cert` and `key`.
+- Use `root` for a custom trust bundle or mTLS.
+- Other advanced TLS tuning options include `cipherSuites`, `minTLSVersion`, `maxTLSVersion`, and `keyExchangeGroups`.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -137,20 +109,12 @@ llm:
   tls:
     cert: /etc/agentgateway/tls/tls.crt
     key: /etc/agentgateway/tls/tls.key
-    root: /etc/agentgateway/tls/ca.crt
-    cipherSuites:
-    - TLS_AES_128_GCM_SHA256
-    minTLSVersion: "1.2"
-    maxTLSVersion: "1.3"
-    keyExchangeGroups:
-    - X25519
   models:
   - name: "*"
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
 mcp:
-  # Keep a separate port when llm.tls is configured.
   port: 3000
 ```
 
