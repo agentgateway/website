@@ -20,16 +20,6 @@ Agentgateway does not ship a built-in catalog. Costs are computed only when you 
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-{{< doc-test paths="costs" >}}
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
-export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
-{{< /doc-test >}}
 
 ## Step 1: Prepare a catalog
 
@@ -157,7 +147,7 @@ Generate traffic through agentgateway that matches a model entry from the catalo
 
 ## Step 5: Monitor catalog lookups
 
-Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` counter, labeled with the lookup `status` and the request's `gen_ai_system` (provider), `gen_ai_request_model`, and `gen_ai_response_model`. Use it to confirm that your catalog prices your traffic.
+Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` counter, labeled with the lookup `status` and the request's `gen_ai_system` (provider), `gen_ai_request_model`, and `gen_ai_response_model`. Use the lookup to confirm that your catalog prices your traffic.
 
 The `status` label is one of the following values:
 
@@ -170,7 +160,6 @@ The `status` label is one of the following values:
 
 For example, the metrics endpoint at `http://localhost:15020/metrics` shows lines such as the following:
 
-```
 agentgateway_cost_catalog_lookups_total{status="Exact",gen_ai_system="openai",gen_ai_request_model="gpt-4o-mini",...} 1
 agentgateway_cost_catalog_lookups_total{status="Missing",gen_ai_system="openai",gen_ai_request_model="gpt-3.5-turbo",...} 1
 ```
