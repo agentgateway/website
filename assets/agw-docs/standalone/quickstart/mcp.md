@@ -181,7 +181,7 @@ sleep 3
 3. Keep the **Streamable HTTP** transport. For the **URL**, enter `http://localhost:3005/mcp`.
 4. Click **Save server**.
 
-{{< reuse-image src="img/ui-mcp-add-server.png" >}}
+{{< reuse-image-light src="img/ui-mcp-add-server.png" >}}
 {{< reuse-image-dark srcDark="img/ui-mcp-add-server-dark.png" >}}
 
 ### Step 5: Try a tool in the playground
@@ -190,12 +190,14 @@ sleep 3
 2. If you see a **Browser access is not allowed** notice, click **Apply CORS** so the playground can call the MCP listener from the UI.
 3. Click **Initialize** to open an MCP session. The playground lists the tools that the server exposes, such as `echo` and various `get` commands.
 
-   {{< reuse-image src="img/ui-playground-tools.png" >}}
+   {{< reuse-image-light src="img/ui-playground-tools.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
 
 4. From the **Tool** list, select the `echo` tool. In the **message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
 5. Verify that the **Result** card shows an `HTTP 200` response with your message echoed back.
 
-   {{< reuse-image src="img/ui-playground-tool-echo.png" >}}
+   {{< reuse-image-light src="img/ui-playground-tool-echo.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-playground-tool-echo-dark.png" >}}
 
 {{% /steps %}}
 {{< /version >}}

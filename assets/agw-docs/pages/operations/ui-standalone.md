@@ -47,13 +47,13 @@ sleep 3
    {{< version include-if="1.3.x" >}}
    The Admin UI opens on the **Gateway Overview**, which lists the available capabilities (LLM, MCP, and Traffic) and lets you enable the ones you want to operate.
 
-   {{< reuse-image src="img/agentgateway-ui-landing.png" >}}
+   {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
    {{< /version >}}
    {{< version exclude-if="1.3.x" >}}
    The Admin UI dashboard shows your configured listeners and port bindings.
 
-   {{< reuse-image src="img/1.2-earlier/agentgateway-ui-landing.png" >}}
+   {{< reuse-image-light src="img/1.2-earlier/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/1.2-earlier/agentgateway-ui-landing-dark.png" >}}
    {{< /version >}}
 

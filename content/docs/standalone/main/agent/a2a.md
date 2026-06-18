@@ -124,8 +124,10 @@ The agentgateway UI shows the listener and route that serve your A2A traffic. To
 
 2. From the navigation menu under **Traffic**, click **Routes**. Verify that you see the route for your A2A listener, with the backend set to the ADK agent on `localhost:9999`.
 
-   {{< reuse-image src="img/ui-a2a-route.png" >}}
+   {{< reuse-image-light src="img/ui-a2a-route.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-a2a-route-dark.png" >}}
 
 3. Click **Listeners** to review the bind and listener that serve A2A traffic on port 3000.
 
-   {{< reuse-image src="img/ui-a2a-listener.png" >}}
+   {{< reuse-image-light src="img/ui-a2a-listener.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-a2a-listener-dark.png" >}}

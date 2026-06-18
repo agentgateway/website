@@ -19,5 +19,5 @@ To open the playground:
 4. In the **Request Context YAML** box, edit the sample request context that the CEL expression is evaluated against.
 5. To test your CEL expression, click **Evaluate**. The **Result** card shows the value returned by the CEL evaluation.
 
-{{< reuse-image src="img/cel-playground.png" >}}
+{{< reuse-image-light src="img/cel-playground.png" >}}
 {{< reuse-image-dark srcDark="img/cel-playground-dark.png" >}}
