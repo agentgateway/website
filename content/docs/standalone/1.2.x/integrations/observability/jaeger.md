@@ -1,0 +1,81 @@
+---
+title: Jaeger
+weight: 40
+description: Distributed tracing with Jaeger for agentgateway
+---
+
+Jaeger is a distributed tracing backend that works with agentgateway's OpenTelemetry integration.
+
+## Quick start
+
+Run Jaeger with Docker:
+
+```bash
+docker run -d --name jaeger \
+  -p 16686:16686 \
+  -p 4317:4317 \
+  jaegertracing/all-in-one:latest
+```
+
+Configure agentgateway to send traces:
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  tracing:
+    otlpEndpoint: http://localhost:4317
+    randomSampling: true
+
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: everything
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+```
+
+View traces at [http://localhost:16686](http://localhost:16686).
+
+## Trace information
+
+Agentgateway traces include:
+
+- **HTTP spans**: Request method, URL, status code, duration
+- **MCP spans**: Session ID, method name, tool calls
+- **LLM spans**: Model, token counts, provider
+- **Backend spans**: Upstream connections and responses
+
+## Docker Compose example
+
+```yaml
+version: '3'
+services:
+  agentgateway:
+    image: ghcr.io/agentgateway/agentgateway:latest
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./config.yaml:/etc/agentgateway/config.yaml
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "16686:16686"
+      - "4317:4317"
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+```
+
+## Learn more
+
+{{< cards >}}
+  {{< card path="/integrations/observability/opentelemetry" title="OpenTelemetry" subtitle="Configure tracing in agentgateway" >}}
+  {{< card path="/llm/observability" title="LLM Observability" subtitle="AI-specific observability" >}}
+{{< /cards >}}

@@ -1,29 +1,25 @@
 ---
 title: Tailscale
 weight: 30
-description: Use Tailscale as a network boundary in front of agentgateway.
+description: Authenticate users with their Tailscale identity for zero-trust access to your MCP servers.
 ---
 
-You can use [Tailscale](https://tailscale.com/) with agentgateway to place your MCP servers behind a private network boundary (your tailnet).
-
-{{< callout type="warning" >}}
-agentgateway does not currently integrate with the Tailscale local API to resolve a request to a Tailscale *user* or *device* identity. Treat Tailscale as a network/access boundary, and use agentgateway policies (JWT/OIDC, HTTP authz, external authz) when you need application-layer authentication and authorization.
-{{< /callout >}}
+Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authenticate users based on their Tailscale identity, which enables zero-trust access to your MCP servers. Agentgateway uses an [external authorization (`extAuthz`)]({{< link-hextra path="/configuration/security/external-authz" >}}) policy to call the local Tailscale daemon's `whois` API and identify the user behind each connection.
 
 ## How it works
 
-1. You run agentgateway on a host that is connected to your tailnet.
-2. Clients connect to agentgateway over Tailscale (using the host's tailnet IP or DNS name).
-3. Tailscale ACLs (and optionally agentgateway network authorization) restrict who can reach the gateway.
-4. agentgateway optionally applies application-layer policies (for example JWT validation) to authenticate/authorize requests.
+1. The client connects from its Tailscale IP address (`100.x.x.x`).
+2. Agentgateway calls the Tailscale local `whois` API with the source IP address.
+3. Tailscale returns the node and user information.
+4. Agentgateway allows or denies the request and logs the identity.
 
 ## Before you begin
 
 - [Install agentgateway]({{< link-hextra path="/quickstart/" >}}).
-- [Install Tailscale](https://tailscale.com/download) on the agentgateway host and connect it to your tailnet.
-- Have at least one other device on your tailnet to test from.
+- [Install Tailscale](https://tailscale.com/download) and connect it to your tailnet.
+- Have another device on your tailnet to test from, or use the same machine through its Tailscale IP.
 
-## Step 1: Verify Tailscale connectivity
+## Step 1: Verify that Tailscale is running
 
 1. Check that Tailscale is connected. You should see your machine listed with a `100.x.x.x` IP address.
 
@@ -31,30 +27,25 @@ agentgateway does not currently integrate with the Tailscale local API to resolv
    tailscale status
    ```
 
-2. Note the host's Tailscale IP address. You use this address to test access later.
+2. Note your Tailscale IP address. You use this address to test access later.
 
    ```bash
    tailscale ip -4
    ```
 
-## Step 2: Restrict access to your tailnet
+## Step 2: Create the configuration
 
-Use Tailscale ACLs/tags to control which users/devices in your tailnet can reach the agentgateway host and port. This is the recommended place to enforce tailnet identity-based access, because it happens before traffic reaches agentgateway.
+Create a `config.yaml` file. The configuration uses an `extAuthz` policy to call the Tailscale daemon's local `whois` API with the source IP address of each request, then extracts the node name and user email from the response. The socket path for the Tailscale daemon differs by platform.
 
-If you also want agentgateway to enforce a network allowlist, configure a [network authorization policy]({{< link-hextra path="/configuration/security/network-authz/" >}}) to only accept connections from the Tailscale CGNAT range (`100.64.0.0/10`).
-
-{{< callout type="info" >}}
-This check is IP-based. It does not prove a specific Tailscale user/device identity, and it can be affected by routing (for example, subnet routers or proxies). Use Tailscale ACLs for identity-based control.
-{{< /callout >}}
-
-Create a `config.yaml` file:
-
+{{< tabs items="Linux,macOS" >}}
+{{% tab %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
-  networkAuthorization:
-    rules:
-    - allow: 'cidr("100.64.0.0/10").containsIP(source.address)'
+  accessLog:
+    add:
+      tailscale.node: extauthz.tailscaleNode
+      tailscale.email: extauthz.tailscaleEmail
 
 binds:
 - port: 3000
@@ -62,7 +53,7 @@ binds:
   - name: default
     protocol: HTTP
     routes:
-    - name: mcp
+    - name: application
       backends:
       - mcp:
           targets:
@@ -70,7 +61,89 @@ binds:
             stdio:
               cmd: npx
               args: ["@modelcontextprotocol/server-everything"]
+      policies:
+        cors:
+          allowOrigins: ["*"]
+          allowHeaders: ["*"]
+          exposeHeaders: ["Mcp-Session-Id"]
+        extAuthz:
+          host: unix:/run/tailscale/tailscaled.sock
+          protocol:
+            http:
+              path: |
+                "/localapi/v0/whois?addr=" + source.address
+              addRequestHeaders:
+                :authority: '"local-tailscaled.sock"'
+              metadata:
+                tailscaleNode: json(response.body).Node.Name
+                tailscaleEmail: json(response.body).UserProfile.LoginName
 ```
+{{% /tab %}}
+{{% tab %}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+frontendPolicies:
+  accessLog:
+    add:
+      tailscale.node: extauthz.tailscaleNode
+      tailscale.email: extauthz.tailscaleEmail
+
+binds:
+- port: 3000
+  listeners:
+  - name: default
+    protocol: HTTP
+    routes:
+    - name: application
+      backends:
+      - mcp:
+          targets:
+          - name: everything
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+      policies:
+        cors:
+          allowOrigins: ["*"]
+          allowHeaders: ["*"]
+          exposeHeaders: ["Mcp-Session-Id"]
+        extAuthz:
+          host: unix:/var/run/tailscale/tailscaled.sock
+          protocol:
+            http:
+              path: |
+                "/localapi/v0/whois?addr=" + source.address
+              addRequestHeaders:
+                :authority: '"local-tailscaled.sock"'
+              metadata:
+                tailscaleNode: json(response.body).Node.Name
+                tailscaleEmail: json(response.body).UserProfile.LoginName
+```
+{{% /tab %}}
+{{< /tabs >}}
+
+The following table describes the key settings in the configuration.
+
+| Setting | Description |
+|---------|-------------|
+| `frontendPolicies.accessLog.add` | Adds the Tailscale identity to the access logs. |
+| `extAuthz.host` | The Unix socket path to the Tailscale daemon. |
+| `extAuthz.protocol.http.path` | A CEL expression that calls the Tailscale `whois` API with the client's source IP address. |
+| `addRequestHeaders.:authority` | The hostname that the Tailscale local API requires. |
+| `metadata.tailscaleNode` | Extracts the machine name from the Tailscale response. |
+| `metadata.tailscaleEmail` | Extracts the user email from the Tailscale response. |
+
+The value for `extAuthz.host` is the path to the Tailscale daemon's local socket, which differs by platform. Use the path that matches the platform where agentgateway runs.
+
+| Platform | Socket path |
+|----------|-------------|
+| Linux | `/run/tailscale/tailscaled.sock` |
+| macOS | `/var/run/tailscale/tailscaled.sock` |
+| Windows | Named pipe (not supported through a Unix socket) |
+
+{{< callout type="info" >}}
+On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
+{{< /callout >}}
 
 ## Step 3: Start agentgateway
 
@@ -84,34 +157,68 @@ Example output:
 info proxy::gateway started bind bind="bind/3000"
 ```
 
-## Step 4: Test connectivity
+## Step 4: Test the authentication
 
-1. From a different device on your tailnet, send a request to the agentgateway host's Tailscale IP:
+1. Send a request from localhost. Because localhost does not have a Tailscale identity, the request is denied with a `403 Forbidden` response.
 
    ```bash
-   curl -i http://<TAILSCALE_IP>:3000/mcp
+   curl -i http://localhost:3000/mcp
    ```
 
-2. From a device that is not on your tailnet, verify that you cannot connect (either because of Tailscale ACLs or because the `networkAuthorization` policy rejects the connection).
+   Example output:
 
-## Next steps: add application-layer auth (optional)
+   ```
+   HTTP/1.1 403 Forbidden
+   external authorization failed
+   ```
 
-Tailscale protects network access, but it does not replace HTTP/MCP authentication and authorization. Depending on your use case, you might also want to configure:
+2. Send a request through your Tailscale IP address. The request passes authentication and reaches the MCP server, which returns a `406 Not Acceptable` response because the request does not include the required `text/event-stream` header.
 
-- [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) to validate OIDC access tokens.
-- [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz/" >}}) for claim- and request-aware authorization rules.
-- [External authorization]({{< link-hextra path="/configuration/security/external-authz" >}}) to delegate authz decisions to an external service (such as an IdP-aware proxy).
+   ```bash
+   TAILSCALE_IP=$(tailscale ip -4)
+   curl -i http://$TAILSCALE_IP:3000/mcp
+   ```
+
+   Example output:
+
+   ```
+   HTTP/1.1 406 Not Acceptable
+   Not Acceptable: Client must accept text/event-stream
+   ```
+
+3. Send a complete MCP request through your Tailscale IP address with the required headers.
+
+   ```bash
+   TAILSCALE_IP=$(tailscale ip -4)
+   curl -X POST "http://$TAILSCALE_IP:3000/mcp" \
+     -H "Content-Type: application/json" \
+     -H "Accept: text/event-stream" \
+     -d '{"jsonrpc":"2.0","method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"test","version":"1.0"}},"id":1}'
+   ```
+
+4. Check the agentgateway logs. After a successful request, the logs show the Tailscale identity from the access log fields that you configured.
+
+   ```
+   info request ... tailscale.node=your-machine-name tailscale.email=you@example.com
+   ```
 
 ## Troubleshooting
 
-**Can't connect from a tailnet client**: Confirm that your client is connected to the same tailnet and that you are connecting to the agentgateway host's *Tailscale* IP/DNS name (not a LAN IP).
+**`external authorization failed` for Tailscale IPs**: Check that the Tailscale socket exists and is accessible at the path in your configuration.
 
-**Connection is rejected after enabling `networkAuthorization`**: Temporarily remove the `frontendPolicies.networkAuthorization` section to confirm whether the block is coming from Tailscale ACLs or from agentgateway. If you're using subnet routers, proxies, or other routing, the downstream `source.address` might not fall into `100.64.0.0/10`.
+```bash
+# Linux
+ls -la /run/tailscale/tailscaled.sock
+
+# macOS
+ls -la /var/run/tailscale/tailscaled.sock
+```
+
+**`no match for IP:port` in the Tailscale response**: The connecting IP address is not recognized by Tailscale. Make sure that you connect through a Tailscale IP address, not localhost or a LAN IP address.
 
 ## Learn more
 
 {{< cards >}}
-  {{< card path="/configuration/security/network-authz/" title="Network authorization" subtitle="L4 allow/deny rules for incoming connections" >}}
-  {{< card path="/configuration/security/jwt-authn/" title="JWT authentication" subtitle="Validate OIDC access tokens" >}}
+  {{< card path="/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
 {{< /cards >}}

@@ -4,7 +4,7 @@ weight: 40
 description: Control access to MCP tools and resources with CEL-based authorization rules
 test:
   mcp-authz-tools:
-  - file: content/docs/standalone/latest/mcp/mcp-authz.md
+  - file: content/docs/standalone/main/mcp/mcp-authz.md
     path: mcp-authz-tools
 ---
 

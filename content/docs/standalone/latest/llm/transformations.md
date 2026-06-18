@@ -4,7 +4,7 @@ weight: 55
 description: Dynamically compute and set LLM request fields using CEL expressions.
 test:
   transformations:
-  - file: content/docs/standalone/latest/llm/transformations.md
+  - file: content/docs/standalone/main/llm/transformations.md
     path: transformations
 ---
 

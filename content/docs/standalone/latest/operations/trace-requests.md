@@ -4,7 +4,7 @@ weight: 16
 description: Capture a per-request trace as a standalone agentgateway instance handles the request.
 test:
   trace-validate:
-  - file: content/docs/standalone/latest/operations/trace-requests.md
+  - file: content/docs/standalone/main/operations/trace-requests.md
     path: trace-validate
 ---
 
@@ -12,4 +12,4 @@ test:
 {{< reuse "agw-docs/snippets/feature-experimental.md">}}
 {{< /callout >}}
 
-{{< reuse "agw-docs/pages/operations/trace-requests-standalone-12x.md" >}}
+{{< reuse "agw-docs/pages/operations/trace-requests-standalone.md" >}}

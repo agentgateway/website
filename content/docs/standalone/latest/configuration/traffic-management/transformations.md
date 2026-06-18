@@ -63,6 +63,30 @@ binds:
             - x-content-type-options
 ```
 
+#### Listener-level header transformation
+
+Transform headers before route selection by attaching the policy at the listener level:
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      transformations:
+        request:
+          add:
+            x-gateway: '"agentgateway"'
+      backendAuth:
+        key: "$OPEN_AI_APIKEY"
+    routes:
+    - backends:
+      - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-3.5-turbo
+```
 
 ### Body transformation
 

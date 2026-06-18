@@ -4,11 +4,11 @@ weight: 20
 description: Customize the agentgateway proxy for different deployment scenarios and requirements.
 test:
   customize:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/setup/customize/customize.md
+  - file: content/docs/kubernetes/main/setup/customize/customize.md
     path: customize
 ---
 
