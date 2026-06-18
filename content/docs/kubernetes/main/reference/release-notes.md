@@ -51,7 +51,7 @@ A refreshed UI exposes the new LLM capabilities through LLM, MCP, and traffic-na
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/1842 -->
 
-External authorization and external processing integrations can now make decisions using MCP request context, such as the tool being called and its arguments, rather than only generic HTTP metadata. This makes it possible to enforce fine-grained, MCP-aware policy in an external service. For more information, see the [MCP guardrail docs]({{< link-hextra path="mcp/guardrails/">}}).
+External authorization and external processing integrations can now make decisions using MCP request context, such as the tool being called and its arguments, rather than only generic HTTP metadata. This change makes it possible to enforce fine-grained, MCP-aware policy in an external service. For more information, see the [MCP guardrail docs]({{< link-hextra path="/mcp/guardrails/">}}).
 
 ### External processing enhancements
 
@@ -66,7 +66,7 @@ External authorization and external processing integrations can now make decisio
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2017 -->
 
-A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits. This enables policies and extensions that need full request-body access before backend selection or dispatch. For more information, see [Body buffering]({{< link-hextra path="/traffic-management/buffer/" >}}).
+A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits. This change enables policies and extensions that need full request-body access before backend selection or dispatch. For more information, see [Body buffering]({{< link-hextra path="/traffic-management/buffer/" >}}).
 
 ### Dynamic SSL certificates
 
