@@ -116,7 +116,7 @@ binds:
         backendAuth:
           azure:
             implicit: {}
-        tls: {}
+        backendTLS: {}
       backends:
       - ai:
           name: azure
@@ -156,7 +156,7 @@ binds:
                 tenantId: "<your-tenant-id>"
                 clientId: "<your-client-id>"
                 clientSecret: "<your-client-secret>"
-        tls: {}
+        backendTLS: {}
       backends:
       - ai:
           name: azure
@@ -198,7 +198,7 @@ binds:
                 tenantId: "<your-tenant-id>"
                 clientId: "<your-client-id>"
                 clientSecret: "<your-client-secret>"
-        tls: {}
+        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -235,7 +235,7 @@ binds:
           azure:
             explicitConfig:
               managedIdentity: {}
-        tls: {}
+        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -278,7 +278,7 @@ binds:
                   # OR use objectId or resourceId instead
                   # objectId: "your-managed-identity-object-id"
                   # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
-        tls: {}
+        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -314,7 +314,7 @@ binds:
           azure:
             explicitConfig:
               workloadIdentity: {}
-        tls: {}
+        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

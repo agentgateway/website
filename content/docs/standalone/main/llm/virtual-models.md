@@ -17,12 +17,12 @@ Use `llm.models[].visibility` to control whether a model is directly exposed to 
 
 ## Route selection modes
 
-Each virtual model defines a `mode` and a list of `routes`.
-The routes in a virtual model point to concrete `llm.models[]` entries.
+Each virtual model defines its routing strategy under `routing`.
+The routing targets in a virtual model point to concrete `llm.models[]` entries.
 
 ### Weighted routing
 
-Use `mode: weighted` to split traffic between targets with `weight`.
+Use `routing.weighted.targets` to split traffic between targets with `weight`.
 
 ```yaml
 llm:
@@ -48,17 +48,18 @@ llm:
 
   virtualModels:
   - name: smart
-    mode: weighted
-    routes:
-    - model: gpt-4o-primary
-      weight: 90
-    - model: gpt-4o-fallback
-      weight: 10
+    routing:
+      weighted:
+        targets:
+        - model: gpt-4o-primary
+          weight: 90
+        - model: gpt-4o-fallback
+          weight: 10
 ```
 
 ### Failover routing
 
-Use `mode: failover` and `priority` to define ordered failover targets.
+Use `routing.failover.targets` and `priority` to define ordered failover targets.
 
 ```yaml
 llm:
@@ -84,17 +85,18 @@ llm:
 
   virtualModels:
   - name: resilient
-    mode: failover
-    routes:
-    - model: claude-primary
-      priority: 1
-    - model: claude-backup
-      priority: 2
+    routing:
+      failover:
+        targets:
+        - model: claude-primary
+          priority: 1
+        - model: claude-backup
+          priority: 2
 ```
 
 ### Conditional routing
 
-Use `mode: conditional` and `when` expressions to select targets by request context.
+Use `routing.conditional.targets` and `when` expressions to select targets by request context.
 
 ```yaml
 llm:
@@ -120,12 +122,13 @@ llm:
 
   virtualModels:
   - name: adaptive
-    mode: conditional
-    routes:
-    - model: openai-fast
-      when: request.headers["x-tier"] == "free"
-    - model: openai-smart
-      when: request.headers["x-tier"] == "pro"
+    routing:
+      conditional:
+        targets:
+        - model: openai-fast
+          when: request.headers["x-tier"] == "free"
+        - model: openai-smart
+          when: request.headers["x-tier"] == "pro"
 ```
 
 {{< callout type="info" >}}
