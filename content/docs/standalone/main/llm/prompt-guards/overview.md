@@ -56,6 +56,18 @@ The diagram shows content flowing through multiple guard layers. Each layer can:
 - **Reject**: Block the request and return an error message
 - **Mask**: Replace sensitive patterns with placeholders and continue
 
+## Shared and model-specific guardrails
+
+Use `llm.policies.guardrails` to define a shared baseline for every LLM model. You can then add extra guardrails on an individual model with `llm.models[].guardrails`.
+
+When both are configured, agentgateway merges the shared and model-specific guardrails for the selected model. In practice, that means a model can inherit organization-wide checks and still add stricter request or response filters for a specific use case.
+
+## Streaming guardrails
+
+Set `llm.policies.streaming` to one of the following values:
+
+- `Disabled` - the default. Guardrails run for non-streaming LLM traffic.
+- `Enabled` - guardrails also run on streamed content, including SSE responses and OpenAI Realtime WebSocket traffic.
 
 ## Choosing the right approach
 

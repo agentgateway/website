@@ -127,6 +127,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `streaming` _[PromptGuardStreamingMode](#promptguardstreamingmode)_ | Apply prompt guards to streaming responses and realtime websocket messages.<br />Defaults to disabled to preserve streaming throughput unless explicitly enabled. |  | Optional: \{\} <br /> |
 | `request` _[PromptguardRequest](#promptguardrequest) array_ | Prompt guards to apply to requests sent by the client. |  | ExactlyOneOf: [regex webhook openAIModeration bedrockGuardrails googleModelArmor] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `response` _[PromptguardResponse](#promptguardresponse) array_ | Prompt guards to apply to responses returned by the LLM provider. |  | ExactlyOneOf: [regex webhook bedrockGuardrails googleModelArmor] <br />MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
@@ -3185,6 +3186,22 @@ _Appears in:_
 | `cacheTools` _boolean_ | Enables caching for tool definitions.<br />Inserts a cache point after all tool specifications. | false | Optional: \{\} <br /> |
 | `minTokens` _integer_ | Minimum estimated token count<br />before caching is enabled. Uses rough heuristic (word count × 1.3) to estimate tokens.<br />Bedrock requires at least 1,024 tokens for caching to be effective. | 1024 | Minimum: 0 <br />Optional: \{\} <br /> |
 | `cacheMessageOffset` _integer_ | Shifts the message cache point further back in the<br />conversation. 0 (default) places it at the second-to-last message.<br />Higher values move it N additional messages towards the start, clamped<br />to bounds. | 0 | Minimum: 0 <br />Optional: \{\} <br /> |
+
+
+#### PromptGuardStreamingMode
+
+_Underlying type:_ _string_
+
+Streaming prompt guard mode.
+
+
+
+_Appears in:_
+- [AIPromptGuard](#aipromptguard)
+
+| Field | Description |
+| --- | --- |
+| `Enabled` | Enable prompt guards for streaming responses and realtime websocket messages.<br /> |
 
 
 #### PromptguardRequest

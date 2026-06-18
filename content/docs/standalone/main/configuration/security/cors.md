@@ -48,17 +48,66 @@ CORS policies are typically implemented to limit access to server resources for 
 > [!TIP]
 > Requests that violate the CORS policy will still have responses returned, but the browser will reject them. As such, usage of tools like `curl` with `cors` can be confusing, as `curl` does not respect CORS headers.
 
-Example:
+The same CORS fields are supported in both simplified LLM and route-based configurations:
+- `allowOrigins`
+- `allowMethods`
+- `allowHeaders`
+- `exposeHeaders`
+- `allowCredentials`
+- `maxAge`
+
+{{< tabs items="Simplified LLM,Route-based" >}}
+{{< tab >}}
 
 ```yaml
-cors:
-  allowOrigins:
-  - "*"
-  allowHeaders:
-  - mcp-protocol-version
-  - content-type
-  allowCredentials: true
-  exposeHeaders:
-  - x-my-header
-  maxAge: 100s
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    cors:
+      allowOrigins:
+      - https://chat.example.com
+      allowMethods:
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 10m
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
+{{< /tab >}}
+{{< tab >}}
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: api.example.com:443
+      policies:
+        cors:
+          allowOrigins:
+          - https://app.example.com
+          allowMethods:
+          - GET
+          - POST
+          - OPTIONS
+          allowHeaders:
+          - authorization
+          - content-type
+          exposeHeaders:
+          - x-request-id
+          allowCredentials: true
+          maxAge: 100s
+```
+{{< /tab >}}
+{{< /tabs >}}
