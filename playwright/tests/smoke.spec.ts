@@ -1,15 +1,14 @@
-import { test, expect } from '../fixtures/test';
+import { test, expect, dismissWelcome } from '../fixtures/test';
 
 /**
- * Minimal end-to-end proof: load the UI landing page and screenshot it. No interaction
- * selectors, so this captures successfully against any served build — used to prove the
- * built-binary -> provisioner -> browser -> screenshot loop works before investing in
- * per-screen specs with real selectors.
- *
- * Runs once per project, so it produces light and dark variants automatically.
+ * Minimal end-to-end proof: load the UI, dismiss the first-run welcome overlay, and
+ * screenshot the landing page. No deep interaction selectors, so it captures against any
+ * served build — used to prove the UI-source -> browser -> screenshot loop and that the
+ * light/dark theme seeding works. Runs once per project → light and dark variants.
  */
 test('UI landing page', async ({ page }) => {
   await page.goto('/ui/');
   await page.waitForLoadState('networkidle');
+  await dismissWelcome(page);
   await expect(page).toHaveScreenshot('ui-landing.png', { fullPage: true });
 });

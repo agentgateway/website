@@ -1,42 +1,45 @@
 import { defineConfig, devices } from '@playwright/test';
-import { existsSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
-import { dirname, resolve } from 'node:path';
 
 /**
  * Proof-of-concept config for capturing screenshots of the agentgateway product UI.
  *
- * One agentgateway instance serves the UI; light vs. dark is a browser-side color
- * scheme, so a single launched binary feeds BOTH the `standalone-light` and
- * `standalone-dark` projects. The binary is launched via Playwright's `webServer`
- * (which also waits for health, reuses an already-running instance, and tears down).
+ * UI source: by default Playwright's `webServer` launches the prebuilt image that ships
+ * the new UI (PR #2232) — howardjohn/agentgateway:sl8 — and waits for the UI to be
+ * healthy. One instance serves every project; light vs. dark is seeded per-project in
+ * fixtures/test.ts (the new UI ignores prefers-color-scheme), so the `standalone-light`
+ * and `standalone-dark` projects share it.
  *
  * Goals served by ONE capture:
  *   - regression: toHaveScreenshot() diffs against the committed baseline
  *   - docs assets: `npm run sync-docs` copies captures into the docs img/ tree
  *
- * Binary resolution (first hit wins):
- *   1. $AGENTGATEWAY_BIN
- *   2. the locally built debug binary in the sibling agentgateway checkout (e.g. the
- *      one built from PR #2232)
- *   3. `agentgateway` on PATH
- *
- * Ports/URL are env-configurable so a run never collides with a separate instance:
- *   ADMIN_ADDR=localhost:15099 STATS_ADDR=localhost:15098 READINESS_ADDR=localhost:15097 \
- *     UI_BASE_URL=http://localhost:15099 npm run test:standalone
- *
- * Kubernetes mode: bring up the cluster + sample app + traffic resources and start a
- * `kubectl port-forward` to the UI yourself (see provisioners/kubernetes.ts), point
- * UI_BASE_URL at it, and Playwright's reuseExistingServer attaches to it.
+ * Env knobs:
+ *   AGW_IMAGE        docker image to run (default howardjohn/agentgateway:sl8)
+ *   UI_HOST_PORT     host port mapped to the container's 15000 (default 15100, so it
+ *                    never collides with a local agentgateway on 15000)
+ *   UI_BASE_URL      full base URL; defaults to http://localhost:${UI_HOST_PORT}
+ *   AGENTGATEWAY_BIN if set, launch this local binary instead of docker (e.g. a build
+ *                    from a different branch). Serves on ADMIN_ADDR (default :15000).
+ *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
+ *          so you can `docker run …` (or `npm run dev`) yourself and just point here.
  */
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-const BUILT_BIN = resolve(__dirname, '../../agentgateway/agentgateway/target/debug/agentgateway');
-const BIN = process.env.AGENTGATEWAY_BIN || (existsSync(BUILT_BIN) ? BUILT_BIN : 'agentgateway');
-const CONFIG = resolve(__dirname, 'fixtures/standalone-config.yaml');
-
+const HOST_PORT = process.env.UI_HOST_PORT || '15100';
+const IMAGE = process.env.AGW_IMAGE || 'howardjohn/agentgateway:sl8';
+const BIN = process.env.AGENTGATEWAY_BIN;
 const ADMIN_ADDR = process.env.ADMIN_ADDR || 'localhost:15000';
-const BASE_URL = process.env.UI_BASE_URL || `http://${ADMIN_ADDR}`;
+
+const BASE_URL =
+  process.env.UI_BASE_URL || (BIN ? `http://${ADMIN_ADDR}` : `http://localhost:${HOST_PORT}`);
+
+// Either launch the local binary, or (default) the docker image with the new UI. The
+// docker variant clears any stale container of the same name first and remaps ports.
+const command = BIN
+  ? `"${BIN}" -f fixtures/standalone-config.yaml`
+  : `sh -c "docker rm -f agw-ui-pw 2>/dev/null; mkdir -p .agw-runtime; ` +
+    `exec docker run --rm --name agw-ui-pw --user $(id -u):$(id -g) ` +
+    `-v \\"$(pwd)/.agw-runtime:/config\\" ` +
+    `-p ${HOST_PORT}:15000 -p 4100:4000 -p 3100:3000 ${IMAGE}"`;
 
 export default defineConfig({
   testDir: './tests',
@@ -45,19 +48,20 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   reporter: [['html', { open: 'never' }], ['list']],
 
-  // Launch (or reuse) the agentgateway binary that serves the UI.
   webServer: {
-    command: `"${BIN}" -f "${CONFIG}"`,
+    command,
     url: `${BASE_URL}/ui/`,
-    reuseExistingServer: true, // attach to an already-running UI (dev server, port-forward)
-    timeout: 60_000,
+    reuseExistingServer: true, // attach to an already-running UI (container, dev server, port-forward)
+    timeout: 120_000, // the sl8 image is amd64 (emulated on arm64) and boots slowly
     stdout: 'pipe',
     stderr: 'pipe',
-    env: {
-      ADMIN_ADDR,
-      STATS_ADDR: process.env.STATS_ADDR || 'localhost:15020',
-      READINESS_ADDR: process.env.READINESS_ADDR || 'localhost:15021',
-    },
+    env: BIN
+      ? {
+          ADMIN_ADDR,
+          STATS_ADDR: process.env.STATS_ADDR || 'localhost:15020',
+          READINESS_ADDR: process.env.READINESS_ADDR || 'localhost:15021',
+        }
+      : {},
   },
 
   use: {
@@ -74,19 +78,11 @@ export default defineConfig({
     },
   },
 
-  // Light/dark are separate projects so each gets its own baseline set. The UI honors
-  // prefers-color-scheme (verified via scripts/probe-theme.mjs), so `colorScheme` is all
-  // that's needed — no theme-toggle clicking. fixtures/test.ts additionally clears the
-  // persisted `agentgateway-theme` localStorage key so a stray explicit choice can't
-  // override the requested scheme.
+  // Light/dark are separate projects so each gets its own baseline set. Theme is seeded
+  // per-project in fixtures/test.ts via localStorage['theme'] (the new UI ignores
+  // prefers-color-scheme, so colorScheme is not used).
   projects: [
-    {
-      name: 'standalone-light',
-      use: { ...devices['Desktop Chrome'], colorScheme: 'light' },
-    },
-    {
-      name: 'standalone-dark',
-      use: { ...devices['Desktop Chrome'], colorScheme: 'dark' },
-    },
+    { name: 'standalone-light', use: { ...devices['Desktop Chrome'] } },
+    { name: 'standalone-dark', use: { ...devices['Desktop Chrome'] } },
   ],
 });

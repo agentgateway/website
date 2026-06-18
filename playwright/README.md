@@ -32,10 +32,12 @@ specs serve both standalone and Kubernetes modes:
 └───────────────────────────────────────────────┘
 ```
 
-In **standalone** mode, Playwright's `webServer` option launches (or reuses) the
-agentgateway binary and waits for `:15000/ui/` to be healthy. One binary serves every
-project — light vs. dark is a browser-side color scheme, not a separate instance — so the
-`standalone-light` and `standalone-dark` projects share it. In **Kubernetes** mode you
+In **standalone** mode, Playwright's `webServer` option launches (or reuses) the UI and
+waits for `/ui/` to be healthy. By default it runs the prebuilt **docker image that ships
+the new UI** (`howardjohn/agentgateway:sl8`, from PR #2232) on host port 15100; set
+`AGENTGATEWAY_BIN` to launch a local binary instead. One instance serves every project —
+light vs. dark is seeded per-project in `fixtures/test.ts` — so the `standalone-light` and
+`standalone-dark` projects share it. In **Kubernetes** mode you
 bring the cluster up and start a `kubectl port-forward` to the UI yourself, then point
 `UI_BASE_URL` at it; `reuseExistingServer` makes Playwright attach to it. The Kubernetes
 path is documented in `provisioners/kubernetes.ts` (it reuses the cluster machinery in
@@ -52,44 +54,56 @@ path is documented in `provisioners/kubernetes.ts` (it reuses the cluster machin
 When the UI legitimately changes: `npm run update` refreshes the baselines, then the
 sync step refreshes the doc images. One capture, both purposes.
 
-## Building the UI binary (from PR #2232)
+## Where the UI comes from
 
 The product UI is embedded in the agentgateway binary at build time
-(`include_dir!(".../ui/out")`). To screenshot the UI from a specific PR/branch, build
-that binary. In a sibling `agentgateway/agentgateway` checkout:
+(`include_dir!(".../ui/out")`), so each binary/image carries one UI version. This POC
+captures the **new UI from PR #2232** via the prebuilt image `howardjohn/agentgateway:sl8`
+— the default. (Building the binary locally from the PR branch also works, but it is easy
+to embed a stale `ui/out`; the published image is the reliable source.)
 
-```sh
-# the UI build needs Node 18+ (PR #2232 is Vite + TanStack Router)
-git fetch upstream pull/2232/head:pr-2232-ui && git checkout pr-2232-ui
-( cd ui && npm ci && npm run build )       # -> ui/out
-cargo build --features ui                  # -> target/debug/agentgateway (debug is fine)
-```
+To build a binary instead (in a sibling `agentgateway/agentgateway` checkout): check out
+the branch, `cd ui && npm ci && npm run build` (Node 18+; PR #2232 is Vite + TanStack
+Router), then `cargo build --features ui`, and run with `AGENTGATEWAY_BIN=<path>`.
 
-The config auto-resolves this binary: `playwright.config.ts` defaults `AGENTGATEWAY_BIN`
-to `../../agentgateway/agentgateway/target/debug/agentgateway` when present, else the one
-on `PATH`, overridable via the `AGENTGATEWAY_BIN` env var.
+## Quick start
 
-## Quick start (standalone mode)
-
-Prereqs: Node 18+ (use the binary built above, or any `agentgateway` on `PATH`).
+Prereqs: Node 18+, Docker running (for the default image path).
 
 ```sh
 cd playwright
 npm install
 npx playwright install --with-deps chromium
 
-# Run on isolated ports so it never collides with an instance you already have running.
-# UI_BASE_URL must match ADMIN_ADDR.
-ADMIN_ADDR=localhost:15099 STATS_ADDR=localhost:15098 READINESS_ADDR=localhost:15097 \
-  UI_BASE_URL=http://localhost:15099 npm run test:standalone
+# Self-contained: webServer launches the sl8 image on host port 15100, captures, tears down.
+npm run test:standalone
 
-# Already have the UI running (e.g. `npm run dev` or a hand-started binary)? Just attach:
-UI_BASE_URL=http://localhost:15000 npm run test:standalone   # reuseExistingServer
+# Already have a UI running (your own `docker run`, `npm run dev`, or a k8s port-forward)?
+# Attach to it (reuseExistingServer):
+UI_BASE_URL=http://localhost:15100 npm run test:standalone
+
+# Use a local binary build instead of the image:
+AGENTGATEWAY_BIN=/path/to/agentgateway npm run test:standalone
 
 # Accept UI changes as the new baseline + refresh doc images
 npm run update
 npm run sync-docs
 ```
+
+The image's host port (default 15100) avoids colliding with a local agentgateway on
+:15000. Override with `UI_HOST_PORT` / `AGW_IMAGE` / `UI_BASE_URL`.
+
+### Theme (light/dark) — new UI specifics
+
+The new UI (sl8) does **not** honor `prefers-color-scheme`. Theme is `<html data-theme>`
+persisted in `localStorage['theme']`, toggled by `button[aria-label="Toggle theme"]`. So
+`fixtures/test.ts` seeds `localStorage['theme']` to `light`/`dark` based on the project
+name before load — that is what drives the two baseline sets. (Verified with
+`scripts/probe-theme.mjs`.)
+
+A first-run **"Welcome to Agentgateway" overlay** (`.startup-shell`) intercepts clicks
+when the gateway has no config; call `dismissWelcome(page)` after load (clicks "Skip
+setup"), or give the gateway a real config so it never appears.
 
 ### Baseline stability — read before trusting diffs
 
@@ -112,9 +126,9 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 |---|---|
 | `playwright.config.ts` | `webServer` launcher, light/dark projects, screenshot/diff settings |
 | `provisioners/kubernetes.ts` | Notes only — the kind + port-forward reuse path |
-| `fixtures/standalone-config.yaml` | Minimal MCP config the UI renders for the POC |
-| `fixtures/test.ts` | Clears the persisted theme key so `colorScheme` controls light/dark |
-| `tests/smoke.spec.ts` | Loads `/ui/` and screenshots it — proves the loop, no fragile selectors |
+| `fixtures/standalone-config.yaml` | Minimal MCP config (used only with `AGENTGATEWAY_BIN`) |
+| `fixtures/test.ts` | Seeds `localStorage['theme']` per project; `dismissWelcome()` helper |
+| `tests/smoke.spec.ts` | Loads `/ui/`, dismisses welcome, screenshots — proves the loop |
 | `tests/playground.spec.ts` | Example interaction flow (selectors illustrative) |
 | `scripts/probe-theme.mjs` | One-off diagnostic used to confirm the theme mechanism |
 | `scripts/sync-docs-images.mjs` | Copies captured PNGs → docs `img/` via a name→path map |
@@ -123,8 +137,9 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 
 ## Status: what works and what's left
 
-**Proven working:** binary built from PR #2232 → `webServer` launch → browser → real
-`/ui/` screenshot, in both light and dark. See `__screenshots__/smoke.spec.ts-snapshots/`.
+**Proven working:** `npm run test:standalone` launches the sl8 image (new UI) → browser
+seeds theme + dismisses welcome → real Gateway Overview screenshot in both light and dark,
+deterministic against committed baselines. See `__screenshots__/smoke.spec.ts-snapshots/`.
 
 **Left to do for full doc-image regeneration:**
 
@@ -132,7 +147,7 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 - Kubernetes mode is documented (notes), not automated.
 - `tests/playground.spec.ts` selectors are illustrative — match them to the real UI DOM.
   The PR's own `ui/tests` Playwright e2e specs are a ready source of real selectors.
-- The fixture config + ports should give the UI real data to render (the smoke capture
-  shows an empty/erroring home page because the throwaway config used a busy port).
+- Give the gateway real config (listeners/routes/MCP targets) so captures show populated
+  screens, not the empty "no surfaces enabled" state.
 - Confirm `docs-image-map.json` destinations (and which pages actually have dark variants)
   against the docs before committing regenerated images.
