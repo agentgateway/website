@@ -155,6 +155,22 @@ Example output (abbreviated):
 }
 ```
 
+{{< version include-if="1.3.x" >}}
+### Step 5: Try the request in the UI playground
+
+You can also send a test request from the built-in LLM playground, without writing a `curl` command.
+
+1. Open the [LLM playground](http://localhost:15000/ui/llm/playground/).
+2. If you see a **Browser access is not allowed** notice, click **Apply CORS** so the playground can call the LLM listener from the UI.
+3. In the **Model** list, select a model. If your configuration uses a wildcard (`*`) model, enter a specific model name, such as `gpt-3.5-turbo`, in the **Specific model** field.
+4. In the **User message** box, enter a prompt, such as `Say hello in one sentence`, and click **Send**.
+5. Verify that the response appears in the chat panel, along with the provider, model, latency, and token usage.
+
+   {{< reuse-image src="img/ui-llm-playground.png" >}}
+
+For more information, see the [LLM playground]({{< link-hextra path="/llm/playground/" >}}) reference.
+{{< /version >}}
+
 {{% /steps %}}
 
 ## Next steps
