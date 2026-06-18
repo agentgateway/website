@@ -10,6 +10,10 @@ test:
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama-standalone.md" >}}
 
+{{< callout type="info" >}}
+Local providers like Ollama usually run over HTTP and do not require `llm.models[].auth` or `llm.models[].tls`. If your Ollama endpoint is behind HTTPS or requires authentication, configure `llm.models[].tls` and `llm.models[].auth` like any other upstream provider.
+{{< /callout >}}
+
 {{< doc-test paths="ollama-standalone-validate" >}}
 # Install agentgateway binary for testing
 mkdir -p "$HOME/.local/bin"
@@ -25,9 +29,9 @@ llm:
   port: 3000
   models:
   - name: "*"
-    provider: openAI
+    provider: ollama
     params:
-      hostOverride: "localhost:11434"
+      model: llama3.2
 EOF
 agentgateway -f /tmp/test-ollama-standalone.yaml --validate-only
 {{< /doc-test >}}
