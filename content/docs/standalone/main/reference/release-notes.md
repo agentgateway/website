@@ -82,7 +82,7 @@ This release brings a large set of improvements to the standalone LLM experience
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/1842 -->
 
-External authorization and external processing integrations can now make decisions using MCP request context, such as the tool being called and its arguments, rather than only generic HTTP metadata. For more information, see the [MCP guardrail docs]({{< link-hextra path="mcp/guardrails/">}}).
+External authorization and external processing integrations can now make decisions using MCP request context, such as the tool being called and its arguments, rather than only generic HTTP metadata. For more information, see the [MCP guardrail docs]({{< link-hextra path="/mcp/guardrails/">}}).
 
 ### External processing enhancements
 
