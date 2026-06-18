@@ -147,6 +147,28 @@ Example output:
 info  app  serving UI at http://localhost:15000/ui
 ```
 
+{{< doc-test paths="mcp" >}}
+# Hidden test: the UI steps below (Enable MCP -> Add server) are not scriptable, so this
+# block reproduces the equivalent config they produce and starts the same backends, to keep
+# the resulting setup tested.
+PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp &
+MCP_PID=$!
+sleep 5
+cat > config.yaml << 'EOF'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: server-everything
+    mcp:
+      host: http://localhost:3005/mcp
+EOF
+agentgateway -f config.yaml &
+AGW_PID=$!
+trap 'kill $AGW_PID $MCP_PID 2>/dev/null' EXIT
+sleep 3
+{{< /doc-test >}}
+
 ### Step 3: Enable MCP
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/).
