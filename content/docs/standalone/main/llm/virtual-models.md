@@ -60,23 +60,24 @@ llm:
 ### Failover routing
 
 Use `routing.failover.targets` and `priority` to define ordered failover targets.
+Targets with the same priority are load balanced across based on health and latency.
 
 ```yaml
 llm:
   models:
-  - name: claude-public
-    visibility: public
-    provider: anthropic
-    params:
-      model: claude-sonnet-4-0
-      apiKey: "$ANTHROPIC_API_KEY"
   - name: claude-primary
     visibility: internal
     provider: anthropic
     params:
       model: claude-sonnet-4-0
       apiKey: "$ANTHROPIC_API_KEY"
-  - name: claude-backup
+  - name: claude-backup-a
+    visibility: internal
+    provider: anthropic
+    params:
+      model: claude-3-5-haiku-20241022
+      apiKey: "$ANTHROPIC_API_KEY"
+  - name: claude-backup-b
     visibility: internal
     provider: anthropic
     params:
@@ -90,7 +91,9 @@ llm:
         targets:
         - model: claude-primary
           priority: 1
-        - model: claude-backup
+        - model: claude-backup-a
+          priority: 2
+        - model: claude-backup-b
           priority: 2
 ```
 

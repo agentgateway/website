@@ -66,9 +66,9 @@ For mandatory conditions such as "all requests must have a valid audience claim,
 
 Unlike `allow` rules (where any one match permits the request), all `require` rules must match for the request to proceed.
 
-## LLM model authorization
+## LLM authorization
 
-In simplified LLM mode, you can apply authorization directly to an individual model with `llm.models[].authorization.rules`.
+In simplified LLM mode, you can also apply authorization at the policy layer with `llm.policies.authorization.rules` to require every request on the local listener to be authenticated, and at the model layer with `llm.models[].authorization.rules` to restrict access to a specific model.
 
 Each rule in `llm.models[].authorization.rules` uses the same schema as route authorization:
 - A CEL string (legacy shorthand for `allow`)

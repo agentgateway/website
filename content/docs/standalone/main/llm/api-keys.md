@@ -122,4 +122,4 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-For the authentication mode semantics (`strict`, `optional`, and `permissive`), see [API Key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}) and [MCP authentication mode]({{< link-hextra path="/configuration/security/mcp-authn/#authentication-mode" >}}).
+For the authentication mode semantics (`strict`, `optional`, and `permissive`), see [API Key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}).

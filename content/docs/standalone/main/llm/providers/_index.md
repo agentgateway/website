@@ -17,7 +17,7 @@ Use [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/"
 
 ### Override the upstream base URL
 
-When you need a custom upstream endpoint in standalone mode, set `params.baseUrl` on the model instead of older host or path override fields.
+When you need a custom upstream endpoint, set `params.baseUrl` on the model instead of older host or path override fields.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -36,7 +36,7 @@ llm:
 
 ## Standalone authentication
 
-In standalone mode, upstream provider authentication is configured per model via `llm.models[].auth`. In routing-based configurations, use `policies.backendAuth` on a route instead.
+For simplified `llm` configuration, upstream provider authentication is configured per model via `llm.models[].auth`. In routing-based configurations, use `policies.backendAuth` on a route instead.
 
 ### API key
 
@@ -52,7 +52,7 @@ llm:
         value: "$OPENAI_API_KEY"
 ```
 
-Use `auth.key.location` to place the credential somewhere other than the default header. For example, Azure often uses `api-key`:
+Use `auth.key.location` only when a provider needs the credential somewhere other than its default location. For example, Azure often uses `api-key`:
 
 ```yaml
 llm:
@@ -82,9 +82,11 @@ llm:
 
 ### Cloud provider auth
 
-- **Google Cloud**: `auth.gcp` uses Application Default Credentials (ADC) and can fetch an access token or ID token, depending on the `type` you select.
-- **AWS**: `auth.aws` signs upstream requests with SigV4 using standard AWS credentials from environment variables, an instance profile, or a shared config profile.
+- **Google Cloud**: `auth.gcp` uses Application Default Credentials (ADC) and can fetch an access token or ID token (depending on the `type` you select).
+- **AWS**: `auth.aws` signs upstream requests with SigV4 using standard AWS credentials (for example, environment variables, an instance profile, or a shared config profile).
 - **Azure**: `auth.azure` uses Entra ID. `auth.azure.implicit` uses the Azure SDK's `DefaultAzureCredential` to discover credentials automatically.
+
+These are the default auth mechanisms for the corresponding built-in providers, so you usually only need to override them when you need custom credential handling.
 
 ```yaml
 llm:
@@ -97,8 +99,7 @@ llm:
   - name: "*"
     provider: bedrock
     auth:
-      aws:
-        serviceName: bedrock
+      aws: {}
   - name: "*"
     provider: azure
     auth:

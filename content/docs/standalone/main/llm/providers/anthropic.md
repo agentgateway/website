@@ -8,6 +8,8 @@ Configure Anthropic (Claude models) as an LLM provider in agentgateway.
 
 ## Configuration
 
+For the common API-key case, the `auth.key.value` example below is the simple path. Use the AWS SigV4 section later in the page only when you need Claude Platform on AWS or custom signing behavior.
+
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
