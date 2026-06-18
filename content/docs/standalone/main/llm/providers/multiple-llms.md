@@ -12,7 +12,7 @@ The P2C algorithm provides better performance than simple round-robin, random, o
 
 ## Reusable providers in simplified LLM mode
 
-For simplified `llm` configuration, you can define named provider defaults once in `llm.providers[]` and reference them from multiple `llm.models[]` entries. This is different from the P2C group above: the reusable provider acts as a preset, not as a load-balancing pool.
+For simplified `llm` configuration, you can define named provider defaults once in `llm.providers[]` and reference them from multiple `llm.models[]` entries. This is different from the previous group example. Here, the reusable provider acts as a preset, not as a load-balancing pool.
 
 ```yaml
 llm:

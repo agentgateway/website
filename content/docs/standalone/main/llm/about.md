@@ -203,10 +203,3 @@ In this example, both routes have one header matcher, so they have equal specifi
 {{< callout type="info" >}}
 For advanced routing based on request body fields like the `model` name, see [Content-based routing]({{< link-hextra path="/llm/content-routing/" >}}).
 {{< /callout >}}
-
-## Virtual models and provider reuse
-
-For simplified LLM mode in agentgateway 1.3:
-
-- Use [Virtual models]({{< link-hextra path="/llm/virtual-models/" >}}) to publish one model name and route to internal targets with `weighted`, `failover`, or `conditional` modes. Virtual model targets are typically marked `llm.models[].visibility: internal`.
-- Use [Multiple LLM providers]({{< link-hextra path="/llm/providers/multiple-llms/" >}}) to define reusable provider defaults in `llm.providers[]` and reference them from `llm.models[]`. Model-level settings override the shared provider defaults.

@@ -11,14 +11,6 @@ Review the release notes for agentgateway standalone.
 For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases)
 {{< /callout >}}
 
-## 1.3 standalone highlights {#v13-standalone-highlights}
-
-- Standalone LLM docs now cover virtual models, including weighted, failover, and conditional routing plus public and internal model visibility.
-- Reusable named providers are documented alongside model-level provider references and override behavior.
-- Model cost catalogs now cover `config.modelCatalog`, `MODEL_CATALOG_PATHS`, `agctl costs import`, and CEL cost variables.
-- Provider docs now use `llm.models[].auth` and the `tls` field for upstream transport settings.
-- Guardrails, authorization, permissive API key mode, listener TLS, listener CORS, and shared MCP/LLM ports are documented for standalone LLM deployments.
-
 ## 🔥 Breaking changes {#v13-breaking-changes}
 
 ### `agctl` commands reorganized under `proxy` and `controller`
