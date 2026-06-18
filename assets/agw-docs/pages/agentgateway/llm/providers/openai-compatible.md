@@ -4,11 +4,6 @@ Configure LLM providers that expose the OpenAI Chat Completions API but do not h
 
 In {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you configure an OpenAI-compatible provider by setting `ai.provider.openai` and pointing it at the provider's `host`, `port`, and `path`. Use the `path` field when the provider serves chat completions from a non-standard path.
 
-{{< version include-if="1.3.x" >}}
-{{< callout type="info" >}}
-In standalone mode, many of these providers have a first-class `provider:` shortcut, such as `provider: groq`, that automatically fills in the base URL. The Kubernetes {{< reuse "agw-docs/snippets/backend.md" >}} API does not yet expose those shortcuts, so in Kubernetes you configure them with the `ai.provider.openai` shape shown on this page.
-{{< /callout >}}
-{{< /version >}}
 
 ### Built-in OpenAI-compatible providers
 
