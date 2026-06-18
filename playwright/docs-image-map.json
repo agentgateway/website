@@ -13,6 +13,10 @@
     },
     "ui-a2a-listener.png": {
       "light": "assets/img/ui-a2a-listener.png"
+    },
+    "ui-llm-playground.png": {
+      "$note": "NEW image (new-UI LLM playground; captured against a mock OpenAI provider). No docs reference it yet — provisional destination, light only.",
+      "light": "assets/img/ui-llm-playground.png"
     }
   }
 }

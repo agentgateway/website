@@ -93,29 +93,34 @@ npm run sync-docs
 The image's host port (default 15100) avoids colliding with a local agentgateway on
 :15000. Override with `UI_HOST_PORT` / `AGW_IMAGE` / `UI_BASE_URL`.
 
-## Populated MCP playground (real data, not the empty state)
+## Populated captures (real data, one command each)
 
-`smoke.spec.ts` works against the default empty gateway. `playground.spec.ts` needs a
-real MCP target so the playground can initialize a session, list tools, and run `echo`
-(the flow in `mcp/connect/{http,stdio}.md`). Two things must be true:
-
-1. An MCP test server runs on the host (`server-everything` on :3005).
-2. The gateway's MCP listener is reachable from the browser at the SAME port the
-   playground derives from `mcp.port` — so the port must be free on the host AND mapped
-   identically (here 3030). The sl8 image is distroless (no Node), so the gateway can't
-   spawn a stdio MCP server itself; hence the host server + `host.docker.internal`.
-
-`scripts/serve-populated-ui.sh` sets all this up (config in `fixtures/mcp-playground-config.yaml`):
+`smoke.spec.ts` works against the default empty gateway. The playground captures need a
+backing server. `CAPTURE_MODE` tells `webServer` which `scripts/serve-*.sh` to launch (it
+starts the backend + container and tears down on exit), so each is one command:
 
 ```sh
-./scripts/serve-populated-ui.sh        # starts server-everything + the UI, prints the URL
-# in another shell:
-UI_BASE_URL=http://localhost:15100 npm run test:standalone
+npm run test:mcp     # MCP playground   — server-everything + fixtures/mcp-playground-config.yaml
+npm run test:a2a     # A2A traffic view — fixtures/a2a-config.yaml (static; no agent needed)
+npm run test:llm     # LLM playground   — mock OpenAI provider + fixtures/llm-config.yaml
 ```
 
-The playground flow in the new UI is **Apply CORS → Initialize → (echo auto-selected) →
-fill MESSAGE → Call tool**, at route `/ui/mcp/playground` (the docs' `/ui/playground/` is
-stale). The dynamic session id is masked in `toHaveScreenshot` so it never breaks baselines.
+Each `serve-*.sh` is also runnable standalone (then capture in another shell with
+`UI_BASE_URL=http://localhost:15100 npm run test:<mode>`).
+
+A shared constraint for the MCP and LLM playgrounds: the playground connects **browser-side**
+to the listener at the SAME port it derives from config (`mcp.port` / `llm.port`), so that
+port must be free on the host AND mapped identically (3030 here). The sl8 image is
+distroless (no Node), so backends run on the host and the gateway reaches them via
+`host.docker.internal`.
+
+- **MCP** (`/ui/mcp/playground`; the docs' `/ui/playground/` is stale): **Apply CORS →
+  Initialize → (echo auto-selected) → fill MESSAGE → Call tool**. The dynamic session id
+  is masked.
+- **LLM** (`/ui/llm/playground`): **Apply CORS → specify a concrete model (config model is
+  `*`) → fill USER MESSAGE → Send**. Captured against a **mock OpenAI provider**
+  (`scripts/mock-openai.mjs`) so the reply is fixed and no real key is needed; the reply
+  streams token-by-token (assert on `body.innerText`), and the latency badge is masked.
 
 ## A2A — no playground in the new UI
 
@@ -169,39 +174,42 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 |---|---|
 | `playwright.config.ts` | `webServer` launcher, light/dark projects, screenshot/diff settings |
 | `provisioners/kubernetes.ts` | Notes only — the kind + port-forward reuse path |
-| `fixtures/mcp-playground-config.yaml` | Gateway config for the populated playground (port 3030 + host MCP target) |
+| `playwright.config.ts` knobs | `CAPTURE_MODE` (mcp/a2a/llm) selects the `webServer` launcher |
+| `fixtures/mcp-playground-config.yaml` | MCP playground config (port 3030 + host MCP target) |
 | `fixtures/a2a-config.yaml` | A2A guide config for the Traffic route/listener capture |
+| `fixtures/llm-config.yaml` | LLM config pointed at the mock OpenAI provider (hostOverride) |
 | `fixtures/standalone-config.yaml` | Minimal MCP config (used only with `AGENTGATEWAY_BIN`) |
 | `fixtures/test.ts` | Seeds `localStorage['theme']` per project; `dismissWelcome()` helper |
 | `tests/smoke.spec.ts` | Loads `/ui/`, dismisses welcome, screenshots — proves the loop |
-| `tests/playground.spec.ts` | Real MCP playground capture (tools-discovered + echo response) |
+| `tests/playground.spec.ts` | MCP playground capture (tools-discovered + echo response) |
 | `tests/a2a-traffic.spec.ts` | A2A config as Traffic route + listener (no A2A playground exists) |
-| `scripts/serve-populated-ui.sh` | Brings up server-everything + the UI for the playground capture |
-| `scripts/serve-a2a-ui.sh` | Brings up the UI with the A2A config for the traffic capture |
+| `tests/llm-playground.spec.ts` | LLM playground capture against the mock provider |
+| `scripts/serve-populated-ui.sh` | `CAPTURE_MODE=mcp` launcher: server-everything + the UI |
+| `scripts/serve-a2a-ui.sh` | `CAPTURE_MODE=a2a` launcher: the UI with the A2A config |
+| `scripts/serve-llm-ui.sh` | `CAPTURE_MODE=llm` launcher: mock-openai + the UI |
+| `scripts/mock-openai.mjs` | Deterministic OpenAI-compatible mock (fixed reply, streaming + JSON) |
 | `scripts/probe-theme.mjs` | One-off diagnostic used to confirm the theme mechanism |
 | `scripts/sync-docs-images.mjs` | Copies captured PNGs → docs `img/` via a name→path map |
 | `docs-image-map.json` | Screenshot name → {light, dark?} doc destinations |
-| `__screenshots__/` | Committed baselines (ui-landing, ui-playground-*, ui-a2a-*; light+dark) |
+| `__screenshots__/` | Committed baselines (ui-landing, ui-playground-*, ui-a2a-*, ui-llm-playground; light+dark) |
 
 ## Status: what works and what's left
 
-**Proven working:**
-- `npm run test:standalone` → sl8 image → Gateway Overview screenshot, light + dark.
-- `playground.spec.ts` → real MCP playground: initialize session, "N tools discovered",
-  run `echo`, HTTP 200 result — light + dark, → `ui-playground-tools/-tool-echo.png`
-  (the images used in `mcp/connect/{http,stdio}.md`).
-- `a2a-traffic.spec.ts` → A2A config as Traffic route + listener, light + dark →
-  `ui-a2a-route/-listener.png` (the new UI has no A2A playground; see above).
+**Proven working (each is one command, self-contained, deterministic, light + dark):**
+- `npm run test:standalone` → Gateway Overview screenshot.
+- `npm run test:mcp` → MCP playground: initialize session, "N tools discovered", run
+  `echo`, HTTP 200 → `ui-playground-tools/-tool-echo.png` (used in `mcp/connect/{http,stdio}.md`).
+- `npm run test:a2a` → A2A config as Traffic route + listener → `ui-a2a-route/-listener.png`
+  (the new UI has no A2A playground; see above).
+- `npm run test:llm` → LLM playground against a mock provider → `ui-llm-playground.png`.
 - `npm run sync-docs` copies the light baselines to their `assets/img/` destinations.
 
 **Left to do for full doc-image regeneration:**
 
 - Not added to any GitHub Actions workflow.
 - Kubernetes mode is documented (notes), not automated.
-- `agent/a2a.md`'s playground section must be rewritten for the new UI (no A2A playground);
-  the `ui-a2a-route/-listener` destinations in `docs-image-map.json` are provisional.
-- Remaining doc images (OpenAPI, time-tool, `operations/ui` debug shots) need specs +
-  backends. The LLM playground (`/llm/playground`) is another candidate (needs a provider key).
-- Populated captures need the manual `serve-*.sh` setup; folding the MCP server + port
-  mapping into `webServer` would make the playground capture one command.
+- Guide rewrites: `agent/a2a.md`'s playground section (no A2A playground in the new UI),
+  and confirm whether `llm/*` docs should embed `ui-llm-playground.png`. The `ui-a2a-*`
+  and `ui-llm-playground` destinations in `docs-image-map.json` are provisional.
+- Remaining doc images (OpenAPI, time-tool, `operations/ui` debug shots) need specs + backends.
 - Confirm `docs-image-map.json` destinations against the docs before committing images.
