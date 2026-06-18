@@ -142,9 +142,9 @@ Use the agentgateway playground to send a request to the ADK agent that you set 
    2. In the **Connection Settings** card, select your listener and the **A2A target**, and click **Connect**. The agentgateway UI connects to the A2A target and retrieves all the skills that the target provides.
    3. Verify that you see a list of **Available Skills**.
 
-      {{< reuse-image src="img/ui-a2a-skills.png" >}}
+      {{< reuse-image src="img/1.2-earlier/ui-a2a-skills.png" >}}
 
 3. Select the **Returns hello world** skill. In the **Message** field, enter a prompt, such as `Say hello`, and click **Send Task**.
 
 4. Verify that you get back a message from the ADK agent stating that your request was processed successfully.
-   {{< reuse-image src="img/ui-a2a-success.png" >}}
+   {{< reuse-image src="img/1.2-earlier/ui-a2a-success.png" >}}

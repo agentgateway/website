@@ -20,7 +20,7 @@ The open source project Istio is the leading service mesh implementation that of
 
 In this guide, you learn how to use {{< reuse "/agw-docs/snippets/kgateway.md" >}} as an ingress gateway proxy for the workloads in your Istio {{< gloss "Service Mesh" >}}service mesh{{< /gloss >}}. You explore how to enable the Istio sidecar mesh integration in {{< reuse "/agw-docs/snippets/kgateway.md" >}}, set up your ingress gateway proxy with a sidecar, and send secure mutual TLS traffic to the Bookinfo app as illustrated in the following image. 
 
-{{< reuse-image src="img/sidecar-ingress.svg" width="800px" >}}
+{{< reuse-image-light src="img/sidecar-ingress.svg" width="800px" >}}
 {{< reuse-image-dark srcDark="img/sidecar-ingress-dark.svg" width="800px" >}}
 <!-- source Excalidraw: https://app.excalidraw.com/s/AKnnsusvczX/1HkLXOmi9BF -->
 

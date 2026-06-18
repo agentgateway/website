@@ -22,8 +22,6 @@ You can configure request buffering, response buffering, or both.
 
 The `maxBytes` value accepts byte-size strings such as `32Ki`, `2Mi`, or `10M`. Large buffered bodies can increase proxy memory usage, so set strict limits for routes that receive untrusted or large payloads. When a body exceeds the applicable buffer limit, agentgateway rejects the body if possible. If response headers were already sent before the limit is exceeded, the proxy closes the connection.
 
-## Before you begin
-
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Buffer request and response bodies

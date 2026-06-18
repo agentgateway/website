@@ -140,13 +140,13 @@ Build the Docker image from the source code. The example builds the image for an
 
    1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
       
-      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
+      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-playground.png" >}}
 
    2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the APIs that are exposed on the target.
    
    3. Verify that you see the Petstore APIs from the OpenAPI spec as a list of **Available Tools** 
    
-      {{< reuse-image src="img/agentgateway-ui-tools-openapi.png" >}}
+      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tools-openapi.png" >}}
 
 3. Verify access to the Petstore APIs. 
    1. Select the **addPet** API. 
@@ -178,7 +178,7 @@ Build the Docker image from the source code. The example builds the image for an
       ```
    3. Click **Run Tool**. Verify that the pet is added to the petstore. 
       
-      {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
+      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tools-openapi-success.png" >}}
 
 
 ## Tool names {#tool-names}

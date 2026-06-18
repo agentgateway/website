@@ -186,14 +186,14 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    * **URL**: Enter the agentgateway address, port, and the `/mcp` path. If your agentgateway proxy is exposed with a LoadBalancer server, use `http://<lb-address>/mcp`. In local test setups where you port-forwarded the agentgateway proxy on your local machine, use `http://localhost:8080/mcp`.
    * Click **Connect**.
 
-   {{< reuse-image src="img/mcp-inspector-connected.png" >}}
+   {{< reuse-image-light src="img/mcp-inspector-connected.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-inspector-connected-dark.png" >}}
 
 4. From the menu bar, click the **Tools** tab. Then from the **Tools** pane, click **List Tools** and select the `fetch` tool. 
 5. From the **fetch** pane, in the **url** field, enter a website URL, such as `https://lipsum.com/`, and click **Run Tool**.
 6. Verify that you get back the fetched URL content.
 
-   {{< reuse-image src="img/mcp-inspector-fetch.png" >}}
+   {{< reuse-image-light src="img/mcp-inspector-fetch.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-inspector-fetch-dark.png" >}}
 
 {{% /steps %}}

@@ -12,7 +12,7 @@ In this guide, you learn how to use {{< reuse "/agw-docs/snippets/kgateway.md" >
 
 This guide assumes that you run your ambient mesh in a single cluster and want to use {{< reuse "/agw-docs/snippets/kgateway.md" >}} as the ingress gateway to protect your ambient mesh services. 
 
-{{< reuse-image src="img/ambient-ingress.svg" width="600px" caption="Ingress gateway integration for an ambient mesh" >}}
+{{< reuse-image-light src="img/ambient-ingress.svg" width="600px" caption="Ingress gateway integration for an ambient mesh" >}}
 {{< reuse-image-dark srcDark="img/ambient-ingress.svg" width="600px" caption="Ingress gateway integration for an ambient mesh" >}}
 
 ## Before you begin
