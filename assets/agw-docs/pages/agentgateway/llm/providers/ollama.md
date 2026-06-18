@@ -115,8 +115,6 @@ Because Ollama runs outside your Kubernetes cluster, you need a headless Service
 
    | Setting | Description |
    |---------|-------------|
-   | Standalone shortcut | Use `provider: ollama` in standalone mode. |
-   | Standalone default base URL | `http://localhost:11434/v1` |
    | `ai.provider.openai` | Current Kubernetes workaround for Ollama's OpenAI-compatible chat completions endpoint. |
    | `ai.provider.openai.model` | The Ollama model to use. This must match a model you pulled with `ollama pull`. |
    | `host` | The in-cluster DNS name of the headless Service pointing to the external Ollama instance. |
