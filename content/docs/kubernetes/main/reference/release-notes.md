@@ -66,7 +66,7 @@ External authorization and external processing integrations can now make decisio
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2017 -->
 
-A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits. This enables policies and extensions that need full request-body access before backend selection or dispatch.
+A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits. This enables policies and extensions that need full request-body access before backend selection or dispatch. For more information, see [Body buffering]({{< link-hextra path="/traffic-management/buffer/" >}}).
 
 ### Dynamic SSL certificates
 

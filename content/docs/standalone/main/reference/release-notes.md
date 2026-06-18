@@ -62,7 +62,7 @@ This release brings a large set of improvements to the standalone LLM experience
 - **Virtual models**: Define a public model name that routes to one or more concrete models using weighted, failover, or conditional (CEL-based) routing, and mark concrete models as `public` or `internal`.
 - **Shared providers**: Define a named provider once with shared defaults and reference it from multiple models, with per-model overrides.
 - **Model-cost catalog**: Supply a model-cost catalog so the gateway computes real per-request cost, surfaced through CEL, logs, traces, and metrics. Catalogs load from files or inline, and `agctl costs import` can generate one.
-- **13 new first-class providers**: Mistral, Hugging Face, Cohere, Groq, Fireworks, DeepSeek, xAI, Together AI, OpenRouter, Cerebras, DeepInfra, Baseten, and Ollama can be selected by name with sensible defaults, and `baseUrl` replaces the older host and path override fields.
+- **13 new first-class providers**: Mistral, Hugging Face, Cohere, Groq, Fireworks, DeepSeek, xAI, Together AI, OpenRouter, Cerebras, DeepInfra, Baseten, and Ollama can be selected by name with sensible defaults, and `baseUrl` replaces the older host and path override fields. For more information, see the [LLM providers section]({{< link-hextra path="/llm/providers/" >}}).
 - **Custom provider**: Access providers without built-in support directly, rather than approximating them with the `OpenAI` provider and a custom `base_url`. A `providerOverride` tags a custom backend with a known provider name so cost and telemetry attribute correctly.
 - **Serve LLM over TLS**: The standalone LLM listener can now serve HTTPS directly.
 - **CORS for the local LLM listener**: Configure CORS on the LLM listener, including correct handling of non-matching requests and 404s.
@@ -97,7 +97,7 @@ External authorization and external processing integrations can now make decisio
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2017 -->
 
-A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits.
+A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits. For more information, see [Body buffering]({{< link-hextra path="/configuration/traffic-management/buffer/" >}}).
 
 ### Authentication and authorization
 
