@@ -1,6 +1,6 @@
 ---
 title: Azure
-weight: 60
+weight: 15
 description: Configuration and setup for Azure AI services provider
 ---
 
@@ -8,7 +8,7 @@ Configure Microsoft Azure AI as an LLM provider in agentgateway.
 
 ## Authentication
 
-Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). In standalone mode, this authentication is configured via `llm.models[].auth` (for example, `auth.azure.implicit` or `auth.key`). In routing-based configurations, use `policies.backendAuth.azure`.
+Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). In standalone mode, this authentication is configured with `llm.models[]` fields (for example, `params.apiKey` or `auth.azure`). In routing-based configurations, use `policies.backendAuth.azure`.
 
 ## Configuration
 
@@ -29,9 +29,6 @@ llm:
   models:
   - name: "*"
     provider: azure
-    auth:
-      azure:
-        implicit: {}
     params:
       azureResourceName: "your-resource-name"
       azureResourceType: foundry
@@ -68,9 +65,6 @@ llm:
   models:
   - name: "gpt-4.1"
     provider: azure
-    auth:
-      azure:
-        implicit: {}
     params:
       azureResourceName: "your-resource-name"
       azureResourceType: openAI
@@ -90,7 +84,7 @@ llm:
 | `params.azureProjectName` | The Foundry project name. Required for `foundry` type. If omitted, defaults to `azureResourceName`. |
 | `params.azureApiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2024-04-01-preview`. |
 | `params.model` | The specific Azure model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
-| `auth` | Authentication for the upstream Azure endpoint. Use `auth.azure` for Entra ID auth, or `auth.key.value` for API key auth. Set `auth.key.location.header.name: api-key` if needed. |
+| `params.apiKey` | The Azure API key for authentication. If unset, implicit Entra ID authentication is used. You can reference environment variables using the `$VAR_NAME` syntax. |
 
 ## Advanced configuration
 
@@ -110,13 +104,6 @@ binds:
     - matches:
       - path:
           pathPrefix: /azure
-      policies:
-        urlRewrite:
-          authority: auto
-        backendAuth:
-          azure:
-            implicit: {}
-        backendTLS: {}
       backends:
       - ai:
           name: azure
@@ -147,8 +134,6 @@ binds:
       - path:
           pathPrefix: /azure
       policies:
-        urlRewrite:
-          authority: auto
         backendAuth:
           azure:
             explicitConfig:
@@ -156,7 +141,6 @@ binds:
                 tenantId: "<your-tenant-id>"
                 clientId: "<your-client-id>"
                 clientSecret: "<your-client-secret>"
-        backendTLS: {}
       backends:
       - ai:
           name: azure
@@ -198,7 +182,6 @@ binds:
                 tenantId: "<your-tenant-id>"
                 clientId: "<your-client-id>"
                 clientSecret: "<your-client-secret>"
-        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -235,7 +218,6 @@ binds:
           azure:
             explicitConfig:
               managedIdentity: {}
-        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -278,7 +260,6 @@ binds:
                   # OR use objectId or resourceId instead
                   # objectId: "your-managed-identity-object-id"
                   # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
-        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

@@ -1,6 +1,6 @@
 ---
 title: Hugging Face
-weight: 61
+weight: 20
 description: Configuration and setup for Hugging Face LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: huggingface
     params:
       apiKey: "$HUGGINGFACE_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://router.huggingface.co/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
