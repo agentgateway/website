@@ -8,7 +8,7 @@ test: skip
 Review the release notes for agentgateway standalone.
 
 {{< callout type="info">}}
-For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases)
+For more details, check out the [release blog](https://agentgateway.dev/blog/2026-06-17-agentgateway-v1.3.0/), or review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 {{< /callout >}}
 
 ## 🔥 Breaking changes {#v13-breaking-changes}
