@@ -10,6 +10,57 @@ Create a group of LLM providers for the same route. agentgateway automatically l
 
 The P2C algorithm provides better performance than simple round-robin, random, or least-connections strategies by adapting in real-time to each provider's health and performance characteristics.
 
+## Reusable providers in simplified LLM mode
+
+For simplified `llm` configuration, you can define named provider defaults once in `llm.providers[]` and reference them from multiple `llm.models[]` entries with `provider.reference`. This is different from the previous group example. Here, the reusable provider acts as a preset, not as a load-balancing pool.
+
+```yaml
+llm:
+  providers:
+  - name: openai-default
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+  - name: openai-backup
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_BACKUP_API_KEY"
+
+  models:
+  - name: fast
+    provider:
+      reference: openai-default
+    params:
+      model: gpt-4o-mini
+  - name: smart
+    provider:
+      reference: openai-backup
+    params:
+      model: gpt-4o
+```
+
+When a model references a named provider with `provider.reference`, provider defaults are reused automatically. Keep shared settings on `llm.providers[]`, and only override `params.model` on the model itself.
+
+```yaml
+llm:
+  providers:
+  - name: openai-default
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+
+  models:
+  - name: smart
+    provider:
+      reference: openai-default
+    params:
+      model: gpt-4o
+```
+
+In this example, `smart` inherits the upstream API key from `llm.providers[]` and only changes the model name.
+
+Named providers can hold shared upstream settings you want to reuse, such as authentication, host overrides, path overrides, or other model defaults. Keep the shared values on `llm.providers[]` and only set per-model differences on `llm.models[]`.
+
 ## Configuration
 
 {{< callout type="info" >}}

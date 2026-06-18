@@ -108,6 +108,8 @@ You can control how agentgateway handles requests that lack valid credentials by
 | `optional` | If a token is present, it is validated. Requests without a token are permitted. |
 | `permissive` | Requests are never rejected based on authentication. |
 
+For the same permissive-mode concept on the standalone LLM listener, see [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) (`llm.policies.apiKey.mode: permissive`).
+
 The following example sets the mode to `permissive`:
 
 ```yaml
