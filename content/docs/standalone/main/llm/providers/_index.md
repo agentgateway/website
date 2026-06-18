@@ -1,31 +1,32 @@
 ---
 title: Providers
 weight: 20
-description: Configure agentgateway for OpenAI-compatible and self-hosted LLM providers
+description: Configure agentgateway for first-class, OpenAI-compatible, and self-hosted LLM providers
 test: skip
 ---
 
 Learn how to configure agentgateway for a particular LLM {{< gloss "Provider" >}}provider{{< /gloss >}}.
 
-## OpenAI-compatible providers
+## First-class providers
 
-Popular OpenAI-compatible providers include xAI (Grok), Cohere, Together AI, Groq, DeepSeek, Mistral, Perplexity, and Fireworks AI.
+Use the dedicated provider pages when agentgateway already knows the upstream base URL and request format. This list includes Anthropic, OpenAI, and many OpenAI-compatible providers.
 
-Additional self-hosted solutions like vLLM and LM Studio are also supported through the [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) configuration.
+## OpenAI-compatible fallback
 
-### Path prefix
+Use [OpenAI-compatible]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) only for providers that do not have a first-class shortcut, such as Perplexity, vLLM, LM Studio, or another service that exposes the OpenAI API format.
 
-When using the advanced `binds/listeners/routes` configuration, you can set `pathPrefix` on an AI provider to prepend a custom path to all API requests. Use `pathPrefix` when routing through a proxy or custom API endpoint that requires a different base path.
+### Override the upstream base URL
+
+When you need a custom upstream endpoint in standalone mode, set `params.baseUrl` on the model instead of older host or path override fields.
 
 ```yaml
-backends:
-- ai:
-    name: openai
-    pathPrefix: /custom/v1
-    provider:
-      openAI:
-        model: gpt-4o-mini
-  policies:
-    backendAuth:
-      key: "$OPENAI_API_KEY"
+llm:
+  port: 3000
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$PERPLEXITY_API_KEY"
+      baseUrl: "https://api.perplexity.ai"
+    backendTLS: {}
 ```
