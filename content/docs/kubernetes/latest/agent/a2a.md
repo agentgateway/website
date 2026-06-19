@@ -4,9 +4,9 @@ weight: 40
 description: Route to A2A servers and securely expose their skills through agentgateway.
 test:
   a2a:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/agent/a2a.md
+  - file: content/docs/kubernetes/latest/agent/a2a.md
     path: a2a
 ---
 

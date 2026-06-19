@@ -6,7 +6,7 @@ description: Connect to an MCP server and try tools in the agentgateway playgrou
 # block in the shared snippet reproduces the equivalent config + backends so this stays tested.
 test:
   mcp-playground:
-  - file: content/docs/standalone/main/quickstart/mcp.md
+  - file: content/docs/standalone/latest/quickstart/mcp.md
     path: mcp
 ---
 

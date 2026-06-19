@@ -4,13 +4,13 @@ weight: 45
 description: Stream responses from the LLM to the end user through agentgateway.
 test:
   streaming-openai:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: content/docs/kubernetes/latest/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: content/docs/kubernetes/latest/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/openai.md
+  - file: content/docs/kubernetes/latest/llm/providers/openai.md
     path: openai-setup
-  - file: content/docs/kubernetes/main/llm/streaming.md
+  - file: content/docs/kubernetes/latest/llm/streaming.md
     path: streaming-openai
 ---
 
