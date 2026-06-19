@@ -1,6 +1,6 @@
 ---
 title: DeepSeek
-weight: 61
+weight: 20
 description: Configuration and setup for DeepSeek LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: deepseek
     params:
       apiKey: "$DEEPSEEK_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.deepseek.com/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

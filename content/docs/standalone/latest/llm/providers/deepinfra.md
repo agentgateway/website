@@ -1,6 +1,6 @@
 ---
 title: DeepInfra
-weight: 61
+weight: 20
 description: Configuration and setup for DeepInfra LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: deepinfra
     params:
       apiKey: "$DEEPINFRA_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.deepinfra.com/v1/openai"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

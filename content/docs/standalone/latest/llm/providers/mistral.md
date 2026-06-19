@@ -1,6 +1,6 @@
 ---
 title: Mistral
-weight: 61
+weight: 20
 description: Configuration and setup for Mistral LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: mistral
     params:
       apiKey: "$MISTRAL_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.mistral.ai/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

@@ -4,13 +4,13 @@ description: Integrate with OpenTelemetry to collect and analyze request traces.
 weight: 90
 test:
   tracing:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: content/docs/kubernetes/main/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: content/docs/kubernetes/main/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: content/docs/kubernetes/main/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/observability/tracing.md
+  - file: content/docs/kubernetes/main/observability/tracing.md
     path: tracing
 ---
 
