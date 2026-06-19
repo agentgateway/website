@@ -1,6 +1,6 @@
 ---
 title: Cohere
-weight: 61
+weight: 20
 description: Configuration and setup for Cohere LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: cohere
     params:
       apiKey: "$COHERE_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.cohere.ai"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

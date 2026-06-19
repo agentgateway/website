@@ -1,6 +1,6 @@
 ---
 title: xAI
-weight: 61
+weight: 20
 description: Configuration and setup for xAI (Grok) LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: xai
     params:
       apiKey: "$XAI_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.x.ai/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

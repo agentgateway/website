@@ -43,7 +43,7 @@ curl 'http://localhost:4000/v1/models'
 {{% /tab %}}
 {{% tab %}}
 
-[View other LLM client integrations](/docs/standalone/latest/integrations/llm-clients/).
+[View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
 
 {{% /tab %}}
 {{< /tabs >}}
