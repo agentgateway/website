@@ -1,4 +1,3 @@
-
 > [!NOTE]
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
 
@@ -10,7 +9,7 @@ MCP authentication uses a connect-time model: the OAuth flow happens once when t
 
 ### Supported IdPs for MCP Auth {#idp}
 
-Agentgateway currently includes built-in support for Keycloak and Auth0 as identity providers. Descope works via the standard resource server configuration using its JWKS endpoint as described in the [Descope integration guide]({{< link-hextra path="/integrations/auth/descope" >}}). Other IdPs that fully comply with the OAuth 2.0 specs might also work but are not tested.{{< conditional-text include-if="kubernetes" >}} For more information, see [Supported identity providers]({{< link-hextra path="/mcp/about/#supported-idps" >}}).{{< /conditional-text >}}
+Agentgateway currently includes built-in support for Keycloak and Auth0 as identity providers. Other IdPs that fully comply with the OAuth 2.0 specs might also work but are not tested.{{< conditional-text include-if="kubernetes" >}} For more information, see [Supported identity providers]({{< link-hextra path="/mcp/about/#supported-idps" >}}).{{< /conditional-text >}}
 
 Adding support for a new provider requires minimal code changes. To contribute support for your IdP, see the [`McpIDP` enum in the agentgateway source](https://github.com/agentgateway/agentgateway/blob/main/crates/agentgateway/src/types/agent.rs).
 
@@ -20,6 +19,7 @@ Agentgateway can adapt traffic for authorization servers that don't fully comply
 For example, Keycloak exposes certificates at a non-standard endpoint.
 
 In this mode, agentgateway:
+
 - Exposes protected resource metadata on behalf of the MCP server
 - Proxies authorization server metadata and client registration
 - Validates tokens using the authorization server's JWKS
@@ -39,14 +39,15 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
     bearerMethodsSupported:
-    - header
-    - body
-    - query
+      - header
+      - body
+      - query
     resourceDocumentation: http://localhost:3000/stdio/docs
     resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
+
 {{% /tab %}}
 {{% tab name="Auth0" %}}
 ```yaml
@@ -59,12 +60,13 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
     bearerMethodsSupported:
-    - header
-    - body
-    - query
+      - header
+      - body
+      - query
 ```
+
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -80,11 +82,11 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
     bearerMethodsSupported:
-    - header
-    - body
-    - query
+      - header
+      - body
+      - query
 ```
 
 ## JWT claim validation
@@ -129,11 +131,11 @@ mcpAuthentication:
 
 You can control how agentgateway handles requests that lack valid credentials by setting the `mode` field. The following modes are supported:
 
-| Mode | Behavior |
-|------|----------|
+| Mode               | Behavior                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `strict` (default) | A valid token issued by a configured issuer must be present. Requests without a valid token are rejected with `401 Unauthorized`. |
-| `optional` | If a token is present, it is validated. Requests without a token are allowed through. |
-| `permissive` | Requests are never rejected based on authentication. |
+| `optional`         | If a token is present, it is validated. Requests without a token are allowed through.                                             |
+| `permissive`       | Requests are never rejected based on authentication.                                                                              |
 
 The following example sets the mode to `permissive`:
 
@@ -146,7 +148,7 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
 ```
 
 ## Passthrough
