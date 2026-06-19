@@ -77,7 +77,7 @@ curl 'http://localhost:4000/v2/rerank' \
 {{% /tab %}}
 {{% tab %}}
 
-[View other LLM client integrations](/docs/standalone/latest/integrations/llm-clients/).
+[View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
 
 {{% /tab %}}
 {{< /tabs >}}

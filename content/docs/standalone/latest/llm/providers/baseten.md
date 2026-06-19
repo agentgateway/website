@@ -1,6 +1,6 @@
 ---
 title: Baseten
-weight: 61
+weight: 20
 description: Configuration and setup for Baseten LLM provider
 ---
 
@@ -19,8 +19,6 @@ llm:
     provider: baseten
     params:
       apiKey: "$BASETEN_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://inference.baseten.co/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

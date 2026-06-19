@@ -4,148 +4,144 @@ weight: 51
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, metrics, and CEL policies.
 test:
   costs:
-  - file: content/docs/standalone/latest/llm/costs.md
+  - file: content/docs/standalone/main/llm/costs.md
     path: costs
+aliases:
+  - /llm/spending/
 ---
 
-Agentgateway can compute the realized USD cost of each LLM request when you provide a model cost catalog. With a catalog in place, agentgateway attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
+Agentgateway can track LLM spend by mapping each request's provider, model, and token counts to per-token pricing.
 
-Agentgateway does not ship a built-in catalog. Costs are computed only when you configure one (for example, a catalog that you generate with [`agctl costs import`](#generate-a-catalog-with-agctl)).
+Agentgateway extracts token usage from supported LLM APIs automatically. To convert those token counts into cost, configure a model cost catalog. The catalog maps provider and model names to pricing data so agentgateway can attach realized USD cost to logs, traces, metrics, and CEL expressions.
 
-## Before you begin
+{{< callout type="info" >}}
+Cost analysis is best-effort and may not exactly match your provider bill in scenarios such as price changes, custom pricing, failed requests, or provider-specific billing rules.
+{{< /callout >}}
 
-{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+## Configure a model catalog
 
-
-## Step 1: Prepare a catalog
-
-Prepare a catalog by creating your own JSON file or using the `agctl costs import` command.
-
-### Catalog JSON format
-
-{{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
-
-### Generate a catalog with agctl
-
-Use `agctl costs import` to generate a catalog JSON file, then reference that file from `config.modelCatalog` or `MODEL_CATALOG_PATHS`.
-
-1. Generate a catalog from a supported source. By default, `agctl costs import` imports every provider that the proxy supports from [models.dev](https://models.dev).
-
-   ```sh
-   agctl costs import --pretty --out ./catalog.json
-   ```
-
-2. To import only a subset of providers, pass a comma-separated list to `--providers`.
-
-   ```sh
-   agctl costs import --pretty --providers openai,anthropic --out ./catalog.json
-   ```
-
-3. Reference the generated file from your configuration with `config.modelCatalog[].file` or `MODEL_CATALOG_PATHS`, then run agentgateway.
-
-For all options, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
-
-## Step 2: Configure catalog sources
-
-Configure one or more catalog sources for agentgateway with the `config.modelCatalog` config section. Sources are merged in order, with later sources taking precedence at the model level.
-
-### Load a catalog from a file
-
-The `file` field is a path to a catalog JSON file. Agentgateway watches the file and reloads it when it changes.
+Use `config.modelCatalog` to load one or more model cost catalog files. Catalog entries are merged in order, and later entries take precedence. This lets you start with an imported public catalog and then layer local overrides for contracted pricing, internal models, or provider-specific aliases.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
+
 config:
   modelCatalog:
-  - file: ./catalog.json
+  - file: ./costs/catalog.json
+
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
 
-### Embed a catalog inline
-
-The `inline` field is a string that contains the catalog JSON.
-
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-config:
-  modelCatalog:
-  - inline: |
-      {
-        "providers": {
-          "openai": {
-            "models": {
-              "gpt-4o-mini": {
-                "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" }
-              }
-            }
-          }
-        }
-      }
-```
-
-### Load catalog files with an environment variable
-
-You can also load one or more catalog files with the `MODEL_CATALOG_PATHS` environment variable, set to a comma-separated list of file paths. The environment variable is useful for container deployments where you mount a catalog file and enable it without editing the main configuration file.
+Run agentgateway with the config file.
 
 ```sh
-MODEL_CATALOG_PATHS=./catalog.json,./overrides.json agentgateway -f config.yaml
+agentgateway -f config.yaml
+```
+
+After the catalog is loaded, priced requests include cost data. The access log includes `agw.ai.usage.cost.total`, and CEL exposes cost data as `llm.cost` and `llm.costRates`.
+
+For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/llm/observability/" >}}).
+
+## Import costs with agctl
+
+Use `agctl costs import` to generate a catalog file from a supported pricing source. The default source is `models.dev`.
+
+```sh
+mkdir -p costs
+agctl costs import --out ./costs/catalog.json
+```
+
+To keep the catalog smaller, import only the providers that you use.
+
+```sh
+agctl costs import \
+  --source models.dev \
+  --providers anthropic,google,openai \
+  --out ./costs/catalog.json
+```
+
+For all flags, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
+
+## Import costs in the UI
+
+You can also import model costs from the Admin UI.
+
+1. Open the [Admin UI cost page](http://localhost:15000/ui/llm/costs).
+2. Press **Refresh base costs**.
+
+The UI fetches the latest base costs and configures `modelCatalog`. You can refresh again later to pull updated pricing and model data.
+
+When you set up a fresh configuration for the first time, the UI automatically performs this step.
+
+## Override catalog entries
+
+If your provider pricing differs from the imported public catalog, add another catalog file after the imported one. Later catalog sources override earlier sources.
+
+```yaml
+config:
+  modelCatalog:
+  - file: ./costs/catalog.json
+  - file: ./costs/overrides.json
+```
+
+Use overrides for contracted pricing, internally hosted models, or models that do not appear in the imported catalog.
+
+You can also load one or more catalog files with the `MODEL_CATALOG_PATHS` environment variable. Set it to a comma-separated list of file paths.
+
+```sh
+MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f config.yaml
 ```
 
 {{< callout type="warning" >}}
-When `MODEL_CATALOG_PATHS` is set, it **replaces** any `config.modelCatalog` sources; the two are not merged. Use one mechanism or the other.
+When `MODEL_CATALOG_PATHS` is set, it replaces any `config.modelCatalog` sources. Use one mechanism or the other.
 {{< /callout >}}
 
-## Step 3: Configure cost policies
+## Use cost data
 
-Use cost data in CEL, logs, traces, and metrics policies.
+When a request matches an entry in the catalog, agentgateway populates these CEL fields:
 
-When a request matches an entry in the catalog, agentgateway populates the following CEL fields:
+- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components such as `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
+- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
 
-- `llm.cost`: The realized USD cost of the request. Includes `total` plus per-token-type components: `input`, `output`, `cacheRead`, `cacheWrite`, `reasoning`, `inputAudio`, and `outputAudio`. Unset when the model cannot be priced.
-- `llm.costRates`: The effective USD-per-1,000,000-token rates that were applied, after tier selection. Includes the same per-token-type fields when available. Unset when the model cannot be priced.
+The request access log always includes `agw.ai.usage.cost.total` for LLM requests when a cost is available.
+Traces always include the full breakdown:
+* `agw.ai.usage.cost.total`
+* `agw.ai.usage.cost.input`
+* `agw.ai.usage.cost.output`
+* `agw.ai.usage.cost.cache_read`
+* `agw.ai.usage.cost.cache_write`
+* `agw.ai.usage.cost.reasoning`
+* `agw.ai.usage.cost.input_audio`
+* `agw.ai.usage.cost.output_audio`
 
-The request access log always includes `agw.ai.usage.cost.total` for LLM requests (it is `0` when the model cannot be priced). To add the breakdown or rate fields, reference them with CEL in access logs, traces, or metrics:
+As these are loaded into the CEL context, they can be explicitly emited as well
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   accessLog:
     add:
-      llm.cost.total: 'llm.cost.total'
-      llm.cost.input: 'llm.cost.input'
-      llm.cost.output: 'llm.cost.output'
-      llm.cost.cacheRead: 'llm.cost.cacheRead'
-  tracing:
-    attributes:
-      llm.cost.total: 'llm.cost.total'
-      llm.costRates.input: 'llm.costRates.input'
-      llm.costRates.output: 'llm.costRates.output'
-
-config:
-  metrics:
-    fields:
-      add:
-        llm.cost.total: 'llm.cost.total'
-        llm.costRates.input: 'llm.costRates.input'
+       # Add the input cost
+       input_cost: llm.cost.input
+       # Add ALL cost variables, as `cost.input`, `cost.output`, etc.
+       cost: flatten(llm.cost)
 ```
 
-A priced request produces an access log line that includes the cost fields:
+A priced request produces an access log entry that includes cost data.
 
-```
+```console
 ... protocol=llm gen_ai.provider.name=openai gen_ai.request.model=gpt-4o-mini
 gen_ai.usage.input_tokens=14 gen_ai.usage.output_tokens=6 agw.ai.usage.cost.total=0.0000057 ...
 ```
 
-For more examples, see [Observe traffic]({{< link-hextra path="/llm/observability/" >}}) and the [CEL reference]({{< link-hextra path="/reference/cel/cel-context" >}}).
+## Monitor catalog lookups
 
-## Step 4: Generate traffic
-
-Generate traffic through agentgateway that matches a model entry from the catalog. For example steps, try the [LLM getting started]({{< link-hextra path="/quickstart/llm/" >}}).
-
-## Step 5: Monitor catalog lookups
-
-Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` counter, labeled with the lookup `status` and the request's `gen_ai_system` (provider), `gen_ai_request_model`, and `gen_ai_response_model`. Use the lookup to confirm that your catalog prices your traffic.
-
-The `status` label is one of the following values:
+Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` counter. The metric is labeled with lookup `status`, provider, request model, and response model.
 
 | Status | Meaning |
 |--------|---------|
@@ -154,17 +150,53 @@ The `status` label is one of the following values:
 | `Missing` | The provider or model was not found in the catalog. |
 | `NoCatalog` | No catalog is configured. |
 
-For example, the metrics endpoint at `http://localhost:15020/metrics` shows lines such as the following:
-
-agentgateway_cost_catalog_lookups_total{status="Exact",gen_ai_system="openai",gen_ai_request_model="gpt-4o-mini",...} 1
-agentgateway_cost_catalog_lookups_total{status="Missing",gen_ai_system="openai",gen_ai_request_model="gpt-3.5-turbo",...} 1
-```
-
 A rising `Missing` or `Unpriced` count means requests are flowing through models that your catalog does not price. Add the missing providers or models to your catalog and reload.
 
 {{< callout type="info" >}}
 In traces, the corresponding cost-resolution `status` attribute uses lowercase values: `exact`, `unpriced`, `missing`, and `noCatalog`.
 {{< /callout >}}
+
+## Enforce budgets
+
+The model catalog provides pricing data for spend visibility. To block or throttle traffic, combine cost visibility with rate limiting or virtual key management.
+
+- Use [Rate limiting]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) to cap request or token usage per route, user, or API key.
+- Use [Virtual keys]({{< link-hextra path="/llm/virtual-keys/" >}}) to issue keys with per-key controls and attribution.
+
+## Advanced: Catalog format
+
+Usually, you do not need to write catalog JSON by hand. Use `agctl costs import` or the Admin UI to generate the base catalog, then add overrides only when needed.
+
+{{< reuse "agw-docs/snippets/model-catalog-json-format.md" >}}
+
+The following minimal example prices one OpenAI model and one tiered Gemini model.
+
+```json
+{
+  "providers": {
+    "openai": {
+      "models": {
+        "gpt-4o-mini": {
+          "rates": { "input": "0.15", "output": "0.6", "cacheRead": "0.075" }
+        }
+      }
+    },
+    "gcp.gemini": {
+      "models": {
+        "gemini-2.5-pro": {
+          "rates": { "input": "1.25", "output": "10", "cacheRead": "0.125" },
+          "tiers": [
+            {
+              "contextOver": 200000,
+              "rates": { "input": "2.5", "output": "15", "cacheRead": "0.25" }
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+```
 
 {{< doc-test paths="costs" >}}
 # Verify that agentgateway loads a catalog from a file source.
