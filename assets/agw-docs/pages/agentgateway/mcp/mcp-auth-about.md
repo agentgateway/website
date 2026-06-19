@@ -8,11 +8,11 @@ To secure your MCP server, you configure it with an authorization server. Typica
 
 Agentgateway currently includes built-in support for the following identity providers.
 
-| Provider | Details |
-|----------|---------|
+| Provider | Details                                                       |
+| -------- | ------------------------------------------------------------- |
 | Keycloak | Adapts non-standard endpoints such as JWKS certificate paths. |
-| Auth0 | Uses standard well-known JWKS endpoint. |
-| Descope | Works via standard JWKS endpoint with Inbound Apps for M2M. See the [Descope integration guide]({{< link-hextra path="/integrations/auth/descope" >}}). |
+| Auth0    | Uses standard well-known JWKS endpoint.                       |
+| Descope  | Uses standard well-known JWKS endpoint.                       |
 
 ### Add other IdPs
 
@@ -45,6 +45,7 @@ Often, public SaaS providers such as GitHub, Databricks, and Slack offer their o
 Instead of pre-registering MCP clients, you can use agentgateway to register MCP clients dynamically with your IdP. The agentgateway proxy implements the MCP OAuth 2.0 specification, and can therefore facilitate the client registration process on behalf of the MCP client by translating the MCP OAuth information into configuration that the IdP understands.
 
 The MCP OAuth flow that is facilitated by the agentgateway proxy includes the following phases:
+
 1. **Initialization**: In the initialization phase, the MCP client tries to connect to a protected MCP server. This connection fails with a 401 HTTP response.
 2. **Discovery**: The MCP client discovers the OAuth authorization server that protects the MCP server and required scopes to access the MCP server by using agentgateway.
 3. **Client registration**: The agentgateway proxy registers the client with the IdP and returns the client ID.
