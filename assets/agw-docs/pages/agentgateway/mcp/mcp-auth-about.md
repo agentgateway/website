@@ -12,6 +12,7 @@ Agentgateway currently includes built-in support for the following identity prov
 |----------|---------|
 | Keycloak | Adapts non-standard endpoints such as JWKS certificate paths. |
 | Auth0 | Uses standard well-known JWKS endpoint. |
+| Descope | Works via standard JWKS endpoint with Inbound Apps for M2M. See the [Descope integration guide]({{< link-hextra path="/integrations/auth/descope" >}}). |
 
 ### Add other IdPs
 
