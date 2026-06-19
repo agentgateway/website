@@ -111,7 +111,7 @@ console.log(response);
 {{% /tab %}}
 {{% tab %}}
 
-[View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
+[View other LLM client integrations](/docs/standalone/latest/integrations/llm-clients/).
 
 {{% /tab %}}
 {{< /tabs >}}
