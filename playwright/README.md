@@ -5,8 +5,8 @@ served on `:15000/ui/`) that the docs embed, using [Playwright](https://playwrig
 Every capture serves two purposes at once:
 
 1. **Docs assets** — regenerate the `assets/img/*.png` files the guides display.
-2. **Visual regression** — a nightly CI job re-captures and fails if the UI drifts from the
-   committed images, so stale screenshots get caught.
+2. **Visual regression** — a nightly CI job re-captures the UI and, if anything changed,
+   opens a PR with the refreshed images so stale screenshots get caught and fixed.
 
 This is separate from `scripts/TEST_FRAMEWORK.md` (which runs the *commands* in the docs
 against a real cluster). This is the **frontend/visual** tier: it screenshots the running UI.
@@ -62,11 +62,11 @@ that has screenshots](#task-add-a-new-guide-that-has-screenshots) — are writte
   npx playwright install --with-deps chromium
   ```
 
-> **Read this before committing images:** Playwright pixel baselines render slightly
-> differently on macOS vs Linux, and **CI runs on Linux**. The committed baselines and doc
-> images must be **Linux-rendered** to match CI. Generate the canonical set on Linux (see
-> [Baselines and platforms](#baselines-and-platforms)); run captures on macOS for local
-> preview only.
+> **The easiest way to (re)generate the committed images is to let CI do it.** Pixel
+> rendering differs slightly between macOS and Linux, and CI runs on Linux, so the canonical
+> images come from the `playwright-screenshots` workflow (which regenerates on Linux and
+> opens a PR). Run captures locally for fast iteration and preview; let the workflow produce
+> the set that gets merged. See [CI](#ci) and [Baselines and platforms](#baselines-and-platforms).
 
 ---
 
@@ -91,16 +91,19 @@ When a new agentgateway release ships a changed UI and you need to refresh the d
    all new-UI versions share the same bare images. See
    [How images map to doc versions](#how-images-map-to-doc-versions).
 
-3. **Regenerate the baselines and doc images** (on Linux — see
-   [Baselines and platforms](#baselines-and-platforms)):
+3. **Regenerate the baselines and doc images.** The recommended path is to run the
+   **`playwright-screenshots` workflow** (Actions → Run workflow): it regenerates on Linux
+   and opens a PR with the new images — no local Docker needed, and the result matches CI.
+   For local iteration you can instead run:
    ```sh
    npm run update:all     # re-capture every spec, refreshing __screenshots__ baselines
    npm run sync-docs      # copy the new baselines into assets/img/
    ```
 
-4. **Review and commit.** Eyeball `git diff --stat assets/img` and open a few PNGs to
-   confirm they show what the guide describes, then commit the changed `assets/img/*.png`
-   **and** the `__screenshots__/` baselines together.
+4. **Review.** Eyeball the image diffs (in the workflow's PR, or `git diff --stat assets/img`
+   locally) to confirm they show what the guides describe. If you regenerated locally on
+   macOS, prefer the workflow's Linux-rendered output for the version that gets merged (see
+   [Baselines and platforms](#baselines-and-platforms)).
 
 ## Task: add a new guide that has screenshots
 
@@ -152,13 +155,15 @@ When a new agentgateway release ships a changed UI and you need to refresh the d
    versions, wrap version-specific content in the version shortcode so old versions keep the
    old UI — see [How images map to doc versions](#how-images-map-to-doc-versions).
 
-5. **Capture, sync, commit** (on Linux):
+5. **Capture and verify locally**, then let CI produce the canonical images:
    ```sh
    npm run test:<mode> -- --update-snapshots   # or `npm run update` for no-backend specs
-   npm run sync-docs
+   npm run sync-docs                            # preview the assets/img output
    ```
-   Commit the guide change, the `docs-image-map.json` entry, the `__screenshots__/`
-   baselines, and the `assets/img/` files.
+   Open the generated PNGs to confirm your spec captured the right thing. Commit the guide
+   change, the `docs-image-map.json` entry, the spec, fixture, and launcher. The Linux-rendered
+   baselines + `assets/img/` come from the `playwright-screenshots` workflow's PR (see
+   [CI](#ci)) — that's the set that gets merged, so the pixels match CI.
 
 ### Adding a backend mode
 
@@ -238,30 +243,35 @@ Screenshots are pixel-compared, so captures must be byte-stable across runs:
 
 ## Baselines and platforms
 
-Pixel rendering (font anti-aliasing especially) differs between macOS and Linux, and
-**CI runs on Linux**, so:
+Pixel rendering (font anti-aliasing especially) differs between macOS and Linux. To avoid
+that being a problem:
 
-- The **canonical baselines and doc images are Linux-rendered.** Generate them on Linux so
-  the nightly drift check compares like-for-like. Options: run on a Linux host with Docker,
-  or trigger the `playwright-screenshots` workflow.
-- On **macOS**, `npm run update:all` works for local iteration and preview, but the PNGs it
-  produces differ from CI's at the pixel level. Don't commit macOS-rendered images as the
-  canonical set.
-- Baselines live in `__screenshots__/<spec>.spec.ts-snapshots/<name>-<project>-<platform>.png`.
-  The tolerance is `maxDiffPixelRatio: 0.01` (see `playwright.config.ts`).
+- **Baseline filenames are platform-neutral** (`<name>-<project>.png`, no `-darwin`/`-linux`
+  suffix — set via `snapshotPathTemplate` in `playwright.config.ts`), so a single committed
+  set serves both CI and local runs.
+- **CI (Linux) owns the canonical set.** The `playwright-screenshots` workflow regenerates
+  the baselines and doc images on Linux and opens a PR; merging that PR is what updates the
+  committed images. Run captures locally (any OS) for iteration and preview, but let the
+  workflow produce the version that gets merged so the pixels match CI.
+- Baselines live in `__screenshots__/<spec>.spec.ts-snapshots/<name>-<project>.png`. The
+  diff tolerance is `maxDiffPixelRatio: 0.01` (see `playwright.config.ts`).
 
 ## CI
 
-`.github/workflows/playwright-screenshots.yml` runs on `ubuntu-latest`:
+`.github/workflows/playwright-screenshots.yml` runs on `ubuntu-latest`, **nightly**
+(cron `0 6 * * *`) and on **manual dispatch** (Actions → Run workflow):
 
-- **Nightly** (cron `0 6 * * *`) and on **manual dispatch**.
-- Steps: `npm ci` → install Chromium → `npm run capture:all` → `npm run sync-docs` →
-  `git diff --exit-code -- assets/img`. If the live UI no longer matches the committed
-  images, the diff is non-empty and the job **fails**, flagging that the docs screenshots
-  are stale. The Playwright HTML report is uploaded as an artifact for triage.
+- Steps: `npm ci` → install Chromium → `npm run update:all` (regenerate every baseline on
+  Linux) → `npm run sync-docs` (refresh `assets/img/`) → `peter-evans/create-pull-request`.
+- If the regenerated images differ from `main`, it opens (or updates) a PR titled
+  **"[Automated] Refresh product-UI screenshots"** on branch `playwright/screenshot-refresh`.
+  If nothing changed, no PR is created. **Review the image diffs in the PR before merging** —
+  a change means the live UI no longer matches the committed screenshots.
+- The Playwright HTML report is uploaded as an artifact for triage.
 
-The job verifies; it does not commit. To refresh the committed images after an intended UI
-change, regenerate them (Task above) and open a PR.
+Requires **"Allow GitHub Actions to create and approve pull requests"** (repo Settings →
+Actions → General) or a `GH_TOKEN` PAT with `contents`+`pull-requests` write — the same
+setup the `reference-docs` workflow uses.
 
 ---
 

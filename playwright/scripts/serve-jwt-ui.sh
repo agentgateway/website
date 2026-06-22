@@ -35,6 +35,7 @@ EVERYTHING_PID=$!
 echo "→ starting agentgateway UI ($IMAGE) on :$UI_PORT (UI) / :$MCP_PORT (MCP)"
 docker rm -f agw-ui-jwt >/dev/null 2>&1 || true
 docker run --rm --name agw-ui-jwt --user "$(id -u):$(id -g)" \
+  --add-host=host.docker.internal:host-gateway \
   -e ADMIN_ADDR=0.0.0.0:15000 \
   -v "$CFG_DIR:/config" \
   -p "$UI_PORT:15000" -p "$MCP_PORT:$MCP_PORT" -p 4100:4000 \

@@ -35,6 +35,7 @@ MOCK_PID=$!
 echo "→ starting agentgateway UI ($IMAGE) on :$UI_PORT (UI) / :$LLM_PORT (LLM)"
 docker rm -f agw-ui-llm >/dev/null 2>&1 || true
 docker run --rm --name agw-ui-llm --user "$(id -u):$(id -g)" \
+  --add-host=host.docker.internal:host-gateway \
   -e ADMIN_ADDR=0.0.0.0:15000 \
   -v "$CFG_DIR:/config" \
   -p "$UI_PORT:15000" -p "$LLM_PORT:$LLM_PORT" \
