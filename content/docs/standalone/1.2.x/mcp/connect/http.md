@@ -91,7 +91,7 @@ sequenceDiagram
 
 3. Verify access to a tool. 
    1. From the **Available Tools** list, select the `echo` tool. 
-   2. In the **message** field, enter any string, such as `This is my first agentgateway setup.`, and click **Run Tool**. 
+   2. In the **Message** field, enter any string, such as `This is my first agentgateway setup.`, and click **Run Tool**. 
    3. Verify that you see your message echoed in the **Response** card. 
    
       {{< reuse-image src="img/1.2-earlier/ui-playground-tool-echo.png" >}}

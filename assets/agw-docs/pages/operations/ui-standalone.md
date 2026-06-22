@@ -50,7 +50,7 @@ sleep 3
    {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
    {{< /version >}}
-   {{< version include-if="1.2.x,1.1.x,1.0,x" >}}
+   {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
    The Admin UI dashboard shows your configured listeners and port bindings.
 
    {{< reuse-image-light src="img/1.2-earlier/agentgateway-ui-landing.png" >}}
