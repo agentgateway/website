@@ -119,6 +119,7 @@ binds:
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 2. Connect to the MCP server with the agentgateway UI playground.
 
    1. From the navigation menu under **MCP**, click **Tool Playground**.
@@ -139,6 +140,27 @@ binds:
 
       {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
       {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
+{{< /version >}}
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
+2. Connect to the MCP server with the agentgateway UI playground.
+
+   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
+
+      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-playground.png" >}}
+
+   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target.
+
+   3. Verify that you see a list of **Available Tools**.
+
+      {{< reuse-image src="img/1.2-earlier/ui-playground-tools.png" >}}
+
+3. Verify access to a tool.
+   1. From the **Available Tools** list, select the `echo` tool.
+   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**.
+   3. Verify that you see your message echoed in the **Response** card.
+
+      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tool-echo-hello.png" >}}
+{{< /version >}}
 
 4. Open the [Jaeger UI](http://localhost:16686). 
 
