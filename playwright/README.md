@@ -103,7 +103,15 @@ starts the backend + container and tears down on exit), so each is one command:
 npm run test:mcp     # MCP playground   — server-everything + fixtures/mcp-playground-config.yaml
 npm run test:a2a     # A2A traffic view — fixtures/a2a-config.yaml (static; no agent needed)
 npm run test:llm     # LLM playground   — mock OpenAI provider + fixtures/llm-config.yaml
+npm run test:virtual # multiplex (virtual MCP) — server-everything + mock-mcp-time (two targets)
+npm run test:openapi # OpenAPI -> MCP    — Swagger Petstore container + openapi target
+npm run test:jwt     # JWT / observability — server-everything; the spec fills the Bearer token
+
+npm run capture:all  # run every mode above (+ test:standalone) in sequence — what CI runs
 ```
+
+`npm run test:standalone` runs ONLY the no-backend captures (smoke / landing / cel) against
+the empty-config image; the backend-dependent specs each run under their own `CAPTURE_MODE`.
 
 Each `serve-*.sh` is also runnable standalone (then capture in another shell with
 `UI_BASE_URL=http://localhost:15100 npm run test:<mode>`).
@@ -174,24 +182,34 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 |---|---|
 | `playwright.config.ts` | `webServer` launcher, light/dark projects, screenshot/diff settings |
 | `provisioners/kubernetes.ts` | Notes only — the kind + port-forward reuse path |
-| `playwright.config.ts` knobs | `CAPTURE_MODE` (mcp/a2a/llm) selects the `webServer` launcher |
+| `playwright.config.ts` knobs | `CAPTURE_MODE` (mcp/a2a/llm/virtual/openapi/jwt) selects the `webServer` launcher |
 | `fixtures/mcp-playground-config.yaml` | MCP playground config (port 3030 + host MCP target) |
 | `fixtures/a2a-config.yaml` | A2A guide config for the Traffic route/listener capture |
 | `fixtures/llm-config.yaml` | LLM config pointed at the mock OpenAI provider (hostOverride) |
+| `fixtures/virtual-config.yaml` | Two MCP targets (time + everything) federated for the multiplex capture |
+| `fixtures/openapi-config.yaml` | `openapi` target reading the Petstore schema file (mounted) |
+| `fixtures/jwt-config.yaml` | MCP target + `metrics.tags` (`user: @sub`) for the JWT capture |
 | `fixtures/standalone-config.yaml` | Minimal MCP config (used only with `AGENTGATEWAY_BIN`) |
-| `fixtures/test.ts` | Seeds `localStorage['theme']` per project; `dismissWelcome()` helper |
+| `fixtures/test.ts` | Seeds `localStorage['theme']` per project; `dismissWelcome`/`maskSession`/`selectTool` helpers |
 | `tests/smoke.spec.ts` | Loads `/ui/`, dismisses welcome, screenshots — proves the loop |
 | `tests/playground.spec.ts` | MCP playground capture (tools-discovered + echo response) |
 | `tests/a2a-traffic.spec.ts` | A2A config as Traffic route + listener (no A2A playground exists) |
 | `tests/llm-playground.spec.ts` | LLM playground capture against the mock provider |
+| `tests/virtual.spec.ts` | Multiplex capture: multi-tools list, everything_echo, time_get_current_time |
+| `tests/openapi.spec.ts` | OpenAPI capture: Petstore tools list + a successful getPetById call |
+| `tests/jwt.spec.ts` | JWT capture: Authorization-header Bearer token + tools discovered |
 | `scripts/serve-populated-ui.sh` | `CAPTURE_MODE=mcp` launcher: server-everything + the UI |
 | `scripts/serve-a2a-ui.sh` | `CAPTURE_MODE=a2a` launcher: the UI with the A2A config |
 | `scripts/serve-llm-ui.sh` | `CAPTURE_MODE=llm` launcher: mock-openai + the UI |
+| `scripts/serve-virtual-ui.sh` | `CAPTURE_MODE=virtual` launcher: server-everything + mock-mcp-time + the UI |
+| `scripts/serve-openapi-ui.sh` | `CAPTURE_MODE=openapi` launcher: Petstore container + the UI |
+| `scripts/serve-jwt-ui.sh` | `CAPTURE_MODE=jwt` launcher: server-everything + the UI |
 | `scripts/mock-openai.mjs` | Deterministic OpenAI-compatible mock (fixed reply, streaming + JSON) |
+| `scripts/mock-mcp-time.mjs` | Deterministic MCP time server over streamable HTTP (get/convert time) |
 | `scripts/probe-theme.mjs` | One-off diagnostic used to confirm the theme mechanism |
 | `scripts/sync-docs-images.mjs` | Copies captured PNGs → docs `img/` via a name→path map |
 | `docs-image-map.json` | Screenshot name → {light, dark?} doc destinations |
-| `__screenshots__/` | Committed baselines (ui-landing, ui-playground-*, ui-a2a-*, ui-llm-playground; light+dark) |
+| `__screenshots__/` | Committed baselines (light+dark). Backend-mode baselines are generated in CI/Docker — see below |
 
 ## Status: what works and what's left
 
@@ -204,12 +222,32 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 - `npm run test:llm` → LLM playground against a mock provider → `ui-llm-playground.png`.
 - `npm run sync-docs` copies the light baselines to their `assets/img/` destinations.
 
+**Added for the backend-dependent guides (harness wired; baselines pending first capture):**
+- `npm run test:virtual` → multiplex playground → `ui-playground-multi-tools.png`,
+  `agentgateway-ui-tool-echo-hello.png`, `ui-tool-time-current.png`
+  (used in `mcp/connect/virtual.md`; the echo image is shared with `observability/*`).
+- `npm run test:openapi` → Petstore OpenAPI tools → `agentgateway-ui-tools-openapi.png`,
+  `agentgateway-ui-tools-openapi-success.png` (used in `mcp/connect/openapi.md`).
+- `npm run test:jwt` → playground with a JWT in the Authorization header →
+  `agentgateway-ui-tools-jwt.png` (used in `reference/observability/metrics.md`).
+- `capture:all` is wired into the nightly `playwright-screenshots` workflow.
+- Matching guide prose for these (main + latest) is rewritten for the new-UI flow
+  (Tool Playground → Apply CORS → Initialize → select tool → Call tool).
+
+> **Baselines for the backend modes are NOT yet committed.** They must be generated inside
+> the Playwright Linux container so they match CI byte-for-byte (see "Baseline stability"),
+> and need Docker + the backends — generate them with
+> `CAPTURE_MODE=<mode> npm run test:<mode> -- --update-snapshots` from inside the image, or
+> let the nightly workflow produce them. On the first run, verify the inferred selectors
+> (tool-argument labels, the OpenAPI `getPetById`/`petId` names, Petstore seed data) and the
+> hand-rolled `mock-mcp-time` transport against the live UI; adjust if the gateway rejects it.
+
 **Left to do for full doc-image regeneration:**
 
-- Not added to any GitHub Actions workflow.
-- Kubernetes mode is documented (notes), not automated.
-- Guide rewrites: `agent/a2a.md`'s playground section (no A2A playground in the new UI),
-  and confirm whether `llm/*` docs should embed `ui-llm-playground.png`. The `ui-a2a-*`
-  and `ui-llm-playground` destinations in `docs-image-map.json` are provisional.
-- Remaining doc images (OpenAPI, time-tool, `operations/ui` debug shots) need specs + backends.
+- `observability/ui` (Kubernetes landing, `agentgateway-ui-kube-landing.png`) — needs the
+  Kubernetes provisioner (kind + controller + port-forward), still documented-only.
+- `agent/a2a.md`'s playground section rewrite; confirm whether `llm/*` docs embed
+  `ui-llm-playground.png`. The `ui-a2a-*` / `ui-llm-playground` destinations are provisional.
+- `agentgateway-ui-playground.png` (the initial MCP playground view) is still the old-UI
+  image — not regenerated in this batch; the rewritten guides drop the "open playground" shot.
 - Confirm `docs-image-map.json` destinations against the docs before committing images.

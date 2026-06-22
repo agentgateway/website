@@ -136,48 +136,21 @@ Build the Docker image from the source code. The example builds the image for an
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and backend configuration.
 
-2. Connect to the OpenAPI server with the agentgateway UI playground. 
+2. From the navigation menu under **MCP**, click **Tool Playground**.
 
-   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
-      
-      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
+3. If you see a banner prompting you to allow browser access, click **Apply CORS**. This adds the UI's origin to the MCP CORS policy so the playground can open a session, and the configuration reloads automatically.
 
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the APIs that are exposed on the target.
-   
-   3. Verify that you see the Petstore APIs from the OpenAPI spec as a list of **Available Tools** 
-   
-      {{< reuse-image src="img/agentgateway-ui-tools-openapi.png" >}}
+4. Click **Initialize**. The agentgateway UI opens an MCP session and lists the Petstore operations from the OpenAPI spec as tools.
 
-3. Verify access to the Petstore APIs. 
-   1. Select the **addPet** API. 
-   2. In the **body** field, enter the details for your pet, such as the ID and name for the pet category and your pet, a URL to a photo of your pet, the pet's status in the store, and optionally any tags. You can use the following example JSON file. 
-      ```json
-      {
-        "id": 10,
-        "category": {
-          "id": 1,
-          "name": "Dogs"
-        },
-        "name": "doggie",
-        "photoUrls": [
-          "https://example.com/photo1.jpg",
-          "https://example.com/photo2.jpg"
-        ],
-        "tags": [
-          {
-            "id": 101,
-            "name": "fluffy"
-          },
-          {
-            "id": 102,
-            "name": "friendly"
-          }
-        ],
-        "status": "available"
-      }
-      ```
-   3. Click **Run Tool**. Verify that the pet is added to the petstore. 
-      
+5. Verify that the **Result** panel reports the discovered tools, such as `getPetById`, `findPetsByStatus`, and `addPet`. Agentgateway generates one tool per operation in the spec, named after the operation's `operationId`.
+
+   {{< reuse-image src="img/agentgateway-ui-tools-openapi.png" >}}
+
+6. Verify access to a Petstore API.
+   1. From the **Tool** dropdown, select the `getPetById` tool.
+   2. In the **petId** field, enter the ID of a pet that exists in the store, such as `1`, and click **Call tool**.
+   3. Verify that the **Result** panel returns `HTTP 200` and the pet's details in the **Tool output**.
+
       {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
 
 

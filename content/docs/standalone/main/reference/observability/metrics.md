@@ -124,34 +124,19 @@ You can optionally enrich the metrics that are captured by the agentgateway with
 
 4. Open the [agentgateway UI](http://localhost:15000/ui/) to view your configuration.
 
-5. Connect to the MCP server with the agentgateway UI playground. 
-      1. In your `config.yaml` file, add the following CORS policy to allow requests from the agentgateway UI playground. The config automatically reloads when you save the file.
-      
-      ```yaml
-      # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-      binds:
-      - post: 3000
-        listeners:
-        - routes:
-          - policies:
-              cors:
-                allowOrigins:
-                  - "*"
-                allowHeaders:
-                  - "*"
-      ...
-      ```
-   1. Go to the agentgateway UI [**Playground**](http://localhost:15000/ui/playground/).
-   2. In the **Testing** card > **Connection** details > **Bearer Token** field, enter the following JWT token. The JWT token includes the `sub: me` claim that is allowed access to the `everything_echo` tool. 
+5. Connect to the MCP server with the agentgateway UI playground.
+   1. From the navigation menu under **MCP**, click **Tool Playground**.
+   2. If you see a banner prompting you to allow browser access, click **Apply CORS**. This adds the UI's origin to the MCP CORS policy so the playground can open a session, and the configuration reloads automatically.
+   3. Expand the **Authorization header** section. In the **Bearer token** field, enter the following JWT token. The token includes the `sub: me` claim that the agentgateway maps to the `user` metrics tag.
       ```sh
       eyJhbGciOiJFUzI1NiIsImtpZCI6IlhoTzA2eDhKaldIMXd3a1dreWVFVXhzb29HRVdvRWRpZEVwd3lkX2htdUkiLCJ0eXAiOiJKV1QifQ.eyJhdWQiOiJtZS5jb20iLCJleHAiOjE5MDA2NTAyOTQsImlhdCI6MTc0Mjg2OTUxNywiaXNzIjoibWUiLCJqdGkiOiI3MDViYjM4MTNjN2Q3NDhlYjAyNzc5MjViZGExMjJhZmY5ZDBmYzE1MDNiOGY3YzFmY2I1NDc3MmRiZThkM2ZhIiwibmJmIjoxNzQyODY5NTE3LCJzdWIiOiJtZSJ9.cLeIaiWWMNuNlY92RiCV3k7mScNEvcVCY0WbfNWIvRFMOn_I3v-oqFhRDKapooJZLWeiNldOb8-PL4DIrBqmIQ
       ```
-   3. Click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
-   4. Verify that you see a list of **Available Tools**.  
-   
+   4. Click **Initialize**. The agentgateway UI opens an MCP session with the token and lists the tools that are exposed on the target.
+   5. Verify that the **Result** panel reports the discovered tools.
+
       {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
 
-6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+6. From the **Tool** dropdown, select the `echo` tool. In the **message** field, enter any string, such as `hello world`, and click **Call tool**. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
    {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
 
 7. Send a request to the agentgateway metrics endpoint to grab the `tool_calls_total` metric. Verify that you see the `custom-tag=test` and the `user=me` tags. 
