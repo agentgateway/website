@@ -50,7 +50,7 @@ An MCP backend allows exposing MCP servers through the agentgateway using {{< gl
 
 3. Verify access to a tool.
    1. From the **Tool** list, select the `echo` tool.
-   2. In the **message** field, enter any string, such as `This is my first agentgateway setup.`, and click **Call tool**.
+   2. In the **Message** field, enter any string, such as `This is my first agentgateway setup.`, and click **Call tool**.
    3. Verify that the **Result** card shows an `HTTP 200` response with your message echoed back.
 
       {{< reuse-image-light src="img/ui-playground-tool-echo.png" >}}

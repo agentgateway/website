@@ -112,7 +112,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 ### Step 6: Run a tool
 
 1. In **Available Tools**, select the `echo` tool.
-2. In the **message** field, enter a string, such as `This is my first agentgateway setup`.
+2. In the **Message** field, enter a string, such as `This is my first agentgateway setup`.
 3. Click **Run Tool**.
 4. Check the **Response** card for the echoed message.
 
@@ -192,7 +192,7 @@ sleep 3
    {{< reuse-image-light src="img/ui-playground-tools.png" >}}
    {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
 
-4. From the **Tool** list, select the `echo` tool. In the **message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
+4. From the **Tool** list, select the `echo` tool. In the **Message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
 5. Verify that the **Result** card shows an `HTTP 200` response with your message echoed back.
 
    {{< reuse-image-light src="img/ui-playground-tool-echo.png" >}}

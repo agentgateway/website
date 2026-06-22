@@ -112,7 +112,7 @@ routes:
 
 6. Verify access to a tool from the `everything` target.
    1. From the **Tool** dropdown, select the `everything_echo` tool.
-   2. In the **message** field, enter any string, such as `hello world`, and click **Call tool**.
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Call tool**.
    3. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
 
       {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}

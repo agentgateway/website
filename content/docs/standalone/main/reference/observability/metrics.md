@@ -137,7 +137,7 @@ You can optionally enrich the metrics that are captured by the agentgateway with
       {{< reuse-image-light src="img/agentgateway-ui-tools-jwt.png" >}}
       {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-jwt-dark.png" >}}
 
-6. From the **Tool** dropdown, select the `echo` tool. In the **message** field, enter any string, such as `hello world`, and click **Call tool**. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
+6. From the **Tool** dropdown, select the `echo` tool. In the **Message** field, enter any string, such as `hello world`, and click **Call tool**. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
    {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 

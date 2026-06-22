@@ -135,7 +135,7 @@ binds:
 
 3. Verify access to a tool.
    1. From the **Tool** dropdown, select the `echo` tool.
-   2. In the **message** field, enter any string, such as `hello world`, and click **Call tool**.
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Call tool**.
    3. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
 
       {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
@@ -156,7 +156,7 @@ binds:
 
 3. Verify access to a tool.
    1. From the **Available Tools** list, select the `echo` tool.
-   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**.
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Run Tool**.
    3. Verify that you see your message echoed in the **Response** card.
 
       {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tool-echo-hello.png" >}}
@@ -291,7 +291,7 @@ You can optionally enrich the traces that are captured by the agentgateway with 
       {{< reuse-image-light src="img/agentgateway-ui-tools-jwt.png" >}}
       {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-jwt-dark.png" >}}
 
-6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+6. Select the `everything_echo` tool, enter any string in the **Message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
    {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 

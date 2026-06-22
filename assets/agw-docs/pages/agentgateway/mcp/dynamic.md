@@ -211,7 +211,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    {{< reuse-image-light src="img/mcp-tools-everything.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-tools-everything-dark.png" >}}
 
-5. Test the tools: Select a tool, such as `echo`. In the **message** field, enter a message, such as `Hello, world!`, and click **Run Tool**.
+5. Test the tools: Select a tool, such as `echo`. In the **Message** field, enter a message, such as `Hello, world!`, and click **Run Tool**.
 
    {{< reuse-image-light src="img/mcp-tool-echo.png" >}}
    {{< reuse-image-dark srcDark="img/mcp-tool-echo-dark.png" >}}
