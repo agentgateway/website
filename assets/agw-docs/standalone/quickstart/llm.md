@@ -76,7 +76,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 Route to an OpenAI backend through agentgateway.
 
-{{< version include-if="1.2.x,1.1.x,1.0,x" >}}
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 {{% steps %}}
 
 ### Step 1: Set your API key
@@ -159,7 +159,7 @@ Example output (abbreviated):
 {{% /steps %}}
 {{< /version >}}
 
-{{< version exclude-if="1.2.x,1.1.x,1.0,x" >}}
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 {{% steps %}}
 
 ### Step 1: Set your API key

@@ -99,27 +99,32 @@ routes:
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
-2. Connect to the MCP test server with the agentgateway UI playground. 
+2. From the navigation menu under **MCP**, click **Tool Playground**.
 
-   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
-      
-      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
+3. If you see a banner prompting you to allow browser access, click **Apply CORS**. This adds the UI's origin to the MCP CORS policy so the playground can open a session, and the configuration reloads automatically.
 
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the targets that you configured and retrieves the tools that are exposed on the targets. 
-   
-   3. Verify that you see a list of **Available Tools**. Note that the tools are listed twice, one time with the prefix `time` and one time with the prefix `everything`. You now have a federated view of all the tools that are exposed on all defined targets.
-   
-      {{< reuse-image src="img/ui-playground-multi-tools.png" >}}
+4. Click **Initialize**. The agentgateway UI opens an MCP session and lists the tools that are exposed across all targets in the backend.
 
-3. Verify access to tools from both targets. 
-   1. From the **Available Tools** list, select the `everything_echo` tool. 
-   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
-   3. Verify that you see your message echoed in the **Response** card. 
-   
-      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
-   4. Repeat the steps with the `time_get_current_time` tool with your timezone, such as `America/New_York`. 
-   
-      {{< reuse-image src="img/ui-tool-time-current.png" >}}
+5. Verify that the **Result** panel reports the discovered tools and that each tool name is prefixed with its target name, such as `everything_echo` and `time_get_current_time`. You now have a federated view of the tools from every target in the backend.
+
+   {{< reuse-image-light src="img/ui-playground-multi-tools.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-playground-multi-tools-dark.png" >}}
+
+6. Verify access to a tool from the `everything` target.
+   1. From the **Tool** dropdown, select the `everything_echo` tool.
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Call tool**.
+   3. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
+
+      {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
+
+7. Verify access to a tool from the `time` target.
+   1. From the **Tool** dropdown, select the `time_get_current_time` tool.
+   2. In the **timezone** field, enter a timezone, such as `America/New_York`, and click **Call tool**.
+   3. Verify that the **Result** panel returns `HTTP 200` with the current time in the **Tool output**.
+
+      {{< reuse-image-light src="img/ui-tool-time-current.png" >}}
+      {{< reuse-image-dark srcDark="img/ui-tool-time-current-dark.png" >}}
 
 ## Next steps
 
