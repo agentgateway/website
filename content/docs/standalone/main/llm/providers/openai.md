@@ -1,6 +1,7 @@
 ---
 title: OpenAI
 weight: 10
+icon: /integrations/providers/bw/openai.svg
 description: Configuration and setup for OpenAI LLM provider
 ---
 

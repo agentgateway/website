@@ -1,6 +1,7 @@
 ---
 title: Groq
 weight: 20
+icon: /integrations/providers/bw/groq.svg
 description: Configuration and setup for Groq LLM provider
 ---
 

@@ -1,0 +1,8 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Minimal standalone config for screenshot capture.
+#
+# For the default path, Playwright launches the prebuilt agentgateway UI image.
+# To use a local binary instead, set AGENTGATEWAY_BIN=/path/to/agentgateway.
+config:
+  adminAddr: localhost:15000

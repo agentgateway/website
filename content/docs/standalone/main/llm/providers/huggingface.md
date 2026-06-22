@@ -1,6 +1,7 @@
 ---
 title: Hugging Face
 weight: 20
+icon: /integrations/providers/bw/huggingface.svg
 description: Configuration and setup for Hugging Face LLM provider
 ---
 

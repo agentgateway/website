@@ -1,6 +1,7 @@
 ---
 title: Ollama
 weight: 15
+icon: /integrations/providers/bw/ollama.svg
 description: Configure agentgateway to route LLM traffic to Ollama for local model inference
 test:
   ollama-standalone-validate:
@@ -26,7 +27,6 @@ chmod +x "$HOME/.local/bin/agentgateway"
 # Write and validate the ollama config from the guide
 cat > /tmp/test-ollama-standalone.yaml << 'EOF'
 llm:
-  port: 3000
   models:
   - name: "*"
     provider: ollama

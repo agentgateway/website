@@ -185,6 +185,10 @@ h6 {
     scrollbar-color: #444 #1e1e1e;
 }
 
+.dark .provider-icon-invert-dark {
+    filter: invert(1);
+}
+
 /* Sidebar link styling — match TOC text color */
 .sidebar-link:not(.sidebar-active-item) {
     color: #6b7280;
@@ -208,6 +212,7 @@ h6 {
     color: #c7d2fe !important;
     background: rgba(99,102,241,0.1) !important;
 }
+
 .dark .sidebar-container {
     background-color: #111 !important;
 }
@@ -335,6 +340,10 @@ h6 {
 /* Sidebar child indent border - dark mode */
 .dark .sidebar-container ul[style*="border-left"] {
     border-left-color: #374151 !important;
+}
+
+#solo-back-to-top {
+    display: none !important;
 }
 
 /* ── Print styles ─────────────────────────────────────────────────────── */

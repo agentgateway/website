@@ -1,6 +1,7 @@
 ---
 title: Vertex AI
-weight: 20
+weight: 15
+icon: /integrations/providers/bw/vertex.svg
 description: Configuration and setup for Google Cloud Vertex AI provider
 ---
 
@@ -25,9 +26,6 @@ llm:
   models:
   - name: gemini-2.5-flash
     provider: vertex
-    auth:
-      gcp:
-        type: accessToken
     params:
       model: google/gemini-2.5-flash-lite-preview-06-17
       vertexProject: my-project-id

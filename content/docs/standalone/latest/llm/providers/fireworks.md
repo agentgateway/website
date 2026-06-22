@@ -1,6 +1,7 @@
 ---
 title: Fireworks AI
-weight: 61
+weight: 20
+icon: /integrations/providers/bw/fireworks.svg
 description: Configuration and setup for Fireworks AI LLM provider
 ---
 
@@ -19,8 +20,6 @@ llm:
     provider: fireworks
     params:
       apiKey: "$FIREWORKS_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.fireworks.ai/inference/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

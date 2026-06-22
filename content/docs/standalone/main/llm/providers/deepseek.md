@@ -1,6 +1,7 @@
 ---
 title: DeepSeek
 weight: 20
+icon: /integrations/providers/bw/deepseek.svg
 description: Configuration and setup for DeepSeek LLM provider
 ---
 

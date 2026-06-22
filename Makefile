@@ -196,6 +196,43 @@ _framework_test_preflight:
 
 
 #----------------------------------------------------------------------------------
+# Playwright screenshots for docs images
+#----------------------------------------------------------------------------------
+# These targets live in the repo, not in docs-theme-extras. They generate the
+# committed UI screenshots under assets/img/ using the local Playwright setup in
+# ./playwright.
+#----------------------------------------------------------------------------------
+
+PLAYWRIGHT_DIR ?= playwright
+
+.PHONY: playwright-install
+playwright-install:
+	@if [ ! -d "$(PLAYWRIGHT_DIR)" ]; then \
+		echo "Playwright directory not found at $(PLAYWRIGHT_DIR)." >&2; \
+		exit 1; \
+	fi
+	cd $(PLAYWRIGHT_DIR) && npm ci
+	cd $(PLAYWRIGHT_DIR) && npx playwright install --with-deps chromium
+
+.PHONY: playwright-test
+playwright-test:
+	@if [ ! -d "$(PLAYWRIGHT_DIR)" ]; then \
+		echo "Playwright directory not found at $(PLAYWRIGHT_DIR)." >&2; \
+		exit 1; \
+	fi
+	cd $(PLAYWRIGHT_DIR) && npm run test:standalone
+
+.PHONY: playwright-update-images
+playwright-update-images: playwright-install
+	@if [ ! -d "$(PLAYWRIGHT_DIR)" ]; then \
+		echo "Playwright directory not found at $(PLAYWRIGHT_DIR)." >&2; \
+		exit 1; \
+	fi
+	cd $(PLAYWRIGHT_DIR) && npm run update
+	cd $(PLAYWRIGHT_DIR) && npm run sync-docs
+
+
+#----------------------------------------------------------------------------------
 # Combined workflows
 #----------------------------------------------------------------------------------
 # One-step targets that chain: test data → inject status → build or serve.

@@ -113,7 +113,7 @@ routes:
 
 3. Verify access to tools from both targets. 
    1. From the **Available Tools** list, select the `everything_echo` tool. 
-   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Run Tool**. 
    3. Verify that you see your message echoed in the **Response** card. 
    
       {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tool-echo-hello.png" >}}
