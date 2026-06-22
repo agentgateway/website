@@ -13,27 +13,33 @@
     },
     "ui-playground-multi-tools.png": {
       "$note": "mcp/connect/virtual — multiplexed playground showing tools from both targets (time_* and everything_*).",
-      "light": "assets/img/ui-playground-multi-tools.png"
+      "light": "assets/img/ui-playground-multi-tools.png",
+      "dark": "assets/img/ui-playground-multi-tools-dark.png"
     },
     "ui-tool-time-current.png": {
       "$note": "mcp/connect/virtual — result of running the time target's get_current_time tool.",
-      "light": "assets/img/ui-tool-time-current.png"
+      "light": "assets/img/ui-tool-time-current.png",
+      "dark": "assets/img/ui-tool-time-current-dark.png"
     },
     "agentgateway-ui-tool-echo-hello.png": {
       "$note": "Shared by mcp/connect/virtual and observability/traces+metrics — echo tool result.",
-      "light": "assets/img/agentgateway-ui-tool-echo-hello.png"
+      "light": "assets/img/agentgateway-ui-tool-echo-hello.png",
+      "dark": "assets/img/agentgateway-ui-tool-echo-hello-dark.png"
     },
     "agentgateway-ui-tools-openapi.png": {
       "$note": "mcp/connect/openapi — playground listing the OpenAPI-derived tools.",
-      "light": "assets/img/agentgateway-ui-tools-openapi.png"
+      "light": "assets/img/agentgateway-ui-tools-openapi.png",
+      "dark": "assets/img/agentgateway-ui-tools-openapi-dark.png"
     },
     "agentgateway-ui-tools-openapi-success.png": {
       "$note": "mcp/connect/openapi — a successful OpenAPI tool call (HTTP 200).",
-      "light": "assets/img/agentgateway-ui-tools-openapi-success.png"
+      "light": "assets/img/agentgateway-ui-tools-openapi-success.png",
+      "dark": "assets/img/agentgateway-ui-tools-openapi-success-dark.png"
     },
     "agentgateway-ui-tools-jwt.png": {
       "$note": "observability/traces+metrics — playground with a JWT supplied before the tool call.",
-      "light": "assets/img/agentgateway-ui-tools-jwt.png"
+      "light": "assets/img/agentgateway-ui-tools-jwt.png",
+      "dark": "assets/img/agentgateway-ui-tools-jwt-dark.png"
     },
     "ui-a2a-listener.png": {
       "$note": "agent/a2a — the new UI has no A2A playground, so this and ui-a2a-route replace the old ui-a2a-skills/ui-a2a-success shots, captured from the Traffic route/listener view.",

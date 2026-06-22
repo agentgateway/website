@@ -129,14 +129,16 @@ binds:
 
    4. Verify that the **Result** panel reports the discovered tools.
 
-      {{< reuse-image src="img/ui-playground-tools.png" >}}
+      {{< reuse-image-light src="img/ui-playground-tools.png" >}}
+      {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
 
 3. Verify access to a tool.
    1. From the **Tool** dropdown, select the `echo` tool.
    2. In the **message** field, enter any string, such as `hello world`, and click **Call tool**.
    3. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
 
-      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 
 4. Open the [Jaeger UI](http://localhost:16686). 
 
@@ -264,10 +266,12 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    4. Click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    5. Verify that you see a list of **Available Tools**.  
    
-      {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-light src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-jwt-dark.png" >}}
 
 6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-   {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+   {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 
 7. Open the [Jaeger UI](http://localhost:16686). 
 

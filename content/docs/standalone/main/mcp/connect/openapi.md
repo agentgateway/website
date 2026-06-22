@@ -144,14 +144,16 @@ Build the Docker image from the source code. The example builds the image for an
 
 5. Verify that the **Result** panel reports the discovered tools, such as `getPetById`, `findPetsByStatus`, and `addPet`. Agentgateway generates one tool per operation in the spec, named after the operation's `operationId`.
 
-   {{< reuse-image src="img/agentgateway-ui-tools-openapi.png" >}}
+   {{< reuse-image-light src="img/agentgateway-ui-tools-openapi.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-openapi-dark.png" >}}
 
 6. Verify access to a Petstore API.
    1. From the **Tool** dropdown, select the `getInventory` tool, which returns the store's pet inventory by status and takes no parameters.
    2. Click **Call tool**.
    3. Verify that the **Result** panel returns `HTTP 200` and the inventory counts in the **Tool output**.
 
-      {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
+      {{< reuse-image-light src="img/agentgateway-ui-tools-openapi-success.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-openapi-success-dark.png" >}}
 
 
 ## Tool names {#tool-names}

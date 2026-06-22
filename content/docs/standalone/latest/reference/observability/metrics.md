@@ -134,10 +134,12 @@ You can optionally enrich the metrics that are captured by the agentgateway with
    4. Click **Initialize**. The agentgateway UI opens an MCP session with the token and lists the tools that are exposed on the target.
    5. Verify that the **Result** panel reports the discovered tools.
 
-      {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-light src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-jwt-dark.png" >}}
 
 6. From the **Tool** dropdown, select the `echo` tool. In the **message** field, enter any string, such as `hello world`, and click **Call tool**. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
-   {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+   {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 
 7. Send a request to the agentgateway metrics endpoint to grab the `tool_calls_total` metric. Verify that you see the `custom-tag=test` and the `user=me` tags. 
    ```sh

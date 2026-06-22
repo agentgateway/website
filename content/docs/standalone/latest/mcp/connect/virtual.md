@@ -107,21 +107,24 @@ routes:
 
 5. Verify that the **Result** panel reports the discovered tools and that each tool name is prefixed with its target name, such as `everything_echo` and `time_get_current_time`. You now have a federated view of the tools from every target in the backend.
 
-   {{< reuse-image src="img/ui-playground-multi-tools.png" >}}
+   {{< reuse-image-light src="img/ui-playground-multi-tools.png" >}}
+   {{< reuse-image-dark srcDark="img/ui-playground-multi-tools-dark.png" >}}
 
 6. Verify access to a tool from the `everything` target.
    1. From the **Tool** dropdown, select the `everything_echo` tool.
    2. In the **message** field, enter any string, such as `hello world`, and click **Call tool**.
    3. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
 
-      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 
 7. Verify access to a tool from the `time` target.
    1. From the **Tool** dropdown, select the `time_get_current_time` tool.
    2. In the **timezone** field, enter a timezone, such as `America/New_York`, and click **Call tool**.
    3. Verify that the **Result** panel returns `HTTP 200` with the current time in the **Tool output**.
 
-      {{< reuse-image src="img/ui-tool-time-current.png" >}}
+      {{< reuse-image-light src="img/ui-tool-time-current.png" >}}
+      {{< reuse-image-dark srcDark="img/ui-tool-time-current-dark.png" >}}
 
 ## Next steps
 
