@@ -5,7 +5,7 @@
   "description": "Proof of concept: Playwright screenshot automation for the agentgateway product UI",
   "scripts": {
     "test:standalone": "playwright test smoke.spec.ts landing.spec.ts cel.spec.ts --project=standalone-light --project=standalone-dark",
-    "test:mcp": "CAPTURE_MODE=mcp playwright test playground.spec.ts --project=standalone-light --project=standalone-dark",
+    "test:mcp": "CAPTURE_MODE=mcp playwright test tests/playground.spec.ts --project=standalone-light --project=standalone-dark",
     "test:a2a": "CAPTURE_MODE=a2a playwright test a2a-traffic.spec.ts --project=standalone-light --project=standalone-dark",
     "test:llm": "CAPTURE_MODE=llm playwright test llm-playground.spec.ts --project=standalone-light --project=standalone-dark",
     "test:virtual": "CAPTURE_MODE=virtual playwright test virtual.spec.ts --project=standalone-light --project=standalone-dark",

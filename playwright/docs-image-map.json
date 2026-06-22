@@ -6,10 +6,12 @@
       "dark": "assets/img/agentgateway-ui-landing-dark.png"
     },
     "ui-playground-tools.png": {
-      "light": "assets/img/ui-playground-tools.png"
+      "light": "assets/img/ui-playground-tools.png",
+      "dark": "assets/img/ui-playground-tools-dark.png"
     },
     "ui-playground-tool-echo.png": {
-      "light": "assets/img/ui-playground-tool-echo.png"
+      "light": "assets/img/ui-playground-tool-echo.png",
+      "dark": "assets/img/ui-playground-tool-echo-dark.png"
     },
     "ui-playground-multi-tools.png": {
       "$note": "mcp/connect/virtual — multiplexed playground showing tools from both targets (time_* and everything_*).",
@@ -43,14 +45,17 @@
     },
     "ui-a2a-listener.png": {
       "$note": "agent/a2a — the new UI has no A2A playground, so this and ui-a2a-route replace the old ui-a2a-skills/ui-a2a-success shots, captured from the Traffic route/listener view.",
-      "light": "assets/img/ui-a2a-listener.png"
+      "light": "assets/img/ui-a2a-listener.png",
+      "dark": "assets/img/ui-a2a-listener-dark.png"
     },
     "ui-a2a-route.png": {
-      "light": "assets/img/ui-a2a-route.png"
+      "light": "assets/img/ui-a2a-route.png",
+      "dark": "assets/img/ui-a2a-route-dark.png"
     },
     "ui-llm-playground.png": {
-      "$note": "NEW image (new-UI LLM playground; captured against a mock OpenAI provider). Provisional destination, light only.",
-      "light": "assets/img/ui-llm-playground.png"
+      "$note": "new-UI LLM playground; captured against a mock OpenAI provider.",
+      "light": "assets/img/ui-llm-playground.png",
+      "dark": "assets/img/ui-llm-playground-dark.png"
     },
     "cel-playground.png": {
       "light": "assets/img/cel-playground.png",
