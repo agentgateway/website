@@ -1,6 +1,7 @@
 ---
 title: External authorization
 weight: 20
+description: Delegate authorization decisions to external services like OPA.
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
@@ -30,6 +31,42 @@ extAuthz:
       # The value is a CEL expression
       metadata:
         dev.agentgateway.jwt: '{"claims": jwt}'
+```
+
+### Cache authorization results
+
+You can cache gRPC external authorization decisions with `extAuthz.cache`. Caching is supported only for `protocol.grpc`; HTTP external authorization requests are always sent to the authorization service.
+
+{{< callout type="warning" >}}
+The cache key must include every request property that your authorization service uses to make a decision. For example, if the service evaluates both the request path and the `Authorization` header, include both values in `cache.key`. Otherwise, agentgateway can incorrectly reuse one request's authorization result for another request.
+{{< /callout >}}
+
+If any `cache.key` expression fails to evaluate or returns an unsupported value, agentgateway still sends the request to the authorization service, but skips both the cache lookup and the cache write for that request.
+
+Use the following fields to configure the cache:
+
+| Field | Description |
+|---|---|
+| `cache.key` | Required ordered list of 1-16 CEL expressions used to build the cache key. |
+| `cache.ttl` | Required expiration for cached results. Set this to a duration such as `"5m"`, to a CEL expression that returns a duration, or to a CEL expression that returns the timestamp when the cached result expires. The expression is evaluated after the authorization response has been applied to the request. |
+| `cache.maxEntries` | Optional maximum number of cached authorization results. If unset, agentgateway defaults to `10000`. |
+
+Example configuration:
+
+```yaml
+extAuthz:
+  host: localhost:9000
+  protocol:
+    grpc:
+      metadata:
+        dev.agentgateway.jwt: '{"claims": jwt}'
+  cache:
+    key:
+      - request.method
+      - request.path
+      - request.headers["authorization"]
+    ttl: '"5m"'
+    maxEntries: 20000
 ```
 
 ## HTTP External Authorization

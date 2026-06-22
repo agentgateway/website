@@ -19,11 +19,11 @@ The following steps show you how to view the raw metrics endpoint of the control
    Example output:
 
    ```console
-   # HELP kgateway_controller_reconciliations_total Total controller reconciliations
-   # TYPE kgateway_controller_reconciliations_total counter
-   kgateway_controller_reconciliations_total{controller="gateway",result="success"} 1
-   kgateway_controller_reconciliations_total{controller="gatewayclass",result="success"} 2
-   kgateway_controller_reconciliations_total{controller="gatewayclass-provisioner",result="success"} 2
+   # HELP agentgateway_controller_reconciliations_total Total number of controller reconciliations
+   # TYPE agentgateway_controller_reconciliations_total counter
+   agentgateway_controller_reconciliations_total{controller="gateway",result="success"} 1
+   agentgateway_controller_reconciliations_total{controller="gatewayclass",result="success"} 2
+   agentgateway_controller_reconciliations_total{controller="gatewayclass-provisioner",result="success"} 2
    ```
 
 {{< doc-test paths="control-plane-metrics" >}}
@@ -65,9 +65,9 @@ Helpful terms:
 
 * Transform: The process of the control plane converting high-level resources or intermediate representations (IR) into lower-level representations into the structure that the XDS API expects for a snapshot.
 
-{{< version include-if="1.2.x" >}}
+{{< version include-if="1.3.x" >}}
 {{< reuse "agw-docs/snippets/metrics-control-plane-latest.md" >}}
 {{< /version >}}
-{{< version include-if="1.3.x" >}}
+{{< version include-if="1.4.x" >}}
 {{< reuse "agw-docs/snippets/metrics-control-plane-main.md" >}}
 {{< /version >}}

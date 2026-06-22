@@ -6,21 +6,17 @@ description: Run prompt guards in sequence, creating defense-in-depth protection
 
 You can configure multiple prompt guards that run in sequence, creating defense-in-depth protection. Guards are evaluated in the order they appear in the configuration.
 
-Example configuration that uses all three layers:
+Shared guardrails under `llm.policies.guardrails` apply to every model. Model-specific guardrails under `llm.models[].guardrails` are merged in for the selected model, so the effective policy is the shared baseline plus any model-specific checks.
+
+Example configuration that combines shared and model-specific guardrails:
 
 ```yaml
-cat <<EOF > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
-  models:
-  - name: "*"
-    provider: openAI
-    params:
-      model: gpt-3.5-turbo
-      apiKey: "$OPENAI_API_KEY"
+  policies:
     guardrails:
       request:
-      # Layer 1: Fast regex check for known patterns
+      # Shared layer 1: Fast regex check for known patterns
       - regex:
           action: reject
           rules:
@@ -29,7 +25,21 @@ llm:
           - builtin: email
         rejection:
           body: "Request contains PII and cannot be processed"
-      # Layer 2: OpenAI moderation for harmful content
+      response:
+      - regex:
+          action: mask
+          rules:
+          - builtin: ssn
+          - builtin: creditCard
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+    guardrails:
+      request:
+      # Model layer: OpenAI moderation for harmful content
       - openAIModeration:
           model: omni-moderation-latest
           policies:
@@ -37,19 +47,14 @@ llm:
               key: "$OPENAI_API_KEY"
         rejection:
           body: "Content blocked by moderation policy"
-      # Layer 3: Custom webhook for domain-specific checks
+      # Model layer: Custom webhook for domain-specific checks
       - webhook:
           target:
             host: content-safety-webhook.example.com:8000
       response:
-      # Response guards run in same order
-      - regex:
-          action: mask
-          rules:
-          - builtin: ssn
-          - builtin: creditCard
       - webhook:
           target:
             host: content-safety-webhook.example.com:8000
-EOF
 ```
+
+In this example, the shared policy catches obvious PII across every model, while the selected model adds moderation and webhook checks on top. The response-side regex masking from the shared policy still applies to the model.

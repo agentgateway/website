@@ -1,7 +1,7 @@
 ---
 title: Virtual MCP
 weight: 20
-description:
+description: Federate multiple MCP servers into a unified virtual MCP backend
 ---
 
 Federate tools of multiple MCP servers on the agentgateway by using MCP {{< gloss "Multiplex" >}}multiplexing{{< /gloss >}}.

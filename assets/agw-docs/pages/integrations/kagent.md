@@ -129,7 +129,7 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
    {{< /tabs >}}
 
 3. Open the kagent UI and try the default `k8s-agent` to confirm everything works end-to-end.
-   {{< reuse-image src="img/kagent-default-k8s-agent.png" >}}
+   {{< reuse-image-light src="img/kagent-default-k8s-agent.png" >}}
    {{< reuse-image-dark srcDark="img/kagent-default-k8s-agent.png" >}}
 
 ## Governance Capabilities
@@ -163,7 +163,7 @@ Agentgateway provides policies that you can use to govern your kagent environmen
    ```
 
 2. Verify the policy by sending a prompt to your agent through the kagent UI that includes the word `email`. You get a `403` response.
-   {{< reuse-image src="img/kagent-rejected-content.png" >}}
+   {{< reuse-image-light src="img/kagent-rejected-content.png" >}}
    {{< reuse-image-dark srcDark="img/kagent-rejected-content.png" >}}
 
 ## Cleanup

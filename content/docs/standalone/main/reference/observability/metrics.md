@@ -1,7 +1,7 @@
 ---
 title: Metrics
 weight: 10
-description: 
+description: View and monitor agentgateway metrics for traffic and performance insights
 ---
 
 The agentgateway comes with a built-in metrics endpoint that you can use to monitor traffic that is going through the agentgateway. Metrics are automatically collected by the agentgateway for every request that the agentgateway receives. 

@@ -23,7 +23,7 @@ Click through the following tabs to see the request flows for each.
 {{< tabs tabTotal="2" items="Single response,Streaming">}}
 {{% tab tabName="Single response" %}}
 
-{{< reuse-image src="/img/aig-streaming-false-light.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
+{{< reuse-image-light src="/img/aig-streaming-false-light.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
 
 {{< reuse-image-dark srcDark="/img/aig-streaming-false-dark.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
 
@@ -35,7 +35,7 @@ Click through the following tabs to see the request flows for each.
 {{% /tab %}}
 {{% tab tabName="Streaming" %}}
 
-{{< reuse-image src="/img/aig-streaming-true-light.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
+{{< reuse-image-light src="/img/aig-streaming-true-light.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
 {{< reuse-image-dark srcDark="/img/aig-streaming-true-dark.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
 
 1. The client sends a request with streaming enabled.

@@ -233,7 +233,34 @@ Before generating, review any `yaml`/`yml` fenced blocks tagged with `paths=` to
 - Inspect `out/tests/generated/*.sh`: order of steps, no unresolved shortcodes, env vars and backgrounding correct.
 - Run a script manually, e.g. `bash out/tests/generated/<script-name>.sh` (standalone tests do not use a kind cluster; use `--generate-only` and run the script in an env that has the binary/Docker/etc.).
 
-### 10. When a test fails: fix the test or fix the content?
+### 10. Report what is tested and what is not (required)
+
+Every time you add or update a doc test, produce a **coverage summary** for the page: a list of what the test validates from the visible content, and a list of what it does **not** validate, each with a one-line reason. This makes coverage gaps explicit instead of letting a passing test imply the whole page is covered.
+
+Do this in **two places**:
+
+1. **In the test**, as a `{{< doc-test >}}` comment block at the top of the test's hidden setup (the comment is not rendered on the page). Keep it current when you change assertions. Example shape:
+   ```
+   {{< doc-test paths="<scenario>" >}}
+   # WHAT THIS TEST VALIDATES:
+   #   * <thing> — <which content block / panel / endpoint it covers>
+   # WHAT THIS TEST DOES NOT VALIDATE (and why):
+   #   * <thing> — <reason: UI-only step / external dependency not stood up /
+   #     requires traffic or config this page does not include / display-only example / etc.>
+   {{< /doc-test >}}
+   ```
+2. **To the user**, as a short two-list summary in your reply.
+
+Write each "not tested" reason from a fixed set of causes so the gap is actionable:
+- **UI-only step** — the doc instructs clicking through a web UI (no scriptable equivalent), so the test uses an API call as a proxy or skips it.
+- **Display-only block** — the block is illustrative (PromQL query, a `version: '3'` compose file) and isn't a self-contained runnable command.
+- **External dependency** — needs a service the test can't stand up (real IdP, cloud API, LLM provider key).
+- **Requires config/traffic the page omits** — the metric/log/trace only appears with setup that lives on a different page (e.g. a tracing policy, an OTLP access-log policy, LLM/MCP traffic).
+- **Different layer** — e.g. backend pod readiness is checked but not that data is actually stored; the asserted metric exists but the dashboard panel's render isn't verified.
+
+Base both lists on what you actually confirmed on a run, not on what you intended to cover. If an assertion was dropped because it failed (and the failure is a content/product gap, not a test bug), it belongs in "not tested" with the reason — see step 11.
+
+### 11. When a test fails: fix the test or fix the content?
 
 When a test fails, determine **where the bug lives** before changing anything. There are two distinct cases:
 
@@ -286,6 +313,7 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 - [ ] Generated script order makes sense (server before curl/YAMLTest); regenerate after extractor changes if needed.
 - [ ] Optional YAMLTest in a hidden block for HTTP or other assertions.
 - [ ] When fixing a failing test, verified whether the bug is in the test or in the customer-facing content. If the content is wrong, fix the content first — don't silently weaken assertions.
+- [ ] Produced a coverage summary (what is tested / what is not, with a reason for each gap) — both as a `{{< doc-test >}}` comment block in the test and in the reply to the user. See step 10.
 
 ---
 

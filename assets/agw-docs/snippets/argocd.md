@@ -26,7 +26,7 @@
 
 4. Log in with the `admin` username and `gateway` password.
    
-   {{< reuse-image src="img/argocd-welcome.png" >}}
+   {{< reuse-image-light src="img/argocd-welcome.png" >}}
    {{< reuse-image-dark srcDark="img/argocd-welcome.png" >}}
 
 5. Create an Argo CD application to deploy the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRD Helm chart. 
@@ -120,5 +120,5 @@
 
 9. Open the Argo CD UI and verify that you see the Argo CD application with a `Healthy` and `Synced` status.
 
-   {{< reuse-image src="img/argo-app-agw.png" >}}
+   {{< reuse-image-light src="img/argo-app-agw.png" >}}
    {{< reuse-image-dark srcDark="img/argo-app-agw.png" >}}

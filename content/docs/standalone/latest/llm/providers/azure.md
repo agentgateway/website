@@ -1,6 +1,6 @@
 ---
 title: Azure
-weight: 60
+weight: 15
 description: Configuration and setup for Azure AI services provider
 ---
 
@@ -8,7 +8,7 @@ Configure Microsoft Azure AI as an LLM provider in agentgateway.
 
 ## Authentication
 
-Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). By default, agentgateway uses `DefaultAzureCredential` which automatically detects credentials from the environment (Azure CLI, managed identity, workload identity, or environment variables). You can also authenticate with an API key.
+Before you can use Azure as an LLM provider, you must authenticate by using one of the standard [Azure authentication methods](https://learn.microsoft.com/en-us/azure/ai-services/authentication). In standalone mode, this authentication is configured with `llm.models[]` fields (for example, `params.apiKey` or `auth.azure`). In routing-based configurations, use `policies.backendAuth.azure`.
 
 ## Configuration
 
@@ -44,11 +44,16 @@ llm:
   models:
   - name: "gpt-4.1"
     provider: azure
+    auth:
+      key:
+        value: "$AZURE_API_KEY"
+        location:
+          header:
+            name: api-key
     params:
       azureResourceName: "your-resource-name"
       azureResourceType: foundry
       azureProjectName: "your-project-name"
-      apiKey: "$AZURE_API_KEY"
 ```
 
 {{% /tab %}}
@@ -99,13 +104,6 @@ binds:
     - matches:
       - path:
           pathPrefix: /azure
-      policies:
-        urlRewrite:
-          authority: auto
-        backendAuth:
-          azure:
-            implicit: {}
-        backendTLS: {}
       backends:
       - ai:
           name: azure
@@ -136,8 +134,6 @@ binds:
       - path:
           pathPrefix: /azure
       policies:
-        urlRewrite:
-          authority: auto
         backendAuth:
           azure:
             explicitConfig:
@@ -145,7 +141,6 @@ binds:
                 tenantId: "<your-tenant-id>"
                 clientId: "<your-client-id>"
                 clientSecret: "<your-client-secret>"
-        backendTLS: {}
       backends:
       - ai:
           name: azure
@@ -187,7 +182,6 @@ binds:
                 tenantId: "<your-tenant-id>"
                 clientId: "<your-client-id>"
                 clientSecret: "<your-client-secret>"
-        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -224,7 +218,6 @@ binds:
           azure:
             explicitConfig:
               managedIdentity: {}
-        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -267,7 +260,6 @@ binds:
                   # OR use objectId or resourceId instead
                   # objectId: "your-managed-identity-object-id"
                   # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
-        backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

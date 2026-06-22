@@ -1,7 +1,7 @@
 ---
 title: About
 weight: 10 
-description:
+description: Learn about Model Context Protocol and enterprise adoption challenges
 next: /mcp/connect
 test: skip
 ---
@@ -15,6 +15,8 @@ Learn more about MCP and common challenges when adopting MCP in enterprise envir
 An MCP server exposes external data sources and tools so that LLM applications can access them. Typically, you want to deploy these servers remotely and have authorization mechanisms in place so that LLM applications can safely access the data.
 
 With agentgateway, you can connect to one or multiple MCP servers in any environment. The agentgateway proxies requests to the MCP tool that is exposed on the server. You can also use the agentgateway to federate tools from multiple MCP servers. For more information, see the [virtual MCP]({{< link-hextra path="/mcp/connect/virtual" >}}) guide. 
+
+In standalone mode, MCP and LLM can run on separate listener ports (`llm.port` defaults to `4000`, `mcp.port` defaults to `3000`) or share one listener when both ports are set to the same value. If `llm.tls` is configured, do not share ports; keep `mcp.port` and `llm.port` separate. For details, see [Routing-based configuration for LLMs]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 ## MCP vs. A2A
 

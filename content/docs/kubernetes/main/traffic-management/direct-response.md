@@ -1,7 +1,7 @@
 ---
 title: Direct responses
 weight: 10
-description:
+description: Return responses directly without forwarding to upstream services.
 test:
   direct-response:
   - file: content/docs/kubernetes/main/quickstart/install.md

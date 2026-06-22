@@ -1,6 +1,7 @@
 ---
 title: HTTP authorization
 weight: 12
+description: Define allow, deny, and require rules using CEL expressions.
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
@@ -56,7 +57,7 @@ authorization:
   - deny: 'jwt.aud != "my-service"'
 ```
 
-These behave the same when a JWT with an audience claim is present, but they differ when the claim is missing. With no JWT, `jwt.aud` is undefined and both expressions error:
+These rules behave the same when a JWT with an audience claim is present, but they differ when the claim is missing. With no JWT, `jwt.aud` is undefined and both expressions error:
 
 - A failed `require` expression denies the request (fail-closed).
 - A failed `deny` expression does not match and therefore does not deny the request (fail-open). The request might be allowed by other rules. 
@@ -64,3 +65,30 @@ These behave the same when a JWT with an audience claim is present, but they dif
 For mandatory conditions such as "all requests must have a valid audience claim," prefer `require`, which fails closed.
 
 Unlike `allow` rules (where any one match permits the request), all `require` rules must match for the request to proceed.
+
+## LLM authorization
+
+In simplified LLM mode, you can also apply authorization at the policy layer with `llm.policies.authorization.rules` to require every request on the local listener to be authenticated, and at the model layer with `llm.models[].authorization.rules` to restrict access to a specific model.
+
+Each rule in `llm.models[].authorization.rules` uses the same schema as route authorization:
+- A CEL string (legacy shorthand for `allow`)
+- An object with `allow`
+- An object with `deny`
+- An object with `require`
+
+```yaml
+llm:
+  models:
+  - name: gpt-4
+    provider: openAI
+    params:
+      model: gpt-4o
+      apiKey: "$OPENAI_API_KEY"
+    authorization:
+      rules:
+      - require: 'jwt.aud == "llm-api"'
+      - deny: 'request.headers["x-org"] == "blocked"'
+      - 'request.headers["x-org"] == "engineering"'
+```
+
+The LLM models endpoint (`/v1/models`) is also gated by authorization. If a caller does not satisfy authorization rules for a model, that model is not returned. This authorization filtering is separate from [`llm.models[].visibility`]({{< link-hextra path="/llm/virtual-models/#public-and-internal-models" >}}), which controls whether a model is directly exposed or kept as an internal virtual-model target.

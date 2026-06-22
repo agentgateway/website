@@ -9,6 +9,8 @@ agctl controls and inspects Agentgateway resources
 
 ### SEE ALSO
 
-* [agctl config](../agctl-config/)	 - Retrieve Agentgateway configuration for a resource
-* [agctl trace](../agctl-trace/)	 - Trace the next request handled by an Agentgateway pod or local instance
+* [agctl controller](../agctl-controller/)	 - Inspect and manage the agentgateway controller
+* [agctl costs](../agctl-costs/)	 - Manage model cost catalogs
+* [agctl proxy](../agctl-proxy/)	 - Inspect and manage the agentgateway proxy
+* [agctl version](../agctl-version/)	 - Print agctl version information
 

@@ -8,87 +8,131 @@ test: skip
 Review the release notes for agentgateway standalone.
 
 {{< callout type="info">}}
-For more details, review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases)
+For more details, check out the [release blog](https://agentgateway.dev/blog/2026-06-17-agentgateway-v1.3.0/), or review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 {{< /callout >}}
 
-## 🌟 New features {#v12-new-features}
+## 🔥 Breaking changes {#v13-breaking-changes}
 
-### Conditional policy execution
+### `agctl` commands reorganized under `proxy` and `controller`
 
-Policies can now be selected conditionally using CEL expressions. Conditional execution is supported for external auth, transformations, rate limiting, external processing, and direct responses. The first matching policy is applied, with an optional final fallback entry. For more information, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies/" >}}).
+The experimental `agctl` CLI now groups its inspection and tracing commands under the `proxy` parent command, and adds new commands for log-level management and version information. Update any scripts or automation that call the previous top-level commands.
 
-### Route delegation
+Before:
 
-Agentgateway now supports route delegation, allowing parent routes to delegate portions of their routing tree to child routes. Platform teams can own shared parent routes while application teams manage delegated route fragments. For more information, see [Route delegation]({{< link-hextra path="/configuration/traffic-management/route-delegation/" >}}).
+```sh
+agctl config all --file /tmp/agw-dump.json -o yaml
+agctl trace --local --port 3000 -- http://example.com/headers
+```
 
-### `agctl` CLI debugging tool
+Now:
 
-A new experimental `agctl` command-line tool for inspecting and debugging agentgateway is now available. To install `agctl`, see [Install agctl]({{< link-hextra path="/operations/agctl/" >}}).
-- `agctl config` renders the runtime configuration that an agentgateway proxy has loaded, including binds, listeners, routes, backends, workloads, and policies, as a structured table, JSON, or YAML. `agctl config backends` shows per-backend health, request counts, and latency. For more information, see [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}).
-- `agctl trace` streams a step-by-step trace of how the proxy processes the next request, showing the matched route, applied policies, chosen backend, and response status. For more information, see [Trace requests with agctl]({{< link-hextra path="/operations/trace-requests/" >}}).
+```sh
+agctl proxy config all --file /tmp/agw-dump.json -o yaml
+agctl proxy trace --local --port 3000 -- http://example.com/headers
+```
 
-For a complete command reference, see [agctl CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
+The reorganization also introduces the following new capabilities:
 
-### Policy targets
+- `agctl version` prints version information for the `agctl` CLI.
+- `agctl proxy log` and `agctl controller log` get or set log levels at runtime for agentgateway running in Kubernetes.
 
-Policies can now target resources by label selector in addition to explicit attachment points. This configuration makes it easier to apply shared policy configuration across groups of listeners, routes, or backends. For more information, see [Attachment points]({{< link-hextra path="/configuration/policies/attachment/" >}}).
+For more information, see [Install `agctl`]({{< link-hextra path="/operations/agctl/" >}}), [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}), [Trace requests with `agctl`]({{< link-hextra path="/operations/trace-requests/" >}}), and the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
 
-### PROXY protocol support
+## 🌟 New features {#v13-new-features}
 
-Listeners now support downstream PROXY protocol handling, including strict and optional modes and PROXY protocol v1/v2 selection. For more information, see [Listeners]({{< link-hextra path="/configuration/listeners/" >}}).
+### New UI
 
-### Locality load balancing and failover
+A refreshed UI exposes the new LLM capabilities through LLM, MCP, and traffic-native views, aligned with the new model-based routing model. Configure providers, models, costs, and guardrails and inspect MCP and traffic configuration from one place.
 
-The data plane now supports locality-aware load balancing and failover, improving traffic placement for multi-zone and multi-region deployments.
+### Standalone LLM enhancements
 
-### LLM gateway enhancements
+This release brings a large set of improvements to the standalone LLM experience, expanding first-class support for model-based routing, where a single endpoint such as `/v1/chat/completions` is exposed and the model is specified in the request body.
 
-- **Azure provider**: A new Azure provider supports both Azure OpenAI and Azure AI Foundry style resources. For more information, see [Azure OpenAI]({{< link-hextra path="/integrations/llm-providers/azure-openai/" >}}).
-- **Copilot support**: Added Copilot authentication and LLM provider support.
-- **Gemini Responses API**: Responses API requests can now be routed to Gemini. For more information, see [Google Gemini]({{< link-hextra path="/integrations/llm-providers/gemini/" >}}).
-- **Path prefixes**: Custom path prefixes now work across all LLM providers, including Gemini, Vertex, Bedrock, and Azure.
-- **OpenAI compatibility**: OpenAI chat completion requests now normalize `max_tokens` to `max_completion_tokens`.
-- **Azure Content Safety guardrails**: Prompt and response guardrails can now use Azure AI Content Safety.
-- **Bedrock guardrails masking**: Bedrock guardrails now support masking. For more information, see [Amazon Bedrock]({{< link-hextra path="/integrations/llm-providers/bedrock/" >}}).
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2186 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2206 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2180 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2209 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2184 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1879 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2212 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2105 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2099 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2217 -->
 
-### MCP improvements
+- **Virtual models**: Define a public model name that routes to one or more concrete models using weighted, failover, or conditional (CEL-based) routing, and mark concrete models as `public` or `internal`.
+- **Shared providers**: Define a named provider once with shared defaults and reference it from multiple models, with per-model overrides.
+- **Model-cost catalog**: Supply a model-cost catalog so the gateway computes real per-request cost, surfaced through CEL, logs, traces, and metrics. Catalogs load from files or inline, and `agctl costs import` can generate one.
+- **13 new first-class providers**: Mistral, Hugging Face, Cohere, Groq, Fireworks, DeepSeek, xAI, Together AI, OpenRouter, Cerebras, DeepInfra, Baseten, and Ollama can be selected by name with sensible defaults, and `baseUrl` replaces the older host and path override fields. For more information, see the [LLM providers section]({{< link-hextra path="/llm/providers/" >}}).
+- **Custom provider**: Access providers without built-in support directly, rather than approximating them with the `OpenAI` provider and a custom `base_url`. A `providerOverride` tags a custom backend with a known provider name so cost and telemetry attribute correctly.
+- **Serve LLM over TLS**: The standalone LLM listener can now serve HTTPS directly.
+- **CORS for the local LLM listener**: Configure CORS on the LLM listener, including correct handling of non-matching requests and 404s.
+- **Share a port for MCP and LLM**: Serve MCP and LLM traffic on a single shared listener port.
 
-- **Session TTL**: MCP sessions can now be configured with an idle TTL. For more information, see [MCP connectivity]({{< link-hextra path="/mcp/" >}}).
-- **Stateless MCP**: Stateless MCP initialization and shutdown behavior is improved.
-- **List resources with multiplexing**: `ListResourcesRequest` now works with multiplexed MCP targets.
+### Guardrails
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2177 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2170 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1946 -->
+
+- **Shared guardrails**: Define guardrails as a shared top-level resource that applies to all models, merged with per-model guardrails.
+- **Streaming guardrails**: Optionally run guardrails on streaming (SSE) and realtime responses.
+- **Webhook `failureMode`**: Webhook guardrails support fail-open or fail-closed behavior.
+
+### ExtMCP: MCP-aware external auth and processing
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1842 -->
+
+External authorization and external processing integrations can now make decisions using MCP request context, such as the tool being called and its arguments, rather than only generic HTTP metadata. For more information, see the [MCP guardrail docs]({{< link-hextra path="/mcp/guardrails/">}}).
+
+### External processing enhancements
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1787 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2010 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2071 -->
+
+- **Per-phase processing modes**: Control whether headers, body, and trailers are sent to the ext_proc server for each phase, choose how the body is delivered, and optionally allow the ext_proc server to override the mode.
+- **`ImmediateResponse` from body phases**: An ext_proc server can now return an `ImmediateResponse` from the request body and response body phases and have it returned to the client.
+
+### Request buffering
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2017 -->
+
+A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits. For more information, see [Body buffering]({{< link-hextra path="/configuration/traffic-management/buffer/" >}}).
 
 ### Authentication and authorization
 
-- **Backend external auth**: External auth can now run as a backend policy after backend selection. For more information, see [External authorization]({{< link-hextra path="/configuration/security/external-authz/" >}}).
-- **Auth credential locations**: JWT, basic auth, API key, and backend auth can now override where credentials are read from or inserted, including headers, query parameters, and cookies. For more information, see [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) and [API key authentication]({{< link-hextra path="/configuration/security/apikey-authn/" >}}).
-- **Explicit GCP credentials**: GCP backend auth can now use explicit Secret-backed credentials. For more information, see [Backend authentication]({{< link-hextra path="/configuration/security/backend-authn/" >}}).
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2164 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1876 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2175 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1844 -->
 
-### Traffic, TLS, and networking
+- **Per-model authorization**: LLM authorization can be configured per model, and `/v1/models` listings are gated by authorization.
+- **API key permissive mode**: A new permissive API key mode never rejects requests; valid keys add claims while missing or invalid keys pass through.
+- **Pre-routing authorization**: Authorization, including CORS, can run in the pre-routing phase.
+- **External auth caching**: External auth supports caching, with a configurable cache key and a TTL that can be a duration or a CEL expression.
 
-- **Post-quantum TLS**: TLS configuration now supports post-quantum key exchange groups, including `X25519_MLKEM768`. For more information, see [Listeners]({{< link-hextra path="/configuration/listeners/" >}}).
-- **Max connection duration**: HTTP listeners can now enforce a maximum connection duration.
-- **HTTP/2 pooling**: HTTP/2 connection pooling is improved to avoid the single-connection bottleneck.
+### MCP improvements
 
-### Operations
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1831 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2100 -->
 
-- Agentgateway's memory allocator performance is improved, resulting in increased runtime performance and decreased memory utilization.
-- A new `/debug/pprof/heap` endpoint is available to get a `pprof` snapshot of current and historical allocations.
+- Added Okta as a first-class MCP authentication provider.
+- Added resource subscribe and unsubscribe support, and improved resource multiplexing.
+- Advertised prompt, resource, and tool list-change capabilities.
 
-### Telemetry
+### CEL enhancements
 
-- **Custom Prometheus labels**: Policies can add custom Prometheus metric labels using CEL expressions. For more information, see [Metrics]({{< link-hextra path="/reference/observability/metrics/" >}}).
-- **OpenTelemetry environment variables**: The OTEL configuration now respects standard environment variables. For more information, see [Traces]({{< link-hextra path="/reference/observability/traces/" >}}).
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2102 -->
 
-## 🪲 Notable fixes {#v12-fixes}
+- Added route metadata to the CEL context and gRPC status to the response context.
+- Added raw JWT bearer token access via `jwt.rawToken`.
+- Added URL encode/decode functions, timestamp conversion helpers, and bit operations on bytes.
+- Added support for CEL expressions in direct responses and retry conditions.
 
-- Fixed A2A policy matching for agents hosted under sub-paths.
-- Fixed A2A and MCP handling of `X-Forwarded-Proto`.
-- Fixed policies that target missing or non-existent backends from silently attaching to the gateway.
-- Fixed JWKS stale fetches, startup fetch behavior, cache cleanup, and orphan cleanup.
-- Fixed CEL property parsing after bracket accessors.
-- Fixed CEL `response.body` access when upstream responses are compressed.
-- Fixed request body buffering when CEL expressions do not need the body.
-- Fixed `Host` and `:authority` alignment after header mutation.
-- Fixed stripping of hop-by-hop connection headers and encoding headers for more consistent behavior.
-- Fixed invalid htpasswd entries to fail gracefully instead of breaking basic auth handling.
-- Fixed active stream accounting in the connection pool when debug assertions are disabled.
+### Operations and observability
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1784 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/1849 -->
+
+- Added proxy timing measurements, a configuration synchronization metric, and request and connection IDs for troubleshooting.
+- Improved distributed trace output, including JSON mode, body snapshots, and effective gateway and route policies.

@@ -1,6 +1,6 @@
 ---
 title: Gemini
-weight: 30
+weight: 15
 description: Configuration and setup for Google Gemini provider
 ---
 

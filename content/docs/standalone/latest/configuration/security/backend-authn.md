@@ -1,6 +1,7 @@
 ---
 title: Backend authentication
 weight: 10
+description: Attach authentication tokens to outgoing backend requests.
 ---
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
@@ -11,7 +12,8 @@ To attach a static key as an `Authorization` value, use `key`:
 
 ```yaml
 backendAuth:
-  key: $MY_API_KEY
+  key:
+    value: $MY_API_KEY
 ```
 
 A file path can also be used:
@@ -19,7 +21,41 @@ A file path can also be used:
 ```yaml
 backendAuth:
   key:
-    file: /path/to/my/key
+    value:
+      file: /path/to/my/key
+```
+
+By default, the proxy retrieves the key from the `Authorization` header value. To use a different header name, use the `location` field as shown in the following example:
+
+```yaml
+backendAuth:
+  key:
+    value: $MY_API_KEY
+    location:
+      # Send as a request header (default)
+      header:
+        name: authorization
+        prefix: "Bearer "
+```
+
+```yaml
+backendAuth:
+  key:
+    value: $MY_API_KEY
+    location:
+      # Send as a query parameter
+      queryParameter:
+        name: api_key
+```
+
+```yaml
+backendAuth:
+  key:
+    value: $MY_API_KEY
+    location:
+      # Send as a cookie
+      cookie:
+        name: api_key
 ```
 
 When using any form of incoming authentication, such as [JWT]({{< link-hextra path="/configuration/security/jwt-authn/" >}}), [API key]({{< link-hextra path="/configuration/security/apikey-authn/" >}}), or [basic auth]({{< link-hextra path="/configuration/security/basic-authn/" >}}), the original credential is removed from the request by default before forwarding to the backend.
@@ -30,12 +66,40 @@ backendAuth:
   passthrough: {}
 ```
 
+The `passthrough` method also accepts a `location` field to specify where to read the credential from:
+
+```yaml
+backendAuth:
+  passthrough:
+    location:
+      header:
+        name: authorization
+        prefix: "Bearer "
+```
+
 Google [Application Default Credentials](https://docs.cloud.google.com/docs/authentication/application-default-credentials) can also be used, which can be useful when connecting to GCP services:
 
 ```yaml
 backendAuth:
   gcp: {}
 ```
+
+To request an access token (for most GCP services) or an ID token (for Cloud Run), set the `type` field:
+
+```yaml
+backendAuth:
+  gcp:
+    type: AccessToken
+```
+
+```yaml
+backendAuth:
+  gcp:
+    type: IdToken
+    audience: "https://my-cloudrun-service-xyz.run.app"
+```
+
+Credentials are sourced from the environment automatically (for example, via the `GOOGLE_APPLICATION_CREDENTIALS` environment variable or a metadata server).
 
 AWS authentication can be used to sign requests to AWS services:
 

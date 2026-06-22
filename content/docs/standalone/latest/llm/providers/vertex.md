@@ -1,6 +1,6 @@
 ---
 title: Vertex AI
-weight: 20
+weight: 15
 description: Configuration and setup for Google Cloud Vertex AI provider
 ---
 
@@ -40,3 +40,4 @@ llm:
 | `params.model` | The specific Vertex AI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.vertexProject` | The Google Cloud project ID. |
 | `params.vertexRegion` | The Google Cloud region. Defaults to `global` if not specified. |
+| `auth.gcp` | Google Cloud authentication configuration. Uses Application Default Credentials (ADC) by default. |

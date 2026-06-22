@@ -1,7 +1,7 @@
 ---
 title: OpenAPI
 weight: 30
-description: 
+description: Expose OpenAPI endpoints as MCP tools in the agentgateway UI playground
 ---
 
 Expose an {{< gloss "OpenAPI" >}}OpenAPI{{< /gloss >}} server on the agentgateway. Then, your OpenAPI endpoints become available as tools in the agentgateway UI playground.

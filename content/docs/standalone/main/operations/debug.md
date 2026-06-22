@@ -1,5 +1,6 @@
 ---
 title: Debug your setup
+description: Inspect and troubleshoot a standalone agentgateway instance using admin endpoints and agctl.
 weight: 15
 ---
 
@@ -138,5 +139,5 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
    Graphviz opens on your web browser to a UI on localhost. Example:
 
-   {{< reuse-image src="img/debug-heap-pprof.png" caption="Heap profile graph" >}}
+   {{< reuse-image-light src="img/debug-heap-pprof.png" caption="Heap profile graph" >}}
    {{< reuse-image-dark srcDark="img/debug-heap-pprof.png" caption="Heap profile graph" >}}

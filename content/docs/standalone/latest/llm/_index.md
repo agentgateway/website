@@ -8,4 +8,5 @@ next: /reference/observability
 test: skip
 ---
 
-Consume LLM services by setting up AI backends for your LLM providers.
+Agentgateway can act as a feature rich AI/LLM gateway, acting as a proxy between your applications and LLM providers.
+This enables connecting to thousands of LLM model through a unified interface providing governance, observability, and reliability controls.

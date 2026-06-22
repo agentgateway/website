@@ -1,10 +1,15 @@
 ---
 title: OTel stack
+description: Install an OpenTelemetry stack with Grafana, Loki, and Tempo for observability.
 weight: 10
 test:
   otel-stack:
   - file: content/docs/kubernetes/main/quickstart/install.md
     path: standard
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/install/sample-app.md
+    path: install-httpbin
   - file: content/docs/kubernetes/main/observability/otel-stack.md
     path: otel-stack
 ---
@@ -22,7 +27,7 @@ test:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Remove the configmap for the Envoy gateway proxy dashboard and delete the `envoy.json` file.
+1. Remove the configmap for the agentgateway dashboard and delete the `agentgateway.json` file.
    ```sh
    kubectl delete cm {{< reuse "agw-docs/snippets/pod-name.md" >}}-dashboard -n telemetry
    rm {{< reuse "agw-docs/snippets/pod-name.md" >}}.json
