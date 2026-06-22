@@ -1,6 +1,7 @@
 ---
 title: Azure
 weight: 15
+icon: /integrations/providers/bw/azure.svg
 description: Configuration and setup for Azure AI services provider
 ---
 

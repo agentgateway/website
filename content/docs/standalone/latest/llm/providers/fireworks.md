@@ -1,6 +1,7 @@
 ---
 title: Fireworks AI
 weight: 20
+icon: /integrations/providers/bw/fireworks.svg
 description: Configuration and setup for Fireworks AI LLM provider
 ---
 

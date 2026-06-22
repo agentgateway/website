@@ -1,6 +1,7 @@
 ---
 title: Together AI
 weight: 20
+icon: /integrations/providers/bw/togetherai.svg
 description: Configuration and setup for Together AI LLM provider
 ---
 
