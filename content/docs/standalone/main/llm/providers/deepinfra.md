@@ -1,6 +1,7 @@
 ---
 title: DeepInfra
 weight: 20
+icon: /integrations/providers/bw/deepinfra.svg
 description: Configuration and setup for DeepInfra LLM provider
 ---
 

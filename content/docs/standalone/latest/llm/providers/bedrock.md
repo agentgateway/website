@@ -1,6 +1,7 @@
 ---
 title: Amazon Bedrock
 weight: 15
+icon: /integrations/providers/bw/bedrock.svg
 description: Configuration and setup for Amazon Bedrock provider
 ---
 

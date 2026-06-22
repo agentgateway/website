@@ -1,6 +1,7 @@
 ---
 title: Ollama
 weight: 15
+icon: /integrations/providers/bw/ollama.svg
 description: Configure agentgateway to route LLM traffic to Ollama for local model inference
 test:
   ollama-standalone-validate:

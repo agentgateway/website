@@ -1,6 +1,7 @@
 ---
 title: Anthropic
 weight: 15
+icon: /integrations/providers/bw/anthropic.svg
 description: Configuration and setup for Anthropic Claude provider
 ---
 

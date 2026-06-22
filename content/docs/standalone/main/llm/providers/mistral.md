@@ -1,6 +1,7 @@
 ---
 title: Mistral
 weight: 20
+icon: /integrations/providers/bw/mistral.svg
 description: Configuration and setup for Mistral LLM provider
 ---
 

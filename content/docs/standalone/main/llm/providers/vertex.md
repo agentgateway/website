@@ -1,6 +1,7 @@
 ---
 title: Vertex AI
 weight: 15
+icon: /integrations/providers/bw/vertex.svg
 description: Configuration and setup for Google Cloud Vertex AI provider
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: xAI
 weight: 20
+icon: /integrations/providers/bw/xai.svg
 description: Configuration and setup for xAI (Grok) LLM provider
 ---
 

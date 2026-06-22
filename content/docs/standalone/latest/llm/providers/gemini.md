@@ -1,6 +1,7 @@
 ---
 title: Gemini
 weight: 15
+icon: /integrations/providers/bw/gemini.svg
 description: Configuration and setup for Google Gemini provider
 ---
 

@@ -1,6 +1,7 @@
 ---
 title: Baseten
 weight: 20
+icon: /integrations/providers/bw/baseten.svg
 description: Configuration and setup for Baseten LLM provider
 ---
 

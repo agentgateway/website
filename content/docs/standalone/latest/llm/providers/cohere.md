@@ -1,6 +1,7 @@
 ---
 title: Cohere
 weight: 20
+icon: /integrations/providers/bw/cohere.svg
 description: Configuration and setup for Cohere LLM provider
 ---
 
