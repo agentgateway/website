@@ -123,7 +123,7 @@ policies:
         type: "tokens"
 ```
 
-This will enforce rate limit per route/user/source_ip tuple. This gives extremely fine-grained control over how to administer rate limiting. This can then be used to control [LLM spend]({{< relref "/docs/standalone/latest/llm/spending/" >}}).
+This will enforce rate limit per route/user/source_ip tuple. This gives extremely fine-grained control over how to administer rate limiting. This can then be used to control [LLM spend]({{< relref "/docs/standalone/latest/llm/virtual-keys/" >}}).
 
 
 ## Enriching Call Metrics
