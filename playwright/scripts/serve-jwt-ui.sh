@@ -10,7 +10,7 @@
 # fills the playground's "Authorization header" Bearer token). Ctrl-C tears everything down.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-howardjohn/agentgateway:sl8}"
+IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.3.0}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 MCP_PORT=3030          # must match mcp.port in fixtures/jwt-config.yaml
 EVERYTHING_PORT=3005

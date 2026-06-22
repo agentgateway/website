@@ -4,7 +4,7 @@ import { defineConfig, devices } from '@playwright/test';
  * Proof-of-concept config for capturing screenshots of the agentgateway product UI.
  *
  * UI source: by default Playwright's `webServer` launches the prebuilt image that ships
- * the new UI (PR #2232) — howardjohn/agentgateway:sl8 — and waits for the UI to be
+ * the new UI (PR #2232) — cr.agentgateway.dev/agentgateway:v1.3.0 — and waits for the UI to be
  * healthy. One instance serves every project; light vs. dark is seeded per-project in
  * fixtures/test.ts (the new UI ignores prefers-color-scheme), so the `standalone-light`
  * and `standalone-dark` projects share it.
@@ -14,7 +14,7 @@ import { defineConfig, devices } from '@playwright/test';
  *   - docs assets: `npm run sync-docs` copies captures into the docs img/ tree
  *
  * Env knobs:
- *   AGW_IMAGE        docker image to run (default howardjohn/agentgateway:sl8)
+ *   AGW_IMAGE        docker image to run (default cr.agentgateway.dev/agentgateway:v1.3.0)
  *   UI_HOST_PORT     host port mapped to the container's 15000 (default 15100, so it
  *                    never collides with a local agentgateway on 15000)
  *   UI_BASE_URL      full base URL; defaults to http://localhost:${UI_HOST_PORT}
@@ -35,7 +35,7 @@ import { defineConfig, devices } from '@playwright/test';
  */
 
 const HOST_PORT = process.env.UI_HOST_PORT || '15100';
-const IMAGE = process.env.AGW_IMAGE || 'howardjohn/agentgateway:sl8';
+const IMAGE = process.env.AGW_IMAGE || 'cr.agentgateway.dev/agentgateway:v1.3.0';
 const BIN = process.env.AGENTGATEWAY_BIN;
 const ADMIN_ADDR = process.env.ADMIN_ADDR || 'localhost:15000';
 const MODE = process.env.CAPTURE_MODE || '';
@@ -77,7 +77,8 @@ export default defineConfig({
     command,
     url: `${BASE_URL}/ui/`,
     reuseExistingServer: true, // attach to an already-running UI (container, dev server, port-forward)
-    timeout: 120_000, // the sl8 image is amd64 (emulated on arm64) and boots slowly
+    timeout: 240_000, // the sl8 image is amd64 (emulated on arm64) and boots slowly; backend
+    // modes also start host servers (npx server-everything, Petstore mock) first
     stdout: 'pipe',
     stderr: 'pipe',
     env: BIN

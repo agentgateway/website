@@ -34,7 +34,7 @@ specs serve both standalone and Kubernetes modes:
 
 In **standalone** mode, Playwright's `webServer` option launches (or reuses) the UI and
 waits for `/ui/` to be healthy. By default it runs the prebuilt **docker image that ships
-the new UI** (`howardjohn/agentgateway:sl8`, from PR #2232) on host port 15100; set
+the new UI** (`cr.agentgateway.dev/agentgateway:v1.3.0`, from PR #2232) on host port 15100; set
 `AGENTGATEWAY_BIN` to launch a local binary instead. One instance serves every project —
 light vs. dark is seeded per-project in `fixtures/test.ts` — so the `standalone-light` and
 `standalone-dark` projects share it. In **Kubernetes** mode you
@@ -58,7 +58,7 @@ sync step refreshes the doc images. One capture, both purposes.
 
 The product UI is embedded in the agentgateway binary at build time
 (`include_dir!(".../ui/out")`), so each binary/image carries one UI version. This POC
-captures the **new UI from PR #2232** via the prebuilt image `howardjohn/agentgateway:sl8`
+captures the **new UI from PR #2232** via the prebuilt image `cr.agentgateway.dev/agentgateway:v1.3.0`
 — the default. (Building the binary locally from the PR branch also works, but it is easy
 to embed a stale `ui/out`; the published image is the reliable source.)
 
@@ -222,30 +222,35 @@ Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-sp
 - `npm run test:llm` → LLM playground against a mock provider → `ui-llm-playground.png`.
 - `npm run sync-docs` copies the light baselines to their `assets/img/` destinations.
 
-**Added for the backend-dependent guides (harness wired; baselines pending first capture):**
+**Added for the backend-dependent guides (captured + committed against `v1.3.0`, light + dark):**
 - `npm run test:virtual` → multiplex playground → `ui-playground-multi-tools.png`,
   `agentgateway-ui-tool-echo-hello.png`, `ui-tool-time-current.png`
   (used in `mcp/connect/virtual.md`; the echo image is shared with `observability/*`).
-- `npm run test:openapi` → Petstore OpenAPI tools → `agentgateway-ui-tools-openapi.png`,
-  `agentgateway-ui-tools-openapi-success.png` (used in `mcp/connect/openapi.md`).
+  The `time` target is a deterministic `scripts/mock-mcp-time.mjs` (the distroless image
+  can't exec the guide's `uvx mcp-server-time`); the gateway accepts it as an HTTP target.
+- `npm run test:openapi` → Petstore OpenAPI tools → `agentgateway-ui-tools-openapi.png`
+  plus a `getInventory` (no-arg) call → `agentgateway-ui-tools-openapi-success.png`
+  (used in `mcp/connect/openapi.md`). Backed by `scripts/mock-petstore.mjs` serving the
+  real spec + a fixed response, since the `swaggerapi/petstore3` image is amd64-only and
+  unusable under qemu on arm64 (`PETSTORE_REAL=1` uses the real container on native amd64).
 - `npm run test:jwt` → playground with a JWT in the Authorization header →
   `agentgateway-ui-tools-jwt.png` (used in `reference/observability/metrics.md`).
-- `capture:all` is wired into the nightly `playwright-screenshots` workflow.
+- `capture:all` is wired into the nightly `playwright-screenshots` workflow (with a
+  `clean:ui` step between modes so a surviving container isn't reused with stale backends).
 - Matching guide prose for these (main + latest) is rewritten for the new-UI flow
   (Tool Playground → Apply CORS → Initialize → select tool → Call tool).
 
-> **Baselines for the backend modes are NOT yet committed.** They must be generated inside
-> the Playwright Linux container so they match CI byte-for-byte (see "Baseline stability"),
-> and need Docker + the backends — generate them with
-> `CAPTURE_MODE=<mode> npm run test:<mode> -- --update-snapshots` from inside the image, or
-> let the nightly workflow produce them. On the first run, verify the inferred selectors
-> (tool-argument labels, the OpenAPI `getPetById`/`petId` names, Petstore seed data) and the
-> hand-rolled `mock-mcp-time` transport against the live UI; adjust if the gateway rejects it.
+**Image note:** the default `AGW_IMAGE` is the released `cr.agentgateway.dev/agentgateway:v1.3.0`
+(arm64-native, fast; matches the UI the docs target). The older `howardjohn/agentgateway:sl8`
+preview lacked the MCP playground's Authorization-header field, so it cannot capture the JWT shot.
 
 **Left to do for full doc-image regeneration:**
 
 - `observability/ui` (Kubernetes landing, `agentgateway-ui-kube-landing.png`) — needs the
   Kubernetes provisioner (kind + controller + port-forward), still documented-only.
+- The other committed baselines (smoke/landing/cel, playground, a2a, llm) predate the
+  image switch and were captured earlier — re-run `capture:all` against `v1.3.0` to make the
+  whole set consistent (and to keep the nightly `git diff` green for every mapped image).
 - `agent/a2a.md`'s playground section rewrite; confirm whether `llm/*` docs embed
   `ui-llm-playground.png`. The `ui-a2a-*` / `ui-llm-playground` destinations are provisional.
 - `agentgateway-ui-playground.png` (the initial MCP playground view) is still the old-UI

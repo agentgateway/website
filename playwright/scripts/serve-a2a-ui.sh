@@ -9,7 +9,7 @@
 # Ctrl-C tears it down. Requires Docker.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-howardjohn/agentgateway:sl8}"
+IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.3.0}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 CFG_DIR="$ROOT/.agw-runtime"

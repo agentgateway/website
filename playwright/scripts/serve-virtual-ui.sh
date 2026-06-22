@@ -14,7 +14,7 @@
 # the real server instead, bridge it to HTTP: `uvx mcp-proxy --port 3006 -- uvx mcp-server-time`.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-howardjohn/agentgateway:sl8}"
+IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.3.0}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 MCP_PORT=3030          # must match mcp.port in fixtures/virtual-config.yaml
 EVERYTHING_PORT=3005

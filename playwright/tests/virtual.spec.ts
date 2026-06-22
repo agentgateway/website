@@ -41,9 +41,11 @@ test.describe('Virtual MCP (multiplex) playground', () => {
 
   test('multiplexed tools discovered from both targets', async ({ page }) => {
     await expect(page.getByText(/tools discovered/i)).toBeVisible();
-    // Prefixed tool names prove the federation: one from each target.
-    await expect(page.getByText('everything_echo')).toBeVisible();
-    await expect(page.getByText('time_get_current_time')).toBeVisible();
+    // Prefixed tool names prove the federation: one from each target. Use exact match so
+    // it resolves to the tool-list chip, not the (collapsed) Raw JSON block that also
+    // contains the names as a substring.
+    await expect(page.getByText('everything_echo', { exact: true })).toBeVisible();
+    await expect(page.getByText('time_get_current_time', { exact: true })).toBeVisible();
     await expect(page).toHaveScreenshot('ui-playground-multi-tools.png', {
       fullPage: true,
       ...maskSession(page),

@@ -147,9 +147,9 @@ Build the Docker image from the source code. The example builds the image for an
    {{< reuse-image src="img/agentgateway-ui-tools-openapi.png" >}}
 
 6. Verify access to a Petstore API.
-   1. From the **Tool** dropdown, select the `getPetById` tool.
-   2. In the **petId** field, enter the ID of a pet that exists in the store, such as `1`, and click **Call tool**.
-   3. Verify that the **Result** panel returns `HTTP 200` and the pet's details in the **Tool output**.
+   1. From the **Tool** dropdown, select the `getInventory` tool, which returns the store's pet inventory by status and takes no parameters.
+   2. Click **Call tool**.
+   3. Verify that the **Result** panel returns `HTTP 200` and the inventory counts in the **Tool output**.
 
       {{< reuse-image src="img/agentgateway-ui-tools-openapi-success.png" >}}
 

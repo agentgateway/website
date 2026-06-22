@@ -11,7 +11,7 @@
 # Ctrl-C (or Playwright's webServer teardown) tears both down. Requires Docker + Node 18+.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-howardjohn/agentgateway:sl8}"
+IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.3.0}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 LLM_PORT=3030          # must match llm.port in fixtures/llm-config.yaml
 MOCK_PORT=8088         # must match hostOverride in fixtures/llm-config.yaml

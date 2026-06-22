@@ -36,17 +36,19 @@ test.describe('OpenAPI playground', () => {
 
   test('petstore APIs discovered as tools', async ({ page }) => {
     await expect(page.getByText(/tools discovered/i)).toBeVisible();
-    await expect(page.getByText('getPetById')).toBeVisible();
+    // exact match → the tool-list chip, not the (collapsed) Raw JSON block.
+    await expect(page.getByText('getPetById', { exact: true })).toBeVisible();
     await expect(page).toHaveScreenshot('agentgateway-ui-tools-openapi.png', {
       fullPage: true,
       ...maskSession(page),
     });
   });
 
-  test('call getPetById successfully', async ({ page }) => {
-    await selectTool(page, 'getPetById');
-    // petId is a required integer; the Petstore seeds a pet with id 1.
-    await page.locator('.tool-arguments-form input, .tool-arguments-form textarea').first().fill('1');
+  test('call getInventory successfully', async ({ page }) => {
+    // getInventory takes no parameters, so the success path needs no argument entry — a
+    // clean, deterministic OpenAPI tool call straight to Call tool. (Parameterized tools
+    // like getPetById expose their args as a Monaco "Arguments JSON" editor.)
+    await selectTool(page, 'getInventory');
     await page.getByRole('button', { name: /call tool/i }).click();
 
     await expect(page.getByText(/HTTP 200/)).toBeVisible({ timeout: 15_000 });

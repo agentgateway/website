@@ -1,17 +1,21 @@
 #!/usr/bin/env bash
 # Stand up an OPENAPI -> MCP UI for the openapi.spec.ts capture:
-#   1. the Swagger Petstore server (host :8080, via the swaggerapi/petstore3 image)
-#   2. its OpenAPI schema curled into .agw-runtime/openapi.json (mounted at /config)
+#   1. the Petstore OpenAPI schema (fixtures/petstore-openapi.json — the real spec) copied
+#      into .agw-runtime/openapi.json and read by the gateway via schema.file
+#   2. a fast, native mock of the Petstore data API on host :8080 (scripts/mock-petstore.mjs)
 #   3. the new-UI image (sl8) wired to it via fixtures/openapi-config.yaml
 #
 #   one command:  CAPTURE_MODE=openapi npm run test:openapi   (Playwright's webServer runs this)
 #   manual:       ./scripts/serve-openapi-ui.sh               then capture in another shell
 #
-# Ctrl-C (or Playwright's webServer teardown) tears everything down. Requires Docker.
+# Why the mock instead of the guide's swaggerapi/petstore3 container: that image is amd64
+# (Java/Jetty) and unusably slow under qemu on arm64. The mock is deterministic and arch-
+# neutral; the tool LIST still comes from the real spec, so it matches the guide. To use the
+# real server instead, set PETSTORE_REAL=1 (runs swaggerapi/petstore3:unstable on :8080 and
+# curls its schema) — works on native amd64 (e.g. CI), slow under emulation.
 set -euo pipefail
 
-IMAGE="${AGW_IMAGE:-howardjohn/agentgateway:sl8}"
-PETSTORE_IMAGE="${PETSTORE_IMAGE:-swaggerapi/petstore3:latest}"
+IMAGE="${AGW_IMAGE:-cr.agentgateway.dev/agentgateway:v1.3.0}"
 UI_PORT="${UI_HOST_PORT:-15100}"
 MCP_PORT=3030          # must match mcp.port in fixtures/openapi-config.yaml
 PETSTORE_PORT=8080
@@ -25,16 +29,22 @@ cp "$SRC_CFG" "$CFG_DIR/config.yaml"
 cleanup() {
   echo "→ stopping…"
   docker rm -f agw-ui-openapi agw-petstore >/dev/null 2>&1 || true
+  [[ -n "${PETSTORE_PID:-}" ]] && kill "$PETSTORE_PID" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT INT TERM
 
-echo "→ starting Petstore on :$PETSTORE_PORT ($PETSTORE_IMAGE)"
-docker rm -f agw-petstore >/dev/null 2>&1 || true
-docker run -d --rm --name agw-petstore -p "$PETSTORE_PORT:8080" "$PETSTORE_IMAGE" >/dev/null
-
-echo "→ waiting for Petstore OpenAPI schema…"
-until curl -sf "http://localhost:$PETSTORE_PORT/api/v3/openapi.json" -o "$CFG_DIR/openapi.json"; do sleep 1; done
-echo "✓ schema saved to .agw-runtime/openapi.json"
+if [[ "${PETSTORE_REAL:-}" == "1" ]]; then
+  echo "→ starting real Petstore (swaggerapi/petstore3:unstable) on :$PETSTORE_PORT"
+  docker rm -f agw-petstore >/dev/null 2>&1 || true
+  docker run -d --rm --name agw-petstore -p "$PETSTORE_PORT:8080" swaggerapi/petstore3:unstable >/dev/null
+  echo "→ waiting for Petstore schema…"
+  until curl -sf "http://localhost:$PETSTORE_PORT/api/v3/openapi.json" -o "$CFG_DIR/openapi.json"; do sleep 2; done
+else
+  echo "→ starting mock Petstore on :$PETSTORE_PORT (schema from fixtures/petstore-openapi.json)"
+  cp "$HERE/fixtures/petstore-openapi.json" "$CFG_DIR/openapi.json"
+  PORT=$PETSTORE_PORT node "$HERE/scripts/mock-petstore.mjs" >/tmp/petstore.log 2>&1 &
+  PETSTORE_PID=$!
+fi
 
 echo "→ starting agentgateway UI ($IMAGE) on :$UI_PORT (UI) / :$MCP_PORT (MCP)"
 docker rm -f agw-ui-openapi >/dev/null 2>&1 || true

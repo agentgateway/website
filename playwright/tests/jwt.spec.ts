@@ -37,7 +37,7 @@ test('JWT supplied in the playground, tools discovered', async ({ page }) => {
   // Expand the collapsible "Authorization header" section and supply the Bearer token.
   // The field is type=password (renders dots), so the literal token never shows — no mask
   // needed for it. Target by its stable name attribute rather than the password role.
-  await page.getByText('Authorization header', { exact: true }).click();
+  await page.locator('.mcp-auth-details summary').click();
   await page.locator('input[name="agw-mcp-playground-bearer-token"]').fill(JWT);
 
   await expect(async () => {

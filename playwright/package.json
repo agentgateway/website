@@ -11,7 +11,8 @@
     "test:virtual": "CAPTURE_MODE=virtual playwright test virtual.spec.ts --project=standalone-light --project=standalone-dark",
     "test:openapi": "CAPTURE_MODE=openapi playwright test openapi.spec.ts --project=standalone-light --project=standalone-dark",
     "test:jwt": "CAPTURE_MODE=jwt playwright test jwt.spec.ts --project=standalone-light --project=standalone-dark",
-    "capture:all": "npm run test:standalone && npm run test:mcp && npm run test:a2a && npm run test:llm && npm run test:virtual && npm run test:openapi && npm run test:jwt",
+    "clean:ui": "docker ps -aq --filter publish=15100 | xargs -I{} docker rm -f {}",
+    "capture:all": "npm run clean:ui && npm run test:standalone && npm run clean:ui && npm run test:mcp && npm run clean:ui && npm run test:a2a && npm run clean:ui && npm run test:llm && npm run clean:ui && npm run test:virtual && npm run clean:ui && npm run test:openapi && npm run clean:ui && npm run test:jwt && npm run clean:ui",
     "update": "playwright test smoke.spec.ts landing.spec.ts cel.spec.ts --update-snapshots --project=standalone-light --project=standalone-dark",
     "sync-docs": "node scripts/sync-docs-images.mjs",
     "report": "playwright show-report"

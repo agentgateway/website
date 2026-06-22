@@ -10,6 +10,11 @@
 # only needs the playground to send the Authorization header and run a tool. That lets it
 # reuse the proven server-everything HTTP backend.
 #
+# NOTE: metrics tags (the `user: @sub` mapping in the guide) are configured via the full
+# bind/listener/route format, not this `mcp:` shorthand (the shorthand schema has no
+# top-level `metrics` field — it crashes the gateway). The tags only affect the /metrics
+# output (a curl step in the guide), not the playground screenshot, so they are omitted here.
+#
 # Adjustments for capturing inside the distroless sl8 container (same as the MCP fixture):
 #   - mcp.port is 3030; the everything target runs on the host (:3005) over HTTP.
 mcp:
@@ -26,7 +31,3 @@ mcp:
     - name: everything
       mcp:
         host: http://host.docker.internal:3005/mcp/
-metrics:
-  tags:
-    user: "@sub"
-    custom-tag: "test"
