@@ -38,7 +38,9 @@ jobs:
         working-directory: playwright
         env:
           CI: true
-        run: npm run test:standalone
+        # Each capture mode brings up its own backends + UI container (scripts/serve-*.sh)
+        # and tears them down, so they run sequentially. Docker is preinstalled on the runner.
+        run: npm run capture:all
 
       - name: Sync screenshots into docs
         working-directory: playwright

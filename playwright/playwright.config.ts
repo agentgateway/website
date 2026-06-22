@@ -21,12 +21,15 @@ import { defineConfig, devices } from '@playwright/test';
  *   AGENTGATEWAY_BIN if set, launch this local binary instead of docker (e.g. a build
  *                    from a different branch). Serves on ADMIN_ADDR (default :15000).
  *   CAPTURE_MODE     which environment webServer brings up:
- *                      ''   (default) — empty-config UI (smoke / landing captures)
- *                      mcp  — server-everything + MCP config (playground.spec.ts)
- *                      a2a  — A2A guide config as a Traffic route (a2a-traffic.spec.ts)
- *                      llm  — mock OpenAI provider + LLM config (llm-playground.spec.ts)
- *                    The mcp/a2a/llm scripts under scripts/ are self-contained: they
- *                    start any backing servers, run the container, and clean up on exit.
+ *                      ''      (default) — empty-config UI (smoke / landing / cel captures)
+ *                      mcp     — server-everything + MCP config (playground.spec.ts)
+ *                      a2a     — A2A guide config as a Traffic route (a2a-traffic.spec.ts)
+ *                      llm     — mock OpenAI provider + LLM config (llm-playground.spec.ts)
+ *                      virtual — server-everything + mock-mcp-time, multiplexed (virtual.spec.ts)
+ *                      openapi — Swagger Petstore + openapi target (openapi.spec.ts)
+ *                      jwt     — server-everything + metrics tags (jwt.spec.ts)
+ *                    The scripts under scripts/ are self-contained: they start any backing
+ *                    servers, run the container, and clean up on exit.
  *   REUSE: webServer.reuseExistingServer attaches to anything already serving the URL,
  *          so you can run a `scripts/serve-*.sh` (or `docker run …`) yourself and point here.
  */
@@ -42,7 +45,14 @@ const BASE_URL =
 
 // Pick the launcher. A local binary, a mode-specific setup script (which starts its own
 // backends + the container and cleans up on teardown), or the default empty-config image.
-const SCRIPT_FOR = { mcp: 'serve-populated-ui.sh', a2a: 'serve-a2a-ui.sh', llm: 'serve-llm-ui.sh' };
+const SCRIPT_FOR = {
+  mcp: 'serve-populated-ui.sh',
+  a2a: 'serve-a2a-ui.sh',
+  llm: 'serve-llm-ui.sh',
+  virtual: 'serve-virtual-ui.sh',
+  openapi: 'serve-openapi-ui.sh',
+  jwt: 'serve-jwt-ui.sh',
+};
 const command = BIN
   ? `"${BIN}" -f fixtures/standalone-config.yaml`
   : MODE && SCRIPT_FOR[MODE]

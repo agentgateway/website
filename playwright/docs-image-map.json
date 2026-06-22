@@ -5,9 +5,6 @@
       "light": "assets/img/agentgateway-ui-landing.png",
       "dark": "assets/img/agentgateway-ui-landing-dark.png"
     },
-    "agentgateway-ui-playground.png": {
-      "light": "assets/img/agentgateway-ui-playground.png"
-    },
     "ui-playground-tools.png": {
       "light": "assets/img/ui-playground-tools.png"
     },

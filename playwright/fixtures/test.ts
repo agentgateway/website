@@ -24,3 +24,30 @@ export async function dismissWelcome(page: Page): Promise<void> {
     await page.locator('.startup-shell').waitFor({ state: 'detached' }).catch(() => {});
   }
 }
+
+/**
+ * Mask the dynamic MCP session id so it never breaks pixel baselines. The session bar
+ * (`.mcp-session-bar .mono`) and the Result status (`.mcp-result-status .mono`) both render
+ * the server-generated id, which changes every run. Spread into toHaveScreenshot():
+ *   await expect(page).toHaveScreenshot('x.png', { fullPage: true, ...maskSession(page) });
+ */
+export function maskSession(page: Page) {
+  return {
+    mask: [
+      page.locator('.mcp-session-bar .mono'),
+      page.locator('.mcp-result-status .mono'),
+    ],
+  };
+}
+
+/**
+ * Select a tool in the MCP Playground's searchable Tool dropdown. The custom `Dropdown`
+ * primitive renders a `combobox` trigger labelled "Tool", a "Search Tool" combobox inside
+ * the open listbox, and `option` rows labelled `${name} - ${description}`. Pass the exact
+ * tool name, e.g. `everything_echo` or `time_get_current_time`.
+ */
+export async function selectTool(page: Page, toolName: string): Promise<void> {
+  await page.getByRole('combobox', { name: 'Tool', exact: true }).click();
+  await page.getByRole('combobox', { name: 'Search Tool', exact: true }).fill(toolName);
+  await page.getByRole('option', { name: new RegExp(`^${toolName}\\b`) }).click();
+}
