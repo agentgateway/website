@@ -1,258 +1,323 @@
-# Product UI screenshot automation — proof of concept
+# Product UI screenshots
 
-> **Status: proof of concept.** This directory is a throwaway demonstration of how
-> Playwright could capture screenshots of the **agentgateway product UI** (the admin
-> UI served on `:15000`), for two purposes at once:
->
-> 1. **Docs assets** — regenerate the `img/*.png` files embedded in the docs.
-> 2. **Visual regression** — fail CI when the UI changes unexpectedly.
->
-> It is **not** wired into CI and does **not** replace `scripts/TEST_FRAMEWORK.md`
-> (which tests that the *commands in the docs* work against a real cluster). This is
-> the missing **frontend/visual** tier: it screenshots the *running product UI*.
+This directory captures the screenshots of the **agentgateway product UI** (the admin UI
+served on `:15000/ui/`) that the docs embed, using [Playwright](https://playwright.dev).
+Every capture serves two purposes at once:
 
-## The two layers
+1. **Docs assets** — regenerate the `assets/img/*.png` files the guides display.
+2. **Visual regression** — a nightly CI job re-captures and fails if the UI drifts from the
+   committed images, so stale screenshots get caught.
 
-Playwright only ever needs `http://localhost:15000/ui/` to be live. **How** the UI got
-there is a separate, mode-specific concern. That separation is what lets one set of
-specs serve both standalone and Kubernetes modes:
+This is separate from `scripts/TEST_FRAMEWORK.md` (which runs the *commands* in the docs
+against a real cluster). This is the **frontend/visual** tier: it screenshots the running UI.
+
+If you write or update a doc page that shows the product UI, this is how those images are
+produced. The two most common tasks — [updating screenshots for a new agentgateway
+version](#task-update-screenshots-for-a-new-agentgateway-version) and [adding a new guide
+that has screenshots](#task-add-a-new-guide-that-has-screenshots) — are written up below.
+
+---
+
+## How it works
 
 ```
-┌─ env provisioner (mode-specific) ─────────────┐
-│  standalone:  install binary → config.yaml →  │
-│               run agentgateway (bg)           │
-│  kubernetes:  kind → controller → app →       │
-│               traffic resources → wait →      │
-│               kubectl port-forward (bg)       │
-└───────────────────────┬───────────────────────┘
-                        │  guarantees :15000 is live + healthy
-                        ▼
-┌─ Playwright (mode-agnostic) ──────────────────┐
-│  navigate /ui/ → interact → screenshot        │
-└───────────────────────────────────────────────┘
+┌─ a launcher brings the UI up ─────────────────────────────┐
+│  webServer runs the agentgateway docker image (the UI is  │
+│  baked into the binary) + any backend a guide needs,      │
+│  and waits until http://localhost:15100/ui/ is healthy    │
+└───────────────────────────┬───────────────────────────────┘
+                            ▼
+┌─ Playwright captures (mode-agnostic) ─────────────────────┐
+│  goto a UI route → interact → toHaveScreenshot('name.png')│
+│  run once per theme: standalone-light and standalone-dark │
+└───────────────────────────┬───────────────────────────────┘
+                            ▼
+┌─ the same PNGs become docs assets ────────────────────────┐
+│  npm run sync-docs copies each baseline to its            │
+│  assets/img/ destination, using docs-image-map.json       │
+└────────────────────────────────────────────────────────────┘
 ```
 
-In **standalone** mode, Playwright's `webServer` option launches (or reuses) the UI and
-waits for `/ui/` to be healthy. By default it runs the prebuilt **docker image that ships
-the new UI** (`cr.agentgateway.dev/agentgateway:v1.3.0`, from PR #2232) on host port 15100; set
-`AGENTGATEWAY_BIN` to launch a local binary instead. One instance serves every project —
-light vs. dark is seeded per-project in `fixtures/test.ts` — so the `standalone-light` and
-`standalone-dark` projects share it. In **Kubernetes** mode you
-bring the cluster up and start a `kubectl port-forward` to the UI yourself, then point
-`UI_BASE_URL` at it; `reuseExistingServer` makes Playwright attach to it. The Kubernetes
-path is documented in `provisioners/kubernetes.ts` (it reuses the cluster machinery in
-`scripts/TEST_FRAMEWORK.md`) but not automated in this POC.
+- **One UI, many environments.** Playwright only needs `:15100/ui/` to be live. A
+  `CAPTURE_MODE` env var selects which `scripts/serve-*.sh` launcher to run; each launcher
+  starts whatever backend that guide needs (an MCP server, a mock LLM, etc.), runs the UI
+  container, and tears everything down on exit. Specs that need no backend (the landing
+  page, the CEL playground) run against the default empty-config image.
+- **Light + dark.** Two Playwright projects (`standalone-light`, `standalone-dark`) run each
+  spec twice. `fixtures/test.ts` seeds `localStorage['theme']` before load, so each project
+  produces its own baseline.
+- **Baseline = doc image.** `toHaveScreenshot('x.png')` writes a baseline under
+  `__screenshots__/` and diffs against it. `npm run sync-docs` then copies the light and
+  dark baselines to the `assets/img/` paths declared in `docs-image-map.json`.
 
-## One capture, both goals
+## Prerequisites
 
-`toHaveScreenshot()` writes a PNG on every run and diffs it against a committed baseline:
+- **Node 18+** (CI uses 20). The repo's default shell `node` may be older; use `nvm use 20`.
+- **Docker** running. The default UI image is `cr.agentgateway.dev/agentgateway:v1.3.0`
+  (arm64-native, so it runs fast on Apple Silicon and on CI without emulation).
+- One-time setup:
+  ```sh
+  cd playwright
+  npm install
+  npx playwright install --with-deps chromium
+  ```
 
-- **Regression** — the assertion fails when pixels drift from the baseline.
-- **Docs assets** — a post-step (`scripts/sync-docs-images.mjs`) copies the captured
-  PNGs to their `content/.../img/` destinations using a name → path map.
+> **Read this before committing images:** Playwright pixel baselines render slightly
+> differently on macOS vs Linux, and **CI runs on Linux**. The committed baselines and doc
+> images must be **Linux-rendered** to match CI. Generate the canonical set on Linux (see
+> [Baselines and platforms](#baselines-and-platforms)); run captures on macOS for local
+> preview only.
 
-When the UI legitimately changes: `npm run update` refreshes the baselines, then the
-sync step refreshes the doc images. One capture, both purposes.
+---
 
-## Where the UI comes from
+## Task: update screenshots for a new agentgateway version
 
-The product UI is embedded in the agentgateway binary at build time
-(`include_dir!(".../ui/out")`), so each binary/image carries one UI version. This POC
-captures the **new UI from PR #2232** via the prebuilt image `cr.agentgateway.dev/agentgateway:v1.3.0`
-— the default. (Building the binary locally from the PR branch also works, but it is easy
-to embed a stale `ui/out`; the published image is the reliable source.)
+When a new agentgateway release ships a changed UI and you need to refresh the docs images:
 
-To build a binary instead (in a sibling `agentgateway/agentgateway` checkout): check out
-the branch, `cd ui && npm ci && npm run build` (Node 18+; PR #2232 is Vite + TanStack
-Router), then `cargo build --features ui`, and run with `AGENTGATEWAY_BIN=<path>`.
+1. **Point the harness at the new release image.** Update the default in
+   `playwright.config.ts` (`const IMAGE = ...`) and in each `scripts/serve-*.sh`
+   (`IMAGE="${AGW_IMAGE:-...}"`), or set `AGW_IMAGE` for a one-off run:
+   ```sh
+   AGW_IMAGE=cr.agentgateway.dev/agentgateway:v1.5.0 npm run capture:all
+   ```
 
-## Quick start
+2. **Preserve older versions' screenshots if the UI changed.** Docs are versioned
+   (`main` = newest, `latest` = current release, plus frozen dirs like
+   `content/docs/standalone/1.2.x/`), but `assets/img/` is **not** versioned — every version
+   references images by filename. So before you overwrite the bare `assets/img/<x>.png`
+   files, copy the outgoing ones into a dated bucket and repoint the older doc versions at
+   it. The existing example is `assets/img/1.2-earlier/`, which holds the pre-1.3 (old UI)
+   shots that the `1.2.x` guides use. If the UI is unchanged across releases, skip this —
+   all new-UI versions share the same bare images. See
+   [How images map to doc versions](#how-images-map-to-doc-versions).
 
-Prereqs: Node 18+, Docker running (for the default image path).
+3. **Regenerate the baselines and doc images** (on Linux — see
+   [Baselines and platforms](#baselines-and-platforms)):
+   ```sh
+   npm run update:all     # re-capture every spec, refreshing __screenshots__ baselines
+   npm run sync-docs      # copy the new baselines into assets/img/
+   ```
 
-```sh
-cd playwright
-npm install
-npx playwright install --with-deps chromium
+4. **Review and commit.** Eyeball `git diff --stat assets/img` and open a few PNGs to
+   confirm they show what the guide describes, then commit the changed `assets/img/*.png`
+   **and** the `__screenshots__/` baselines together.
 
-# Self-contained: webServer launches the sl8 image on host port 15100, captures, tears down.
-npm run test:standalone
+## Task: add a new guide that has screenshots
 
-# Already have a UI running (your own `docker run`, `npm run dev`, or a k8s port-forward)?
-# Attach to it (reuseExistingServer):
-UI_BASE_URL=http://localhost:15100 npm run test:standalone
+1. **Does the page need a backend?**
+   - **No backend** (a static UI page like the CEL playground or the landing page): add your
+     capture to an existing no-backend spec, or create a new `tests/<name>.spec.ts` and add
+     it to the `test:standalone` script in `package.json`. These run against the default
+     empty-config image.
+   - **Needs a backend** (an MCP/LLM/OpenAPI playground that talks to a server): you'll add a
+     fixture, a launcher, and a capture mode. See [Adding a backend
+     mode](#adding-a-backend-mode) below.
 
-# Use a local binary build instead of the image:
-AGENTGATEWAY_BIN=/path/to/agentgateway npm run test:standalone
+2. **Write the spec** in `tests/<name>.spec.ts`. Navigate to the UI route, drive the page,
+   and assert a screenshot. Reuse the helpers in `fixtures/test.ts`:
+   - `dismissWelcome(page)` — clears the first-run "Welcome to Agentgateway" overlay.
+   - `selectTool(page, 'echo')` — picks a tool in the MCP playground's dropdown.
+   - `maskSession(page)` — masks the dynamic MCP session id so it doesn't break diffs.
+   ```ts
+   import { test, expect, dismissWelcome, maskSession } from '../fixtures/test';
 
-# Accept UI changes as the new baseline + refresh doc images
-npm run update
-npm run sync-docs
-```
+   test('my new capture', async ({ page }) => {
+     await page.goto('/ui/some/route');
+     await page.waitForLoadState('networkidle');
+     await dismissWelcome(page);
+     // ...interact...
+     await expect(page).toHaveScreenshot('my-image.png', { fullPage: true, ...maskSession(page) });
+   });
+   ```
+   **Mask anything non-deterministic** (timestamps, latencies, generated IDs) with
+   `toHaveScreenshot({ mask: [...] })`, or the image diffs on every run. See
+   [Determinism](#determinism-and-gotchas).
 
-The image's host port (default 15100) avoids colliding with a local agentgateway on
-:15000. Override with `UI_HOST_PORT` / `AGW_IMAGE` / `UI_BASE_URL`.
+3. **Map the image to its doc destination** in `docs-image-map.json`. Provide `light`, and
+   `dark` if the guide shows a dark variant (most new-UI shots do):
+   ```json
+   "my-image.png": {
+     "light": "assets/img/my-image.png",
+     "dark": "assets/img/my-image-dark.png"
+   }
+   ```
 
-## Populated captures (real data, one command each)
+4. **Reference the image in the guide.** New-UI screenshots use the theme-aware pair so
+   light and dark each render in the matching site theme:
+   ```md
+   {{< reuse-image-light src="img/my-image.png" >}}
+   {{< reuse-image-dark srcDark="img/my-image-dark.png" >}}
+   ```
+   If the guide is a **shared snippet** (under `assets/agw-docs/`) reused by multiple doc
+   versions, wrap version-specific content in the version shortcode so old versions keep the
+   old UI — see [How images map to doc versions](#how-images-map-to-doc-versions).
 
-`smoke.spec.ts` works against the default empty gateway. The playground captures need a
-backing server. `CAPTURE_MODE` tells `webServer` which `scripts/serve-*.sh` to launch (it
-starts the backend + container and tears down on exit), so each is one command:
+5. **Capture, sync, commit** (on Linux):
+   ```sh
+   npm run test:<mode> -- --update-snapshots   # or `npm run update` for no-backend specs
+   npm run sync-docs
+   ```
+   Commit the guide change, the `docs-image-map.json` entry, the `__screenshots__/`
+   baselines, and the `assets/img/` files.
 
-```sh
-npm run test:mcp     # MCP playground   — server-everything + fixtures/mcp-playground-config.yaml
-npm run test:a2a     # A2A traffic view — fixtures/a2a-config.yaml (static; no agent needed)
-npm run test:llm     # LLM playground   — mock OpenAI provider + fixtures/llm-config.yaml
-npm run test:virtual # multiplex (virtual MCP) — server-everything + mock-mcp-time (two targets)
-npm run test:openapi # OpenAPI -> MCP    — Swagger Petstore container + openapi target
-npm run test:jwt     # JWT / observability — server-everything; the spec fills the Bearer token
+### Adding a backend mode
 
-npm run capture:all  # run every mode above (+ test:standalone) in sequence — what CI runs
-```
+For a guide whose UI talks to a server, add a self-contained capture mode:
 
-`npm run test:standalone` runs ONLY the no-backend captures (smoke / landing / cel) against
-the empty-config image; the backend-dependent specs each run under their own `CAPTURE_MODE`.
+1. **Fixture** `fixtures/<name>-config.yaml` — the gateway config. Because the UI image is
+   distroless, **targets run as host-side HTTP servers** (you cannot `stdio`-exec a command
+   inside the image). Point targets at `http://host.docker.internal:<port>` and keep
+   `mcp.port`/`llm.port` at `3030` (the playground connects browser-side to that port, so it
+   must be mapped identically). Mirror an existing fixture.
+2. **Launcher** `scripts/serve-<name>-ui.sh` — start the backend(s) on the host, run the UI
+   container with the fixture mounted, wait for `/ui/`, and clean up in a `trap`. Copy
+   `scripts/serve-jwt-ui.sh` (simplest) or `serve-virtual-ui.sh` (two backends) as a
+   template. For deterministic data, prefer a small mock (see `scripts/mock-*.mjs`) over a
+   live third-party server.
+3. **Register the mode** in two places:
+   - `playwright.config.ts` → add `<name>: 'serve-<name>-ui.sh'` to the `SCRIPT_FOR` map.
+   - `package.json` → add `"test:<name>": "CAPTURE_MODE=<name> playwright test tests/<name>.spec.ts --project=standalone-light --project=standalone-dark"`, and add it (with a `clean:ui` before it) to both `capture:all` and `update:all`.
 
-Each `serve-*.sh` is also runnable standalone (then capture in another shell with
-`UI_BASE_URL=http://localhost:15100 npm run test:<mode>`).
+---
 
-A shared constraint for the MCP and LLM playgrounds: the playground connects **browser-side**
-to the listener at the SAME port it derives from config (`mcp.port` / `llm.port`), so that
-port must be free on the host AND mapped identically (3030 here). The sl8 image is
-distroless (no Node), so backends run on the host and the gateway reaches them via
-`host.docker.internal`.
+## How images map to doc versions
 
-- **MCP** (`/ui/mcp/playground`; the docs' `/ui/playground/` is stale): **Apply CORS →
-  Initialize → (echo auto-selected) → fill MESSAGE → Call tool**. The dynamic session id
-  is masked.
-- **LLM** (`/ui/llm/playground`): **Apply CORS → specify a concrete model (config model is
-  `*`) → fill USER MESSAGE → Send**. Captured against a **mock OpenAI provider**
-  (`scripts/mock-openai.mjs`) so the reply is fixed and no real key is needed; the reply
-  streams token-by-token (assert on `body.innerText`), and the latency badge is masked.
+Docs are versioned but images are not — `assets/img/` is a single flat tree that every
+version references by filename. The version dropdown maps (see `hugo.yaml`):
 
-## A2A — no playground in the new UI
+| Doc tree | Version | UI |
+|---|---|---|
+| `content/docs/standalone/main/` | 1.4.x | new UI → bare `img/<x>.png` |
+| `content/docs/standalone/latest/` | 1.3.x | new UI → bare `img/<x>.png` |
+| `content/docs/standalone/1.2.x/` | 1.2.x and earlier | old UI → `img/1.2-earlier/<x>.png` |
 
-The new UI has **no A2A playground**. Its only playgrounds are `/llm/playground` and
-`/mcp/playground`; the `a2a` route policy is not surfaced as its own type. So the old doc
-images `ui-a2a-skills.png` / `ui-a2a-success.png` (from the previous UI) cannot be
-regenerated — `agent/a2a.md`'s "Try out the playground" section needs rewriting around
-what the new UI shows: the A2A config as a **Traffic route/listener**.
+So when the UI changes, the **older versions are pinned to a frozen image bucket**
+(`assets/img/1.2-earlier/`) while the new-UI versions use the bare paths this harness
+regenerates. Two ways a guide selects the right image:
 
-`a2a-traffic.spec.ts` captures that (static config views — no ADK agent needed):
+- **Per-version files** (most guides, e.g. `mcp/connect/virtual.md`): each version dir has
+  its own copy of the file. The `1.2.x` copy references `img/1.2-earlier/...` with the old
+  prose; the `main`/`latest` copies reference the bare new images with the new-UI prose.
+- **Shared snippets** (e.g. `assets/agw-docs/pages/observability/traces.md`, reused by all
+  versions via `{{< reuse ... >}}`): one file serves every version, so version-specific
+  parts are wrapped in the version shortcode:
+  ```md
+  {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+  ...new-UI steps + bare img/ (reuse-image-light/dark)...
+  {{< /version >}}
+  {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
+  ...old-UI steps + img/1.2-earlier/ (plain reuse-image)...
+  {{< /version >}}
+  ```
 
-```sh
-./scripts/serve-a2a-ui.sh        # gateway with fixtures/a2a-config.yaml (localhost:9999)
-# in another shell:
-UI_BASE_URL=http://localhost:15100 npm run test:standalone -- a2a-traffic.spec.ts
-```
+When you regenerate images for a new UI, make sure any guide that older versions still need
+points at a frozen bucket *before* you overwrite the bare files.
 
-Produces `ui-a2a-route.png` + `ui-a2a-listener.png` (light + dark). New image names with
-provisional destinations in `docs-image-map.json` pending the guide rewrite.
+---
 
-### Theme (light/dark) — new UI specifics
+## Determinism and gotchas
 
-The new UI (sl8) does **not** honor `prefers-color-scheme`. Theme is `<html data-theme>`
-persisted in `localStorage['theme']`, toggled by `button[aria-label="Toggle theme"]`. So
-`fixtures/test.ts` seeds `localStorage['theme']` to `light`/`dark` based on the project
-name before load — that is what drives the two baseline sets. (Verified with
-`scripts/probe-theme.mjs`.)
+Screenshots are pixel-compared, so captures must be byte-stable across runs:
 
-A first-run **"Welcome to Agentgateway" overlay** (`.startup-shell`) intercepts clicks
-when the gateway has no config; call `dismissWelcome(page)` after load (clicks "Skip
-setup"), or give the gateway a real config so it never appears.
+- **Mask dynamic content.** The MCP session id, latency badges, and timestamps change every
+  run — mask them (`maskSession(page)` covers the session id; pass others via
+  `toHaveScreenshot({ mask: [...] })`).
+- **Mock non-deterministic backends.** Live servers give varying output. The repo ships
+  deterministic mocks used by the launchers:
+  - `scripts/mock-openai.mjs` — fixed LLM reply (no API key, no cost).
+  - `scripts/mock-mcp-time.mjs` — fixed "current time" (the real `mcp-server-time` is stdio,
+    which the distroless image can't exec).
+  - `scripts/mock-petstore.mjs` — serves the real Petstore OpenAPI spec + a fixed response
+    (the `swaggerapi/petstore3` image is amd64-only and unusable under emulation on arm64).
+    Set `PETSTORE_REAL=1` to use the real container instead (fine on native amd64, e.g. CI).
+  `server-everything` (via `npx`) is deterministic enough to use directly.
+- **First-run overlay.** A "Welcome to Agentgateway" overlay (`.startup-shell`) intercepts
+  clicks when the gateway has no config — always `dismissWelcome(page)` after `goto`.
+- **Pin viewport/scale.** Set in `playwright.config.ts` (1440×900, deviceScaleFactor 1).
+  Don't change these casually; every baseline would shift.
 
-### Baseline stability — read before trusting diffs
+## Baselines and platforms
 
-Pixel diffing is extremely sensitive to font rendering, which differs across macOS and
-Linux. **Generate and store baselines from inside the Playwright Docker image** so local
-and CI rendering match byte-for-byte:
+Pixel rendering (font anti-aliasing especially) differs between macOS and Linux, and
+**CI runs on Linux**, so:
 
-```sh
-docker run --rm --network host -v "$PWD":/work -w /work \
-  mcr.microsoft.com/playwright:v1.49.0-jammy \
-  sh -c "npm ci && npm run update"
-```
+- The **canonical baselines and doc images are Linux-rendered.** Generate them on Linux so
+  the nightly drift check compares like-for-like. Options: run on a Linux host with Docker,
+  or trigger the `playwright-screenshots` workflow.
+- On **macOS**, `npm run update:all` works for local iteration and preview, but the PNGs it
+  produces differ from CI's at the pixel level. Don't commit macOS-rendered images as the
+  canonical set.
+- Baselines live in `__screenshots__/<spec>.spec.ts-snapshots/<name>-<project>-<platform>.png`.
+  The tolerance is `maxDiffPixelRatio: 0.01` (see `playwright.config.ts`).
 
-Dynamic UI content (timestamps, latency numbers, generated IDs) is masked per-spec via
-`toHaveScreenshot({ mask: [...] })` — otherwise metrics screens diff on every run.
+## CI
+
+`.github/workflows/playwright-screenshots.yml` runs on `ubuntu-latest`:
+
+- **Nightly** (cron `0 6 * * *`) and on **manual dispatch**.
+- Steps: `npm ci` → install Chromium → `npm run capture:all` → `npm run sync-docs` →
+  `git diff --exit-code -- assets/img`. If the live UI no longer matches the committed
+  images, the diff is non-empty and the job **fails**, flagging that the docs screenshots
+  are stale. The Playwright HTML report is uploaded as an artifact for triage.
+
+The job verifies; it does not commit. To refresh the committed images after an intended UI
+change, regenerate them (Task above) and open a PR.
+
+---
 
 ## Files
 
 | File | Purpose |
 |---|---|
-| `playwright.config.ts` | `webServer` launcher, light/dark projects, screenshot/diff settings |
-| `provisioners/kubernetes.ts` | Notes only — the kind + port-forward reuse path |
-| `playwright.config.ts` knobs | `CAPTURE_MODE` (mcp/a2a/llm/virtual/openapi/jwt) selects the `webServer` launcher |
-| `fixtures/mcp-playground-config.yaml` | MCP playground config (port 3030 + host MCP target) |
-| `fixtures/a2a-config.yaml` | A2A guide config for the Traffic route/listener capture |
-| `fixtures/llm-config.yaml` | LLM config pointed at the mock OpenAI provider (hostOverride) |
-| `fixtures/virtual-config.yaml` | Two MCP targets (time + everything) federated for the multiplex capture |
-| `fixtures/openapi-config.yaml` | `openapi` target reading the Petstore schema file (mounted) |
-| `fixtures/jwt-config.yaml` | MCP target + `metrics.tags` (`user: @sub`) for the JWT capture |
-| `fixtures/standalone-config.yaml` | Minimal MCP config (used only with `AGENTGATEWAY_BIN`) |
-| `fixtures/test.ts` | Seeds `localStorage['theme']` per project; `dismissWelcome`/`maskSession`/`selectTool` helpers |
-| `tests/smoke.spec.ts` | Loads `/ui/`, dismisses welcome, screenshots — proves the loop |
-| `tests/playground.spec.ts` | MCP playground capture (tools-discovered + echo response) |
-| `tests/a2a-traffic.spec.ts` | A2A config as Traffic route + listener (no A2A playground exists) |
-| `tests/llm-playground.spec.ts` | LLM playground capture against the mock provider |
-| `tests/virtual.spec.ts` | Multiplex capture: multi-tools list, everything_echo, time_get_current_time |
-| `tests/openapi.spec.ts` | OpenAPI capture: Petstore tools list + a successful getPetById call |
-| `tests/jwt.spec.ts` | JWT capture: Authorization-header Bearer token + tools discovered |
-| `scripts/serve-populated-ui.sh` | `CAPTURE_MODE=mcp` launcher: server-everything + the UI |
-| `scripts/serve-a2a-ui.sh` | `CAPTURE_MODE=a2a` launcher: the UI with the A2A config |
-| `scripts/serve-llm-ui.sh` | `CAPTURE_MODE=llm` launcher: mock-openai + the UI |
-| `scripts/serve-virtual-ui.sh` | `CAPTURE_MODE=virtual` launcher: server-everything + mock-mcp-time + the UI |
-| `scripts/serve-openapi-ui.sh` | `CAPTURE_MODE=openapi` launcher: Petstore container + the UI |
-| `scripts/serve-jwt-ui.sh` | `CAPTURE_MODE=jwt` launcher: server-everything + the UI |
-| `scripts/mock-openai.mjs` | Deterministic OpenAI-compatible mock (fixed reply, streaming + JSON) |
-| `scripts/mock-mcp-time.mjs` | Deterministic MCP time server over streamable HTTP (get/convert time) |
-| `scripts/probe-theme.mjs` | One-off diagnostic used to confirm the theme mechanism |
-| `scripts/sync-docs-images.mjs` | Copies captured PNGs → docs `img/` via a name→path map |
-| `docs-image-map.json` | Screenshot name → {light, dark?} doc destinations |
-| `__screenshots__/` | Committed baselines (light+dark). Backend-mode baselines are generated in CI/Docker — see below |
+| `playwright.config.ts` | `webServer` launcher selection (`CAPTURE_MODE` → `SCRIPT_FOR`), light/dark projects, viewport, diff tolerance |
+| `docs-image-map.json` | Screenshot name → `{ light, dark? }` `assets/img/` destinations |
+| `fixtures/test.ts` | Per-project theme seeding; `dismissWelcome` / `maskSession` / `selectTool` helpers |
+| `fixtures/*-config.yaml` | Per-mode gateway configs (mcp, a2a, llm, virtual, openapi, jwt) + `standalone-config.yaml` (for `AGENTGATEWAY_BIN`) |
+| `fixtures/petstore-openapi.json` | Bundled Swagger Petstore spec served by the openapi mock |
+| `tests/smoke.spec.ts` `tests/landing.spec.ts` `tests/cel.spec.ts` | No-backend captures (run under `test:standalone`) |
+| `tests/playground.spec.ts` | MCP playground (tools discovered + echo) |
+| `tests/virtual.spec.ts` | Multiplex playground (prefixed tools + echo + time) |
+| `tests/openapi.spec.ts` | OpenAPI → MCP (tool list + a `getInventory` call) |
+| `tests/jwt.spec.ts` | Playground with a JWT in the Authorization header |
+| `tests/a2a-traffic.spec.ts` | A2A config shown as a Traffic route/listener (no A2A playground in the new UI) |
+| `tests/llm-playground.spec.ts` | LLM playground against the mock provider |
+| `scripts/serve-*.sh` | Per-mode launchers: start backend(s) + UI container, clean up on exit |
+| `scripts/mock-*.mjs` | Deterministic mock backends (openai, mcp-time, petstore) |
+| `scripts/sync-docs-images.mjs` | Copies baselines → `assets/img/` via `docs-image-map.json` |
+| `provisioners/kubernetes.ts` | Notes on the (not-yet-automated) Kubernetes capture path |
+| `__screenshots__/` | Committed baselines (light + dark per spec) |
 
-## Status: what works and what's left
+## npm scripts
 
-**Proven working (each is one command, self-contained, deterministic, light + dark):**
-- `npm run test:standalone` → Gateway Overview screenshot.
-- `npm run test:mcp` → MCP playground: initialize session, "N tools discovered", run
-  `echo`, HTTP 200 → `ui-playground-tools/-tool-echo.png` (used in `mcp/connect/{http,stdio}.md`).
-- `npm run test:a2a` → A2A config as Traffic route + listener → `ui-a2a-route/-listener.png`
-  (the new UI has no A2A playground; see above).
-- `npm run test:llm` → LLM playground against a mock provider → `ui-llm-playground.png`.
-- `npm run sync-docs` copies the light baselines to their `assets/img/` destinations.
+| Script | Does |
+|---|---|
+| `test:standalone` | Capture/verify the no-backend specs (landing, cel, smoke) |
+| `test:mcp` / `:a2a` / `:llm` / `:virtual` / `:openapi` / `:jwt` | Capture/verify one backend mode (brings up its backend + UI) |
+| `capture:all` | Run every mode in sequence (what CI runs); `clean:ui` between modes |
+| `update:all` | Same as `capture:all` but **regenerates** baselines (`--update-snapshots`) |
+| `update` | Regenerate only the no-backend baselines (quick) |
+| `sync-docs` | Copy baselines into `assets/img/` (`--dry-run` to preview) |
+| `clean:ui` | Remove any leftover UI container publishing `:15100` |
+| `report` | Open the last Playwright HTML report |
 
-**Added for the backend-dependent guides (captured + committed against `v1.3.0`, light + dark):**
-- `npm run test:virtual` → multiplex playground → `ui-playground-multi-tools.png`,
-  `agentgateway-ui-tool-echo-hello.png`, `ui-tool-time-current.png`
-  (used in `mcp/connect/virtual.md`; the echo image is shared with `observability/*`).
-  The `time` target is a deterministic `scripts/mock-mcp-time.mjs` (the distroless image
-  can't exec the guide's `uvx mcp-server-time`); the gateway accepts it as an HTTP target.
-- `npm run test:openapi` → Petstore OpenAPI tools → `agentgateway-ui-tools-openapi.png`
-  plus a `getInventory` (no-arg) call → `agentgateway-ui-tools-openapi-success.png`
-  (used in `mcp/connect/openapi.md`). Backed by `scripts/mock-petstore.mjs` serving the
-  real spec + a fixed response, since the `swaggerapi/petstore3` image is amd64-only and
-  unusable under qemu on arm64 (`PETSTORE_REAL=1` uses the real container on native amd64).
-- `npm run test:jwt` → playground with a JWT in the Authorization header →
-  `agentgateway-ui-tools-jwt.png` (used in `reference/observability/metrics.md`).
-- `capture:all` is wired into the nightly `playwright-screenshots` workflow (with a
-  `clean:ui` step between modes so a surviving container isn't reused with stale backends).
-- Matching guide prose for these (main + latest) is rewritten for the new-UI flow
-  (Tool Playground → Apply CORS → Initialize → select tool → Call tool).
+Append `-- --update-snapshots` to any `test:*` to refresh just that mode's baselines.
 
-**Image note:** the default `AGW_IMAGE` is the released `cr.agentgateway.dev/agentgateway:v1.3.0`
-(arm64-native, fast; matches the UI the docs target). The older `howardjohn/agentgateway:sl8`
-preview lacked the MCP playground's Authorization-header field, so it cannot capture the JWT shot.
+## Environment variables
 
-**Left to do for full doc-image regeneration:**
+| Var | Default | Purpose |
+|---|---|---|
+| `AGW_IMAGE` | `cr.agentgateway.dev/agentgateway:v1.3.0` | UI docker image (bump for a new release) |
+| `UI_HOST_PORT` | `15100` | Host port mapped to the container's `15000` |
+| `UI_BASE_URL` | `http://localhost:15100` | Attach to an already-running UI instead of launching one (`reuseExistingServer`) |
+| `AGENTGATEWAY_BIN` | — | Launch a local binary instead of the docker image |
+| `CAPTURE_MODE` | `''` | Which `serve-*.sh` launcher to run (set by the `test:*` scripts) |
+| `PETSTORE_REAL` | — | `1` runs the real Petstore container instead of the mock |
 
-- `observability/ui` (Kubernetes landing, `agentgateway-ui-kube-landing.png`) — needs the
-  Kubernetes provisioner (kind + controller + port-forward), still documented-only.
-- The other committed baselines (smoke/landing/cel, playground, a2a, llm) predate the
-  image switch and were captured earlier — re-run `capture:all` against `v1.3.0` to make the
-  whole set consistent (and to keep the nightly `git diff` green for every mapped image).
-- `agent/a2a.md`'s playground section rewrite; confirm whether `llm/*` docs embed
-  `ui-llm-playground.png`. The `ui-a2a-*` / `ui-llm-playground` destinations are provisional.
-- `agentgateway-ui-playground.png` (the initial MCP playground view) is still the old-UI
-  image — not regenerated in this batch; the rewritten guides drop the "open playground" shot.
-- Confirm `docs-image-map.json` destinations against the docs before committing images.
+## Known limitations
+
+- **Kubernetes landing (`observability/ui`) is not automated.** It needs a kind cluster +
+  controller + a long-lived `kubectl port-forward` to the UI; `provisioners/kubernetes.ts`
+  documents the intended path. Capture it manually for now by pointing `UI_BASE_URL` at a
+  port-forwarded cluster UI.
+- **`agentgateway-ui-playground.png`** (the initial playground view) is not regenerated; the
+  rewritten guides open directly into the populated playground instead.
