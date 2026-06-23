@@ -59,8 +59,8 @@ Below shows some basic examples using the Chat Completions API
 For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
 {{< /callout >}}
 
-{{< tabs items="Curl,Python,JavaScript" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://localhost:4000/v1/chat/completions' \
@@ -78,7 +78,7 @@ curl 'http://localhost:4000/v1/chat/completions' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Python" %}}
 
 {{< callout type="info" >}}
 The `api_key` parameter is required in the OpenAI library.
@@ -104,7 +104,7 @@ print(response)
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="JavaScript" %}}
 
 ```javascript
 import OpenAI from "openai";

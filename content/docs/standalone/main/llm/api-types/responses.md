@@ -54,8 +54,8 @@ For detailed information about model routing and configuration modes, see [Model
 
 Using the Responses API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
 
-{{< tabs items="Curl,Python,JavaScript,Other" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://localhost:4000/v1/responses' \
@@ -67,7 +67,7 @@ curl 'http://localhost:4000/v1/responses' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Python" %}}
 
 {{< callout type="info" >}}
 The `api_key` parameter is required in the OpenAI library. Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
@@ -90,7 +90,7 @@ print(response)
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="JavaScript" %}}
 
 ```javascript
 import OpenAI from "openai";
@@ -109,7 +109,7 @@ console.log(response);
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Other" %}}
 
 [View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
 

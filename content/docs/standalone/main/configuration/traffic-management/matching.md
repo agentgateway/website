@@ -28,8 +28,8 @@ Only one of `exact`, `pathPrefix`, or `regex` can be specified per path matcher.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
-{{< tabs items="Exact path matching, Prefix path matching, Regex path matching">}}
-{{< tab >}}
+{{< tabs >}}
+{{< tab name="Exact path matching" >}}
 ```yaml
 routes:
 - name: api-exact
@@ -40,7 +40,7 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Prefix path matching" >}}
 ```yaml
 routes:
 - name: api-prefix
@@ -51,7 +51,7 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Regex path matching" >}}
 ```yaml
 routes:
 - name: api-regex
@@ -75,8 +75,8 @@ Match incoming requests based on HTTP headers included in the request.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
-{{< tabs items="Exact header matching, Regex header matching, Multiple header matching">}}
-{{< tab >}}
+{{< tabs >}}
+{{< tab name="Exact header matching" >}}
 ```yaml
 routes:
 - name: auth-exact
@@ -91,7 +91,7 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Regex header matching" >}}
 ```yaml
 routes:
 - name: auth-regex
@@ -106,7 +106,7 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Multiple header matching" >}}
 ```yaml
 routes:
 - name: multi-header
@@ -136,8 +136,8 @@ Optionally restrict matches to specific HTTP methods.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
-{{< tabs items="GET method matching, POST method matching, Multiple methods with different backends">}}
-{{< tab >}}
+{{< tabs >}}
+{{< tab name="GET method matching" >}}
 ```yaml
 routes:
 - name: get-only
@@ -149,7 +149,7 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="POST method matching" >}}
 ```yaml
 routes:
 - name: post-only
@@ -161,7 +161,7 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Multiple methods with different backends" >}}
 ```yaml
 routes:
 - name: read-operations
@@ -193,8 +193,8 @@ Match on query parameters, either by exact value or regex.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
-{{< tabs items="Exact query parameter matching, Regex query parameter matching, Multiple query parameters">}}
-{{< tab >}}
+{{< tabs >}}
+{{< tab name="Exact query parameter matching" >}}
 ```yaml
 routes:
 - name: version-exact
@@ -209,7 +209,7 @@ routes:
     - host: api-v1.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Regex query parameter matching" >}}
 ```yaml
 routes:
 - name: version-regex
@@ -224,7 +224,7 @@ routes:
     - host: api.example.com:8080
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Multiple query parameters" >}}
 ```yaml
 routes:
 - name: multi-query

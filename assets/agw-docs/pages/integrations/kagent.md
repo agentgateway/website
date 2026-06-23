@@ -114,14 +114,14 @@ Install kagent in your cluster. For more information, see the [kagent docs](http
    ```
 
 2. Verify that kagent is accessible and correctly functioning.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2"  >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n kagent kagent-ui -o jsonpath="{.spec.clusterIP}")
    echo $INGRESS_GW_ADDRESS  
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"  %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```shell
    kubectl port-forward -n kagent service/kagent-ui 8082:8080
    ```

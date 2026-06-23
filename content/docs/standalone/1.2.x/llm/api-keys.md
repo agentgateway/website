@@ -23,9 +23,9 @@ Follow the instructions in this guide to learn how to use these different method
 
 Browse through the tabs to learn about different ways for how to provide your API key to agentgateway. 
 
-{{< tabs items="Inline,Environment variable,File,Kubernetes secret or passthrough token" >}}
+{{< tabs >}}
 
-{{% tab %}}
+{{% tab name="Inline" %}}
 
 You can provide your API key directly in the agentgateway configuration. This option is the least secure. Only use this option for quick tests.
 
@@ -43,7 +43,7 @@ You can provide your API key directly in the agentgateway configuration. This op
    ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Environment variable" %}}
 
 1. Get the token from your LLM provider, such as an API key to OpenAI and save it as an environment variable.
    ```sh
@@ -64,7 +64,7 @@ You can provide your API key directly in the agentgateway configuration. This op
    ```
    
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="File" %}}
 
 You can store your API key in a file and load the file into agentgateway during startup.
 
@@ -90,7 +90,7 @@ You can store your API key in a file and load the file into agentgateway during 
    EOF
    ```
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Kubernetes secret or passthrough token" %}}
 
 When deploying agentgateway on Kubernetes, you can leverage Kubernetes secrets to store your API key or pass through a token by using an `Authorization` or other custom header. 
 

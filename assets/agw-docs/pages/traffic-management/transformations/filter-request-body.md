@@ -61,8 +61,8 @@ For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x
 
 2. Send a POST request to the httpbin app with a JSON body that includes internal metadata fields. Verify that you get back a 200 HTTP response code and that the `x_` fields are absent from the forwarded body.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:80" \
@@ -70,7 +70,7 @@ For example, a request body of `{"messages": [...], "model": "gpt-3.5-turbo", "x
     -d '{"messages": [{"role": "user", "content": "hello"}], "model": "gpt-3.5-turbo", "x_trace_id": "abc123", "x_user_session": "xyz789"}'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/post \
    -H "host: www.example.com" \

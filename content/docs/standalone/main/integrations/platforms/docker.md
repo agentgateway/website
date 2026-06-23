@@ -10,9 +10,9 @@ Run agentgateway as a Docker container for local development or small deployment
 
 Get started in under a minute with your preferred LLM provider.
 
-{{< tabs items="OpenAI,Anthropic,xAI (Grok),Ollama,Azure OpenAI,Amazon Bedrock,Google Gemini" >}}
+{{< tabs >}}
 
-{{% tab %}}
+{{% tab name="OpenAI" %}}
 
 ```bash
 # Set your API key
@@ -43,7 +43,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Anthropic" %}}
 
 ```bash
 # Set your API key
@@ -74,7 +74,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="xAI (Grok)" %}}
 
 ```bash
 # Set your xAI API key
@@ -106,7 +106,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Ollama" %}}
 
 ```bash
 # Start Ollama (if not already running)
@@ -140,7 +140,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Azure OpenAI" %}}
 
 ```bash
 # Set your Azure OpenAI credentials
@@ -177,7 +177,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Amazon Bedrock" %}}
 
 ```bash
 # Set your AWS credentials
@@ -212,7 +212,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Google Gemini" %}}
 
 ```bash
 # Set your API key

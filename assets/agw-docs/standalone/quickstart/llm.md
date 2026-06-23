@@ -4,8 +4,8 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   {{< tabs items="Latest,Specific version,Nightly build" tabTotal="3">}}
-{{% tab tabName="Latest" %}}
+   {{< tabs >}}
+{{% tab name="Latest" %}}
 
 To install the latest release:
 
@@ -14,7 +14,7 @@ curl -sL https://agentgateway.dev/install | bash
 ```
 
 {{% /tab %}}
-{{% tab tabName="Specific version" %}}
+{{% tab name="Specific version" %}}
 
 To install a specific version, pass the `--version` flag. Use any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), such as `{{< reuse "agw-docs/versions/n-patch.md" >}}`.
 
@@ -22,7 +22,7 @@ To install a specific version, pass the `--version` flag. Use any release tag fr
 curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 {{% /tab %}}
-{{% tab tabName="Nightly build" %}}
+{{% tab name="Nightly build" %}}
 
 To install the nightly build for development and testing:
 

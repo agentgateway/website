@@ -56,8 +56,8 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
    ```
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
-   {{< tabs tabTotal="3" items="Vertex AI default, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Vertex AI default" %}}
+   {{< tabs >}}
+   {{% tab name="Vertex AI default" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -78,7 +78,7 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -103,7 +103,7 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -133,8 +133,8 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
 
 6. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the API.
    
-   {{< tabs tabTotal="3" items="Vertex AI default, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Vertex AI default" %}}
+   {{< tabs >}}
+   {{% tab name="Vertex AI default" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -161,7 +161,7 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
     }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -188,7 +188,7 @@ Configure [Vertex AI](https://cloud.google.com/products/gemini-enterprise-agent-
     }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/vertex" -H content-type:application/json  -d '{

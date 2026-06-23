@@ -9,9 +9,9 @@ Connect AI coding assistants to MCP servers exposed through your agentgateway pr
 
 The MCP endpoint URL depends on how you exposed the MCP server through agentgateway.
 
-{{< tabs items="LoadBalancer,Port-forward" >}}
+{{< tabs >}}
 
-{{% tab tabName="LoadBalancer" %}}
+{{% tab name="LoadBalancer" %}}
 ```bash
 export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
   -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
@@ -20,7 +20,7 @@ echo "MCP URL: http://$INGRESS_GW_ADDRESS/mcp/mcp"
 ```
 {{% /tab %}}
 
-{{% tab tabName="Port-forward" %}}
+{{% tab name="Port-forward" %}}
 ```bash
 kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80 &
 ```
@@ -76,13 +76,13 @@ Review the following table of configuration details by IDE environment.
 
 1. Add the MCP server to your Claude configuration.
    
-   {{< tabs tabTotal="2" items="CLI, mcp.json file">}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    ```bash
    claude mcp add agentgateway --transport http <MCP_URL>
    ```
    {{% /tab %}}
-   {{% tab tabName="mcp.json file" %}}
+   {{% tab name="mcp.json file" %}}
    ```json
    {
      "mcpServers": {
@@ -159,16 +159,16 @@ The `agentgateway` server shows up as **Connected**.
 
 If you configured [MCP auth]({{< link-hextra path="/mcp/auth/" >}}) on your agentgateway proxy, include the required headers in your client configuration. The following example shows a Bearer token.
 
-{{< tabs items="Claude Code CLI,JSON config (Cursor / VS Code / Windsurf)" >}}
+{{< tabs >}}
 
-{{% tab tabName="Claude Code CLI" %}}
+{{% tab name="Claude Code CLI" %}}
 ```bash
 claude mcp add agentgateway --transport http <MCP_URL> \
   --header "Authorization: Bearer <your-token>"
 ```
 {{% /tab %}}
 
-{{% tab tabName="JSON config (Cursor / VS Code / Windsurf)" %}}
+{{% tab name="JSON config (Cursor / VS Code / Windsurf)" %}}
 ```json
 {
   "mcpServers": {

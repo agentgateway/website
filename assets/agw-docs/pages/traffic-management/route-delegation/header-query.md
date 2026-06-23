@@ -170,14 +170,14 @@ The following image illustrates the route delegation hierarchy:
    {{< /doc-test >}}
 
 4. Send a request to the `delegation.example` domain along the `/anything/team1/foo` path with the `header1: val1` request header and the `query1=val1` query parameter. Verify that you get a 404 HTTP response. Although you included the header and query parameter that are defined on the parent, the headers and query parameters that the child also matches on (`headerX` and `queryX`) are missing.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo?query1=val1" \
      -H "host: delegation.example" -H "header1: val1"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i "localhost:8080/anything/team1/foo?query1=val1" \
      -H "host: delegation.example" -H "header1: val1"
@@ -210,14 +210,14 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 5. Send another request along the `/anything/team1/foo` path. This time, include all of the headers and query parameters that the parent and child define. Verify that you get a 200 HTTP response.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo?query1=val1&queryX=valX" \
      -H "host: delegation.example" -H "header1: val1" -H "headerX: valX"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i "localhost:8080/anything/team1/foo?query1=val1&queryX=valX" \
      -H "host: delegation.example" -H "header1: val1" -H "headerX: valX"
@@ -252,14 +252,14 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 6. Send a request along the `/anything/team2/bar` path with the parent's matchers (`header2` and `query2`). Verify that you get a 200 HTTP response. The parent's rule delegates the request to the `team2` namespace, and `child-team2` matches on path alone with no additional header or query parameter requirements.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i "http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar?query2=val2" \
      -H "host: delegation.example" -H "header2: val2"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i "localhost:8080/anything/team2/bar?query2=val2" \
      -H "host: delegation.example" -H "header2: val2"
@@ -293,14 +293,14 @@ The following image illustrates the route delegation hierarchy:
    ```
 
 7. Send another request along the `/anything/team2/bar` path, but without the parent's matchers. Verify that you get a 404 HTTP response. Even though `child-team2` matches on path alone, the parent requires `header2: val2` and `query2=val2` to delegate the request to the `team2` namespace.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team2/bar \
      -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team2/bar \
      -H "host: delegation.example"
