@@ -425,9 +425,9 @@ kind delete cluster --name agentgateway
 
 ## Resources
 
-- [Solo AgentGateway Docs](https://docs.solo.io/agentgateway/)
+- [Solo Enterprise for agentgateway docs](https://docs.solo.io/agentgateway/)
 - [AgentGateway OSS](https://agentgateway.dev)
-- [Langfuse Docs](https://langfuse.com/docs)
-- [Langfuse OpenTelemetry Integration](https://langfuse.com/integrations/native/opentelemetry)
-- [OpenTelemetry GenAI Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
-- [Source Code for This Guide](https://github.com/sebbycorp/agentgateway-langfuse)
+- [Langfuse docs](https://langfuse.com/docs)
+- [Langfuse OpenTelemetry integration](https://langfuse.com/integrations/native/opentelemetry)
+- [OpenTelemetry GenAI conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/)
+- [Source code for this guide](https://github.com/sebbycorp/agentgateway-langfuse)
