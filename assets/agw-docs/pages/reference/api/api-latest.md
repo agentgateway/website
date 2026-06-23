@@ -3794,7 +3794,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `model` _[ShortString](#shortstring)_ | Model name override, such as `gpt-4o-mini`.<br />If unset, the model name is taken from the request. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `projectId` _[TinyString](#tinystring)_ | The ID of the Google Cloud Project that you use for the Vertex AI. |  | MaxLength: 64 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `region` _[TinyString](#tinystring)_ | The location of the Google Cloud Project that you use for the Vertex AI.<br />Defaults to `global` if not specified. | global | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `region` _[TinyString](#tinystring)_ | The location of the Google Cloud Project that you use for the Vertex AI.<br />Special values: `global` uses the global endpoint, while `us` and `eu` use restricted<br />multi-region endpoints. Other values are treated as regional locations.<br />Defaults to `global` if not specified. | global | MaxLength: 64 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### Webhook
