@@ -59,6 +59,7 @@ non-default path for that format.
 | `Embeddings` | `/v1/embeddings` |
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
+| `Rerank` | `/v1/rerank` |
 
 Agentgateway chooses from the provider-native formats that you declare. For
 example, if a custom provider supports OpenAI chat completions but not OpenAI
@@ -73,6 +74,7 @@ shapes, declare each supported format and optionally set a per-format path.
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
+| Rerank | `Rerank` |
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
