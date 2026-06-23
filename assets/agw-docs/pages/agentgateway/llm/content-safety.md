@@ -412,7 +412,7 @@ The `aws: {}` configuration uses the default AWS credential chain (IAM role, env
 Google Model Armor (formerly Vertex AI Safety) provides content safety filtering for Google Cloud customers. Configuration follows a similar pattern to other external moderation endpoints.
 
 {{< callout type="info" >}}
-For Google Model Armor configuration details, contact Solo.io support or consult the Google Cloud documentation for Vertex AI content safety features.
+For Google Model Armor configuration details, consult the Google Cloud documentation for Vertex AI content safety features.
 {{< /callout >}}
 
 ## Layer 3: Custom webhook integration
