@@ -1,4 +1,3 @@
-
 > [!NOTE]
 > {{< reuse "agw-docs/snippets/mcp-policy-note.md" >}}
 
@@ -20,6 +19,7 @@ Agentgateway can adapt traffic for authorization servers that don't fully comply
 For example, Keycloak exposes certificates at a non-standard endpoint.
 
 In this mode, agentgateway:
+
 - Exposes protected resource metadata on behalf of the MCP server
 - Proxies authorization server metadata and client registration
 - Validates tokens using the authorization server's JWKS
@@ -29,6 +29,7 @@ The following examples show how to configure the authorization server proxy mode
 
 {{< tabs items="Keycloak,Auth0" >}}
 {{% tab tabName="Keycloak" %}}
+
 ```yaml
 mcpAuthentication:
   issuer: http://localhost:7080/realms/mcp
@@ -39,16 +40,18 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
     bearerMethodsSupported:
-    - header
-    - body
-    - query
+      - header
+      - body
+      - query
     resourceDocumentation: http://localhost:3000/stdio/docs
     resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
+
 {{% /tab %}}
 {{% tab tabName="Auth0" %}}
+
 ```yaml
 mcpAuthentication:
   issuer: https://<your-auth0-domain>/
@@ -59,12 +62,13 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
     bearerMethodsSupported:
-    - header
-    - body
-    - query
+      - header
+      - body
+      - query
 ```
+
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -80,11 +84,11 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
     bearerMethodsSupported:
-    - header
-    - body
-    - query
+      - header
+      - body
+      - query
 ```
 
 ## JWT claim validation
@@ -129,11 +133,11 @@ mcpAuthentication:
 
 You can control how agentgateway handles requests that lack valid credentials by setting the `mode` field. The following modes are supported:
 
-| Mode | Behavior |
-|------|----------|
+| Mode               | Behavior                                                                                                                          |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
 | `strict` (default) | A valid token issued by a configured issuer must be present. Requests without a valid token are rejected with `401 Unauthorized`. |
-| `optional` | If a token is present, it is validated. Requests without a token are allowed through. |
-| `permissive` | Requests are never rejected based on authentication. |
+| `optional`         | If a token is present, it is validated. Requests without a token are allowed through.                                             |
+| `permissive`       | Requests are never rejected based on authentication.                                                                              |
 
 The following example sets the mode to `permissive`:
 
@@ -146,7 +150,7 @@ mcpAuthentication:
   resourceMetadata:
     resource: http://localhost:3000/mcp
     scopesSupported:
-    - read:all
+      - read:all
 ```
 
 ## Passthrough
