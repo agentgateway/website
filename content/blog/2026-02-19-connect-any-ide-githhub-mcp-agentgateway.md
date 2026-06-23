@@ -1,9 +1,9 @@
 ---
-title: "Connect Any IDE to GitHub MCP Server Through AgentGateway"
+title: "Connect Any IDE to GitHub MCP Server Through Agentgateway"
 category: "Tutorial"
 publishDate: 2026-02-19
 author: "Sebastian Maniak"
-description: "Route MCP traffic from Cursor, VS Code, Windsurf, Claude Code, and OpenCode to GitHub's remote MCP server through Solo AgentGateway — with config examples for every IDE."
+description: "Route MCP traffic from Cursor, VS Code, Windsurf, Claude Code, and OpenCode to GitHub's remote MCP server through agentgateway — with config examples for every IDE."
 ---
 
 ## Introduction
