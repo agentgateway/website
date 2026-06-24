@@ -101,15 +101,18 @@ REQUESTS=20000 DAYS=30 ./setup.sh
 
 Open `http://localhost:15000/ui/` and click **Analytics**. By default it shows total traffic over the last 24 hours — token volume per hour with a running tally of cost, tokens, and calls.
 
-{{< reuse-image src="img/blog/cost-tokenomics/analytics-total.png" alt="agentgateway Analytics dashboard showing total token traffic over 24 hours" caption="The Analytics dashboard: total token traffic over the last 24 hours, with cost, tokens, and call counts." >}}
+<!-- TODO image: add assets/img/blog/cost-tokenomics/analytics-total.png then restore:
+{{</* reuse-image src="img/blog/cost-tokenomics/analytics-total.png" alt="agentgateway Analytics dashboard showing total token traffic over 24 hours" caption="The Analytics dashboard: total token traffic over the last 24 hours, with cost, tokens, and call counts." */>}} -->
 
 The real power is in **Group by**. Switch it to **Provider** and the same traffic splits out by backend — here OpenAI dominates with ~13.3M tokens, followed by Anthropic, Google, and Bedrock. The breakdown table underneath ranks every provider by token consumption.
 
-{{< reuse-image src="img/blog/cost-tokenomics/analytics-by-provider.png" alt="agentgateway Analytics grouped by provider, showing OpenAI, Anthropic, Google, and Bedrock token usage" caption="Grouped by provider: OpenAI dominates token usage, followed by Anthropic, Google, and Bedrock." >}}
+<!-- TODO image: add assets/img/blog/cost-tokenomics/analytics-by-provider.png then restore:
+{{</* reuse-image src="img/blog/cost-tokenomics/analytics-by-provider.png" alt="agentgateway Analytics grouped by provider, showing OpenAI, Anthropic, Google, and Bedrock token usage" caption="Grouped by provider: OpenAI dominates token usage, followed by Anthropic, Google, and Bedrock." */>}} -->
 
 Switch **Group by** to **User** and you get per-person accounting — exactly the view you need when you're trying to figure out who's driving spend. Each bar in the time series is stacked by user, and the breakdown ranks them by tokens consumed.
 
-{{< reuse-image src="img/blog/cost-tokenomics/analytics-by-user.png" alt="agentgateway Analytics grouped by user, showing per-person token consumption" caption="Grouped by user: per-person token accounting, ranked by consumption." >}}
+<!-- TODO image: add assets/img/blog/cost-tokenomics/analytics-by-user.png then restore:
+{{</* reuse-image src="img/blog/cost-tokenomics/analytics-by-user.png" alt="agentgateway Analytics grouped by user, showing per-person token consumption" caption="Grouped by user: per-person token accounting, ranked by consumption." */>}} -->
 
 You can group by **Model**, **Provider**, **User**, **Group**, or **User agent** (Cursor, Claude Code, openai-python, codex, bifrost, and more), and switch the **Measure** between tokens and cost. The **Costs** page focuses the same data on dollars, and **Export** lets you pull the underlying numbers out for reporting.
 
