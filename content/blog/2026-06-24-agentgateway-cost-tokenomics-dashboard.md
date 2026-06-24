@@ -1,33 +1,33 @@
 ---
-title: "AgentGateway Standalone: A Cost & Tokenomics Dashboard in One Command"
+title: "agentgateway Standalone: A Cost & Tokenomics Dashboard in One Command"
 category: "Tutorial"
 publishDate: 2026-06-24
 author: "Sebastian Maniak"
-description: "Spin up AgentGateway standalone with Docker and get a pre-populated cost and tokenomics dashboard in a single command — see spend, tokens, and traffic broken down by model, provider, and user."
+description: "Spin up agentgateway standalone with Docker and get a pre-populated cost and tokenomics dashboard in a single command — see spend, tokens, and traffic broken down by model, provider, and user."
 ---
 
 ## Introduction
 
 You're routing LLM traffic through a gateway. But do you actually know what it *costs*? Not the rough monthly invoice from your provider — the real breakdown. Which model burned the most tokens last night? Which user is driving 80% of your spend? Which provider is quietly eating your budget?
 
-AgentGateway answers those questions out of the box. Every request that flows through the proxy is priced against a per-model rate catalog and surfaced in a built-in **Costs** and **Analytics** dashboard. No external observability stack, no Prometheus, no Grafana — just the standalone binary.
+agentgateway answers those questions out of the box. Every request that flows through the proxy is priced against a per-model rate catalog and surfaced in a built-in **Costs** and **Analytics** dashboard. No external observability stack, no Prometheus, no Grafana — just the standalone binary.
 
 This guide gets you from zero to a fully populated tokenomics dashboard in a single command. We'll use a Docker-based demo that seeds 5,000 simulated requests across 7 days, so the dashboard has something interesting to show you the moment it boots — then we'll send real traffic through it and watch it get priced live.
 
 ## Why This Matters
 
-Cost visibility is the FinOps story for AI. As soon as more than one team, agent, or app starts calling LLMs through shared infrastructure, "what did this cost and who spent it?" becomes a board-level question. AgentGateway answers it at the **gateway layer**, which means:
+Cost visibility is the FinOps story for AI. As soon as more than one team, agent, or app starts calling LLMs through shared infrastructure, "what did this cost and who spent it?" becomes a board-level question. agentgateway answers it at the **gateway layer**, which means:
 
 - **Per-model pricing** — every request is priced against a rate catalog (input, output, and cache token rates), so dollars show up next to tokens automatically.
 - **Group by anything** — slice spend and tokens by model, provider, user, group, or user agent (Cursor, Claude Code, openai-python, etc.).
 - **Zero application changes** — your apps just point at the gateway. The accounting happens in the proxy, not in your code.
-- **One binary** — the dashboard ships inside AgentGateway. There's no separate metrics pipeline to stand up for basic cost visibility.
+- **One binary** — the dashboard ships inside agentgateway. There's no separate metrics pipeline to stand up for basic cost visibility.
 
 ## What You'll Build
 
 ```
                                        ┌──────────────────────────────┐
-  ┌──────────────┐                     │        AgentGateway          │
+  ┌──────────────┐                     │        agentgateway          │
   │ Your apps /  │   /v1/chat/         │  ┌────────────────────────┐  │      ┌────────────┐
   │ agents /curl │───completions──────▶│  │ LLM proxy  (port 4000) │──┼─────▶│   OpenAI   │
   └──────────────┘                     │  └───────────┬────────────┘  │      └────────────┘
@@ -45,7 +45,7 @@ Cost visibility is the FinOps story for AI. As soon as more than one team, agent
                                        └──────────────────────────────┘
 ```
 
-AgentGateway proxies LLM traffic on port `4000` and serves its admin UI and dashboards on port `15000`. Every request is written to a SQLite database (`data.db`) and priced using a model catalog (`base-costs.json`). The mock generator writes to the same `request_logs` schema, which is why the dashboard is populated before you send a single real request.
+agentgateway proxies LLM traffic on port `4000` and serves its admin UI and dashboards on port `15000`. Every request is written to a SQLite database (`data.db`) and priced using a model catalog (`base-costs.json`). The mock generator writes to the same `request_logs` schema, which is why the dashboard is populated before you send a single real request.
 
 ## Prerequisites
 
@@ -79,7 +79,7 @@ That's it. Open **`http://localhost:15000/ui/`** and head to the **Costs** and *
    gen-mock-logs.py --replace --requests 5000 --days 7 -o data/data.db
    ```
 4. **Writes `config.yaml`** pointing the gateway at the database and the model rate catalog.
-5. **Pulls the AgentGateway image** (`cr.agentgateway.dev/agentgateway:v1.3.1`) and removes any previous demo container.
+5. **Pulls the agentgateway image** (`cr.agentgateway.dev/agentgateway:v1.3.1`) and removes any previous demo container.
 6. **Seeds a named Docker volume** (`agw-cost-demo-data`) with the generated database.
 7. **Launches the container**, binding ports to loopback only:
    ```
@@ -101,15 +101,15 @@ REQUESTS=20000 DAYS=30 ./setup.sh
 
 Open `http://localhost:15000/ui/` and click **Analytics**. By default it shows total traffic over the last 24 hours — token volume per hour with a running tally of cost, tokens, and calls.
 
-{{< reuse-image src="img/blog/cost-tokenomics/analytics-total.png" alt="AgentGateway Analytics dashboard showing total token traffic over 24 hours" caption="The Analytics dashboard: total token traffic over the last 24 hours, with cost, tokens, and call counts." >}}
+{{< reuse-image src="img/blog/cost-tokenomics/analytics-total.png" alt="agentgateway Analytics dashboard showing total token traffic over 24 hours" caption="The Analytics dashboard: total token traffic over the last 24 hours, with cost, tokens, and call counts." >}}
 
 The real power is in **Group by**. Switch it to **Provider** and the same traffic splits out by backend — here OpenAI dominates with ~13.3M tokens, followed by Anthropic, Google, and Bedrock. The breakdown table underneath ranks every provider by token consumption.
 
-{{< reuse-image src="img/blog/cost-tokenomics/analytics-by-provider.png" alt="AgentGateway Analytics grouped by provider, showing OpenAI, Anthropic, Google, and Bedrock token usage" caption="Grouped by provider: OpenAI dominates token usage, followed by Anthropic, Google, and Bedrock." >}}
+{{< reuse-image src="img/blog/cost-tokenomics/analytics-by-provider.png" alt="agentgateway Analytics grouped by provider, showing OpenAI, Anthropic, Google, and Bedrock token usage" caption="Grouped by provider: OpenAI dominates token usage, followed by Anthropic, Google, and Bedrock." >}}
 
 Switch **Group by** to **User** and you get per-person accounting — exactly the view you need when you're trying to figure out who's driving spend. Each bar in the time series is stacked by user, and the breakdown ranks them by tokens consumed.
 
-{{< reuse-image src="img/blog/cost-tokenomics/analytics-by-user.png" alt="AgentGateway Analytics grouped by user, showing per-person token consumption" caption="Grouped by user: per-person token accounting, ranked by consumption." >}}
+{{< reuse-image src="img/blog/cost-tokenomics/analytics-by-user.png" alt="agentgateway Analytics grouped by user, showing per-person token consumption" caption="Grouped by user: per-person token accounting, ranked by consumption." >}}
 
 You can group by **Model**, **Provider**, **User**, **Group**, or **User agent** (Cursor, Claude Code, openai-python, codex, bifrost, and more), and switch the **Measure** between tokens and cost. The **Costs** page focuses the same data on dollars, and **Export** lets you pull the underlying numbers out for reporting.
 
@@ -160,7 +160,7 @@ curl -X POST http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "openai/gpt-4.1",
-    "messages": [{"role": "user", "content": "Hello from AgentGateway!"}]
+    "messages": [{"role": "user", "content": "Hello from agentgateway!"}]
   }'
 ```
 
@@ -199,11 +199,11 @@ This stops and removes the container and the named volume.
 
 ## Wrapping Up
 
-Cost and token visibility is one of those things you don't realize you're missing until a bill lands. AgentGateway puts it right in the box: per-model pricing, a built-in dashboard, and grouping by model, provider, and user — no external observability stack required. The Docker demo gets you a populated dashboard in one command so you can see exactly what it looks like before pointing real traffic at it.
+Cost and token visibility is one of those things you don't realize you're missing until a bill lands. agentgateway puts it right in the box: per-model pricing, a built-in dashboard, and grouping by model, provider, and user — no external observability stack required. The Docker demo gets you a populated dashboard in one command so you can see exactly what it looks like before pointing real traffic at it.
 
 ## Resources
 
 - [Demo source code](https://github.com/sebbycorp/agentgateway-demos/tree/main/00-standalone-latest)
-- [AgentGateway](https://agentgateway.dev)
-- [AgentGateway documentation](https://agentgateway.dev/docs/)
+- [agentgateway](https://agentgateway.dev)
+- [agentgateway documentation](https://agentgateway.dev/docs/)
 - [Solo Enterprise for agentgateway](https://docs.solo.io/agentgateway/)
