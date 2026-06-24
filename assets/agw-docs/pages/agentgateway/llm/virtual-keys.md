@@ -151,7 +151,7 @@ spec:
         descriptors:
           - entries:
               - name: user_id
-                expression: 'apiKey.metadata.user_id'
+                expression: 'apiKey.user_id'
             unit: Tokens
 EOF
 ```
@@ -580,9 +580,9 @@ Provide different budget tiers for free, standard, and premium users.
          descriptors:
            - entries:
                - name: tier
-                 expression: 'apiKey.metadata.tier'
+                 expression: 'apiKey.tier'
                - name: user_id
-                 expression: 'apiKey.metadata.user_id'
+                 expression: 'apiKey.user_id'
              unit: Tokens
    ```
 
@@ -637,9 +637,9 @@ Create virtual keys scoped to both user and tenant for multi-tenant applications
 descriptors:
   - entries:
       - name: tenant_id
-        expression: 'apiKey.metadata.tenant_id'
+        expression: 'apiKey.tenant_id'
       - name: user_id
-        expression: 'apiKey.metadata.user_id'
+        expression: 'apiKey.user_id'
     unit: Tokens
 ```
 
