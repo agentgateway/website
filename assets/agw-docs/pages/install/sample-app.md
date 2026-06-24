@@ -223,6 +223,13 @@ Send a request to the httpbin app through the agentgateway proxy.
 
 {{% /steps %}}
 
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
+
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-http.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-http-dark.png" >}}
+{{% /version %}}
+
 ## Next steps
 
 Now that you have {{< reuse "/agw-docs/snippets/kgateway.md" >}} set up and running, check out the following guides to expand your API gateway capabilities.
