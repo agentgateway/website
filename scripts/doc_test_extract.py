@@ -275,7 +275,11 @@ class Extractor:
             self.repo_root / "assets" / "agw-docs" / "pages" / stripped / "_index.md",
         ]
         for candidate in direct_candidates:
-            if candidate.exists():
+            # Match only files: Path.exists() is also true for directories, so a
+            # section route like ".../integrations/llm-clients" would otherwise return
+            # the directory itself (which read_text() can't open) before the later
+            # "_index.md" candidates are ever tried.
+            if candidate.is_file():
                 return candidate.resolve()
 
         last_segment = stripped.split("/")[-1]
