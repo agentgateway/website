@@ -275,7 +275,7 @@ class Extractor:
             self.repo_root / "assets" / "agw-docs" / "pages" / stripped / "_index.md",
         ]
         for candidate in direct_candidates:
-            if candidate.exists():
+            if candidate.is_file():
                 return candidate.resolve()
 
         last_segment = stripped.split("/")[-1]
@@ -465,7 +465,7 @@ class Extractor:
 
             for link in result.links:
                 linked = self._find_by_route_like_target(link)
-                if linked and linked not in self.visited:
+                if linked and linked.is_file() and linked not in self.visited:
                     self.recursion_edges.append((file_path.as_posix(), linked.as_posix(), "link"))
                     queue.append((linked, depth + 1))
 

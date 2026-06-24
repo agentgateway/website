@@ -51,7 +51,7 @@ When a request arrives:
 
 ## Set up virtual keys
 
-This example creates two virtual keys (for Alice and Bob) with independent 100,000 token daily budgets.
+This example creates two virtual keys (for Alice and Bob) with independent daily token budgets. The budget is deliberately small (100 tokens per day) so that you can exhaust it in a few requests and see the enforcement in action. For production-sized budgets, see [Advanced configuration](#advanced-configuration).
 
 ### Create API keys for users
 
@@ -125,7 +125,7 @@ EOF
 
 ### Configure per-key token budgets
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces a daily token budget of 100,000 tokens per user.
+Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that sends a per-user token cost to the rate limit server. The policy extracts the `user_id` from each API key and reports the token usage of each response under that descriptor. The rate limit server holds the actual budget (100 tokens per day per user, which you deploy in the next step).
 
 ```yaml,paths="virtual-keys-with-ratelimit"
 kubectl apply -f- <<EOF
@@ -142,11 +142,11 @@ spec:
   traffic:
     rateLimit:
       global:
-        domain: token-budgets
+        domain: agentgateway
         backendRef:
           kind: Service
-          name: rate-limit-server
-          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+          name: ratelimit
+          namespace: ratelimit
           port: 8081
         descriptors:
           - entries:
@@ -156,51 +156,51 @@ spec:
 EOF
 ```
 
+{{< doc-test paths="virtual-keys-with-ratelimit" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for daily-token-budget policy to be accepted
+  wait:
+    target:
+      kind: AgentgatewayPolicy
+      metadata:
+        namespace: agentgateway-system
+        name: daily-token-budget
+    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 120
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 {{% reuse "agw-docs/snippets/review-table.md" %}}
 
 | Setting     | Description |
 |-------------|-------------|
 | `rateLimit.global` | Use global rate limiting to enforce limits across all {{< reuse "agw-docs/snippets/agentgateway.md" >}} instances. |
-| `domain` | A namespace for rate limit configurations. Use `token-budgets` to organize your budget policies. |
-| `backendRef` | References the rate limit server Service. Must include `kind`, `name`, `namespace`, and `port`. |
-| `descriptors[].entries[].name` | The name of the descriptor entry. Set to `user_id` to rate limit per user. |
+| `domain` | The rate limit domain. Must match the `domain` in the rate limit server configuration (`agentgateway`). |
+| `backendRef` | References the rate limit server Service. Must include `kind`, `name`, `namespace`, and `port`. This example points at the `ratelimit` Service in the `ratelimit` namespace that you deploy in the next step. |
+| `descriptors[].entries[].name` | The name of the descriptor entry. Must match a `key` in the rate limit server config. Set to `user_id` to rate limit per user. |
 | `descriptors[].entries[].expression` | CEL expression to extract the user ID from the API key's metadata. |
-| `descriptors[].unit` | Set to `Tokens` to enforce token-based limits instead of request-based limits. |
+| `descriptors[].unit` | Set to `Tokens` so the gateway reports each response's token count as the cost. The rate limit server subtracts that cost from the user's budget. |
 
-### Configure the rate limit server
+### Deploy the rate limit server
 
-Deploy a rate limit server and configure it with your budget limits. This guide uses global rate limiting to enforce per-key token budgets across multiple gateway instances. For more information, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
+Global rate limiting requires an external rate limit server that stores the budgets and maintains the counters. Deploy Redis and the rate limit service as described in [Deploy the rate limit service]({{< link-hextra path="/security/rate-limit-global#deploy-service" >}}) in the global rate limiting guide. That example deploys a `ratelimit` Service in the `ratelimit` namespace (the target of the `backendRef` in the previous step) and configures it with the `user_id` token-budget descriptor that this guide relies on:
 
-1. Deploy the rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
+```yaml
+# Excerpt from the rate limit server ConfigMap
+domain: agentgateway
+descriptors:
+  - key: user_id
+    rate_limit:
+      unit: day
+      requests_per_unit: 100   # 100 tokens per day per user
+```
 
-2. Create a ConfigMap with your budget configuration.
-
-   ```yaml,paths="virtual-keys-with-ratelimit"
-   kubectl apply -f- <<EOF
-   apiVersion: v1
-   kind: ConfigMap
-   metadata:
-     name: rate-limit-config
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   data:
-     config.yaml: |
-       domain: token-budgets
-       descriptors:
-         - key: user_id
-           rate_limit:
-             unit: day
-             requests_per_unit: 100000
-   EOF
-   ```
-
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
-
-   | Setting     | Description |
-   |-------------|-------------|
-   | `domain` | Must match the domain in your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} (`token-budgets`). |
-   | `descriptors[].key` | Must match the descriptor key (`user_id`). |
-   | `rate_limit.unit` | The time window for the budget. Use `day` for daily budgets. Other options: `second`, `minute`, `hour`. |
-   | `rate_limit.requests_per_unit` | The token budget. Set to 100,000 tokens per day. Since `type: tokens` is set, this counts tokens rather than requests. |
+The `key` (`user_id`) matches the descriptor `name` in your token budget policy, and the `domain` (`agentgateway`) matches the policy's `domain`. The `requests_per_unit` value is the per-user token budget, because the policy reports token usage with `unit: Tokens`. To change the budget, edit `requests_per_unit` in the server config; to change the window, edit `unit` (`second`, `minute`, `hour`, or `day`).
 
 ### Set up an LLM backend
 
@@ -258,7 +258,7 @@ EOF
 ### Test the virtual keys
 
 {{< callout type="info" >}}
-The following tests verify API key authentication and routing. For full end-to-end testing of per-key token budget enforcement, deploy a rate limit server as described in the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}).
+The following steps verify API key authentication, routing, and per-key token budget enforcement. Budget enforcement requires the rate limit server from the [previous step](#deploy-the-rate-limit-server).
 {{< /callout >}}
 
 {{< doc-test paths="virtual-keys-openai-test" >}}
@@ -405,6 +405,55 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+{{< doc-test paths="virtual-keys-ratelimit-test" >}}
+# Drain Alice's 100-token daily budget. httpbun returns ~20-30 tokens per response,
+# so a handful of requests pushes Alice over the budget.
+for i in $(seq 1 10); do
+  curl -s -o /dev/null \
+    "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer sk-alice-abc123def456" \
+    -d '{"model":"gpt-4","messages":[{"role":"user","content":"Say hello"}]}'
+  sleep 0.3
+done
+
+YAMLTest -f - <<'EOF'
+- name: Alice is rejected with 429 after exhausting her token budget
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+      Authorization: "Bearer sk-alice-abc123def456"
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  retries: 3
+  expect:
+    statusCode: 429
+- name: Bob still succeeds because he has an independent budget
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+      Authorization: "Bearer sk-bob-xyz789uvw012"
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
    {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
@@ -455,12 +504,23 @@ EOF
    }
    ```
 
-2. Send multiple requests until Alice's 100,000 token budget is exhausted. Verify that subsequent requests are rejected with a 429 status code.
+2. Send several more requests with Alice's API key until her 100-token daily budget is exhausted. Because httpbun returns roughly 20-30 tokens per response, a handful of requests pushes Alice over the budget. The request that crosses the budget still completes; subsequent requests are rejected with a 429 status code.
+
+   ```sh
+   for i in $(seq 1 10); do
+     STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+       "$INGRESS_GW_ADDRESS/openai" \
+       -H "Authorization: Bearer sk-alice-abc123def456" \
+       -H "Content-Type: application/json" \
+       -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}')
+     echo "Request $i: HTTP $STATUS"
+   done
+   ```
 
    Example 429 response:
    ```
    HTTP/1.1 429 Too Many Requests
-   x-ratelimit-limit: 100000
+   x-ratelimit-limit: 100
    x-ratelimit-remaining: 0
    x-ratelimit-reset: 43200
 
@@ -571,11 +631,11 @@ Provide different budget tiers for free, standard, and premium users.
    traffic:
      rateLimit:
        global:
-         domain: token-budgets
+         domain: agentgateway
          backendRef:
            kind: Service
-           name: rate-limit-server
-           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+           name: ratelimit
+           namespace: ratelimit
            port: 8081
          descriptors:
            - entries:
@@ -589,7 +649,7 @@ Provide different budget tiers for free, standard, and premium users.
 3. Configure the rate limit server with tier-based budgets.
 
    ```yaml
-   domain: token-budgets
+   domain: agentgateway
    descriptors:
      - key: tier
        value: "free"
@@ -619,8 +679,8 @@ Provide different budget tiers for free, standard, and premium users.
 Set a smaller budget that refreshes every hour for tighter cost control.
 
 ```yaml
-# In rate-limit-config ConfigMap
-domain: token-budgets
+# In the ratelimit-config ConfigMap
+domain: agentgateway
 descriptors:
   - key: user_id
     rate_limit:
@@ -644,8 +704,8 @@ descriptors:
 ```
 
 ```yaml
-# In rate-limit-config ConfigMap
-domain: token-budgets
+# In the ratelimit-config ConfigMap
+domain: agentgateway
 descriptors:
   - key: tenant_id
     descriptors:
@@ -664,10 +724,11 @@ For more advanced rate limiting patterns, see the [budget and spend limits guide
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth daily-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete configmap rate-limit-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
+
+To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
 
 ## What's next
 
