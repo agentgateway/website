@@ -13,8 +13,8 @@ Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completion
 ## Set up access to Amazon Bedrock {#setup}
 
 1. Store your credentials to access the AWS Bedrock API. 
-   {{< tabs tabTotal="2" items="AWS credentials,AWS Bedrock API key" >}}
-   {{% tab tabName="AWS credentials" %}}
+   {{< tabs >}}
+   {{% tab name="AWS credentials" %}}
 
    1. Log in to the [AWS console](https://console.aws.amazon.com/console/home) and store your access credentials as environment variables.
       ```bash
@@ -34,7 +34,7 @@ Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completion
         --dry-run=client -o yaml | kubectl apply -f -
       ```
    {{% /tab %}}
-   {{% tab tabName="AWS Bedrock API key" %}}
+   {{% tab name="AWS Bedrock API key" %}}
    1. Save the API key in an environment variable.
       ```sh
       export BEDROCK_API_KEY=<insert your API key>
@@ -91,8 +91,8 @@ Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completion
 
 3. Create an HTTPRoute resource to route requests through your agentgateway proxy to the Bedrock {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   {{< tabs tabTotal="2" items="OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{< tabs >}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -117,7 +117,7 @@ Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completion
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -147,8 +147,8 @@ Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completion
 
 4. Send a request to the LLM provider API along the route that you previously created, such as `/bedrock` or `/v1/chat/completions` depending on your route configuration. The request body must be in OpenAI chat-completions format. Verify that the request succeeds and that you get back a response from the chat completion API.
 
-   {{< tabs tabTotal="2" items="OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{< tabs >}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
@@ -175,7 +175,7 @@ Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completion
      }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/bedrock" -H content-type:application/json -d '{

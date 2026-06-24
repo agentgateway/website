@@ -81,8 +81,8 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       ``` 
 
 3. Send an unauthenticated request to the MCP server. 
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    1. Send a request to the MCP server.   
       ```sh
       npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
@@ -98,7 +98,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
       Error POSTing to endpoint: authentication failure: no bearer token found
       ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. From the terminal, run the MCP Inspector command. Then, the MCP Inspector opens in your browser. If the MCP inspector tool does not open automatically, run `mcp-inspector`. 
       ```sh
       npx @modelcontextprotocol/inspector@{{% reuse "agw-docs/versions/mcp-inspector.md" %}}
@@ -122,8 +122,8 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< /tabs >}}
 
 4. Send another request to the MCP server. This time, you provide a valid JWT token for Alice in the `Authorization` header. 
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    ```sh
    npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
@@ -146,7 +146,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    }
    ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. Go back to the MCP Inspector tool and expand the **Authentication** section. Enter the following details in the **API Token Authentication** card: 
       * **Header Name**: Enter `Authorization`. 
       * **Bearer Token**: Enter the JWT token for Alice. 
@@ -163,8 +163,8 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< /tabs >}}
 
 5. Repeat the same request with the JWT token for Bob. Verify that you can also connect to your MCP server successfully.  
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    ```sh
    npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
@@ -187,7 +187,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    }
    ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. Go back to the MCP Inspector tool and expand the **Authentication** section. Enter the following details in the **API Token Authentication** card: 
       * **Header Name**: Enter `Authorization`. 
       * **Bearer Token**: Enter the JWT token for Bob. 
@@ -204,8 +204,8 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    {{< /tabs >}}
 
 6. Try to enter an invalid JWT token, such as `abcdefg`. Verify that access to the MCP server is denied, because the JWT token could not be validated by your agentgateway proxy. 
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    ```sh
    npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
@@ -222,7 +222,7 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
    Error POSTing to endpoint: authentication failure: the token header is malformed: Error(InvalidToken)
    ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. Go back to the MCP Inspector tool and expand the **Authentication** section. Enter the following details in the **API Token Authentication** card: 
       * **Header Name**: Enter `Authorization`. 
       * **Bearer Token**: Enter the JWT token for Alice. 
@@ -284,8 +284,8 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    ```
 
 2. Send a request to the MCP server with Alice's JWT token. Verify that the request succeeds, because the JWT contains the `sub=alice` claim. 
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    ```sh
    npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
@@ -308,7 +308,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    }
    ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. In MCP Inspector tool, expand the **Authentication** section and enter the following details in the **API Token Authentication** card: 
       * **Header Name**: Enter `Authorization`. 
       * **Bearer Token**: Enter the JWT token for Alice. 
@@ -325,8 +325,8 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    {{< /tabs >}}
 
 3. Now send a request with Bob's JWT token. Verify that the connection fails, because Bob's JWT token does not have the `sub=alice` claim. 
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    ```sh
    npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
@@ -343,7 +343,7 @@ You can limit access to the MCP server based on specific JWT claims with CEL-bas
    Error POSTing to endpoint: authorization failed
    ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. Go back to the MCP Inspector tool and expand the **Authentication** section. Enter the following details in the **API Token Authentication** card: 
       * **Header Name**: Enter `Authorization`. 
       * **Bearer Token**: Enter the JWT token for Bob. 

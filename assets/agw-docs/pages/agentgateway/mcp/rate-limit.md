@@ -152,8 +152,8 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
    The following example assumes you have the MCP Inspector CLI installed. If prompted, install the MCP Inspector packages.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    for i in $(seq 1 20); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
@@ -165,7 +165,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    for i in $(seq 1 20); do
      npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
@@ -392,8 +392,8 @@ The following steps show how to set up global rate limiting infrastructure and c
 
    Each tool maintains an independent counter in Redis. Exhausting the budget for `trigger-long-running-operation` tool call (3 requests per minute) has no effect on the `echo` tool call (10 requests per minute) because they have separate rate limit counters.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
    for i in $(seq 1 5); do
@@ -417,7 +417,7 @@ The following steps show how to set up global rate limiting infrastructure and c
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    # trigger-long-running-operation: 3/min limit — hits 429 on the 4th call
    for i in $(seq 1 5); do

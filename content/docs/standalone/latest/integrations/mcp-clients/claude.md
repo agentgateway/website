@@ -18,8 +18,8 @@ This page covers connecting Claude as an **MCP client**. To proxy Claude Code's 
 
 Add agentgateway to your Claude Desktop configuration file.
 
-{{< tabs items="macOS,Windows" >}}
-{{< tab >}}
+{{< tabs >}}
+{{< tab name="macOS" >}}
 Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
 ```json
@@ -32,7 +32,7 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 }
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Windows" >}}
 Edit `%APPDATA%\Claude\claude_desktop_config.json`:
 
 ```json

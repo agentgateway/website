@@ -38,14 +38,14 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 Run the httpbin image so it listens on port 80 inside the container. Map it to a host port such as 8000 so that agentgateway can reach it.
 
-{{< tabs items="Linux, macOS (Apple Silicon)" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Linux" %}}
 
 ```sh {paths="httpbin,httpbin-linux"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin
 ```
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="macOS (Apple Silicon)" %}}
 
 ```sh {paths="httpbin-macos"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform linux/amd64

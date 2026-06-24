@@ -54,8 +54,8 @@ For detailed information about model routing and configuration modes, see [Model
 
 Send a request to the `/v1/embeddings` endpoint. The response includes an embedding vector for each input item.
 
-{{< tabs items="Curl,Other" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://localhost:4000/v1/embeddings' \
@@ -70,7 +70,7 @@ curl 'http://localhost:4000/v1/embeddings' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Other" %}}
 
 [View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
 

@@ -58,8 +58,8 @@ You can configure the CORS policy at two levels:
 
 1. Create a CORS policy for the httpbin app in an HTTPRoute or {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. The following example sets up custom HTTP methods and max age for requests for the `https://example.com/` and `https://*.ai` origins.
 
-   {{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy"  >}}
-   {{% tab tabName="HTTPRoute" %}}
+   {{< tabs >}}
+   {{% tab name="HTTPRoute" %}}
    ```sh {paths="cors-in-httproute"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -96,7 +96,7 @@ You can configure the CORS policy at two levels:
    ```
 
    {{% /tab %}}
-   {{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
+   {{% tab name="AgentgatewayPolicy" %}}
 
    ```sh {paths="cors-in-agentgatewaypolicy"}
    kubectl apply -f- <<EOF
@@ -160,14 +160,14 @@ You can configure the CORS policy at two levels:
 
 2. Send a request to the httpbin app and use `https://example.com` as the origin. Verify that your request succeeds and that you get back the configured CORS headers.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" \
     -H "Origin: https://example.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -I -X OPTIONS localhost:8080/headers -H "host: www.example.com" \
     -H "Origin: https://example.com"
@@ -192,14 +192,14 @@ You can configure the CORS policy at two levels:
 
 3. Send another request to the httpbin app and use `https://example.ai` as the origin. Verify that your request also succeeds and that you get back the configured CORS headers.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" \
     -H "Origin: https://example.ai"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -I -X OPTIONS localhost:8080/headers -H "host: www.example.com" \
     -H "Origin: https://example.ai"
@@ -224,14 +224,14 @@ You can configure the CORS policy at two levels:
 
 4. Send another request to the httpbin app. This time, you use `notallowed.com` as your origin. Although the request succeeds, you do not get back your configured CORS settings such as max age, allowed origin, or allowed methods, because `notallowed.com` is not configured as a supported origin.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -I -X OPTIONS http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com" \
     -H "Origin: https://notallowed.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -I -X OPTIONS localhost:8080/headers -H "host: www.example.com" \
     -H "Origin: https://notallowed.com"
@@ -279,8 +279,8 @@ You can configure the CORS policy at two levels:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-{{< tabs tabTotal="2" items="HTTPRoute,AgentgatewayPolicy" >}}
-{{% tab tabName="HTTPRoute" %}}
+{{< tabs >}}
+{{% tab name="HTTPRoute" %}}
 
 Restore the HTTPRoute for the httpbin app.
 ```yaml
@@ -304,7 +304,7 @@ EOF
 ```
 
 {{% /tab %}}
-{{% tab tabName="EnterpriseAgentgatewayPolicy" %}}
+{{% tab name="AgentgatewayPolicy" %}}
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-cors -n {{< reuse "agw-docs/snippets/namespace.md" >}}
