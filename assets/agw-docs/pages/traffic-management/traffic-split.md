@@ -104,14 +104,14 @@ This example demonstrates A/B testing and canary deployments by distributing tra
    ```
 
 3. Send a few requests to the `/hello` path. Verify that you see responses from all 3 Helloworld apps, and that most responses are returned from `helloworld-v3`. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    for i in {1..20}; do curl -i http://$INGRESS_GW_ADDRESS:80/hello \
    -H "host: traffic.split.example:8080"; done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    for i in {1..20}; do curl -i localhost:8080/hello \
    -H "host: traffic.split.example"; done
@@ -215,8 +215,8 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
 
 3. Send multiple requests to observe the traffic distribution. In your request, do not specify a model. Instead, the HTTPRoute distributes traffic according to the backend weights (80% to gpt-4o-mini, 20% to gpt-4o).
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    for i in {1..10}; do
      curl -s "$INGRESS_GW_ADDRESS/test" \
@@ -226,7 +226,7 @@ This example demonstrates traffic splitting for LLM workloads, distributing requ
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    for i in {1..10}; do
      curl -s "localhost:8080/test" \

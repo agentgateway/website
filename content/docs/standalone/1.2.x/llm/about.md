@@ -50,8 +50,8 @@ This allows you to continue using existing code and SDKs.
 For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
 {{< /callout >}}
 
-{{< tabs items="Curl,Python,JavaScript" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://localhost:4000/' \
@@ -69,7 +69,7 @@ curl 'http://localhost:4000/' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Python" %}}
 
 {{< callout type="info" >}}
 The `api_key` parameter is required in the OpenAI library.
@@ -95,7 +95,7 @@ print(response)
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="JavaScript" %}}
 
 ```javascript
 import OpenAI from "openai";

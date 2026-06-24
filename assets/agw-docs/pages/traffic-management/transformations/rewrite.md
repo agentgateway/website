@@ -54,14 +54,14 @@ For example, a request to `/users/12345` is forwarded upstream as `/users/id`.
 
 2. Send a request to the httpbin app using a path with a numeric ID. Verify that you get back a 200 HTTP response code and that the `url` field in the response body shows the normalized path forwarded to the upstream.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything/users/12345 \
     -H "host: www.example.com:80"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/anything/users/12345 \
    -H "host: www.example.com"

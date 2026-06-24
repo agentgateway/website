@@ -55,8 +55,8 @@ For detailed information about model routing and configuration modes, see [Model
 
 Send a request to the `/v1/messages/count_tokens` endpoint with the same message shape that you would send to `/v1/messages`.
 
-{{< tabs items="Curl,Other" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://localhost:4000/v1/messages/count_tokens' \
@@ -73,7 +73,7 @@ curl 'http://localhost:4000/v1/messages/count_tokens' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Other" %}}
 
 [View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
 

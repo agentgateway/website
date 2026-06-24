@@ -81,8 +81,8 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    ```
 3. Send requests to different OpenAI endpoints. With the routes configured, you can access different OpenAI endpoints by including the full path in your requests:
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    **Chat completions:**
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai/v1/chat/completions" \
@@ -108,7 +108,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    curl "$INGRESS_GW_ADDRESS/openai/v1/models" | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    **Chat completions:**
    ```sh
    curl "localhost:8080/openai/v1/chat/completions" \

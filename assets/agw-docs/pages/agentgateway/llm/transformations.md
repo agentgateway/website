@@ -118,9 +118,9 @@ EOF
    Some older OpenAI models use `max_tokens` instead of `max_completion_tokens`. If the transformation does not appear to take effect, check the model's API documentation for the correct field name and update the transformation's `field` value accordingly.
    {{< /callout >}}
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
    -H "content-type: application/json" \
@@ -137,7 +137,7 @@ EOF
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/v1/chat/completions" \
    -H "content-type: application/json" \
@@ -307,15 +307,15 @@ EOF
 
 2. Send a chat completion request through the gateway and inspect the response headers.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi "http://$INGRESS_GW_ADDRESS/v1/chat/completions" \
     -H "Content-Type: application/json" \
     -d '{"model": "gpt-4", "messages": [{"role": "user", "content": "Hi"}]}'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "http://localhost:8080/v1/chat/completions" \
     -H "Content-Type: application/json" \

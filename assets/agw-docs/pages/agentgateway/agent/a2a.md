@@ -152,8 +152,8 @@ Deploy an A2A server, then create the resources that route traffic to it. You ca
 
 For most cases, use the `{{< reuse "agw-docs/snippets/backend.md" >}}` approach. The `a2a` backend type represents the A2A server as a dedicated backend that you can further configure, such as by attaching policies, and it can select A2A servers that run outside your cluster. The Service-based approach requires an update to your app (the `appProtocol` setting) and is the legacy way from an earlier version of agentgateway.
 
-{{< tabs items="AgentgatewayBackend,Service" tabTotal="2" >}}
-{{% tab tabName="AgentgatewayBackend" %}}
+{{< tabs >}}
+{{% tab name="AgentgatewayBackend" %}}
 Because the backend's `a2a` type signals the A2A protocol, the Service does not need the `appProtocol` setting.
 
 1. Deploy the A2A server with a Deployment and a Service.
@@ -241,7 +241,7 @@ Because the backend's `a2a` type signals the A2A protocol, the Service does not 
    EOF
    ```
 {{% /tab %}}
-{{% tab tabName="Service" %}}
+{{% tab name="Service" %}}
 1. Deploy the A2A server with a Deployment and a Service. Notice that the Service uses the `appProtocol: kgateway.dev/a2a` setting.
 
    ```yaml
@@ -328,14 +328,14 @@ kubectl wait deployment/a2a-agent --for=condition=Available --timeout=120s
 
 1. Get the agentgateway address.
    
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="a2a"}
    export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o=jsonpath="{.status.addresses[0].value}")
    echo $INGRESS_GW_ADDRESS
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
@@ -354,8 +354,8 @@ done
 
 2. As a user, send a request to the A2A server. As an assistant, the agent echoes back the message that you sent.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="a2a"}
    curl -X POST http://$INGRESS_GW_ADDRESS/myagent \
      -H "Content-Type: application/json" \
@@ -379,7 +379,7 @@ done
      }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -X POST http://localhost:8080/myagent \
      -H "Content-Type: application/json" \

@@ -25,8 +25,8 @@ Google Cloud Model Armor guardrails are model-agnostic and can be applied to any
 
 Set up your agentgateway proxy with the credentials so that you can access Google Model Armor guardrails. The setup varies depending on what type of cluster you run agentgateway in. 
 
-{{< tabs tabTotal="2" items="Local cluster (kind), GKE cluster" >}}
-{{% tab tabName="Local cluster (kind)" %}}
+{{< tabs >}}
+{{% tab name="Local cluster (kind)" %}}
 
 Create a service account with the required permissions to access Google Model Armor. Then mount a JSON key file to the `agentgateway-proxy` pod. 
 
@@ -107,7 +107,7 @@ Create a service account with the required permissions to access Google Model Ar
    ```
 
 {{% /tab %}}
-{{% tab tabName="GKE cluster" %}}
+{{% tab name="GKE cluster" %}}
 
 In your GKE cluster, set up workload identity. 
 
@@ -198,8 +198,8 @@ In your GKE cluster, set up workload identity.
    ```
 
 2. Send a request to the Gemini provider that triggers the guardrail. 
-   {{< tabs tabTotal="3" items="Gemini default, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Gemini default" %}}
+   {{< tabs >}}
+   {{% tab name="Gemini default" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1beta/openai/chat/completions" -H content-type:application/json  -d '{
@@ -220,7 +220,7 @@ In your GKE cluster, set up workload identity.
    }'
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -241,7 +241,7 @@ In your GKE cluster, set up workload identity.
    }' 
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/gemini" -H content-type:application/json  -d '{

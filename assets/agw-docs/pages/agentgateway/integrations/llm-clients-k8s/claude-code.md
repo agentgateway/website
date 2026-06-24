@@ -37,9 +37,9 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
 
 3. Create an {{< reuse "agw-docs/snippets/backend.md" >}} with the `/v1/messages` route and any other details such as models that you want to configure.
 
-   {{< tabs items="Flexible model (recommended),Fixed model" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Flexible model (recommended)" %}}
+   {{% tab name="Flexible model (recommended)" %}}
    Allow Claude Code to use any model. The `anthropic: {}` syntax means no model is pinned.
 
    ```bash {paths="claude-code-k8s"}
@@ -65,7 +65,7 @@ Create a secret, backend, and route to proxy Claude Code traffic through agentga
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Fixed model" %}}
+   {{% tab name="Fixed model" %}}
    Pin the backend to a specific model. The model must match what Claude Code is configured to use, because Claude Code sends the model name in API requests and agentgateway rejects mismatches.
 
    ```bash
@@ -187,15 +187,15 @@ EOF
 
 Set the `ANTHROPIC_BASE_URL` environment variable to point Claude Code at your gateway address.
 
-{{< tabs items="LoadBalancer,Port-forward" >}}
+{{< tabs >}}
 
-{{% tab tabName="LoadBalancer" %}}
+{{% tab name="LoadBalancer" %}}
 ```bash
 export ANTHROPIC_BASE_URL="http://$INGRESS_GW_ADDRESS"
 ```
 {{% /tab %}}
 
-{{% tab tabName="Port-forward" %}}
+{{% tab name="Port-forward" %}}
 ```bash
 kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80 &
 export ANTHROPIC_BASE_URL="http://localhost:8080"

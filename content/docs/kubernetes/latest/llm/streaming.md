@@ -20,8 +20,8 @@ Click through the following tabs to see the request flows for each.
 
 <!-- Diagrams in Excalidraw https://app.excalidraw.com/s/AKnnsusvczX/AZJRSy6wV4F -->
 
-{{< tabs tabTotal="2" items="Single response,Streaming">}}
-{{% tab tabName="Single response" %}}
+{{< tabs >}}
+{{% tab name="Single response" %}}
 
 {{< reuse-image-light src="/img/aig-streaming-false-light.svg" width="600px" alt="Figure: Response without streaming in a single chunk" caption="Figure: Response without streaming in a single chunk">}}
 
@@ -33,7 +33,7 @@ Click through the following tabs to see the request flows for each.
 4. The gateway forwards the response in a single chunk to the client.
 
 {{% /tab %}}
-{{% tab tabName="Streaming" %}}
+{{% tab name="Streaming" %}}
 
 {{< reuse-image-light src="/img/aig-streaming-true-light.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
 {{< reuse-image-dark srcDark="/img/aig-streaming-true-dark.svg" width="600px" alt="Figure: Response in a stream of chunks" caption="Figure: Response in a stream of chunks">}}
@@ -131,8 +131,8 @@ The following steps show how to stream a response from OpenAI.
 
 1. Send a request to the OpenAI provider that includes the streaming parameter `"stream": "true"`. For other providers, see [Provider differences](#provider-differences).
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh {paths="streaming-openai"}
    curl "http://${INGRESS_GW_ADDRESS}/openai" -H content-type:application/json  -d '{
       "stream": true,
@@ -150,7 +150,7 @@ The following steps show how to stream a response from OpenAI.
     }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json  -d '{
       "stream": true,

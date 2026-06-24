@@ -85,13 +85,13 @@ The agentgateway proxy requires the password that the user uses to authenticate 
 
 3. Send a request to the httpbin app without any credentials. Verify that the request fails with a 401 HTTP response code. 
    
-   {{< tabs tabTotal= "2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com"                                  
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/headers" -H "host: www.example.com" 
    ```
@@ -119,15 +119,15 @@ The agentgateway proxy requires the password that the user uses to authenticate 
    ```
 
 5. Repeat the request. This time, you include the base64 user credentials in an `Authorization` header. Verify that the request now succeeds and returns. 
-   {{< tabs tabTotal= "2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi "${INGRESS_GW_ADDRESS}:80/headers" \
    -H "host: www.example.com" \
    -H "Authorization: basic dXNlcjpwYXNzd29yZA=="                                 
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/headers" \
    -H "host: www.example.com" \

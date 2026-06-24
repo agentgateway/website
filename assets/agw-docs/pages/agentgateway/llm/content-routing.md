@@ -208,8 +208,8 @@ EOF
 
 4. Send a request with `gpt-4o` in the model field. Verify that the request routes to the OpenAI backend.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
      "model": "gpt-4o",
@@ -222,7 +222,7 @@ EOF
    gpt-4o-2024-08-06
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
      "model": "gpt-4o",
@@ -239,8 +239,8 @@ EOF
 
 5. Send a request with `claude-3-5-sonnet-latest` in the model field. Verify that the request routes to the Anthropic backend.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json -d '{
      "model": "claude-3-5-sonnet-latest",
@@ -253,7 +253,7 @@ EOF
    claude-3-5-sonnet-20241022
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
      "model": "claude-3-5-sonnet-latest",
@@ -411,8 +411,8 @@ This example shows routing based on a custom `priority` field in the request bod
 
 4. Test the routing by sending requests with different priority values.
 
-   {{< tabs tabTotal="2" items="High priority,Standard priority" >}}
-   {{% tab tabName="High priority" %}}
+   {{< tabs >}}
+   {{% tab name="High priority" %}}
    ```bash
    curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
      "model": "gpt-4o",
@@ -423,7 +423,7 @@ This example shows routing based on a custom `priority` field in the request bod
 
    Routes to the high-priority backend using `gpt-4o`.
    {{% /tab %}}
-   {{% tab tabName="Standard priority" %}}
+   {{% tab name="Standard priority" %}}
    ```bash
    curl "localhost:8080/v1/chat/completions" -H content-type:application/json -d '{
      "model": "gpt-4o",

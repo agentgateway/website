@@ -115,9 +115,9 @@ kubectl get deployment agentgateway-proxy -n {{< reuse "agw-docs/snippets/namesp
 
 Choose your LLM provider and set your API key:
 
-{{< tabs items="OpenAI,Anthropic" >}}
+{{< tabs >}}
 
-{{% tab tabName="OpenAI" %}}
+{{% tab name="OpenAI" %}}
 ```bash
 export OPENAI_API_KEY=<insert your OpenAI API key>
 
@@ -169,7 +169,7 @@ EOF
 ```
 {{% /tab %}}
 
-{{% tab tabName="Anthropic" %}}
+{{% tab name="Anthropic" %}}
 ```bash
 export ANTHROPIC_API_KEY=<insert your Anthropic API key>
 

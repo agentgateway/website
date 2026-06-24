@@ -235,8 +235,8 @@ Example output:
 
 [Claude Platform on AWS](https://docs.aws.amazon.com/claude-platform/latest/userguide/welcome.html) hosts Anthropic's native Messages API on AWS infrastructure at `aws-external-anthropic.{region}.api.aws`. Because the API is the same Anthropic Messages API, you point the `anthropic` provider at the AWS endpoint and choose either API-key or AWS SigV4 authentication.
 
-{{< tabs tabTotal="2" items="API key, AWS SigV4" >}}
-{{% tab tabName="API key" %}}
+{{< tabs >}}
+{{% tab name="API key" %}}
 
 Store your Claude Platform on AWS API key in an environment variable or file and reference it from the provider configuration.
 Override the upstream host to point at the Claude Platform endpoint.
@@ -266,7 +266,7 @@ llm:
 | `params.apiKey`                             | API key. |
 
 {{% /tab %}}
-{{% tab tabName="AWS SigV4" %}}
+{{% tab name="AWS SigV4" %}}
 
 Use IAM credentials from the environment (for example IRSA, an EC2 instance profile, or an AWS SSO profile) and let agentgateway sign requests with SigV4. Set `auth.aws.serviceName` to `aws-external-anthropic`, which is the SigV4 service name that Claude Platform expects.
 

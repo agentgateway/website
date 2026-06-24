@@ -56,8 +56,8 @@ The same CORS fields are supported in both simplified LLM and route-based config
 - `allowCredentials`
 - `maxAge`
 
-{{< tabs items="Simplified LLM,Route-based" >}}
-{{< tab >}}
+{{< tabs >}}
+{{< tab name="Simplified LLM" >}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -83,7 +83,7 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 {{< /tab >}}
-{{< tab >}}
+{{< tab name="Route-based" >}}
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
