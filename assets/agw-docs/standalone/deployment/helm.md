@@ -225,6 +225,7 @@ Upgrade the release by running `helm upgrade` with the new chart version.
 helm upgrade -i agentgateway-standalone \
   oci://cr.agentgateway.dev/charts/agentgateway-standalone \
   --namespace agentgateway-system \
+  --reuse-values \
   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}}
 ```
 
