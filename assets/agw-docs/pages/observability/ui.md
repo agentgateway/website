@@ -2,9 +2,14 @@ Use the agentgateway Admin UI to inspect your Kubernetes proxy configuration.
 
 ## About
 
-The agentgateway Admin UI is a built-in web interface that runs on port 15000 of the `agentgateway-proxy` pod. In Kubernetes mode, the UI is **read-only**. It reflects the configuration pushed by the agentgateway controller. Make configuration changes by updating your Kubernetes resources such as via GitOps, not through the UI.
+The agentgateway Admin UI is a built-in web interface that runs on port 15000 of the `agentgateway-proxy` pod. In Kubernetes mode, the UI is **read-only**. It reflects the configuration that the agentgateway controller pushes to the proxy over xDS, the protocol that the control plane uses to deliver configuration to the proxy.
 
-The Admin UI is useful for debugging and verifying what configuration the proxy has received, and for testing MCP tool calls through the built-in playground.
+{{< callout type="info" >}}
+The Admin UI is read-only in Kubernetes mode. Unlike standalone mode, you cannot use the UI to add features such as models, LLM providers, or MCP servers. Instead, make configuration changes by updating your Kubernetes resources, such as through GitOps, not through the UI.
+{{< /callout >}}
+
+
+The Admin UI is useful for debugging and verifying the configuration that the proxy received from the controller, such as confirming that a Gateway, HTTPRoute, AgentgatewayBackend, or AgentgatewayPolicy resource took effect.
 
 ## Access the Admin UI {#access-admin-ui}
 
@@ -25,7 +30,7 @@ The Admin UI is not exposed as a Kubernetes Service. To access it, use `kubectl 
 
 2. While the port-forward is running, open [http://localhost:15000/ui/](http://localhost:15000/ui/) in your browser.
 
-   The Admin UI dashboard shows your configured listeners and port binding in **read-only** mode.
+   The **Gateway Overview** opens in read-only mode and summarizes the resources that the proxy currently serves, such as the number of listeners, routes, and policies.
 
    {{< reuse-image-light src="img/agentgateway-ui-kube-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-landing-dark.png" >}}
@@ -53,3 +58,37 @@ EOF
 {{< callout type="info" >}}
 The port-forward connection closes when you stop the <code>kubectl port-forward</code> command. Run it in a dedicated terminal tab or in the background if you need persistent access.
 {{< /callout >}}
+
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+## Explore the read-only views {#explore}
+
+Because configuration is managed by xDS, every page shows a read-only mode banner and editing is disabled. The views reflect the configuration that the proxy currently runs, so use them to verify that the proxy received the configuration that you expect. The navigation menu groups the views into **Gateway**, **Traffic**, and **Tools**.
+
+### Listeners {#listeners}
+
+The **Listeners** page lists the ports that the proxy binds and the routes that are attached to each listener. Use it to confirm the proxy's port bindings and how routes map to each listener.
+
+{{< reuse-image-light src="img/agentgateway-ui-kube-listeners.png" >}}
+{{< reuse-image-dark srcDark="img/agentgateway-ui-kube-listeners-dark.png" >}}
+
+### Routes {#routes}
+
+The **Routes** page is an inventory of the routes that the proxy currently runs. Each row shows the route name, type, listener, path match, backends, and the number of attached policies. To inspect a single route in more detail, click the view (eye) icon in its row.
+
+{{< reuse-image-light src="img/agentgateway-ui-kube-routes.png" >}}
+{{< reuse-image-dark srcDark="img/agentgateway-ui-kube-routes-dark.png" >}}
+
+### Policies {#policies}
+
+The **Policies** page lists the policies that the proxy currently runs, including the resource that each policy targets, the policy type, and how the policy is inherited.
+
+{{< reuse-image-light src="img/agentgateway-ui-kube-policies.png" >}}
+{{< reuse-image-dark srcDark="img/agentgateway-ui-kube-policies-dark.png" >}}
+
+### CEL Playground {#cel-playground}
+
+The **CEL Playground**, under **Tools**, lets you evaluate Common Expression Language (CEL) expressions against sample input. It is the only interactive tool available in Kubernetes mode, and it does not modify any configuration. For more information about where agentgateway uses CEL, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
+
+{{< reuse-image-light src="img/agentgateway-ui-kube-cel.png" >}}
+{{< reuse-image-dark srcDark="img/agentgateway-ui-kube-cel-dark.png" >}}
+{{% /version %}}
