@@ -1,11 +1,11 @@
 1. Install the custom resources of the {{< reuse "agw-docs/snippets/k8s-gateway-api-name.md" >}} version {{< reuse "agw-docs/versions/k8s-gw-version.md" >}}.
-   {{< tabs items="Standard, Experimental" tabTotal="2" >}}
-   {{% tab tabName="Standard" %}}
+   {{< tabs >}}
+   {{% tab name="Standard" %}}
    ```sh {paths="standard"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
    ```
    {{% /tab %}}
-   {{% tab tabName="Experimental" %}}
+   {{% tab name="Experimental" %}}
    CRDs in the experimental channel are required to use some experimental features in the Gateway API. Guides that require experimental CRDs note this requirement in their prerequisites.
    ```sh {paths="experimental"}
    kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
@@ -50,8 +50,8 @@
 
    2. Install {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane by using Helm. If you modified the `values.yaml` file with custom installation values, add the `-f {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}/values.yaml` flag.
 
-      {{< tabs tabTotal="3" items="Basic installation,Custom values file,Development" >}}
-{{% tab tabName="Basic installation" %}}
+      {{< tabs >}}
+{{% tab name="Basic installation" %}}
 
 
 
@@ -63,7 +63,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw
 
 
 {{% /tab %}}
-{{% tab tabName="Custom values" %}}
+{{% tab name="Custom values file" %}}
 
 
 
@@ -76,7 +76,7 @@ helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/ag
 
 
 {{% /tab %}}
-{{% tab tabName="Development" %}}
+{{% tab name="Development" %}}
 When using the nightly build {{< reuse "agw-docs/versions/patch-dev.md" >}}, add the `--set controller.image.pullPolicy=Always` option to ensure you get the latest image. Alternatively, you can specify the exact image digest.
 
 

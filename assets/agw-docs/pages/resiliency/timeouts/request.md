@@ -7,8 +7,8 @@ Set the route-level timeout with an HTTPRoute or {{< reuse "agw-docs/snippets/tr
 Specify timeouts for a specific route.
 
 1. Configure a timeout for specific routes by using the Kubernetes Gateway API-native configuration in an HTTPRoute or by using an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. 
-   {{< tabs tabTotal="3" items="Option 1: HTTPRoute (Kubernetes GW API),Option 2: AgentgatewayPolicy,Option 3: Gateway listener" >}}
-   {{% tab tabName="Option 1: HTTPRoute (Kubernetes GW API)" %}}
+   {{< tabs >}}
+   {{% tab name="Option 1: HTTPRoute (Kubernetes GW API)" %}}
 
    1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app.
 
@@ -92,7 +92,7 @@ Specify timeouts for a specific route.
          ```
 
    {{% /tab %}}
-   {{% tab tabName="Option 2: EnterpriseKgatewayTrafficPolicy"  %}}
+   {{% tab name="Option 2: AgentgatewayPolicy" %}}
    
    1. Configure the HTTPRoute. In the following example, you set a timeout of 2 seconds for the `/delay` path of the httpbin app and add an HTTPRoute rule name to the path. You use the rule name later to apply the timeout to a particular route.
       ```yaml {paths="timeout-in-trafficpolicy"}
@@ -180,7 +180,7 @@ Specify timeouts for a specific route.
    
    {{% /tab %}}
 
-   {{% tab tabName="Option 3: Gateway listener"  %}}
+   {{% tab name="Option 3: Gateway listener" %}}
    
    1. Create an HTTPRoute that configures a route to the `/delay` path of the httpbin app.
       ```yaml {paths="timeout-in-gatewaylistener"}
@@ -270,13 +270,13 @@ Specify timeouts for a specific route.
 
 4. Send a request along the `/delay` path of the httpbin. This path delays requests for the number of seconds that you specify. In this example, you delay the request by 1 second. Because the delay is shorter than the timeout that you configured, the request succeeds and a 200 HTTP response code is returned.  
  
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/delay/1 -H "host: timeout.example:80"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/delay/1 -H "host: timeout.example"
    ```
@@ -331,13 +331,13 @@ Specify timeouts for a specific route.
 
 6. Repeat the request along the `/delay` path. This time, you use a delay that is longer than the request timeout that you previously specified and therefore simulates an app that is slow to respond. Verify that the request times out and that you get back a 504 HTTP response code. 
  
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/delay/5 -H "host: timeout.example:80"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/delay/5 -H "host: timeout.example"
    ```

@@ -106,8 +106,8 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
 
 1. Send a test request to the OpenAI backend. Verify that you get back a 200 HTTP response code and that no authorization is required.
 
-   {{< tabs tabTotal= "2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
@@ -124,7 +124,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -v "localhost:8080/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
@@ -152,8 +152,8 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
 
 2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that references the external authorization service. Choose the tab for the target you want to attach the policy to. The Gateway and HTTPRoute tabs apply external authorization before backend selection. The {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} tab applies it after backend selection.
 
-   {{< tabs tabTotal="3" items="Gateway,HTTPRoute,AgentgatewayBackend" >}}
-   {{% tab tabName="Gateway" %}}
+   {{< tabs >}}
+   {{% tab name="Gateway" %}}
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -184,7 +184,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="HTTPRoute" %}}
+   {{% tab name="HTTPRoute" %}}
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
@@ -215,7 +215,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="AgentgatewayBackend" %}}
+   {{% tab name="AgentgatewayBackend" %}}
    
    Backend-level policies can also target a Kubernetes Service. To target a Service, set `kind: Service` and `group: ""` in `targetRefs`, and use the same `backend.extAuth` configuration shown in the {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} tab.
 
@@ -252,8 +252,8 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
 
 3. Repeat your request to the OpenAI backend and verify that the request is denied.
 
-   {{< tabs tabTotal= "2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
@@ -270,7 +270,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -v "localhost:8080/openai" -H content-type:application/json -d '{
     "model": "gpt-3.5-turbo",
@@ -303,8 +303,8 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
 
 4. Send another request, this time with the `x-ext-authz: allow` header. The Istio external authorization service is configured to allow requests with this header. Therefore, the request succeeds.
 
-   {{< tabs tabTotal= "2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json \
    -H "x-ext-authz: allow" \
@@ -324,7 +324,7 @@ Gateway and HTTPRoute targets use the `traffic.extAuth` section so that authoriz
    }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -v "localhost:8080/openai" -H content-type:application/json \
     -H "x-ext-authz: allow" \

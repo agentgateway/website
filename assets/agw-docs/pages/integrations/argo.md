@@ -18,8 +18,8 @@
    This configuration is only an example. Ensure you use the correct plugin binary for your platform, such as amd64 or arm64. For more platform and version options, refer to the [releases of the Argo rollouts traffic router plugin for the Gateway API](https://github.com/argoproj-labs/rollouts-plugin-trafficrouter-gatewayapi/releases).
    {{< /callout >}}
 
-   {{< tabs items="Linux amd64, Linux arm64" tabTotal="2" >}}
-   {{% tab tabName="Linux amd64" %}}
+   {{< tabs >}}
+   {{% tab name="Linux amd64" %}}
    ```yaml
    cat <<EOF | kubectl apply -f -
    apiVersion: v1
@@ -37,7 +37,7 @@
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Linux arm64" %}}
+   {{% tab name="Linux arm64" %}}
    ```yaml
    cat <<EOF | kubectl apply -f -
    apiVersion: v1
@@ -216,8 +216,8 @@
    EOF
    ```
 3. Send a request to the `httpbun` app and verify your CLI output.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    1. Get the external address of the gateway and save it in an environment variable.
         ```bash
         export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy \
@@ -260,7 +260,7 @@
        }
        ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    1. Port-forward the gateway proxy `http` pod on port 8080.
        ```bash
        kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80

@@ -48,8 +48,8 @@ Note that this guide assumes that you want to apply the policy to the OpenAI LLM
 
 2. Send a request to the OpenAI API. Verify that the request succeeds and that you see the `response-gateway` header with a value of `response path /openai`. 
    
-   {{< tabs tabTotal= "2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -v "${INGRESS_GW_ADDRESS}:8080/openai" -H content-type:application/json -H "X-User-ID: user123" -d '{
     "model": "gpt-3.5-turbo",
@@ -66,7 +66,7 @@ Note that this guide assumes that you want to apply the policy to the OpenAI LLM
    }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -v "localhost:8080/openai" -H content-type:application/json -H "X-User-ID: user123" -d '{
     "model": "gpt-3.5-turbo",
