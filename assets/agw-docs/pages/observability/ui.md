@@ -55,6 +55,91 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+{{< doc-test paths="ui-k8s-capture" >}}
+# Screenshot-capture fixture (not rendered on the page). Adds an LLM backend + route and a
+# CORS policy on top of the MCP and httpbin routes so the read-only Listeners, Routes, and
+# Policies views render content. A placeholder LLM key keeps capture free of external calls.
+kubectl create secret generic openai-secret -n agentgateway-system \
+  --from-literal=Authorization=sk-doc-capture-placeholder --dry-run=client -o yaml | kubectl apply -f -
+
+kubectl apply -f- <<'EOF'
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayBackend
+metadata:
+  name: openai
+  namespace: agentgateway-system
+spec:
+  ai:
+    provider:
+      openai:
+        model: gpt-3.5-turbo
+  policies:
+    auth:
+      secretRef:
+        name: openai-secret
+---
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: openai
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+    - name: agentgateway-proxy
+      namespace: agentgateway-system
+  rules:
+  - matches:
+    - path:
+        type: PathPrefix
+        value: /openai
+    backendRefs:
+    - name: openai
+      namespace: agentgateway-system
+      group: agentgateway.dev
+      kind: AgentgatewayBackend
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayPolicy
+metadata:
+  name: mcp-cors
+  namespace: default
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: mcp
+  traffic:
+    cors:
+      allowOrigins:
+      - https://example.com
+      allowMethods:
+      - GET
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - Authorization
+      - Content-Type
+      maxAge: 3600
+EOF
+
+YAMLTest -f - <<'EOF'
+- name: wait for openai backend to be accepted
+  wait:
+    target:
+      kind: AgentgatewayBackend
+      metadata:
+        namespace: agentgateway-system
+        name: openai
+    jsonPath: "$.status.conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 60
+      intervalSeconds: 2
+EOF
+{{< /doc-test >}}
+
 {{< callout type="info" >}}
 The port-forward connection closes when you stop the <code>kubectl port-forward</code> command. Run it in a dedicated terminal tab or in the background if you need persistent access.
 {{< /callout >}}
