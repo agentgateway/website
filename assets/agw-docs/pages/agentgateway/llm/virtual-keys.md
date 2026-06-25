@@ -504,7 +504,7 @@ EOF
    }
    ```
 
-2. Send several more requests with Alice's API key until her 100-token daily budget is exhausted. Because httpbun returns roughly 20-30 tokens per response, a handful of requests pushes Alice over the budget. The request that crosses the budget still completes; subsequent requests are rejected with a 429 status code.
+2. Send several more requests with Alice's API key until her 100-token daily budget is exhausted. Because the LLM provider returns roughly 20-30 tokens per response, a handful of requests pushes Alice over the budget. The request that crosses the budget still completes; subsequent requests are rejected with a 429 status code.
 
    ```sh
    for i in $(seq 1 10); do
@@ -558,35 +558,139 @@ EOF
 
 ## Monitor per-key spending
 
-Track token usage and spending for each virtual key using Prometheus metrics.
+Track token usage and spending for each virtual key by using Prometheus metrics.
 
-1. Port-forward the agentgateway proxy metrics endpoint.
-   ```sh
-   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15020
+By default, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} token usage metric (`agentgateway_gen_ai_client_token_usage`) is broken down by dimensions such as the model and token type, but *not* by user. To attribute usage to each virtual key, add a `user_id` label to the metrics with a metrics policy, then query Prometheus.
+
+### Before you begin {#monitor-prereqs}
+
+Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics. The [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}) walks you through the full setup; at a minimum, complete the [Prometheus step]({{< link-hextra path="/observability/otel-stack/#prometheus" >}}). The following steps assume the `kube-prometheus-stack` release in the `telemetry` namespace, as deployed by that guide.
+
+### Add a per-user metric label
+
+1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: per-user-metrics
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: Gateway
+         name: agentgateway-proxy
+     frontend:
+       metrics:
+         attributes:
+           add:
+             - name: user_id
+               expression: 'apiKey.user_id'
+   EOF
    ```
 
-2. Query token usage metrics filtered by user ID.
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting     | Description |
+   |-------------|-------------|
+   | `frontend.metrics.attributes.add[].name` | The name of the Prometheus label to add (`user_id`). |
+   | `frontend.metrics.attributes.add[].expression` | A CEL expression that is evaluated per request. Use `apiKey.user_id` to read the `user_id` from the authenticated API key. If the expression fails to evaluate (for example, on an unauthenticated request), the label value is set to `unknown`. |
+
+   {{< callout type="warning" >}}
+   The `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers (such as raw end-user IDs) to metrics at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
+   {{< /callout >}}
+
+2. Send a few requests with each virtual key so that the metrics have per-user data to report. You can reuse the requests from [Test the virtual keys](#test-the-virtual-keys).
+
+### Query per-key usage
+
+1. Port-forward the Prometheus server from the OpenTelemetry stack.
+
+   ```sh
+   kubectl port-forward -n telemetry svc/kube-prometheus-stack-prometheus 9090:9090
+   ```
+
+   Then open the Prometheus UI at `http://localhost:9090/graph` and run the following queries, or send them to the HTTP API with `curl`. For example:
+
+   ```sh
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum)'
+   ```
+
+   Example output:
+
+   ```json
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782410561.391,"720"]},{"metric":{"user_id":"bob"},"value":[1782410561.391,"448"]},{"metric":{"user_id":"alice"},"value":[1782410561.391,"448"]}]}}
+   ```
+
+2. Query token usage broken down by user ID. The token usage metric carries a separate series per token type (`input`, `output`, `input_cache_read`), so match both the input and output types in a single selector and sum them, rather than adding two selectors together.
+
+   {{< tabs tabTotal="2" items="Query,curl example" >}}
+   {{% tab tabName="Query" %}}   
    ```promql
    # Total tokens consumed by user over the last 24 hours
    sum by (user_id) (
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h])
    )
 
-   # Percentage of daily budget used
+   # Percentage of a 100-token daily budget used (adjust the divisor to match your budget)
    (sum by (user_id) (
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
-   ) / 100000) * 100
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h])
+   ) / 100) * 100
+   ```
+   {{% /tab %}}
+   {{% tab tabName="curl example" %}}
+   ```bash
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=sum by (user_id) (increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h]))'
    ```
 
-3. Calculate costs per user by multiplying token counts by your provider's pricing. For example, with OpenAI GPT-3.5:
+   ```bash
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=(sum by (user_id) (increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h])) / 100) * 100'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Each result series is labeled with a `user_id`, such as `alice` and `bob`. If a key is missing the `user_id` field, or the request is not attributed to a key, its usage appears under `user_id="unknown"`.
+
+   Example output:
+
+   ```json
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782411002.488,"0"]},{"metric":{"user_id":"bob"},"value":[1782411002.488,"372.2787929364588"]},{"metric":{"user_id":"alice"},"value":[1782411002.488,"309.56920815395927"]}]}}
+   
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782411059.867,"0"]},{"metric":{"user_id":"bob"},"value":[1782411059.867,"370.95800165527817"]},{"metric":{"user_id":"alice"},"value":[1782411059.867,"307.9427844448483"]}]}}
+   ```
+
+   {{< callout type="info" >}}
+   `increase()` and `rate()` need at least two samples within the time range to report a value, so a brand-new `user_id` series shows no result until it has been scraped a few times under continuous traffic. For a quick instant check, query the cumulative counter directly: `sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum)`.
+   {{< /callout >}}
+
+3. Calculate costs per user by multiplying token counts by your provider's pricing. Input and output tokens are usually priced differently, so reduce each token type to a per-user series with `sum by (user_id)` before adding them, which keeps the two sides matchable.
+
+   {{< tabs tabTotal="2" items="Query,curl example" >}}
+   {{% tab tabName="Query" %}}   
    ```promql
    # Cost per user (assuming $0.50 per 1M input tokens, $1.50 per 1M output tokens)
-   sum by (user_id) (
-     ((rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) / 1000000) * 0.50) +
-     ((rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h]) / 1000000) * 1.50)
-   )
+   sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h])) / 1000000 * 0.50
+   +
+   sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])) / 1000000 * 1.50
+   ```
+   {{% /tab %}}
+   {{% tab tabName="curl example" %}}
+   ```bash
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h])) / 1000000 * 0.50 + sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])) / 1000000 * 1.50'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```json
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782410758.432,"0"]},{"metric":{"user_id":"bob"},"value":[1782410758.432,"6.101636101191084e-09"]},{"metric":{"user_id":"alice"},"value":[1782410758.432,"5.106526900820178e-09"]}]}}
    ```
 
 For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
@@ -722,7 +826,7 @@ For more advanced rate limiting patterns, see the [budget and spend limits guide
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth daily-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth daily-token-budget per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
