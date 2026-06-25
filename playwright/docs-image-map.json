@@ -60,6 +60,46 @@
     "cel-playground.png": {
       "light": "assets/img/cel-playground.png",
       "dark": "assets/img/cel-playground-dark.png"
+    },
+    "agentgateway-ui-kube-landing.png": {
+      "$note": "observability/ui (kubernetes) — read-only Gateway Overview in xds mode. Captured via tests/kube-readonly.spec.ts against a port-forwarded proxy (UI_BASE_URL).",
+      "light": "assets/img/agentgateway-ui-kube-landing.png",
+      "dark": "assets/img/agentgateway-ui-kube-landing-dark.png"
+    },
+    "agentgateway-ui-kube-listeners.png": {
+      "$note": "observability/ui (kubernetes) — read-only Traffic Listeners view.",
+      "light": "assets/img/agentgateway-ui-kube-listeners.png",
+      "dark": "assets/img/agentgateway-ui-kube-listeners-dark.png"
+    },
+    "agentgateway-ui-kube-routes.png": {
+      "$note": "observability/ui (kubernetes) — read-only Traffic Routes inventory.",
+      "light": "assets/img/agentgateway-ui-kube-routes.png",
+      "dark": "assets/img/agentgateway-ui-kube-routes-dark.png"
+    },
+    "agentgateway-ui-kube-policies.png": {
+      "$note": "observability/ui (kubernetes) — read-only Policies view.",
+      "light": "assets/img/agentgateway-ui-kube-policies.png",
+      "dark": "assets/img/agentgateway-ui-kube-policies-dark.png"
+    },
+    "agentgateway-ui-kube-cel.png": {
+      "$note": "observability/ui (kubernetes) — CEL Playground (the one Tools view available in xds mode).",
+      "light": "assets/img/agentgateway-ui-kube-cel.png",
+      "dark": "assets/img/agentgateway-ui-kube-cel-dark.png"
+    },
+    "agentgateway-ui-kube-route-mcp.png": {
+      "$note": "mcp quickstart + mcp/static-mcp verify step — read-only route detail drawer for the mcp route. Captured via tests/kube-readonly.spec.ts; requires the mcp route in the cluster.",
+      "light": "assets/img/agentgateway-ui-kube-route-mcp.png",
+      "dark": "assets/img/agentgateway-ui-kube-route-mcp-dark.png"
+    },
+    "agentgateway-ui-kube-route-llm.png": {
+      "$note": "llm quickstart + llm/providers/openai verify step — read-only route detail drawer for the openai route.",
+      "light": "assets/img/agentgateway-ui-kube-route-llm.png",
+      "dark": "assets/img/agentgateway-ui-kube-route-llm-dark.png"
+    },
+    "agentgateway-ui-kube-route-http.png": {
+      "$note": "non-agentic-http quickstart + install/sample-app verify step — read-only route detail drawer for the httpbin route.",
+      "light": "assets/img/agentgateway-ui-kube-route-http.png",
+      "dark": "assets/img/agentgateway-ui-kube-route-http-dark.png"
     }
   }
 }
