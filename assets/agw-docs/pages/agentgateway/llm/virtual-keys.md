@@ -93,7 +93,11 @@ EOF
 
 ### Configure API key authentication
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway.
+Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
+
+{{< tabs tabTotal="2" items="Single Secret (secretRef),Multiple Secrets (secretSelector)" >}}
+{{% tab tabName="Single Secret (secretRef)" %}}
+Reference a single Secret by name. This example uses the `llm-api-keys` Secret that you created in the previous step.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
@@ -114,6 +118,42 @@ spec:
         name: llm-api-keys
 EOF
 ```
+{{% /tab %}}
+{{% tab tabName="Multiple Secrets (secretSelector)" %}}
+Select all Secrets that carry a particular label. Every matching Secret contributes its keys to the same key set, so you do not need to consolidate keys into one Secret. Label each Secret that holds virtual keys, for example:
+
+```sh
+kubectl label secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway.dev/apikey=true
+```
+
+Then reference the label with `secretSelector` instead of `secretRef`.
+
+```yaml
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+metadata:
+  name: api-key-auth
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+  traffic:
+    apiKeyAuthentication:
+      mode: Strict
+      secretSelector:
+        matchLabels:
+          agentgateway.dev/apikey: "true"
+EOF
+```
+
+{{< callout type="warning" >}}
+`secretSelector` matches `Secret` resources only. Keep key identifiers unique across the selected Secrets: if the same key is defined in more than one Secret, the behavior is undefined.
+{{< /callout >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 {{% reuse "agw-docs/snippets/review-table.md" %}}
 
@@ -121,7 +161,8 @@ EOF
 |-------------|-------------|
 | `targetRefs` | Apply the policy to the entire Gateway so all routes require API keys. |
 | `apiKeyAuthentication.mode` | Set to `Strict` to require a valid API key for all requests. |
-| `secretRef.name` | References the Secret containing API keys and user metadata. |
+| `secretRef.name` | References a single Secret containing API keys and user metadata. Use this or `secretSelector`, not both. |
+| `secretSelector.matchLabels` | Selects all Secrets that carry the given labels, combining their keys. Use instead of `secretRef` when keys are spread across multiple Secrets. Secret-only. |
 
 ### Configure per-key token budgets
 
