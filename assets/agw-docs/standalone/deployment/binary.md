@@ -8,8 +8,8 @@ To run agentgateway as a standalone binary, follow the steps to download, instal
 
 Download and install the agentgateway binary. Alternatively, you can manually download the binary from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases/latest).
 
-{{< tabs tabTotal="3" items="Latest, Specific version, Nightly build" >}}
-{{% tab tabName="Latest" %}}
+{{< tabs >}}
+{{% tab name="Latest" %}}
 
 To install the latest release:
 
@@ -18,7 +18,7 @@ curl -sL https://agentgateway.dev/install | bash
 ```
 
 {{% /tab %}}
-{{% tab tabName="Specific version" %}}
+{{% tab name="Specific version" %}}
 
 To install a specific version, pass the `--version` flag. Use any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), `{{< reuse "agw-docs/versions/n-patch.md" >}}`. The version must start with `v` (the script adds it if you omit it).
 
@@ -27,7 +27,7 @@ curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-
 ```
 
 {{% /tab %}}
-{{% tab tabName="Nightly build" %}}
+{{% tab name="Nightly build" %}}
 To install the nightly build for development and testing:
 
 1. Go to the [nightly release in GitHub Actions](https://github.com/agentgateway/agentgateway/actions/workflows/nightly.yml) and click the release that you want to use.

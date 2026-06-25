@@ -60,8 +60,8 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/anthropic` path. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the Anthropic `/v1/messages` endpoint.
 
-   {{< tabs tabTotal="3" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Anthropic v1/messages" %}}
+   {{< tabs >}}
+   {{% tab name="Anthropic v1/messages" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -82,7 +82,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -107,7 +107,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -136,8 +136,8 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 
 6. Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the API.
    
-   {{< tabs tabTotal="3" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions, Custom route" >}}
-   {{% tab tabName="Anthropic v1/messages" %}}
+   {{< tabs >}}
+   {{% tab name="Anthropic v1/messages" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/messages" -H content-type:application/json  -d '{
@@ -164,7 +164,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
     }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+   {{% tab name="OpenAI-compatible v1/chat/completions" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -191,7 +191,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
     }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Custom route" %}}
+   {{% tab name="Custom route" %}}
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/anthropic" -H content-type:application/json  -d '{
@@ -253,8 +253,8 @@ Extended thinking and reasoning lets Claude reason through complex problems befo
 Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
 {{< /callout >}}
 
-{{< tabs tabTotal="2" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Anthropic v1/messages" %}}
+{{< tabs >}}
+{{% tab name="Anthropic v1/messages" %}}
 
 To opt in to extended thinking, include the `thinking.type` field in your request. You can also set the `output_config.effort` field to control how much reasoning the model applies.
 
@@ -346,7 +346,7 @@ Example output:
 ```
 
 {{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+{{% tab name="OpenAI-compatible v1/chat/completions" %}}
 
 Use the `reasoning_effort` field in your request to enable extended thinking. The value that you set is automatically mapped to a specific thinking budget as shown in the following table.
 
@@ -424,8 +424,8 @@ Example output:
 
 Structured outputs constrain the model to respond with a specific JSON schema. You must provide the schema definition in your request. 
 
-{{< tabs tabTotal="2" items="Anthropic v1/messages, OpenAI-compatible v1/chat/completions" >}}
-{{% tab tabName="Anthropic v1/messages" %}}
+{{< tabs >}}
+{{% tab name="Anthropic v1/messages" %}}
 
 Provide the JSON schema definition in the `output_config.format` field. 
 
@@ -508,7 +508,7 @@ Example output:
 ```
 
 {{% /tab %}}
-{{% tab tabName="OpenAI-compatible v1/chat/completions" %}}
+{{% tab name="OpenAI-compatible v1/chat/completions" %}}
 
 Provide the schema definition in the `response_format` field. 
 
@@ -610,8 +610,8 @@ Example output:
 Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/install/">}}).
 {{< /callout >}}
 
-{{< tabs tabTotal="2" items="API key, AWS SigV4" >}}
-{{% tab tabName="API key" %}}
+{{< tabs >}}
+{{% tab name="API key" %}}
 
 1. Create a Kubernetes secret that contains your Anthropic-on-AWS API key.
 
@@ -664,7 +664,7 @@ Before you begin, [install agentgateway with the nightly build]({{< link-hextra 
    | `policies.auth.secretRef` | References the secret that holds the API key. The token is automatically sent in the `x-api-key` header. |
 
 {{% /tab %}}
-{{% tab tabName="AWS SigV4" %}}
+{{% tab name="AWS SigV4" %}}
 
 1. Make sure the agentgateway proxy pod has access to AWS credentials, for example through [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) or a Kubernetes secret with `accessKey`, `secretKey`, and optional `sessionToken`. For the secret-based approach:
 

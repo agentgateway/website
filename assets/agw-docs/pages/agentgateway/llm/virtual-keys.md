@@ -456,8 +456,8 @@ EOF
 
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" \
      -H "Authorization: Bearer sk-alice-abc123def456" \
@@ -468,7 +468,7 @@ EOF
      }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" \
      -H "Authorization: Bearer sk-alice-abc123def456" \
@@ -529,8 +529,8 @@ EOF
 
 3. Verify that Bob can still send requests with his own budget, independent of Alice's usage.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" \
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \
@@ -541,7 +541,7 @@ EOF
      }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" \
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \

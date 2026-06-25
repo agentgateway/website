@@ -300,8 +300,8 @@ EOF
 
 5. Send a request to verify the setup.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer, Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS" \
      -H "content-type: application/json" \
@@ -316,7 +316,7 @@ EOF
      }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    In one terminal, start a port-forward to the gateway:
 
    ```sh
