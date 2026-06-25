@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, rmSync } from 'node:fs';
 import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pixelmatch from 'pixelmatch';
@@ -68,6 +68,7 @@ let copied = 0;
 let shared = 0;
 let missing = 0;
 const divergedImages = [];
+const convergedImages = [];
 
 for (const [name, dests] of Object.entries(map)) {
   for (const variant of ['light', 'dark']) {
@@ -86,6 +87,16 @@ for (const [name, dests] of Object.entries(map)) {
       const latestBaseline = findBaseline(name, `latest-${variant}`);
       if (!diverged(baseline, latestBaseline)) {
         shared++;
+        // main has converged back to latest. If a previous run published a divergent
+        // img/main/<name>.png, remove it so create-pull-request commits the removal —
+        // otherwise a {{< version >}} split would keep showing a stale main screenshot.
+        const target = mainDest(dest);
+        const absTarget = resolve(repoRoot, target);
+        if (existsSync(absTarget)) {
+          console.log(`${dryRun ? '[dry-run] ' : ''}CONVERGED rm ${target} (main now matches latest)`);
+          if (!dryRun) rmSync(absTarget);
+          if (variant === 'light') convergedImages.push(name);
+        }
         continue; // identical -> keep sharing the bare latest image
       }
       const target = mainDest(dest);
@@ -112,4 +123,9 @@ console.log(`\n${dryRun ? 'would copy' : 'copied'} ${copied} image(s) for ${VERS
 if (VERSION === 'main' && divergedImages.length) {
   console.log('\nmain diverged from latest for these images — add a version split so main pages use img/main/:');
   for (const n of divergedImages) console.log(`  - ${n}`);
+}
+
+if (VERSION === 'main' && convergedImages.length) {
+  console.log('\nmain converged back to latest for these images — removed the stale img/main/ copy; drop any {{< version >}} split that pointed main at img/main/:');
+  for (const n of convergedImages) console.log(`  - ${n}`);
 }
