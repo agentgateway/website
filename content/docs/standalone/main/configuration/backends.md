@@ -19,7 +19,7 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 
 ## Static Hosts
 
-The simplest form of backend is a static hostname or IP address. For example:
+The simplest form of backend is a static hostname or IP address. Static hosts are a routing-based backend, so they are configured under `binds`; the simplified `llm` and `mcp` modes model only LLM providers and MCP targets. For example:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -148,6 +148,22 @@ agentgateway -f config2-simplified.yaml --validate-only
 
 By default, MCP backends use stateful session routing, where the gateway tracks session IDs and routes subsequent requests to the same upstream. For upstreams that do not maintain server-side session state, you can set `statefulMode: stateless`. In stateless mode, the gateway automatically wraps each request with an initialization sequence, so the upstream server processes every request independently.
 
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  statefulMode: stateless
+  targets:
+  - name: openapi-server
+    openapi:
+      host: petstore3.swagger.io:443
+      schema:
+        url: https://petstore3.swagger.io/api/v3/openapi.json
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -164,10 +180,13 @@ binds:
               schema:
                 url: https://petstore3.swagger.io/api/v3/openapi.json
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="backends" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The stateless session-routing MCP backend example config is accepted by agentgateway.
+#   * The stateless session-routing MCP backend example is accepted by agentgateway
+#     in both the routing-based (binds) and simplified MCP (mcp) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That stateless wrapping actually occurs at runtime — requires the OpenAPI
 #     upstream and live MCP traffic the page omits.
@@ -188,6 +207,20 @@ binds:
                 url: https://petstore3.swagger.io/api/v3/openapi.json
 EOF
 agentgateway -f config3.yaml --validate-only
+
+cat <<'EOF' > config3-simplified.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  statefulMode: stateless
+  targets:
+  - name: openapi-server
+    openapi:
+      host: petstore3.swagger.io:443
+      schema:
+        url: https://petstore3.swagger.io/api/v3/openapi.json
+EOF
+agentgateway -f config3-simplified.yaml --validate-only
 {{< /doc-test >}}
 
 ## LLM Providers
