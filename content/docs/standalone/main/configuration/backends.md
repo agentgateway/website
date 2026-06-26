@@ -109,7 +109,7 @@ agentgateway -f config2.yaml --validate-only
 
 ### Session routing
 
-By default, MCP backends use stateful session routing, where the gateway tracks session IDs and routes subsequent requests to the same upstream. For upstreams that do not maintain server-side session state, you can set `statefulMode: Stateless`. In stateless mode, the gateway automatically wraps each request with an initialization sequence, so the upstream server processes every request independently.
+By default, MCP backends use stateful session routing, where the gateway tracks session IDs and routes subsequent requests to the same upstream. For upstreams that do not maintain server-side session state, you can set `statefulMode: stateless`. In stateless mode, the gateway automatically wraps each request with an initialization sequence, so the upstream server processes every request independently.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -119,7 +119,7 @@ binds:
   - routes:
     - backends:
       - mcp:
-          statefulMode: Stateless
+          statefulMode: stateless
           targets:
           - name: openapi-server
             openapi:
@@ -141,7 +141,7 @@ binds:
   - routes:
     - backends:
       - mcp:
-          statefulMode: Stateless
+          statefulMode: stateless
           targets:
           - name: openapi-server
             openapi:
