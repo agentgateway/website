@@ -11,6 +11,17 @@ toc: false
 
 Agentgateway can call out to policy engines for LLM guardrail or for enterprise policy decisions. We've recently added support for MCP guardrails. This blog goes a layer deeper and shows where MCP guardrails would fit into an agentic architecture following the principals from the [AARM paper](https://arxiv.org/html/2602.09433v1).
 
+---
+TL;DR
+
+I have put together a demo that digs into the AGT framework with agentgateway.
+
+You can find it here: [https://github.com/christian-posta/agent-governance-agw](https://github.com/christian-posta/agent-governance-agw)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/NCZhGs5QfNk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+---
+
 AI agents [are not like microservices](https://blog.christianposta.com/difference-between-microservices-and-ai-agents/). An agent's intent is "interpreted" and explores its way to a solution for a goal. When agentgateway sits on the request path to other agents, MCP tools, or APIs as a policy enforcement point (PEP), we are one step closer to coralling this emergent behavior with policy and guardrails.
 
 Typical policy decision systems ([think things like OPA](https://www.openpolicyagent.org)) are good at evaluating a number of signals and making policy decisions. Think "attribute based access control". They are stateless, take some "context" to evaluate (subject, roles, the resource being accessed, the action being taken) and return a deterministic allow/deny decision.
@@ -109,4 +120,18 @@ With the mcpGuardrails config we can:
 - **Compose processors.** The `processors` list is an ordered chain; the first to `Reject` short-circuits, mutations from earlier processors are visible to later ones, and metadata maps merge across the chain.
 
 I have put together a demo that digs into the AGT framework with agentgateway.
+
+You can find it here: [https://github.com/christian-posta/agent-governance-agw](https://github.com/christian-posta/agent-governance-agw)
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/NCZhGs5QfNk" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+## Try it and get involved
+
+Ready to put MCP guardrails in front of your own agents and tools? Start with the [standalone](https://agentgateway.dev/docs/standalone/latest/quickstart/) or [Kubernetes](https://agentgateway.dev/docs/kubernetes/latest/quickstart/) quickstart, then follow the [MCP guardrails docs](https://agentgateway.dev/docs/standalone/latest/mcp/guardrails/) to wire up an external policy server. Clone the [AGT + agentgateway demo](https://github.com/christian-posta/agent-governance-agw) to walk through the full AARM flow end to end.
+
+
+* Explore the [docs](https://agentgateway.dev/docs/) and [get started](https://agentgateway.dev/#getting-started) today.
+* Star and contribute on [GitHub](https://github.com/agentgateway/agentgateway).
+* Join the conversation on [Discord](https://discord.gg/y9efgEmppm).
+* Attend our weekly [community meetings](https://github.com/agentgateway/agentgateway?tab=readme-ov-file#community-meetings).
 
