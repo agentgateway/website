@@ -18,6 +18,28 @@ Modify URLs of incoming requests with {{< gloss "Rewrite" >}}rewrite{{< /gloss >
 
 For example, the following configuration modifies the request hostname to `example.com` and the request path to `/new-path`.
 
+Agentgateway supports more than one configuration style. The following tabs show the same `urlRewrite` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    urlRewrite:
+      authority:
+        full: example.com
+      path:
+        full: /new-path
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -33,10 +55,13 @@ binds:
       backends:
       - host: example.com:443
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="rewrites" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The urlRewrite example config is accepted by agentgateway.
+#   * The urlRewrite example config is accepted by agentgateway in both the
+#     routing-based (binds) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the hostname/path are actually rewritten at runtime — requires a
 #     backend the page omits to forward to and inspect.
@@ -56,4 +81,22 @@ binds:
       - host: example.com:443
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    urlRewrite:
+      authority:
+        full: example.com
+      path:
+        full: /new-path
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}

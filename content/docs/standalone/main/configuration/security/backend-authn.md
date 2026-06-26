@@ -19,6 +19,26 @@ When connecting to a backend, an authentication token can be attached to each re
 
 To attach a static key as an `Authorization` value, use `key`:
 
+Agentgateway supports more than one configuration style. The following tabs show the same `backendAuth` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    backendAuth:
+      key:
+        value: $MY_API_KEY
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -32,10 +52,13 @@ binds:
             key:
               value: $MY_API_KEY
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="backend-authn" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The static-key backendAuth example config is accepted by agentgateway.
+#   * The static-key backendAuth example config is accepted by agentgateway in
+#     both the routing-based (binds) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * The other backendAuth snippets on this page (file path, location,
 #     passthrough, gcp, aws) are field-reference fragments with no `binds:`,
@@ -54,6 +77,22 @@ binds:
               value: $MY_API_KEY
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    backendAuth:
+      key:
+        value: $MY_API_KEY
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 The remaining examples on this page show only the `backendAuth` policy. Attach each one to a backend under `backends[].policies`, as shown in the complete example above.

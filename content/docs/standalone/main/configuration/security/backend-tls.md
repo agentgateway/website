@@ -24,6 +24,35 @@ cp certs/cert.pem certs/root-cert.pem
 By default, requests to backends use HTTP.
 To use HTTPS, configure a backend {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}} policy.
 
+Agentgateway supports more than one configuration style. The following tabs show the same `backendTLS` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    backendTLS:
+      # A file containing the root certificate to verify.
+      # If unset, the system trust bundle will be used.
+      root: ./certs/root-cert.pem
+      # For mutual TLS, the client certificate to use
+      cert: ./certs/cert.pem
+      # For mutual TLS, the client certificate key to use.
+      key: ./certs/key.pem
+      # If set, hostname verification is disabled
+      # insecureHost: true
+      # If set, all TLS verification is disabled
+      # insecure: true
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -46,10 +75,13 @@ binds:
             # If set, all TLS verification is disabled
             # insecure: true
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="backend-tls" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The backendTLS example config is accepted by agentgateway.
+#   * The backendTLS example config is accepted by agentgateway in both the
+#     routing-based (binds) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the TLS handshake to the backend succeeds at runtime — requires an
 #     HTTPS backend on localhost:8443 the page omits.
@@ -76,4 +108,29 @@ binds:
             # insecure: true
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    backendTLS:
+      # A file containing the root certificate to verify.
+      # If unset, the system trust bundle will be used.
+      root: ./certs/root-cert.pem
+      # For mutual TLS, the client certificate to use
+      cert: ./certs/cert.pem
+      # For mutual TLS, the client certificate key to use.
+      key: ./certs/key.pem
+      # If set, hostname verification is disabled
+      # insecureHost: true
+      # If set, all TLS verification is disabled
+      # insecure: true
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}

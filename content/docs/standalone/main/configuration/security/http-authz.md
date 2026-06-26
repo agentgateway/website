@@ -36,6 +36,49 @@ A CEL expression that cannot be evaluated is treated as `false`. For example, if
 - An `allow` expression that errors does not match, so it does not allow the request.
 {{< /callout >}}
 
+Agentgateway supports more than one configuration style. The following tabs show the same `authorization` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -53,16 +96,19 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="http-authz" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The authorization route-level policy with allow/deny/require and legacy
-#     rules is accepted by agentgateway.
+#   * The authorization policy with allow/deny/require and legacy rules is
+#     accepted by agentgateway in all three configuration forms: routing-based
+#     (binds), simplified LLM (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually allowed/denied at runtime — requires a backend
 #     and traffic the page omits.
-#   * The `### Require rules` snippets and the `llm:` example are focused
-#     fragments / simplified-mode examples (no binds:), so they are not tested.
+#   * The `### Require rules` snippets and the model-layer `llm:` example are
+#     focused fragments, so they are not tested.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -81,6 +127,45 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config-llm.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 ### Require rules

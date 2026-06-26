@@ -36,6 +36,45 @@ By default, agentgateway applies rate limits to requests. Therefore, each reques
 
 To explicitly set request-based rate limits, set the rate limiting type to `requests` as shown in the following example. 
 
+Agentgateway supports more than one configuration style. The following tabs show the same `localRateLimit` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: requests
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: requests
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -51,10 +90,14 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="rate-limits" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The request-based localRateLimit example config is accepted by agentgateway.
+#   * The request-based localRateLimit policy is accepted by agentgateway in the
+#     routing-based (binds), simplified LLM (llm.policies), and simplified MCP
+#     (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually limited at runtime — requires driving traffic
 #     past the configured bucket, which the page does not exercise.
@@ -74,9 +117,42 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: requests
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config-llm.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: requests
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
-
-
 
 ### Token-based rate limits
 

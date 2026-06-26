@@ -11,6 +11,8 @@ test:
 Listeners are the entrypoints for traffic into agentgateway.
 Agentgateway supports both {{< gloss "HTTP (Hypertext Transfer Protocol)" >}}HTTP{{< /gloss >}} and {{< gloss "TCP (Transmission Control Protocol)" >}}TCP{{< /gloss >}} traffic, with and without {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}}.
 
+The following examples use routing-based configuration with `binds`. If you only route to LLM or MCP backends, the simplified `llm` and `mcp` modes set the listener port and TLS directly through `llm.port`, `llm.tls`, and `mcp.port`. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
 {{< doc-test paths="listeners" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}

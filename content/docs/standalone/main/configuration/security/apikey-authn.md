@@ -28,6 +28,49 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This setting is useful for usage of claims in later steps such as authorization or logging.  
   *Warning*: This allows requests without an API key!
 
+Agentgateway supports more than one configuration style. The following tabs show the same `apiKey` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -45,10 +88,14 @@ binds:
     - backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="apikey-authn" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The apiKey listener-level authentication example config is accepted by agentgateway.
+#   * The apiKey authentication policy is accepted by agentgateway in all three
+#     configuration forms: routing-based (binds), simplified LLM (llm.policies),
+#     and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That a request with the given key is actually authenticated at runtime —
 #     requires a backend the page omits to forward to.
@@ -70,6 +117,45 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config-llm.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 Later policies can now operate on the metadata associated with the API key. For example, you can set a custom `x-authenticated-user` header with the authenticated user from the API key metadata by adding a route-level transformation.

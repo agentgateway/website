@@ -25,8 +25,25 @@ You can configure two types of timeouts on a route.
 |`requestTimeout`|The time from the start of an incoming request, until the end of the response headers is received. Note if there are retries, this includes the total time across retries.|
 |`backendRequestTimeout`|The time from the start of a request to a backend, until the end of the response headers are completed. Note this is per-request, so with retries this is a per-retry timeout.|
 
-For example:
+Agentgateway supports more than one configuration style. The following tabs show the same `timeout` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    timeout:
+      requestTimeout: 1s
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -39,10 +56,13 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="timeouts" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The route-level timeout example config is accepted by agentgateway.
+#   * The route-level timeout policy is accepted by agentgateway in both the
+#     routing-based (binds) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests actually time out at runtime — requires a slow backend the
 #     page omits to exceed the configured deadline.
@@ -59,6 +79,21 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    timeout:
+      requestTimeout: 1s
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 ## Backend Timeouts

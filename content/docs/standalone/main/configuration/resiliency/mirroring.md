@@ -17,6 +17,28 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badg
 Request {{< gloss "Mirroring" >}}mirroring{{< /gloss >}} allows sending a copy of each request to an alterative backend.
 These request will not be retried if they fail.
 
+Agentgateway supports more than one configuration style. The following tabs show the same `requestMirror` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    requestMirror:
+      backend:
+        host: localhost:8080
+      # Mirror 50% of requests
+      percentage: 0.5
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -32,10 +54,13 @@ binds:
       backends:
       - host: localhost:8000
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="mirroring" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The requestMirror example config is accepted by agentgateway.
+#   * The requestMirror policy is accepted by agentgateway in both the
+#     routing-based (binds) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually mirrored at runtime — requires live primary
 #     and mirror backends the page omits to send to and inspect.
@@ -55,4 +80,22 @@ binds:
       - host: localhost:8000
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    requestMirror:
+      backend:
+        host: localhost:8080
+      # Mirror 50% of requests
+      percentage: 0.5
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}

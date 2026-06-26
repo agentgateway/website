@@ -28,6 +28,39 @@ In this mode, agentgateway:
 - Validates tokens using the authorization server's JWKS
 - Returns `401 Unauthorized` with appropriate `WWW-Authenticate` headers for unauthenticated requests
 
+Agentgateway supports more than one configuration style. The following tabs show the same `mcpAuthentication` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:7080/realms/mcp
+      jwks:
+        url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
+      provider:
+        keycloak: {}
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
+        resourceDocumentation: http://localhost:3000/stdio/docs
+        resourcePolicyUri: http://localhost:3000/stdio/policies
+  targets:
+  - name: tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -68,6 +101,8 @@ binds:
             resourceDocumentation: http://localhost:3000/stdio/docs
             resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Resource Server Only
 

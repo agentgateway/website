@@ -37,6 +37,49 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This is useful for usage of claims in later steps (authorization, logging, etc).  
   *Warning*: This allows requests without a JWT token!
 
+Agentgateway supports more than one configuration style. The following tabs show the same `jwtAuth` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        # Relative to the folder the binary runs from, not the config file
+        file: ./manifests/jwt/pub-key
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        # Relative to the folder the binary runs from, not the config file
+        file: ./manifests/jwt/pub-key
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -54,13 +97,17 @@ binds:
     - backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="jwt-authn" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The jwtAuth listener example config is accepted by agentgateway.
+#   * The jwtAuth policy is accepted by agentgateway in all three configuration
+#     forms: routing-based (binds), simplified LLM (llm.policies), and
+#     simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That a token is actually verified at runtime — requires minting a signed
-#     JWT and a backend on localhost:8080 the page omits.
+#     JWT and a backend the page omits.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -79,6 +126,43 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config-llm.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 It is common to pair `jwtAuth` with `authorization`, using the `claims` from the verified JWT.

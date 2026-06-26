@@ -10,6 +10,8 @@ test:
 
 Based on the route schema (see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}) for the full field reference and [schema validation]({{< link-hextra path="/reference/configuration/validation/" >}}) for IDE integration), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.
 
+Request matching is a routing-based feature: routes and their match conditions are configured under `binds`. The simplified `llm` configuration supports header-based model matching (`llm.models[].matches`), but path, method, and query matching require routing-based configuration. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
 {{< doc-test paths="matching" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}

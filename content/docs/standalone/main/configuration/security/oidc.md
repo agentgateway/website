@@ -56,6 +56,51 @@ Review the following details about session management.
 
 Add the `oidc` policy to a route to protect it with browser-based OIDC authentication.
 
+Agentgateway supports more than one configuration style. The following tabs show the same `oidc` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    oidc:
+      issuer: http://localhost:7080/realms/agentgateway
+      clientId: agentgateway-browser
+      clientSecret: agentgateway-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    oidc:
+      issuer: http://localhost:7080/realms/agentgateway
+      clientId: agentgateway-browser
+      clientSecret: agentgateway-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -77,6 +122,8 @@ binds:
           - profile
           - email
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 ### Keycloak example
 

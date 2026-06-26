@@ -38,6 +38,57 @@ To provide a specific string value, add your string in single quotes `'` followe
 
 Transform headers after route selection:
 
+Agentgateway supports more than one configuration style. The following tabs show the same `transformations` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    transformations:
+      request:
+        add:
+          x-request-path: request.path
+          x-client-ip: source.address
+      response:
+        add:
+          x-response-code: 'string(response.code)'
+        remove:
+        - server
+        - x-content-type-options
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPEN_AI_APIKEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    transformations:
+      request:
+        add:
+          x-request-path: request.path
+          x-client-ip: source.address
+      response:
+        add:
+          x-response-code: 'string(response.code)'
+        remove:
+        - server
+        - x-content-type-options
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -71,10 +122,14 @@ binds:
             - server
             - x-content-type-options
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="transformations" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The route-level header transformation example config is accepted by agentgateway.
+#   * The route-level header transformation example config is accepted by
+#     agentgateway in all three configuration forms: routing-based (binds),
+#     simplified LLM (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * Runtime header rewriting and the AI backend call — requires a live OpenAI
 #     backend and a real API key the page omits.
@@ -112,6 +167,53 @@ binds:
             - x-content-type-options
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    transformations:
+      request:
+        add:
+          x-request-path: request.path
+          x-client-ip: source.address
+      response:
+        add:
+          x-response-code: 'string(response.code)'
+        remove:
+        - server
+        - x-content-type-options
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPEN_AI_APIKEY"
+EOF
+agentgateway -f config-llm.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    transformations:
+      request:
+        add:
+          x-request-path: request.path
+          x-client-ip: source.address
+      response:
+        add:
+          x-response-code: 'string(response.code)'
+        remove:
+        - server
+        - x-content-type-options
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 #### Listener-level header transformation

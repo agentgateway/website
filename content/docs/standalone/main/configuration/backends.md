@@ -63,6 +63,25 @@ The MCP backend allows you to connect to an MCP server.
 Below shows a simple example, exposing a local and remote MCP server.
 See the [MCP connectivity guide]({{< link-hextra path="/mcp/" >}}) for more information.
 
+Agentgateway supports more than one configuration style. The following tabs show the same MCP targets in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: stdio-server
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+  - name: http-server
+    mcp:
+      host: https://example.com/mcp
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -80,10 +99,13 @@ binds:
             mcp:
               host: https://example.com/mcp
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="backends" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The MCP backend example config (stdio + remote MCP targets) is accepted by agentgateway.
+#   * The MCP backend example (stdio + remote MCP targets) is accepted by
+#     agentgateway in both the routing-based (binds) and simplified MCP (mcp) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the MCP targets actually start/connect at runtime — requires the npx
 #     command and remote server the page does not stand up.
@@ -105,6 +127,21 @@ binds:
               host: https://example.com/mcp
 EOF
 agentgateway -f config2.yaml --validate-only
+
+cat <<'EOF' > config2-simplified.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: stdio-server
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+  - name: http-server
+    mcp:
+      host: https://example.com/mcp
+EOF
+agentgateway -f config2-simplified.yaml --validate-only
 {{< /doc-test >}}
 
 ### Session routing
@@ -159,6 +196,22 @@ Agentgateway natively supports connecting to LLM providers, such as OpenAI and A
 Below shows a simple example, connecting to OpenAI.
 See the [LLM consumption guide]({{< link-hextra path="/llm/" >}}) for more information.
 
+Agentgateway supports more than one configuration style. The following tabs show the same OpenAI provider in the routing-based form (`binds`) and in the simplified `llm` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: openai
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -175,10 +228,13 @@ binds:
         backendAuth:
           key: "$OPENAI_API_KEY"
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="backends" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The OpenAI LLM provider (ai backend) example config is accepted by agentgateway.
+#   * The OpenAI LLM provider example is accepted by agentgateway in both the
+#     routing-based (ai backend) and simplified LLM (llm.models) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually proxied to OpenAI at runtime — requires a real
 #     OPENAI_API_KEY and live LLM traffic the page omits.
@@ -199,4 +255,16 @@ binds:
           key: "$OPENAI_API_KEY"
 EOF
 agentgateway -f config4.yaml --validate-only
+
+cat <<'EOF' > config4-simplified.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: openai
+    provider: openAI
+    params:
+      model: gpt-3.5-turbo
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config4-simplified.yaml --validate-only
 {{< /doc-test >}}

@@ -48,7 +48,7 @@ CORS policies are typically implemented to limit access to server resources for 
 > [!TIP]
 > Requests that violate the CORS policy will still have responses returned, but the browser will reject them. As such, usage of tools like `curl` with `cors` can be confusing, as `curl` does not respect CORS headers.
 
-The same CORS fields are supported in both simplified LLM and route-based configurations:
+Agentgateway supports more than one configuration style. The following tabs show the same `cors` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}). The same CORS fields are supported in every form:
 - `allowOrigins`
 - `allowMethods`
 - `allowHeaders`
@@ -57,8 +57,7 @@ The same CORS fields are supported in both simplified LLM and route-based config
 - `maxAge`
 
 {{< tabs >}}
-{{< tab name="Simplified LLM" >}}
-
+{{< tab name="Simplified (LLM)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
@@ -83,8 +82,33 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 {{< /tab >}}
-{{< tab name="Route-based" >}}
-
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+      - https://chat.example.com
+      allowMethods:
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 10m
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

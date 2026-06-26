@@ -22,7 +22,6 @@ According to [OWASP](https://owasp.org/www-community/attacks/csrf), CSRF is defi
 
 To help prevent CSRF attacks, the CSRF policy implements a multi-layered validation approach to allow or block requests based on their properties. The policy checks that the request's origin matches its destination. If the origin and destination do not match, a 403 Forbidden error code is returned. Unlike CORS, CSRF protection works with all HTTP clients, not just browsers.
 
-
 Review the following diagram to see an example CSRF request flow:
 ```mermaid
 sequenceDiagram
@@ -73,12 +72,31 @@ Blocked requests, which receive a `403 Forbidden` response with the message "CSR
 > [!NOTE]
 > Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
 
-
-
 ## Configuration
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
+Agentgateway supports more than one configuration style. The following tabs show the same `csrf` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    csrf:
+      additionalOrigins:
+      - "https://www.example.com"
+      - "https://trusted.domain.com"
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -93,10 +111,13 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="csrf" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The csrf route-level policy with an additionalOrigins list is accepted by agentgateway.
+#   * The csrf policy with an additionalOrigins list is accepted by agentgateway
+#     in both the routing-based (binds) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That cross-site requests are actually blocked/allowed at runtime — requires
 #     a backend the page omits to forward to.
@@ -117,6 +138,23 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    csrf:
+      additionalOrigins:
+      - "https://www.example.com"
+      - "https://trusted.domain.com"
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 The `additionalOrigins` setting is a list of trusted origins allowed to make cross-site requests.

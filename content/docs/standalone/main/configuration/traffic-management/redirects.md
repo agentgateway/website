@@ -18,6 +18,30 @@ Request {{< gloss "Redirect" >}}redirects{{< /gloss >}} allow returning a direct
 
 For example, the following configuration will return a `307 Temporary Redirect` response with the header `location: https://example.com/new-path`:
 
+Agentgateway supports more than one configuration style. The following tabs show the same `requestRedirect` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    requestRedirect:
+      scheme: https
+      authority:
+        full: example.com
+      path:
+        full: /new-path
+      status: 307
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -33,10 +57,13 @@ binds:
             full: /new-path
           status: 307
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="redirects" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The requestRedirect example config is accepted by agentgateway.
+#   * The requestRedirect example config is accepted by agentgateway in both the
+#     routing-based (binds) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That a 307 redirect is actually returned at runtime — requires sending a
 #     request and inspecting the response, which the page does not demonstrate.
@@ -56,4 +83,24 @@ binds:
           status: 307
 EOF
 agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    requestRedirect:
+      scheme: https
+      authority:
+        full: example.com
+      path:
+        full: /new-path
+      status: 307
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}

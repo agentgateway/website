@@ -24,6 +24,26 @@ Directly respond to a request with a custom response using {{< gloss "Direct Res
 
 For example, the following configuration returns a `404 Not found!` response.
 
+Agentgateway supports more than one configuration style. The following tabs show the same `directResponse` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    directResponse:
+      body: "Not found!"
+      status: 404
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -35,6 +55,8 @@ binds:
           body: "Not found!"
           status: 404
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="direct-response" >}}
 cat <<'EOF' > config.yaml
@@ -48,6 +70,22 @@ binds:
           body: "Not found!"
           status: 404
 EOF
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    directResponse:
+      body: "Not found!"
+      status: 404
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 {{< doc-test paths="direct-response" >}}
