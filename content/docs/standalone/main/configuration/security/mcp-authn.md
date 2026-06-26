@@ -39,6 +39,7 @@ mcp:
   policies:
     mcpAuthentication:
       issuer: http://localhost:7080/realms/mcp
+      audiences: ["http://localhost:3000/mcp"]
       jwks:
         url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
       provider:
@@ -86,6 +87,7 @@ binds:
       policies:
         mcpAuthentication:
           issuer: http://localhost:7080/realms/mcp
+          audiences: ["http://localhost:3000/mcp"]
           jwks:
             url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
           provider:
@@ -119,6 +121,7 @@ mcp:
   policies:
     mcpAuthentication:
       issuer: http://localhost:9000
+      audiences: ["http://localhost:3000/mcp"]
       jwks:
         url: http://localhost:9000/.well-known/jwks.json
       resourceMetadata:
@@ -158,6 +161,7 @@ binds:
       policies:
         mcpAuthentication:
           issuer: http://localhost:9000
+          audiences: ["http://localhost:3000/mcp"]
           jwks:
             url: http://localhost:9000/.well-known/jwks.json
           resourceMetadata:
@@ -189,6 +193,7 @@ policies:
   mcpAuthentication:
     mode: permissive
     issuer: http://localhost:9000
+    audiences: ["http://localhost:3000/mcp"]
     jwks:
       url: http://localhost:9000/.well-known/jwks.json
     resourceMetadata:
