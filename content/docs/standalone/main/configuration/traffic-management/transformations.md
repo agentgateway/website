@@ -128,10 +128,11 @@ binds:
         request:
           add:
             x-gateway: '"agentgateway"'
-      backendAuth:
-        key: "$OPEN_AI_APIKEY"
     routes:
-    - backends:
+    - policies:
+        backendAuth:
+          key: "$OPEN_AI_APIKEY"
+      backends:
       - ai:
          name: openai
          provider:
@@ -155,10 +156,11 @@ binds:
         request:
           add:
             x-gateway: '"agentgateway"'
-      backendAuth:
-        key: "$OPEN_AI_APIKEY"
     routes:
-    - backends:
+    - policies:
+        backendAuth:
+          key: "$OPEN_AI_APIKEY"
+      backends:
       - ai:
          name: openai
          provider:

@@ -85,6 +85,8 @@ binds:
             connectTimeout:
               secs: 10
               nanos: 0
+            # Required when setting tcp connection options; {} keeps keepalive defaults
+            keepalives: {}
 ```
 
 {{< doc-test paths="timeouts" >}}
@@ -108,6 +110,8 @@ binds:
             connectTimeout:
               secs: 10
               nanos: 0
+            # Required when setting tcp connection options; {} keeps keepalive defaults
+            keepalives: {}
 EOF
 agentgateway -f config2.yaml --validate-only
 {{< /doc-test >}}
