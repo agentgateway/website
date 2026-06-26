@@ -78,17 +78,17 @@ The memory difference was the biggest surprise. During this benchmark, LiteLLM c
 ./scripts/run-benchmark.sh
 ==> Run ID: 20260626-120716
 ==> LiteLLM workers: 18
-
+...
 Running fortio to litellm at 0 QPS for 3s and 32 connections...
 qps: 3198.48qps    p50: 7.076ms    p90: 17.986ms    p99: 32.192ms
-
+...
 Running fortio to agentgateway at 0 QPS for 3s and 32 connections...
 qps: 36933.62qps    p50: 0.831ms    p90: 1.533ms    p99: 1.970ms
-
+...
 DEST,CLIENT,QPS,CONS,DUR,PAYLOAD,SUCCESS,THROUGHPUT,P50,P90,P99
 litellm,fortio,0,32,3,1104,10186,3198.48qps,7.076ms,17.986ms,32.192ms
 agentgateway,fortio,0,32,3,1104,110831,36933.62qps,0.831ms,1.533ms,1.970ms
-
+...
 CONTAINER,SAMPLES,AVG_CPU%,PEAK_CPU%,AVG_MEM,PEAK_MEM
 perf-agentgateway,4,104.80%,243.02%,22.38MiB,28.79MiB
 perf-litellm,4,330.79%,1075.38%,11.81GiB,11.81GiB
