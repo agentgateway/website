@@ -28,8 +28,6 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This setting is useful for usage of claims in later steps such as authorization or logging.  
   *Warning*: This allows requests without an API key!
 
-The following example shows a complete configuration that enforces API key authentication on the listener before forwarding requests to a backend.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

@@ -28,8 +28,6 @@ Additionally, authentication can run in two different modes:
 * **Optional** (default): If a username/password pair exists, validate it.  
   *Warning*: This allows requests without a username/password pair!
 
-The following example shows a complete configuration that enforces basic authentication on the listener before forwarding requests to a backend.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

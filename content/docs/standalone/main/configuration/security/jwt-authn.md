@@ -37,8 +37,6 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This is useful for usage of claims in later steps (authorization, logging, etc).  
   *Warning*: This allows requests without a JWT token!
 
-The following example shows a complete configuration that verifies JWTs on the listener before forwarding requests to a backend.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -83,7 +81,8 @@ EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
 
-It is common to pair `jwtAuth` with `authorization`, using the `claims` from the verified JWT. The following example verifies the JWT on the listener, then applies a route-level authorization rule that allows access to `/admin` only for tokens with the `admins` group claim.
+It is common to pair `jwtAuth` with `authorization`, using the `claims` from the verified JWT.
+For example:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

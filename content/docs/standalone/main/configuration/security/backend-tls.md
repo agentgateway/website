@@ -24,8 +24,6 @@ cp certs/cert.pem certs/root-cert.pem
 By default, requests to backends use HTTP.
 To use HTTPS, configure a backend {{< gloss "TLS (Transport Layer Security)" >}}TLS{{< /gloss >}} policy.
 
-The following example shows a complete configuration that connects to a backend over HTTPS with a backend TLS policy.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

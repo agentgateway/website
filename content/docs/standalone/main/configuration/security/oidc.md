@@ -80,7 +80,7 @@ binds:
 
 ### Keycloak example
 
-Review the following complete example for a Keycloak IdP.
+Review the following example for a Keycloak IdP.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

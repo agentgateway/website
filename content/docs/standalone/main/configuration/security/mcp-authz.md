@@ -23,8 +23,6 @@ Instead of running against an HTTP request, MCP authorization policies run again
 
 If a tool or other resource is not allowed, the gateway automatically filters it from the `list` response.
 
-The following example shows a complete configuration that attaches an MCP authorization policy to an MCP backend target.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

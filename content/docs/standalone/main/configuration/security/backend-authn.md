@@ -17,7 +17,7 @@ export MY_API_KEY="${MY_API_KEY:-dummy}"
 
 When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 
-To attach a static key as an `Authorization` value, use `key`. The following example shows a complete configuration that attaches the policy to a backend.
+To attach a static key as an `Authorization` value, use `key`:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config

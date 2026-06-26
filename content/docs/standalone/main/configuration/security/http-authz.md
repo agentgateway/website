@@ -36,8 +36,6 @@ A CEL expression that cannot be evaluated is treated as `false`. For example, if
 - An `allow` expression that errors does not match, so it does not allow the request.
 {{< /callout >}}
 
-The following example shows a complete configuration that attaches an HTTP authorization policy to a route.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

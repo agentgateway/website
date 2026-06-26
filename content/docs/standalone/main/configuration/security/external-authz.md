@@ -28,8 +28,6 @@ Agentgateway is API-compatible with the Envoy External Authorization gRPC servic
 
 When an ExtAuthz server returns header modifications, agentgateway uses `insert` instead of `append` for response headers. This ensures headers are properly set rather than potentially duplicated.
 
-The following example shows a complete configuration that attaches a gRPC external authorization policy to a route.
-
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
