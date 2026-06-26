@@ -1,4 +1,4 @@
-Agentgateway continuously tracks the health of the endpoints behind a backend and can automatically remove, or *evict*, endpoints that return errors, then gradually restore them as they recover. This passive health checking (also known as outlier detection) is built in to the load balancer, so it applies to any backend, including regular Kubernetes Services, not just LLM providers.
+Agentgateway continuously tracks the health of the endpoints behind a backend and can automatically remove, or *evict*, endpoints that return errors, then gradually restore them as they recover. This passive health checking (also known as outlier detection) is built into the load balancer, so it applies to any backend, including regular Kubernetes Services, not just LLM providers.
 
 Unlike active health checks that probe endpoints on a schedule, passive health checking observes the responses from real traffic. When an endpoint's responses match an unhealthy condition that you define, its health score drops. If the score crosses the eviction threshold, the gateway stops sending new requests to that endpoint for a backoff period, then returns it to the pool to see whether it recovered.
 
@@ -15,7 +15,7 @@ When every endpoint of a backend is evicted, the load balancer falls back to ret
 
 ## Configure backend health checking {#configure}
 
-The following example evicts an httpbin endpoint after it returns three consecutive `5xx` responses, keeps it out of the pool for 30 seconds, and then restores it with full health.
+The following example evicts an httpbin endpoint after it returns three consecutive `5xx` responses, keeps it out of the pool for 30 seconds, and then restores it with full health. Restoring full health does not guarantee that the endpoint has recovered. If it keeps failing, it is evicted again, but each subsequent eviction lasts longer because the `duration` uses a multiplicative backoff. This backoff prevents a tight evict-restore-fail loop from sending a steady stream of traffic to a persistently broken endpoint. To restore the endpoint more cautiously, set `restoreHealth` below 100 so that it returns with a degraded health score and receives less traffic until it proves healthy.
 
 1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies backend health settings to the httpbin Service. Because the policy targets a Service, create it in the same namespace as the Service.
 
@@ -95,6 +95,10 @@ The following example evicts an httpbin endpoint after it returns three consecut
    ```
 
    {{< doc-test paths="backend-health" >}}
+   # This test verifies that the health policy is accepted and present in the config dump.
+   # Eviction behavior is not exercised here: the quickstart deploys a single httpbin endpoint,
+   # so the load balancer falls back to the evicted endpoint instead of shifting traffic away.
+   # Observing eviction requires multiple endpoints, which is called out in the manual steps below.
    YAMLTest -f - <<'EOF'
    - name: wait for httpbin-health policy to be accepted
      wait:
@@ -134,14 +138,14 @@ The following example evicts an httpbin endpoint after it returns three consecut
 
 4. Send requests to the httpbin app to confirm that healthy traffic still flows. The `/headers` endpoint returns a `200` response code, and the `/status/503` endpoint simulates an unhealthy backend response that matches your `unhealthyCondition`.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com"
    curl -i "http://${INGRESS_GW_ADDRESS}:80/status/503" -H "host: www.example.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    In a separate terminal, port-forward the gateway proxy on port 8080.
 
    ```sh
@@ -157,8 +161,10 @@ The following example evicts an httpbin endpoint after it returns three consecut
 
    The `/headers` request returns a `200` response, and the `/status/503` request returns a `503`. With a single httpbin endpoint, the gateway falls back to the evicted endpoint instead of failing requests. To observe eviction shifting traffic away from an unhealthy endpoint, scale the backend to multiple endpoints.
 
-5. Optional: Clean up and remove the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+## Cleanup
 
-   ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-health -n httpbin
-   ```
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-health -n httpbin
+```

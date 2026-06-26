@@ -95,8 +95,8 @@ EOF
 
 Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
 
-{{< tabs tabTotal="2" items="Single Secret (secretRef),Multiple Secrets (secretSelector)" >}}
-{{% tab tabName="Single Secret (secretRef)" %}}
+{{< tabs >}}
+{{% tab name="Single Secret (secretRef)" %}}
 Reference a single Secret by name. This example uses the `llm-api-keys` Secret that you created in the previous step.
 
 ```yaml,paths="virtual-keys"
@@ -119,7 +119,7 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab tabName="Multiple Secrets (secretSelector)" %}}
+{{% tab name="Multiple Secrets (secretSelector)" %}}
 Select all Secrets that carry a particular label. Every matching Secret contributes its keys to the same key set, so you do not need to consolidate keys into one Secret. Label each Secret that holds virtual keys, for example:
 
 ```sh
@@ -166,7 +166,7 @@ EOF
 
 ### Configure per-key token budgets
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that sends a per-user token cost to the rate limit server. The policy extracts the `user_id` from each API key and reports the token usage of each response under that descriptor. The rate limit server holds the actual budget (100 tokens per day per user, which you deploy in the next step).
+Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that sends a per-user token cost to the rate limit server. The policy extracts the `user_id` from each API key and reports the token usage of each response under that descriptor. The rate limit server holds the actual budget (100 tokens per day per user), which you deploy in the next step.
 
 ```yaml,paths="virtual-keys-with-ratelimit"
 kubectl apply -f- <<EOF
@@ -605,7 +605,7 @@ By default, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} token usage me
 
 ### Before you begin {#monitor-prereqs}
 
-Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics. The [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}) walks you through the full setup; at a minimum, complete the [Prometheus step]({{< link-hextra path="/observability/otel-stack/#prometheus" >}}). The following steps assume the `kube-prometheus-stack` release in the `telemetry` namespace, as deployed by that guide.
+Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics. The [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}) walks you through the full setup; at a minimum, complete the [Prometheus step]({{< link-hextra path="/observability/otel-stack/#prometheus" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
 
 ### Add a per-user metric label
 
@@ -668,8 +668,8 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
 
 2. Query token usage broken down by user ID. The token usage metric carries a separate series per token type (`input`, `output`, `input_cache_read`), so match both the input and output types in a single selector and sum them, rather than adding two selectors together.
 
-   {{< tabs tabTotal="2" items="Query,curl example" >}}
-   {{% tab tabName="Query" %}}   
+   {{< tabs >}}
+   {{% tab name="Query" %}}   
    ```promql
    # Total tokens consumed by user over the last 24 hours
    sum by (user_id) (
@@ -682,7 +682,7 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
    ) / 100) * 100
    ```
    {{% /tab %}}
-   {{% tab tabName="curl example" %}}
+   {{% tab name="curl example" %}}
    ```bash
    curl -s http://localhost:9090/api/v1/query \
      --data-urlencode 'query=sum by (user_id) (increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h]))'
@@ -711,8 +711,8 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
 
 3. Calculate costs per user by multiplying token counts by your provider's pricing. Input and output tokens are usually priced differently, so reduce each token type to a per-user series with `sum by (user_id)` before adding them, which keeps the two sides matchable.
 
-   {{< tabs tabTotal="2" items="Query,curl example" >}}
-   {{% tab tabName="Query" %}}   
+   {{< tabs >}}
+   {{% tab name="Query" %}}   
    ```promql
    # Cost per user (assuming $0.50 per 1M input tokens, $1.50 per 1M output tokens)
    sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h])) / 1000000 * 0.50
@@ -720,7 +720,7 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
    sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])) / 1000000 * 1.50
    ```
    {{% /tab %}}
-   {{% tab tabName="curl example" %}}
+   {{% tab name="curl example" %}}
    ```bash
    curl -s http://localhost:9090/api/v1/query \
      --data-urlencode 'query=sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h])) / 1000000 * 0.50 + sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])) / 1000000 * 1.50'
