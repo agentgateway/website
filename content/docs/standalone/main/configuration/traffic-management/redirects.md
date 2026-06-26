@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="redirects" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -17,8 +19,6 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badg
 Request {{< gloss "Redirect" >}}redirects{{< /gloss >}} allow returning a direct response redirecting users to another location.
 
 For example, the following configuration will return a `307 Temporary Redirect` response with the header `location: https://example.com/new-path`:
-
-Agentgateway supports more than one configuration style. The following tabs show the same `requestRedirect` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

@@ -10,14 +10,14 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="retries" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
 
 When a backend request fails, agentgateway can be configured to *{{< gloss "Retry" >}}retry{{< /gloss >}}* the request.
 When a retry is attempted, a different backend will be preferred (if possible).
-
-Agentgateway supports more than one configuration style. The following tabs show the same `retry` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

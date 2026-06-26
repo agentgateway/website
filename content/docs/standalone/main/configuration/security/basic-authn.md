@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="basic-authn" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -27,8 +29,6 @@ Additionally, authentication can run in two different modes:
 * **Strict**: A valid username/password pair must be present.
 * **Optional** (default): If a username/password pair exists, validate it.  
   *Warning*: This allows requests without a username/password pair!
-
-Agentgateway supports more than one configuration style. The following tabs show the same `basicAuth` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}

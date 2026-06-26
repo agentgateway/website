@@ -10,14 +10,14 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="mirroring" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
 
 Request {{< gloss "Mirroring" >}}mirroring{{< /gloss >}} allows sending a copy of each request to an alterative backend.
 These request will not be retried if they fail.
-
-Agentgateway supports more than one configuration style. The following tabs show the same `requestMirror` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

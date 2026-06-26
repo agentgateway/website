@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="transformations" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 export OPEN_AI_APIKEY="${OPEN_AI_APIKEY:-dummy}"
@@ -37,8 +39,6 @@ To provide a specific string value, add your string in single quotes `'` followe
 #### Route-level header transformation
 
 Transform headers after route selection:
-
-Agentgateway supports more than one configuration style. The following tabs show the same `transformations` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
@@ -220,8 +220,6 @@ agentgateway -f config-mcp.yaml --validate-only
 
 Transform headers before route selection by attaching the policy at the listener level:
 
-The same configuration is available in the simplified `llm` and `mcp` forms.
-
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -353,8 +351,6 @@ You can provide a custom body for a request or response.
 {{< callout type="info" >}}
 To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 {{< /callout >}}
-
-The same configuration is available in the simplified `llm` and `mcp` forms.
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}

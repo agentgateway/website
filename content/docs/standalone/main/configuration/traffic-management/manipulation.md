@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="manipulation" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -19,8 +21,6 @@ There are a few different policies that offer manipulation of HTTP requests and 
 The `requestHeaderModifier` and `responseHeaderModifier` modify request and response headers respectively.
 These allow you to `add`, `set`, or `remove` headers.
 `add` and `set` differ in the case the header already exists; `set` will replace it while `add` will append.
-
-Agentgateway supports more than one configuration style. The following tabs show the same `requestHeaderModifier` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

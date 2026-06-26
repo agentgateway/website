@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="http-authz" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -35,8 +37,6 @@ A CEL expression that cannot be evaluated is treated as `false`. For example, if
 - A `deny` expression that errors does not match, so it does not deny the request (fail-open).
 - An `allow` expression that errors does not match, so it does not allow the request.
 {{< /callout >}}
-
-Agentgateway supports more than one configuration style. The following tabs show the same `authorization` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}

@@ -6,6 +6,8 @@ description: Configure Cross-Origin Resource Sharing policies to control cross-d
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 ## About CORS
 
 {{< gloss "CORS (Cross-Origin Resource Sharing)" >}}Cross-origin resource sharing (CORS){{< /gloss >}} is a browser security mechanism which allows a server to control which origins can request and interact with resources that are hosted on a different domain. By default, web browsers only allow requests to resources that are hosted on the same domain as the web page that served the original request. Access to web pages or resources that are hosted on a different domain is restricted to prevent potential security vulnerabilities, such as cross-site request forgery (CRSF).
@@ -48,7 +50,6 @@ CORS policies are typically implemented to limit access to server resources for 
 > [!TIP]
 > Requests that violate the CORS policy will still have responses returned, but the browser will reject them. As such, usage of tools like `curl` with `cors` can be confusing, as `curl` does not respect CORS headers.
 
-Agentgateway supports more than one configuration style. The following tabs show the same `cors` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}). The same CORS fields are supported in every form:
 - `allowOrigins`
 - `allowMethods`
 - `allowHeaders`

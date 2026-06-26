@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="backend-authn" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 export MY_API_KEY="${MY_API_KEY:-dummy}"
@@ -18,8 +20,6 @@ export MY_API_KEY="${MY_API_KEY:-dummy}"
 When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 
 To attach a static key as an `Authorization` value, use `key`:
-
-Agentgateway supports more than one configuration style. The following tabs show the same `backendAuth` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

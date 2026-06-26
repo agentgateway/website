@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/">}} (MCP Backends only)
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="mcp-authz-config" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -22,8 +24,6 @@ The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy 
 Instead of running against an HTTP request, MCP authorization policies run against specific MCP method invocations such as `list_tools` and `call_tools`.
 
 If a tool or other resource is not allowed, the gateway automatically filters it from the `list` response.
-
-Agentgateway supports more than one configuration style. The following tabs show the same `mcpAuthorization` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="csrf" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -75,8 +77,6 @@ Blocked requests, which receive a `403 Forbidden` response with the message "CSR
 ## Configuration
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
-
-Agentgateway supports more than one configuration style. The following tabs show the same `csrf` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

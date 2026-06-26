@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="external-authz" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -27,8 +29,6 @@ Agentgateway is API-compatible with the Envoy External Authorization gRPC servic
 > gRPC refers to the protocol of the external authorization service. The service can authorize both gRPC and HTTP requests from the user.
 
 When an ExtAuthz server returns header modifications, agentgateway uses `insert` instead of `append` for response headers. This ensures headers are properly set rather than potentially duplicated.
-
-Agentgateway supports more than one configuration style. The following tabs show the same `extAuthz` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
@@ -242,7 +242,6 @@ For example, configure `redirect` to redirect users to a sign-in page, and `meta
 |`includeRequestBody`|Options for including the request body in the authorization request|
 |`includeRequestBody.maxRequestBytes`|Maximum size of request body to buffer (default: 8192)|
 |`includeRequestBody.allowPartialMessage`|If true, send partial body when max_request_bytes is reached|
-
 
 ## Backend connection policies
 

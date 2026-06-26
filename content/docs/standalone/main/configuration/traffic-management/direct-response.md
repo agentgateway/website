@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 Directly respond to a request with a custom response using {{< gloss "Direct Response" >}}direct response{{< /gloss >}}, without forwarding to any backend.
 
 {{< doc-test paths="direct-response" >}}
@@ -23,8 +25,6 @@ Directly respond to a request with a custom response using {{< gloss "Direct Res
 {{< /doc-test >}}
 
 For example, the following configuration returns a `404 Not found!` response.
-
-Agentgateway supports more than one configuration style. The following tabs show the same `directResponse` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

@@ -6,6 +6,8 @@ description: Enable browser-based OpenID Connect authentication with encrypted s
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. Unauthenticated requests are automatically redirected to the identity provider's login page. After successful authentication, the user's session is maintained with encrypted cookies.
 
 The OIDC policy uses the OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange) for secure browser-based authentication without requiring a separate proxy like oauth2-proxy.
@@ -55,8 +57,6 @@ Review the following details about session management.
 ## Configuration
 
 Add the `oidc` policy to a route to protect it with browser-based OIDC authentication.
-
-Agentgateway supports more than one configuration style. The following tabs show the same `oidc` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
@@ -128,8 +128,6 @@ binds:
 ### Keycloak example
 
 Review the following example for a Keycloak IdP.
-
-The same `oidc` policy is available in the simplified `llm` and `mcp` forms.
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}

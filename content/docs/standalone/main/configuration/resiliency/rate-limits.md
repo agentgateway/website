@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="rate-limits" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
@@ -35,8 +37,6 @@ In additional to simple request-based rate limits, agentgateway can limit reques
 By default, agentgateway applies rate limits to requests. Therefore, each request consumes 1 unit of capacity.
 
 To explicitly set request-based rate limits, set the rate limiting type to `requests` as shown in the following example. 
-
-Agentgateway supports more than one configuration style. The following tabs show the same `localRateLimit` policy in the routing-based form (`binds`) and in the simplified `llm` and `mcp` forms. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
@@ -191,8 +191,6 @@ Local rate limiting uses a [Token bucket](https://en.wikipedia.org/wiki/Token_bu
 |`type`|The type of rate limiting. Choose between `requests` for request-based rate limits, and `tokens` for token-based rate limits. |
 
 Below shows an example rate limit configuration that allows 5,000 tokens per hour, and 60 requests per second.
-
-The same configuration is available in the simplified `llm` and `mcp` forms.
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
@@ -356,8 +354,6 @@ agentgateway -f config2-mcp.yaml --validate-only
 Remote rate limits are not defined directly in agentgateway.
 Instead, agentgateway is configured to connect to an external rate limit server, and which "descriptors" to send to the server.
 The rate limit server is responsible for defining, and enforcing, the appropriate limits matching the descriptors.
-
-The same configuration is available in the simplified `llm` and `mcp` forms.
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}

@@ -10,6 +10,8 @@ test:
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 MCP authentication enables OAuth 2.0 protection for MCP servers, helping to implement the [MCP Authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization). Agentgateway can act as a resource server, validating JWT tokens and exposing protected resource metadata.
 
 MCP authentication is configured at the route level under `policies.mcpAuthentication`. Because the policy runs at the route level, you can use JWT claims from MCP auth in other route-level policies, such as authorization, rate limiting, and transformations.
@@ -44,8 +46,6 @@ In this mode, agentgateway:
 - Proxies authorization server metadata and client registration
 - Validates tokens using the authorization server's JWKS
 - Returns `401 Unauthorized` with appropriate `WWW-Authenticate` headers for unauthenticated requests
-
-Agentgateway supports more than one configuration style. The following tabs show the same `mcpAuthentication` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
@@ -211,8 +211,6 @@ agentgateway -f proxy-routing.yaml --validate-only
 ## Resource Server Only
 
 Agentgateway acts solely as a resource server, validating tokens issued by an external authorization server.
-
-The same `mcpAuthentication` policy is available in the simplified `mcp` form.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

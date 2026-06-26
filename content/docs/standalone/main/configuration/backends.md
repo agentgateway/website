@@ -12,6 +12,8 @@ test:
 Agentgateway {{< gloss "Backend" >}}backends{{< /gloss >}} control where traffic is routed to.
 Agentgateway supports a variety of backends, such as simple hostnames and IP addresses, {{< gloss "Provider" >}}LLM providers{{< /gloss >}}, and MCP servers.
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 {{< doc-test paths="backends" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
@@ -62,8 +64,6 @@ agentgateway -f config.yaml --validate-only
 The MCP backend allows you to connect to an MCP server.
 Below shows a simple example, exposing a local and remote MCP server.
 See the [MCP connectivity guide]({{< link-hextra path="/mcp/" >}}) for more information.
-
-Agentgateway supports more than one configuration style. The following tabs show the same MCP targets in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
@@ -228,8 +228,6 @@ agentgateway -f config3-simplified.yaml --validate-only
 Agentgateway natively supports connecting to LLM providers, such as OpenAI and Anthropic.
 Below shows a simple example, connecting to OpenAI.
 See the [LLM consumption guide]({{< link-hextra path="/llm/" >}}) for more information.
-
-Agentgateway supports more than one configuration style. The following tabs show the same OpenAI provider in the routing-based form (`binds`) and in the simplified `llm` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
