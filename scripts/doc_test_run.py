@@ -433,7 +433,7 @@ def create_cluster_with_retries(cluster_name: str, repo_root: Path) -> Tuple[int
     return create_code, create_output
 
 
-def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False) -> Dict:
+def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False, keep_cluster: bool = False) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
 
@@ -511,25 +511,41 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
                 except Exception as exc:
                     logger.warning("Context collection error: %s", exc)
     finally:
-        if pause:
-            logger.info("--pause set: cluster '%s' is kept running. Press Ctrl+C to clean up and exit.", cluster_name)
-            try:
-                while True:
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                logger.info("Interrupted — deleting cluster '%s'...", cluster_name)
+        if keep_cluster:
+            # Leave the cluster up for an external capture step (e.g. port-forward + Playwright).
+            # cloud-provider-kind is still stopped: the pods are up and port-forward to the proxy
+            # deployment works without it, and leaving the daemon running would leak a process.
+            if cloud_provider is not None:
+                cloud_provider.terminate()
+                try:
+                    cloud_provider.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    cloud_provider.kill()
+            logger.info(
+                "--keep-cluster set: cluster '%s' left running (kubeconfig context 'kind-%s'). "
+                "Clean up with: kind delete cluster --name %s",
+                cluster_name, cluster_name, cluster_name,
+            )
+        else:
+            if pause:
+                logger.info("--pause set: cluster '%s' is kept running. Press Ctrl+C to clean up and exit.", cluster_name)
+                try:
+                    while True:
+                        time.sleep(1)
+                except KeyboardInterrupt:
+                    logger.info("Interrupted — deleting cluster '%s'...", cluster_name)
 
-        if cloud_provider is not None:
-            cloud_provider.terminate()
-            try:
-                cloud_provider.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                cloud_provider.kill()
+            if cloud_provider is not None:
+                cloud_provider.terminate()
+                try:
+                    cloud_provider.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    cloud_provider.kill()
 
-        delete_code, delete_output = run_command(["kind", "delete", "cluster", "--name", cluster_name], repo_root)
-        if delete_code != 0 and not error:
-            error = delete_output.strip()
-            status = "failed"
+            delete_code, delete_output = run_command(["kind", "delete", "cluster", "--name", cluster_name], repo_root)
+            if delete_code != 0 and not error:
+                error = delete_output.strip()
+                status = "failed"
 
     result = {
         "status": status,
@@ -591,6 +607,19 @@ def main() -> int:
     parser.add_argument("--file", nargs="+", default=None, metavar="FILE", help="Path(s) to one or more markdown files to test (relative to repo root or absolute)")
     parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (only used when --file specifies a single file)")
     parser.add_argument("--pause", action="store_true", help="After the test, keep the cluster running until Ctrl+C, then clean up")
+    parser.add_argument(
+        "--keep-cluster",
+        action="store_true",
+        help="After the test, leave the kind cluster running and exit (non-blocking) instead of deleting it. "
+        "Use for screenshot capture: an external step can port-forward the proxy and run Playwright against "
+        "the kept cluster (kubeconfig context 'kind-<cluster>'), then run 'kind delete cluster --name <cluster>'.",
+    )
+    parser.add_argument(
+        "--keep-cluster-file",
+        default=None,
+        metavar="PATH",
+        help="With --keep-cluster, write the kept cluster name(s) to PATH (one per line) so CI can port-forward and later delete them.",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -667,17 +696,30 @@ def main() -> int:
     context_base_dir = generated_dir / "context"
 
     logger.info("Running %d test scenario(s)", len(test_cases))
+    if args.keep_cluster and len(test_cases) > 1:
+        logger.warning("--keep-cluster with %d scenarios will leave multiple clusters running.", len(test_cases))
     test_results: Dict[str, Dict] = {}
+    kept_clusters: List[str] = []
     exit_code = 0
     for test_case in test_cases:
         doc_rel = test_case.document.relative_to(repo_root).as_posix()
         key = f"{doc_rel}::{test_case.name}"
-        result = run_test_case(repo_root, test_case, args.cluster_prefix, context_base_dir=context_base_dir, pause=args.pause)
+        result = run_test_case(repo_root, test_case, args.cluster_prefix, context_base_dir=context_base_dir, pause=args.pause, keep_cluster=args.keep_cluster)
         status_icon = "PASSED" if result.get("status") == "passed" else "FAILED"
         logger.info("%s: %s", status_icon, key)
         test_results[key] = result
+        if args.keep_cluster and result.get("cluster"):
+            kept_clusters.append(result["cluster"])
         if result.get("status") != "passed":
             exit_code = 1
+
+    if args.keep_cluster and args.keep_cluster_file and kept_clusters:
+        kept_path = Path(args.keep_cluster_file)
+        if not kept_path.is_absolute():
+            kept_path = repo_root / kept_path
+        kept_path.parent.mkdir(parents=True, exist_ok=True)
+        kept_path.write_text("\n".join(kept_clusters) + "\n", encoding="utf-8")
+        logger.info("Wrote kept cluster name(s) to %s", kept_path)
 
     write_report(report_path, tested_documents, test_results, total_documents, total_by_version)
     logger.info("================= Test Results =================")
