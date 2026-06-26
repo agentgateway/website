@@ -13,13 +13,7 @@ Agentgateway {{< gloss "Backend" >}}backends{{< /gloss >}} control where traffic
 Agentgateway supports a variety of backends, such as simple hostnames and IP addresses, {{< gloss "Provider" >}}LLM providers{{< /gloss >}}, and MCP servers.
 
 {{< doc-test paths="backends" >}}
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 {{< /doc-test >}}
 

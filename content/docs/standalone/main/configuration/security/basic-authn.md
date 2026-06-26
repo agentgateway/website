@@ -11,13 +11,7 @@ test:
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
 {{< doc-test paths="basic-authn" >}}
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
 
 [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#basic_authentication_scheme) enables a simple username/password authentication mechanism.

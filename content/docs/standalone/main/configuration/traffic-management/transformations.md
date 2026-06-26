@@ -11,14 +11,8 @@ test:
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
 
 {{< doc-test paths="transformations" >}}
-# Install agentgateway binary
+{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 export OPEN_AI_APIKEY="${OPEN_AI_APIKEY:-dummy}"
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
 {{< /doc-test >}}
 
 Agentgateway uses {{< gloss "Transformation" >}}transformation{{< /gloss >}} templates that are written in {{< gloss "CEL (Common Expression Language)" >}}Common Expression Language (CEL){{< /gloss >}}. CEL is a fast, portable, and safely executable language that goes beyond declarative configurations. CEL lets you develop more complex expressions in a readable, developer-friendly syntax.

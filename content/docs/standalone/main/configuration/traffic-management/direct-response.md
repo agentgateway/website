@@ -19,13 +19,7 @@ Directly respond to a request with a custom response using {{< gloss "Direct Res
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * The conditional-execution variant — requires config/traffic the page omits
 #     (the `conditional` field is documented on a separate page).
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
 
 For example, the following configuration returns a `404 Not found!` response.
