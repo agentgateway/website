@@ -1,7 +1,7 @@
 ---
 title: "Benchmarking Agentgateway vs LiteLLM Part 2: Fixed Throughput"
 category: "Deep Dive"
-publishDate: 2026-06-26
+publishDate: 2026-06-26T01:00:00-00:00
 author: "Lin Sun"
 description: "A fixed-throughput follow-up benchmark comparing agentgateway and LiteLLM at 3,000 QPS on latency, CPU, and memory using Fortio and a mock LLM backend."
 ---
