@@ -43,7 +43,7 @@ When a request arrives:
 
 **Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
 
-**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute, one policy silently overwrites the other based on creation order, even though both report `ACCEPTED/ATTACHED` status. There is no error to indicate that one policy's settings are not taking effect. To avoid this conflict, combine the settings that apply to the same target into a single policy. For example, this guide puts API key authentication and per-key rate limiting in one policy rather than two.
 
 ## Before you begin
 
@@ -93,7 +93,7 @@ EOF
 
 ### Configure API key authentication
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
+Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
 
 {{< tabs >}}
 {{% tab name="Single Secret (secretRef)" %}}
@@ -166,82 +166,11 @@ EOF
 
 ### Configure per-key token budgets
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that sends a per-user token cost to the rate limit server. The policy extracts the `user_id` from each API key and reports the token usage of each response under that descriptor. The rate limit server holds the actual budget (100 tokens per day per user), which you deploy in the next step.
-
-```yaml,paths="virtual-keys-with-ratelimit"
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: daily-token-budget
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: Gateway
-      name: agentgateway-proxy
-  traffic:
-    rateLimit:
-      global:
-        domain: agentgateway
-        backendRef:
-          kind: Service
-          name: ratelimit
-          namespace: ratelimit
-          port: 8081
-        descriptors:
-          - entries:
-              - name: user_id
-                expression: 'apiKey.user_id'
-            unit: Tokens
-EOF
-```
-
-{{< doc-test paths="virtual-keys-with-ratelimit" >}}
-YAMLTest -f - <<'EOF'
-- name: wait for daily-token-budget policy to be accepted
-  wait:
-    target:
-      kind: AgentgatewayPolicy
-      metadata:
-        namespace: agentgateway-system
-        name: daily-token-budget
-    jsonPath: "$.status.ancestors[0].conditions[?(@.type=='Accepted')].status"
-    jsonPathExpectation:
-      comparator: equals
-      value: "True"
-    polling:
-      timeoutSeconds: 120
-      intervalSeconds: 2
-EOF
-{{< /doc-test >}}
-
-{{% reuse "agw-docs/snippets/review-table.md" %}}
-
-| Setting     | Description |
-|-------------|-------------|
-| `rateLimit.global` | Use global rate limiting to enforce limits across all {{< reuse "agw-docs/snippets/agentgateway.md" >}} instances. |
-| `domain` | The rate limit domain. Must match the `domain` in the rate limit server configuration (`agentgateway`). |
-| `backendRef` | References the rate limit server Service. Must include `kind`, `name`, `namespace`, and `port`. This example points at the `ratelimit` Service in the `ratelimit` namespace that you deploy in the next step. |
-| `descriptors[].entries[].name` | The name of the descriptor entry. Must match a `key` in the rate limit server config. Set to `user_id` to rate limit per user. |
-| `descriptors[].entries[].expression` | CEL expression to extract the user ID from the API key's metadata. |
-| `descriptors[].unit` | Set to `Tokens` so the gateway reports each response's token count as the cost. The rate limit server subtracts that cost from the user's budget. |
+{{% reuse "agw-docs/snippets/rate-limit-token-budget-step.md" %}}
 
 ### Deploy the rate limit server
 
-Global rate limiting requires an external rate limit server that stores the budgets and maintains the counters. Deploy Redis and the rate limit service as described in [Deploy the rate limit service]({{< link-hextra path="/security/rate-limit-global#deploy-service" >}}) in the global rate limiting guide. That example deploys a `ratelimit` Service in the `ratelimit` namespace (the target of the `backendRef` in the previous step) and configures it with the `user_id` token-budget descriptor that this guide relies on:
-
-```yaml
-# Excerpt from the rate limit server ConfigMap
-domain: agentgateway
-descriptors:
-  - key: user_id
-    rate_limit:
-      unit: day
-      requests_per_unit: 100   # 100 tokens per day per user
-```
-
-The `key` (`user_id`) matches the descriptor `name` in your token budget policy, and the `domain` (`agentgateway`) matches the policy's `domain`. The `requests_per_unit` value is the per-user token budget, because the policy reports token usage with `unit: Tokens`. To change the budget, edit `requests_per_unit` in the server config; to change the window, edit `unit` (`second`, `minute`, `hour`, or `day`).
+{{% reuse "agw-docs/snippets/rate-limit-step.md" %}}
 
 ### Set up an LLM backend
 
@@ -609,7 +538,7 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
 
 ### Add a per-user metric label
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -867,7 +796,7 @@ For more advanced rate limiting patterns, see the [budget and spend limits guide
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth daily-token-budget per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
