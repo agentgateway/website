@@ -30,8 +30,8 @@ The benchmark uses a very simple architecture. A mock LLM server immediately ret
 [Fortio](https://fortio.org/) generates as much traffic as possible against each gateway.
 
 ```
-fortio (bt) ──► litellm :4000 ──┐
-                               ├──► mock-server (hyper-server) :8081
+fortio (bt) ──► litellm :4000 ───────┐
+                                     ├──► mock-server (hyper-server) :8081
 fortio (bt) ──► agentgateway :4001 ──┘
 ```
 
