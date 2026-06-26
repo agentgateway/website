@@ -2,9 +2,23 @@
 title: API Key authentication
 weight: 17
 description: Authenticate requests using API keys with configurable validation modes.
+test:
+  apikey-authn:
+  - file: content/docs/standalone/main/configuration/security/apikey-authn.md
+    path: apikey-authn
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
+
+{{< doc-test paths="apikey-authn" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
 
 {{< gloss "API Key" >}}API key{{< /gloss >}} {{< gloss "Authentication (AuthN)" >}}authentication{{< /gloss >}} enables authenticating requests based on a user-provided API key.
 
@@ -20,23 +34,105 @@ Additionally, authentication can run in three different modes:
 * **Permissive**: Requests are never rejected. This setting is useful for usage of claims in later steps such as authorization or logging.  
   *Warning*: This allows requests without an API key!
 
-```yaml
-apiKey:
-  mode: strict
-  keys:
-    - key: sk-testkey-1
-      metadata:
-        user: test
-        role: admin
-```
-
-Later policies can now operate on the metadata associated with the API key.
-
-For example, you can set a custom `x-authenticated-user` header with the authenticated user from the API key metadata.
+The following example shows a complete configuration that enforces API key authentication on the listener before forwarding requests to a backend.
 
 ```yaml
-transformations:
-  request:
-    set:
-      x-authenticated-user: apiKey.user
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      apiKey:
+        mode: strict
+        keys:
+        - key: sk-testkey-1
+          metadata:
+            user: test
+            role: admin
+    routes:
+    - backends:
+      - host: localhost:8080
 ```
+
+{{< doc-test paths="apikey-authn" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The apiKey listener-level authentication example config is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That a request with the given key is actually authenticated at runtime —
+#     requires a backend the page omits to forward to.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      apiKey:
+        mode: strict
+        keys:
+        - key: sk-testkey-1
+          metadata:
+            user: test
+            role: admin
+    routes:
+    - backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+
+Later policies can now operate on the metadata associated with the API key. For example, you can set a custom `x-authenticated-user` header with the authenticated user from the API key metadata by adding a route-level transformation.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      apiKey:
+        mode: strict
+        keys:
+        - key: sk-testkey-1
+          metadata:
+            user: test
+            role: admin
+    routes:
+    - policies:
+        transformations:
+          request:
+            set:
+              x-authenticated-user: apiKey.user
+      backends:
+      - host: localhost:8080
+```
+
+{{< doc-test paths="apikey-authn" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The apiKey config combined with a route-level transformation that sets a
+#     header from API key metadata is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That the x-authenticated-user header is actually set at runtime —
+#     requires a backend the page omits to forward to and inspect.
+cat <<'EOF' > config2.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      apiKey:
+        mode: strict
+        keys:
+        - key: sk-testkey-1
+          metadata:
+            user: test
+            role: admin
+    routes:
+    - policies:
+        transformations:
+          request:
+            set:
+              x-authenticated-user: apiKey.user
+      backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config2.yaml --validate-only
+{{< /doc-test >}}

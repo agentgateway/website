@@ -2,9 +2,23 @@
 title: Header manipulation
 weight: 10
 description: Add, set, or remove HTTP request and response headers.
+test:
+  manipulation:
+  - file: content/docs/standalone/main/configuration/traffic-management/manipulation.md
+    path: manipulation
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badge content="Backend" path="/configuration/backends/">}}
+
+{{< doc-test paths="manipulation" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
 
 There are a few different policies that offer manipulation of HTTP requests and responses.
 
@@ -13,12 +27,44 @@ These allow you to `add`, `set`, or `remove` headers.
 `add` and `set` differ in the case the header already exists; `set` will replace it while `add` will append.
 
 ```yaml
-requestHeaderModifier:
-  add:
-    x-req-added: value
-  remove:
-    - x-remove-me
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        requestHeaderModifier:
+          add:
+            x-req-added: value
+          remove:
+          - x-remove-me
+      backends:
+      - host: localhost:8080
 ```
+
+{{< doc-test paths="manipulation" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The requestHeaderModifier example config is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That headers are actually added/removed at runtime — requires a backend
+#     the page omits to forward to and inspect.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        requestHeaderModifier:
+          add:
+            x-req-added: value
+          remove:
+          - x-remove-me
+      backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 More advanced operations are available with the [`transformation` policy](../transformations).
 Like the `HeaderModifier` policies, this can also `add`, `set`, or `remove` headers, but can also manipulate HTTP bodies.

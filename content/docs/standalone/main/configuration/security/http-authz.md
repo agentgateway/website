@@ -2,9 +2,23 @@
 title: HTTP authorization
 weight: 12
 description: Define allow, deny, and require rules using CEL expressions.
+test:
+  http-authz:
+  - file: content/docs/standalone/main/configuration/security/http-authz.md
+    path: http-authz
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
+
+{{< doc-test paths="http-authz" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
 
 HTTP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} allows defining rules to allow or deny requests based on their properties, using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
 
@@ -28,15 +42,54 @@ A CEL expression that cannot be evaluated is treated as `false`. For example, if
 - An `allow` expression that errors does not match, so it does not allow the request.
 {{< /callout >}}
 
+The following example shows a complete configuration that attaches an HTTP authorization policy to a route.
+
 ```yaml
-authorization:
-  rules:
-  - allow: 'request.path == "/authz/public"'
-  - deny: 'request.path == "/authz/deny"'
-  - require: 'jwt.aud == "my-service"'
-  # legacy format; same as `allow: ...`
-  - 'request.headers["x-allow"] == "true"'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        authorization:
+          rules:
+          - allow: 'request.path == "/authz/public"'
+          - deny: 'request.path == "/authz/deny"'
+          - require: 'jwt.aud == "my-service"'
+          # legacy format; same as `allow: ...`
+          - 'request.headers["x-allow"] == "true"'
+      backends:
+      - host: localhost:8080
 ```
+
+{{< doc-test paths="http-authz" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The authorization route-level policy with allow/deny/require and legacy
+#     rules is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That requests are actually allowed/denied at runtime — requires a backend
+#     and traffic the page omits.
+#   * The `### Require rules` snippets and the `llm:` example are focused
+#     fragments / simplified-mode examples (no binds:), so they are not tested.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        authorization:
+          rules:
+          - allow: 'request.path == "/authz/public"'
+          - deny: 'request.path == "/authz/deny"'
+          - require: 'jwt.aud == "my-service"'
+          # legacy format; same as `allow: ...`
+          - 'request.headers["x-allow"] == "true"'
+      backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 ### Require rules
 

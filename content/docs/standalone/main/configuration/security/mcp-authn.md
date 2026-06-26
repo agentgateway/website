@@ -29,40 +29,44 @@ In this mode, agentgateway:
 - Returns `401 Unauthorized` with appropriate `WWW-Authenticate` headers for unauthenticated requests
 
 ```yaml
-routes:
-- backends:
-  - mcp:
-      targets:
-      - name: tools
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-  matches:
-  - path:
-      exact: /mcp
-  - path:
-      exact: /.well-known/oauth-protected-resource/mcp
-  - path:
-      exact: /.well-known/oauth-authorization-server/mcp
-  - path:
-      exact: /.well-known/oauth-authorization-server/mcp/client-registration
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:7080/realms/mcp
-      jwks:
-        url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
-      provider:
-        keycloak: {}
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-        - body
-        - query
-        resourceDocumentation: http://localhost:3000/stdio/docs
-        resourcePolicyUri: http://localhost:3000/stdio/policies
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: tools
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+      matches:
+      - path:
+          exact: /mcp
+      - path:
+          exact: /.well-known/oauth-protected-resource/mcp
+      - path:
+          exact: /.well-known/oauth-authorization-server/mcp
+      - path:
+          exact: /.well-known/oauth-authorization-server/mcp/client-registration
+      policies:
+        mcpAuthentication:
+          issuer: http://localhost:7080/realms/mcp
+          jwks:
+            url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
+          provider:
+            keycloak: {}
+          resourceMetadata:
+            resource: http://localhost:3000/mcp
+            scopesSupported:
+            - read:all
+            bearerMethodsSupported:
+            - header
+            - body
+            - query
+            resourceDocumentation: http://localhost:3000/stdio/docs
+            resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
 
 ## Resource Server Only
@@ -70,32 +74,36 @@ routes:
 Agentgateway acts solely as a resource server, validating tokens issued by an external authorization server.
 
 ```yaml
-routes:
-- backends:
-  - mcp:
-      targets:
-      - name: tools
-        stdio:
-          cmd: npx
-          args: ["@modelcontextprotocol/server-everything"]
-  matches:
-  - path:
-      exact: /mcp
-  - path:
-      exact: /.well-known/oauth-protected-resource/mcp
-  policies:
-    mcpAuthentication:
-      issuer: http://localhost:9000
-      jwks:
-        url: http://localhost:9000/.well-known/jwks.json
-      resourceMetadata:
-        resource: http://localhost:3000/mcp
-        scopesSupported:
-        - read:all
-        bearerMethodsSupported:
-        - header
-        - body
-        - query
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - mcp:
+          targets:
+          - name: tools
+            stdio:
+              cmd: npx
+              args: ["@modelcontextprotocol/server-everything"]
+      matches:
+      - path:
+          exact: /mcp
+      - path:
+          exact: /.well-known/oauth-protected-resource/mcp
+      policies:
+        mcpAuthentication:
+          issuer: http://localhost:9000
+          jwks:
+            url: http://localhost:9000/.well-known/jwks.json
+          resourceMetadata:
+            resource: http://localhost:3000/mcp
+            scopesSupported:
+            - read:all
+            bearerMethodsSupported:
+            - header
+            - body
+            - query
 ```
 
 ## Authentication mode

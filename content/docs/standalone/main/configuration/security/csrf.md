@@ -2,9 +2,23 @@
 title: CSRF
 weight: 11
 description: Protect against cross-site request forgery attacks with origin validation.
+test:
+  csrf:
+  - file: content/docs/standalone/main/configuration/security/csrf.md
+    path: csrf
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
+
+{{< doc-test paths="csrf" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
 
 ## About CSRF protection
 
@@ -72,21 +86,52 @@ Blocked requests, which receive a `403 Forbidden` response with the message "CSR
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 
 ```yaml
-policies:
-  csrf:
-    additionalOrigins:
-      - "https://www.example.com"
-      - "https://trusted.domain.com"
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        csrf:
+          additionalOrigins:
+          - "https://www.example.com"
+          - "https://trusted.domain.com"
+      backends:
+      - host: localhost:8080
 ```
+
+{{< doc-test paths="csrf" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The csrf route-level policy with an additionalOrigins list is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That cross-site requests are actually blocked/allowed at runtime — requires
+#     a backend the page omits to forward to.
+#   * The standalone `additionalOrigins: []` snippet later on the page is a
+#     fragment (no binds:), so it is intentionally not tested.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        csrf:
+          additionalOrigins:
+          - "https://www.example.com"
+          - "https://trusted.domain.com"
+      backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 The `additionalOrigins` setting is a list of trusted origins allowed to make cross-site requests.
 - Format: `"scheme://host[:port]"`
 - Examples: `"https://www.example.com"`, `"http://localhost:3000"`
 
-For strict CSRF protection to prevent all cross-site requests, set `additionalOrigins` to an empty list.
+For strict CSRF protection to prevent all cross-site requests, set `additionalOrigins` to an empty list, as shown in the following route-level policy.
 
 ```yaml
-...
 policies:
   csrf:
     additionalOrigins: []

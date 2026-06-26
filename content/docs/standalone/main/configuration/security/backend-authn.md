@@ -2,19 +2,67 @@
 title: Backend authentication
 weight: 10
 description: Attach authentication tokens to outgoing backend requests.
+test:
+  backend-authn:
+  - file: content/docs/standalone/main/configuration/security/backend-authn.md
+    path: backend-authn
 ---
 
 Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
 
+{{< doc-test paths="backend-authn" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+export MY_API_KEY="${MY_API_KEY:-dummy}"
+{{< /doc-test >}}
+
 When connecting to a backend, an authentication token can be attached to each request using the backend authentication policy.
 
-To attach a static key as an `Authorization` value, use `key`:
+To attach a static key as an `Authorization` value, use `key`. The following example shows a complete configuration that attaches the policy to a backend.
 
 ```yaml
-backendAuth:
-  key:
-    value: $MY_API_KEY
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8080
+        policies:
+          backendAuth:
+            key:
+              value: $MY_API_KEY
 ```
+
+{{< doc-test paths="backend-authn" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The static-key backendAuth example config is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The other backendAuth snippets on this page (file path, location,
+#     passthrough, gcp, aws) are field-reference fragments with no `binds:`,
+#     so they are not standalone configs and are not tested here.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8080
+        policies:
+          backendAuth:
+            key:
+              value: $MY_API_KEY
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+
+The remaining examples on this page show only the `backendAuth` policy. Attach each one to a backend under `backends[].policies`, as shown in the complete example above.
 
 A file path can also be used:
 

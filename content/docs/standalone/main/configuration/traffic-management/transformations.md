@@ -2,9 +2,24 @@
 title: Transformations
 weight: 12
 description: Modify header and body information for requests and responses. 
+test:
+  transformations:
+  - file: content/docs/standalone/main/configuration/traffic-management/transformations.md
+    path: transformations
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
+
+{{< doc-test paths="transformations" >}}
+# Install agentgateway binary
+export OPEN_AI_APIKEY="${OPEN_AI_APIKEY:-dummy}"
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
 
 Agentgateway uses {{< gloss "Transformation" >}}transformation{{< /gloss >}} templates that are written in {{< gloss "CEL (Common Expression Language)" >}}Common Expression Language (CEL){{< /gloss >}}. CEL is a fast, portable, and safely executable language that goes beyond declarative configurations. CEL lets you develop more complex expressions in a readable, developer-friendly syntax.
 
@@ -63,6 +78,48 @@ binds:
             - x-content-type-options
 ```
 
+{{< doc-test paths="transformations" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The route-level header transformation example config is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * Runtime header rewriting and the AI backend call — requires a live OpenAI
+#     backend and a real API key the page omits.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - ai:
+         name: openai
+         provider:
+           openAI:
+             # Optional; overrides the model in requests
+             model: gpt-3.5-turbo
+      policies:
+        backendAuth:
+          key: "$OPEN_AI_APIKEY"
+        cors:
+          allowOrigins:
+            - "*"
+          allowHeaders:
+            - "*"
+        transformations:
+          request:
+            add:
+              x-request-path: request.path
+              x-client-ip: source.address
+          response:
+            add:
+              x-response-code: 'string(response.code)'
+            remove:
+            - server
+            - x-content-type-options
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
+
 #### Listener-level header transformation
 
 Transform headers before route selection by attaching the policy at the listener level:
@@ -88,6 +145,35 @@ binds:
              model: gpt-3.5-turbo
 ```
 
+{{< doc-test paths="transformations" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The listener-level header transformation example config is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * Runtime header injection and the AI backend call — requires a live OpenAI
+#     backend and a real API key the page omits.
+cat <<'EOF' > config2.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      transformations:
+        request:
+          add:
+            x-gateway: '"agentgateway"'
+      backendAuth:
+        key: "$OPEN_AI_APIKEY"
+    routes:
+    - backends:
+      - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-3.5-turbo
+EOF
+agentgateway -f config2.yaml --validate-only
+{{< /doc-test >}}
+
 ### Body transformation
 
 You can provide a custom body for a request or response. 
@@ -97,14 +183,48 @@ To provide a specific string value, add your string in single quotes `'` followe
 {{< /callout >}}
 
 ```yaml
-transformations:
-  request:
-    body: |
-      "Hello " + default(request.headers["x-user-name"], "guest")
-  response:
-    body: |
-      "Response code: " + string(response.code)
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        transformations:
+          request:
+            body: |
+              "Hello " + default(request.headers["x-user-name"], "guest")
+          response:
+            body: |
+              "Response code: " + string(response.code)
+      backends:
+      - host: localhost:8080
 ```
+
+{{< doc-test paths="transformations" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The body transformation example config is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * Runtime body rewriting — requires a backend the page omits to forward to
+#     and inspect.
+cat <<'EOF' > config3.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        transformations:
+          request:
+            body: |
+              "Hello " + default(request.headers["x-user-name"], "guest")
+          response:
+            body: |
+              "Response code: " + string(response.code)
+      backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config3.yaml --validate-only
+{{< /doc-test >}}
 
 ## Conditional execution
 

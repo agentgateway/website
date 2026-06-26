@@ -2,9 +2,23 @@
 title: Basic authentication
 weight: 16
 description: Configure simple username and password authentication for your routes.
+test:
+  basic-authn:
+  - file: content/docs/standalone/main/configuration/security/basic-authn.md
+    path: basic-authn
 ---
 
 Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{< badge content="Route" path="/configuration/routes/">}}
+
+{{< doc-test paths="basic-authn" >}}
+# Install agentgateway binary
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /doc-test >}}
 
 [Basic authentication](https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Authentication#basic_authentication_scheme) enables a simple username/password authentication mechanism.
 
@@ -20,18 +34,57 @@ Additionally, authentication can run in two different modes:
 * **Optional** (default): If a username/password pair exists, validate it.  
   *Warning*: This allows requests without a username/password pair!
 
+The following example shows a complete configuration that enforces basic authentication on the listener before forwarding requests to a backend.
+
 ```yaml
-basicAuth:
-  mode: strict
-  # Generated with `htpasswd -nb -B user1 agentgateway`
-  # You can also use:
-  # htpasswd:
-  #   file: /path/to/htpasswd
-  # With inline configuration, $ must be escaped to $$.
-  htpasswd: |
-    user1:$$2y$$05$$LMZ.8WGNqvagmtJz2Gw6VuiE6khXc2zc0FDTHrfWJyLT66HM8BMAa
-  realm: example.com
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      basicAuth:
+        mode: strict
+        # Generated with `htpasswd -nb -B user1 agentgateway`
+        # You can also use:
+        # htpasswd:
+        #   file: /path/to/htpasswd
+        # With inline configuration, $ must be escaped to $$.
+        htpasswd: |
+          user1:$$2y$$05$$LMZ.8WGNqvagmtJz2Gw6VuiE6khXc2zc0FDTHrfWJyLT66HM8BMAa
+        realm: example.com
+    routes:
+    - backends:
+      - host: localhost:8080
 ```
+
+{{< doc-test paths="basic-authn" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The basicAuth listener-level authentication example config is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That credentials are actually enforced at runtime — requires a backend
+#     the page omits to forward to.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - policies:
+      basicAuth:
+        mode: strict
+        # Generated with `htpasswd -nb -B user1 agentgateway`
+        # You can also use:
+        # htpasswd:
+        #   file: /path/to/htpasswd
+        # With inline configuration, $ must be escaped to $$.
+        htpasswd: |
+          user1:$$2y$$05$$LMZ.8WGNqvagmtJz2Gw6VuiE6khXc2zc0FDTHrfWJyLT66HM8BMAa
+        realm: example.com
+    routes:
+    - backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 Now to send requests, include the username and password.
 

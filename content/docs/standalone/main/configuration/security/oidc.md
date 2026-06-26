@@ -80,18 +80,28 @@ binds:
 
 ### Keycloak example
 
-Review the following example for a Keycloak IdP.
+Review the following complete example for a Keycloak IdP.
 
 ```yaml
-policies:
-  oidc:
-    issuer: http://keycloak.example.com/realms/myrealm
-    clientId: agentgateway-browser
-    clientSecret: my-client-secret
-    redirectURI: http://localhost:3000/oauth/callback
-    scopes:
-    - profile
-    - email
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:18080
+      matches:
+      - path:
+          pathPrefix: /
+      policies:
+        oidc:
+          issuer: http://keycloak.example.com/realms/myrealm
+          clientId: agentgateway-browser
+          clientSecret: my-client-secret
+          redirectURI: http://localhost:3000/oauth/callback
+          scopes:
+          - profile
+          - email
 ```
 
 ## Fields
