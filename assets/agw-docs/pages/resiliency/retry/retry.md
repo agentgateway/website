@@ -25,8 +25,8 @@ Set up retries to the sample app.
 
 2. Create your retry rules. You can choose to apply a retry on an HTTPRoute by using the Kubernetes Gateway API-native approach, or to add a retry to a specific HTTPRoute rule or Gateway listener by using an {{< reuse "agw-docs/snippets/backend.md" >}} resource.
 
-   {{< tabs tabTotal="3" items="HTTPRoute (Kubernetes GW API),HTTPRoute and rule (AgentgatewayPolicy),Gateway listener" >}}
-   {{% tab tabName="HTTPRoute (Kubernetes GW API)" %}}
+   {{< tabs >}}
+   {{% tab name="HTTPRoute (Kubernetes GW API)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
       ```yaml {paths="retry-in-httproute"}
       kubectl apply -f- <<EOF
@@ -130,7 +130,7 @@ Set up retries to the sample app.
          ```
 
    {{% /tab %}}
-   {{% tab tabName="HTTPRoute (EnterpriseAgentgatewayPolicy)" %}}
+   {{% tab name="HTTPRoute and rule (AgentgatewayPolicy)" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
       ```yaml {paths="retry-in-agentgateway"}
       kubectl apply -f- <<EOF
@@ -242,7 +242,7 @@ Set up retries to the sample app.
 
 
    {{% /tab %}}
-   {{% tab tabName="Gateway listener" %}}
+   {{% tab name="Gateway listener" %}}
    1. Create an HTTPRoute that routes requests along the `retry.example` domain to the sample app.
       ```yaml {paths="retry-in-gatewaylistener"}
       kubectl apply -f- <<EOF
@@ -353,13 +353,13 @@ Set up retries to the sample app.
 
 4. Send a request to the sample app. Verify that the request succeeds.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: retry.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/headers -H "host: retry.example"
    ```
@@ -399,13 +399,13 @@ Simulate a failure for the sample app so that you can verify that the request is
 
 1. Send another request to the httpbin app along the `/status/500` path. This path returns a 500 HTTP response code. Because the  agentgateway proxy is configured to retry a request when a 500 HTTP response code is received, the proxy starts retrying the request.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/status/500 -H "host: retry.example:80"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/status/500 -H "host: retry.example"
    ```

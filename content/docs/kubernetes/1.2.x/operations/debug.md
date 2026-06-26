@@ -33,13 +33,13 @@ Most routing and policy issues surface in the status of the corresponding Kubern
 
 1. Verify that the agentgateway control plane and proxy pods are running.
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    kubectl get pods -n <namespace>
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    kubectl get pods -n agentgateway-system
    ```
@@ -48,14 +48,14 @@ Most routing and policy issues surface in the status of the corresponding Kubern
 
 2. Verify the Gateway is `Accepted` and `Programmed`.
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    kubectl get gateway -A
    kubectl get gateway <name> -n <namespace> -o yaml
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    kubectl get gateway agentgateway-proxy -n agentgateway-system -o yaml
    ```
@@ -68,13 +68,13 @@ Most routing and policy issues surface in the status of the corresponding Kubern
    kubectl get httproute -A
    ```
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    kubectl get httproute <name> -n <namespace> -o yaml
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    kubectl get httproute openai -n agentgateway-system -o yaml
    ```
@@ -93,13 +93,13 @@ Sometimes a route is `Accepted` but the proxy still does not behave as expected.
 
 1. Render a summary of the routes, backends, and policies that the gateway has loaded.
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    agctl config all gateway/<gateway-name> -n <namespace> -o yaml
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    agctl config all gateway/agentgateway-proxy -n agentgateway-system -o yaml
    ```
@@ -108,13 +108,13 @@ Sometimes a route is `Accepted` but the proxy still does not behave as expected.
 
 2. Inspect the backends that the gateway is sending traffic to and their endpoint health.
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    agctl config backends gateway/<gateway-name> -n <namespace>
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    agctl config backends gateway/agentgateway-proxy -n agentgateway-system
    ```
@@ -136,13 +136,13 @@ For complete steps, see [Inspect agentgateway configuration]({{< link-hextra pat
 
 To see how a specific request flows through agentgateway, use `agctl trace`. The trace shows you the route that was selected, the policies that were applied, the backend that was chosen, and the response status. Tracing helps you understand why a request did or did not match a route, why a policy was or was not applied, or why a request returned an unexpected status.
 
-{{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-{{% tab tabName="Replace with your own" %}}
+{{< tabs >}}
+{{% tab name="Replace with your own" %}}
 ```sh
 agctl trace gateway/<gateway-name> -n <namespace> --port <listener-port> -- http://<host>/<path>
 ```
 {{% /tab %}}
-{{% tab tabName="Quickstart example" %}}
+{{% tab name="Quickstart example" %}}
 
 ```sh
 agctl trace gateway/agentgateway-proxy -n agentgateway-system --port 8080 -- http://httpbin.example.com/
@@ -160,13 +160,13 @@ Agentgateway uses the same level syntax as [`RUST_LOG`](https://docs.rs/env_logg
 
 1. Open a port-forward to the proxy.
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    kubectl port-forward deploy/<gateway-name> -n <namespace> 15000 &
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    kubectl port-forward deploy/agentgateway-proxy -n agentgateway-system 15000 &
    ```
@@ -187,13 +187,13 @@ Agentgateway uses the same level syntax as [`RUST_LOG`](https://docs.rs/env_logg
 
 3. Tail the proxy logs.
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    kubectl logs -n <namespace> deploy/<gateway-name> -f
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    kubectl logs -n agentgateway-system deploy/agentgateway-proxy -f
    ```
@@ -210,13 +210,13 @@ Agentgateway includes pprof endpoints to help you investigate CPU and memory iss
 
 2. Open a port-forward to the proxy.
 
-   {{< tabs tabTotal="2" items="Replace with your own, Quickstart example" >}}
-   {{% tab tabName="Replace with your own" %}}
+   {{< tabs >}}
+   {{% tab name="Replace with your own" %}}
    ```sh
    kubectl port-forward deploy/<gateway-name> -n <namespace> 15000 &
    ```
    {{% /tab %}}
-   {{% tab tabName="Quickstart example" %}}
+   {{% tab name="Quickstart example" %}}
    ```sh
    kubectl port-forward deploy/agentgateway-proxy -n agentgateway-system 15000 &
    ```

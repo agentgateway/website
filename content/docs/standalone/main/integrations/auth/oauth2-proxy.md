@@ -174,8 +174,8 @@ agentgateway -f config.yaml
 
 OAuth2 Proxy supports many providers. To use a different provider, update the Docker command from [Step 3](#step-3-start-oauth2-proxy).
 
-{{< tabs items="Google,Azure AD" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Google" %}}
 ```bash
 docker run -d --name oauth2-proxy \
   -p 4180:4180 \
@@ -193,7 +193,7 @@ docker run -d --name oauth2-proxy \
   --reverse-proxy=true
 ```
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Azure AD" %}}
 ```bash
 docker run -d --name oauth2-proxy \
   -p 4180:4180 \

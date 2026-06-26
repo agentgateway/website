@@ -156,14 +156,14 @@ The following image illustrates the route delegation hierarchy and policy inheri
    {{< /doc-test >}}
 
 4. Send a request to the `delegation.example` domain along the `/anything/team1/delay/3` path. The httpbin app holds the request open for 3 seconds, but the inherited `1s` timeout cuts the request short. You get a 504 HTTP response after about 1 second.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    time curl -i --max-time 8 http://$INGRESS_GW_ADDRESS:8080/anything/team1/delay/3 \
      -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    time curl -i --max-time 8 localhost:8080/anything/team1/delay/3 \
      -H "host: delegation.example"
@@ -197,14 +197,14 @@ The following image illustrates the route delegation hierarchy and policy inheri
    ```
 
 5. Send a request along the `/anything/team2/delay/3` path. The `child-team2` route's `5s` timeout overrides the parent's `1s` timeout, so the 3-second httpbin delay completes. You get a 200 HTTP response after about 3 seconds.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    time curl -i --max-time 8 http://$INGRESS_GW_ADDRESS:8080/anything/team2/delay/3 \
      -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    time curl -i --max-time 8 localhost:8080/anything/team2/delay/3 \
      -H "host: delegation.example"

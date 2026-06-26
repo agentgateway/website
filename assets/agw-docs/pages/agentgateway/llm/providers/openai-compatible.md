@@ -59,8 +59,8 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
 
 4. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that points the `openai` provider at your provider's host and path. Select the tab for your provider.
 
-   {{< tabs tabTotal="12" items="Baseten,Cerebras,Cohere,DeepInfra,DeepSeek,Fireworks AI,Groq,Hugging Face,Mistral,OpenRouter,Together AI,xAI" >}}
-   {{% tab tabName="Baseten" %}}
+   {{< tabs >}}
+   {{% tab name="Baseten" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -85,7 +85,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Cerebras" %}}
+   {{% tab name="Cerebras" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -110,7 +110,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Cohere" %}}
+   {{% tab name="Cohere" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -135,7 +135,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="DeepInfra" %}}
+   {{% tab name="DeepInfra" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -160,7 +160,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="DeepSeek" %}}
+   {{% tab name="DeepSeek" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -185,7 +185,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Fireworks AI" %}}
+   {{% tab name="Fireworks AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -210,7 +210,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Groq" %}}
+   {{% tab name="Groq" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -235,7 +235,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Hugging Face" %}}
+   {{% tab name="Hugging Face" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -260,7 +260,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Mistral" %}}
+   {{% tab name="Mistral" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -285,7 +285,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="OpenRouter" %}}
+   {{% tab name="OpenRouter" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -310,7 +310,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="Together AI" %}}
+   {{% tab name="Together AI" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -335,7 +335,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
    EOF
    ```
    {{% /tab %}}
-   {{% tab tabName="xAI" %}}
+   {{% tab name="xAI" %}}
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -400,8 +400,8 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
 
 6. Send a request to verify the setup. Replace the `model` value with the model that you configured on the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/llm" -H content-type:application/json -d '{
       "model": "<your-model>",
@@ -414,7 +414,7 @@ The following steps create a generic secret and {{< reuse "agw-docs/snippets/bac
     }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/llm" -H content-type:application/json -d '{
       "model": "<your-model>",

@@ -75,8 +75,8 @@ EOF
 
 Create a {{< reuse "agw-docs/snippets/backend.md" >}} that sets up the {{< reuse "agw-docs/snippets/agentgateway.md" >}} target details for the MCP server.
 
-{{< tabs tabTotal="2" items="Static host, Service" >}}
-{{% tab tabName="Static host" %}}
+{{< tabs >}}
+{{% tab name="Static host" %}}
 ```yaml {paths="setup-mcp-server"}
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
@@ -94,7 +94,7 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab tabName="Service" %}}
+{{% tab name="Service" %}}
 Instead of specifying the full hostname with `static.host`, you can use `backendRef` to reference a `Service` by name. The `backendRef` approach is simpler and avoids hardcoding the full cluster DNS name.
 
 ```yaml

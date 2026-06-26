@@ -62,8 +62,8 @@ In this example, `model` and `max_tokens` are optional. If a client omits them, 
 
 2. Send a request that omits the optional fields. Verify that defaults are applied in the forwarded body.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:80" \
@@ -71,7 +71,7 @@ In this example, `model` and `max_tokens` are optional. If a client omits them, 
     -d '{"messages": [{"role": "user", "content": "hello"}]}'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/post \
    -H "host: www.example.com" \
@@ -149,8 +149,8 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
 
 2. Send a request that includes `user_id` in the body. Verify that the `x-user-id` header is present in the forwarded request.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:80" \
@@ -158,7 +158,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
     -d '{"user_id": "user123", "messages": [{"role": "user", "content": "hello"}]}'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/post \
    -H "host: www.example.com" \
@@ -187,8 +187,8 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
 
 3. Send a request that omits `user_id`. Verify that the `x-user-id` header is absent.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com:80" \
@@ -196,7 +196,7 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
     -d '{"messages": [{"role": "user", "content": "hello"}]}'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/post \
    -H "host: www.example.com" \

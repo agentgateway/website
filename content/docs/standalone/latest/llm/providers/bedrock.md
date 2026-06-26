@@ -64,8 +64,8 @@ llm:
 
 Then, you can send native Converse and Invoke requests:
 
-{{< tabs items="Converse,Invoke" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Converse" %}}
 
 ```python
 import json
@@ -91,7 +91,7 @@ print(response)
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Invoke" %}}
 
 ```python
 import json

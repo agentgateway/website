@@ -203,13 +203,13 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
    {{< /doc-test >}}
 
 4. Send a request to the `delegation.example` domain along the `/anything/team1/foo` path. Verify that the response includes the `X-Child-Policy` header but not the `X-Parent-Policy` header. The child's transformation overrides the parent's because both define the same `transformation` policy.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -s localhost:8080/anything/team1/foo -H "host: delegation.example"
    ```
@@ -247,13 +247,13 @@ In this section, you attach an `AgentgatewayPolicy` to the parent and a differen
    ```
 
 5. Send a second request to the same path within one minute. Verify that you get a 429 HTTP response, because the child inherits the parent's rate limit of 1 request per minute.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team1/foo -H "host: delegation.example"
    ```
@@ -372,13 +372,13 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    {{< /doc-test >}}
 
 3. Send a request without either header. Verify that you get a 403 HTTP response, because both `Require` rules must match.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo -H "host: delegation.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team1/foo -H "host: delegation.example"
    ```
@@ -409,15 +409,15 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    ```
 
 4. Send a request with only the parent's required header. Verify that you still get a 403 HTTP response, because the child's `Require` rule is not satisfied.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
      -H "host: delegation.example" \
      -H "x-parent-required: true"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team1/foo \
      -H "host: delegation.example" \
@@ -450,15 +450,15 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    ```
 
 5. Send a request with only the child's required header. Verify that you still get a 403 HTTP response, because the parent's `Require` rule is not satisfied.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
      -H "host: delegation.example" \
      -H "x-child-required: true"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team1/foo \
      -H "host: delegation.example" \
@@ -491,8 +491,8 @@ In this section, you attach a `Require` authorization rule to the parent and a d
    ```
 
 6. Send a request with both required headers. Verify that you get a 200 HTTP response, because both the parent's and child's `Require` rules match.
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:8080/anything/team1/foo \
      -H "host: delegation.example" \
@@ -500,7 +500,7 @@ In this section, you attach a `Require` authorization rule to the parent and a d
      -H "x-child-required: true"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/anything/team1/foo \
      -H "host: delegation.example" \

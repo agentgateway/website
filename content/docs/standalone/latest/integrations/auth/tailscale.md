@@ -37,8 +37,8 @@ Agentgateway can integrate with [Tailscale](https://tailscale.com/) to authentic
 
 Create a `config.yaml` file. The configuration uses an `extAuthz` policy to call the Tailscale daemon's local `whois` API with the source IP address of each request, then extracts the node name and user email from the response. The socket path for the Tailscale daemon differs by platform.
 
-{{< tabs items="Linux,macOS" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Linux" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
@@ -79,7 +79,7 @@ binds:
                 tailscaleEmail: json(response.body).UserProfile.LoginName
 ```
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="macOS" %}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:

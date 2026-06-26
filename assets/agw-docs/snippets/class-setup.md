@@ -1,5 +1,5 @@
-{{< tabs items="agentgateway,agentgateway-waypoint" tabTotal="2">}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="agentgateway" %}}
 The `agentgateway` GatewayClass is the standard class for when you want to use an agentgateway proxy in kgateway.
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1
@@ -11,7 +11,7 @@ spec:
   description: Specialized class for agentgateway.
 ```
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="agentgateway-waypoint" %}}
 The `agentgateway-waypoint` GatewayClass is for when you use agentgateway as a waypoint in an Istio Ambient service mesh setup.
 ```yaml
 apiVersion: gateway.networking.k8s.io/v1

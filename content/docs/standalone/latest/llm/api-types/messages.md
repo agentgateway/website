@@ -60,8 +60,8 @@ For detailed information about model routing and configuration modes, see [Model
 
 Send a request to the `/v1/messages` endpoint. The request is forwarded to the Anthropic API and the response is returned to the client.
 
-{{< tabs items="Curl,Other" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl -X POST http://localhost:4000/v1/messages \
@@ -74,7 +74,7 @@ curl -X POST http://localhost:4000/v1/messages \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Other" %}}
 
 [View other LLM client integrations](/docs/standalone/latest/integrations/llm-clients/).
 
