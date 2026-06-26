@@ -226,8 +226,8 @@ Send a request to the httpbin app through the agentgateway proxy.
 {{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
 {{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
 
-   {{< reuse-image-light src="img/agentgateway-ui-kube-route-http.png" >}}
-   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-http-dark.png" >}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-http.png" width="600px">}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-http-dark.png" width="600px">}}
 {{% /version %}}
 
 ## Next steps
