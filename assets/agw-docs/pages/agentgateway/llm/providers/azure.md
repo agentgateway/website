@@ -2,8 +2,8 @@ Configure [Azure](https://learn.microsoft.com/en-us/azure/ai-services/) as an LL
 
 Azure supports two endpoint types:
 
-- **Azure OpenAI** (`openAI`): Connect to Azure OpenAI Service deployments at `{resourceName}.openai.azure.com`.
-- **Azure AI Foundry** (`foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}-resource.services.ai.azure.com`.
+- **Azure OpenAI** (`OpenAI`): Connect to Azure OpenAI Service deployments at `{resourceName}.openai.azure.com`.
+- **Azure AI Foundry** (`Foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}-resource.services.ai.azure.com`.
 
 ## Before you begin
 
@@ -51,7 +51,7 @@ Azure supports two endpoint types:
        provider:
          azure:
            resourceName: my-resource
-           resourceType: openAI
+           resourceType: OpenAI
            model: gpt-4.1-mini
    EOF
    ```
@@ -69,7 +69,7 @@ Azure supports two endpoint types:
        provider:
          azure:
            resourceName: my-resource
-           resourceType: foundry
+           resourceType: Foundry
            projectName: my-project
            model: gpt-4.1-mini
    EOF
@@ -90,7 +90,7 @@ Azure supports two endpoint types:
        provider:
          azure:
            resourceName: my-resource
-           resourceType: openAI
+           resourceType: OpenAI
            model: gpt-4.1-mini
    EOF
    ```
@@ -103,9 +103,9 @@ Azure supports two endpoint types:
    |-------------|-------------|
    | `ai.provider.azure` | Define the Azure provider. |
    | `azure.resourceName` | The Azure resource name used to construct the endpoint hostname. |
-   | `azure.resourceType` | The endpoint type: `openAI` for Azure OpenAI Service, or `foundry` for Azure AI Foundry. |
+   | `azure.resourceType` | The endpoint type: `OpenAI` for Azure OpenAI Service, or `Foundry` for Azure AI Foundry. |
    | `azure.model` | The model to use for requests, such as `gpt-4.1-mini`. |
-   | `azure.projectName` | The Foundry project name. Required when `resourceType` is `foundry`. |
+   | `azure.projectName` | The Foundry project name. Required when `resourceType` is `Foundry`. |
    | `azure.apiVersion` | Optional API version override. Defaults to `v1`. For legacy deployments, use a dated version like `2025-01-01-preview`. |
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the appropriate chat completion endpoint of the LLM provider for you, based on the LLM provider that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}} resource.
