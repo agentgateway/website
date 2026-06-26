@@ -123,6 +123,7 @@ binds:
           targets:
           - name: openapi-server
             openapi:
+              host: petstore3.swagger.io:443
               schema:
                 url: https://petstore3.swagger.io/api/v3/openapi.json
 ```
@@ -145,6 +146,7 @@ binds:
           targets:
           - name: openapi-server
             openapi:
+              host: petstore3.swagger.io:443
               schema:
                 url: https://petstore3.swagger.io/api/v3/openapi.json
 EOF
