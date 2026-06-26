@@ -16,8 +16,8 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badg
 {{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
 {{< /doc-test >}}
 
-Request {{< gloss "Mirroring" >}}mirroring{{< /gloss >}} allows sending a copy of each request to an alterative backend.
-These request will not be retried if they fail.
+Request {{< gloss "Mirroring" >}}mirroring{{< /gloss >}} allows sending a copy of each request to an alternative backend.
+These requests will not be retried if they fail.
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}
