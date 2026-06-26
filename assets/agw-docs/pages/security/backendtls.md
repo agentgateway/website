@@ -30,9 +30,41 @@ The following example uses an NGINX server with a self-signed TLS certificate.
 
 1. Deploy the NGINX server with a self-signed TLS certificate.
 
-   ```shell
+   ```shell {paths="backendtls-in-cluster"}
    kubectl apply -f https://raw.githubusercontent.com/solo-io/gloo-mesh-use-cases/refs/heads/main/agentgateway/nginx-tls.yaml
    ```
+
+{{< doc-test paths="backendtls-in-cluster" >}}
+# WHAT THIS TEST VALIDATES:
+#   * In-cluster one-way TLS origination: the gateway terminates client TLS and
+#     originates a new TLS connection to the NGINX backend on port 8443, using the
+#     BackendTLSPolicy plus the CA ConfigMap. A 200 on example.com proves origination
+#     worked (without a valid policy/CA, the request fails with UnknownIssuer /
+#     ECONNRESET).
+#   * Covers: the NGINX deploy, the CA ConfigMap, the BackendTLSPolicy, the
+#     HTTPRoute, and the step 4 curl to example.com.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The external service scenario (httpbin.org): Covered separately by the
+#     backendtls-external scenario.
+#   * The full curl -vi response body/headers shown in the example output: Different
+#     layer. Only the HTTP status code is asserted.
+YAMLTest -f - <<'EOF'
+- name: wait for nginx pod to be running
+  wait:
+    target:
+      kind: Pod
+      metadata:
+        namespace: agentgateway-system
+        name: nginx
+    jsonPath: "$.status.phase"
+    jsonPathExpectation:
+      comparator: equals
+      value: "Running"
+    polling:
+      timeoutSeconds: 180
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
 
 2. Verify that the NGINX server is running.
 
@@ -53,7 +85,7 @@ Create a BackendTLSPolicy for the NGINX workload.
 
 1. Create a Kubernetes ConfigMap that has the certificate the Gateway uses to verify the NGINX server. The NGINX deployment uses a self-signed certificate, so use that same certificate (the server cert) as the trust anchor in `ca.crt`. This certificate must match the one in the [nginx-tls.yaml](https://raw.githubusercontent.com/solo-io/gloo-mesh-use-cases/refs/heads/main/agentgateway/nginx-tls.yaml) deployment.
 
-   ```yaml
+   ```yaml {paths="backendtls-in-cluster"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    data:
@@ -88,7 +120,7 @@ Create a BackendTLSPolicy for the NGINX workload.
 
 2. Create the TLS policy. Note that to use the BackendTLSPolicy, you must have the experimental channel of the Kubernetes Gateway API version 1.4 or later.
 
-   ```yaml
+   ```yaml {paths="backendtls-in-cluster"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: BackendTLSPolicy
@@ -121,7 +153,7 @@ Create a BackendTLSPolicy for the NGINX workload.
 
 3. Create an HTTPRoute that routes traffic to the NGINX server on the `example.com` hostname and HTTPS port 8443. Note that the parent Gateway is the sample `http` Gateway resource that you created [before you began](#before-you-begin).
 
-   ```yaml
+   ```yaml {paths="backendtls-in-cluster"}
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1beta1
    kind: HTTPRoute
@@ -142,6 +174,25 @@ Create a BackendTLSPolicy for the NGINX workload.
          port: 8443
    EOF
    ```
+
+{{< doc-test paths="backendtls-in-cluster" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for nginx-route HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: nginx-route
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
 
 4. Send a request to the NGINX server and verify that you get back a 200 HTTP response code.
    
@@ -177,13 +228,53 @@ Create a BackendTLSPolicy for the NGINX workload.
 
    The HTTPRoute forwards the request to the NGINX server on port 8443, and the NGINX server accepts only TLS on that port. A 200 response means that the gateway proxy originated a TLS connection to the backend successfully. Without a valid BackendTLSPolicy and CA certificate, requests fail with `invalid peer certificate: UnknownIssuer`.
 
+{{< doc-test paths="backendtls-in-cluster" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/" -H "host: example.com" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="backendtls-in-cluster" >}}
+YAMLTest -f - <<'EOF'
+- name: backendtls in-cluster - example.com returns 200 via TLS originated to nginx
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /
+    method: GET
+    headers:
+      host: "example.com"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
    
 ## External service
 
 Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents your external service. Then, use a BackendTLSPolicy to instruct the gateway proxy to originate a TLS connection from the gateway proxy to the external service. 
 
+{{< doc-test paths="backendtls-external" >}}
+# WHAT THIS TEST VALIDATES:
+#   * External one-way TLS origination with system CA certificates: the gateway
+#     originates a TLS connection to the public httpbin.org backend using
+#     wellKnownCACertificates System, and the URLRewrite filter rewrites the host
+#     from httpbin-external.example to httpbin.org. A 200 with the rewritten Host
+#     header proves both the system-CA TLS origination and the rewrite worked.
+#   * Covers: the Backend, the BackendTLSPolicy with system CAs, the HTTPRoute with
+#     the URLRewrite filter, and the step 4 curl to httpbin-external.example.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The full curl -vi response body/headers shown in the example output: Different
+#     layer. Only the status code and the rewritten Host header are asserted.
+# NOTE: This scenario depends on the public httpbin.org service being reachable over
+# cluster egress, so it can be flaky if that external service is down.
+{{< /doc-test >}}
+
 1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents your external service. In this example, you use a static backend that routes traffic to the `httpbin.org` site. Make sure to include the HTTPS port 443 so that traffic is routed to this port. 
-   ```yaml
+   ```yaml {paths="backendtls-external"}
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
@@ -199,7 +290,7 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
    
 2. Create a TLS policy that originates a TLS connection to the {{< reuse "agw-docs/snippets/backend.md" >}} that you created in the previous step. To originate the TLS connection, you use known trusted CA certificates.
 
-   ```yaml
+   ```yaml {paths="backendtls-external"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: BackendTLSPolicy
@@ -218,7 +309,7 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
    ```
 
 3. Create an HTTPRoute that rewrites traffic on the `httpbin-external.example` domain to the `httpbin.org` hostname and routes traffic to your Backend.  
-   ```yaml
+   ```yaml {paths="backendtls-external"}
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: HTTPRoute
@@ -246,6 +337,25 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
              hostname: httpbin.org
    EOF
    ```
+
+{{< doc-test paths="backendtls-external" >}}
+YAMLTest -f - <<'EOF'
+- name: wait for httpbin-org HTTPRoute to be accepted
+  wait:
+    target:
+      kind: HTTPRoute
+      metadata:
+        namespace: agentgateway-system
+        name: httpbin-org
+    jsonPath: "$.status.parents[0].conditions[?(@.type=='Accepted')].status"
+    jsonPathExpectation:
+      comparator: equals
+      value: "True"
+    polling:
+      timeoutSeconds: 300
+      intervalSeconds: 5
+EOF
+{{< /doc-test >}}
 
 4. Send a request to the `httpbin-external.example` domain. Verify that the host is rewritten to `https://httpbin.org/anything` and that you get back a 200 HTTP response code.  
    
@@ -286,6 +396,34 @@ Set up an {{< reuse "agw-docs/snippets/backend.md" >}} resource that represents 
      "url": "https://httpbin.org/anything"
    }
    ```
+
+{{< doc-test paths="backendtls-external" >}}
+for i in $(seq 1 60); do
+  curl -s --max-time 5 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/anything" -H "host: httpbin-external.example" && break
+  sleep 2
+done
+{{< /doc-test >}}
+
+{{< doc-test paths="backendtls-external" >}}
+YAMLTest -f - <<'EOF'
+- name: backendtls external - httpbin-external.example rewrites host and returns 200 over system-CA TLS
+  retries: 1
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80"
+    path: /anything
+    method: GET
+    headers:
+      host: "httpbin-external.example"
+  source:
+    type: local
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.headers.Host"
+        comparator: equals
+        value: "httpbin.org"
+EOF
+{{< /doc-test >}}
 
 
 ## Cleanup
