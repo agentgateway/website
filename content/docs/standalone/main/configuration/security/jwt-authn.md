@@ -168,6 +168,53 @@ agentgateway -f config-mcp.yaml --validate-only
 It is common to pair `jwtAuth` with `authorization`, using the `claims` from the verified JWT.
 For example:
 
+The same configuration is available in the simplified `llm` and `mcp` forms.
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+    authorization:
+      rules:
+      - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+    authorization:
+      rules:
+      - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -188,11 +235,14 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="jwt-authn" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The jwtAuth + route-level authorization example config is accepted by
-#     agentgateway.
+#   * The jwtAuth + authorization example config is accepted by agentgateway in
+#     all three configuration forms: routing-based (binds), simplified LLM
+#     (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the authorization rule actually allows/denies at runtime — requires
 #     minting a signed JWT with the `admins` group and a backend the page omits.
@@ -217,4 +267,47 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config2.yaml --validate-only
+
+cat <<'EOF' > config2-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+    authorization:
+      rules:
+      - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config2-llm.yaml --validate-only
+
+cat <<'EOF' > config2-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+    authorization:
+      rules:
+      - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config2-mcp.yaml --validate-only
 {{< /doc-test >}}

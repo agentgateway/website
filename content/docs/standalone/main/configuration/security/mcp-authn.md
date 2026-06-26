@@ -108,6 +108,35 @@ binds:
 
 Agentgateway acts solely as a resource server, validating tokens issued by an external authorization server.
 
+The same `mcpAuthentication` policy is available in the simplified `mcp` form.
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:9000
+      jwks:
+        url: http://localhost:9000/.well-known/jwks.json
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
+  targets:
+  - name: tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -140,6 +169,8 @@ binds:
             - body
             - query
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Authentication mode
 

@@ -129,6 +129,51 @@ binds:
 
 Review the following example for a Keycloak IdP.
 
+The same `oidc` policy is available in the simplified `llm` and `mcp` forms.
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    oidc:
+      issuer: http://keycloak.example.com/realms/myrealm
+      clientId: agentgateway-browser
+      clientSecret: my-client-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    oidc:
+      issuer: http://keycloak.example.com/realms/myrealm
+      clientId: agentgateway-browser
+      clientSecret: my-client-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -150,6 +195,8 @@ binds:
           - profile
           - email
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Fields
 

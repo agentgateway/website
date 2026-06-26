@@ -220,6 +220,43 @@ agentgateway -f config-mcp.yaml --validate-only
 
 Transform headers before route selection by attaching the policy at the listener level:
 
+The same configuration is available in the simplified `llm` and `mcp` forms.
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    transformations:
+      request:
+        add:
+          x-gateway: '"agentgateway"'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPEN_AI_APIKEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    transformations:
+      request:
+        add:
+          x-gateway: '"agentgateway"'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -241,10 +278,14 @@ binds:
            openAI:
              model: gpt-3.5-turbo
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="transformations" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The listener-level header transformation example config is accepted by agentgateway.
+#   * The listener-level header transformation example config is accepted by
+#     agentgateway in all three configuration forms: routing-based (binds),
+#     simplified LLM (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * Runtime header injection and the AI backend call — requires a live OpenAI
 #     backend and a real API key the page omits.
@@ -270,6 +311,39 @@ binds:
              model: gpt-3.5-turbo
 EOF
 agentgateway -f config2.yaml --validate-only
+
+cat <<'EOF' > config2-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    transformations:
+      request:
+        add:
+          x-gateway: '"agentgateway"'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPEN_AI_APIKEY"
+EOF
+agentgateway -f config2-llm.yaml --validate-only
+
+cat <<'EOF' > config2-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    transformations:
+      request:
+        add:
+          x-gateway: '"agentgateway"'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config2-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 ### Body transformation
@@ -280,6 +354,49 @@ You can provide a custom body for a request or response.
 To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 {{< /callout >}}
 
+The same configuration is available in the simplified `llm` and `mcp` forms.
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          "Hello " + default(request.headers["x-user-name"], "guest")
+      response:
+        body: |
+          "Response code: " + string(response.code)
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPEN_AI_APIKEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    transformations:
+      request:
+        body: |
+          "Hello " + default(request.headers["x-user-name"], "guest")
+      response:
+        body: |
+          "Response code: " + string(response.code)
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -297,10 +414,14 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="transformations" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The body transformation example config is accepted by agentgateway.
+#   * The body transformation example config is accepted by agentgateway in all
+#     three configuration forms: routing-based (binds), simplified LLM
+#     (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * Runtime body rewriting — requires a backend the page omits to forward to
 #     and inspect.
@@ -322,6 +443,45 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config3.yaml --validate-only
+
+cat <<'EOF' > config3-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    transformations:
+      request:
+        body: |
+          "Hello " + default(request.headers["x-user-name"], "guest")
+      response:
+        body: |
+          "Response code: " + string(response.code)
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPEN_AI_APIKEY"
+EOF
+agentgateway -f config3-llm.yaml --validate-only
+
+cat <<'EOF' > config3-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    transformations:
+      request:
+        body: |
+          "Hello " + default(request.headers["x-user-name"], "guest")
+      response:
+        body: |
+          "Response code: " + string(response.code)
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config3-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 ## Conditional execution

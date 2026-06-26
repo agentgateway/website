@@ -23,6 +23,31 @@ Instead of running against an HTTP request, MCP authorization policies run again
 
 If a tool or other resource is not allowed, the gateway automatically filters it from the `list` response.
 
+Agentgateway supports more than one configuration style. The following tabs show the same `mcpAuthorization` policy in the routing-based form (`binds`) and in the simplified `mcp` form. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    policies:
+      mcpAuthorization:
+        rules:
+        # Allow anyone to call 'echo'
+        - 'mcp.tool.name == "echo"'
+        # Only the test-user can call 'add'
+        - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+        # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+        - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -46,11 +71,15 @@ binds:
                 # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
                 - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="mcp-authz-config" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The MCP authorization example config loads and the gateway serves the
 #     stdio MCP server: the /mcp endpoint accepts an initialize request.
+#   * The same policy is accepted in the simplified MCP (mcp) form via
+#     --validate-only.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That unauthorized tools are actually filtered — would require an
 #     authenticated tools/list call with a JWT carrying the right claims.
@@ -78,6 +107,27 @@ binds:
                 # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
                 - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 EOF
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+    policies:
+      mcpAuthorization:
+        rules:
+        # Allow anyone to call 'echo'
+        - 'mcp.tool.name == "echo"'
+        # Only the test-user can call 'add'
+        - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+        # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+        - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+EOF
+agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}
 
 {{< doc-test paths="mcp-authz-config" >}}

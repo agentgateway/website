@@ -160,6 +160,57 @@ agentgateway -f config-mcp.yaml --validate-only
 
 Later policies can now operate on the metadata associated with the API key. For example, you can set a custom `x-authenticated-user` header with the authenticated user from the API key metadata by adding a route-level transformation.
 
+The same configuration is available in the simplified `llm` and `mcp` forms.
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+    transformations:
+      request:
+        set:
+          x-authenticated-user: apiKey.user
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+    transformations:
+      request:
+        set:
+          x-authenticated-user: apiKey.user
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:
@@ -182,11 +233,15 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< /tabs >}}
 
 {{< doc-test paths="apikey-authn" >}}
 # WHAT THIS TEST VALIDATES:
-#   * The apiKey config combined with a route-level transformation that sets a
-#     header from API key metadata is accepted by agentgateway.
+#   * The apiKey config combined with a transformation that sets a header from
+#     API key metadata is accepted by agentgateway in all three configuration
+#     forms: routing-based (binds), simplified LLM (llm.policies), and simplified
+#     MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the x-authenticated-user header is actually set at runtime —
 #     requires a backend the page omits to forward to and inspect.
@@ -213,4 +268,51 @@ binds:
       - host: localhost:8080
 EOF
 agentgateway -f config2.yaml --validate-only
+
+cat <<'EOF' > config2-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+    transformations:
+      request:
+        set:
+          x-authenticated-user: apiKey.user
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config2-llm.yaml --validate-only
+
+cat <<'EOF' > config2-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+    transformations:
+      request:
+        set:
+          x-authenticated-user: apiKey.user
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config2-mcp.yaml --validate-only
 {{< /doc-test >}}
