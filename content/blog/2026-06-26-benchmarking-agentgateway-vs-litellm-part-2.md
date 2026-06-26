@@ -60,7 +60,7 @@ Latency was also dramatically different. agentgateway maintained a P99 latency b
 
 | Gateway | Avg CPU | Peak CPU | Avg Memory | Peak Memory |
 |---------|---------|----------|------------|-------------|
-| agentgateway | 13.4% | 29.5% | **13 MB** | 17 MB |
+| agentgateway | 13.4% | 29.5% | **13 MiB** | 17 MiB |
 | LiteLLM | 345.5% | 1158.5% | **11.67 GiB** | 11.69 GiB |
 
 The resource utilization is arguably even more interesting than the latency numbers.
