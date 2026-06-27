@@ -2,9 +2,19 @@
 title: Request matching
 weight: 9
 description: Match incoming requests by path, headers, methods, and query parameters.
+test:
+  matching:
+  - file: content/docs/standalone/main/configuration/traffic-management/matching.md
+    path: matching
 ---
 
 Based on the route schema (see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}) for the full field reference and [schema validation]({{< link-hextra path="/reference/configuration/validation/" >}}) for IDE integration), you can configure the following {{< gloss "Matching" >}}matching{{< /gloss >}} conditions for HTTP or TCP routes.
+
+Request matching is a routing-based feature: routes and their match conditions are configured under `binds`. The simplified `llm` configuration supports header-based model matching (`llm.models[].matches`), but path, method, and query matching require routing-based configuration. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
+
+{{< doc-test paths="matching" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< /doc-test >}}
 
 ## HTTP routes
 
@@ -31,35 +41,47 @@ Only one of `exact`, `pathPrefix`, or `regex` can be specified per path matcher.
 {{< tabs >}}
 {{< tab name="Exact path matching" >}}
 ```yaml
-routes:
-- name: api-exact
-  matches:
-  - path:
-      exact: "/api/v1/users"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: api-exact
+      matches:
+      - path:
+          exact: "/api/v1/users"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="Prefix path matching" >}}
 ```yaml
-routes:
-- name: api-prefix
-  matches:
-  - path:
-      pathPrefix: "/api/v1"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: api-prefix
+      matches:
+      - path:
+          pathPrefix: "/api/v1"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="Regex path matching" >}}
 ```yaml
-routes:
-- name: api-regex
-  matches:
-  - path:
-      regex: ["^/api/v[0-9]+/users$", 0]
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: api-regex
+      matches:
+      - path:
+          regex: ["^/api/v[0-9]+/users$", 0]
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -78,50 +100,62 @@ Match incoming requests based on HTTP headers included in the request.
 {{< tabs >}}
 {{< tab name="Exact header matching" >}}
 ```yaml
-routes:
-- name: auth-exact
-  matches:
-  - path:
-      pathPrefix: "/api"
-    headers:
-    - name: "Authorization"
-      value:
-        exact: "Bearer abc123token"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: auth-exact
+      matches:
+      - path:
+          pathPrefix: "/api"
+        headers:
+        - name: "Authorization"
+          value:
+            exact: "Bearer abc123token"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="Regex header matching" >}}
 ```yaml
-routes:
-- name: auth-regex
-  matches:
-  - path:
-      pathPrefix: "/api"
-    headers:
-    - name: "Authorization"
-      value:
-        regex: "^Bearer .*"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: auth-regex
+      matches:
+      - path:
+          pathPrefix: "/api"
+        headers:
+        - name: "Authorization"
+          value:
+            regex: "^Bearer .*"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="Multiple header matching" >}}
 ```yaml
-routes:
-- name: multi-header
-  matches:
-  - path:
-      pathPrefix: "/api"
-    headers:
-    - name: "Authorization"
-      value:
-        regex: "^Bearer .*"
-    - name: "Content-Type"
-      value:
-        exact: "application/json"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: multi-header
+      matches:
+      - path:
+          pathPrefix: "/api"
+        headers:
+        - name: "Authorization"
+          value:
+            regex: "^Bearer .*"
+        - name: "Content-Type"
+          value:
+            exact: "application/json"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -139,45 +173,57 @@ Optionally restrict matches to specific HTTP methods.
 {{< tabs >}}
 {{< tab name="GET method matching" >}}
 ```yaml
-routes:
-- name: get-only
-  matches:
-  - path:
-      pathPrefix: "/api"
-    method: "GET"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: get-only
+      matches:
+      - path:
+          pathPrefix: "/api"
+        method: "GET"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="POST method matching" >}}
 ```yaml
-routes:
-- name: post-only
-  matches:
-  - path:
-      pathPrefix: "/api/users"
-    method: "POST"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: post-only
+      matches:
+      - path:
+          pathPrefix: "/api/users"
+        method: "POST"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="Multiple methods with different backends" >}}
 ```yaml
-routes:
-- name: read-operations
-  matches:
-  - path:
-      pathPrefix: "/api/users"
-    method: "GET"
-    backends:
-    - host: read-api.example.com:8080
-- name: write-operations
-  matches:
-  - path:
-      pathPrefix: "/api/users"
-    method: "POST"
-    backends:
-    - host: write-api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: read-operations
+      matches:
+      - path:
+          pathPrefix: "/api/users"
+        method: "GET"
+      backends:
+      - host: read-api.example.com:8080
+    - name: write-operations
+      matches:
+      - path:
+          pathPrefix: "/api/users"
+        method: "POST"
+      backends:
+      - host: write-api.example.com:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -196,50 +242,62 @@ Match on query parameters, either by exact value or regex.
 {{< tabs >}}
 {{< tab name="Exact query parameter matching" >}}
 ```yaml
-routes:
-- name: version-exact
-  matches:
-  - path:
-      pathPrefix: "/api"
-    query:
-    - name: "version"
-      value:
-        exact: "v1"
-    backends:
-    - host: api-v1.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: version-exact
+      matches:
+      - path:
+          pathPrefix: "/api"
+        query:
+        - name: "version"
+          value:
+            exact: "v1"
+      backends:
+      - host: api-v1.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="Regex query parameter matching" >}}
 ```yaml
-routes:
-- name: version-regex
-  matches:
-  - path:
-      pathPrefix: "/api"
-    query:
-    - name: "version"
-      value:
-        regex: "^v[0-9]+$"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: version-regex
+      matches:
+      - path:
+          pathPrefix: "/api"
+        query:
+        - name: "version"
+          value:
+            regex: "^v[0-9]+$"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< tab name="Multiple query parameters" >}}
 ```yaml
-routes:
-- name: multi-query
-  matches:
-  - path:
-      pathPrefix: "/api"
-    query:
-    - name: "version"
-      value:
-        exact: "v1"
-    - name: "format"
-      value:
-        regex: "^(json|xml)$"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: multi-query
+      matches:
+      - path:
+          pathPrefix: "/api"
+        query:
+        - name: "version"
+          value:
+            exact: "v1"
+        - name: "format"
+          value:
+            regex: "^(json|xml)$"
+      backends:
+      - host: api.example.com:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -249,23 +307,60 @@ routes:
 You can combine multiple matching conditions to create a more specific route, such as the following example.
 
 ```yaml
-routes:
-- name: comprehensive-match
-  matches:
-  - path:
-      pathPrefix: "/api/v1"
-    method: "GET"
-    headers:
-    - name: "Authorization"
-      value:
-        regex: "^Bearer .*"
-    query:
-    - name: "format"
-      value:
-        exact: "json"
-    backends:
-    - host: api.example.com:8080
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: comprehensive-match
+      matches:
+      - path:
+          pathPrefix: "/api/v1"
+        method: "GET"
+        headers:
+        - name: "Authorization"
+          value:
+            regex: "^Bearer .*"
+        query:
+        - name: "format"
+          value:
+            exact: "json"
+      backends:
+      - host: api.example.com:8080
 ```
+
+{{< doc-test paths="matching" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The combined-matching example config (path + method + header + query) is
+#     accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * Runtime match behavior — requires a backend the page omits to route to.
+#   * The other match-type variants on this page (exact/prefix/regex path,
+#     header, method, query) are structurally analogous and not individually tested.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - name: comprehensive-match
+      matches:
+      - path:
+          pathPrefix: "/api/v1"
+        method: "GET"
+        headers:
+        - name: "Authorization"
+          value:
+            regex: "^Bearer .*"
+        query:
+        - name: "format"
+          value:
+            exact: "json"
+      backends:
+      - host: api.example.com:8080
+EOF
+agentgateway -f config.yaml --validate-only
+{{< /doc-test >}}
 
 ## TCP routes
 
@@ -276,12 +371,18 @@ For routes configured with [TCP listeners]({{< link-hextra path="/configuration/
 Match incoming requests based on the hostname included in the request. This is primarily used for TLS termination scenarios.
 
 ```yaml
-tcpRoutes:
-- name: database-backend
-  hostnames:
-  - "db.example.com"
-  backends:
-  - host: postgres.example.com:5432
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 5432
+  listeners:
+  - name: database-proxy
+    protocol: TCP
+    tcpRoutes:
+    - name: database-backend
+      hostnames:
+      - "db.example.com"
+      backends:
+      - host: postgres.example.com:5432
 ```
 
 ### Backend routing
@@ -295,13 +396,47 @@ In the following example, traffic is load balanced across the three backends in 
 If no weight is specified, the default is 1. Backends with a weight of 0 receive no traffic. Each incoming TCP connection maintains a 1:1 mapping with an outgoing backend connection; once a connection is established, it remains bound to its assigned backend for the lifetime of that connection.
 
 ```yaml
-tcpRoutes:
-- name: redis-cluster
-  backends:
-  - host: redis-1.example.com:6379
-    weight: 1
-  - host: redis-2.example.com:6379
-    weight: 2
-  - host: redis-3.example.com:6379
-    weight: 1
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 6379
+  listeners:
+  - name: redis-proxy
+    protocol: TCP
+    tcpRoutes:
+    - name: redis-cluster
+      backends:
+      - host: redis-1.example.com:6379
+        weight: 1
+      - host: redis-2.example.com:6379
+        weight: 2
+      - host: redis-3.example.com:6379
+        weight: 1
 ```
+
+{{< doc-test paths="matching" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The TCP backend-routing example config (weighted multi-backend tcpRoutes)
+#     is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * Runtime weighted load balancing — requires live TCP backends the page omits.
+#   * The hostname-matching TCP variant on this page is structurally analogous
+#     and not individually tested.
+cat <<'EOF' > config2.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 6379
+  listeners:
+  - name: redis-proxy
+    protocol: TCP
+    tcpRoutes:
+    - name: redis-cluster
+      backends:
+      - host: redis-1.example.com:6379
+        weight: 1
+      - host: redis-2.example.com:6379
+        weight: 2
+      - host: redis-3.example.com:6379
+        weight: 1
+EOF
+agentgateway -f config2.yaml --validate-only
+{{< /doc-test >}}
