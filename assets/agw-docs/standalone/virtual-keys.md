@@ -392,6 +392,6 @@ Track token usage and spending for each virtual key using Prometheus metrics exp
 ## What's next
 
 - [Model costs]({{< link-hextra path="/llm/costs/" >}}) to price requests with a model cost catalog and expose realized USD costs
-- [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for detailed authentication configuration
+- [LLM providers]({{< link-hextra path="/llm/providers/" >}}) for provider-specific authentication configuration
 - [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for advanced rate limiting configuration
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs

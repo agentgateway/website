@@ -69,8 +69,13 @@ jobs:
             --config docs-link-checking/lychee.toml
             --root-dir "${{ github.workspace }}/public"
             --index-files index.html
-            --exclude-path public/docs/kubernetes/2.2.x
-            --exclude-path public/docs/kubernetes/1.0.x
+            # Only link-check the current doc versions (main, latest). Any
+            # numbered version dir (e.g. 1.2.x, 2.2.x) is skipped automatically,
+            # so retired versions never need adding here. Non-docs pages (blog,
+            # models, boilerplates, landing) are still checked. exclude-path is
+            # a regex: match /docs/<product>/<version> where version starts with
+            # a digit (main/latest start with a letter, so they pass through).
+            --exclude-path 'public/docs/[^/]+/[0-9]'
             --remap "^https://agentgateway\.dev/docs/ file:///${{ github.workspace }}/public/docs/"
             --remap "public/docs/observability public/docs/kubernetes/latest/observability"
             --remap "public/docs/resiliency public/docs/kubernetes/latest/resiliency"
