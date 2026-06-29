@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badg
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="timeouts" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 Request {{< gloss "Timeout" >}}timeouts{{< /gloss >}} allow returning an error for requests that take too long to complete.

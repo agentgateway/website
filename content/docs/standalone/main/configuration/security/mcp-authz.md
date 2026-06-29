@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Backend" path="/configuration/backends/">}} (MCP
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="mcp-authz-config" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 The MCP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} policy works similarly to [HTTP authorization]({{< link-hextra path="/configuration/security/http-authz" >}}), but runs in the context of an MCP request.

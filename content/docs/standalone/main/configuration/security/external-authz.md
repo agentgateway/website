@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="external-authz" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 When {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} decisions need to be made out-of-process, use an external authorization policy.

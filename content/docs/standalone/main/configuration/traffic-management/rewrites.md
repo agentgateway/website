@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="rewrites" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 Modify URLs of incoming requests with {{< gloss "Rewrite" >}}rewrite{{< /gloss >}} policies.

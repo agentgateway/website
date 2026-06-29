@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Listener" path="/configuration/listeners/">}} {{
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="apikey-authn" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 {{< gloss "API Key" >}}API key{{< /gloss >}} {{< gloss "Authentication (AuthN)" >}}authentication{{< /gloss >}} enables authenticating requests based on a user-provided API key.

@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="backend-authn" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 export MY_API_KEY="${MY_API_KEY:-dummy}"
 {{< /doc-test >}}
 

@@ -15,7 +15,7 @@ Agentgateway supports a variety of backends, such as simple hostnames and IP add
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="backends" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 {{< /doc-test >}}
 

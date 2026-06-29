@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}} {{< badg
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="manipulation" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 There are a few different policies that offer manipulation of HTTP requests and responses.

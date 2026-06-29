@@ -21,7 +21,7 @@ Directly respond to a request with a custom response using {{< gloss "Direct Res
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * The conditional-execution variant — requires config/traffic the page omits
 #     (the `conditional` field is documented on a separate page).
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 For example, the following configuration returns a `404 Not found!` response.

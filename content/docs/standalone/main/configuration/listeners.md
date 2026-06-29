@@ -14,7 +14,7 @@ Agentgateway supports both {{< gloss "HTTP (Hypertext Transfer Protocol)" >}}HTT
 The following examples use routing-based configuration with `binds`. If you only route to LLM or MCP backends, the simplified `llm` and `mcp` modes set the listener port and TLS directly through `llm.port`, `llm.tls`, and `mcp.port`. For more information about the configuration styles, see [Routing-based configuration]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 {{< doc-test paths="listeners" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 {{< doc-test paths="listeners" >}}

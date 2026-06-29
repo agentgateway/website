@@ -13,7 +13,7 @@ Attaches to: {{< badge content="Backend" path="/configuration/backends/">}}
 {{< reuse "agw-docs/snippets/config-styles-note.md" >}}
 
 {{< doc-test paths="backend-tls" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 {{< doc-test paths="backend-tls" >}}

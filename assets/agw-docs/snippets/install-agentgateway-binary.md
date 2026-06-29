@@ -1,3 +1,4 @@
+{{< version include-if="main" >}}
 # Install the agentgateway nightly build, following the documented "Nightly build"
 # steps (https://agentgateway.dev/docs/standalone/latest/quickstart/llm/). CI runs
 # on Linux, so this downloads the release-binary-linux artifact from the latest
@@ -9,3 +10,12 @@ chmod +x agentgateway
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
 mv agentgateway "$HOME/.local/bin/agentgateway"
+{{< /version >}}
+{{< version exclude-if="main" >}}
+# Install the latest released agentgateway binary to local bin without sudo.
+mkdir -p "$HOME/.local/bin"
+export PATH="$HOME/.local/bin:$PATH"
+BINARY_URL="https://github.com/agentgateway/agentgateway/releases/latest/download/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
+curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
+chmod +x "$HOME/.local/bin/agentgateway"
+{{< /version >}}

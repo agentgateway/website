@@ -24,7 +24,7 @@ MCP authentication uses a connect-time model: the OAuth flow happens once when t
 There are three deployment scenarios.
 
 {{< doc-test paths="mcp-authn" >}}
-{{< reuse "agw-docs/snippets/install-agentgateway.md" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 {{< doc-test paths="mcp-authn" >}}
