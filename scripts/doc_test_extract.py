@@ -137,14 +137,22 @@ class Extractor:
         kv = self._parse_shortcode_params(params)
         include_if = [x.strip() for x in kv.get("include-if", "").split(",") if x.strip()]
         exclude_if = [x.strip() for x in kv.get("exclude-if", "").split(",") if x.strip()]
-        # Use the resolved canonical version string (e.g. "2.2.x") so that
-        # include-if values in asset files match regardless of whether the
-        # context.version was supplied as a linkVersion token ("latest") or
-        # directly as a version string ("2.2.x").
-        version = self._resolved_version
-        if include_if and version not in include_if:
+        # Identifiers that represent the current version. We accept both the
+        # canonical version string (e.g. "2.2.x") AND the stable linkVersion
+        # token (e.g. "main"/"latest"). This lets include-if/exclude-if target a
+        # directory by its release-stable name ("main") instead of the version
+        # number, which rotates every release. Matching the canonical string
+        # still works regardless of whether context.version was supplied as a
+        # linkVersion token or directly as a version string. Mirrors the
+        # linkVersion matching in the Hugo version.html shortcode.
+        identifiers = {self.version, self._resolved_version}
+        for link_ver, ver in self._link_version_map.items():
+            if ver == self._resolved_version:
+                identifiers.add(link_ver)
+        identifiers.discard(None)
+        if include_if and not identifiers.intersection(include_if):
             return False
-        if exclude_if and version in exclude_if:
+        if exclude_if and identifiers.intersection(exclude_if):
             return False
         return True
 
