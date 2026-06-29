@@ -1,15 +1,15 @@
 {{< version include-if="main" >}}
-# Install the agentgateway nightly build, following the documented "Nightly build"
-# steps (https://agentgateway.dev/docs/standalone/latest/quickstart/llm/). CI runs
-# on Linux, so this downloads the release-binary-linux artifact from the latest
-# successful nightly workflow run. Requires an authenticated `gh` with read access
-# to the agentgateway/agentgateway repo's Actions artifacts.
-RUN_ID=$(gh run list -R agentgateway/agentgateway --workflow nightly.yml --status success --limit 1 --json databaseId --jq '.[0].databaseId')
-gh run download "$RUN_ID" -R agentgateway/agentgateway -n release-binary-linux
-chmod +x agentgateway
+# Install the agentgateway binary from the latest main (nightly) build.
+# The nightly build publishes a container image tagged 'latest-dev'; extract the
+# binary from that image. The GitHub release assets only exist for tagged
+# releases, not for the in-development 'main' version.
 mkdir -p "$HOME/.local/bin"
 export PATH="$HOME/.local/bin:$PATH"
-mv agentgateway "$HOME/.local/bin/agentgateway"
+docker rm -f agw-extract >/dev/null 2>&1 || true
+docker create --name agw-extract cr.agentgateway.dev/agentgateway:latest-dev
+docker cp agw-extract:/app/agentgateway "$HOME/.local/bin/agentgateway"
+docker rm agw-extract
+chmod +x "$HOME/.local/bin/agentgateway"
 {{< /version >}}
 {{< version exclude-if="main" >}}
 # Install the latest released agentgateway binary to local bin without sudo.
