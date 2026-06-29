@@ -5,7 +5,7 @@ description: Configure agentgateway for providers without built-in support that 
 aliases: /llm/providers/openai-compatible
 test:
   openai-compatible-validate:
-  - file: ${versionRoot}/llm/providers/openai-compatible.md
+  - file: ${versionRoot}/llm/providers/custom.md
     path: openai-compat-validate
 ---
 
