@@ -4,14 +4,13 @@ description: Install an OpenTelemetry stack with Grafana, Loki, and Tempo for ob
 weight: 10
 test:
   otel-stack:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/observability/otel-stack.md
-    path: otel-stack
+  - path: otel-stack
 ---
 
 {{< reuse "agw-docs/snippets/agentgateway/otel-prereq.md" >}}

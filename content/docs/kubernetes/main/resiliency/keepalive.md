@@ -4,24 +4,22 @@ weight: 10
 description: Manage idle and stale connections with TCP and HTTP keepalive.
 test:
   tcp-keepalive:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/resiliency/keepalive.md
-    path: tcp-keepalive
+  - path: tcp-keepalive
 
   http-keepalive:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/resiliency/keepalive.md
-    path: http-keepalive
+  - path: http-keepalive
 ---
 
 {{< reuse "agw-docs/pages/resiliency/keepalive.md" >}}

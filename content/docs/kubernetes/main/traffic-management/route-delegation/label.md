@@ -4,14 +4,12 @@ weight: 20
 description: Use labels to delegate traffic to child HTTPRoutes with the `<key>=<value>` syntax.
 test:
   label:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/traffic-management/route-delegation/label.md
-    path: route-delegation-prereq
-  - file: content/docs/kubernetes/main/traffic-management/route-delegation/label.md
-    path: label
+  - path: route-delegation-prereq
+  - path: label
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/route-delegation/label.md" >}}

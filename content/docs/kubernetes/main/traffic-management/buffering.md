@@ -4,12 +4,11 @@ weight: 10
 description: Buffer requests and responses for inspection or replay.
 test:
   buffering:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/traffic-management/buffering.md
-    path: buffering
+  - path: buffering
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/buffering.md" >}}

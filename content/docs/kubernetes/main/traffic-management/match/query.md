@@ -4,14 +4,13 @@ weight: 10
 description: Specify a set of URL query parameters which requests must match in entirety.
 test:
   query-match:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/match/query.md
-    path: query-match
+  - path: query-match
 ---
 
 Specify a set of URL query parameters which requests must match in entirety.

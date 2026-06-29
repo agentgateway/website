@@ -4,14 +4,13 @@ weight: 10
 description: Modify requests and responses with an external gRPC processing server.
 test:
   extproc:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/extproc.md
-    path: extproc
+  - path: extproc
 ---
 
 Modify aspects of an HTTP request or response with an external processing server. 

@@ -4,14 +4,13 @@ weight: 46
 description: Read a query parameter from the request URI and inject it as a request header using a CEL conditional expression.
 test:
   query:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/transformations/query.md
-    path: query
+  - path: query
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/query.md" >}}
