@@ -2,9 +2,19 @@
 title: HTTP authorization
 weight: 12
 description: Define allow, deny, and require rules using CEL expressions.
+test:
+  http-authz:
+  - file: content/docs/standalone/main/configuration/security/http-authz.md
+    path: http-authz
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
+
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
+{{< doc-test paths="http-authz" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
 
 HTTP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} allows defining rules to allow or deny requests based on their properties, using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
 
@@ -28,15 +38,135 @@ A CEL expression that cannot be evaluated is treated as `false`. For example, if
 - An `allow` expression that errors does not match, so it does not allow the request.
 {{< /callout >}}
 
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
 ```yaml
-authorization:
-  rules:
-  - allow: 'request.path == "/authz/public"'
-  - deny: 'request.path == "/authz/deny"'
-  - require: 'jwt.aud == "my-service"'
-  # legacy format; same as `allow: ...`
-  - 'request.headers["x-allow"] == "true"'
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        authorization:
+          rules:
+          - allow: 'request.path == "/authz/public"'
+          - deny: 'request.path == "/authz/deny"'
+          - require: 'jwt.aud == "my-service"'
+          # legacy format; same as `allow: ...`
+          - 'request.headers["x-allow"] == "true"'
+      backends:
+      - host: localhost:8080
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+{{< doc-test paths="http-authz" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The authorization policy with allow/deny/require and legacy rules is
+#     accepted by agentgateway in all three configuration forms: routing-based
+#     (binds), simplified LLM (llm.policies), and simplified MCP (mcp.policies).
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That requests are actually allowed/denied at runtime — requires a backend
+#     and traffic the page omits.
+#   * The `### Require rules` snippets and the model-layer `llm:` example are
+#     focused fragments, so they are not tested.
+cat <<'EOF' > config.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - policies:
+        authorization:
+          rules:
+          - allow: 'request.path == "/authz/public"'
+          - deny: 'request.path == "/authz/deny"'
+          - require: 'jwt.aud == "my-service"'
+          # legacy format; same as `allow: ...`
+          - 'request.headers["x-allow"] == "true"'
+      backends:
+      - host: localhost:8080
+EOF
+agentgateway -f config.yaml --validate-only
+
+cat <<'EOF' > config-llm.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
+EOF
+agentgateway -f config-llm.yaml --validate-only
+
+cat <<'EOF' > config-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-mcp.yaml --validate-only
+{{< /doc-test >}}
 
 ### Require rules
 

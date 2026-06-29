@@ -140,6 +140,9 @@ jobs:
           DEBUG_MODE: true
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PYTHONUNBUFFERED: '1'
+          # Used by the install-agentgateway-binary snippet's `gh run download` of the
+          # nightly release-binary-linux artifact from agentgateway/agentgateway.
+          GH_TOKEN: ${{ github.token }}
         run: |
           FAILED=0
           TEST_INDEX=0
