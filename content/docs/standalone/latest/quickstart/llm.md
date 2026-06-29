@@ -4,7 +4,7 @@ weight: 11
 description: Route requests to OpenAI's chat completions API with the agentgateway binary.
 test:
   llm-openai:
-  - file: content/docs/standalone/latest/quickstart/llm.md
+  - file: ${versionRoot}/quickstart/llm.md
     path: llm
 ---
 

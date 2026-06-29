@@ -4,7 +4,7 @@ weight: 40
 description: Define authorization rules for MCP method invocations using CEL expressions.
 test:
   mcp-authz-config:
-  - file: content/docs/standalone/main/configuration/security/mcp-authz.md
+  - file: ${versionRoot}/configuration/security/mcp-authz.md
     path: mcp-authz-config
 ---
 
