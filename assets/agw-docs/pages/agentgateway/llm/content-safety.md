@@ -386,19 +386,19 @@ For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails
          promptGuard:
            request:
            - bedrockGuardrails:
-               guardrailIdentifier: your-guardrail-id
-               guardrailVersion: "1"  # or "DRAFT"
+               identifier: your-guardrail-id
+               version: "1"  # or "DRAFT"
                region: us-west-2
                policies:
-                 backendAuth:
+                 auth:
                    aws: {}
            response:
            - bedrockGuardrails:
-               guardrailIdentifier: your-guardrail-id
-               guardrailVersion: "1"
+               identifier: your-guardrail-id
+               version: "1"
                region: us-west-2
                policies:
-                 backendAuth:
+                 auth:
                    aws: {}
    EOF
    ```

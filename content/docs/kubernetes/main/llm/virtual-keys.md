@@ -14,6 +14,21 @@ test:
     path: virtual-keys
   - file: content/docs/kubernetes/main/llm/virtual-keys.md
     path: virtual-keys-httpbun-test
+  virtual-keys-ratelimit:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/llm/providers/httpbun.md
+    path: setup-httpbun-llm
+  - file: content/docs/kubernetes/main/security/rate-limit-global.md
+    path: deploy-rate-limit-server
+  - file: content/docs/kubernetes/main/llm/virtual-keys.md
+    path: virtual-keys
+  - file: content/docs/kubernetes/main/llm/virtual-keys.md
+    path: virtual-keys-with-ratelimit
+  - file: content/docs/kubernetes/main/llm/virtual-keys.md
+    path: virtual-keys-ratelimit-test
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/virtual-keys.md" >}}
