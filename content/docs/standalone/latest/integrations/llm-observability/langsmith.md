@@ -77,5 +77,5 @@ services:
 
 ## Learn more
 
-- [LangSmith Documentation](https://docs.smith.langchain.com/)
+- [LangSmith Documentation](https://docs.langchain.com/langsmith)
 - [OpenTelemetry Integration]({{< link-hextra path="/integrations/observability/opentelemetry" >}})

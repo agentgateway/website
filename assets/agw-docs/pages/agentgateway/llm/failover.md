@@ -388,7 +388,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
 3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
 
-   The `unhealthyCondition` field is an optional [CEL expression](https://github.com/google/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
+   The `unhealthyCondition` field is an optional [CEL expression](https://github.com/cel-expr/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
    {{< tabs >}}
    {{% tab name="5xx and rate-limit failover" %}}
