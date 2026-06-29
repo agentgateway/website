@@ -14,7 +14,7 @@ The LLM playground is available in the agentgateway UI in version 1.3 and later.
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Configure at least one LLM provider. For an example, see [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}}) or any [OpenAI-compatible provider]({{< link-hextra path="/llm/providers/openai-compatible/" >}}).
+2. Configure at least one LLM provider. For an example, see [OpenAI]({{< link-hextra path="/llm/providers/openai/" >}}) or any [OpenAI-compatible provider]({{< link-hextra path="/llm/providers/custom/" >}}).
 
 ## Send a test request
 
