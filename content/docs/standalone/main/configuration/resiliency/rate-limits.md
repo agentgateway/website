@@ -159,7 +159,7 @@ agentgateway -f config-mcp.yaml --validate-only
 For tokens, each token (prompt or completion) consumes 1 unit of capacity.
 Because the number of tokens that are used for the completion is not known at the time the request is sent, calculating the number of tokens can become tricky. To work around this issue, agentgateway checks token-based rate limits in two phases, at request time and at response time. 
 
-To enable token-based rate limiting, set the rate limiting type to `tokens`. This example shows only the route-level `localRateLimit` policy; attach it to a route as shown in the complete examples in the [Configuration](#configuration) section.
+To enable token-based rate limiting, set the rate limiting type to `tokens`. This example shows only the `localRateLimit` policy; attach it to a route as shown in the complete examples in the [Configuration](#configuration) section.
 
 ```yaml
 localRateLimit:
