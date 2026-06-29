@@ -1,7 +1,7 @@
 ---
 title: "MCP Guardrails with AARM and Microsoft Agent Governance Toolkit"
 category: "Integration"
-publishDate: 2026-06-25
+publishDate: 2026-06-29
 author: "Christian Posta"
 description: "AI agents behavior emerge at runtime. Roles and pre-defined access is not enough"
 toc: false
