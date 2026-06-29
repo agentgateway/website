@@ -6,7 +6,8 @@ test:
   mcp:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: setup-mcp-server
+  - file: ${versionRoot}/quickstart/mcp.md
+    path: setup-mcp-server
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/quickstart/mcp.md" >}}

@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: setup-httpbun-llm
+  - file: ${versionRoot}/llm/providers/httpbun.md
+    path: setup-httpbun-llm
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/httpbun.md" >}}

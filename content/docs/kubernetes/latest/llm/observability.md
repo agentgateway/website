@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - path: llm-observability
+  - file: ${versionRoot}/llm/observability.md
+    path: llm-observability
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/observability.md" >}}

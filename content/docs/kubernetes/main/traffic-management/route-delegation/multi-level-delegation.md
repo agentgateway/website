@@ -8,8 +8,10 @@ test:
     path: experimental
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: route-delegation-prereq
-  - path: multi-level
+  - file: ${versionRoot}/traffic-management/route-delegation/multi-level-delegation.md
+    path: route-delegation-prereq
+  - file: ${versionRoot}/traffic-management/route-delegation/multi-level-delegation.md
+    path: multi-level
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/route-delegation/multi-level-delegation.md" >}}

@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: validate-defaults
+  - file: ${versionRoot}/traffic-management/transformations/validate.md
+    path: validate-defaults
   validate-skip:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: validate-skip
+  - file: ${versionRoot}/traffic-management/transformations/validate.md
+    path: validate-skip
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/validate.md" >}}

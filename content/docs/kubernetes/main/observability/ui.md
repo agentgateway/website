@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: ui-k8s
+  - file: ${versionRoot}/observability/ui.md
+    path: ui-k8s
   capture:
   - file: ${versionRoot}/install/helm.md
     path: standard
@@ -18,7 +19,8 @@ test:
     path: setup-mcp-server
   - file: ${versionRoot}/quickstart/non-agentic-http.md
     path: install-httpbin
-  - path: ui-k8s-capture
+  - file: ${versionRoot}/observability/ui.md
+    path: ui-k8s-capture
 ---
 
 {{< reuse "agw-docs/pages/observability/ui.md" >}}

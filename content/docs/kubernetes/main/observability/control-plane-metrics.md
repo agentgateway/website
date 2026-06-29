@@ -6,7 +6,8 @@ test:
   control-plane-metrics:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: control-plane-metrics
+  - file: ${versionRoot}/observability/control-plane-metrics.md
+    path: control-plane-metrics
 ---
 
 {{< reuse "agw-docs/pages/observability/control-plane-metrics.md" >}}

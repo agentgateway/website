@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: tracing
+  - file: ${versionRoot}/traffic-management/transformations/tracing.md
+    path: tracing
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/tracing.md" >}}

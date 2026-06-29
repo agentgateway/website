@@ -8,8 +8,10 @@ test:
     path: experimental
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: route-delegation-prereq
-  - path: native-policies
+  - file: ${versionRoot}/traffic-management/route-delegation/inheritance/native-policies.md
+    path: route-delegation-prereq
+  - file: ${versionRoot}/traffic-management/route-delegation/inheritance/native-policies.md
+    path: native-policies
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/route-delegation/inheritance/native-policies.md" >}}

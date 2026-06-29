@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: remove-header
+  - file: ${versionRoot}/traffic-management/transformations/remove-header.md
+    path: remove-header
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/remove-header.md" >}}

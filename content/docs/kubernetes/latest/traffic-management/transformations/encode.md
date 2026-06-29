@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: encode
+  - file: ${versionRoot}/traffic-management/transformations/encode.md
+    path: encode
   decode:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,6 +19,7 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: decode
+  - file: ${versionRoot}/traffic-management/transformations/encode.md
+    path: decode
 ---
 {{< reuse "agw-docs/pages/traffic-management/transformations/encode.md" >}}

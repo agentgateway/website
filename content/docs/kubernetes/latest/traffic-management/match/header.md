@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: header-match-exact
+  - file: ${versionRoot}/traffic-management/match/header.md
+    path: header-match-exact
   header-match-regex:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: header-match-regex
+  - file: ${versionRoot}/traffic-management/match/header.md
+    path: header-match-regex
 ---
 
 Specify a set of headers which incoming requests must match in entirety, such as with regular expressions (regex).

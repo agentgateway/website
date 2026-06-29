@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: path-match-exact
+  - file: ${versionRoot}/traffic-management/match/path.md
+    path: path-match-exact
   path-match-prefix:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: path-match-prefix
+  - file: ${versionRoot}/traffic-management/match/path.md
+    path: path-match-prefix
   path-match-regex:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -26,7 +28,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: path-match-regex
+  - file: ${versionRoot}/traffic-management/match/path.md
+    path: path-match-regex
 ---
 
 Match the targeted path of an incoming request against specific path criteria. 

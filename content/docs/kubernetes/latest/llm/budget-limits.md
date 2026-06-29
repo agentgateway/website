@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - path: budget-limits
+  - file: ${versionRoot}/llm/budget-limits.md
+    path: budget-limits
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/budget-limits.md" >}}

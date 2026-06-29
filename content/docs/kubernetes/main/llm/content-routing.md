@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: content-routing
+  - file: ${versionRoot}/llm/content-routing.md
+    path: content-routing
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/content-routing.md" >}}

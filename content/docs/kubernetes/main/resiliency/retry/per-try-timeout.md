@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: per-try-timeout-in-httproute
+  - file: ${versionRoot}/resiliency/retry/per-try-timeout.md
+    path: per-try-timeout-in-httproute
   per-try-timeout-in-agentgateway:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: per-try-timeout-in-agentgateway
+  - file: ${versionRoot}/resiliency/retry/per-try-timeout.md
+    path: per-try-timeout-in-agentgateway
   per-try-timeout-in-gatewaylistener:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -26,7 +28,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: per-try-timeout-in-gatewaylistener
+  - file: ${versionRoot}/resiliency/retry/per-try-timeout.md
+    path: per-try-timeout-in-gatewaylistener
 ---
 
 {{< reuse "agw-docs/pages/resiliency/retry/per-try-timeout.md" >}}

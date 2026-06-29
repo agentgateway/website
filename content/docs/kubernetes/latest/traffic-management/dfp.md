@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: dfp
+  - file: ${versionRoot}/traffic-management/dfp.md
+    path: dfp
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/dfp.md" >}}

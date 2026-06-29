@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: cors-in-httproute
+  - file: ${versionRoot}/security/cors.md
+    path: cors-in-httproute
 
   cors-in-agentgatewaypolicy:
   - file: ${versionRoot}/quickstart/install.md
@@ -19,7 +20,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: cors-in-agentgatewaypolicy
+  - file: ${versionRoot}/security/cors.md
+    path: cors-in-agentgatewaypolicy
 ---
 
 {{< reuse "agw-docs/pages/security/cors.md" >}}

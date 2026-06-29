@@ -8,8 +8,10 @@ test:
     path: experimental
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: route-delegation-prereq
-  - path: header-query
+  - file: ${versionRoot}/traffic-management/route-delegation/header-query.md
+    path: route-delegation-prereq
+  - file: ${versionRoot}/traffic-management/route-delegation/header-query.md
+    path: header-query
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/route-delegation/header-query.md" >}}

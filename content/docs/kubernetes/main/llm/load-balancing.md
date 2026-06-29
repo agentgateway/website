@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: load-balancing
+  - file: ${versionRoot}/llm/load-balancing.md
+    path: load-balancing
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/load-balancing.md" >}}

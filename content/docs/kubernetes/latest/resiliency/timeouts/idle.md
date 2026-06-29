@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: idle-timeout
+  - file: ${versionRoot}/resiliency/timeouts/idle.md
+    path: idle-timeout
 ---
 
 {{< reuse "agw-docs/pages/resiliency/timeouts/idle.md" >}}

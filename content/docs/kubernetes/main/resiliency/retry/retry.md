@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: retry-in-httproute
+  - file: ${versionRoot}/resiliency/retry/retry.md
+    path: retry-in-httproute
   retry-in-agentgateway:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: retry-in-agentgateway
+  - file: ${versionRoot}/resiliency/retry/retry.md
+    path: retry-in-agentgateway
   retry-in-gatewaylistener:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -26,7 +28,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: retry-in-gatewaylistener
+  - file: ${versionRoot}/resiliency/retry/retry.md
+    path: retry-in-gatewaylistener
 ---
 
 {{< reuse "agw-docs/pages/resiliency/retry/retry.md" >}}

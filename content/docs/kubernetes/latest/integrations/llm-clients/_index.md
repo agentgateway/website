@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: llm-clients-k8s-gateway-url
+  - file: ${versionRoot}/integrations/llm-clients/_index.md
+    path: llm-clients-k8s-gateway-url
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients-k8s.md" >}}

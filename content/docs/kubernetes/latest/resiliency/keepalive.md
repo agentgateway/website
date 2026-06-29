@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: tcp-keepalive
+  - file: ${versionRoot}/resiliency/keepalive.md
+    path: tcp-keepalive
 
   http-keepalive:
   - file: ${versionRoot}/quickstart/install.md
@@ -19,7 +20,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: http-keepalive
+  - file: ${versionRoot}/resiliency/keepalive.md
+    path: http-keepalive
 ---
 
 {{< reuse "agw-docs/pages/resiliency/keepalive.md" >}}

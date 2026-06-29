@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/mcp/static-mcp.md
     path: setup-mcp-server
-  - path: mcp-local-rate-limit
+  - file: ${versionRoot}/mcp/rate-limit.md
+    path: mcp-local-rate-limit
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/rate-limit.md" >}}

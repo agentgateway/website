@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: claude-code-k8s
+  - file: ${versionRoot}/integrations/llm-clients/claude-code.md
+    path: claude-code-k8s
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/llm-clients-k8s/claude-code.md" >}}

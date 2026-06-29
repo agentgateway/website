@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: change-response-status
+  - file: ${versionRoot}/traffic-management/transformations/status.md
+    path: change-response-status
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/status.md" >}}

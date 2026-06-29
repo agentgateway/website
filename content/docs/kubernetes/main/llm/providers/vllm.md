@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: vllm-provider-setup
+  - file: ${versionRoot}/llm/providers/vllm.md
+    path: vllm-provider-setup
 ---
 
 {{< callout type="info" >}}

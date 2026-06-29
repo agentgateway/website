@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: access-logging
+  - file: ${versionRoot}/security/access-logging.md
+    path: access-logging
 ---
 
 {{< reuse "agw-docs/pages/security/access-logging.md" >}}

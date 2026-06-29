@@ -12,7 +12,8 @@ test:
     path: setup-mcp-server
   - file: ${versionRoot}/mcp/auth/keycloak.md
     path: setup-keycloak
-  - path: mcp-auth-setup
+  - file: ${versionRoot}/mcp/auth/setup.md
+    path: mcp-auth-setup
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-setup.md" >}}

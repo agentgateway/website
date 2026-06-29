@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: backend-health
+  - file: ${versionRoot}/resiliency/backend-health.md
+    path: backend-health
 ---
 
 {{< reuse "agw-docs/pages/resiliency/backend-health.md" >}}

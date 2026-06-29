@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: setup-mcp-server
+  - file: ${versionRoot}/mcp/static-mcp.md
+    path: setup-mcp-server
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/static.md" >}}

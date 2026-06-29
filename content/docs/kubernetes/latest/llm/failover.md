@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - path: failover
+  - file: ${versionRoot}/llm/failover.md
+    path: failover
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/failover.md" >}}

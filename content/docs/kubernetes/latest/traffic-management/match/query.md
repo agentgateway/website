@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: query-match
+  - file: ${versionRoot}/traffic-management/match/query.md
+    path: query-match
 ---
 
 Specify a set of URL query parameters which requests must match in entirety.

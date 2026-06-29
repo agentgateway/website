@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: ollama-provider-setup
+  - file: ${versionRoot}/llm/providers/ollama.md
+    path: ollama-provider-setup
 ---
 
 {{< callout type="info" >}}

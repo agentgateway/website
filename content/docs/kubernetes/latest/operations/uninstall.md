@@ -6,7 +6,8 @@ test:
   uninstall:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: uninstall
+  - file: ${versionRoot}/operations/uninstall.md
+    path: uninstall
 ---
 
 {{< reuse "agw-docs/pages/operations/uninstall.md" >}}

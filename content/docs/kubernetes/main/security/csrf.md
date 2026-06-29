@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: csrf
+  - file: ${versionRoot}/security/csrf.md
+    path: csrf
 ---
 
 {{< reuse "agw-docs/pages/security/csrf.md" >}}

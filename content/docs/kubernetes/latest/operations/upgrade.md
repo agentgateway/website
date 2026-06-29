@@ -6,7 +6,8 @@ test:
   upgrade:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: upgrade
+  - file: ${versionRoot}/operations/upgrade.md
+    path: upgrade
 ---
 
 {{< reuse "agw-docs/pages/operations/upgrade.md" >}}

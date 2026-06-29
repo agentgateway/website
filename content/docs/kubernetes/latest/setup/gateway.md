@@ -6,7 +6,8 @@ test:
   setup-gateway:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: all
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
 ---
 
 Set up an agentgateway proxy. 

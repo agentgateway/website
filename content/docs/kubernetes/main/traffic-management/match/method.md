@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: method-match
+  - file: ${versionRoot}/traffic-management/match/method.md
+    path: method-match
 ---
 
 Specify an HTTP method, such as POST, GET, PUT, PATCH, or DELETE, to match requests against.

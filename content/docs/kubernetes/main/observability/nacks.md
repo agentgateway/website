@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: nacks
+  - file: ${versionRoot}/observability/nacks.md
+    path: nacks
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/monitoring-agentgateway-nacks.md" >}}

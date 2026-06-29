@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: add-request-header
+  - file: ${versionRoot}/traffic-management/header-control/request-header.md
+    path: add-request-header
   set-request-header:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: set-request-header
+  - file: ${versionRoot}/traffic-management/header-control/request-header.md
+    path: set-request-header
   remove-request-header:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -26,7 +28,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: remove-request-header
+  - file: ${versionRoot}/traffic-management/header-control/request-header.md
+    path: remove-request-header
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/header-control/request-header.md" >}}

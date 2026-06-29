@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: openai-setup
+  - file: ${versionRoot}/llm/providers/openai.md
+    path: openai-setup
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/openai.md" >}}

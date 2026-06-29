@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: customize
+  - file: ${versionRoot}/setup/customize/customize.md
+    path: customize
 ---
 
 {{< reuse "agw-docs/pages/setup/customize.md" >}}

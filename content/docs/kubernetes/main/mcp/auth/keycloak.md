@@ -6,7 +6,8 @@ test:
   setup-keycloak:
   - file: ${versionRoot}/install/helm.md
     path: experimental
-  - path: setup-keycloak
+  - file: ${versionRoot}/mcp/auth/keycloak.md
+    path: setup-keycloak
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-keycloak.md" >}}

@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: path-redirect-prefix
+  - file: ${versionRoot}/traffic-management/redirect/path.md
+    path: path-redirect-prefix
   path-redirect-full:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: path-redirect-full
+  - file: ${versionRoot}/traffic-management/redirect/path.md
+    path: path-redirect-full
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/redirect/path.md" >}}

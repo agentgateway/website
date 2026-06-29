@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: inject-response-headers
+  - file: ${versionRoot}/traffic-management/transformations/inject-response-headers.md
+    path: inject-response-headers
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/inject-response-headers.md" >}}

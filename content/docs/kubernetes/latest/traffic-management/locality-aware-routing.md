@@ -6,7 +6,8 @@ test:
   locality-aware-routing:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - path: locality-aware-routing
+  - file: ${versionRoot}/traffic-management/locality-aware-routing.md
+    path: locality-aware-routing
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/locality-aware-routing.md" >}}

@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: host-rewrite
+  - file: ${versionRoot}/traffic-management/rewrite/host.md
+    path: host-rewrite
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/rewrite/host.md" >}}

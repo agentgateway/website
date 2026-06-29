@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/mcp/static-mcp.md
     path: setup-mcp-server
-  - path: mcp-clients-k8s
+  - file: ${versionRoot}/integrations/mcp-clients/_index.md
+    path: mcp-clients-k8s
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/integrations/mcp-clients-k8s.md" >}}

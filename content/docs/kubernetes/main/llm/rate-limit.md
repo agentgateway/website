@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - path: llm-token-rate-limit
+  - file: ${versionRoot}/llm/rate-limit.md
+    path: llm-token-rate-limit
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/rate-limit.md" >}}

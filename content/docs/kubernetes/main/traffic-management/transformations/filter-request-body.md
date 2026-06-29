@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: filter-request-body
+  - file: ${versionRoot}/traffic-management/transformations/filter-request-body.md
+    path: filter-request-body
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/filter-request-body.md" >}}

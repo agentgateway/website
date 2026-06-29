@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: https-listener
+  - file: ${versionRoot}/setup/listeners/https.md
+    path: https-listener
 ---
 
 {{< reuse "agw-docs/pages/setup/listeners/https.md" >}}

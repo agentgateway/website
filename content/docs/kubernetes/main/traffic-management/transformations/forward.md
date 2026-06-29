@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: forward
+  - file: ${versionRoot}/traffic-management/transformations/forward.md
+    path: forward
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/forward.md" >}}

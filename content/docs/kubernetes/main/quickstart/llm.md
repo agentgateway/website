@@ -6,7 +6,8 @@ test:
   openai:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: openai-setup
+  - file: ${versionRoot}/quickstart/llm.md
+    path: openai-setup
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/quickstart/llm.md" >}}

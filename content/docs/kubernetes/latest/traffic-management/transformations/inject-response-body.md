@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: inject-header-into-body
+  - file: ${versionRoot}/traffic-management/transformations/inject-response-body.md
+    path: inject-header-into-body
   inject-body-field-into-body:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: inject-body-field-into-body
+  - file: ${versionRoot}/traffic-management/transformations/inject-response-body.md
+    path: inject-body-field-into-body
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/inject-response-body.md" >}}

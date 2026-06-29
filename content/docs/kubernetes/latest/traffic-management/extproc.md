@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: extproc
+  - file: ${versionRoot}/traffic-management/extproc.md
+    path: extproc
 ---
 
 Modify aspects of an HTTP request or response with an external processing server. 

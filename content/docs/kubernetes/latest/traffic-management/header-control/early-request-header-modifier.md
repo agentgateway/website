@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: remove-reserved-header
+  - file: ${versionRoot}/traffic-management/header-control/early-request-header-modifier.md
+    path: remove-reserved-header
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/header-control/early-request-header-modifier.md" >}}

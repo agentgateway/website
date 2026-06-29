@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: otel-stack
+  - file: ${versionRoot}/observability/otel-stack.md
+    path: otel-stack
 ---
 
 {{< reuse "agw-docs/snippets/agentgateway/otel-prereq.md" >}}

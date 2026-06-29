@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: global-rate-limit-by-ip
+  - file: ${versionRoot}/security/rate-limit-global.md
+    path: global-rate-limit-by-ip
 ---
 
 {{< reuse "agw-docs/pages/security/rate-limit-global.md" >}}

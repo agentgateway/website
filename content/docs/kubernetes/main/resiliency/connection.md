@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: connection-general
+  - file: ${versionRoot}/resiliency/connection.md
+    path: connection-general
 
   connection-http1:
   - file: ${versionRoot}/quickstart/install.md
@@ -19,7 +20,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: connection-http1
+  - file: ${versionRoot}/resiliency/connection.md
+    path: connection-http1
 
   connection-http2-flow:
   - file: ${versionRoot}/quickstart/install.md
@@ -28,7 +30,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: connection-http2-flow
+  - file: ${versionRoot}/resiliency/connection.md
+    path: connection-http2-flow
 ---
 
 {{< reuse "agw-docs/pages/resiliency/connection.md" >}}

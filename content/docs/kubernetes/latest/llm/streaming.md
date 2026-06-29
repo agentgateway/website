@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - path: streaming-openai
+  - file: ${versionRoot}/llm/streaming.md
+    path: streaming-openai
 ---
 
 Models return a response in two main ways: all at once in a single chunk, or in a stream of chunks.

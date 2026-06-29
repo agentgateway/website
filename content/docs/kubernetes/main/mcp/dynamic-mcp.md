@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: dynamic-mcp
+  - file: ${versionRoot}/mcp/dynamic-mcp.md
+    path: dynamic-mcp
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/dynamic.md" >}}

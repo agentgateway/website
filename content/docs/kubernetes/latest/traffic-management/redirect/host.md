@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: host-redirect
+  - file: ${versionRoot}/traffic-management/redirect/host.md
+    path: host-redirect
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/redirect/host.md" >}}

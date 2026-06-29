@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - path: llm-transformations
+  - file: ${versionRoot}/traffic-management/transformations/llm-model-headers.md
+    path: llm-transformations
 
   llm-model-headers:
   - file: ${versionRoot}/quickstart/install.md
@@ -19,7 +20,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - path: llm-model-headers
+  - file: ${versionRoot}/traffic-management/transformations/llm-model-headers.md
+    path: llm-model-headers
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/transformations.md" >}}

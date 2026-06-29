@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: local-rate-limit
+  - file: ${versionRoot}/security/rate-limit-http.md
+    path: local-rate-limit
 ---
 
 {{< reuse "agw-docs/pages/security/rate-limit-http.md" >}}

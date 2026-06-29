@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: access-logs
+  - file: ${versionRoot}/traffic-management/transformations/access-logs.md
+    path: access-logs
   access-logs-filter:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: access-logs-filter
+  - file: ${versionRoot}/traffic-management/transformations/access-logs.md
+    path: access-logs-filter
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/access-logs.md" >}}

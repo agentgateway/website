@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: host-match
+  - file: ${versionRoot}/traffic-management/match/host.md
+    path: host-match
 ---
 Expose a route on multiple hosts. 
 

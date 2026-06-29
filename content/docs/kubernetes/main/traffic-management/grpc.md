@@ -6,7 +6,8 @@ test:
   grpc:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: grpc
+  - file: ${versionRoot}/traffic-management/grpc.md
+    path: grpc
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/grpc.md" >}}

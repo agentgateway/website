@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - path: traffic-split-llm
+  - file: ${versionRoot}/traffic-management/traffic-split.md
+    path: traffic-split-llm
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/traffic-split.md" >}}

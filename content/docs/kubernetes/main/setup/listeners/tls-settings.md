@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: tls-settings
+  - file: ${versionRoot}/setup/listeners/tls-settings.md
+    path: tls-settings
 ---
 
 {{< reuse "agw-docs/pages/setup/listeners/tls-settings.md" >}}

@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: query
+  - file: ${versionRoot}/traffic-management/transformations/query.md
+    path: query
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/transformations/query.md" >}}

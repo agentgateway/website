@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - path: realtime
+  - file: ${versionRoot}/llm/realtime.md
+    path: realtime
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/llm/realtime.md" >}}

@@ -8,7 +8,8 @@ test:
     path: experimental
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: buffering
+  - file: ${versionRoot}/traffic-management/buffering.md
+    path: buffering
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/buffering.md" >}}

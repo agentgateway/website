@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: direct-response
+  - file: ${versionRoot}/traffic-management/direct-response.md
+    path: direct-response
 ---
 
 {{< reuse "agw-docs/pages/traffic-management/direct-response.md" >}}

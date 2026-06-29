@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: install-httpbin
+  - file: ${versionRoot}/install/sample-app.md
+    path: install-httpbin
 ---
 
 {{< reuse "agw-docs/pages/install/sample-app.md" >}}

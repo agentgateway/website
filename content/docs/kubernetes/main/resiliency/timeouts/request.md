@@ -10,7 +10,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: timeout-in-httproute
+  - file: ${versionRoot}/resiliency/timeouts/request.md
+    path: timeout-in-httproute
   timeout-in-trafficpolicy:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -18,7 +19,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: timeout-in-trafficpolicy
+  - file: ${versionRoot}/resiliency/timeouts/request.md
+    path: timeout-in-trafficpolicy
   timeout-in-gatewaylistener:
   - file: ${versionRoot}/quickstart/install.md
     path: experimental
@@ -26,7 +28,8 @@ test:
     path: all
   - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - path: timeout-in-gatewaylistener
+  - file: ${versionRoot}/resiliency/timeouts/request.md
+    path: timeout-in-gatewaylistener
 ---
 
 {{< reuse "agw-docs/pages/resiliency/timeouts/request.md" >}}

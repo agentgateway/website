@@ -8,7 +8,8 @@ test:
     path: standard
   - file: ${versionRoot}/setup/gateway.md
     path: all
-  - path: virtual-mcp
+  - file: ${versionRoot}/mcp/virtual.md
+    path: virtual-mcp
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/multiplex.md" >}}

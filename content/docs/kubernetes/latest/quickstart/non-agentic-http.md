@@ -6,7 +6,8 @@ test:
   httpbin:
   - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - path: install-httpbin
+  - file: ${versionRoot}/quickstart/non-agentic-http.md
+    path: install-httpbin
 ---
 
 {{< reuse "agw-docs/pages/agentgateway/quickstart/non-agentic-http.md" >}}
