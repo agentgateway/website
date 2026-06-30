@@ -2,6 +2,10 @@
 title: Docker
 weight: 20
 description: Run agentgateway as a Docker container
+test:
+  docker-provider-configs:
+  - file: content/docs/standalone/latest/integrations/platforms/docker.md
+    path: docker-provider-configs
 ---
 
 Run agentgateway as a Docker container for local development or small deployments.
@@ -291,3 +295,113 @@ docker compose up -d
 - [Deployment Guide]({{< link-hextra path="/deployment/docker/" >}})
 - [Configuration Reference]({{< link-hextra path="/configuration/" >}})
 - [LLM Providers]({{< link-hextra path="/llm/providers/" >}})
+
+{{< doc-test paths="docker-provider-configs" >}}
+# WHAT THIS TEST VALIDATES:
+#   * Each LLM provider config shown in the Quick start tabs is schema-valid
+#     (agentgateway --validate-only): OpenAI, Anthropic, xAI, Ollama,
+#     Amazon Bedrock, Google Gemini, and Azure OpenAI. This guards against
+#     field-name regressions like the Bedrock `region` -> `awsRegion` fix
+#     (issue #428) and the Azure `azureEndpoint`/`azureApiKey` fix.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The `docker run ...` commands and `curl` chat completions in each tab
+#     — External dependency: each needs a real provider API key/credentials
+#     and a live LLM endpoint, which the test cannot stand up.
+#   * The "Access the Admin UI" and "Docker Compose" sections — Display-only:
+#     no scriptable assertion without a running container and a real key.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
+
+{{< doc-test paths="docker-provider-configs" >}}
+# Dummy values let shellexpand resolve the $VARs in each config. --validate-only
+# only checks schema, so the values themselves are never used for a real call.
+export OPENAI_API_KEY="test"
+export ANTHROPIC_API_KEY="test"
+export XAI_API_KEY="test"
+export GEMINI_API_KEY="test"
+export AWS_REGION="us-east-1"
+export AZURE_OPENAI_API_KEY="test"
+export AZURE_DEPLOYMENT="gpt-4o"
+export AZURE_RESOURCE_NAME="test-resource"
+
+# OpenAI (Quick start > OpenAI tab)
+cat <<'EOF' > /tmp/docker-openai.yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: $OPENAI_API_KEY
+EOF
+agentgateway -f /tmp/docker-openai.yaml --validate-only
+
+# Anthropic (Quick start > Anthropic tab)
+cat <<'EOF' > /tmp/docker-anthropic.yaml
+llm:
+  models:
+  - name: "*"
+    provider: anthropic
+    params:
+      apiKey: $ANTHROPIC_API_KEY
+EOF
+agentgateway -f /tmp/docker-anthropic.yaml --validate-only
+
+# xAI / Grok (Quick start > xAI (Grok) tab)
+cat <<'EOF' > /tmp/docker-xai.yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: $XAI_API_KEY
+      baseUrl: "https://api.x.ai"
+EOF
+agentgateway -f /tmp/docker-xai.yaml --validate-only
+
+# Ollama (Quick start > Ollama tab)
+cat <<'EOF' > /tmp/docker-ollama.yaml
+llm:
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      baseUrl: "http://host.docker.internal:11434"
+EOF
+agentgateway -f /tmp/docker-ollama.yaml --validate-only
+
+# Amazon Bedrock (Quick start > Amazon Bedrock tab)
+cat <<'EOF' > /tmp/docker-bedrock.yaml
+llm:
+  models:
+  - name: "*"
+    provider: bedrock
+    params:
+      awsRegion: $AWS_REGION
+EOF
+agentgateway -f /tmp/docker-bedrock.yaml --validate-only
+
+# Google Gemini (Quick start > Google Gemini tab)
+cat <<'EOF' > /tmp/docker-gemini.yaml
+llm:
+  models:
+  - name: "*"
+    provider: gemini
+    params:
+      apiKey: $GEMINI_API_KEY
+EOF
+agentgateway -f /tmp/docker-gemini.yaml --validate-only
+
+# Azure OpenAI (Quick start > Azure OpenAI tab)
+cat <<'EOF' > /tmp/docker-azure.yaml
+llm:
+  models:
+  - name: "*"
+    provider: azure
+    params:
+      model: $AZURE_DEPLOYMENT
+      azureResourceName: $AZURE_RESOURCE_NAME
+      azureResourceType: openAI
+      apiKey: $AZURE_OPENAI_API_KEY
+EOF
+agentgateway -f /tmp/docker-azure.yaml --validate-only
+{{< /doc-test >}}
