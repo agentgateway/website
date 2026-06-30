@@ -61,13 +61,10 @@ To install the nightly build for development and testing:
    {{< /tabs >}}
 
 {{< doc-test paths="llm" >}}
-# For CI/tests: install dev version to local bin without sudo
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+# For CI/tests: install the agentgateway binary to local bin without sudo.
+# Uses the nightly 'latest-dev' image for main and the latest release otherwise,
+# so the version dir rotates without hardcoding a release tag that may not exist yet.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 2. Get an [OpenAI API key](https://platform.openai.com/api-keys).
