@@ -4,7 +4,7 @@ weight: 10
 description: Enforce budget and spend limits per key by controlling request and token usage.
 test:
   rate-limits:
-  - file: content/docs/standalone/main/configuration/resiliency/rate-limits.md
+  - file: ${versionRoot}/configuration/resiliency/rate-limits.md
     path: rate-limits
 ---
 

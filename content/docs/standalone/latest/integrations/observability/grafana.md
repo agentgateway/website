@@ -4,7 +4,7 @@ weight: 30
 description: Visualize agentgateway metrics and traces with Grafana
 test:
   grafana:
-  - file: content/docs/standalone/latest/integrations/observability/grafana.md
+  - file: ${versionRoot}/integrations/observability/grafana.md
     path: grafana
 ---
 

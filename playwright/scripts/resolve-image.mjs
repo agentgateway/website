@@ -9,7 +9,7 @@
  *   node resolve-image.mjs latest            -> ghcr.io/agentgateway/agentgateway:v1.3.1
  *   node resolve-image.mjs main              -> ghcr.io/agentgateway/agentgateway:latest-dev
  *   node resolve-image.mjs latest patch      -> 1.3.1
- *   node resolve-image.mjs main chart-version-> v0.0.0-latest-dev   (matches helm.md)
+ *   node resolve-image.mjs main chart-version-> 0.0.0-latest-dev    (matches helm.md)
  *
  * Mapping rule (no hugo.yaml parse needed): n-patch keys each version line to a patch.
  * The line whose patch is a dev string (e.g. 0.0.0-latest-dev) is `main`; `latest` is the
@@ -71,6 +71,13 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   const v = process.argv[2] || process.env.DOC_VERSION || 'latest';
   const what = process.argv[3] || 'image';
   if (what === 'patch') console.log(resolvePatch(v));
-  else if (what === 'chart-version') console.log(`v${resolvePatch(v)}`);
+  else if (what === 'chart-version') {
+    // Released charts are tagged vX.Y.Z; the floating dev chart is published
+    // as the bare nightly tag (0.0.0-latest-dev, no leading "v"). Mirror the
+    // conditional "v" in helm-version-flag.md so screenshot capture installs
+    // the same chart tag the docs (and doc tests) install.
+    const patch = resolvePatch(v);
+    console.log(isDev(patch) ? patch : `v${patch}`);
+  }
   else console.log(resolveImage(v));
 }

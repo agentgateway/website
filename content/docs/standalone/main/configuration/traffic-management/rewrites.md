@@ -4,7 +4,7 @@ weight: 13
 description: Modify URL hostnames and paths of incoming requests dynamically.
 test:
   rewrites:
-  - file: content/docs/standalone/main/configuration/traffic-management/rewrites.md
+  - file: ${versionRoot}/configuration/traffic-management/rewrites.md
     path: rewrites
 ---
 

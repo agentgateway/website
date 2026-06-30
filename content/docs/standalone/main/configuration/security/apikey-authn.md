@@ -4,7 +4,7 @@ weight: 17
 description: Authenticate requests using API keys with configurable validation modes.
 test:
   apikey-authn:
-  - file: content/docs/standalone/main/configuration/security/apikey-authn.md
+  - file: ${versionRoot}/configuration/security/apikey-authn.md
     path: apikey-authn
 ---
 

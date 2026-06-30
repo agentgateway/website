@@ -4,7 +4,7 @@ weight: 12
 description: Define allow, deny, and require rules using CEL expressions.
 test:
   http-authz:
-  - file: content/docs/standalone/main/configuration/security/http-authz.md
+  - file: ${versionRoot}/configuration/security/http-authz.md
     path: http-authz
 ---
 

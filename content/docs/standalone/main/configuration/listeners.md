@@ -4,7 +4,7 @@ weight: 12
 description: Configure listeners for agentgateway.
 test:
   listeners:
-  - file: content/docs/standalone/main/configuration/listeners.md
+  - file: ${versionRoot}/configuration/listeners.md
     path: listeners
 ---
 

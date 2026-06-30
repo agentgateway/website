@@ -78,6 +78,42 @@ def infer_version_from_sources(sources: List[Dict[str, str]], fallback: str) -> 
     return fallback
 
 
+def version_path_tokens(doc_rel_path: str) -> Dict[str, str]:
+    """Build the path-substitution tokens for a page's `test:` metadata.
+
+    Derived from the declaring page's repo-relative path
+    (e.g. "content/docs/standalone/main/configuration/backends.md"):
+
+      ${version}     -> the version dir segment, e.g. "main" / "latest"
+      ${versionRoot} -> the prefix up to and including the version dir,
+                        e.g. "content/docs/standalone/main"
+
+    These let `file:` values reference paths without hardcoding the version
+    directory, which rotates every release. Resolution is anchored to the page
+    that declares the test, so a page copied from main/ to latest/ needs no
+    metadata edit. Entries that intentionally target another version just write
+    the literal path (no token). Returns an empty dict for paths that don't
+    match the content/docs/<section>/<version>/ layout, leaving `file:`
+    unchanged.
+
+    The ${...} syntax (not {...}) is deliberate: a YAML value starting with
+    "{" is parsed as a flow mapping, so a leading {versionRoot} would be a
+    parse error unless quoted. A leading "$" is a plain scalar, so ${versionRoot}
+    is valid unquoted at the start of a `file:` value.
+    """
+    parts = doc_rel_path.replace("\\", "/").split("/")
+    try:
+        idx = parts.index("docs")
+        section = parts[idx + 1]
+        version = parts[idx + 2]
+    except (ValueError, IndexError):
+        return {}
+    if section not in ("kubernetes", "standalone"):
+        return {}
+    version_root = "/".join(parts[: idx + 3])
+    return {"${versionRoot}": version_root, "${version}": version}
+
+
 def build_test_cases_from_file(
     repo_root: Path,
     md_file: Path,
@@ -112,13 +148,24 @@ def build_test_cases_from_file(
             continue
 
         sources: List[Dict[str, str]] = []
+        tokens = version_path_tokens(rel_doc)
         for entry in entries:
             if not isinstance(entry, dict):
                 continue
-            source_file = entry.get("file")
             source_path = entry.get("path")
-            if not source_file or not source_path:
+            if not source_path:
                 continue
+            # `file` defaults to the page that declares the test, and supports
+            # ${version}/${versionRoot} placeholders resolved against that page's
+            # path. This lets entries reference a path without hardcoding the
+            # version dir (which rotates every release), so a page copied from
+            # main/ to latest/ needs no metadata edit -- the version context is
+            # still inferred from the resolved path. Entries that intentionally
+            # point at another version (e.g. a latest/ page reusing main/'s code
+            # blocks) just write the literal path with no token.
+            source_file = entry.get("file") or rel_doc
+            for token, value in tokens.items():
+                source_file = source_file.replace(token, value)
             sources.append({"file": source_file, "path": source_path})
 
         if not sources:

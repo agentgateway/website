@@ -4,7 +4,7 @@ weight: 40
 description: Control access to MCP tools and resources with CEL-based authorization rules
 test:
   mcp-authz-tools:
-  - file: content/docs/standalone/main/mcp/mcp-authz.md
+  - file: ${versionRoot}/mcp/mcp-authz.md
     path: mcp-authz-tools
 ---
 
@@ -19,12 +19,7 @@ The `mcpAuthorization` policy is attached at the backend level, where it applies
 
 {{< doc-test paths="mcp-authz-tools" >}}
 # Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 ## Allow specific tools
