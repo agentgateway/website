@@ -4,7 +4,7 @@ weight: 14
 description: Return custom responses directly without forwarding to a backend.
 test:
   direct-response:
-  - file: content/docs/standalone/main/configuration/traffic-management/direct-response.md
+  - file: ${versionRoot}/configuration/traffic-management/direct-response.md
     path: direct-response
 ---
 

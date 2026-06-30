@@ -4,31 +4,31 @@ weight: 10
 description: Match requests by path using exact, prefix, or regex patterns.
 test:
   path-match-exact:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/match/path.md
+  - file: ${versionRoot}/traffic-management/match/path.md
     path: path-match-exact
   path-match-prefix:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/match/path.md
+  - file: ${versionRoot}/traffic-management/match/path.md
     path: path-match-prefix
   path-match-regex:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/match/path.md
+  - file: ${versionRoot}/traffic-management/match/path.md
     path: path-match-regex
 ---
 

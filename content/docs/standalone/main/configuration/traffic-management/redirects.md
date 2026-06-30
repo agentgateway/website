@@ -4,7 +4,7 @@ weight: 11
 description: Return direct redirect responses to send users to another location.
 test:
   redirects:
-  - file: content/docs/standalone/main/configuration/traffic-management/redirects.md
+  - file: ${versionRoot}/configuration/traffic-management/redirects.md
     path: redirects
 ---
 

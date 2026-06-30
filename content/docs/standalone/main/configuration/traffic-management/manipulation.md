@@ -4,7 +4,7 @@ weight: 10
 description: Add, set, or remove HTTP request and response headers.
 test:
   manipulation:
-  - file: content/docs/standalone/main/configuration/traffic-management/manipulation.md
+  - file: ${versionRoot}/configuration/traffic-management/manipulation.md
     path: manipulation
 ---
 

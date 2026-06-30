@@ -4,7 +4,7 @@ weight: 10
 description: Configure TLS for secure connections to backend services.
 test:
   backend-tls:
-  - file: content/docs/standalone/main/configuration/security/backend-tls.md
+  - file: ${versionRoot}/configuration/security/backend-tls.md
     path: backend-tls
 ---
 

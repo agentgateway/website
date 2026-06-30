@@ -4,7 +4,7 @@ weight: 12
 description: Modify header and body information for requests and responses. 
 test:
   transformations:
-  - file: content/docs/standalone/main/configuration/traffic-management/transformations.md
+  - file: ${versionRoot}/configuration/traffic-management/transformations.md
     path: transformations
 ---
 

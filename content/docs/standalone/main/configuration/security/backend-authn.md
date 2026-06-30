@@ -4,7 +4,7 @@ weight: 10
 description: Attach authentication tokens to outgoing backend requests.
 test:
   backend-authn:
-  - file: content/docs/standalone/main/configuration/security/backend-authn.md
+  - file: ${versionRoot}/configuration/security/backend-authn.md
     path: backend-authn
 ---
 

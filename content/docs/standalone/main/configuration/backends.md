@@ -5,7 +5,7 @@ description: Configure backends to route traffic to hostnames, LLM providers, an
 prev: /configuration/listeners
 test:
   backends:
-  - file: content/docs/standalone/main/configuration/backends.md
+  - file: ${versionRoot}/configuration/backends.md
     path: backends
 ---
 

@@ -4,7 +4,7 @@ weight: 51
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, metrics, and CEL policies.
 test:
   costs:
-  - file: content/docs/standalone/main/llm/costs.md
+  - file: ${versionRoot}/llm/costs.md
     path: costs
 aliases:
   - /llm/spending/

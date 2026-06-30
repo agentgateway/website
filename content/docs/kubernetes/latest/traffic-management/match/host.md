@@ -4,13 +4,13 @@ weight: 10
 description: Match requests by hostname.
 test:
   host-match:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/match/host.md
+  - file: ${versionRoot}/traffic-management/match/host.md
     path: host-match
 ---
 Expose a route on multiple hosts. 

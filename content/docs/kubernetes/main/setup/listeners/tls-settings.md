@@ -4,11 +4,11 @@ description: Configure advanced TLS settings such as cipher suites and protocol 
 weight: 20
 test:
   tls-settings:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/setup/listeners/tls-settings.md
+  - file: ${versionRoot}/setup/listeners/tls-settings.md
     path: tls-settings
 ---
 

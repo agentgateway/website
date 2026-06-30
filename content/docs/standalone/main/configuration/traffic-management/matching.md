@@ -4,7 +4,7 @@ weight: 9
 description: Match incoming requests by path, headers, methods, and query parameters.
 test:
   matching:
-  - file: content/docs/standalone/main/configuration/traffic-management/matching.md
+  - file: ${versionRoot}/configuration/traffic-management/matching.md
     path: matching
 ---
 
