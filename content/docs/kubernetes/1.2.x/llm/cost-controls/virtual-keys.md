@@ -1,6 +1,6 @@
 ---
 title: Virtual keys
-weight: 30
+weight: 10
 description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
 test:
   virtual-keys-auth:
@@ -10,9 +10,9 @@ test:
     path: all
   - file: content/docs/kubernetes/latest/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - file: content/docs/kubernetes/latest/llm/virtual-keys.md
+  - file: content/docs/kubernetes/latest/llm/cost-controls/virtual-keys.md
     path: virtual-keys
-  - file: content/docs/kubernetes/latest/llm/virtual-keys.md
+  - file: content/docs/kubernetes/latest/llm/cost-controls/virtual-keys.md
     path: virtual-keys-httpbun-test
 ---
 

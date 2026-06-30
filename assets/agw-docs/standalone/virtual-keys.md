@@ -386,12 +386,12 @@ Track token usage and spending for each virtual key using Prometheus metrics exp
    ```
 
    {{< callout type="info" >}}
-   This query *estimates* cost by applying your own pricing to token counts. To have agentgateway compute the *realized* USD cost per request from a model cost catalog, see [Model costs]({{< link-hextra path="/llm/costs/" >}}).
+   This query *estimates* cost by applying your own pricing to token counts. To have agentgateway compute the *realized* USD cost per request from a model cost catalog, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
    {{< /callout >}}
 
 ## What's next
 
-- [Model costs]({{< link-hextra path="/llm/costs/" >}}) to price requests with a model cost catalog and expose realized USD costs
+- [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) to price requests with a model cost catalog and expose realized USD costs
 - [LLM providers]({{< link-hextra path="/llm/providers/" >}}) for provider-specific authentication configuration
 - [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for advanced rate limiting configuration
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs

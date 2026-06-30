@@ -78,7 +78,7 @@ Review the following table for example use cases and configuration guidance.
 
 Also, check out the rate limiting guides for other use cases:
 
-- [LLM rate limiting by token expenses]({{< link-hextra path="/llm/rate-limit" >}}).
+- [LLM rate limiting by token expenses]({{< link-hextra path="/llm/cost-controls/rate-limit" >}}).
 - [HTTP rate limiting]({{< link-hextra path="/security/rate-limit-http" >}}).
 
 ## Before you begin

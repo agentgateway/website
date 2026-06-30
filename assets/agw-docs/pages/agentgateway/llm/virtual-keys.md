@@ -663,7 +663,7 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
    {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782410758.432,"0"]},{"metric":{"user_id":"bob"},"value":[1782410758.432,"6.101636101191084e-09"]},{"metric":{"user_id":"alice"},"value":[1782410758.432,"5.106526900820178e-09"]}]}}
    ```
 
-For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
+For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
 
 ## Advanced configuration
 
@@ -789,7 +789,7 @@ descriptors:
           requests_per_unit: 50000
 ```
 
-For more advanced rate limiting patterns, see the [budget and spend limits guide]({{< link-hextra path="/llm/budget-limits/" >}}).
+For more advanced rate limiting patterns, see the [budget and spend limits guide]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}).
 
 ## Cleanup
 
@@ -807,6 +807,6 @@ To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path
 ## What's next
 
 - [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for detailed authentication configuration
-- [Budget and spend limits]({{< link-hextra path="/llm/budget-limits/" >}}) for advanced rate limiting patterns
-- [Track costs per request]({{< link-hextra path="/llm/cost-tracking/" >}}) for cost calculation and monitoring
+- [Budget and spend limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) for advanced rate limiting patterns
+- [Track costs per request]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) for cost calculation and monitoring
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs

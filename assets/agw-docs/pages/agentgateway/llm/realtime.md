@@ -147,7 +147,7 @@ After the Realtime request completes, verify that {{< reuse "agw-docs/snippets/a
 1. Open the {{< reuse "agw-docs/snippets/agentgateway.md" >}} [metrics endpoint](http://localhost:15020/metrics).
 2. Look for the `agentgateway_gen_ai_client_token_usage` metric. The metric includes labels for the token type (`input` or `output`) and the model used.
 
-For more information about LLM metrics and observability, see {{< conditional-text include-if="standalone" >}}[Observe traffic]({{< link-hextra path="/llm/observability/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[LLM cost tracking]({{< link-hextra path="/llm/cost-tracking/" >}}){{< /conditional-text >}}.
+For more information about LLM metrics and observability, see {{< conditional-text include-if="standalone" >}}[Observe traffic]({{< link-hextra path="/llm/observability/" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[LLM cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}){{< /conditional-text >}}.
 
 ## Cleanup
 

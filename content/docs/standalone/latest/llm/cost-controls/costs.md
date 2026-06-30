@@ -1,10 +1,10 @@
 ---
 title: Model costs
-weight: 51
+weight: 20
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, metrics, and CEL policies.
 test:
   costs:
-  - file: content/docs/standalone/main/llm/costs.md
+  - file: content/docs/standalone/main/llm/cost-controls/costs.md
     path: costs
 aliases:
   - /llm/spending/
@@ -161,7 +161,7 @@ In traces, the corresponding cost-resolution `status` attribute uses lowercase v
 The model catalog provides pricing data for spend visibility. To block or throttle traffic, combine cost visibility with rate limiting or virtual key management.
 
 - Use [Rate limiting]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) to cap request or token usage per route, user, or API key.
-- Use [Virtual keys]({{< link-hextra path="/llm/virtual-keys/" >}}) to issue keys with per-key controls and attribution.
+- Use [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) to issue keys with per-key controls and attribution.
 
 ## Advanced: Catalog format
 

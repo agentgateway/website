@@ -169,7 +169,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/llm/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
+3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/llm/cost-controls/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
    ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
@@ -375,7 +375,7 @@ The table summarizes the examples in the following sections.
 Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/security/rate-limit-http#local" >}}).
 
 For AI-specific use cases:
-- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
+- [LLM token-based rate limiting]({{< link-hextra path="/llm/cost-controls/rate-limit" >}})
 - [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
 
 ### Rate limit by client IP {#rate-limit-by-client-ip}

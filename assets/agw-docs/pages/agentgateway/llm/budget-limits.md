@@ -44,7 +44,7 @@ flowchart TD
 
 ## Before you begin
 
-Complete the [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}) guide to:
+Complete the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide to:
 - Create API keys for users
 - Configure API key authentication
 - Set up token-based rate limiting
@@ -193,15 +193,15 @@ cost = (50,000 / 1,000,000 × $30) + (50,000 / 1,000,000 × $60)
      = $4.50 per day
 ```
 
-For more information on cost calculation, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
+For more information on cost calculation, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
 
 ## Cleanup
 
-For cleanup instructions, see the [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}) guide.
+For cleanup instructions, see the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide.
 
 ## What's next
 
-- [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}) for complete API key and rate limiting setup
-- [Track costs per request]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor actual spending
+- [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) for complete API key and rate limiting setup
+- [Track costs per request]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor actual spending
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics
-- [Configure rate limiting]({{< link-hextra path="/llm/rate-limit/" >}}) for advanced rate limit patterns
+- [Configure rate limiting]({{< link-hextra path="/llm/cost-controls/rate-limit/" >}}) for advanced rate limit patterns

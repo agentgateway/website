@@ -1,6 +1,6 @@
 ---
 title: Model costs
-weight: 84
+weight: 20
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, and metrics.
 # Not yet doc-testable: on the current nightly, the deployer mounts the catalog
 # ConfigMap with a subPath that does not match the volume's remapped item path, so

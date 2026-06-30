@@ -1,6 +1,6 @@
 ---
 title: LLM cost tracking
-weight: 85
+weight: 30
 description: Track and monitor LLM costs per request using token usage metrics.
 ---
 

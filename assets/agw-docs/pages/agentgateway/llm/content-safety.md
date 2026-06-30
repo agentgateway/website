@@ -529,5 +529,5 @@ EOF
 
 - [Configure prompt guards]({{< link-hextra path="/llm/prompt-guards/" >}}) for step-by-step examples of regex-based guards
 - [Guardrail Webhook API]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}) for implementing custom content safety logic
-- [Track costs]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
+- [Track costs]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to track content safety metrics

@@ -1,10 +1,10 @@
 ---
 title: Virtual key management
-weight: 32
+weight: 10
 description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
 test:
   virtual-keys:
-  - file: content/docs/standalone/main/llm/virtual-keys.md
+  - file: content/docs/standalone/main/llm/cost-controls/virtual-keys.md
     path: virtual-keys
 ---
 
