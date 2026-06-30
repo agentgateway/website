@@ -342,9 +342,7 @@ h6 {
     border-left-color: #374151 !important;
 }
 
-#solo-back-to-top {
-    display: none !important;
-}
+
 
 /* ── Print styles ─────────────────────────────────────────────────────── */
 @media print {
