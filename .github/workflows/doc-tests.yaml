@@ -89,7 +89,7 @@ jobs:
           else
             echo "has_tests=false" >> $GITHUB_OUTPUT
           fi
-          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 20] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
+          MATRIX=$(echo "$TESTS" | jq -c '(length | [., 40] | min) as $shards | . as $tests | {include: [range($shards) | . as $i | ([$tests | to_entries[] | select(.key % $shards == $i) | .value] as $shard | {shard_index: $i, test_count: ($shard | length), tests: ($shard | tojson), shard_name: ($shard | [.[].test] | join(", ") | if length > 80 then .[:77] + "..." else . end)})]}')
           echo "matrix=${MATRIX}" >> $GITHUB_OUTPUT
           echo "Discovered $COUNT test case(s)"
         env:
@@ -100,7 +100,7 @@ jobs:
     needs: discover
     if: needs.discover.outputs.has_tests == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     strategy:
       matrix: ${{ fromJson(needs.discover.outputs.matrix) }}
