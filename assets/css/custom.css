@@ -342,9 +342,7 @@ h6 {
     border-left-color: #374151 !important;
 }
 
-/* The back-to-top arrow is lifted above the AI chat launcher by the
-   body:has(#chatbot-widget) rule in docs-theme-extras, so no agw-local
-   override is needed here. */
+
 
 /* ── Print styles ─────────────────────────────────────────────────────── */
 @media print {
