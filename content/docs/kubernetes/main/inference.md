@@ -94,7 +94,7 @@ spec:
 ```
 
 For more token rate limiting details, see
-[Rate limiting for LLMs]({{< link-hextra path="/llm/cost-controls/rate-limit/" >}}).
+[Rate limiting for LLMs]({{< link-hextra path="/llm/rate-limit/" >}}).
 
 For more custom provider examples, see
 [Custom providers]({{< link-hextra path="/llm/providers/custom/" >}}).

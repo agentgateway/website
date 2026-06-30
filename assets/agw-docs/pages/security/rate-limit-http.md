@@ -14,7 +14,7 @@ Additionally, you can set up local or global rate limiting, depending on whether
 | Global | External rate limit service | Shared limits across multiple proxy replicas |
 
 For AI-specific use cases, see:
-- [Rate limiting for LLMs]({{< link-hextra path="/llm/cost-controls/rate-limit" >}})
+- [Rate limiting for LLMs]({{< link-hextra path="/llm/rate-limit" >}})
 - [Rate limiting for MCP]({{< link-hextra path="/mcp/rate-limit" >}})
 
 ### Gateway-level global DoS protection

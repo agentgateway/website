@@ -138,12 +138,10 @@
 /docs/kubernetes/main/llm/costs /docs/kubernetes/main/llm/cost-controls/costs 301
 /docs/kubernetes/main/llm/cost-tracking /docs/kubernetes/main/llm/cost-controls/cost-tracking 301
 /docs/kubernetes/main/llm/budget-limits /docs/kubernetes/main/llm/cost-controls/budget-limits 301
-/docs/kubernetes/main/llm/rate-limit /docs/kubernetes/main/llm/cost-controls/rate-limit 301
 /docs/kubernetes/main/llm/virtual-keys /docs/kubernetes/main/llm/cost-controls/virtual-keys 301
 /docs/kubernetes/latest/llm/costs /docs/kubernetes/latest/llm/cost-controls/costs 301
 /docs/kubernetes/latest/llm/cost-tracking /docs/kubernetes/latest/llm/cost-controls/cost-tracking 301
 /docs/kubernetes/latest/llm/budget-limits /docs/kubernetes/latest/llm/cost-controls/budget-limits 301
-/docs/kubernetes/latest/llm/rate-limit /docs/kubernetes/latest/llm/cost-controls/rate-limit 301
 /docs/kubernetes/latest/llm/virtual-keys /docs/kubernetes/latest/llm/cost-controls/virtual-keys 301
 /docs/standalone/main/llm/costs /docs/standalone/main/llm/cost-controls/costs 301
 /docs/standalone/main/llm/virtual-keys /docs/standalone/main/llm/cost-controls/virtual-keys 301

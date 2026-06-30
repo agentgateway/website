@@ -1,6 +1,6 @@
 ---
 title: Rate limiting for LLMs
-weight: 50
+weight: 80
 description: Control LLM costs with token-based rate limiting and request-based limits.
 ---
 

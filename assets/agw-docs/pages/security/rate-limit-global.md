@@ -375,7 +375,7 @@ The table summarizes the examples in the following sections.
 Global rate limiting is the right choice when you need shared quotas across multiple proxy replicas, fine-grained control based on request attributes, or integration with existing rate limiting infrastructure. For simpler per-replica limits, use [local rate limiting]({{< link-hextra path="/security/rate-limit-http#local" >}}).
 
 For AI-specific use cases:
-- [LLM token-based rate limiting]({{< link-hextra path="/llm/cost-controls/rate-limit" >}})
+- [LLM token-based rate limiting]({{< link-hextra path="/llm/rate-limit" >}})
 - [MCP tool call rate limiting]({{< link-hextra path="/mcp/rate-limit" >}})
 
 ### Rate limit by client IP {#rate-limit-by-client-ip}
