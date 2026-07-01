@@ -127,9 +127,9 @@ Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/
 
    In the response, the `completion_tokens` value reflects a completion capped at 10 tokens.
 
-## Conditionally set fields based on headers
+## Conditionally set fields based on the request
 
-Use a CEL expression in the model-level `transformation` field to dynamically set `max_tokens` based on the caller's identity from a request header. This example gives admin users a higher token limit than regular users.
+Use a CEL expression in the model-level `transformation` field to dynamically set a field based on the incoming request body. This example gives requests for a larger model a higher token limit than requests for a smaller model.
 
 ```yaml {paths="transformations"}
 cat <<'EOF' > config.yaml
@@ -142,13 +142,13 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
     transformation:
-      max_tokens: "request.headers['x-user-id'] == 'admin' ? 100 : 10"
+      max_tokens: "llmRequest.model == 'gpt-4o-mini' ? 100 : 10"
 EOF
 ```
 
 | Setting | Description |
 | -- | -- |
-| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
+| `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access fields from the original LLM request body. |
 
 {{< doc-test paths="transformations" >}}
 agentgateway -f config.yaml &
@@ -157,24 +157,22 @@ trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 
-Send a request as an admin user and verify the response uses the higher token limit.
+Send a request for the larger model and verify the response uses the higher token limit.
 
 ```sh {paths="transformations"}
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "x-user-id: admin" \
   -d '{
-    "model": "gpt-3.5-turbo",
+    "model": "gpt-4o-mini",
     "messages": [{"role": "user", "content": "Tell me a story"}]
   }' | jq .
 ```
 
-Send a request as a regular user and verify the response is capped at the lower token limit.
+Send a request for the smaller model and verify the response is capped at the lower token limit.
 
 ```sh {paths="transformations"}
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
-  -H "x-user-id: alice" \
   -d '{
     "model": "gpt-3.5-turbo",
     "messages": [{"role": "user", "content": "Tell me a story"}]
@@ -183,17 +181,16 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 {{< doc-test paths="transformations" >}}
 YAMLTest -f - <<'EOF'
-- name: admin user gets higher token limit
+- name: larger model gets higher token limit
   http:
     url: "http://localhost:4000"
     path: /v1/chat/completions
     method: POST
     headers:
       content-type: application/json
-      x-user-id: admin
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "gpt-4o-mini",
         "messages": [{"role": "user", "content": "Tell me a story"}]
       }
   source:
@@ -205,14 +202,13 @@ YAMLTest -f - <<'EOF'
         comparator: equals
         value: 100
 
-- name: regular user gets lower token limit
+- name: smaller model gets lower token limit
   http:
     url: "http://localhost:4000"
     path: /v1/chat/completions
     method: POST
     headers:
       content-type: application/json
-      x-user-id: alice
     body: |
       {
         "model": "gpt-3.5-turbo",
@@ -229,7 +225,7 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
+In the responses, the request for `gpt-4o-mini` receives up to 100 completion tokens while the request for `gpt-3.5-turbo` is capped at 10.
 
 ## Available CEL variables
 
@@ -237,9 +233,6 @@ You can use these variables in your CEL transformation expressions.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `request.headers["name"]` | Request header values | `request.headers["x-user-id"]` |
-| `request.path` | Request path | `request.path` returns `/` |
-| `request.method` | HTTP method | `request.method` returns `POST` |
 | `llmRequest.max_tokens` | Original max_tokens from the request | `min(llmRequest.max_tokens, 100)` |
 | `llmRequest.model` | Requested model name | `llmRequest.model` |
 
@@ -262,9 +255,9 @@ llm:
       max_tokens: "min(llmRequest.max_tokens, 1024)"
 ```
 
-### Set temperature based on headers
+### Set temperature based on the model
 
-Allow callers to control creativity through a header while enforcing bounds.
+Apply a different creativity setting depending on the requested model.
 
 ```yaml
 llm:
@@ -274,7 +267,7 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
     transformation:
-      temperature: "request.headers['x-creativity'] == 'high' ? 0.9 : 0.1"
+      temperature: "llmRequest.model == 'gpt-4o' ? 0.9 : 0.1"
 ```
 
 ### Combine multiple transformations
@@ -289,8 +282,8 @@ llm:
     params:
       apiKey: "$OPENAI_API_KEY"
     transformation:
-      max_tokens: "request.headers['x-user-tier'] == 'premium' ? 4096 : 256"
-      temperature: "request.headers['x-user-tier'] == 'premium' ? 0.8 : 0.3"
+      max_tokens: "llmRequest.model == 'gpt-4o' ? 4096 : 256"
+      temperature: "llmRequest.model == 'gpt-4o' ? 0.8 : 0.3"
 ```
 
 ## Next steps
