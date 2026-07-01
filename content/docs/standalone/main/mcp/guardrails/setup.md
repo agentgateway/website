@@ -16,7 +16,7 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
 
 1. Start a sample ExtMCP policy server. This example uses a prebuilt gRPC server that denies `tools/call` when the tool name contains `forbidden`, and appends ` [extmcp]` to every tool description in `tools/list` responses. The server listens on port `9001`.
    ```sh
-   docker run --rm -p 9001:9001 ghcr.io/agentgateway/testbox:0.0.1
+   docker run --rm -p 9001:9001 gcr.io/solo-public/docs/testbox:latest
    ```
 
    {{< callout type="info" >}}
