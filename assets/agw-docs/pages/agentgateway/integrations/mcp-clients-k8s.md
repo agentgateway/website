@@ -140,13 +140,13 @@ The `agentgateway` server shows up as **Connected**.
 
 ### Windsurf
 
-1. Create or edit `~/.windsurf/mcp.json`.
+1. Create or edit `~/.codeium/windsurf/mcp_config.json`. For remote MCP servers, Windsurf uses the `serverUrl` field.
 
    ```json
    {
      "mcpServers": {
        "agentgateway": {
-         "url": "<MCP_URL>"
+         "serverUrl": "<MCP_URL>"
        }
      }
    }

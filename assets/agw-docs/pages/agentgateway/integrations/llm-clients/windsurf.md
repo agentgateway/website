@@ -1,4 +1,4 @@
-Configure [Windsurf](https://devin.ai/desktop), the AI code editor by Codeium, to route requests to your LLM through your agentgateway proxy.
+Configure [Windsurf](https://devin.ai/desktop), the AI-powered code editor from Cognition (the makers of Devin), to route requests to your LLM through your agentgateway proxy.
 
 ## Before you begin
 
