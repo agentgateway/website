@@ -138,9 +138,9 @@ The `agentgateway` server shows up as **Connected**.
 2. Restart VS Code and verify that agentgateway tools appear in the MCP tools list.
 
 
-### Windsurf
+### Devin Desktop (formerly Windsurf)
 
-1. Create or edit `~/.codeium/windsurf/mcp_config.json`. For remote MCP servers, Windsurf uses the `serverUrl` field.
+1. Create or edit `~/.codeium/windsurf/mcp_config.json`. For remote MCP servers, Devin Desktop uses the `serverUrl` field.
 
    ```json
    {
@@ -152,7 +152,7 @@ The `agentgateway` server shows up as **Connected**.
    }
    ```
 
-2. Restart Windsurf and verify that agentgateway tools appear in the MCP tools list.
+2. Restart Devin Desktop and verify that agentgateway tools appear in the MCP tools list.
 
 
 ## Authentication
@@ -168,7 +168,7 @@ claude mcp add agentgateway --transport http <MCP_URL> \
 ```
 {{% /tab %}}
 
-{{% tab name="JSON config (Cursor / VS Code / Windsurf)" %}}
+{{% tab name="JSON config (Cursor / VS Code / Devin Desktop)" %}}
 ```json
 {
   "mcpServers": {
