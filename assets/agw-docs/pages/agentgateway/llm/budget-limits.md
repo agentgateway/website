@@ -200,6 +200,10 @@ For more information on cost calculation, see the [cost tracking guide]({{< link
 The budgets in the previous sections are measured in *tokens*. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each request and exposes it to CEL as `llm.cost`. You can then rate limit on *dollars* directly, which enforces a true spend cap regardless of which model or input/output token mix each user hits.
 
 {{< callout type="warning" >}}
+**Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build—the response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
+{{< /callout >}}
+
+{{< callout type="warning" >}}
 **Requirements and behavior:**
 - A [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) must be configured so that `llm.cost` is populated. Without a catalog, `llm.cost.total` is `0` and no spend is counted.
 - Cost is evaluated *after* the response completes. The request that crosses the budget still completes; the user's *next* request is rejected with a 429. Budgets are therefore approximate at the boundary.
