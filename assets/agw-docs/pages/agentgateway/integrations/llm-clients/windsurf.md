@@ -5,6 +5,10 @@ Configure [Windsurf](https://devin.ai/desktop), the AI-powered code editor from 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Install [Windsurf](https://devin.ai/desktop).
 
+{{< doc-test paths="windsurf-validate" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
+
 ## Example agentgateway configuration
 
 ```yaml {paths="windsurf-validate"}
