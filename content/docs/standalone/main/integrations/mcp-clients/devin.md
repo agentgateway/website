@@ -3,7 +3,7 @@ title: Devin Desktop
 weight: 4
 description: Connect Devin Desktop to agentgateway
 aliases:
-  - /integrations/mcp-clients/windsurf/
+  - windsurf
 ---
 
 Configure Devin Desktop (formerly Windsurf), the AI-powered code editor from Cognition, to use agentgateway as an MCP server.
