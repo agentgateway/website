@@ -2,11 +2,16 @@
 title: Model costs
 weight: 20
 description: Price LLM requests with a model cost catalog and expose realized USD costs in logs, traces, and metrics.
-# Not yet doc-testable: on the current nightly, the deployer mounts the catalog
-# ConfigMap with a subPath that does not match the volume's remapped item path, so
-# the proxy sees an empty directory and the catalog never loads. Enable once that
-# mount bug is fixed and the catalog loads end-to-end.
-test: skip
+test:
+  costs:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: standard
+  - file: content/docs/kubernetes/main/setup/gateway.md
+    path: all
+  - file: content/docs/kubernetes/main/llm/providers/httpbun.md
+    path: setup-httpbun-llm
+  - file: content/docs/kubernetes/main/llm/cost-controls/costs.md
+    path: costs
 ---
 
 {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} can compute the realized USD cost of each LLM request when you provide a model cost catalog. With a catalog in place, {{< reuse "agw-docs/snippets/agentgateway.md" >}} attributes cost per request in access logs, traces, and metrics, and exposes the values to CEL expressions as `llm.cost` and `llm.costRates`.
@@ -201,3 +206,79 @@ To view the metric, port-forward the proxy and query the metrics endpoint:
    ```
 
 A rising `Missing` or `Unpriced` count means requests are flowing through models that your catalog does not price. Add the missing providers or models to your catalog and update the ConfigMap.
+
+{{< doc-test paths="costs" >}}
+# Create a catalog that prices the httpbun test model (gpt-4) and attach it to the Gateway
+# through a Gateway-level AgentgatewayParameters resource.
+kubectl apply -f- <<'EOF'
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: costs-test-catalog
+  namespace: agentgateway-system
+data:
+  catalog.json: |
+    {
+      "providers": {
+        "openai": {
+          "models": {
+            "gpt-4": { "rates": { "input": "30", "output": "60" } }
+          }
+        }
+      }
+    }
+---
+apiVersion: agentgateway.dev/v1alpha1
+kind: AgentgatewayParameters
+metadata:
+  name: costs-test-params
+  namespace: agentgateway-system
+spec:
+  modelCatalog:
+    sources:
+      - configMap:
+          name: costs-test-catalog
+          key: catalog.json
+EOF
+kubectl patch gateway agentgateway-proxy -n agentgateway-system --type merge \
+  -p '{"spec":{"infrastructure":{"parametersRef":{"name":"costs-test-params","group":"agentgateway.dev","kind":"AgentgatewayParameters"}}}}'
+# Attaching the catalog rolls the proxy so it can mount the ConfigMap.
+sleep 10
+kubectl rollout status deployment/agentgateway-proxy -n agentgateway-system --timeout=180s
+{{< /doc-test >}}
+
+{{< doc-test paths="costs" >}}
+# Send priced traffic through the httpbun route and confirm the catalog prices it
+# (the lookup metric records status="Exact" for the gpt-4 model).
+export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n agentgateway-system -o jsonpath="{.status.addresses[0].value}")
+kubectl port-forward deployment/agentgateway-proxy -n agentgateway-system 15020:15020 > /dev/null 2>&1 &
+PF_PID=$!
+trap 'kill $PF_PID 2>/dev/null' EXIT
+sleep 3
+priced=false
+for i in $(seq 1 12); do
+  curl -s -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
+    -H "content-type: application/json" \
+    -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}'
+  if curl -s http://localhost:15020/metrics \
+      | grep -E 'agentgateway_cost_catalog_lookups_total\{status="Exact"' \
+      | grep -q 'gen_ai_request_model="gpt-4"'; then
+    priced=true
+    break
+  fi
+  sleep 5
+done
+if [ "$priced" != "true" ]; then
+  echo "FAIL: catalog did not price gpt-4 traffic (no status=Exact lookup)"
+  exit 1
+fi
+echo "PASS: catalog priced gpt-4 traffic (status=Exact)"
+{{< /doc-test >}}
+
+{{< doc-test paths="costs" >}}
+# Cleanup: detach the catalog and remove the test resources.
+kubectl patch gateway agentgateway-proxy -n agentgateway-system --type json \
+  -p '[{"op":"remove","path":"/spec/infrastructure/parametersRef"}]' || true
+kubectl delete agentgatewayparameters costs-test-params -n agentgateway-system --ignore-not-found
+kubectl delete configmap costs-test-catalog -n agentgateway-system --ignore-not-found
+{{< /doc-test >}}
