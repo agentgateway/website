@@ -18,6 +18,15 @@ Agentgateway extracts token usage from supported LLM APIs automatically. To conv
 Cost analysis is best-effort and may not exactly match your provider bill in scenarios such as price changes, custom pricing, failed requests, or provider-specific billing rules.
 {{< /callout >}}
 
+## Before you begin
+
+{{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
+
+{{< doc-test paths="costs" >}}
+# Install agentgateway binary
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
+
 ## Configure a model catalog
 
 Use `config.modelCatalog` to load one or more model cost catalog files. Catalog entries are merged in order, and later entries take precedence. This lets you start with an imported public catalog and then layer local overrides for contracted pricing, internal models, or provider-specific aliases.
