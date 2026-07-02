@@ -47,7 +47,7 @@ After the catalog is loaded, priced requests include cost data. The access log i
 
 For general LLM telemetry setup, see [Observe traffic]({{< link-hextra path="/llm/observability/" >}}).
 
-## Import costs with agctl
+## Import costs (agctl)
 
 Use `agctl costs import` to generate a catalog file from a supported pricing source. The default source is `models.dev`.
 
@@ -67,16 +67,20 @@ agctl costs import \
 
 For all flags, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
 
-## Import costs in the UI
+## Import costs (Admin UI)
 
-You can also import model costs from the Admin UI.
+You can also manage the model cost catalog from the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
 
-1. Open the [Admin UI cost page](http://localhost:15000/ui/llm/costs).
-2. Press **Refresh base costs**.
+1. Open the [Admin UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **catalog sources** (files and ConfigMaps, merged in order) and any inline **custom costs** overrides.
 
-The UI fetches the latest base costs and configures `modelCatalog`. You can refresh again later to pull updated pricing and model data.
+   {{< reuse-image-light src="img/ui-cost-catalog.png" alt="Admin UI LLM Costs page showing catalog sources and custom cost overrides" >}}
+   {{< reuse-image-dark srcDark="img/ui-cost-catalog-dark.png" alt="Admin UI LLM Costs page showing catalog sources and custom cost overrides" >}}
 
-When you set up a fresh configuration for the first time, the UI automatically performs this step.
+2. Press **Refresh base costs**. The UI fetches the latest base costs and configures `modelCatalog`. You can refresh again later to pull updated pricing and model data.
+
+3. To adjust pricing for a specific model, use **Edit** under **Custom costs** to add inline overrides without changing your catalog files.
+
+When you set up a fresh configuration for the first time, the UI automatically performs the refresh step.
 
 After you load a catalog, the same Admin UI visualizes your priced traffic. For more information, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
 

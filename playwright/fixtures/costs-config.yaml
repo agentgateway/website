@@ -8,8 +8,8 @@
 #     /config is the mounted .agw-runtime dir; the seeded DB lives at /config/costs.db.
 #   - config.modelCatalog: prices requests. The seeded rows already carry cost, but a catalog
 #     is part of the documented setup and keeps any live request priced too.
-#   - the llm model exists only so the config is a valid LLM gateway; apiKey is a throwaway
-#     literal (the capture never sends real traffic).
+#   - llm.policies.apiKey seeds a couple of virtual keys so the LLM > Virtual API Keys page
+#     has content to capture; the provider apiKey is a throwaway literal (no real traffic).
 config:
   adminAddr: 0.0.0.0:15000
   database:
@@ -18,6 +18,16 @@ config:
     - file: /config/costs-catalog.json
 llm:
   port: 4000
+  policies:
+    apiKey:
+      mode: strict
+      keys:
+        - key: sk-alice-abc123def456
+          metadata:
+            user: alice
+        - key: sk-bob-xyz789uvw012
+          metadata:
+            user: bob
   models:
     - name: "*"
       provider: openAI

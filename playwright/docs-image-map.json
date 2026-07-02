@@ -115,6 +115,21 @@
       "$note": "kubernetes/llm/cost-controls/dashboard \u2014 Analytics cost dashboard rendered in the Kubernetes (xds) Admin UI (Traffic nav).",
       "light": "assets/img/agentgateway-ui-kube-cost-dashboard.png",
       "dark": "assets/img/agentgateway-ui-kube-cost-dashboard-dark.png"
+    },
+    "ui-virtual-keys-list.png": {
+      "$note": "llm/cost-controls/virtual-keys \u2014 Admin UI Virtual API Keys list.",
+      "light": "assets/img/ui-virtual-keys-list.png",
+      "dark": "assets/img/ui-virtual-keys-list-dark.png"
+    },
+    "ui-virtual-keys-new.png": {
+      "$note": "llm/cost-controls/virtual-keys \u2014 Create virtual key drawer (name, auto-generated key, metadata).",
+      "light": "assets/img/ui-virtual-keys-new.png",
+      "dark": "assets/img/ui-virtual-keys-new-dark.png"
+    },
+    "ui-cost-catalog.png": {
+      "$note": "llm/cost-controls/costs \u2014 LLM Costs catalog management page (sources + custom overrides).",
+      "light": "assets/img/ui-cost-catalog.png",
+      "dark": "assets/img/ui-cost-catalog-dark.png"
     }
   }
 }

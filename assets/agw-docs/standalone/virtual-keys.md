@@ -39,7 +39,31 @@ curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
 chmod +x "$HOME/.local/bin/agentgateway"
 {{< /doc-test >}}
 
-## Set up virtual keys
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+
+> [!NOTE]
+> You can manage virtual keys two ways: interactively in the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes; the config file is the source of truth for GitOps workflows.
+
+## Set up virtual keys (Admin UI)
+
+Set up virtual keys interactively through the Admin UI.
+
+1. Open [http://localhost:15000/ui/llm/keys](http://localhost:15000/ui/llm/keys) (**LLM > Virtual API Keys**). Configured keys and their metadata are listed here, where you can show, copy, edit, or delete each one.
+
+   {{< reuse-image-light src="img/ui-virtual-keys-list.png" alt="Admin UI Virtual API Keys page listing configured keys and metadata" >}}
+   {{< reuse-image-dark srcDark="img/ui-virtual-keys-list-dark.png" alt="Admin UI Virtual API Keys page listing configured keys and metadata" >}}
+
+2. Click **New key**. Give the key a name, let {{< reuse "agw-docs/snippets/agentgateway.md" >}} auto-generate the key value (or paste your own), and add metadata such as a `user` entry to attribute usage. Click **Save key**.
+
+   {{< reuse-image-light src="img/ui-virtual-keys-new.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
+   {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
+
+The rest of this guide uses the equivalent config-file settings, which apply the same `apiKey` policy shown in the UI.
+{{< /version >}}
+
+## Set up virtual keys (config file)
+
+Set up virtual keys in a declarative config file, particularly useful in GitOps settings.
 
 ### Step 1: Configure API key authentication
 

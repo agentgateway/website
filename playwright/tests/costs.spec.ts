@@ -44,3 +44,35 @@ test('cost dashboard — cost', async ({ page }) => {
   await page.waitForTimeout(500);
   await expect(page).toHaveScreenshot('ui-cost-dashboard-cost.png', CHART_DRIFT);
 });
+
+// LLM > Virtual API Keys — the keys list (llm/cost-controls/virtual-keys.md). Static content,
+// so the default (tight) screenshot threshold applies.
+test('virtual keys list', async ({ page }) => {
+  await page.goto('/ui/llm/keys');
+  await page.waitForLoadState('networkidle');
+  await dismissWelcome(page);
+  await expect(page.getByRole('heading', { name: 'Virtual API Keys' })).toBeVisible();
+  await expect(page.getByText('user: alice')).toBeVisible();
+  await expect(page).toHaveScreenshot('ui-virtual-keys-list.png', { fullPage: true });
+});
+
+// The "Create virtual key" drawer (Name, auto-generated key, metadata).
+test('virtual keys — create drawer', async ({ page }) => {
+  await page.goto('/ui/llm/keys');
+  await page.waitForLoadState('networkidle');
+  await dismissWelcome(page);
+  await page.getByRole('button', { name: 'New key' }).click();
+  await expect(page.getByRole('heading', { name: 'Create virtual key' })).toBeVisible();
+  await page.waitForTimeout(300);
+  await expect(page).toHaveScreenshot('ui-virtual-keys-new.png', { fullPage: true });
+});
+
+// LLM > Costs — the model cost catalog management page (llm/cost-controls/costs.md).
+test('cost catalog page', async ({ page }) => {
+  await page.goto('/ui/llm/costs');
+  await page.waitForLoadState('networkidle');
+  await dismissWelcome(page);
+  await expect(page.getByRole('heading', { name: 'LLM Costs' })).toBeVisible();
+  await expect(page.getByText('Catalog sources')).toBeVisible();
+  await expect(page).toHaveScreenshot('ui-cost-catalog.png', { fullPage: true });
+});
