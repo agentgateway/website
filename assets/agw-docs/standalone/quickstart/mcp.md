@@ -70,9 +70,13 @@ agentgateway -f config.yaml
 ```
 
 {{< doc-test paths="mcp" >}}
-agentgateway -f config.yaml &
+# Redirect background output to a file so the started process doesn't keep the test
+# runner's stdout pipe open (which would block the run from ever completing).
+agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
 AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
+# agentgateway starts the server-everything MCP server as a stdio child; reap the whole
+# tree on exit so no orphaned node process holds the pipe open and hangs the job.
+trap 'kill $AGW_PID 2>/dev/null; pkill -f "server-everything" 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 
@@ -145,7 +149,9 @@ info  app  serving UI at http://localhost:15000/ui
 # Hidden test: the UI steps below (Enable MCP -> Add server) are not scriptable, so this
 # block reproduces the equivalent config they produce and starts the same backends, to keep
 # the resulting setup tested.
-PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp &
+# Redirect background output to files so the started servers don't keep the test
+# runner's stdout pipe open (which would block the run from ever completing).
+PORT=3005 npx -y @modelcontextprotocol/server-everything streamableHttp >/tmp/mcp-server.log 2>&1 &
 MCP_PID=$!
 sleep 5
 cat > config.yaml << 'EOF'
@@ -157,9 +163,11 @@ mcp:
     mcp:
       host: http://localhost:3005/mcp
 EOF
-agentgateway -f config.yaml &
+agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
 AGW_PID=$!
-trap 'kill $AGW_PID $MCP_PID 2>/dev/null' EXIT
+# On exit, reap the whole process tree. npx spawns a node child for the server, and
+# killing npx alone orphans that child, which holds the pipe open and hangs the job.
+trap 'kill $AGW_PID 2>/dev/null; pkill -P $MCP_PID 2>/dev/null; kill $MCP_PID 2>/dev/null; pkill -f "server-everything" 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
 
