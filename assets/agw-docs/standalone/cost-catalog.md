@@ -113,7 +113,7 @@ Traces always include the full breakdown:
 * `agw.ai.usage.cost.input_audio`
 * `agw.ai.usage.cost.output_audio`
 
-As these are loaded into the CEL context, they can be explicitly emited as well
+As these are loaded into the CEL context, they can be explicitly emited as well.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
