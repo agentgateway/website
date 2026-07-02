@@ -1,1 +1,1 @@
-1.5.0
+{{< version include-if="1.1.x,1.2.x,1.3.x" >}}1.5.0{{< /version >}}{{< version exclude-if="1.1.x,1.2.x,1.3.x" >}}1.6.0{{< /version >}}
