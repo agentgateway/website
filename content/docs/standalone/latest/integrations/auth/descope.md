@@ -16,7 +16,7 @@ description: Integrate agentgateway with Descope for authentication and identity
 
 ## Configuration
 
-Configure agentgateway to validate Descope JWTs:
+Configure agentgateway to validate Descope JWTs.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
