@@ -8,16 +8,16 @@ test:
     path: cost-dashboard
 ---
 
-The [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) guide prices every request and exposes the result to logs, metrics, and CEL. The built-in **Admin UI** turns that data into a visual dashboard: spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent—no external Prometheus or Grafana required.
+The [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) guide prices every request and exposes the result to logs, metrics, and CEL. The built-in **Admin UI** turns that data into a visual dashboard: spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. No external Prometheus or Grafana is required.
 
-The dashboard is populated from a local database that agentgateway writes for every request that flows through the proxy. Because the accounting happens in the gateway, your applications need no changes: they point at the proxy, and spend shows up next to tokens automatically.
+The dashboard is populated from a local database that agentgateway writes for every request that flows through the proxy. Because the accounting happens in the gateway, your applications need no changes. They point at the proxy, and spend shows up next to tokens automatically.
 
 ## Requirements
 
 Two pieces of configuration power the dashboard:
 
-- **`config.database`** — the SQLite database where agentgateway records a `request_logs` row for each request. This is the store behind the dashboard's time series and breakdowns.
-- **`config.modelCatalog`** — the [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) that turns token counts into dollars. Without a catalog, the dashboard still shows token and call volume, but cost is `0`.
+- `config.database`: the SQLite database where agentgateway records a `request_logs` row for each request. It is the store behind the dashboard's time series and breakdowns.
+- `config.modelCatalog`: the [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) that turns token counts into dollars. Without a catalog, the dashboard still shows token and call volume, but the cost is `0`.
 
 ## Enable the dashboard
 
@@ -54,7 +54,7 @@ Two pieces of configuration power the dashboard:
 
 ## Open the dashboard
 
-The dashboard is the **LLM > Analytics** page. Open [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics). It shows traffic over time with a running tally of cost, tokens, and calls, plus a breakdown below the chart.
+Review the dashboard in the **LLM > Analytics** page. Open [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics). It shows traffic over time with a running tally of cost, tokens, and calls, plus a breakdown below the chart.
 
 {{< reuse-image-light src="img/ui-cost-dashboard-tokens.png" alt="agentgateway Analytics dashboard showing token traffic over time, with group-by and measure controls" >}}
 {{< reuse-image-dark srcDark="img/ui-cost-dashboard-tokens-dark.png" alt="agentgateway Analytics dashboard showing token traffic over time, with group-by and measure controls" >}}
@@ -67,13 +67,13 @@ The separate **LLM > Costs** page ([http://localhost:15000/ui/llm/costs](http://
 
 Use the **Group by** control to break the same traffic down by:
 
-- **Model** — which models drive spend (`gen_ai_request_model` / `gen_ai_response_model`).
-- **Provider** — spend per backend, such as OpenAI, Anthropic, Google, or Bedrock (`gen_ai_provider_name`).
-- **User** — per-person accounting, ideal for finding who drives spend (`agentgateway_user`).
-- **Group** — spend per team or group (`agentgateway_group`).
-- **User agent** — spend per client, such as Cursor, Claude Code, or `openai-python` (`user_agent_name`).
+- **Model**: which models drive spend (`gen_ai_request_model` / `gen_ai_response_model`).
+- **Provider**: spend per backend, such as OpenAI, Anthropic, Google, or Bedrock (`gen_ai_provider_name`).
+- **User**: per-person accounting, ideal for finding who drives spend (`agentgateway_user`).
+- **Group**: spend per team or group (`agentgateway_group`).
+- **User agent**: spend per client, such as Cursor, Claude Code, or `openai-python` (`user_agent_name`).
 
-Toggle **Measure** between **Tokens**, **Cost**, and **Requests** to view the same breakdown either way. Set it to **Cost** to see realized spend in dollars:
+Toggle **Measure** between **Tokens**, **Cost**, and **Requests** to view the same breakdown either way. Set it to **Cost** to see realized spend in dollars.
 
 {{< reuse-image-light src="img/ui-cost-dashboard-cost.png" alt="agentgateway Analytics dashboard measured in dollars, showing realized spend over time" >}}
 {{< reuse-image-dark srcDark="img/ui-cost-dashboard-cost-dark.png" alt="agentgateway Analytics dashboard measured in dollars, showing realized spend over time" >}}

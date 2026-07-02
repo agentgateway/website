@@ -56,7 +56,7 @@ llm:
         - model: cheap   # fallback: no "when", and must be listed last
 ```
 
-Clients always request `assistant`. Premium callers reach the frontier model; everyone else falls through to the cheaper one. The fallback target has no `when` and must be last. Because `when` is evaluated at request time, it can reference `request.headers`, `request.body` (via `json(request.body)`), `jwt`, and `apiKey` metadata—but not `llm.cost`, which is only known after the response.
+Clients always request `assistant`. Premium callers reach the frontier model; everyone else falls through to the cheaper one. The fallback target has no `when` and must be last. Because `when` is evaluated at request time, it can reference `request.headers`, `request.body` (via `json(request.body)`), `jwt`, and `apiKey` metadata, but not `llm.cost`, which is only known after the response.
 
 ### Weighted routing: A/B test cost before you commit
 
@@ -93,13 +93,13 @@ With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}
 
 ### Failover routing: cheaper, resilient backups
 
-Use `routing.failover` with `priority` to define ordered backups. Beyond resilience, failover lets you keep serving—often from a cheaper alternate—when your primary provider is rate limited or down, instead of failing the request.
+Use `routing.failover` with `priority` to define ordered backups. Beyond resilience, failover lets you keep serving, often from a cheaper alternate, when your primary provider is rate limited or down, instead of failing the request.
 
 For the full failover example and semantics, see [Failover routing]({{< link-hextra path="/llm/virtual-models/#failover-routing" >}}).
 
 ## Cache repeated prompt content
 
-When requests share a large, stable prefix—a long system prompt, tool definitions, or retrieved context—prompt caching lets the provider reuse that work instead of reprocessing it every time. Cached input tokens are billed at a much lower rate than fresh input tokens, so caching cuts cost for repetitive workloads such as agents and chat sessions.
+When requests share a large, stable prefix (a long system prompt, tool definitions, or retrieved context), prompt caching lets the provider reuse that work instead of reprocessing it every time. Cached input tokens are billed at a much lower rate than fresh input tokens, so caching cuts cost for repetitive workloads such as agents and chat sessions.
 
 {{< callout type="warning" >}}
 Prompt caching is currently applied for **Amazon Bedrock** models that support it (Claude 3 and later, and Amazon Nova). It is not applied for the direct Anthropic or OpenAI providers.

@@ -200,7 +200,7 @@ For more information on cost calculation, see the [cost tracking guide]({{< link
 The budgets in the previous sections are measured in *tokens*. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each request and exposes it to CEL as `llm.cost`. You can then rate limit on *dollars* directly, which enforces a true spend cap regardless of which model or input/output token mix each user hits.
 
 {{< callout type="warning" >}}
-**Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build—the response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
+**Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build. The response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
 {{< /callout >}}
 
 {{< callout type="warning" >}}
@@ -241,7 +241,7 @@ The budgets in the previous sections are measured in *tokens*. If you configure 
                cost: 'uint(llm.cost.total * 1000000)'
    ```
 
-2. Configure the rate limit server with the user's daily budget expressed in micro-dollars. Reuse the same rate limit server that you deployed for token budgets in the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide—dollar enforcement uses the identical Envoy rate limit service and protocol. Add the `spend-budgets` domain to the server's configuration so that it does not collide with your token-budget descriptors. This example caps each user at `$1.00` per day (`1000000` micro-dollars).
+2. Configure the rate limit server with the user's daily budget expressed in micro-dollars. Reuse the same rate limit server that you deployed for token budgets in the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide. Dollar enforcement uses the identical Envoy rate limit service and protocol. Add the `spend-budgets` domain to the server's configuration so that it does not collide with your token-budget descriptors. This example caps each user at `$1.00` per day (`1000000` micro-dollars).
 
    ```yaml
    domain: spend-budgets

@@ -38,12 +38,12 @@ spec:
 For the full walkthrough, see [Model aliasing]({{< link-hextra path="/llm/alias/" >}}).
 
 {{< callout type="info" >}}
-In Kubernetes mode, cost-aware routing is limited to model aliases (a one-to-one name mapping). The weighted, conditional, and failover [virtual model]({{< link-hextra path="/llm/virtual-models/" >}}) strategies—for example, splitting traffic across models to A/B test cost, or routing premium users to a frontier model—are available in standalone mode.
+In Kubernetes mode, cost-aware routing is limited to model aliases (a one-to-one name mapping). The weighted, conditional, and failover [virtual model]({{< link-hextra path="/llm/virtual-models/" >}}) strategies are available in standalone mode. For example, you can split traffic across models to A/B test cost, or route premium users to a frontier model.
 {{< /callout >}}
 
 ## Cache repeated prompt content
 
-When requests share a large, stable prefix—a long system prompt, tool definitions, or retrieved context—prompt caching lets the model reuse that work instead of reprocessing it on every request. Cached input tokens are billed at a much lower rate than fresh input tokens, so caching cuts cost for repetitive workloads such as agents and chat sessions.
+When requests share a large, stable prefix (a long system prompt, tool definitions, or retrieved context), prompt caching lets the model reuse that work instead of reprocessing it on every request. Cached input tokens are billed at a much lower rate than fresh input tokens, so caching cuts cost for repetitive workloads such as agents and chat sessions.
 
 Configure caching with the `backend.ai.promptCaching` fields on an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
 

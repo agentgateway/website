@@ -55,11 +55,11 @@ agctl costs import \
 
 For all flags, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
 
-## Import costs (admin UI)
+## Import costs (Admin UI)
 
 You can also manage the model cost catalog from the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}).
 
-1. Open the [Admin UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **catalog sources** (files and ConfigMaps, merged in order) and any inline **custom costs** overrides.
+1. Open the [Admin UI cost page](http://localhost:15000/ui/llm/costs) (**LLM > Costs**). The page lists your configured **Catalog sources** (files and ConfigMaps, merged in order) and any inline **Custom costs** overrides.
 
    {{< reuse-image-light src="img/ui-cost-catalog.png" alt="Admin UI LLM Costs page showing catalog sources and custom cost overrides" >}}
    {{< reuse-image-dark srcDark="img/ui-cost-catalog-dark.png" alt="Admin UI LLM Costs page showing catalog sources and custom cost overrides" >}}

@@ -5,17 +5,17 @@ description: View LLM spend, tokens, and traffic in the built-in Admin UI when r
 test: skip
 ---
 
-The built-in **Admin UI** includes a cost dashboard—the same **LLM > Analytics** page described for [standalone]({{< reuse "agw-docs/snippets/agentgateway.md" >}})—that plots spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. It works in Kubernetes too, but unlike standalone it is **not enabled by default**: the proxy ships without a request-log database, so the dashboard has nothing to show until you configure one.
+The built-in **Admin UI** includes a cost dashboard: the same **LLM > Analytics** page available in standalone mode. It plots spend, tokens, and calls over time, broken down by model, provider, user, group, or user agent. It works in Kubernetes too, but unlike standalone it is not enabled by default. The proxy ships without a request-log database, so the dashboard has nothing to show until you configure one.
 
 ## Requirements
 
 Two pieces of configuration power the dashboard:
 
-- **A request-log database** (`config.database`). The Kubernetes {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no typed field for it, so you set it through `rawConfig`, which merges raw agentgateway configuration into the proxy's config file. Point it at a writable path in the pod, such as the `/tmp` volume.
-- **A [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}})** (`spec.modelCatalog`) so requests are priced. Without a catalog the dashboard still shows token and call volume, but cost is `0`.
+- A request-log database (`config.database`). The Kubernetes {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no typed field for it, so you set it through `rawConfig`, which merges raw agentgateway configuration into the proxy's config file. Point it at a writable path in the pod, such as the `/tmp` volume.
+- A [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) (`spec.modelCatalog`) so requests are priced. Without a catalog, the dashboard still shows token and call volume, but the cost is `0`.
 
 {{< callout type="warning" >}}
-The `/tmp` path is an ephemeral `emptyDir`: the request-log history is **per-pod** and is lost when the pod restarts or scales. For durable history, back `config.database` with a persistent volume, and note that each replica keeps its own local database.
+The `/tmp` path is an ephemeral `emptyDir`, so the request-log history is per-pod and is lost when the pod restarts or scales. For durable history, back `config.database` with a persistent volume, and note that each replica keeps its own local database.
 {{< /callout >}}
 
 ## Enable the dashboard
@@ -42,7 +42,7 @@ The `/tmp` path is an ephemeral `emptyDir`: the request-log history is **per-pod
    EOF
    ```
 
-2. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to your Gateway with `infrastructure.parametersRef`. `modelCatalog` and `rawConfig` are honored only on a **Gateway-level** resource.
+2. Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to your Gateway with `infrastructure.parametersRef`. `modelCatalog` and `rawConfig` are honored only on a Gateway-level resource.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -84,13 +84,13 @@ Every request that flows through the proxy is now recorded and priced. Port-forw
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15000
    ```
 
-2. Open [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics). Send some LLM traffic through the gateway, then refresh—it shows traffic over time with a running tally of cost, tokens, and calls, plus a breakdown below the chart.
+2. Open [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics). Send some LLM traffic through the gateway, then refresh to see traffic over time with a running tally of cost, tokens, and calls, plus a breakdown below the chart.
 
    {{< reuse-image-light src="img/agentgateway-ui-kube-cost-dashboard.png" alt="agentgateway Analytics cost dashboard in the Kubernetes Admin UI" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-cost-dashboard-dark.png" alt="agentgateway Analytics cost dashboard in the Kubernetes Admin UI" >}}
 
 {{< callout type="info" >}}
-In Kubernetes (xds) mode the Admin UI is read-only—you view the dashboard but manage configuration through Kubernetes resources, not the UI.
+In Kubernetes (xds) mode the Admin UI is read-only. You view the dashboard, but you manage configuration through Kubernetes resources rather than the UI.
 {{< /callout >}}
 
 ### Group by and measure

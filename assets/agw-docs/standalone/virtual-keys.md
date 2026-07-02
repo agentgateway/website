@@ -2,10 +2,10 @@ Issue API keys to users or applications and control token usage (also known as v
 
 ## About
 
-Virtual key management allows you to issue API keys to users or applications, each with independent tracking and cost controls. Agentgateway achieves this by composing existing capabilities:
-- **API key authentication**: Identify incoming requests by API key
-- **Token-based rate limiting**: Enforce token budgets
-- **Observability metrics**: Track per-key spending and usage
+Virtual key management allows you to issue API keys to users or applications, each with independent tracking and cost controls. Agentgateway composes existing capabilities to do this:
+- API key authentication identifies incoming requests by API key.
+- Token-based rate limiting enforces token budgets.
+- Observability metrics track per-key spending and usage.
 
 ### How virtual keys work
 
@@ -41,8 +41,9 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 
-> [!NOTE]
-> You can manage virtual keys two ways: interactively in the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes; the config file is the source of truth for GitOps workflows.
+{{< callout type="info" >}}
+You can manage virtual keys two ways: interactively in the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
+{{< /callout >}}
 
 ## Set up virtual keys (Admin UI)
 

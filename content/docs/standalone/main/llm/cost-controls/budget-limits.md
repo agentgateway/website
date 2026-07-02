@@ -5,7 +5,7 @@ description: Enforce per-key token budgets and dollar spend caps on LLM traffic 
 test: skip
 ---
 
-The [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide caps usage with a gateway-wide `localRateLimit`. This guide goes further: enforce budgets **per key or per user** with remote rate limiting, and cap spend in **dollars** by rate limiting on the realized cost from your [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+The [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide caps usage with a gateway-wide `localRateLimit`. This guide goes further: enforce budgets per key or per user with remote rate limiting, and cap spend in dollars by rate limiting on the realized cost from your [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
 
 Budget limits enforce token or cost quotas using a token bucket. Each user or API key gets a virtual budget; each request draws it down, and the bucket refills at a configured interval. When the budget is exhausted, requests are rejected with a `429` until the bucket refills.
 
@@ -13,11 +13,11 @@ Budget limits enforce token or cost quotas using a token bucket. Each user or AP
 
 Complete the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide to set up API key authentication and a token budget. This guide builds on that configuration.
 
-To enforce budgets **per key or user** (rather than a single shared budget), you need a remote rate limit server. Agentgateway connects to any [Envoy Rate Limit gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ratelimit/v3/rls.proto); the Envoy project provides an example [rate limiter service](https://github.com/envoyproxy/ratelimit). For the full field reference, see [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
+To enforce budgets per key or user (rather than a single shared budget), you need a remote rate limit server. Agentgateway connects to any [Envoy Rate Limit gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ratelimit/v3/rls.proto); the Envoy project provides an example [rate limiter service](https://github.com/envoyproxy/ratelimit). For the full field reference, see [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}).
 
 ## Per-key token budgets
 
-`localRateLimit` is gateway-wide: it enforces a single shared budget across all requests and keys. To give each user their own budget, use `remoteRateLimit` with a descriptor keyed on the API key's identity, and let the rate limit server hold the per-user counters.
+`localRateLimit` is gateway-wide. It enforces a single shared budget across all requests and keys. To give each user their own budget, use `remoteRateLimit` with a descriptor keyed on the API key's identity, and let the rate limit server hold the per-user counters.
 
 1. Configure agentgateway to send a per-user descriptor to the rate limit server. The `apiKey.user` value comes from the API key `metadata` you set in the virtual keys guide, so each user is counted independently. Setting `type: tokens` counts LLM tokens (not requests) against the budget.
 
@@ -63,12 +63,12 @@ To enforce budgets **per key or user** (rather than a single shared budget), you
 When a user reaches their daily token budget, further requests are rejected with a `429` until the budget refills.
 
 {{< callout type="info" >}}
-Token-based rate limits are checked in two phases—at request time and at response time—because the completion token count is not known until the response returns. For details, see [Token-based rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/#token-based-rate-limits" >}}).
+Token-based rate limits are checked in two phases, at request time and at response time, because the completion token count is not known until the response returns. For details, see [Token-based rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/#token-based-rate-limits" >}}).
 {{< /callout >}}
 
 ## Local token budgets
 
-For simpler setups that do not need shared state across replicas, use `localRateLimit` instead of a remote server. Remember that a local limit is **gateway-wide**, not per-key, and supports only `Seconds`, `Minutes`, and `Hours` intervals (no daily budgets).
+For simpler setups that do not need shared state across replicas, use `localRateLimit` instead of a remote server. Remember that a local limit is gateway-wide, not per-key, and supports only `Seconds`, `Minutes`, and `Hours` intervals (no daily budgets).
 
 ```yaml
 llm:
@@ -104,7 +104,7 @@ Token budgets approximate spend but drift as prices or model mix change. To cap 
 The budgets above are measured in *tokens*. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), agentgateway computes the realized USD cost of each request and exposes it to CEL as `llm.cost`. You can then rate limit on *dollars* directly, which enforces a true spend cap regardless of which model or input/output token mix each user hits.
 
 {{< callout type="warning" >}}
-**Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build—the response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
+**Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build. The response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
 {{< /callout >}}
 
 {{< callout type="warning" >}}
@@ -143,7 +143,7 @@ The budgets above are measured in *tokens*. If you configure a [model cost catal
          apiKey: "$OPENAI_API_KEY"
    ```
 
-2. Configure the rate limit server with the user's daily budget expressed in micro-dollars. Reuse the same rate limit server that you deployed for token budgets—dollar enforcement uses the identical Envoy rate limit service and protocol. Use a separate `domain` (`spend-budgets`) so it does not collide with your token-budget descriptors. This example caps each user at `$1.00` per day (`1000000` micro-dollars).
+2. Configure the rate limit server with the user's daily budget expressed in micro-dollars. Reuse the same rate limit server that you deployed for token budgets. Dollar enforcement uses the identical Envoy rate limit service and protocol. Use a separate `domain` (`spend-budgets`) so it does not collide with your token-budget descriptors. This example caps each user at `$1.00` per day (`1000000` micro-dollars).
 
    ```yaml
    domain: spend-budgets
