@@ -54,7 +54,7 @@ mcp:
 
 1. Create a project in the [Descope Console](https://app.descope.com/).
 
-2. Note your **Project ID** from **Project Settings** — this is used in your issuer URL and JWKS URL.
+2. Note your **Project ID** from **Project Settings**. The project ID is used in your issuer URL and JWKS URL.
 
 3. Create an [MCP Server](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) in the Descope Console to represent your MCP gateway. Set the **MCP Server URL** to match the public URL agentgateway exposes (typically ending with `/mcp`), and define the scopes your server enforces.
 
