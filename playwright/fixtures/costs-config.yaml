@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# Config for the cost-dashboard capture (llm/cost-controls/dashboard.md). The dashboard reads
+# from the local request-log database, which serve-costs-ui.sh pre-seeds with deterministic
+# traffic (scripts/seed-costs-db.mjs) — so no live LLM traffic is needed for the capture.
+#
+#   - config.database: the SQLite request_logs store the Costs/Analytics pages read from.
+#     /config is the mounted .agw-runtime dir; the seeded DB lives at /config/costs.db.
+#   - config.modelCatalog: prices requests. The seeded rows already carry cost, but a catalog
+#     is part of the documented setup and keeps any live request priced too.
+#   - the llm model exists only so the config is a valid LLM gateway; apiKey is a throwaway
+#     literal (the capture never sends real traffic).
+config:
+  adminAddr: 0.0.0.0:15000
+  database:
+    url: "sqlite:///config/costs.db?mode=rwc"
+  modelCatalog:
+    - file: /config/costs-catalog.json
+llm:
+  port: 4000
+  models:
+    - name: "*"
+      provider: openAI
+      params:
+        model: gpt-4o-mini
+        apiKey: "sk-mock-not-a-real-key"

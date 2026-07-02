@@ -54,20 +54,18 @@ Two pieces of configuration power the dashboard:
 
 ## Open the dashboard
 
-The Admin UI serves two cost-focused pages:
+The dashboard is the **LLM > Analytics** page. Open [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics). It shows traffic over time with a running tally of cost, tokens, and calls, plus a breakdown below the chart.
 
-| Page | URL | Focus |
-|------|-----|-------|
-| **Costs** | [http://localhost:15000/ui/llm/costs](http://localhost:15000/ui/llm/costs) | Spend in dollars |
-| **Analytics** | [http://localhost:15000/ui/llm/analytics](http://localhost:15000/ui/llm/analytics) | Token volume and traffic |
+{{< reuse-image-light src="img/ui-cost-dashboard-tokens.png" alt="agentgateway Analytics dashboard showing token traffic over time, with group-by and measure controls" >}}
+{{< reuse-image-dark srcDark="img/ui-cost-dashboard-tokens-dark.png" alt="agentgateway Analytics dashboard showing token traffic over time, with group-by and measure controls" >}}
 
-Both pages show the same underlying data with a running tally of cost, tokens, and calls, plotted as a time series over your selected window.
-
-<!-- TODO screenshots: capture Costs and Analytics pages (group-by user + provider) via the Playwright UI screenshot flow and add via reuse-image. -->
+{{< callout type="info" >}}
+The separate **LLM > Costs** page ([http://localhost:15000/ui/llm/costs](http://localhost:15000/ui/llm/costs)) is where you *manage the cost catalog* (import or override pricing), not where you view spend. See [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) for catalog setup.
+{{< /callout >}}
 
 ### Group by and measure
 
-The dashboard's power is in the **Group by** control. Switch it to break the same traffic down by:
+Use the **Group by** control to break the same traffic down by:
 
 - **Model** — which models drive spend (`gen_ai_request_model` / `gen_ai_response_model`).
 - **Provider** — spend per backend, such as OpenAI, Anthropic, Google, or Bedrock (`gen_ai_provider_name`).
@@ -75,7 +73,12 @@ The dashboard's power is in the **Group by** control. Switch it to break the sam
 - **Group** — spend per team or group (`agentgateway_group`).
 - **User agent** — spend per client, such as Cursor, Claude Code, or `openai-python` (`user_agent_name`).
 
-Toggle **Measure** between **tokens** and **cost** to view the same breakdown either way. Use **Export** to pull the underlying numbers out for reporting.
+Toggle **Measure** between **Tokens**, **Cost**, and **Requests** to view the same breakdown either way. Set it to **Cost** to see realized spend in dollars:
+
+{{< reuse-image-light src="img/ui-cost-dashboard-cost.png" alt="agentgateway Analytics dashboard measured in dollars, showing realized spend over time" >}}
+{{< reuse-image-dark srcDark="img/ui-cost-dashboard-cost-dark.png" alt="agentgateway Analytics dashboard measured in dollars, showing realized spend over time" >}}
+
+Use **Export** to pull the underlying numbers out for reporting.
 
 ## Send traffic and watch it get priced
 
@@ -87,7 +90,7 @@ curl -s http://localhost:4000/v1/chat/completions \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello from agentgateway!"}]}'
 ```
 
-Refresh the **Costs** or **Analytics** page and the request appears: tokens counted, cost calculated against the catalog, and attributed to the model, provider, and (if present) user. Each request is stored as a `request_logs` row with the realized `cost` alongside `input_tokens`, `output_tokens`, and `total_tokens`, which is why the same fields you see in [logs and metrics]({{< link-hextra path="/llm/observability/" >}}) also drive the dashboard.
+Refresh the **Analytics** page and the request appears: tokens counted, cost calculated against the catalog, and attributed to the model, provider, and (if present) user. Each request is stored as a `request_logs` row with the realized `cost` alongside `input_tokens`, `output_tokens`, and `total_tokens`, which is why the same fields you see in [logs and metrics]({{< link-hextra path="/llm/observability/" >}}) also drive the dashboard.
 
 ## Persistence and scaling
 

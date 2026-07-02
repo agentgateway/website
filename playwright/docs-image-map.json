@@ -1,5 +1,5 @@
 {
-  "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to its doc image destinations under assets/img/. `npm run sync-docs` copies the standalone-light baseline to `light` and standalone-dark to `dark`. `dark` is OPTIONAL — omit it for shots the docs only embed in light mode (most do, via {{< reuse-image >}} / {{< reuse-image-light >}}); the dark baselines are still captured + diffed for visual regression, just not published. Confirm paths against the guides before committing regenerated images.",
+  "$comment": "Maps a Playwright screenshot name (from toHaveScreenshot('NAME.png')) to its doc image destinations under assets/img/. `npm run sync-docs` copies the standalone-light baseline to `light` and standalone-dark to `dark`. `dark` is OPTIONAL \u2014 omit it for shots the docs only embed in light mode (most do, via {{< reuse-image >}} / {{< reuse-image-light >}}); the dark baselines are still captured + diffed for visual regression, just not published. Confirm paths against the guides before committing regenerated images.",
   "images": {
     "agentgateway-ui-landing.png": {
       "light": "assets/img/agentgateway-ui-landing.png",
@@ -14,37 +14,37 @@
       "dark": "assets/img/ui-playground-tool-echo-dark.png"
     },
     "ui-playground-multi-tools.png": {
-      "$note": "mcp/connect/virtual — multiplexed playground showing tools from both targets (time_* and everything_*).",
+      "$note": "mcp/connect/virtual \u2014 multiplexed playground showing tools from both targets (time_* and everything_*).",
       "light": "assets/img/ui-playground-multi-tools.png",
       "dark": "assets/img/ui-playground-multi-tools-dark.png"
     },
     "ui-tool-time-current.png": {
-      "$note": "mcp/connect/virtual — result of running the time target's get_current_time tool.",
+      "$note": "mcp/connect/virtual \u2014 result of running the time target's get_current_time tool.",
       "light": "assets/img/ui-tool-time-current.png",
       "dark": "assets/img/ui-tool-time-current-dark.png"
     },
     "agentgateway-ui-tool-echo-hello.png": {
-      "$note": "Shared by mcp/connect/virtual and observability/traces+metrics — echo tool result.",
+      "$note": "Shared by mcp/connect/virtual and observability/traces+metrics \u2014 echo tool result.",
       "light": "assets/img/agentgateway-ui-tool-echo-hello.png",
       "dark": "assets/img/agentgateway-ui-tool-echo-hello-dark.png"
     },
     "agentgateway-ui-tools-openapi.png": {
-      "$note": "mcp/connect/openapi — playground listing the OpenAPI-derived tools.",
+      "$note": "mcp/connect/openapi \u2014 playground listing the OpenAPI-derived tools.",
       "light": "assets/img/agentgateway-ui-tools-openapi.png",
       "dark": "assets/img/agentgateway-ui-tools-openapi-dark.png"
     },
     "agentgateway-ui-tools-openapi-success.png": {
-      "$note": "mcp/connect/openapi — a successful OpenAPI tool call (HTTP 200).",
+      "$note": "mcp/connect/openapi \u2014 a successful OpenAPI tool call (HTTP 200).",
       "light": "assets/img/agentgateway-ui-tools-openapi-success.png",
       "dark": "assets/img/agentgateway-ui-tools-openapi-success-dark.png"
     },
     "agentgateway-ui-tools-jwt.png": {
-      "$note": "observability/traces+metrics — playground with a JWT supplied before the tool call.",
+      "$note": "observability/traces+metrics \u2014 playground with a JWT supplied before the tool call.",
       "light": "assets/img/agentgateway-ui-tools-jwt.png",
       "dark": "assets/img/agentgateway-ui-tools-jwt-dark.png"
     },
     "ui-a2a-listener.png": {
-      "$note": "agent/a2a — the new UI has no A2A playground, so this and ui-a2a-route replace the old ui-a2a-skills/ui-a2a-success shots, captured from the Traffic route/listener view.",
+      "$note": "agent/a2a \u2014 the new UI has no A2A playground, so this and ui-a2a-route replace the old ui-a2a-skills/ui-a2a-success shots, captured from the Traffic route/listener view.",
       "light": "assets/img/ui-a2a-listener.png",
       "dark": "assets/img/ui-a2a-listener-dark.png"
     },
@@ -62,44 +62,54 @@
       "dark": "assets/img/cel-playground-dark.png"
     },
     "agentgateway-ui-kube-landing.png": {
-      "$note": "observability/ui (kubernetes) — read-only Gateway Overview in xds mode. Captured via tests/kube-readonly.spec.ts against a port-forwarded proxy (UI_BASE_URL).",
+      "$note": "observability/ui (kubernetes) \u2014 read-only Gateway Overview in xds mode. Captured via tests/kube-readonly.spec.ts against a port-forwarded proxy (UI_BASE_URL).",
       "light": "assets/img/agentgateway-ui-kube-landing.png",
       "dark": "assets/img/agentgateway-ui-kube-landing-dark.png"
     },
     "agentgateway-ui-kube-listeners.png": {
-      "$note": "observability/ui (kubernetes) — read-only Traffic Listeners view.",
+      "$note": "observability/ui (kubernetes) \u2014 read-only Traffic Listeners view.",
       "light": "assets/img/agentgateway-ui-kube-listeners.png",
       "dark": "assets/img/agentgateway-ui-kube-listeners-dark.png"
     },
     "agentgateway-ui-kube-routes.png": {
-      "$note": "observability/ui (kubernetes) — read-only Traffic Routes inventory.",
+      "$note": "observability/ui (kubernetes) \u2014 read-only Traffic Routes inventory.",
       "light": "assets/img/agentgateway-ui-kube-routes.png",
       "dark": "assets/img/agentgateway-ui-kube-routes-dark.png"
     },
     "agentgateway-ui-kube-policies.png": {
-      "$note": "observability/ui (kubernetes) — read-only Policies view.",
+      "$note": "observability/ui (kubernetes) \u2014 read-only Policies view.",
       "light": "assets/img/agentgateway-ui-kube-policies.png",
       "dark": "assets/img/agentgateway-ui-kube-policies-dark.png"
     },
     "agentgateway-ui-kube-cel.png": {
-      "$note": "observability/ui (kubernetes) — CEL Playground (the one Tools view available in xds mode).",
+      "$note": "observability/ui (kubernetes) \u2014 CEL Playground (the one Tools view available in xds mode).",
       "light": "assets/img/agentgateway-ui-kube-cel.png",
       "dark": "assets/img/agentgateway-ui-kube-cel-dark.png"
     },
     "agentgateway-ui-kube-route-mcp.png": {
-      "$note": "mcp quickstart + mcp/static-mcp verify step — read-only route detail drawer for the mcp route. Captured via tests/kube-readonly.spec.ts; requires the mcp route in the cluster.",
+      "$note": "mcp quickstart + mcp/static-mcp verify step \u2014 read-only route detail drawer for the mcp route. Captured via tests/kube-readonly.spec.ts; requires the mcp route in the cluster.",
       "light": "assets/img/agentgateway-ui-kube-route-mcp.png",
       "dark": "assets/img/agentgateway-ui-kube-route-mcp-dark.png"
     },
     "agentgateway-ui-kube-route-llm.png": {
-      "$note": "llm quickstart + llm/providers/openai verify step — read-only route detail drawer for the openai route.",
+      "$note": "llm quickstart + llm/providers/openai verify step \u2014 read-only route detail drawer for the openai route.",
       "light": "assets/img/agentgateway-ui-kube-route-llm.png",
       "dark": "assets/img/agentgateway-ui-kube-route-llm-dark.png"
     },
     "agentgateway-ui-kube-route-http.png": {
-      "$note": "non-agentic-http quickstart + install/sample-app verify step — read-only route detail drawer for the httpbin route.",
+      "$note": "non-agentic-http quickstart + install/sample-app verify step \u2014 read-only route detail drawer for the httpbin route.",
       "light": "assets/img/agentgateway-ui-kube-route-http.png",
       "dark": "assets/img/agentgateway-ui-kube-route-http-dark.png"
+    },
+    "ui-cost-dashboard-cost.png": {
+      "$note": "llm/cost-controls/dashboard \u2014 Analytics dashboard measured in dollars (realized spend).",
+      "light": "assets/img/ui-cost-dashboard-cost.png",
+      "dark": "assets/img/ui-cost-dashboard-cost-dark.png"
+    },
+    "ui-cost-dashboard-tokens.png": {
+      "$note": "llm/cost-controls/dashboard \u2014 Analytics dashboard: token traffic over time with group-by and measure controls.",
+      "light": "assets/img/ui-cost-dashboard-tokens.png",
+      "dark": "assets/img/ui-cost-dashboard-tokens-dark.png"
     }
   }
 }
