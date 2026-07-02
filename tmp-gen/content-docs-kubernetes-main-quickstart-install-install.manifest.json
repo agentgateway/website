@@ -1,0 +1,200 @@
+name: install-install
+main_file: content/docs/kubernetes/main/quickstart/install.md
+sources:
+- file: content/docs/kubernetes/main/quickstart/install.md
+  paths:
+  - standard
+options:
+  follow_reuse: true
+  follow_include: true
+  follow_internal_links: true
+  skip_tabs_without_paths: true
+  max_depth: 8
+context:
+  version: main
+  product: kubernetes
+visited_files:
+- content/docs/kubernetes/main/quickstart/install.md
+- content/docs/kubernetes/main/reference/helm/_index.md
+recursion_edges:
+- from: content/docs/kubernetes/main/quickstart/install.md
+  to: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/kgateway.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/agentgateway/about.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/about.md
+  to: assets/agw-docs/snippets/kgateway.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/about.md
+  to: assets/agw-docs/snippets/agentgateway.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/about.md
+  to: assets/agw-docs/snippets/agentgateway/agentgatewaypolicy.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/about.md
+  to: assets/agw-docs/snippets/agentgateway/agentgatewaybackend.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/agentgateway/get-started.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/versions/k8s-gw-version.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/versions/k8s-gw-version.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/kgateway.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/helm-kgateway-crds.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/helm-path-crds.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/versions/helm-version-flag.md
+  kind: reuse
+- from: assets/agw-docs/versions/helm-version-flag.md
+  to: assets/agw-docs/versions/n-patch.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/kgateway.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/helm-kgateway.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/helm-path.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/versions/helm-version-flag.md
+  kind: reuse
+- from: assets/agw-docs/versions/helm-version-flag.md
+  to: assets/agw-docs/versions/n-patch.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/pod-name.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway/get-started.md
+  to: assets/agw-docs/snippets/pod-name.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/kgateway.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/agentgateway-setup.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/agw-gatewayclass.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/agw-gatewayclass.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/agw-gatewayclass.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/snippets/agentgateway-setup.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/kgateway.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/helm-kgateway.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/helm-kgateway-crds.md
+  kind: reuse
+- from: assets/agw-docs/pages/agentgateway/quickstart/install.md
+  to: assets/agw-docs/snippets/namespace.md
+  kind: reuse
+- from: content/docs/kubernetes/main/quickstart/install.md
+  to: content/docs/kubernetes/main/reference/helm/_index.md
+  kind: link
+- from: content/docs/kubernetes/main/reference/helm/_index.md
+  to: assets/agw-docs/snippets/helm-path.md
+  kind: reuse
+- from: content/docs/kubernetes/main/reference/helm/_index.md
+  to: assets/agw-docs/versions/n-patch.md
+  kind: reuse
+- from: content/docs/kubernetes/main/reference/helm/_index.md
+  to: assets/agw-docs/versions/n-patch.md
+  kind: reuse
+discovered_paths_by_file:
+  content/docs/kubernetes/main/quickstart/install.md:
+  - all
+  - experimental
+  - standard
+  content/docs/kubernetes/main/reference/helm/_index.md: []
+selected_blocks:
+- file: content/docs/kubernetes/main/quickstart/install.md
+  line: 31
+  language: sh
+  paths:
+  - standard
+  hidden: false
+  preview: kubectl apply --server-side --force-conflicts -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml
+- file: content/docs/kubernetes/main/quickstart/install.md
+  line: 45
+  language: sh
+  paths:
+  - standard
+  - experimental
+  hidden: false
+  preview: helm upgrade -i agentgateway-crds oci://cr.agentgateway.dev/charts/agentgateway-crds
+    \
+- file: content/docs/kubernetes/main/quickstart/install.md
+  line: 54
+  language: sh
+  paths:
+  - standard
+  - experimental
+  hidden: false
+  preview: helm upgrade -i agentgateway oci://cr.agentgateway.dev/charts/agentgateway
+    \
+- file: content/docs/kubernetes/main/quickstart/install.md
+  line: 81
+  language: sh
+  paths:
+  - all
+  hidden: false
+  preview: kubectl apply -f- <<EOF
+- file: content/docs/kubernetes/main/quickstart/install.md
+  line: 145
+  language: sh
+  paths:
+  - all
+  hidden: true
+  preview: YAMLTest -f - <<'EOF'
+selected_test_includes: []
+selected_count: 5
+selected_test_count: 0
