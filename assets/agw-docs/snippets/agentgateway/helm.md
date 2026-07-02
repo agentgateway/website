@@ -33,21 +33,21 @@
    2. Deploy the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs by using Helm. This command creates the {{< reuse "agw-docs/snippets/namespace.md" >}} namespace and creates the {{< reuse "/agw-docs/snippets/kgateway.md" >}} CRDs in the cluster.
 
       {{< tabs >}}
-      {{% tab name="Standard" %}}
-      ```sh {paths="standard"}
-      helm upgrade -i --create-namespace \
-        --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-        --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
-      ```
-      {{% /tab %}}
-      {{% tab name="Experimental" %}}
-      The experimental path uses the nightly development build.
-      ```sh {paths="experimental"}
-      helm upgrade -i --create-namespace \
-        --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-        --version {{< reuse "agw-docs/versions/patch-dev.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
-      ```
-      {{% /tab %}}
+ {{% tab name="Standard" %}}
+ ```sh {paths="standard"}
+ helm upgrade -i --create-namespace \
+   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
+ ```
+ {{% /tab %}}
+ {{% tab name="Experimental" %}}
+ The experimental path uses the nightly development build.
+ ```sh {paths="experimental"}
+ helm upgrade -i --create-namespace \
+   --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   --version {{< reuse "agw-docs/versions/patch-dev.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "/agw-docs/snippets/helm-path-crds.md" >}}
+ ```
+ {{% /tab %}}
       {{< /tabs >}}
 
 3. Install the {{< reuse "/agw-docs/snippets/kgateway.md" >}} Helm chart.
