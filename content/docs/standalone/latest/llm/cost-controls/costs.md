@@ -78,6 +78,8 @@ The UI fetches the latest base costs and configures `modelCatalog`. You can refr
 
 When you set up a fresh configuration for the first time, the UI automatically performs this step.
 
+After you load a catalog, the same Admin UI visualizes your priced traffic. For more information, see [Cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}).
+
 ## Override catalog entries
 
 If your provider pricing differs from the imported public catalog, add another catalog file after the imported one. Later catalog sources override earlier sources.
