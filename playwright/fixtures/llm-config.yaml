@@ -1,0 +1,27 @@
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+#
+# LLM config for the LLM playground capture, pointed at a local MOCK OpenAI provider so
+# captures are deterministic, key-free, and CI-safe. Uses the openAI provider type with
+# hostOverride (the openai-compatible pattern, see llm/providers/openai-compatible.md) and
+# NO backendTLS, so the gateway calls the mock over plain HTTP.
+#
+#   - port 3030: the playground connects browser-side to http://localhost:<llm.port>, so
+#     this must be free on the host AND mapped identically (docker -p 3030:3030).
+#   - hostOverride host.docker.internal:8088: the mock (scripts/mock-openai.mjs) runs on
+#     the host; the container reaches it via host.docker.internal.
+#   - apiKey is a throwaway literal — the mock ignores it (no real key needed).
+llm:
+  port: 3030
+  policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+  models:
+    - name: "*"
+      provider: openAI
+      params:
+        model: gpt-4o-mini
+        apiKey: "sk-mock-not-a-real-key"
+        hostOverride: "host.docker.internal:8088"

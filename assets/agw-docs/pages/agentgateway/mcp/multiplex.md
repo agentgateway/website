@@ -309,14 +309,14 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 1. Get the agentgateway address.
    
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o=jsonpath="{.status.addresses[0].value}")
    echo $INGRESS_GW_ADDRESS
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"%}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```
@@ -342,7 +342,7 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
    {{< reuse-image-dark srcDark="img/mcp-multiplex-dark.png" >}}
 
 5. Test the federated tools:
-   * **Test the `mcp-server-everything-3001_echo` tool**: Click **List Tools** and select the `echo` tool. In the **message** field, enter any string, such as `Hello world`, and click **Run Tool**. Verify that your string is echoed back. 
+   * **Test the `mcp-server-everything-3001_echo` tool**: Click **List Tools** and select the `echo` tool. In the **Message** field, enter any string, such as `Hello world`, and click **Run Tool**. Verify that your string is echoed back. 
    * **Test the `mcp-website-fetcher_fetch` tool**: Click **List Tools** and select the `fetch` tool. In the **url** field, enter a website URL, such as `https://lipsum.com/`, and click **Run Tool**.
    
 

@@ -1,6 +1,7 @@
 ---
 title: OpenRouter
-weight: 61
+weight: 20
+icon: /integrations/providers/bw/openrouter.svg
 description: Configuration and setup for OpenRouter LLM provider
 ---
 
@@ -19,8 +20,6 @@ llm:
     provider: openrouter
     params:
       apiKey: "$OPENROUTER_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://openrouter.ai/api/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

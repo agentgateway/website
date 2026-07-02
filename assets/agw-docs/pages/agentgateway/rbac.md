@@ -45,8 +45,8 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
 
 2. Send a request to the LLM provider API without the `llm` header. Verify that the request is denied with a 403 HTTP response code. 
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
 
    ````sh
    curl -vik "$INGRESS_GW_ADDRESS:80/gemini" -H content-type:application/json  -d '{
@@ -56,7 +56,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
     ]
    }'
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vik "localhost:8080/gemini" -H content-type:application/json  -d '{
      "model": "",
@@ -86,8 +86,8 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
    
 3. Send another request to the LLM provider. This time, you include the `llm` header. Verify that the request succeeds with a 200 HTTP response code. 
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
 
    ```sh
    curl -vik "$INGRESS_GW_ADDRESS:80/gemini" \
@@ -100,7 +100,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
    }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vik "localhost:8080/gemini" \
      -H "content-type: application/json" \

@@ -251,8 +251,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
 1. Create or update the {{< reuse "agw-docs/snippets/backend.md" >}} for your LLM providers.
 
-   {{< tabs tabTotal="2" items="OpenAI model priority,Cost-based priority across providers" >}}
-   {{% tab tabName="OpenAI model priority" %}}
+   {{< tabs >}}
+   {{% tab name="OpenAI model priority" %}}
    
    In this example, you configure separate priority groups for failover across multiple models from the same LLM provider, OpenAI. Each model is in its own priority group. The order of the groups determines the failover priority. If the first model is evicted, requests fail over to the second group, and so on.
    
@@ -301,7 +301,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    
    {{% /tab %}}
-   {{% tab tabName="Cost-based priority across providers" %}}
+   {{% tab name="Cost-based priority across providers" %}}
    
    In this example, you configure failover across multiple providers with cost-based priority. The first priority group contains cheaper models. Responses are load-balanced across these models. In the event that both models are unavailable, requests fall back to the second priority group of more premium models.
    - Highest priority: Load balance across cheaper OpenAI `gpt-3.5-turbo` and Anthropic `claude-haiku-4-5-20251001` models.
@@ -388,10 +388,10 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
 3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
 
-   The `unhealthyCondition` field is an optional [CEL expression](https://github.com/google/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
+   The `unhealthyCondition` field is an optional [CEL expression](https://github.com/cel-expr/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
-   {{< tabs tabTotal="2" items="5xx and rate-limit failover,5xx-only failover" >}}
-   {{% tab tabName="5xx and rate-limit failover" %}}
+   {{< tabs >}}
+   {{% tab name="5xx and rate-limit failover" %}}
 
    This configuration evicts backends on both server errors (5xx) and rate-limit responses (429). This way, when you get throttled by one LLM provider, agentgateway automatically fails over to another.
 
@@ -417,7 +417,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    ```
 
    {{% /tab %}}
-   {{% tab tabName="5xx-only failover" %}}
+   {{% tab name="5xx-only failover" %}}
 
    This configuration evicts backends only on server errors (5xx) or connection failures. Rate-limited (429) responses lower the backend's health score but do not trigger eviction.
 
@@ -480,8 +480,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    Send multiple requests in sequence. Check the `model` field in each response to confirm that requests progress through the priority groups as each backend is evicted.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    for i in 1 2 3; do
      echo "=== Request $i ==="
@@ -492,7 +492,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    for i in 1 2 3; do
      echo "=== Request $i ==="
@@ -505,8 +505,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    {{< /tab >}}
    {{< /tabs >}}
 
-   {{< tabs tabTotal="2" items="OpenAI model priority,Cost-based priority across providers" >}}
-   {{% tab tabName="OpenAI model priority" %}}
+   {{< tabs >}}
+   {{% tab name="OpenAI model priority" %}}
 
    With the OpenAI model priority configuration, each request evicts the current group's backend and the next request routes to the next group. You can see the `model` field change with each request:
 
@@ -522,7 +522,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    ```
    
    {{% /tab %}}
-   {{% tab tabName="Cost-based priority across providers" %}}
+   {{% tab name="Cost-based priority across providers" %}}
 
    With the cost-based configuration, the first two requests are load balanced across the two providers in the first priority group. After both are evicted, the third request fails over to the second priority group:
 

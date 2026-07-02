@@ -1,11 +1,23 @@
 Enable server-side TLS encryption for the xDS gRPC server in the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane. For more information about the server, see the [Architecture]({{< link-hextra path="/about/architecture" >}}) docs.
 
+{{< version exclude-if="1.0.x,1.1.x,2.2.x" >}}
+The control plane serves xDS over TLS by default (`controller.xds.mode: tls`) and self-manages the certificate: it generates and rotates an internal CA and serving certificate, and propagates the CA bundle to the {{< reuse "agw-docs/snippets/pod-name.md" >}} data plane proxies. No cert-manager setup or pre-created secret is required. Optionally, you can bring your own certificate authority.
+{{< /version >}}
+{{< version include-if="1.0.x,1.1.x,2.2.x" >}}
 TLS encryption is disabled by default. When enabled, the control plane mounts a `{{< reuse "agw-docs/snippets/pod-name.md" >}}-xds-cert` TLS secret that you create and propagates the CA bundle to any {{< reuse "agw-docs/snippets/pod-name.md" >}} data plane proxies to establish a secure connection. You might integrate your secret with a provider such as [cert-manager](https://cert-manager.io/docs) to automate certificate management and rotation.
+{{< /version >}}
 
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
 
+{{< version exclude-if="1.0.x,1.1.x,2.2.x" >}}
+## Step 1: (Optional) Bring your own certificate authority {#cert-manager}
+
+The control plane self-manages the xDS certificate, so cert-manager is not required and you can skip to [Step 2](#control-plane). To use your own certificate authority instead of the self-signed one that the control plane generates, provide a CA key pair (certificate and key) in the `{{< reuse "agw-docs/snippets/pod-name.md" >}}-xds-cert` secret in the control plane namespace. You might use a provider such as [cert-manager](https://cert-manager.io/docs) to automate issuance and rotation.
+{{< /version >}}
+
+{{< version include-if="1.0.x,1.1.x,2.2.x" >}}
 ## Step 1: Set up cert-manager {#cert-manager}
 
 cert-manager is a Kubernetes controller that helps you automate the process of obtaining and renewing certificates from various PKI providers, such as AWS Private CA, Google Cloud CA, or Vault. In this example, you set up cert-manager to provide self-signed certificates for the {{< reuse "agw-docs/snippets/kgateway.md" >}} control plane.
@@ -93,6 +105,8 @@ cert-manager is a Kubernetes controller that helps you automate the process of o
    EOF
    ```
 
+{{< /version >}}
+
 ## Step 2: Update the control plane to use TLS {#control-plane}
 
 Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the controller. For complete steps, review the [Upgrade guide]({{< link-hextra path="/operations/upgrade" >}}).
@@ -111,12 +125,23 @@ Upgrade {{< reuse "agw-docs/snippets/kgateway.md" >}} with TLS enabled for the c
    ```
 
 3. Add the following values to the Helm values file to enable TLS for the xDS gRPC server.
+
+   {{% version exclude-if="1.0.x,1.1.x,2.2.x" %}}
+   ```yaml
+   controller:
+     xds:
+       mode: tls
+   ```
+   {{% /version %}}
+
+   {{% version include-if="1.0.x,1.1.x,2.2.x" %}}
    ```yaml
    controller:
      xds:
        tls:
          enabled: true
    ```
+   {{% /version %}}
 
 4. Upgrade your Helm installation.
 

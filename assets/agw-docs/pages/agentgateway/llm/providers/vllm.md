@@ -399,8 +399,8 @@ These steps are the same for both external and in-cluster vLLM.
 
 3. Send a request to verify agentgateway can route to vLLM.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer, Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS" \
      -H "content-type: application/json" \
@@ -415,7 +415,7 @@ These steps are the same for both external and in-cluster vLLM.
      }' | jq
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    In one terminal, start a port-forward to the gateway.
 
    ```sh

@@ -8,12 +8,7 @@ The Admin UI is separate from the [Web UI integrations]({{< link-hextra path="/i
 
 {{< doc-test paths="ui-standalone-default,ui-standalone-custom-port" >}}
 # Install agentgateway binary for tests
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 ## Open the Admin UI {#open-admin-ui}
@@ -50,7 +45,7 @@ sleep 3
    {{< reuse-image-light src="img/agentgateway-ui-landing.png" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-landing-dark.png" >}}
    {{< /version >}}
-   {{< version include-if="1.2.x,1.1.x,1.0,x" >}}
+   {{< version include-if="1.2.x,1.1.x,1.0.x" >}}
    The Admin UI dashboard shows your configured listeners and port bindings.
 
    {{< reuse-image-light src="img/1.2-earlier/agentgateway-ui-landing.png" >}}

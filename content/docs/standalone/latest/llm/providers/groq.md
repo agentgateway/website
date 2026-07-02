@@ -1,6 +1,7 @@
 ---
 title: Groq
-weight: 61
+weight: 20
+icon: /integrations/providers/bw/groq.svg
 description: Configuration and setup for Groq LLM provider
 ---
 
@@ -19,8 +20,6 @@ llm:
     provider: groq
     params:
       apiKey: "$GROQ_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.groq.com/openai/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

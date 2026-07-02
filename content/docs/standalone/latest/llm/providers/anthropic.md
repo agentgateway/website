@@ -1,6 +1,7 @@
 ---
 title: Anthropic
-weight: 50
+weight: 15
+icon: /integrations/providers/bw/anthropic.svg
 description: Configuration and setup for Anthropic Claude provider
 ---
 
@@ -36,7 +37,7 @@ llm:
 
 After running agentgateway with the configuration from the previous section, you can send a request to the `v1/messages` endpoint. Agentgateway automatically adds the `x-api-key` authorization and `anthropic-version` headers to the request. The request is forwarded to the Anthropic API and the response is returned to the client.
 
-```json
+```sh
 curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
@@ -98,7 +99,7 @@ Example response:
 }
 ```
 
-## Extended thinking and reasoing
+## Extended thinking and reasoning
 
 Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
 
@@ -130,7 +131,7 @@ The following values are supported:
 The following example request uses adaptive extended thinking. Note that this setting requires the `output_config.effort` field to be set too. 
 
 ```sh
-curl "localhost:3000/v1/messages" -H content-type:application/json -d '{
+curl "localhost:4000/v1/messages" -H content-type:application/json -d '{
   "model": "",
   "max_tokens": 1024,
   "thinking": {
@@ -181,7 +182,7 @@ Structured outputs constrain the model to respond with a specific JSON schema. Y
 Provide the JSON schema definition in the `output_config.format` field. 
 
 ```sh
-curl "localhost:3000/v1/messages" -H content-type:application/json -d '{
+curl "localhost:4000/v1/messages" -H content-type:application/json -d '{
   "model": "",
   "max_tokens": 256,
   "output_config": {
@@ -234,15 +235,11 @@ Example output:
 
 [Claude Platform on AWS](https://docs.aws.amazon.com/claude-platform/latest/userguide/welcome.html) hosts Anthropic's native Messages API on AWS infrastructure at `aws-external-anthropic.{region}.api.aws`. Because the API is the same Anthropic Messages API, you point the `anthropic` provider at the AWS endpoint and choose either API-key or AWS SigV4 authentication.
 
-<!--TODO 1.3 release -->
-{{< callout type="info" >}}
-Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/">}}).
-{{< /callout >}}
+{{< tabs >}}
+{{% tab name="API key" %}}
 
-{{< tabs tabTotal="2" items="API key, AWS SigV4" >}}
-{{% tab tabName="API key" %}}
-
-Store your Anthropic-on-AWS API key in a file and reference it from the provider configuration. Override the upstream host to point at the Claude Platform endpoint.
+Store your Claude Platform on AWS API key in an environment variable or file and reference it from the provider configuration.
+Override the upstream host to point at the Claude Platform endpoint.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -253,28 +250,23 @@ llm:
     provider: anthropic
     requestHeaders:
       set:
+        # Replace with your workspace ID
         anthropic-workspace-id: wrkspc_XXXXX
     params:
-      awsRegion: us-west-2
-      hostOverride: aws-external-anthropic.us-west-2.api.aws:443
-      pathPrefix: /v1
-    auth:
-      key:
-        value:
-          file: $HOME/.secrets/anthropic-aws
-    tls: {}
+      apiKey: $ANTHROPIC_AWS_API_KEY
+      # Replace with your region
+      baseUrl: https://aws-external-anthropic.us-west-2.api.aws/v1
 ```
 
-| Setting | Description |
-|---------|-------------|
+| Setting                                     | Description |
+|---------------------------------------------|-------------|
 | `requestHeaders.set.anthropic-workspace-id` | The Anthropic workspace ID that scopes the request. Replace `wrkspc_XXXXX` with your workspace ID. |
-| `params.hostOverride` | The Claude Platform endpoint host and port. Use the form `aws-external-anthropic.{region}.api.aws:443`. |
-| `params.pathPrefix` | The Anthropic API path prefix on Claude Platform, set to `/v1`. |
-| `auth.key.value.file` | A path to a file that contains the API key. |
-| `tls: {}` | Enables TLS to the upstream host. Required because Claude Platform is served over HTTPS. |
+| `params.hostOverride`                       | The Claude Platform endpoint host and port. Use the form `aws-external-anthropic.{region}.api.aws:443`. |
+| `params.pathPrefix`                         | The Anthropic API path prefix on Claude Platform, set to `/v1`. |
+| `params.apiKey`                             | API key. |
 
 {{% /tab %}}
-{{% tab tabName="AWS SigV4" %}}
+{{% tab name="AWS SigV4" %}}
 
 Use IAM credentials from the environment (for example IRSA, an EC2 instance profile, or an AWS SSO profile) and let agentgateway sign requests with SigV4. Set `auth.aws.serviceName` to `aws-external-anthropic`, which is the SigV4 service name that Claude Platform expects.
 

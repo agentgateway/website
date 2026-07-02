@@ -1,6 +1,7 @@
 ---
 title: Cerebras
 weight: 20
+icon: /integrations/providers/bw/cerebras.svg
 description: Configuration and setup for Cerebras LLM provider
 ---
 

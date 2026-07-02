@@ -459,7 +459,7 @@
 
 /* ===== GETTING STARTED ===== */
 .hp-gs-wrap {
-  display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; margin-top: 32px;
+  display: grid; grid-template-columns: 1.4fr 1fr; gap: 32px; margin-top: 32px; align-items: start;
 }
 @media (max-width: 860px) { .hp-gs-wrap { grid-template-columns: 1fr; } }
 .hp-code-block {
@@ -894,7 +894,6 @@
       <div class="hp-logo-item"><img src="/aaif-light.svg" alt="AAIF" class="hp-logo-img"><span>AAIF</span></div>
       <div class="hp-logo-item"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
       <div class="hp-logo-item"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
-      <div class="hp-logo-item"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
       <div class="hp-logo-item"><img src="/logos/alibaba.svg" alt="Alibaba" class="hp-logo-img"><span>Alibaba</span></div>
       <div class="hp-logo-item"><img src="/logos/adobe.svg" alt="Adobe" class="hp-logo-img"><span>Adobe</span></div>
       <div class="hp-logo-item"><img src="/logos/aws.svg" alt="AWS" class="hp-logo-img"><span>AWS</span></div>
@@ -905,7 +904,6 @@
       <div class="hp-logo-item" aria-hidden="true"><img src="/aaif-light.svg" alt="AAIF" class="hp-logo-img"><span>AAIF</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/adopters/solo-io-light.png" alt="Solo.io" class="hp-logo-img"><span>Solo.io</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/quotes/microsoft.svg" alt="Microsoft" class="hp-logo-img"><span>Microsoft</span></div>
-      <div class="hp-logo-item" aria-hidden="true"><img src="/logos/apple.svg" alt="Apple" class="hp-logo-img"><span>Apple</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/logos/alibaba.svg" alt="Alibaba" class="hp-logo-img"><span>Alibaba</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/logos/adobe.svg" alt="Adobe" class="hp-logo-img"><span>Adobe</span></div>
       <div class="hp-logo-item" aria-hidden="true"><img src="/logos/aws.svg" alt="AWS" class="hp-logo-img"><span>AWS</span></div>
@@ -1050,42 +1048,34 @@
             <div class="com"># Install the agentgateway binary</div>
             <div><span class="prompt-char">$</span> curl -sL https://agentgateway.dev/install | bash</div>
             <div>&nbsp;</div>
-            <div class="com"># Download sample config</div>
-            <div><span class="prompt-char">$</span> curl -sL https://raw.githubusercontent.com/agentgateway/agentgateway/main/examples/basic/config.yaml -o config.yaml</div>
+            <div class="com"># Run</div>
+            <div><span class="prompt-char">$</span> agentgateway</div>
             <div>&nbsp;</div>
-            <div class="com"># Run with the config</div>
-            <div><span class="prompt-char">$</span> agentgateway -f config.yaml</div>
-            <div>&nbsp;</div>
-            <div class="com"># INFO agentgateway: Listening on 0.0.0.0:3000</div>
-            <div class="com"># INFO agentgateway: Admin UI at http://localhost:15000/ui/</div>
+            <div class="com"># info	app	serving UI at http://localhost:15000/ui</div>
           </div>
           <div class="hp-code-panel" id="hp-code-helm">
             <div class="com"># Install Gateway API CRDs</div>
             <div><span class="prompt-char">$</span> kubectl apply --server-side --force-conflicts \</div>
-            <div>  -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml</div>
+            <div>&nbsp;&nbsp;-f https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.5.0/standard-install.yaml</div>
             <div>&nbsp;</div>
             <div class="com"># Install agentgateway CRDs via Helm</div>
             <div><span class="prompt-char">$</span> helm upgrade -i agentgateway-crds \</div>
-            <div>  oci://cr.agentgateway.dev/charts/agentgateway-crds \</div>
-            <div>  --create-namespace --namespace agentgateway-system \</div>
-            <div>  --version v1.2.1 \</div>
-            <div>  --set controller.image.pullPolicy=Always</div>
+            <div>&nbsp;&nbsp;oci://cr.agentgateway.dev/charts/agentgateway-crds \</div>
+            <div>&nbsp;&nbsp;--create-namespace --namespace agentgateway-system \</div>
+            <div>&nbsp;&nbsp;--version v1.3.0</div>
             <div>&nbsp;</div>
             <div class="com"># Install agentgateway via Helm</div>
             <div><span class="prompt-char">$</span> helm upgrade -i agentgateway \</div>
-            <div>  oci://cr.agentgateway.dev/charts/agentgateway \</div>
-            <div>  --namespace agentgateway-system \</div>
-            <div>  --version v1.2.1 \</div>
-            <div>  --set controller.image.pullPolicy=Always \</div>
-            <div>  --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \</div>
-            <div>  --wait</div>
+            <div>&nbsp;&nbsp;oci://cr.agentgateway.dev/charts/agentgateway \</div>
+            <div>&nbsp;&nbsp;--namespace agentgateway-system \</div>
+            <div>&nbsp;&nbsp;--version v1.3.0</div>
           </div>
           <div class="hp-code-panel" id="hp-code-docker">
             <div class="com"># Run agentgateway in a container</div>
             <div><span class="prompt-char">$</span> docker run -p 3000:3000 -p 15000:15000 \</div>
-            <div>  -v $(pwd)/config.yaml:/etc/agentgateway/config.yaml \</div>
-            <div>  ghcr.io/agentgateway/agentgateway:latest \</div>
-            <div>  -f /etc/agentgateway/config.yaml</div>
+            <div>&nbsp;&nbsp;-v $(pwd)/config.yaml:/etc/agentgateway/config.yaml \</div>
+            <div>&nbsp;&nbsp;ghcr.io/agentgateway/agentgateway:latest \</div>
+            <div>&nbsp;&nbsp;-f /etc/agentgateway/config.yaml</div>
           </div>
         </div>
       </div>

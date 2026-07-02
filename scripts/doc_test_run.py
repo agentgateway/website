@@ -78,6 +78,42 @@ def infer_version_from_sources(sources: List[Dict[str, str]], fallback: str) -> 
     return fallback
 
 
+def version_path_tokens(doc_rel_path: str) -> Dict[str, str]:
+    """Build the path-substitution tokens for a page's `test:` metadata.
+
+    Derived from the declaring page's repo-relative path
+    (e.g. "content/docs/standalone/main/configuration/backends.md"):
+
+      ${version}     -> the version dir segment, e.g. "main" / "latest"
+      ${versionRoot} -> the prefix up to and including the version dir,
+                        e.g. "content/docs/standalone/main"
+
+    These let `file:` values reference paths without hardcoding the version
+    directory, which rotates every release. Resolution is anchored to the page
+    that declares the test, so a page copied from main/ to latest/ needs no
+    metadata edit. Entries that intentionally target another version just write
+    the literal path (no token). Returns an empty dict for paths that don't
+    match the content/docs/<section>/<version>/ layout, leaving `file:`
+    unchanged.
+
+    The ${...} syntax (not {...}) is deliberate: a YAML value starting with
+    "{" is parsed as a flow mapping, so a leading {versionRoot} would be a
+    parse error unless quoted. A leading "$" is a plain scalar, so ${versionRoot}
+    is valid unquoted at the start of a `file:` value.
+    """
+    parts = doc_rel_path.replace("\\", "/").split("/")
+    try:
+        idx = parts.index("docs")
+        section = parts[idx + 1]
+        version = parts[idx + 2]
+    except (ValueError, IndexError):
+        return {}
+    if section not in ("kubernetes", "standalone"):
+        return {}
+    version_root = "/".join(parts[: idx + 3])
+    return {"${versionRoot}": version_root, "${version}": version}
+
+
 def build_test_cases_from_file(
     repo_root: Path,
     md_file: Path,
@@ -112,13 +148,24 @@ def build_test_cases_from_file(
             continue
 
         sources: List[Dict[str, str]] = []
+        tokens = version_path_tokens(rel_doc)
         for entry in entries:
             if not isinstance(entry, dict):
                 continue
-            source_file = entry.get("file")
             source_path = entry.get("path")
-            if not source_file or not source_path:
+            if not source_path:
                 continue
+            # `file` defaults to the page that declares the test, and supports
+            # ${version}/${versionRoot} placeholders resolved against that page's
+            # path. This lets entries reference a path without hardcoding the
+            # version dir (which rotates every release), so a page copied from
+            # main/ to latest/ needs no metadata edit -- the version context is
+            # still inferred from the resolved path. Entries that intentionally
+            # point at another version (e.g. a latest/ page reusing main/'s code
+            # blocks) just write the literal path with no token.
+            source_file = entry.get("file") or rel_doc
+            for token, value in tokens.items():
+                source_file = source_file.replace(token, value)
             sources.append({"file": source_file, "path": source_path})
 
         if not sources:
@@ -433,7 +480,7 @@ def create_cluster_with_retries(cluster_name: str, repo_root: Path) -> Tuple[int
     return create_code, create_output
 
 
-def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False) -> Dict:
+def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, context_base_dir: Optional[Path] = None, pause: bool = False, keep_cluster: bool = False) -> Dict:
     test_slug = sanitize_name(test_case.name)
     cluster_name = f"{cluster_prefix}-{test_slug}"[:50]
 
@@ -511,25 +558,41 @@ def run_test_case(repo_root: Path, test_case: TestCase, cluster_prefix: str, con
                 except Exception as exc:
                     logger.warning("Context collection error: %s", exc)
     finally:
-        if pause:
-            logger.info("--pause set: cluster '%s' is kept running. Press Ctrl+C to clean up and exit.", cluster_name)
-            try:
-                while True:
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                logger.info("Interrupted — deleting cluster '%s'...", cluster_name)
+        if keep_cluster:
+            # Leave the cluster up for an external capture step (e.g. port-forward + Playwright).
+            # cloud-provider-kind is still stopped: the pods are up and port-forward to the proxy
+            # deployment works without it, and leaving the daemon running would leak a process.
+            if cloud_provider is not None:
+                cloud_provider.terminate()
+                try:
+                    cloud_provider.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    cloud_provider.kill()
+            logger.info(
+                "--keep-cluster set: cluster '%s' left running (kubeconfig context 'kind-%s'). "
+                "Clean up with: kind delete cluster --name %s",
+                cluster_name, cluster_name, cluster_name,
+            )
+        else:
+            if pause:
+                logger.info("--pause set: cluster '%s' is kept running. Press Ctrl+C to clean up and exit.", cluster_name)
+                try:
+                    while True:
+                        time.sleep(1)
+                except KeyboardInterrupt:
+                    logger.info("Interrupted — deleting cluster '%s'...", cluster_name)
 
-        if cloud_provider is not None:
-            cloud_provider.terminate()
-            try:
-                cloud_provider.wait(timeout=10)
-            except subprocess.TimeoutExpired:
-                cloud_provider.kill()
+            if cloud_provider is not None:
+                cloud_provider.terminate()
+                try:
+                    cloud_provider.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    cloud_provider.kill()
 
-        delete_code, delete_output = run_command(["kind", "delete", "cluster", "--name", cluster_name], repo_root)
-        if delete_code != 0 and not error:
-            error = delete_output.strip()
-            status = "failed"
+            delete_code, delete_output = run_command(["kind", "delete", "cluster", "--name", cluster_name], repo_root)
+            if delete_code != 0 and not error:
+                error = delete_output.strip()
+                status = "failed"
 
     result = {
         "status": status,
@@ -591,6 +654,19 @@ def main() -> int:
     parser.add_argument("--file", nargs="+", default=None, metavar="FILE", help="Path(s) to one or more markdown files to test (relative to repo root or absolute)")
     parser.add_argument("--test", default=None, help="Name of a specific test scenario to run (only used when --file specifies a single file)")
     parser.add_argument("--pause", action="store_true", help="After the test, keep the cluster running until Ctrl+C, then clean up")
+    parser.add_argument(
+        "--keep-cluster",
+        action="store_true",
+        help="After the test, leave the kind cluster running and exit (non-blocking) instead of deleting it. "
+        "Use for screenshot capture: an external step can port-forward the proxy and run Playwright against "
+        "the kept cluster (kubeconfig context 'kind-<cluster>'), then run 'kind delete cluster --name <cluster>'.",
+    )
+    parser.add_argument(
+        "--keep-cluster-file",
+        default=None,
+        metavar="PATH",
+        help="With --keep-cluster, write the kept cluster name(s) to PATH (one per line) so CI can port-forward and later delete them.",
+    )
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -667,17 +743,30 @@ def main() -> int:
     context_base_dir = generated_dir / "context"
 
     logger.info("Running %d test scenario(s)", len(test_cases))
+    if args.keep_cluster and len(test_cases) > 1:
+        logger.warning("--keep-cluster with %d scenarios will leave multiple clusters running.", len(test_cases))
     test_results: Dict[str, Dict] = {}
+    kept_clusters: List[str] = []
     exit_code = 0
     for test_case in test_cases:
         doc_rel = test_case.document.relative_to(repo_root).as_posix()
         key = f"{doc_rel}::{test_case.name}"
-        result = run_test_case(repo_root, test_case, args.cluster_prefix, context_base_dir=context_base_dir, pause=args.pause)
+        result = run_test_case(repo_root, test_case, args.cluster_prefix, context_base_dir=context_base_dir, pause=args.pause, keep_cluster=args.keep_cluster)
         status_icon = "PASSED" if result.get("status") == "passed" else "FAILED"
         logger.info("%s: %s", status_icon, key)
         test_results[key] = result
+        if args.keep_cluster and result.get("cluster"):
+            kept_clusters.append(result["cluster"])
         if result.get("status") != "passed":
             exit_code = 1
+
+    if args.keep_cluster and args.keep_cluster_file and kept_clusters:
+        kept_path = Path(args.keep_cluster_file)
+        if not kept_path.is_absolute():
+            kept_path = repo_root / kept_path
+        kept_path.parent.mkdir(parents=True, exist_ok=True)
+        kept_path.write_text("\n".join(kept_clusters) + "\n", encoding="utf-8")
+        logger.info("Wrote kept cluster name(s) to %s", kept_path)
 
     write_report(report_path, tested_documents, test_results, total_documents, total_by_version)
     logger.info("================= Test Results =================")

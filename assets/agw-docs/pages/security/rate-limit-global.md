@@ -127,13 +127,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 1. Create a namespace for the rate limit infrastructure.
 
-   ```sh {paths="global-rate-limit-by-ip"}
+   ```sh {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl create namespace ratelimit
    ```
 
 2. Deploy Redis as the backing store.
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -169,9 +169,9 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
+3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/llm/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -187,6 +187,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
            rate_limit:
              unit: minute
              requests_per_unit: 10
+
+         # Per-user LLM token budget (see the virtual keys guide).
+         # Deliberately small so you can exhaust it in a few requests; raise for production.
+         - key: user_id
+           rate_limit:
+             unit: day
+             requests_per_unit: 100
 
          # Rate limit by path
          - key: path
@@ -241,7 +248,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 4. Deploy the rate limit service.
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -302,7 +309,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-   {{< doc-test paths="global-rate-limit-by-ip" >}}
+   {{< doc-test paths="global-rate-limit-by-ip,deploy-rate-limit-server" >}}
    YAMLTest -f - <<'EOF'
    - name: wait for redis deployment to be ready
      wait:
@@ -429,8 +436,8 @@ The descriptor entry `name` in the policy must match the `key` in the rate limit
 
 2. Send 15 requests to the httpbin app.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    for i in $(seq 1 15); do
      STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -440,7 +447,7 @@ The descriptor entry `name` in the policy must match the `key` in the rate limit
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    for i in $(seq 1 15); do
      STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -528,13 +535,13 @@ Extract the user ID from a header and rate limit per user (50 requests per minut
 
 2. Send a request without the `x-user-id` header. This request does not match the user-based descriptor and is allowed.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/get -H "host: www.example.com"
    ```
@@ -543,8 +550,8 @@ Extract the user ID from a header and rate limit per user (50 requests per minut
 
 3. Send requests with a user ID header to trigger the rate limit.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    for i in $(seq 1 60); do
      STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -555,7 +562,7 @@ Extract the user ID from a header and rate limit per user (50 requests per minut
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    for i in $(seq 1 60); do
      STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -618,8 +625,8 @@ Apply different rate limits to different API paths (`/api/v1` at 100/min, `/api/
 
 2. Send requests to different paths and compare the rate limits.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    # /api/v1 has a 100 req/min limit
    for i in $(seq 1 5); do
@@ -636,7 +643,7 @@ Apply different rate limits to different API paths (`/api/v1` at 100/min, `/api/
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    # /api/v1 has a 100 req/min limit
    for i in $(seq 1 5); do
@@ -694,13 +701,13 @@ Use a static value to categorize traffic — for example, by service tier (1000 
 
 2. Send a request and inspect the rate limit headers to verify the limit.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i http://$INGRESS_GW_ADDRESS:80/get -H "host: www.example.com"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i localhost:8080/get -H "host: www.example.com"
    ```
@@ -761,8 +768,8 @@ Combine multiple descriptor entries to create composite rate limits — for exam
 
 2. Send requests as different users to different paths and verify that each user-path combination has its own counter.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    # Requests as alice to /api/v1
    for i in $(seq 1 5); do
@@ -781,7 +788,7 @@ Combine multiple descriptor entries to create composite rate limits — for exam
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    # Requests as alice to /api/v1
    for i in $(seq 1 5); do
@@ -848,8 +855,8 @@ Apply both local and global rate limits to the same traffic.
 
 2. Send requests with a user ID header. The global per-user limit (50/min) is reached before the local per-replica limit (100/s).
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    for i in $(seq 1 60); do
      STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
@@ -860,7 +867,7 @@ Apply both local and global rate limits to the same traffic.
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    for i in $(seq 1 60); do
      STATUS=$(curl -s -o /dev/null -w "%{http_code}" \

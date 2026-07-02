@@ -6,6 +6,8 @@ description: Configure Cross-Origin Resource Sharing policies to control cross-d
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 ## About CORS
 
 {{< gloss "CORS (Cross-Origin Resource Sharing)" >}}Cross-origin resource sharing (CORS){{< /gloss >}} is a browser security mechanism which allows a server to control which origins can request and interact with resources that are hosted on a different domain. By default, web browsers only allow requests to resources that are hosted on the same domain as the web page that served the original request. Access to web pages or resources that are hosted on a different domain is restricted to prevent potential security vulnerabilities, such as cross-site request forgery (CRSF).
@@ -48,7 +50,6 @@ CORS policies are typically implemented to limit access to server resources for 
 > [!TIP]
 > Requests that violate the CORS policy will still have responses returned, but the browser will reject them. As such, usage of tools like `curl` with `cors` can be confusing, as `curl` does not respect CORS headers.
 
-The same CORS fields are supported in both simplified LLM and route-based configurations:
 - `allowOrigins`
 - `allowMethods`
 - `allowHeaders`
@@ -56,9 +57,8 @@ The same CORS fields are supported in both simplified LLM and route-based config
 - `allowCredentials`
 - `maxAge`
 
-{{< tabs items="Simplified LLM,Route-based" >}}
-{{< tab >}}
-
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 llm:
@@ -83,8 +83,33 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 {{< /tab >}}
-{{< tab >}}
-
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins:
+      - https://chat.example.com
+      allowMethods:
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 10m
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 binds:

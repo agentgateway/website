@@ -4,13 +4,13 @@ weight: 40
 description: Use CEL expressions to construct a full request URL from context variables and forward it upstream as a request header.
 test:
   forward:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/traffic-management/transformations/forward.md
+  - file: ${versionRoot}/traffic-management/transformations/forward.md
     path: forward
 ---
 

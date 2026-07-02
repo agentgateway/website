@@ -151,7 +151,7 @@ You can optionally enrich the metrics that are captured by the agentgateway with
    
       {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tools-jwt.png" >}}
 
-6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+6. Select the `everything_echo` tool, enter any string in the **Message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
    {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tool-echo-hello.png" >}}
 
 7. Send a request to the agentgateway metrics endpoint to grab the `tool_calls_total` metric. Verify that you see the `custom-tag=test` and the `user=me` tags. 

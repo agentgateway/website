@@ -114,15 +114,15 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
 
 4. Enter the **Gateway base URL**.
 
-   {{< tabs items="LoadBalancer,Port-forward" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="LoadBalancer" %}}
+   {{% tab name="LoadBalancer" %}}
    ```
    http://$INGRESS_GW_ADDRESS/claude
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Port-forward" %}}
+   {{% tab name="Port-forward" %}}
    Use `127.0.0.1` rather than `localhost`.
    
    ```bash

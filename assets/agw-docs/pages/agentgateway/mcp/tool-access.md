@@ -71,8 +71,8 @@ sequenceDiagram
       ``` 
 
 3. Send a request to the MCP server. Provide the JWT token for Alice in your request.
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    ```sh
    npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
    --cli http://localhost:8080/mcp-github \
@@ -95,7 +95,7 @@ sequenceDiagram
    }
    ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. Go back to the MCP Inspector tool and expand the **Authentication** section. Enter the following details in the **API Token Authentication** card: 
       * **Header Name**: Enter `Authorization`. 
       * **Bearer Token**: Enter the JWT token for Alice. 
@@ -139,8 +139,8 @@ sequenceDiagram
    ```
    
 2. Try to access tools on the MCP server. 
-   {{< tabs tabTotal="2" items="CLI,UI" >}}
-   {{% tab tabName="CLI" %}}
+   {{< tabs >}}
+   {{% tab name="CLI" %}}
    1. Try to access the `get_me` tool with Alice's JWT token. Verify that the request succeeds and you can access the tool. 
       ```sh
       npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
@@ -200,7 +200,7 @@ sequenceDiagram
       "failed to send message: unauthorized tool call"}}
       ```
    {{% /tab %}}
-   {{% tab tabName="UI" %}}
+   {{% tab name="UI" %}}
    1. Go to the MCP inspector tool, and re-connect with Alice's token. From the **Tools** tab, click **Clear**. Then click **List Tools**. Verify that you can now only see the `get_me` tool that you authorized in your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. 
    
       {{< reuse-image-light src="img/mcp-github-tool.png" >}}

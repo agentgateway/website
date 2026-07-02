@@ -9,9 +9,12 @@ The Anthropic Messages API (`/v1/messages`) is the native interface for Anthropi
 
 ## About
 
-The [Anthropic Messages API](https://platform.claude.com/docs/en/api/messages) is the primary endpoint for Claude models. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement. Agentgateway automatically adds the `x-api-key` and `anthropic-version` headers that the Anthropic API requires.
+The [Anthropic Messages API](https://platform.claude.com/docs/en/api/messages) is the primary endpoint for Claude models.
+Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement.
 
-The related `/v1/messages/count_tokens` endpoint, which estimates token usage before sending a request, is handled by the `anthropicTokenCount` route type.
+When using the Anthropic provider, Agentgateway automatically handles additional requirements, such as the `x-api-key` and `anthropic-version` headers that the Anthropic API requires.
+
+The related [`/v1/messages/count_tokens`]({{< link-hextra path="/llm/api-types/token-count/" >}}) endpoint estimates token usage before sending a request and is handled by the `anthropicTokenCount` route type.
 
 ## Route type configuration
 
@@ -57,6 +60,9 @@ For detailed information about model routing and configuration modes, see [Model
 
 Send a request to the `/v1/messages` endpoint. The request is forwarded to the Anthropic API and the response is returned to the client.
 
+{{< tabs >}}
+{{% tab name="Curl" %}}
+
 ```shell
 curl -X POST http://localhost:4000/v1/messages \
   -H "Content-Type: application/json" \
@@ -67,13 +73,12 @@ curl -X POST http://localhost:4000/v1/messages \
   }'
 ```
 
+{{% /tab %}}
+{{% tab name="Other" %}}
+
+[View other LLM client integrations](/docs/standalone/latest/integrations/llm-clients/).
+
+{{% /tab %}}
+{{< /tabs >}}
+
 For Anthropic-specific features such as token counting, extended thinking, and structured outputs, see the [Anthropic provider]({{< link-hextra path="/llm/providers/anthropic/" >}}) guide.
-
-## Token usage tracking
-
-After sending Messages requests, verify that agentgateway recorded token usage metrics.
-
-1. Open the agentgateway [metrics endpoint](http://localhost:15020/metrics).
-2. Look for the `agentgateway_gen_ai_client_token_usage` metric. The metric includes labels for the token type (`input` or `output`) and the model used.
-
-For more information about LLM metrics and observability, see [Observe traffic]({{< link-hextra path="/llm/observability/" >}}).

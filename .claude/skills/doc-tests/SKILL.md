@@ -73,10 +73,19 @@ Use this skill when adding tests to documentation guides in the `agentgateway/we
 title: ...
 test:
   <scenario-name>:
-  - file: content/docs/standalone/main/quickstart/<page>.md
+  - file: ${versionRoot}/quickstart/<page>.md   # same-version prereq
     path: <path-name>
+  - path: <path-name>                           # file: omitted -> this page itself
 ---
 ```
+
+**Write `file:` values version-relative so a page can be copied between `main` and `latest` with no front-matter edits:**
+
+- **Omit `file:`** when the source is the page that declares the test — it defaults to the declaring page.
+- **Use `${versionRoot}/...`** for prerequisites in the **same version** (e.g. `${versionRoot}/quickstart/install.md`). `${versionRoot}` expands to the version dir of the page declaring the test (`content/docs/kubernetes/main`, `.../latest`, etc.); `${version}` expands to just the segment (`main`/`latest`).
+- Use a **literal path** only when an entry must point at a *different* version on purpose.
+
+Token resolution covers the `kubernetes` and `standalone` sections; a `file:` that doesn't match the `content/docs/<section>/<version>/` layout is left as-is.
 
 **Pages with no testable content** (no code blocks, landing pages, concept pages, `_index.md` files without ordered steps, etc.) should be marked with `test: skip` instead of a scenario dict. This counts the page as covered in the test coverage report without generating any test cases:
 
@@ -98,19 +107,19 @@ test: skip
 
 **Key principle:** The existing framework already supports every content type except pure link validation. Most "non-runnable" pages can become testable through content changes alone — adding hidden `{{< doc-test >}}` blocks that write configs, start services in the background, and run lightweight assertions. 
 
-Or for the latest (stable) version:
+Because the example above uses `${versionRoot}` and omits `file:` for the declaring page, the **same** front matter works under `latest/` without changes. Only when you deliberately mix versions do you write a literal path:
 
 ```yaml
 ---
 title: ...
 test:
   <scenario-name>:
-  - file: content/docs/standalone/latest/quickstart/<page>.md
+  - file: content/docs/standalone/latest/quickstart/<page>.md   # literal: pin a specific version
     path: <path-name>
 ---
 ```
 
-- Use the **content** path for `file`. List sources in dependency order if chaining (install → … → feature).
+- Prefer version-relative `file:` values (see above). List sources in dependency order if chaining (install → … → feature).
 - One scenario can list only the current page with one path if the guide is self-contained.
 - For Kubernetes docs, prerequisite files often come from `latest` (e.g. `content/docs/kubernetes/latest/quickstart/install.md`) while the feature page may be in `main` or `latest`.
 
@@ -299,7 +308,7 @@ When in doubt, flag the failure to the user rather than silently adjusting the t
 - [ ] If the guide has a long-running server, a **hidden** doc-test block starts it in the background (and optional trap/sleep); visible "start server" block has **no** path.
 - [ ] Placeholders in shell blocks are quoted or use `${VAR:-default}` so the script has no syntax errors.
 - [ ] `test:` front matter on the **content** page lists the right `file` and `path`; file path is the content path (extractor follows reuse). For pages with no testable content (index pages, no code blocks), use `test: skip` instead — counts toward coverage without generating test cases.
-- [ ] When copying a test chain between `main` and `latest`, **update every `file:` path** in front matter to match the target version directory.
+- [ ] `file:` values are **version-relative** (`${versionRoot}/...`, or omitted for the declaring page) so copying a page between `main` and `latest` needs **no** front-matter edits. Use a literal path only to point at a different version on purpose.
 - [ ] Prerequisite `file:` paths come from the guide's actual **Before you begin** links — don't guess; check the links to confirm exact paths.
 - [ ] No `kubectl port-forward` in any visible block — replace with YAMLTest HTTP assertions using `${INGRESS_GW_ADDRESS}`.
 - [ ] Host headers in YAMLTest `http.headers` use bare hostnames — no port suffix (e.g. `host: "example.com"`, not `host: "example.com:80"`). Including a port causes ECONNRESET, not an HTTP error.

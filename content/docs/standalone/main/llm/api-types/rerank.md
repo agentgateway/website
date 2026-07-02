@@ -56,8 +56,8 @@ For detailed information about model routing and configuration modes, see [Model
 
 Send a request to the `/v2/rerank` endpoint with a query and candidate documents. The response ranks the documents by relevance.
 
-{{< tabs items="Curl,Other" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://localhost:4000/v2/rerank' \
@@ -75,7 +75,7 @@ curl 'http://localhost:4000/v2/rerank' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Other" %}}
 
 [View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
 

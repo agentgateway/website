@@ -119,24 +119,48 @@ binds:
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
-2. Connect to the MCP server with the agentgateway UI playground. 
-   
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
+2. Connect to the MCP server with the agentgateway UI playground.
+
+   1. From the navigation menu under **MCP**, click **Tool Playground**.
+
+   2. If you see a banner prompting you to allow browser access, click **Apply CORS**. This adds the UI's origin to the MCP CORS policy so the playground can open a session, and the configuration reloads automatically.
+
+   3. Click **Initialize**. The agentgateway UI opens an MCP session and lists the tools that are exposed on the target.
+
+   4. Verify that the **Result** panel reports the discovered tools.
+
+      {{< reuse-image-light src="img/ui-playground-tools.png" >}}
+      {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
+
+3. Verify access to a tool.
+   1. From the **Tool** dropdown, select the `echo` tool.
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Call tool**.
+   3. Verify that the **Result** panel returns `HTTP 200` and that your message is echoed in the **Tool output**.
+
+      {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
+{{< /version >}}
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
+2. Connect to the MCP server with the agentgateway UI playground.
+
    1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
-      
-      {{< reuse-image src="img/agentgateway-ui-playground.png" >}}
 
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
+      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-playground.png" >}}
 
-   3. Verify that you see a list of **Available Tools**. 
-   
+   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target.
+
+   3. Verify that you see a list of **Available Tools**.
+
       {{< reuse-image src="img/1.2-earlier/ui-playground-tools.png" >}}
 
-3. Verify access to a tool. 
-   1. From the **Available Tools** list, select the `echo` tool. 
-   2. In the **message** field, enter any string, such as `hello world`, and click **Run Tool**. 
-   3. Verify that you see your message echoed in the **Response** card. 
-   
-      {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+3. Verify access to a tool.
+   1. From the **Available Tools** list, select the `echo` tool.
+   2. In the **Message** field, enter any string, such as `hello world`, and click **Run Tool**.
+   3. Verify that you see your message echoed in the **Response** card.
+
+      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tool-echo-hello.png" >}}
+{{< /version >}}
 
 4. Open the [Jaeger UI](http://localhost:16686). 
 
@@ -264,10 +288,12 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    4. Click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target. 
    5. Verify that you see a list of **Available Tools**.  
    
-      {{< reuse-image src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-light src="img/agentgateway-ui-tools-jwt.png" >}}
+      {{< reuse-image-dark srcDark="img/agentgateway-ui-tools-jwt-dark.png" >}}
 
-6. Select the `everything_echo` tool, enter any string in the **message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
-   {{< reuse-image src="img/agentgateway-ui-tool-echo-hello.png" >}}
+6. Select the `everything_echo` tool, enter any string in the **Message** field, such as `hello world`, and click **Run Tool**. Verify that access to the tool is granted and that you see your message echoed. 
+   {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
 
 7. Open the [Jaeger UI](http://localhost:16686). 
 

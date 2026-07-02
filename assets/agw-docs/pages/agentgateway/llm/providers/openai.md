@@ -77,8 +77,8 @@ EOF
 
 Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route. Note that {{< reuse "agw-docs/snippets/kgateway.md" >}} automatically rewrites the endpoint to the OpenAI `/v1/chat/completions` endpoint.
 
-{{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
-{{% tab tabName="OpenAI v1/chat/completions" %}}
+{{< tabs >}}
+{{% tab name="OpenAI v1/chat/completions" %}}
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
@@ -99,7 +99,7 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab tabName="Custom route" %}}
+{{% tab name="Custom route" %}}
 ```yaml {paths="openai-setup"}
 kubectl apply -f- <<EOF
 apiVersion: gateway.networking.k8s.io/v1
@@ -149,8 +149,8 @@ EOF
 
 Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API.
    
-{{< tabs tabTotal="2" items="OpenAI v1/chat/completions, Custom route" >}}
-{{% tab tabName="OpenAI v1/chat/completions" %}}
+{{< tabs >}}
+{{% tab name="OpenAI v1/chat/completions" %}}
 **Cloud Provider LoadBalancer**:
 ```sh
 curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
@@ -185,7 +185,7 @@ curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '
  }' | jq
 ```
 {{% /tab %}}
-{{% tab tabName="Custom route" %}}
+{{% tab name="Custom route" %}}
 **Cloud Provider LoadBalancer**:
 ```sh
 curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
@@ -292,6 +292,15 @@ Example output:
 ```
 
 {{% /steps %}}
+
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
+
+{{% conditional-text include-if="kubernetes" %}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-llm.png" width="600px">}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-llm-dark.png" width="600px">}}
+{{% /conditional-text %}}
+{{% /version %}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
 

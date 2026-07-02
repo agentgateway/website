@@ -85,9 +85,9 @@ Install Goose by following the [Goose installation guide](https://goose-docs.ai/
 
 Point Goose at the agentgateway ingress address using environment variables.
 
-{{< tabs items="LoadBalancer,Port-forward" >}}
+{{< tabs >}}
 
-{{% tab tabName="LoadBalancer" %}}
+{{% tab name="LoadBalancer" %}}
 ```bash
 export GOOSE_PROVIDER=openai
 export GOOSE_MODEL=gpt-4o
@@ -96,7 +96,7 @@ export OPENAI_API_KEY=placeholder
 ```
 {{% /tab %}}
 
-{{% tab tabName="Port-forward" %}}
+{{% tab name="Port-forward" %}}
 ```bash
 kubectl port-forward -n {{< reuse "agw-docs/snippets/namespace.md" >}} svc/agentgateway-proxy 8080:80 &
 

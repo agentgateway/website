@@ -1,6 +1,7 @@
 ---
 title: Together AI
-weight: 61
+weight: 20
+icon: /integrations/providers/bw/togetherai.svg
 description: Configuration and setup for Together AI LLM provider
 ---
 
@@ -19,8 +20,6 @@ llm:
     provider: togetherai
     params:
       apiKey: "$TOGETHER_API_KEY"
-      # Optional. If omitted, agentgateway uses the default:
-      # baseUrl: "https://api.together.xyz/v1"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

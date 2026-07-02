@@ -75,6 +75,7 @@
 | nameOverride | string | Add a name to the default Helm base release, which is 'agentgateway'. If you set 'nameOverride: "foo", the name of the resources that the Helm release creates become 'agentgateway-foo', such as the deployment, service, and service account for the agentgateway control plane in the agentgateway-system namespace. | `""` |
 | nodeSelector | object | Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'. | `{}` |
 | podAnnotations | object | Add annotations to the agentgateway pods. | `{"prometheus.io/scrape":"true"}` |
+| podLabels | object | Add labels to the agentgateway pods. Useful for `NetworkPolicy` selectors (e.g. opt-in egress labels on Cilium-based clusters). | `{}` |
 | podSecurityContext | object | Set the pod-level security context. For example, 'fsGroup: 2000' sets the filesystem group to 2000. | `{}` |
 | proxy | object | Configure the agentgateway data plane deployment. | `{"image":{"registry":"","repository":"agentgateway","tag":""}}` |
 | proxy.image.registry | string | Set the default image registry. Set to override the global value. | `""` |

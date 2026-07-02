@@ -11,8 +11,6 @@ The OpenAI Chat Completions API (`/v1/chat/completions`) is the primary interfac
 
 The [OpenAI Chat Completions API](https://developers.openai.com/api/docs/guides/text) is the most widely used LLM endpoint. Agentgateway proxies these requests to your configured providers while providing token usage tracking, observability metrics, and policy enforcement.
 
-By default, requests to agentgateway use the Chat Completions API. These requests are translated to the upstream provider's native API format when necessary.
-
 ## Route type configuration
 
 In the simplified `llm` configuration, agentgateway automatically maps `/v1/chat/completions` requests to the `completions` route type, so no explicit route configuration is required.
@@ -56,8 +54,8 @@ For detailed information about model routing and configuration modes, see [Model
 
 Using the Chat Completions API works exactly the same as consuming OpenAI directly, with only a change to the base URL. This allows you to continue using existing code and SDKs.
 
-{{< tabs items="Curl,Python,JavaScript" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Curl" %}}
 
 ```shell
 curl 'http://localhost:4000/v1/chat/completions' \
@@ -74,7 +72,7 @@ curl 'http://localhost:4000/v1/chat/completions' \
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Python" %}}
 
 {{< callout type="info" >}}
 The `api_key` parameter is required in the OpenAI library. Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
@@ -85,7 +83,7 @@ import openai
 
 client = openai.OpenAI(
     api_key="anything",
-    base_url="http://localhost:4000"
+    base_url="http://localhost:4000/v1"
 )
 
 response = client.chat.completions.create(
@@ -102,14 +100,14 @@ print(response)
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="JavaScript" %}}
 
 ```javascript
 import OpenAI from "openai";
 
 const openai = new OpenAI({
   apiKey: "anything",
-  baseURL: "http://localhost:4000",
+  baseURL: "http://localhost:4000/v1",
 });
 
 const response = await openai.chat.completions.create({
@@ -121,13 +119,9 @@ console.log(response);
 ```
 
 {{% /tab %}}
+{{% tab name="Other" %}}
+
+[View other LLM client integrations](/docs/standalone/latest/integrations/llm-clients/).
+
+{{% /tab %}}
 {{< /tabs >}}
-
-## Token usage tracking
-
-After sending Chat Completions requests, verify that agentgateway recorded token usage metrics.
-
-1. Open the agentgateway [metrics endpoint](http://localhost:15020/metrics).
-2. Look for the `agentgateway_gen_ai_client_token_usage` metric. The metric includes labels for the token type (`input` or `output`) and the model used.
-
-For more information about LLM metrics and observability, see [Observe traffic]({{< link-hextra path="/llm/observability/" >}}).

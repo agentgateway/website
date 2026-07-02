@@ -4,12 +4,7 @@ Use the agentgateway binary to proxy requests to an open source MCP test server,
 
 {{< doc-test paths="mcp" >}}
 # Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
@@ -20,7 +15,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 ## Steps
 
-{{< version include-if="1.2.x,1.1.x,1.0,x" >}}
+{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
 {{% steps %}}
 
 ### Step 1: Create the configuration
@@ -112,7 +107,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 ### Step 6: Run a tool
 
 1. In **Available Tools**, select the `echo` tool.
-2. In the **message** field, enter a string, such as `This is my first agentgateway setup`.
+2. In the **Message** field, enter a string, such as `This is my first agentgateway setup`.
 3. Click **Run Tool**.
 4. Check the **Response** card for the echoed message.
 
@@ -121,7 +116,7 @@ You can change the target and port configurations in the UI. Any updates you mak
 {{% /steps %}}
 {{< /version >}}
 
-{{< version exclude-if="1.2.x,1.1.x,1.0,x" >}}
+{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 {{% steps %}}
 
 ### Step 1: Start the MCP test server
@@ -192,7 +187,7 @@ sleep 3
    {{< reuse-image-light src="img/ui-playground-tools.png" >}}
    {{< reuse-image-dark srcDark="img/ui-playground-tools-dark.png" >}}
 
-4. From the **Tool** list, select the `echo` tool. In the **message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
+4. From the **Tool** list, select the `echo` tool. In the **Message** field, enter a string, such as `This is my first agentgateway setup`, and click **Call tool**.
 5. Verify that the **Result** card shows an `HTTP 200` response with your message echoed back.
 
    {{< reuse-image-light src="img/ui-playground-tool-echo.png" >}}

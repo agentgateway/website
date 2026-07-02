@@ -93,13 +93,13 @@ EOF
 {{< /doc-test >}}
 
 3. Send a request to a hostname of your choice, such as `httpbin.org`. The Dynamic Forward Proxy resolves the host at request time and forwards the request to it, so the host's welcome page is returned. Because no upstream hosts are pre-defined in the Backend, you can send a request to any reachable host without changing the configuration. For example, for quick testing, you might send a request with the host header set to an in-cluster service, such as `httpbin.httpbin.svc.cluster.local:8000`.
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vik http://$INGRESS_GW_ADDRESS:80 -H "host: httpbin.org" 
    ```
    {{% /tab %}}
-   {{% tab tabName="Port forward for local testing" %}}
+   {{% tab name="Port forward for local testing" %}}
    1. Port-forward the gateway proxy on port 8080.
       ```sh
       kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
