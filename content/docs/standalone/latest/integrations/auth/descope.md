@@ -58,7 +58,7 @@ mcp:
 
 3. Create an [MCP Server](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) in the Descope Console to represent your MCP gateway. Set the **MCP Server URL** to match the public URL agentgateway exposes (typically ending with `/mcp`), and define the scopes your server enforces.
 
-4. Copy the **Issuer URL** from the MCP Server **Connection Information** section — use this value for `mcpAuthentication.issuer` in agentgateway.
+4. Copy the **Issuer URL** from the MCP Server **Connection Information** section. Use this value for `mcpAuthentication.issuer` in agentgateway.
 
 5. For machine-to-machine access, [create a Client](https://docs.descope.com/agentic-identity-hub/core-components/clients#creating-a-client) manually and enable the [**Client Credentials** grant type](https://docs.descope.com/agentic-identity-hub/core-components/clients#client-credentials). Note the generated **Client ID** and **Client Secret**.
 
