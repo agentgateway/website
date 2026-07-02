@@ -79,9 +79,8 @@ Azure supports two endpoint types:
            model: gpt-4.1-mini
      policies:
        auth:
-         azure:
-           secretRef:
-             name: azure-secret
+         secretRef:
+           name: azure-secret
    EOF
    ```
    {{% /tab %}}
