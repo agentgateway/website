@@ -110,6 +110,11 @@
       "$note": "llm/cost-controls/dashboard \u2014 Analytics dashboard: token traffic over time with group-by and measure controls.",
       "light": "assets/img/ui-cost-dashboard-tokens.png",
       "dark": "assets/img/ui-cost-dashboard-tokens-dark.png"
+    },
+    "agentgateway-ui-kube-cost-dashboard.png": {
+      "$note": "kubernetes/llm/cost-controls/dashboard \u2014 Analytics cost dashboard rendered in the Kubernetes (xds) Admin UI (Traffic nav).",
+      "light": "assets/img/agentgateway-ui-kube-cost-dashboard.png",
+      "dark": "assets/img/agentgateway-ui-kube-cost-dashboard-dark.png"
     }
   }
 }
