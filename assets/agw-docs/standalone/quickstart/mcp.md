@@ -76,7 +76,7 @@ agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
 AGW_PID=$!
 # agentgateway starts the server-everything MCP server as a stdio child; reap the whole
 # tree on exit so no orphaned node process holds the pipe open and hangs the job.
-trap 'kill $AGW_PID 2>/dev/null; pkill -f "server-everything" 2>/dev/null' EXIT
+trap 'kill $AGW_PID 2>/dev/null || true; pkill -f "server-everything" 2>/dev/null || true' EXIT
 sleep 3
 {{< /doc-test >}}
 
@@ -167,7 +167,7 @@ agentgateway -f config.yaml >/tmp/agentgateway.log 2>&1 &
 AGW_PID=$!
 # On exit, reap the whole process tree. npx spawns a node child for the server, and
 # killing npx alone orphans that child, which holds the pipe open and hangs the job.
-trap 'kill $AGW_PID 2>/dev/null; pkill -P $MCP_PID 2>/dev/null; kill $MCP_PID 2>/dev/null; pkill -f "server-everything" 2>/dev/null' EXIT
+trap 'kill $AGW_PID 2>/dev/null || true; pkill -P $MCP_PID 2>/dev/null || true; kill $MCP_PID 2>/dev/null || true; pkill -f "server-everything" 2>/dev/null || true' EXIT
 sleep 3
 {{< /doc-test >}}
 
