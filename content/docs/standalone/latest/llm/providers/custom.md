@@ -7,7 +7,7 @@ aliases:
   - /docs/standalone/latest/llm/providers/openai-compatible
 test:
   openai-compatible-validate:
-  - file: content/docs/standalone/main/llm/providers/openai-compatible.md
+  - file: ${versionRoot}/llm/providers/custom.md
     path: openai-compat-validate
 ---
 
@@ -30,12 +30,7 @@ You also need the following prerequisites.
 
 {{< doc-test paths="openai-compat-validate" >}}
 # Install agentgateway binary for testing
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 
 # Set placeholder API keys for validation (--validate-only still resolves env vars)
 export PERPLEXITY_API_KEY="${PERPLEXITY_API_KEY:-test}"

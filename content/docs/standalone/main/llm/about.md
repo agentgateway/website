@@ -39,12 +39,12 @@ Many providers now have dedicated integrations with preconfigured base URLs and 
 
 Run models locally or in your own infrastructure:
 - [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}})
-- [vLLM]({{< link-hextra path="/llm/providers/openai-compatible/#vllm" >}})
-- [LM Studio]({{< link-hextra path="/llm/providers/openai-compatible/#lm-studio" >}})
+- [vLLM]({{< link-hextra path="/llm/providers/custom/" >}})
+- [LM Studio]({{< link-hextra path="/llm/providers/custom/" >}})
 
 ### Custom providers
 
-Use [Custom provider]({{< link-hextra path="/llm/providers/openai-compatible/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
+Use [Custom provider]({{< link-hextra path="/llm/providers/custom/" >}}) for other providers without direct support such as Perplexity, vLLM, or LM Studio.
 Agentgateway supports all of the common LLM formats and can generally integrate with any provider ([file an issue](https://github.com/agentgateway/agentgateway/issues/new) if one is missing!).
 
 ## Using the API

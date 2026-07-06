@@ -4,11 +4,11 @@ weight: 20
 description: Gate and mutate MCP method calls with an external ExtMCP policy server.
 test:
   mcp-guardrails:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/mcp/guardrails/setup.md
+  - file: ${versionRoot}/mcp/guardrails/setup.md
     path: mcp-guardrails
 ---
 
@@ -100,7 +100,7 @@ spec:
           value: "0"
       containers:
       - name: ext-mcp-server
-        image: ghcr.io/agentgateway/testbox:0.0.1
+        image: gcr.io/solo-public/docs/testbox:latest
         readinessProbe:
           httpGet:
             path: /

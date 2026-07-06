@@ -1,10 +1,8 @@
 {{- /*
-  Announcement banner — primary message promotes the "Govern AI Costs in Real
-  Time" workshop (with a locally-hosted hero thumbnail at
-  static/workshop-cost-governance.webp); a secondary inline note keeps the AAIF
-  announcement. A dismissible, goose-style fixed bar pinned to the
-  top of the viewport. This partial is included from every page template
-  (homepage, docs, tutorials, enterprise, blog), so the banner is site-wide.
+  Announcement banner — promotes the AAIF announcement. A dismissible,
+  goose-style fixed bar pinned to the top of the viewport. This partial is
+  included from every page template (homepage, docs, tutorials, enterprise,
+  blog), so the banner is site-wide.
 
   Dismissal is remembered in localStorage. When the banner is showing, the
   `agw-has-banner` class on <html> shifts the fixed navbars and page content
@@ -26,20 +24,6 @@
     text-underline-offset: 2px;
   }
   .agw-banner a:hover { opacity: 0.85; }
-  /* Workshop thumbnail shown inline at the start of the banner. */
-  .agw-banner-thumb {
-    height: 26px; width: auto; border-radius: 4px; flex-shrink: 0;
-    object-fit: cover;
-  }
-  /* Secondary AAIF note kept alongside the primary workshop message. */
-  .agw-banner-secondary {
-    opacity: 0.8; font-size: 0.8125rem;
-    border-left: 1px solid rgba(255,255,255,0.35);
-    padding-left: 8px; margin-left: 4px;
-  }
-  @media (max-width: 900px) {
-    .agw-banner-secondary { display: none; }
-  }
   .agw-banner-close {
     position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
     display: inline-flex; align-items: center; justify-content: center;
@@ -63,9 +47,7 @@
 </style>
 
 <div class="agw-banner" id="agwBanner" role="region" aria-label="Site announcement">
-  <img class="agw-banner-thumb" src="/workshop-cost-governance.webp" alt="" aria-hidden="true" />
-  <span>&#127919; New workshop: <a href="https://www.solo.io/resources/workshop/govern-ai-costs-in-real-time-hands-on-with-agentgateway" target="_blank" rel="noopener">Govern AI Costs in Real Time &mdash; Hands-On with agentgateway</a></span>
-  <span class="agw-banner-secondary">agentgateway has joined the <strong>Agentic AI Foundation</strong> &mdash; <a href="https://aaif.io/blog/agentgateway-joins-aaif-as-an-open-gateway-for-agentic-ai-infrastructure/" target="_blank" rel="noopener">Learn more</a></span>
+  <span>agentgateway has joined the <strong>Agentic AI Foundation</strong> &mdash; <a href="https://aaif.io/blog/agentgateway-joins-aaif-as-an-open-gateway-for-agentic-ai-infrastructure/" target="_blank" rel="noopener">Learn more</a></span>
   <button type="button" class="agw-banner-close" aria-label="Dismiss announcement" onclick="agwDismissBanner()">&times;</button>
 </div>
 

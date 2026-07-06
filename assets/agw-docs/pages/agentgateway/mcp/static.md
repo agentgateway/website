@@ -198,6 +198,15 @@ Use the [MCP Inspector tool](https://modelcontextprotocol.io/docs/tools/inspecto
 
 {{% /steps %}}
 
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
+
+{{% conditional-text include-if="kubernetes" %}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-mcp.png" width="600px">}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-mcp-dark.png" width="600px">}}
+{{% /conditional-text %}}
+{{% /version %}}
+
 ## Connect an IDE
 
 After verifying connectivity with MCP Inspector, you can connect AI coding assistants such as Claude Code, Cursor, or VS Code to the MCP server through agentgateway.{{% conditional-text include-if="kubernetes" %}} For configuration instructions, see [MCP clients]({{< link-hextra path="/integrations/mcp-clients/" >}}).{{% /conditional-text %}}

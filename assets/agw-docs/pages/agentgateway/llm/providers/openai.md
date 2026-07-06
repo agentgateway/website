@@ -293,6 +293,15 @@ Example output:
 
 {{% /steps %}}
 
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
+
+{{% conditional-text include-if="kubernetes" %}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-llm.png" width="600px">}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-llm-dark.png" width="600px">}}
+{{% /conditional-text %}}
+{{% /version %}}
+
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
 
 ## Cleanup

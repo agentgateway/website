@@ -31,12 +31,7 @@ flowchart TD
 
 {{< doc-test paths="virtual-keys" >}}
 # Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 ## Set up virtual keys
@@ -392,6 +387,6 @@ Track token usage and spending for each virtual key using Prometheus metrics exp
 ## What's next
 
 - [Model costs]({{< link-hextra path="/llm/costs/" >}}) to price requests with a model cost catalog and expose realized USD costs
-- [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for detailed authentication configuration
+- [LLM providers]({{< link-hextra path="/llm/providers/" >}}) for provider-specific authentication configuration
 - [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for advanced rate limiting configuration
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs

@@ -4,13 +4,13 @@ weight: 10
 description: Create an HTTP listener on your gateway proxy to serve HTTPRoutes.
 test:
   http-listener:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/setup/listeners/http.md
+  - file: ${versionRoot}/setup/listeners/http.md
     path: http-listener
 ---
 

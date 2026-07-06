@@ -4,15 +4,15 @@ weight: 40
 description: Secure MCP servers with OAuth 2.0 authentication using agentgateway and an identity provider like Keycloak.
 test:
   mcp-auth-setup:
-  - file: content/docs/kubernetes/main/install/helm.md
+  - file: ${versionRoot}/install/helm.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/mcp/static-mcp.md
+  - file: ${versionRoot}/mcp/static-mcp.md
     path: setup-mcp-server
-  - file: content/docs/kubernetes/main/mcp/auth/keycloak.md
+  - file: ${versionRoot}/mcp/auth/keycloak.md
     path: setup-keycloak
-  - file: content/docs/kubernetes/main/mcp/auth/setup.md
+  - file: ${versionRoot}/mcp/auth/setup.md
     path: mcp-auth-setup
 ---
 

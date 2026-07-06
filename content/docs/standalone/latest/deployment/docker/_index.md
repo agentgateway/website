@@ -16,7 +16,7 @@ and create the configuration in the UI:
 mkdir agentgateway-config
 docker run \
   --user "$(id -u):$(id -g)" \
-  -v ./agentgateway-config:/config \
+  -v "$PWD/agentgateway-config:/config" \
   -p 3000:3000 -p 4000:4000 -p 127.0.0.1:15000:15000 \
   cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
@@ -30,7 +30,7 @@ the `ADMIN_ADDR` is set below to expose it and is optional.
 ```sh
 docker run \
   --user "$(id -u):$(id -g)" \
-  -v ./config.yaml:/config.yaml \
+  -v "$PWD/config.yaml:/config.yaml" \
   -p 3000:3000 -p 4000:4000 -p 127.0.0.1:15000:15000 \
   -e ADMIN_ADDR=0.0.0.0:15000 \
   cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} \

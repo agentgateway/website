@@ -127,13 +127,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 1. Create a namespace for the rate limit infrastructure.
 
-   ```sh {paths="global-rate-limit-by-ip"}
+   ```sh {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl create namespace ratelimit
    ```
 
 2. Deploy Redis as the backing store.
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -169,9 +169,9 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
+3. Create a ConfigMap with rate limit rules. This configuration defines the actual rate limits that are enforced by the rate limit service. The configuration includes rate limits by client IP (10 requests per minute), a per-user LLM token budget (100 tokens per day, used by the [virtual keys guide]({{< link-hextra path="/llm/virtual-keys" >}})), by path (100 requests per minute for `/api/v1`, 200 for `/api/v2`), by user ID (50 requests per minute for most users, 500 for VIP users), and by service tier (1000 requests per minute for premium, 100 for standard).
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: v1
    kind: ConfigMap
@@ -187,6 +187,13 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
            rate_limit:
              unit: minute
              requests_per_unit: 10
+
+         # Per-user LLM token budget (see the virtual keys guide).
+         # Deliberately small so you can exhaust it in a few requests; raise for production.
+         - key: user_id
+           rate_limit:
+             unit: day
+             requests_per_unit: 100
 
          # Rate limit by path
          - key: path
@@ -241,7 +248,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
 
 4. Deploy the rate limit service.
 
-   ```yaml {paths="global-rate-limit-by-ip"}
+   ```yaml {paths="global-rate-limit-by-ip,deploy-rate-limit-server"}
    kubectl apply -f- <<EOF
    apiVersion: apps/v1
    kind: Deployment
@@ -302,7 +309,7 @@ You need an external rate limit service that implements the Envoy Rate Limit gRP
    EOF
    ```
 
-   {{< doc-test paths="global-rate-limit-by-ip" >}}
+   {{< doc-test paths="global-rate-limit-by-ip,deploy-rate-limit-server" >}}
    YAMLTest -f - <<'EOF'
    - name: wait for redis deployment to be ready
      wait:
