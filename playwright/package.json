@@ -4,21 +4,24 @@
   "type": "module",
   "description": "Playwright screenshot automation for the agentgateway product UI (docs assets + visual regression)",
   "scripts": {
-    "test:standalone": "playwright test tests/smoke.spec.ts tests/landing.spec.ts tests/cel.spec.ts --project=standalone-light --project=standalone-dark",
-    "test:mcp": "CAPTURE_MODE=mcp playwright test tests/playground.spec.ts --project=standalone-light --project=standalone-dark",
-    "test:a2a": "CAPTURE_MODE=a2a playwright test tests/a2a-traffic.spec.ts --project=standalone-light --project=standalone-dark",
-    "test:llm": "CAPTURE_MODE=llm playwright test tests/llm-playground.spec.ts --project=standalone-light --project=standalone-dark",
-    "test:virtual": "CAPTURE_MODE=virtual playwright test tests/virtual.spec.ts --project=standalone-light --project=standalone-dark",
-    "test:openapi": "CAPTURE_MODE=openapi playwright test tests/openapi.spec.ts --project=standalone-light --project=standalone-dark",
-    "test:jwt": "CAPTURE_MODE=jwt playwright test tests/jwt.spec.ts --project=standalone-light --project=standalone-dark",
+    "test:standalone": "playwright test tests/smoke.spec.ts tests/landing.spec.ts tests/cel.spec.ts",
+    "test:mcp": "CAPTURE_MODE=mcp playwright test tests/playground.spec.ts",
+    "test:a2a": "CAPTURE_MODE=a2a playwright test tests/a2a-traffic.spec.ts",
+    "test:llm": "CAPTURE_MODE=llm playwright test tests/llm-playground.spec.ts",
+    "test:virtual": "CAPTURE_MODE=virtual playwright test tests/virtual.spec.ts",
+    "test:openapi": "CAPTURE_MODE=openapi playwright test tests/openapi.spec.ts",
+    "test:jwt": "CAPTURE_MODE=jwt playwright test tests/jwt.spec.ts",
+    "test:kube": "CAPTURE_TARGET=kube playwright test tests/kube-readonly.spec.ts",
     "clean:ui": "docker ps -aq --filter publish=15100 | xargs -I{} docker rm -f {}",
     "capture:all": "npm run clean:ui && npm run test:standalone && npm run clean:ui && npm run test:mcp && npm run clean:ui && npm run test:a2a && npm run clean:ui && npm run test:llm && npm run clean:ui && npm run test:virtual && npm run clean:ui && npm run test:openapi && npm run clean:ui && npm run test:jwt && npm run clean:ui",
     "update:all": "npm run clean:ui && npm run test:standalone -- --update-snapshots && npm run clean:ui && npm run test:mcp -- --update-snapshots && npm run clean:ui && npm run test:a2a -- --update-snapshots && npm run clean:ui && npm run test:llm -- --update-snapshots && npm run clean:ui && npm run test:virtual -- --update-snapshots && npm run clean:ui && npm run test:openapi -- --update-snapshots && npm run clean:ui && npm run test:jwt -- --update-snapshots && npm run clean:ui",
-    "update": "playwright test tests/smoke.spec.ts tests/landing.spec.ts tests/cel.spec.ts --update-snapshots --project=standalone-light --project=standalone-dark",
+    "update": "playwright test tests/smoke.spec.ts tests/landing.spec.ts tests/cel.spec.ts --update-snapshots",
     "sync-docs": "node scripts/sync-docs-images.mjs",
     "report": "playwright show-report"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0"
+    "@playwright/test": "^1.49.0",
+    "pixelmatch": "^7.2.0",
+    "pngjs": "^7.0.0"
   }
 }

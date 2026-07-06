@@ -4,31 +4,31 @@ weight: 10
 description: Match requests by path using exact, prefix, or regex patterns.
 test:
   path-match-exact:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/match/path.md
+  - file: ${versionRoot}/traffic-management/match/path.md
     path: path-match-exact
   path-match-prefix:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/match/path.md
+  - file: ${versionRoot}/traffic-management/match/path.md
     path: path-match-prefix
   path-match-regex:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/match/path.md
+  - file: ${versionRoot}/traffic-management/match/path.md
     path: path-match-regex
 ---
 
@@ -66,13 +66,13 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    ```
    
 2. Send a request to the `/status/200` path of the httpbin app on the `match.example` domain. Verify that you get back a 200 HTTP response code.  
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing"  %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/status/200 -H "host: match.example"
    ```
@@ -93,13 +93,13 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    ```
 
 3. Send another request to the httpbin app. This time, use the `/headers` path. Because this path is not specified in the HTTPRoute, the request fails and a 404 HTTP response code is returned. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/headers -H "host: match.example"
    ```
@@ -204,13 +204,13 @@ EOF
    ```
    
 2. Send a request to the `/anything/team1` path of the httpbin app on the `match.example` domain. Verify that you get back a 200 HTTP response code.  
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything/team1 -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/anything/team1 -H "host: match.example"
    ```
@@ -254,13 +254,13 @@ EOF
    ```
 
 3. Send another request to the httpbin app. This time, use the `/headers` path. Because this path is not specified in the HTTPRoute, the request fails and a 404 HTTP response code is returned. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/headers -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/headers -H "host: match.example"
    ```
@@ -394,15 +394,15 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    * `/anything/dogs/3.0-game` matches the regex pattern `/anything/(dogs|cats)/\\d[.]\\d.*`
    
    Verify that the requests succeed and that you get back a 200 HTTP response code.  
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything/this-is-my-path-1 -H "host: match.example"
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything/stores/us/entities -H "host: match.example"
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything/dogs/3.0-game -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/anything/this-is-my-path-1 -H "host: match.example"
    curl -vi localhost:8080/anything/stores/us/entities -H "host: match.example"
@@ -453,15 +453,15 @@ Use [RE2 syntax](https://github.com/google/re2/wiki/Syntax) for regular expressi
    * `/anything/birds/1.1-game` does not match the regex pattern `/anything/(dogs|cats)/\\d[.]\\d.*`
    
    Verify that all requests fail with a 404 HTTP response code, because the path does not match the regex pattern that you defined. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything -H "host: match.example"
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything/stores/us/south/entities -H "host: match.example"
    curl -vi http://$INGRESS_GW_ADDRESS:80/anything/birds/1.1-game -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/anything -H "host: match.example"
    curl -vi localhost:8080/anything/stores/us/south/entities -H "host: match.example"

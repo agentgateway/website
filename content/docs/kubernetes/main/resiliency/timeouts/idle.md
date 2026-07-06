@@ -4,13 +4,13 @@ weight: 20
 description: Set idle timeouts to terminate inactive HTTP/1 connections.
 test:
   idle-timeout:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/resiliency/timeouts/idle.md
+  - file: ${versionRoot}/resiliency/timeouts/idle.md
     path: idle-timeout
 ---
 

@@ -43,7 +43,7 @@ When a request arrives:
 
 **Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
 
-**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute, one policy silently overwrites the other based on creation order, even though both report `ACCEPTED/ATTACHED` status. There is no error to indicate that one policy's settings are not taking effect. To avoid this conflict, combine the settings that apply to the same target into a single policy. For example, this guide puts API key authentication and per-key rate limiting in one policy rather than two.
 
 ## Before you begin
 
@@ -51,7 +51,7 @@ When a request arrives:
 
 ## Set up virtual keys
 
-This example creates two virtual keys (for Alice and Bob) with independent 100,000 token daily budgets.
+This example creates two virtual keys (for Alice and Bob) with independent daily token budgets. The budget is deliberately small (100 tokens per day) so that you can exhaust it in a few requests and see the enforcement in action. For production-sized budgets, see [Advanced configuration](#advanced-configuration).
 
 ### Create API keys for users
 
@@ -93,7 +93,11 @@ EOF
 
 ### Configure API key authentication
 
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway.
+Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
+
+{{< tabs >}}
+{{% tab name="Single Secret (secretRef)" %}}
+Reference a single Secret by name. This example uses the `llm-api-keys` Secret that you created in the previous step.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
@@ -114,25 +118,22 @@ spec:
         name: llm-api-keys
 EOF
 ```
+{{% /tab %}}
+{{% tab name="Multiple Secrets (secretSelector)" %}}
+Select all Secrets that carry a particular label. Every matching Secret contributes its keys to the same key set, so you do not need to consolidate keys into one Secret. Label each Secret that holds virtual keys, for example:
 
-{{% reuse "agw-docs/snippets/review-table.md" %}}
+```sh
+kubectl label secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway.dev/apikey=true
+```
 
-| Setting     | Description |
-|-------------|-------------|
-| `targetRefs` | Apply the policy to the entire Gateway so all routes require API keys. |
-| `apiKeyAuthentication.mode` | Set to `Strict` to require a valid API key for all requests. |
-| `secretRef.name` | References the Secret containing API keys and user metadata. |
+Then reference the label with `secretSelector` instead of `secretRef`.
 
-### Configure per-key token budgets
-
-Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces a daily token budget of 100,000 tokens per user.
-
-```yaml,paths="virtual-keys-with-ratelimit"
+```yaml
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
 kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
 metadata:
-  name: daily-token-budget
+  name: api-key-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
 spec:
   targetRefs:
@@ -140,67 +141,36 @@ spec:
       kind: Gateway
       name: agentgateway-proxy
   traffic:
-    rateLimit:
-      global:
-        domain: token-budgets
-        backendRef:
-          kind: Service
-          name: rate-limit-server
-          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-          port: 8081
-        descriptors:
-          - entries:
-              - name: user_id
-                expression: 'apiKey.metadata.user_id'
-            unit: Tokens
+    apiKeyAuthentication:
+      mode: Strict
+      secretSelector:
+        matchLabels:
+          agentgateway.dev/apikey: "true"
 EOF
 ```
+
+{{< callout type="warning" >}}
+`secretSelector` matches `Secret` resources only. Keep key identifiers unique across the selected Secrets: if the same key is defined in more than one Secret, the behavior is undefined.
+{{< /callout >}}
+{{% /tab %}}
+{{< /tabs >}}
 
 {{% reuse "agw-docs/snippets/review-table.md" %}}
 
 | Setting     | Description |
 |-------------|-------------|
-| `rateLimit.global` | Use global rate limiting to enforce limits across all {{< reuse "agw-docs/snippets/agentgateway.md" >}} instances. |
-| `domain` | A namespace for rate limit configurations. Use `token-budgets` to organize your budget policies. |
-| `backendRef` | References the rate limit server Service. Must include `kind`, `name`, `namespace`, and `port`. |
-| `descriptors[].entries[].name` | The name of the descriptor entry. Set to `user_id` to rate limit per user. |
-| `descriptors[].entries[].expression` | CEL expression to extract the user ID from the API key's metadata. |
-| `descriptors[].unit` | Set to `Tokens` to enforce token-based limits instead of request-based limits. |
+| `targetRefs` | Apply the policy to the entire Gateway so all routes require API keys. |
+| `apiKeyAuthentication.mode` | Set to `Strict` to require a valid API key for all requests. |
+| `secretRef.name` | References a single Secret containing API keys and user metadata. Use this or `secretSelector`, not both. |
+| `secretSelector.matchLabels` | Selects all Secrets that carry the given labels, combining their keys. Use instead of `secretRef` when keys are spread across multiple Secrets. Secret-only. |
 
-### Configure the rate limit server
+### Configure per-key token budgets
 
-Deploy a rate limit server and configure it with your budget limits. This guide uses global rate limiting to enforce per-key token budgets across multiple gateway instances. For more information, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
+{{% reuse "agw-docs/snippets/rate-limit-token-budget-step.md" %}}
 
-1. Deploy the rate limit server. For setup instructions, see the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}) in the LLM rate limiting guide.
+### Deploy the rate limit server
 
-2. Create a ConfigMap with your budget configuration.
-
-   ```yaml,paths="virtual-keys-with-ratelimit"
-   kubectl apply -f- <<EOF
-   apiVersion: v1
-   kind: ConfigMap
-   metadata:
-     name: rate-limit-config
-     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-   data:
-     config.yaml: |
-       domain: token-budgets
-       descriptors:
-         - key: user_id
-           rate_limit:
-             unit: day
-             requests_per_unit: 100000
-   EOF
-   ```
-
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
-
-   | Setting     | Description |
-   |-------------|-------------|
-   | `domain` | Must match the domain in your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} (`token-budgets`). |
-   | `descriptors[].key` | Must match the descriptor key (`user_id`). |
-   | `rate_limit.unit` | The time window for the budget. Use `day` for daily budgets. Other options: `second`, `minute`, `hour`. |
-   | `rate_limit.requests_per_unit` | The token budget. Set to 100,000 tokens per day. Since `type: tokens` is set, this counts tokens rather than requests. |
+{{% reuse "agw-docs/snippets/rate-limit-step.md" %}}
 
 ### Set up an LLM backend
 
@@ -258,7 +228,7 @@ EOF
 ### Test the virtual keys
 
 {{< callout type="info" >}}
-The following tests verify API key authentication and routing. For full end-to-end testing of per-key token budget enforcement, deploy a rate limit server as described in the [global rate limiting section]({{< link-hextra path="/llm/rate-limit/#global" >}}).
+The following steps verify API key authentication, routing, and per-key token budget enforcement. Budget enforcement requires the rate limit server from the [previous step](#deploy-the-rate-limit-server).
 {{< /callout >}}
 
 {{< doc-test paths="virtual-keys-openai-test" >}}
@@ -405,10 +375,59 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
+{{< doc-test paths="virtual-keys-ratelimit-test" >}}
+# Drain Alice's 100-token daily budget. httpbun returns ~20-30 tokens per response,
+# so a handful of requests pushes Alice over the budget.
+for i in $(seq 1 10); do
+  curl -s -o /dev/null \
+    "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer sk-alice-abc123def456" \
+    -d '{"model":"gpt-4","messages":[{"role":"user","content":"Say hello"}]}'
+  sleep 0.3
+done
+
+YAMLTest -f - <<'EOF'
+- name: Alice is rejected with 429 after exhausting her token budget
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+      Authorization: "Bearer sk-alice-abc123def456"
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  retries: 3
+  expect:
+    statusCode: 429
+- name: Bob still succeeds because he has an independent budget
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+      Authorization: "Bearer sk-bob-xyz789uvw012"
+    body: |
+      {
+        "model": "gpt-4",
+        "messages": [{"role": "user", "content": "Say hello"}]
+      }
+  source:
+    type: local
+  expect:
+    statusCode: 200
+EOF
+{{< /doc-test >}}
+
 1. Send a request with Alice's API key. Verify that the request succeeds.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" \
      -H "Authorization: Bearer sk-alice-abc123def456" \
@@ -419,7 +438,7 @@ EOF
      }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" \
      -H "Authorization: Bearer sk-alice-abc123def456" \
@@ -455,12 +474,23 @@ EOF
    }
    ```
 
-2. Send multiple requests until Alice's 100,000 token budget is exhausted. Verify that subsequent requests are rejected with a 429 status code.
+2. Send several more requests with Alice's API key until her 100-token daily budget is exhausted. Because the LLM provider returns roughly 20-30 tokens per response, a handful of requests pushes Alice over the budget. The request that crosses the budget still completes; subsequent requests are rejected with a 429 status code.
+
+   ```sh
+   for i in $(seq 1 10); do
+     STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+       "$INGRESS_GW_ADDRESS/openai" \
+       -H "Authorization: Bearer sk-alice-abc123def456" \
+       -H "Content-Type: application/json" \
+       -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}')
+     echo "Request $i: HTTP $STATUS"
+   done
+   ```
 
    Example 429 response:
    ```
    HTTP/1.1 429 Too Many Requests
-   x-ratelimit-limit: 100000
+   x-ratelimit-limit: 100
    x-ratelimit-remaining: 0
    x-ratelimit-reset: 43200
 
@@ -469,8 +499,8 @@ EOF
 
 3. Verify that Bob can still send requests with his own budget, independent of Alice's usage.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" \
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \
@@ -481,7 +511,7 @@ EOF
      }'
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" \
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \
@@ -498,35 +528,139 @@ EOF
 
 ## Monitor per-key spending
 
-Track token usage and spending for each virtual key using Prometheus metrics.
+Track token usage and spending for each virtual key by using Prometheus metrics.
 
-1. Port-forward the agentgateway proxy metrics endpoint.
-   ```sh
-   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 15020
+By default, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} token usage metric (`agentgateway_gen_ai_client_token_usage`) is broken down by dimensions such as the model and token type, but *not* by user. To attribute usage to each virtual key, add a `user_id` label to the metrics with a metrics policy, then query Prometheus.
+
+### Before you begin {#monitor-prereqs}
+
+Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics. The [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}) walks you through the full setup; at a minimum, complete the [Prometheus step]({{< link-hextra path="/observability/otel-stack/#prometheus" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
+
+### Add a per-user metric label
+
+1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: per-user-metrics
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: Gateway
+         name: agentgateway-proxy
+     frontend:
+       metrics:
+         attributes:
+           add:
+             - name: user_id
+               expression: 'apiKey.user_id'
+   EOF
    ```
 
-2. Query token usage metrics filtered by user ID.
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting     | Description |
+   |-------------|-------------|
+   | `frontend.metrics.attributes.add[].name` | The name of the Prometheus label to add (`user_id`). |
+   | `frontend.metrics.attributes.add[].expression` | A CEL expression that is evaluated per request. Use `apiKey.user_id` to read the `user_id` from the authenticated API key. If the expression fails to evaluate (for example, on an unauthenticated request), the label value is set to `unknown`. |
+
+   {{< callout type="warning" >}}
+   The `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers (such as raw end-user IDs) to metrics at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
+   {{< /callout >}}
+
+2. Send a few requests with each virtual key so that the metrics have per-user data to report. You can reuse the requests from [Test the virtual keys](#test-the-virtual-keys).
+
+### Query per-key usage
+
+1. Port-forward the Prometheus server from the OpenTelemetry stack.
+
+   ```sh
+   kubectl port-forward -n telemetry svc/kube-prometheus-stack-prometheus 9090:9090
+   ```
+
+   Then open the Prometheus UI at `http://localhost:9090/graph` and run the following queries, or send them to the HTTP API with `curl`. For example:
+
+   ```sh
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum)'
+   ```
+
+   Example output:
+
+   ```json
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782410561.391,"720"]},{"metric":{"user_id":"bob"},"value":[1782410561.391,"448"]},{"metric":{"user_id":"alice"},"value":[1782410561.391,"448"]}]}}
+   ```
+
+2. Query token usage broken down by user ID. The token usage metric carries a separate series per token type (`input`, `output`, `input_cache_read`), so match both the input and output types in a single selector and sum them, rather than adding two selectors together.
+
+   {{< tabs >}}
+   {{% tab name="Query" %}}   
    ```promql
    # Total tokens consumed by user over the last 24 hours
    sum by (user_id) (
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h])
    )
 
-   # Percentage of daily budget used
+   # Percentage of a 100-token daily budget used (adjust the divisor to match your budget)
    (sum by (user_id) (
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) +
-     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])
-   ) / 100000) * 100
+     increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h])
+   ) / 100) * 100
+   ```
+   {{% /tab %}}
+   {{% tab name="curl example" %}}
+   ```bash
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=sum by (user_id) (increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h]))'
    ```
 
-3. Calculate costs per user by multiplying token counts by your provider's pricing. For example, with OpenAI GPT-3.5:
+   ```bash
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=(sum by (user_id) (increase(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"}[24h])) / 100) * 100'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Each result series is labeled with a `user_id`, such as `alice` and `bob`. If a key is missing the `user_id` field, or the request is not attributed to a key, its usage appears under `user_id="unknown"`.
+
+   Example output:
+
+   ```json
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782411002.488,"0"]},{"metric":{"user_id":"bob"},"value":[1782411002.488,"372.2787929364588"]},{"metric":{"user_id":"alice"},"value":[1782411002.488,"309.56920815395927"]}]}}
+   
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782411059.867,"0"]},{"metric":{"user_id":"bob"},"value":[1782411059.867,"370.95800165527817"]},{"metric":{"user_id":"alice"},"value":[1782411059.867,"307.9427844448483"]}]}}
+   ```
+
+   {{< callout type="info" >}}
+   `increase()` and `rate()` need at least two samples within the time range to report a value, so a brand-new `user_id` series shows no result until it has been scraped a few times under continuous traffic. For a quick instant check, query the cumulative counter directly: `sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum)`.
+   {{< /callout >}}
+
+3. Calculate costs per user by multiplying token counts by your provider's pricing. Input and output tokens are usually priced differently, so reduce each token type to a per-user series with `sum by (user_id)` before adding them, which keeps the two sides matchable.
+
+   {{< tabs >}}
+   {{% tab name="Query" %}}   
    ```promql
    # Cost per user (assuming $0.50 per 1M input tokens, $1.50 per 1M output tokens)
-   sum by (user_id) (
-     ((rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h]) / 1000000) * 0.50) +
-     ((rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h]) / 1000000) * 1.50)
-   )
+   sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h])) / 1000000 * 0.50
+   +
+   sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])) / 1000000 * 1.50
+   ```
+   {{% /tab %}}
+   {{% tab name="curl example" %}}
+   ```bash
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"}[24h])) / 1000000 * 0.50 + sum by (user_id) (rate(agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"}[24h])) / 1000000 * 1.50'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   Example output:
+
+   ```json
+   {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782410758.432,"0"]},{"metric":{"user_id":"bob"},"value":[1782410758.432,"6.101636101191084e-09"]},{"metric":{"user_id":"alice"},"value":[1782410758.432,"5.106526900820178e-09"]}]}}
    ```
 
 For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
@@ -571,25 +705,25 @@ Provide different budget tiers for free, standard, and premium users.
    traffic:
      rateLimit:
        global:
-         domain: token-budgets
+         domain: agentgateway
          backendRef:
            kind: Service
-           name: rate-limit-server
-           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+           name: ratelimit
+           namespace: ratelimit
            port: 8081
          descriptors:
            - entries:
                - name: tier
-                 expression: 'apiKey.metadata.tier'
+                 expression: 'apiKey.tier'
                - name: user_id
-                 expression: 'apiKey.metadata.user_id'
+                 expression: 'apiKey.user_id'
              unit: Tokens
    ```
 
 3. Configure the rate limit server with tier-based budgets.
 
    ```yaml
-   domain: token-budgets
+   domain: agentgateway
    descriptors:
      - key: tier
        value: "free"
@@ -619,8 +753,8 @@ Provide different budget tiers for free, standard, and premium users.
 Set a smaller budget that refreshes every hour for tighter cost control.
 
 ```yaml
-# In rate-limit-config ConfigMap
-domain: token-budgets
+# In the ratelimit-config ConfigMap
+domain: agentgateway
 descriptors:
   - key: user_id
     rate_limit:
@@ -637,15 +771,15 @@ Create virtual keys scoped to both user and tenant for multi-tenant applications
 descriptors:
   - entries:
       - name: tenant_id
-        expression: 'apiKey.metadata.tenant_id'
+        expression: 'apiKey.tenant_id'
       - name: user_id
-        expression: 'apiKey.metadata.user_id'
+        expression: 'apiKey.user_id'
     unit: Tokens
 ```
 
 ```yaml
-# In rate-limit-config ConfigMap
-domain: token-budgets
+# In the ratelimit-config ConfigMap
+domain: agentgateway
 descriptors:
   - key: tenant_id
     descriptors:
@@ -662,12 +796,13 @@ For more advanced rate limiting patterns, see the [budget and spend limits guide
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth daily-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete configmap rate-limit-config -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
+
+To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
 
 ## What's next
 

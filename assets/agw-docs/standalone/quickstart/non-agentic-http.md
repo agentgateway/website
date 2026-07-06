@@ -14,12 +14,7 @@ flowchart LR
 
 {{< doc-test paths="httpbin" >}}
 # Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
@@ -38,14 +33,14 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 Run the httpbin image so it listens on port 80 inside the container. Map it to a host port such as 8000 so that agentgateway can reach it.
 
-{{< tabs items="Linux, macOS (Apple Silicon)" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Linux" %}}
 
 ```sh {paths="httpbin,httpbin-linux"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin
 ```
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="macOS (Apple Silicon)" %}}
 
 ```sh {paths="httpbin-macos"}
 docker run --rm -d -p 8000:80 --name httpbin kennethreitz/httpbin --platform linux/amd64

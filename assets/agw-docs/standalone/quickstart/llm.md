@@ -4,8 +4,8 @@ Configure the agentgateway binary to route requests to the [OpenAI](https://open
 
 1. [Install the agentgateway binary]({{< link-hextra path="/deployment/binary" >}}).
 
-   {{< tabs items="Latest,Specific version,Nightly build" tabTotal="3">}}
-{{% tab tabName="Latest" %}}
+   {{< tabs >}}
+{{% tab name="Latest" %}}
 
 To install the latest release:
 
@@ -14,7 +14,7 @@ curl -sL https://agentgateway.dev/install | bash
 ```
 
 {{% /tab %}}
-{{% tab tabName="Specific version" %}}
+{{% tab name="Specific version" %}}
 
 To install a specific version, pass the `--version` flag. Use any release tag from the [agentgateway releases page](https://github.com/agentgateway/agentgateway/releases), such as `{{< reuse "agw-docs/versions/n-patch.md" >}}`.
 
@@ -22,7 +22,7 @@ To install a specific version, pass the `--version` flag. Use any release tag fr
 curl -sL https://agentgateway.dev/install | bash -s -- --version {{< reuse "agw-docs/versions/n-patch.md" >}}
 ```
 {{% /tab %}}
-{{% tab tabName="Nightly build" %}}
+{{% tab name="Nightly build" %}}
 
 To install the nightly build for development and testing:
 
@@ -61,13 +61,10 @@ To install the nightly build for development and testing:
    {{< /tabs >}}
 
 {{< doc-test paths="llm" >}}
-# For CI/tests: install dev version to local bin without sudo
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+# For CI/tests: install the agentgateway binary to local bin without sudo.
+# Uses the nightly 'latest-dev' image for main and the latest release otherwise,
+# so the version dir rotates without hardcoding a release tag that may not exist yet.
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 {{< /doc-test >}}
 
 2. Get an [OpenAI API key](https://platform.openai.com/api-keys).

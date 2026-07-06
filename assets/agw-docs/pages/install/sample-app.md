@@ -140,8 +140,8 @@ EOF
 
 Send a request to the httpbin app through the agentgateway proxy.
 
-{{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{< tabs >}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 1. Get the external address of the gateway proxy and save it in an environment variable.
 
    ```sh {paths="install-httpbin"}
@@ -180,7 +180,7 @@ Send a request to the httpbin app through the agentgateway proxy.
    }
    ```
 {{% /tab %}}
-{{% tab tabName="Port-forward for local testing"%}}
+{{% tab name="Port-forward for local testing" %}}
 1. Port-forward the gateway proxy `http` pod on port 8080.
 
    ```sh
@@ -222,6 +222,15 @@ Send a request to the httpbin app through the agentgateway proxy.
 {{< /tabs >}}
 
 {{% /steps %}}
+
+{{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
+{{< reuse "agw-docs/snippets/verify-admin-ui.md" >}}
+
+{{% conditional-text include-if="kubernetes" %}}
+   {{< reuse-image-light src="img/agentgateway-ui-kube-route-http.png" width="600px">}}
+   {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-route-http-dark.png" width="600px">}}
+{{% /conditional-text %}}
+{{% /version %}}
 
 ## Next steps
 

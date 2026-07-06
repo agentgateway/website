@@ -116,8 +116,8 @@ Use "agctl [command] --help" for more information about a command.
 
 `agctl` ships with an autocompletion script for `bash`, `zsh`, `fish`, and `powershell`. Source the script for your shell to get tab-completion of subcommands, flags, and resource names.
 
-{{< tabs items="zsh,bash,fish,powershell" tabTotal="4" >}}
-{{% tab tabName="zsh" %}}
+{{< tabs >}}
+{{% tab name="zsh" %}}
 Add the completion script to a directory on your `$fpath`. The following example creates one and writes the script to it.
 
 ```sh
@@ -132,19 +132,19 @@ fpath=(~/.zsh/completions $fpath)
 autoload -U compinit && compinit
 ```
 {{% /tab %}}
-{{% tab tabName="bash" %}}
+{{% tab name="bash" %}}
 Source the script in your `~/.bashrc`.
 
 ```sh
 echo 'source <(agctl completion bash)' >> ~/.bashrc
 ```
 {{% /tab %}}
-{{% tab tabName="fish" %}}
+{{% tab name="fish" %}}
 ```sh
 agctl completion fish > ~/.config/fish/completions/agctl.fish
 ```
 {{% /tab %}}
-{{% tab tabName="powershell" %}}
+{{% tab name="powershell" %}}
 ```powershell
 agctl completion powershell | Out-String | Invoke-Expression
 ```

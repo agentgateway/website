@@ -4,11 +4,11 @@ weight: 30
 description: Federate tools from multiple MCP servers on a single gateway endpoint using virtual MCP multiplexing.
 test:
   virtual-mcp:
-  - file: content/docs/kubernetes/main/install/helm.md
+  - file: ${versionRoot}/install/helm.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/mcp/virtual.md
+  - file: ${versionRoot}/mcp/virtual.md
     path: virtual-mcp
 ---
 

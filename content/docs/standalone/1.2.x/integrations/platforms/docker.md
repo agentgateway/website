@@ -10,9 +10,9 @@ Run agentgateway as a Docker container for local development or small deployment
 
 Get started in under a minute with your preferred LLM provider.
 
-{{< tabs items="OpenAI,Anthropic,xAI (Grok),Ollama,Azure OpenAI,Amazon Bedrock,Google Gemini" >}}
+{{< tabs >}}
 
-{{% tab %}}
+{{% tab name="OpenAI" %}}
 
 ```bash
 # Set your API key
@@ -43,7 +43,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Anthropic" %}}
 
 ```bash
 # Set your API key
@@ -74,7 +74,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="xAI (Grok)" %}}
 
 ```bash
 # Set your xAI API key
@@ -106,7 +106,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Ollama" %}}
 
 ```bash
 # Start Ollama (if not already running)
@@ -140,13 +140,13 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Azure OpenAI" %}}
 
 ```bash
 # Set your Azure OpenAI credentials
 export AZURE_OPENAI_API_KEY=your-api-key
 export AZURE_DEPLOYMENT=your-deployment-name
-export AZURE_ENDPOINT=your-resource.openai.azure.com
+export AZURE_RESOURCE_NAME=your-resource-name
 
 # Create config for Azure OpenAI
 cat <<'EOF' > config.yaml
@@ -158,15 +158,16 @@ llm:
     provider: azure
     params:
       model: $AZURE_DEPLOYMENT
-      azureEndpoint: "https://$AZURE_ENDPOINT"
-      azureApiKey: $AZURE_OPENAI_API_KEY
+      azureResourceName: $AZURE_RESOURCE_NAME
+      azureResourceType: openAI
+      apiKey: $AZURE_OPENAI_API_KEY
 EOF
 
 # Run agentgateway
 docker run -v ./config.yaml:/config.yaml -p 3000:3000 \
   -e AZURE_OPENAI_API_KEY=$AZURE_OPENAI_API_KEY \
   -e AZURE_DEPLOYMENT=$AZURE_DEPLOYMENT \
-  -e AZURE_ENDPOINT=$AZURE_ENDPOINT \
+  -e AZURE_RESOURCE_NAME=$AZURE_RESOURCE_NAME \
   cr.agentgateway.dev/agentgateway:v{{< reuse "agw-docs/versions/n-patch.md" >}} -f /config.yaml
 
 # Test with a chat completion
@@ -177,7 +178,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Amazon Bedrock" %}}
 
 ```bash
 # Set your AWS credentials
@@ -194,7 +195,7 @@ llm:
   - name: "*"
     provider: bedrock
     params:
-      region: $AWS_REGION
+      awsRegion: $AWS_REGION
 EOF
 
 # Run agentgateway
@@ -212,7 +213,7 @@ curl http://localhost:3000/v1/chat/completions \
 
 {{% /tab %}}
 
-{{% tab %}}
+{{% tab name="Google Gemini" %}}
 
 ```bash
 # Set your API key

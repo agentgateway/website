@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { resolveImage } from './scripts/resolve-image.mjs';
 
 /**
  * Proof-of-concept config for capturing screenshots of the agentgateway product UI.
@@ -34,8 +35,19 @@ import { defineConfig, devices } from '@playwright/test';
  *          so you can run a `scripts/serve-*.sh` (or `docker run …`) yourself and point here.
  */
 
+// Which docs version line we are capturing for. Drives both the image (a released tag for
+// `latest`, the nightly `latest-dev` for `main`) and the per-version baseline project names,
+// so latest and main keep independent baselines and can diverge as the UI changes on main.
+const VERSION = process.env.DOC_VERSION || 'latest';
+// Which deployment target the capture exercises: `standalone` (the binary/image run directly,
+// the default for every existing spec) or `kube` (the Kubernetes proxy UI, captured against a
+// port-forwarded cluster). It is part of the project name so standalone and kube baselines stay
+// separate and standalone remains a first-class, named target alongside Kubernetes.
+const TARGET = process.env.CAPTURE_TARGET || 'standalone';
 const HOST_PORT = process.env.UI_HOST_PORT || '15100';
-const IMAGE = process.env.AGW_IMAGE || 'cr.agentgateway.dev/agentgateway:v1.3.0';
+// AGW_IMAGE still wins (e.g. to pin a one-off build); otherwise resolve from the docs'
+// version source of truth (assets/agw-docs/versions/n-patch.md) via resolve-image.mjs.
+const IMAGE = process.env.AGW_IMAGE || resolveImage(VERSION);
 const BIN = process.env.AGENTGATEWAY_BIN;
 const ADMIN_ADDR = process.env.ADMIN_ADDR || 'localhost:15000';
 const MODE = process.env.CAPTURE_MODE || '';
@@ -108,11 +120,15 @@ export default defineConfig({
     },
   },
 
-  // Light/dark are separate projects so each gets its own baseline set. Theme is seeded
-  // per-project in fixtures/test.ts via localStorage['theme'] (the new UI ignores
-  // prefers-color-scheme, so colorScheme is not used).
+  // Projects are scoped by target, version, and theme: `${TARGET}-${VERSION}-{light,dark}`,
+  // e.g. `standalone-latest-light` or `kube-main-dark`. Target keeps standalone and kube
+  // baselines distinct; version gives latest vs main independent baselines (captured against
+  // different images); theme is seeded per-project in fixtures/test.ts via localStorage['theme']
+  // (the new UI ignores prefers-color-scheme). Only the two projects for the active
+  // CAPTURE_TARGET + DOC_VERSION are defined, so `playwright test <spec>` runs exactly its
+  // light + dark pair.
   projects: [
-    { name: 'standalone-light', use: { ...devices['Desktop Chrome'] } },
-    { name: 'standalone-dark', use: { ...devices['Desktop Chrome'] } },
+    { name: `${TARGET}-${VERSION}-light`, use: { ...devices['Desktop Chrome'] } },
+    { name: `${TARGET}-${VERSION}-dark`, use: { ...devices['Desktop Chrome'] } },
   ],
 });

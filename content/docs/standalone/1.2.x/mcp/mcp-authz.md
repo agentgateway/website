@@ -15,7 +15,7 @@ The MCP authorization policy works similarly to [HTTP authorization]({{< link-he
 
 If a tool or other resource is not allowed, agentgateway automatically filters the resource from `list` responses so that unauthorized clients never see it.
 
-The `mcpAuthorization` policy can be attached at the backend level (applying to all MCP targets) or at the individual target level. For more on how policies inherit and override at different levels, see [MCP target policies]({{< link-hextra path="/mcp/mcp-target-policies" >}}).
+The `mcpAuthorization` policy is attached at the backend level, where it applies to all MCP targets in the backend. To apply different rules to individual targets, match on the `mcp.tool.target` variable in your CEL rules. For more about which policies can be configured per target, see [MCP target policies]({{< link-hextra path="/mcp/mcp-target-policies" >}}).
 
 {{< doc-test paths="mcp-authz-tools" >}}
 # Install agentgateway binary
@@ -35,15 +35,15 @@ The following configuration exposes an MCP server and allows any client to call 
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
   port: 3000
+  policies:
+    mcpAuthorization:
+      rules:
+      - 'mcp.tool.name == "echo"'
   targets:
   - name: everything
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-    policies:
-      mcpAuthorization:
-        rules:
-        - 'mcp.tool.name == "echo"'
 ```
 
 {{< doc-test paths="mcp-authz-tools" >}}
@@ -51,15 +51,15 @@ cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
   port: 3000
+  policies:
+    mcpAuthorization:
+      rules:
+      - 'mcp.tool.name == "echo"'
   targets:
   - name: everything
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-    policies:
-      mcpAuthorization:
-        rules:
-        - 'mcp.tool.name == "echo"'
 EOF
 {{< /doc-test >}}
 
@@ -106,6 +106,8 @@ mcp:
   policies:
     mcpAuthentication:
       issuer: http://localhost:9000
+      audiences:
+      - http://localhost:3000/mcp
       jwks:
         url: http://localhost:9000/.well-known/jwks.json
       resourceMetadata:
@@ -114,29 +116,28 @@ mcp:
         - read:all
         bearerMethodsSupported:
         - header
+    mcpAuthorization:
+      rules:
+      # Any authenticated user can call 'echo'
+      - 'mcp.tool.name == "echo"'
+      # Only the test-user can call 'add'
+      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+      # Claim-based access for 'printEnv'
+      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
   targets:
   - name: everything
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-    policies:
-      mcpAuthorization:
-        rules:
-        # Any authenticated user can call 'echo'
-        - 'mcp.tool.name == "echo"'
-        # Only the test-user can call 'add'
-        - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-        # Claim-based access for 'printEnv'
-        - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 
 ## Different rules per target
 
-When you multiplex several MCP servers behind a single agentgateway listener, you can apply different authorization rules to each target. 
+When you multiplex several MCP servers behind a single agentgateway listener, you can apply different authorization rules to each target by matching on the `mcp.tool.target` variable in a single backend-level policy. 
 
 In this example:
-- Any user can access public tools.
-- Only users with `admin` in the JWT roles can access admin tools.
+- Any user can access tools on the `public-tools` target.
+- Only users with `admin` in the JWT roles can access tools on the `admin-tools` target.
 - The JWT is validated against a local authorization server running on port 9000.
 
 ```yaml
@@ -153,6 +154,8 @@ mcp:
     mcpAuthentication:
       mode: optional
       issuer: http://localhost:9000
+      audiences:
+      - http://localhost:3000/mcp
       jwks:
         url: http://localhost:9000/.well-known/jwks.json
       resourceMetadata:
@@ -161,26 +164,21 @@ mcp:
         - read:all
         bearerMethodsSupported:
         - header
+    mcpAuthorization:
+      rules:
+      # Allow anyone to access tools on the public-tools target
+      - 'mcp.tool.target == "public-tools"'
+      # Only authenticated admins can access tools on the admin-tools target
+      - 'mcp.tool.target == "admin-tools" && has(jwt.sub) && "admin" in jwt.roles'
   targets:
   - name: public-tools
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-    policies:
-      mcpAuthorization:
-        rules:
-        # Allow anyone to access all tools
-        - 'true'
-
   - name: admin-tools
     stdio:
       cmd: npx
       args: ["@mycompany/admin-server"]
-    policies:
-      mcpAuthorization:
-        rules:
-        # Only authenticated admins can access these tools
-        - 'has(jwt.sub) && "admin" in jwt.roles'
 ```
 
 ## CEL expression reference

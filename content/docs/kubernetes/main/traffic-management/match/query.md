@@ -4,13 +4,13 @@ weight: 10
 description: Specify a set of URL query parameters which requests must match in entirety.
 test:
   query-match:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/traffic-management/match/query.md
+  - file: ${versionRoot}/traffic-management/match/query.md
     path: query-match
 ---
 
@@ -49,13 +49,13 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    ```
 
 2. Send a request to the `/status/200` path of the httpbin app on the `match.example` domain without any query parameters. Verify that your request is not forwarded to the httpbin app because no matching query parameter is found. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/status/200 -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/status/200 -H "host: match.example"
    ```
@@ -73,13 +73,13 @@ For more information, see the [{{< reuse "agw-docs/snippets/k8s-gateway-api-name
    ```
 
 3. Send a request to the `/status/200` path of the httpbin app on the `match.example` domain. This time, you provide the `user=me` query parameter. Verify that your request now succeeds and that you get back a 200 HTTP response code. 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi "http://$INGRESS_GW_ADDRESS:80/status/200?user=me" -H "host: match.example"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/status/200?user=me" -H "host: match.example"
    ```

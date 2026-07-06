@@ -192,8 +192,8 @@ EOF
 
 3. Send multiple requests to observe load balancing behavior.
 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```bash
    for i in {1..10}; do
      curl "$INGRESS_GW_ADDRESS/chat" -H content-type:application/json -d '{
@@ -202,7 +202,7 @@ EOF
    done
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```bash
    for i in {1..10}; do
      curl "localhost:8080/chat" -H content-type:application/json -d '{

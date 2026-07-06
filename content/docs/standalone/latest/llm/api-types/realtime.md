@@ -4,7 +4,7 @@ weight: 40
 description: Proxy OpenAI Realtime API WebSocket traffic and track token usage.
 test:
   realtime-standalone:
-  - file: content/docs/standalone/latest/llm/api-types/realtime.md
+  - file: ${versionRoot}/llm/api-types/realtime.md
     path: realtime-standalone
 ---
 
@@ -26,12 +26,7 @@ The `realtime` route type supports token usage tracking and observability. Other
 
 {{< doc-test paths="realtime-standalone" >}}
 # Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
 {{< /doc-test >}}
 

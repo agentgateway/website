@@ -170,9 +170,9 @@ EOF
 
 Send a request with a fake credit card number and verify it gets masked in the response:
 
-{{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+{{< tabs >}}
 
-{{% tab tabName="Cloud Provider LoadBalancer" %}}
+{{% tab name="Cloud Provider LoadBalancer" %}}
 ```sh
 curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
   "model": "gpt-3.5-turbo",
@@ -186,7 +186,7 @@ curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
 ```
 {{% /tab %}}
 
-{{% tab tabName="Port-forward for local testing" %}}
+{{% tab name="Port-forward for local testing" %}}
 ```sh
 curl "localhost:8080/openai" -H content-type:application/json -d '{
   "model": "gpt-3.5-turbo",
@@ -313,9 +313,9 @@ The OpenAI Moderation API detects potentially harmful content across categories 
    ```
 
 3. Test with content that triggers moderation:
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
+   {{< tabs >}}
 
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -i "$INGRESS_GW_ADDRESS/openai" \
      -H "content-type: application/json" \
@@ -331,7 +331,7 @@ The OpenAI Moderation API detects potentially harmful content across categories 
    ```
    {{% /tab %}}
 
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -i "localhost:8080/openai" \
      -H "content-type: application/json" \
@@ -386,19 +386,19 @@ For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails
          promptGuard:
            request:
            - bedrockGuardrails:
-               guardrailIdentifier: your-guardrail-id
-               guardrailVersion: "1"  # or "DRAFT"
+               identifier: your-guardrail-id
+               version: "1"  # or "DRAFT"
                region: us-west-2
                policies:
-                 backendAuth:
+                 auth:
                    aws: {}
            response:
            - bedrockGuardrails:
-               guardrailIdentifier: your-guardrail-id
-               guardrailVersion: "1"
+               identifier: your-guardrail-id
+               version: "1"
                region: us-west-2
                policies:
-                 backendAuth:
+                 auth:
                    aws: {}
    EOF
    ```

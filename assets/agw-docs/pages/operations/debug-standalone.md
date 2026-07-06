@@ -30,14 +30,14 @@ Steps:
 
 2. Enable debug logs.
 
-   {{< tabs tabTotal="2" items="curl logging endpoint,config file" >}}
-   {{% tab tabName="curl logging endpoint" %}}
+   {{< tabs >}}
+   {{% tab name="curl logging endpoint" %}}
    In another tab, enable debug logs. If you configured agentgateway to use a different admin `ip:port`, update the command accordingly.
    ```sh
    curl -X POST "http://localhost:15000/logging?level=debug"
    ```
    {{% /tab %}}
-   {{% tab tabName="config file" %}}
+   {{% tab name="config file" %}}
    Update the config file to set the logging level to `debug`.
    ```yaml
    config:

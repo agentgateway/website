@@ -72,8 +72,8 @@ For complete steps, including how to inject a request from `agctl` itself, see [
 
 Agentgateway uses the same level syntax as [`RUST_LOG`](https://docs.rs/env_logger/latest/env_logger/#enabling-logging): `error`, `warn`, `info`, `debug`, and `trace`. You can change the level at runtime through the `/logging` endpoint, or set it in your config file at startup.
 
-{{< tabs tabTotal="2" items="curl logging endpoint,config file" >}}
-{{% tab tabName="curl logging endpoint" %}}
+{{< tabs >}}
+{{% tab name="curl logging endpoint" %}}
 Set the log level without restarting agentgateway. If you configured agentgateway to use a different admin address, update the host and port accordingly.
 
 ```sh
@@ -86,7 +86,7 @@ Example output:
 current log level is typespec_client_core::http::policies::logging=warn,hickory_server::server::server_future=off,rmcp=warn,debug
 ```
 {{% /tab %}}
-{{% tab tabName="config file" %}}
+{{% tab name="config file" %}}
 Set the log level permanently. Agentgateway reads the value at startup.
 
 ```yaml

@@ -4,22 +4,22 @@ weight: 70
 description: Dynamically compute and set LLM request fields using CEL expressions.
 test:
   llm-transformations:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/openai.md
+  - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - file: content/docs/kubernetes/main/llm/transformations.md
+  - file: ${versionRoot}/llm/transformations.md
     path: llm-transformations
   llm-model-headers:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/openai.md
+  - file: ${versionRoot}/llm/providers/openai.md
     path: openai-setup
-  - file: content/docs/kubernetes/main/llm/transformations.md
+  - file: ${versionRoot}/llm/transformations.md
     path: llm-model-headers
 ---
 

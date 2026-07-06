@@ -8,7 +8,7 @@ description: Configuration and setup for Amazon Bedrock provider
 Configure Amazon Bedrock as an LLM provider in agentgateway.
 
 {{< callout type="info" >}}
-Agentgateway accepts requests in one of the supported [API formats](../api-types) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
+Agentgateway accepts requests in one of the supported [API formats](../../api-types) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
 Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
 Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
 {{< /callout >}}
@@ -45,7 +45,7 @@ llm:
 ## Passthrough
 
 If your applications directly use the AWS `Converse` or `Invoke` APIs, Agentgateway cannot translate these APIs to other providers.
-However, it can pass the request through to Bedrock itself following the [passthrough](../api-types/passthrough) approach.
+However, it can pass the request through to Bedrock itself following the [passthrough](../../api-types/passthrough) approach.
 
 This can provide telemetry data for these requests.
 
@@ -64,8 +64,8 @@ llm:
 
 Then, you can send native Converse and Invoke requests:
 
-{{< tabs items="Converse,Invoke" >}}
-{{% tab %}}
+{{< tabs >}}
+{{% tab name="Converse" %}}
 
 ```python
 import json
@@ -91,7 +91,7 @@ print(response)
 ```
 
 {{% /tab %}}
-{{% tab %}}
+{{% tab name="Invoke" %}}
 
 ```python
 import json

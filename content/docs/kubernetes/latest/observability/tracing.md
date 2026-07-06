@@ -4,13 +4,13 @@ description: Integrate with OpenTelemetry to collect and analyze request traces.
 weight: 90
 test:
   tracing:
-  - file: content/docs/kubernetes/latest/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/latest/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/latest/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/latest/observability/tracing.md
+  - file: ${versionRoot}/observability/tracing.md
     path: tracing
 ---
 
@@ -128,15 +128,15 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 ## Verify traces
 
 1. Send a request to the httpbin app with the `x-header-tag` header. 
-   {{< tabs tabTotal="2" items="Cloud Provider LoadBalancer,Port-forward for local testing" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi -X POST http://$INGRESS_GW_ADDRESS:80/post \
     -H "host: www.example.com" \
     -H "x-header-tag: custom-tracing"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi -X POST localhost:8080/post \
     -H "host: www.example.com" \

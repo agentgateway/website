@@ -54,15 +54,15 @@ In this example, you read a plain-text request header and add its base64-encoded
 
 2. Send a request to the httpbin app and include the `x-user-id` request header. Verify that you get back a 200 HTTP response code and that the `x-user-id-encoded` response header contains the base64-encoded value.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
     -H "host: www.example.com:80" \
     -H "x-user-id: user123"
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
    -H "host: www.example.com" \
@@ -146,15 +146,15 @@ In this example, you take the encoded value from the encode example (`dXNlcjEyMw
 
 2. Send a request to the httpbin app and include the base64-encoded value from the encode example in the `x-user-id-encoded` request header. Verify that you get back a 200 HTTP response code and that the `x-user-id-decoded` response header contains the original plain-text value.
 
-   {{< tabs items="Cloud Provider LoadBalancer,Port-forward for local testing" tabTotal="2" >}}
-   {{% tab tabName="Cloud Provider LoadBalancer" %}}
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi http://$INGRESS_GW_ADDRESS:80/response-headers \
     -H "host: www.example.com:80" \
     -H "x-user-id-encoded: dXNlcjEyMw=="
    ```
    {{% /tab %}}
-   {{% tab tabName="Port-forward for local testing" %}}
+   {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi localhost:8080/response-headers \
    -H "host: www.example.com" \
