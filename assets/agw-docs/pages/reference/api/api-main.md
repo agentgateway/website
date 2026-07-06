@@ -503,8 +503,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `targetRefs` _[LocalPolicyTargetReferenceWithSectionName](#localpolicytargetreferencewithsectionname) array_ | Target resources to attach the<br />policy to. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `targetSelectors` _[LocalPolicyTargetSelectorWithSectionName](#localpolicytargetselectorwithsectionname) array_ | Target selectors used to select resources to attach the policy to. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `targetRefs` _[LocalPolicyTargetReferenceWithSectionName](#localpolicytargetreferencewithsectionname) array_ | Target resources to attach the<br />policy to. |  | AtMostOneOf: [sectionName port] <br />MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `targetSelectors` _[LocalPolicyTargetSelectorWithSectionName](#localpolicytargetselectorwithsectionname) array_ | Target selectors used to select resources to attach the policy to. |  | AtMostOneOf: [sectionName port] <br />MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `strategy` _[PolicyStrategy](#policystrategy)_ | Policy merge and conflict resolution strategy.<br />Strategy settings apply to the policy object as a whole. Individual strategy fields may<br />only be valid for specific policy kinds; for example, inheritance is only valid when this<br />policy contains traffic settings. |  | Optional: \{\} <br /> |
 | `frontend` _[Frontend](#frontend)_ | Settings for how to handle incoming traffic.<br />A frontend policy can only target a `Gateway`. `Listener` and<br />`ListenerSet` are not valid targets.<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. For example, policy A sets `tcp` and `tls`, and policy B sets<br />`tls`; the effective policy would be `tcp` from policy A, and `tls` from<br />policy B. |  | Optional: \{\} <br /> |
 | `traffic` _[Traffic](#traffic)_ | Settings for how to process traffic.<br />A traffic policy can target a `Gateway` (optionally, with a<br />`sectionName` indicating the listener), `ListenerSet`, or `Route`<br />(optionally, with a `sectionName` indicating the route rule).<br />When multiple policies are selected for a given request, they are merged on a field-level basis, but not a deep<br />merge. Precedence is given to more precise policies: `Gateway` <<br />`Listener` < `Route` < `Route Rule`. For example, policy A sets<br />`timeouts` and `retries`, and policy B sets `retries`; the effective<br />policy would be `timeouts` from policy A, and `retries` from policy B. |  | Optional: \{\} <br /> |
@@ -787,9 +787,13 @@ _Appears in:_
 
 
 
+AzureAuth configures authentication to Azure services. At most one explicit
+credential source may be set. When none is set, authentication is implicit:
+the method is automatically detected from the environment, which resolves to
+Workload Identity when running on Kubernetes.
 
-
-
+_Validation:_
+- AtMostOneOf: [secretRef managedIdentity workloadIdentity]
 
 _Appears in:_
 - [BackendAuth](#backendauth)
@@ -798,6 +802,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, containing the Azure credentials. When using the default Secret<br />resolver, the `Secret` must have keys `clientID`, `tenantID`, and<br />`clientSecret`. |  | Optional: \{\} <br /> |
 | `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Managed identity authentication settings. |  | Optional: \{\} <br /> |
+| `workloadIdentity` _[AzureWorkloadIdentity](#azureworkloadidentity)_ | Workload identity authentication settings. Uses the federated token<br />projected into the data plane pod (via the `AZURE_FEDERATED_TOKEN_FILE`,<br />`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_AUTHORITY_HOST`<br />environment variables) to authenticate. This is the recommended method<br />when running on Azure Kubernetes Service (AKS) with Workload Identity<br />enabled. |  | Optional: \{\} <br /> |
 
 
 #### AzureConfig
@@ -875,6 +880,19 @@ _Appears in:_
 | `Foundry` | AzureResourceTypeFoundry uses the Azure AI Foundry endpoint: \{resourceName\}.services.ai.azure.com<br /> |
 
 
+#### AzureWorkloadIdentity
+
+
+
+AzureWorkloadIdentity configures Azure Workload Identity authentication.
+
+
+
+_Appears in:_
+- [AzureAuth](#azureauth)
+
+
+
 #### BackendAI
 
 
@@ -919,7 +937,7 @@ _Appears in:_
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing the key to use as the authorization value. When using<br />the default Secret resolver, this must be stored in the `Authorization`<br />key. |  | Optional: \{\} <br /> |
 | `passthrough` _[BackendAuthPassthrough](#backendauthpassthrough)_ | Passes through an existing token that has been sent by the<br />client and validated. Other policies, like JWT and API key<br />authentication, will strip the original client credentials. Passthrough backend authentication<br />causes the original token to be added back into the request. If there are no client authentication policies on the<br />request, the original token would be unchanged, so this would have no effect. |  | Optional: \{\} <br /> |
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the backend.<br />When omitted, default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
-| `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | Optional: \{\} <br /> |
+| `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the backend.<br />When omitted, default Google credential discovery is used. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted.<br />If omitted, credentials are written to the `Authorization` header with the `Bearer ` prefix.<br />This applies to `key`, `secretRef`, and `passthrough`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 
@@ -1212,8 +1230,7 @@ _Underlying type:_ _string_
 
 How HTTP bodies are delivered to the external processor.
 
-_Validation:_
-- Enum: [None Buffered BufferedPartial FullDuplexStreamed]
+
 
 _Appears in:_
 - [ProcessingOptions](#processingoptions)
@@ -1257,6 +1274,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `maxBytes` _[ByteSize](#bytesize)_ | Maximum number of bytes to buffer from the request or response body.<br />If unset, defaults to the global proxy setting, which defaults to 2Mi. |  | MaxLength: 32 <br />MinLength: 1 <br />Pattern: `^[+-]?([0-9]+(\.[0-9]*)?\|\.[0-9]+)(([KMGTPE]i)\|[numkMGTPE]\|[eE](\+?0*([0-9]\|1[0-8])\|-0*[0-9]))?$` <br />XIntOrString: \{\} <br />Optional: \{\} <br /> |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the request or response body exceeds the buffer limit.<br />If unset, defaults to FailClosed, returning 413 for oversized requests and 502 for oversized responses. |  | Optional: \{\} <br /> |
 
 
 #### BuiltIn
@@ -1323,11 +1341,14 @@ _Appears in:_
 - [DirectResponseOrConditional](#directresponseorconditional)
 - [ExtAuthCache](#extauthcache)
 - [ExtAuthConditional](#extauthconditional)
+- [ExtProc](#extproc)
 - [ExtProcConditional](#extprocconditional)
+- [ExtProcOrConditional](#extprocorconditional)
 - [FieldTransformation](#fieldtransformation)
 - [HeaderTransformation](#headertransformation)
 - [Health](#health)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
+- [OtlpAccessLog](#otlpaccesslog)
 - [RateLimitDescriptor](#ratelimitdescriptor)
 - [RateLimitDescriptorEntry](#ratelimitdescriptorentry)
 - [RateLimitsConditional](#ratelimitsconditional)
@@ -1639,6 +1660,9 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
+| `metadataContext` _object (keys:string, values:[map[string]CELExpression](#map[string]celexpression))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `requestAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Request attributes to send to the external processor in the request<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `responseAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Response attributes to send to the external processor in the response<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per response. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 
 
 #### ExtProcConditional
@@ -1673,6 +1697,9 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
+| `metadataContext` _object (keys:string, values:[map[string]CELExpression](#map[string]celexpression))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `requestAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Request attributes to send to the external processor in the request<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `responseAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Response attributes to send to the external processor in the response<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per response. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `conditional` _[ExtProcConditional](#extprocconditional) array_ | Conditional policy execution. Set this or the top-level extProc fields.<br />The first matching policy will be executed.<br />A single policy may be provided without a condition set; if so, it must be the last policy and will be the fallback<br />in case no conditions are met. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 
 
@@ -1685,6 +1712,7 @@ _Underlying type:_ _string_
 
 
 _Appears in:_
+- [BufferBody](#bufferbody)
 - [ExtAuth](#extauth)
 - [ExtAuthOrConditional](#extauthorconditional)
 - [GlobalRateLimit](#globalratelimit)
@@ -1802,7 +1830,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mode` _[FrontendConnectMode](#frontendconnectmode)_ | Whether downstream CONNECT requests are accepted. |  | Enum: [Deny Route Tunnel] <br />Required: \{\} <br /> |
+| `mode` _[FrontendConnectMode](#frontendconnectmode)_ | Whether downstream CONNECT requests are accepted. |  | Required: \{\} <br /> |
 
 
 #### FrontendConnectMode
@@ -1811,8 +1839,7 @@ _Underlying type:_ _string_
 
 
 
-_Validation:_
-- Enum: [Deny Route Tunnel]
+
 
 _Appears in:_
 - [FrontendConnect](#frontendconnect)
@@ -2087,8 +2114,7 @@ _Underlying type:_ _string_
 
 Whether HTTP headers are delivered to the external processor.
 
-_Validation:_
-- Enum: [Send Skip]
+
 
 _Appears in:_
 - [ProcessingOptions](#processingoptions)
@@ -2298,7 +2324,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | Metadata to use for MCP resources,<br />served at the MCP OAuth metadata endpoints. |  | Optional: \{\} <br /> |
-| `provider` _[McpIDP](#mcpidp)_ | Identity provider to use for MCP authentication flows. |  | Enum: [Auth0 Keycloak Okta] <br />Optional: \{\} <br /> |
+| `provider` _[McpIDP](#mcpidp)_ | Identity provider to use for MCP authentication flows. |  | Optional: \{\} <br /> |
 | `clientId` _string_ | Client ID to use for short-circuiting Dynamic Client Registration.<br />If set, the gateway will not proxy registration requests to the IDP and instead return this client ID. |  | Optional: \{\} <br /> |
 
 
@@ -2466,10 +2492,11 @@ _Appears in:_
 
 
 Selects one same-namespace object by `group`, `kind`, `name`, and,
-optionally, `sectionName`.
+optionally, `sectionName` or `port`.
 The object must be in the same namespace as the policy.
 
-
+_Validation:_
+- AtMostOneOf: [sectionName port]
 
 _Appears in:_
 - [AgentgatewayPolicySpec](#agentgatewaypolicyspec)
@@ -2480,6 +2507,7 @@ _Appears in:_
 | `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
 | `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | The name of the target resource. |  | Required: \{\} <br /> |
 | `sectionName` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | The named section of the target resource. |  | Optional: \{\} <br /> |
+| `port` _integer_ | The port of the target resource this policy applies to.<br />At most one of `sectionName` or `port` may be set.<br />Only valid on frontend policies targeting a `Gateway`. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### LocalPolicyTargetSelector
@@ -2513,7 +2541,8 @@ the specified labels.
 Prefer `targetRefs` when reconciliation latency is important, especially
 when many policies target the same resource.
 
-
+_Validation:_
+- AtMostOneOf: [sectionName port]
 
 _Appears in:_
 - [AgentgatewayPolicySpec](#agentgatewaypolicyspec)
@@ -2524,6 +2553,7 @@ _Appears in:_
 | `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | The API kind of the target resource, such as `Gateway` or `HTTPRoute`. |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Required: \{\} <br /> |
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected target resource. |  | Required: \{\} <br /> |
 | `sectionName` _[SectionName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#sectionname)_ | The named section of each selected target resource. |  | Optional: \{\} <br /> |
+| `port` _integer_ | The port of each selected target resource this policy applies to.<br />At most one of `sectionName` or `port` may be set.<br />Only valid on frontend policies targeting a `Gateway`. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 
 
 #### LocalRateLimit
@@ -2601,6 +2631,7 @@ _Appears in:_
 
 _Appears in:_
 - [AccessLog](#accesslog)
+- [OtlpAccessLog](#otlpaccesslog)
 - [Tracing](#tracing)
 
 | Field | Description | Default | Validation |
@@ -2625,7 +2656,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `resourceMetadata` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | Metadata to use for MCP resources. |  | Optional: \{\} <br /> |
-| `provider` _[McpIDP](#mcpidp)_ | Identity provider to use for authentication. |  | Enum: [Auth0 Keycloak Okta] <br />Optional: \{\} <br /> |
+| `provider` _[McpIDP](#mcpidp)_ | Identity provider to use for authentication. |  | Optional: \{\} <br /> |
 | `issuer` _[ShortString](#shortstring)_ | IdP that issued the JWT. This corresponds to the<br />`iss` claim ([RFC 7519 §4.1.1](https://tools.ietf.org/html/rfc7519#section-4.1.1)). |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `audiences` _string array_ | Allowed audiences that are allowed<br />access. This corresponds to the `aud` claim<br />([RFC 7519 §4.1.3](https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3)).<br />If unset, any audience is allowed. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `jwks` _[RemoteJWKS](#remotejwks)_ | Remote JSON Web Key used to validate the signature of<br />the JWT. |  | Required: \{\} <br /> |
@@ -2759,6 +2790,7 @@ _Appears in:_
 | `Auth0` |  |
 | `Keycloak` |  |
 | `Okta` |  |
+| `Descope` |  |
 
 
 #### McpSelector
@@ -3034,6 +3066,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | OTLP server to send access logs to.<br />Supported types: `Service` and `AgentgatewayBackend`. |  | Required: \{\} <br /> |
+| `filter` _[CELExpression](#celexpression)_ | CEL expression used to filter OTLP logs. A log<br />will only be exported if the expression evaluates to `true`.<br />If unset, the parent access log filter is used. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `attributes` _[LogTracingAttributes](#logtracingattributes)_ | Customizations to the key-value pairs exported over OTLP.<br />If unset, the parent access log attributes are used. |  | Optional: \{\} <br /> |
 | `protocol` _[OTLPProtocol](#otlpprotocol)_ | OTLP protocol variant to use. | GRPC | Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | OTLP/HTTP path to use. This is only applicable<br />when `protocol` is `HTTP`. If unset, this defaults to `/v1/logs`. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -3145,12 +3179,12 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `requestBodyMode` _[BodySendMode](#bodysendmode)_ | How request bodies are sent to the external processor.<br />`Buffered` buffers the full body and returns an error if it exceeds 8KB.<br />`BufferedPartial` buffers up to 8KB and sends the buffered prefix if the<br />body exceeds that limit. Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Enum: [None Buffered BufferedPartial FullDuplexStreamed] <br />Optional: \{\} <br /> |
-| `responseBodyMode` _[BodySendMode](#bodysendmode)_ | How response bodies are sent to the external processor.<br />`Buffered` buffers the full body and returns an error if it exceeds 8KB.<br />`BufferedPartial` buffers up to 8KB and sends the buffered prefix if the<br />body exceeds that limit. Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Enum: [None Buffered BufferedPartial FullDuplexStreamed] <br />Optional: \{\} <br /> |
-| `requestHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether request headers are sent to the external processor.<br />Defaults to `Send`. | Send | Enum: [Send Skip] <br />Optional: \{\} <br /> |
-| `responseHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether response headers are sent to the external processor.<br />Defaults to `Send`. | Send | Enum: [Send Skip] <br />Optional: \{\} <br /> |
-| `requestTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether request trailers are sent to the external processor.<br />Defaults to `Send`. | Send | Enum: [Skip Send] <br />Optional: \{\} <br /> |
-| `responseTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether response trailers are sent to the external processor.<br />Defaults to `Send`. | Send | Enum: [Skip Send] <br />Optional: \{\} <br /> |
+| `requestBodyMode` _[BodySendMode](#bodysendmode)_ | How request bodies are sent to the external processor.<br />`Buffered` buffers the full body and returns an error if it exceeds 8KB.<br />`BufferedPartial` buffers up to 8KB and sends the buffered prefix if the<br />body exceeds that limit. Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
+| `responseBodyMode` _[BodySendMode](#bodysendmode)_ | How response bodies are sent to the external processor.<br />`Buffered` buffers the full body and returns an error if it exceeds 8KB.<br />`BufferedPartial` buffers up to 8KB and sends the buffered prefix if the<br />body exceeds that limit. Defaults to `FullDuplexStreamed`. | FullDuplexStreamed | Optional: \{\} <br /> |
+| `requestHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether request headers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
+| `responseHeaderMode` _[HeaderSendMode](#headersendmode)_ | Whether response headers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
+| `requestTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether request trailers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
+| `responseTrailerMode` _[TrailerSendMode](#trailersendmode)_ | Whether response trailers are sent to the external processor.<br />Defaults to `Send`. | Send | Optional: \{\} <br /> |
 | `allowModeOverride` _boolean_ | Allows ext_proc `mode_override` values from matching header responses to update<br />subsequent request/response processing phases for this exchange. Defaults to `false`. | false | Optional: \{\} <br /> |
 
 
@@ -3693,8 +3727,7 @@ _Underlying type:_ _string_
 
 Whether HTTP trailers are delivered to the external processor.
 
-_Validation:_
-- Enum: [Skip Send]
+
 
 _Appears in:_
 - [ProcessingOptions](#processingoptions)

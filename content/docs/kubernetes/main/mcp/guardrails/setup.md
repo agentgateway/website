@@ -100,7 +100,7 @@ spec:
           value: "0"
       containers:
       - name: ext-mcp-server
-        image: ghcr.io/agentgateway/testbox:0.0.1
+        image: gcr.io/solo-public/docs/testbox:latest
         readinessProbe:
           httpGet:
             path: /
