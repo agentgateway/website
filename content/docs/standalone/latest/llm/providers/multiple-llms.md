@@ -1,10 +1,12 @@
 ---
 title: Multiple LLM providers
 weight: 30
-description: Configure load balancing across multiple LLM providers.
+description: Define reusable LLM provider configurations once and reference them across multiple model definitions to avoid duplicating connection and authentication parameters.
 ---
 
-For simplified `llm` configuration, you can define named provider defaults once in `llm.providers[]` and reference them from multiple `llm.models[]` entries with `provider.reference`.
+## Reusable provider configuration
+
+Reuse provider configuration to avoid duplicating connection and authentication parameters across multiple model definitions. Define named provider defaults once in `llm.providers[]` and reference them from multiple `llm.models[]` entries with `provider.reference`.
 
 ```yaml
 llm:
