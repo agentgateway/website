@@ -48,30 +48,30 @@
    EOF
    ```
 
-3. Verify the gateway service is created.
+3. Verify that the Gateway is programmed.
 
    ```shell
-   kubectl get svc -n kserve kserve-ingress-gateway
+   kubectl get gateway kserve-ingress-gateway -n kserve
    ```
 
    Example output:
 
    ```
-   NAME                     TYPE           CLUSTER-IP   EXTERNAL-IP   PORT(S)                      AGE
-   kserve-ingress-gateway   LoadBalancer   10.96.4.5    <pending>     80:32764/TCP,443:31766/TCP   11s
+   NAME                     CLASS          ADDRESS   PROGRAMMED   AGE
+   kserve-ingress-gateway   agentgateway             True         11s
    ```
 
 ## Step 3: Install KServe
 
 1. Install the KServe CRDs.
    ```shell
-   helm install kserve-crd oci://ghcr.io/kserve/charts/kserve-crd --version v0.17.0
+   helm install kserve-crd oci://ghcr.io/kserve/charts/kserve-crd --version v0.19.0
    ```
 
 2. Install KServe resources using Helm.
    ```shell
    helm install kserve oci://ghcr.io/kserve/charts/kserve-resources \
-     --version v0.17.0 \
+     --version v0.19.0 \
      --namespace kserve \
      --create-namespace \
      --set kserve.controller.deploymentMode=Standard \
@@ -84,6 +84,21 @@
      --set kserve.controller.knativeAddressableResolver.enabled=false \
      --set kserve.controller.gateway.localGateway.gateway="" \
      --set kserve.controller.gateway.localGateway.gatewayService=""
+   ```
+
+3. Verify that the KServe controller is available.
+
+   ```shell
+   kubectl wait --for=condition=available deployment/kserve-controller-manager -n kserve --timeout=180s
+   kubectl get deployment kserve-controller-manager -n kserve
+   ```
+
+   Example output:
+
+   ```
+   deployment.apps/kserve-controller-manager condition met
+   NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+   kserve-controller-manager   1/1     1            1           45s
    ```
 
 ## Step 4: Deploy a mocked LLM with llm-d-inference-sim

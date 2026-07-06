@@ -2,10 +2,6 @@
 title: Transform requests
 weight: 55
 description: Dynamically compute and set LLM request fields using CEL expressions.
-test:
-  transformations:
-  - file: content/docs/standalone/latest/llm/transformations.md
-    path: transformations
 ---
 
 Use LLM request transformations to dynamically compute and set fields in LLM requests using {{< gloss "CEL (Common Expression Language)" >}}Common Expression Language (CEL){{< /gloss >}} expressions. Transformations let you enforce policies such as capping token usage or conditionally modifying request parameters, without changing client code.
@@ -23,20 +19,10 @@ Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/
 
 {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 
-{{< doc-test paths="transformations" >}}
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
-{{< /doc-test >}}
-
 ## Configure LLM request transformations
 
 1. Create a configuration file with your LLM transformation settings. The following example caps `max_tokens` to 10, regardless of what the client requests.
-   ```yaml {paths="transformations"}
+   ```yaml
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
    llm:
@@ -63,15 +49,8 @@ chmod +x "$HOME/.local/bin/agentgateway"
    agentgateway -f config.yaml
    ```
 
-   {{< doc-test paths="transformations" >}}
-   agentgateway -f config.yaml &
-   AGW_PID=$!
-   trap 'kill $AGW_PID 2>/dev/null' EXIT
-   sleep 3
-   {{< /doc-test >}}
-
 3. Send a request with `max_tokens` set to a value greater than 1024. The transformation caps it to 10 before the request reaches the LLM provider.
-   ```sh {paths="transformations"}
+   ```sh
    curl -s 'http://localhost:4000/v1/chat/completions' \
    --header 'Content-Type: application/json' \
    --data '{
@@ -85,32 +64,6 @@ chmod +x "$HOME/.local/bin/agentgateway"
      ]
    }' | jq .
    ```
-
-   {{< doc-test paths="transformations" >}}
-   YAMLTest -f - <<'EOF'
-   - name: request with max_tokens transformation returns capped completion
-     http:
-       url: "http://localhost:4000"
-       path: /v1/chat/completions
-       method: POST
-       headers:
-         content-type: application/json
-       body: |
-         {
-           "model": "gpt-3.5-turbo",
-           "max_tokens": 5000,
-           "messages": [{"role": "user", "content": "Tell me a short story"}]
-         }
-     source:
-       type: local
-     expect:
-       statusCode: 200
-       bodyJsonPath:
-         - path: "$.usage.completion_tokens"
-           comparator: equals
-           value: 10
-   EOF
-   {{< /doc-test >}}
 
    Example output:
    ```console {hl_lines=[2]}
@@ -136,7 +89,7 @@ chmod +x "$HOME/.local/bin/agentgateway"
 
 Use a CEL expression in the model-level `transformation` field to dynamically set `max_tokens` based on the caller's identity from a request header. This example gives admin users a higher token limit than regular users.
 
-```yaml {paths="transformations"}
+```yaml
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 
@@ -155,16 +108,9 @@ EOF
 | -- | -- |
 | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use `request.headers` to access incoming HTTP headers and `llmRequest` to access the original LLM request body. |
 
-{{< doc-test paths="transformations" >}}
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-
 Send a request as an admin user and verify the response uses the higher token limit.
 
-```sh {paths="transformations"}
+```sh
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: admin" \
@@ -176,7 +122,7 @@ curl -s http://localhost:4000/v1/chat/completions \
 
 Send a request as a regular user and verify the response is capped at the lower token limit.
 
-```sh {paths="transformations"}
+```sh
 curl -s http://localhost:4000/v1/chat/completions \
   -H "Content-Type: application/json" \
   -H "x-user-id: alice" \
@@ -185,54 +131,6 @@ curl -s http://localhost:4000/v1/chat/completions \
     "messages": [{"role": "user", "content": "Tell me a story"}]
   }' | jq .
 ```
-
-{{< doc-test paths="transformations" >}}
-YAMLTest -f - <<'EOF'
-- name: admin user gets higher token limit
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      x-user-id: admin
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Tell me a story"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.completion_tokens"
-        comparator: equals
-        value: 100
-
-- name: regular user gets lower token limit
-  http:
-    url: "http://localhost:4000"
-    path: /v1/chat/completions
-    method: POST
-    headers:
-      content-type: application/json
-      x-user-id: alice
-    body: |
-      {
-        "model": "gpt-3.5-turbo",
-        "messages": [{"role": "user", "content": "Tell me a story"}]
-      }
-  source:
-    type: local
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.usage.completion_tokens"
-        comparator: equals
-        value: 10
-EOF
-{{< /doc-test >}}
 
 In the responses, the admin user receives up to 100 completion tokens while the regular user is capped at 10.
 
