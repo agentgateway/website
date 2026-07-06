@@ -58,6 +58,7 @@ Set up virtual keys interactively through the Admin UI.
 
    {{< reuse-image-light src="img/ui-virtual-keys-new.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
    {{< reuse-image-dark srcDark="img/ui-virtual-keys-new-dark.png" alt="Create virtual key drawer with name, auto-generated key value, and metadata" >}}
+3. **Copy** the virtual key value. Give this key to your users to use in an `Authorization: Bearer $VIRTUAL_KEY` header in subsequent requests through agentgateway.
 
 The rest of this guide uses the equivalent config-file settings, which apply the same `apiKey` policy shown in the UI.
 {{< /version >}}
