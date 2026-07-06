@@ -19,13 +19,48 @@ For a complete list of subcommands and flags, see the [`agctl` CLI reference]({{
 
 ## Before you begin
 
-Build `agctl` from source. Make sure that you have the following tools installed.
+Make sure that you have [Graphviz](https://graphviz.org/download/) installed if you plan to use `agctl` for profile investigation.
 
-* [Go](https://go.dev/doc/install) 1.22 or later
-* [Git](https://git-scm.com/downloads)
-* [Graphviz](https://graphviz.org/download/) for profile investigation
+If you choose to build `agctl` from source, you must also install [Go](https://go.dev/doc/install) 1.22 or later and [Git](https://git-scm.com/downloads).
 
 ## Install agctl
+
+Download the `agctl` binary for your platform from the [releases page](https://github.com/agentgateway/agentgateway/releases) or build it from source.
+
+{{< tabs items="Linux,macOS,Windows,Build from source" tabTotal="4" >}}
+{{% tab tabName="Linux" %}}
+
+Download the pre-compiled binary:
+
+```sh
+curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-linux-amd64 -o agctl
+chmod +x agctl
+sudo mv agctl /usr/local/bin/agctl
+```
+
+{{% /tab %}}
+{{% tab tabName="macOS" %}}
+
+Download the pre-compiled binary:
+
+```sh
+# Intel
+curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-amd64 -o agctl
+
+# Apple Silicon
+curl -sL https://github.com/agentgateway/agentgateway/releases/latest/download/agctl-darwin-arm64 -o agctl
+
+chmod +x agctl
+sudo mv agctl /usr/local/bin/agctl
+```
+
+{{% /tab %}}
+{{% tab tabName="Windows" %}}
+
+Download `agctl-windows-amd64.exe` from the [releases page](https://github.com/agentgateway/agentgateway/releases) and add it to your `PATH`.
+
+{{% /tab %}}
+{{% tab tabName="Build from source" %}}
 
 1. Clone the agentgateway repository.
 
@@ -46,33 +81,36 @@ Build `agctl` from source. Make sure that you have the following tools installed
    export PATH="$(go env GOPATH)/bin:$PATH"
    ```
 
-3. Verify the install.
+{{% /tab %}}
+{{< /tabs >}}
 
-   ```sh
-   agctl --help
-   ```
+## Verify the installation
 
-   Example output:
+```sh
+agctl --help
+```
 
-   ```
-   agctl controls and inspects Agentgateway resources
+Example output:
 
-   Usage:
-     agctl [command]
+```
+agctl controls and inspects Agentgateway resources
 
-   Available Commands:
-     completion  Generate the autocompletion script for the specified shell
-     controller  Inspect and manage the Agentgateway controller
-     help        Help about any command
-     proxy       Inspect and manage the Agentgateway proxy
-     version     Print agctl version information
+Usage:
+  agctl [command]
 
-   Flags:
-     -h, --help                help for agctl
-     -k, --kubeconfig string   kubeconfig
+Available Commands:
+  completion  Generate the autocompletion script for the specified shell
+  controller  Inspect and manage the Agentgateway controller
+  help        Help about any command
+  proxy       Inspect and manage the Agentgateway proxy
+  version     Print agctl version information
 
-   Use "agctl [command] --help" for more information about a command.
-   ```
+Flags:
+  -h, --help                help for agctl
+  -k, --kubeconfig string   kubeconfig
+
+Use "agctl [command] --help" for more information about a command.
+```
 
 ## Enable shell completion
 
@@ -115,7 +153,9 @@ agctl completion powershell | Out-String | Invoke-Expression
 
 ## Upgrade agctl
 
-To upgrade `agctl` to a newer version, pull the latest changes and rebuild.
+To upgrade `agctl`, replace the binary with the new version following the same steps as installation.
+
+If you built from source, pull the latest changes and rebuild.
 
 ```sh
 cd agentgateway
@@ -135,8 +175,12 @@ Use the same `agctl` version as the agentgateway version that you run in your cl
 
 ## Uninstall agctl
 
-To uninstall `agctl`, remove the binary from your `GOBIN` directory.
+To uninstall `agctl`, remove the binary from your system. For example:
 
 ```sh
+# If installed to /usr/local/bin
+sudo rm /usr/local/bin/agctl
+
+# If installed via GOBIN
 rm "$(go env GOPATH)/bin/agctl"
 ```
