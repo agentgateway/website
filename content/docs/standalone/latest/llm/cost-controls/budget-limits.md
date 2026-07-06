@@ -103,18 +103,22 @@ Token budgets approximate spend but drift as prices or model mix change. To cap 
 
 The budgets above are measured in *tokens*. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), agentgateway computes the realized USD cost of each request and exposes it to CEL as `llm.cost`. You can then rate limit on *dollars* directly, which enforces a true spend cap regardless of which model or input/output token mix each user hits.
 
-{{< callout type="warning" >}}
-**Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build. The response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
-{{< /callout >}}
+> [!NOTE]
+> - Cost is evaluated *after* the response completes. The request that crosses the budget still completes; the user's *next* request is rejected with a `429`. Budgets are therefore approximate at the boundary.
+> - The `cost` expression must return an unsigned integer. Because USD costs are fractional (for example, `$0.0000057`), scale them to **micro-dollars** (USD × 1,000,000) with `uint()`. A budget of `1000000` micro-dollars equals `$1.00`.
 
-{{< callout type="warning" >}}
-**Requirements and behavior:**
-- A [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) must be configured so that `llm.cost` is populated. Without a catalog, `llm.cost.total` is `0` and no spend is counted.
-- Cost is evaluated *after* the response completes. The request that crosses the budget still completes; the user's *next* request is rejected with a `429`. Budgets are therefore approximate at the boundary.
-- The `cost` expression must return an unsigned integer. Because USD costs are fractional (for example, `$0.0000057`), scale them to **micro-dollars** (USD × 1,000,000) with `uint()`. A budget of `1000000` micro-dollars equals `$1.00`.
-{{< /callout >}}
+Before you begin:
 
-1. Add a `cost` expression to the descriptor that converts the realized cost to micro-dollars. This example keys the budget on `apiKey.user`, so it builds on the API key authentication from the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide.
+1. Follow the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide to set up virtual keys and token budgets with a rate limiter.
+
+2. Create a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) so that `llm.cost` is populated. 
+
+Enforce a dollar budget:
+
+1. Add a `cost` expression to the descriptor that converts the realized cost to micro-dollars.
+   * The following example keys the budget on the `apiKey.user` that you set up in the virtual keys guide before you began.
+   * The budget limits spending on the total cost (`llm.cost.total`).
+   * To budget on a single cost component instead of the total, use that field in the expression. For example, `llm.cost.output` budgets only on output-token spend.
 
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -155,10 +159,6 @@ The budgets above are measured in *tokens*. If you configure a [model cost catal
    ```
 
 3. Send requests as a user. After each response, agentgateway computes the request's micro-dollar cost and sends it to the rate limit server as the request's cost. When the user's accumulated spend reaches the daily budget, further requests are rejected with a `429` until the budget refills.
-
-{{< callout type="info" >}}
-To budget on a single cost component instead of the total, use that field in the expression. For example, `cost: 'uint(llm.cost.output * 1000000)'` budgets only on output-token spend.
-{{< /callout >}}
 
 ## Monitor budget usage
 
