@@ -17,7 +17,7 @@ stdio transport is ideal when:
 
 ```bash
 # Download the stdio MCP configuration
-curl -L https://agentgateway.dev/examples/basic/config.yaml -o config.yaml
+curl -L https://agentgateway.dev/examples/mcp-basic/config.yaml -o config.yaml
 
 # Run agentgateway
 agentgateway -f config.yaml
