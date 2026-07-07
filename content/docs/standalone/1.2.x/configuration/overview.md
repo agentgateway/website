@@ -21,7 +21,7 @@ Agentgateway configuration has a few top level sections:
 ### Example configuration file {#example-file}
 
 ```yaml
-{{% github url="https://agentgateway.dev/examples/basic/config.yaml" %}}
+{{% github url="https://raw.githubusercontent.com/agentgateway/agentgateway/refs/tags/v1.2.1/examples/basic/config.yaml" %}}
 ```
 
 ## Update configuration {#add}
