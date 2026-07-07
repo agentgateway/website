@@ -237,4 +237,5 @@ cd .. && rm -rf oauth2-proxy-test
 {{< cards >}}
   {{< card path="/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
+  {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-oauth2-proxy" title="traffic-oauth2-proxy example" subtitle="Agentgateway config example to start an OAuth2 proxy with Docker Compose" >}}
 {{< /cards >}}

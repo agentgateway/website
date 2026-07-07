@@ -4,7 +4,7 @@ Use [`docker compose`](https://docs.docker.com/compose/install/linux/) to spin u
 * A Jaeger UI that is exposed on `http://localhost:16686`. 
 
 Steps to create a Jaeger instance:
-1. Create the OpenTelemetry collector configuration file in your current directory. The Compose file in the next step mounts this file into the collector container. Both files are sourced from the [`examples/telemetry`](https://github.com/agentgateway/agentgateway/tree/main/examples/telemetry) directory in the agentgateway repository. 
+1. Create the OpenTelemetry collector configuration file in your current directory. The Compose file in the next step mounts this file into the collector container. Both files are sourced from the [`examples/mcp-telemetry`](https://github.com/agentgateway/agentgateway/tree/main/examples/mcp-telemetry) directory in the agentgateway repository. 
 
    ```sh
    cat > otel-collector-config.yaml <<'EOF'
