@@ -3,7 +3,7 @@ Configure [Azure](https://learn.microsoft.com/en-us/azure/ai-services/) as an LL
 Azure supports two endpoint types:
 
 - **Azure OpenAI** (`OpenAI`): Connect to Azure OpenAI Service deployments at `{resourceName}.openai.azure.com`.
-- **Azure AI Foundry** (`Foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}-resource.services.ai.azure.com`.
+- **Azure AI Foundry** (`Foundry`): Connect to Azure AI Foundry project endpoints at `{resourceName}.services.ai.azure.com`.
 
 ## Before you begin
 
@@ -13,7 +13,7 @@ Azure supports two endpoint types:
 
 1. Retrieve the resource name and, if applicable, the project name from the [Azure AI Foundry portal](https://ai.azure.com/) or the [Azure portal](https://portal.azure.com/). For example:
    * For an Azure OpenAI endpoint like `https://{my-resource}.openai.azure.com`, the resource name is `my-resource`.
-   * For an Azure AI Foundry endpoint like `https://{my-resource}-resource.services.ai.azure.com` and path `/api/projects/{my-project}`, the resource name is `my-resource` and the project name is `my-project`. If the resource name and the project name are the same, you can leave the `projectName` field empty.
+   * For an Azure AI Foundry endpoint like `https://{my-resource}.services.ai.azure.com` and path `/api/projects/{my-project}`, the resource name is `my-resource` and the project name is `my-project`. If the resource name and the project name are the same, you can leave the `projectName` field empty.
 
 2. Store the API key to access your model deployment in an environment variable. If you are using implicit Entra ID authentication (such as managed identity or workload identity), you can skip this step.
    ```sh
@@ -53,6 +53,10 @@ Azure supports two endpoint types:
            resourceName: my-resource
            resourceType: OpenAI
            model: gpt-4.1-mini
+     policies:
+       auth:
+         secretRef:
+           name: azure-secret
    EOF
    ```
    {{% /tab %}}
@@ -72,6 +76,10 @@ Azure supports two endpoint types:
            resourceType: Foundry
            projectName: my-project
            model: gpt-4.1-mini
+     policies:
+       auth:
+         secretRef:
+           name: azure-secret
    EOF
    ```
    {{% /tab %}}
@@ -168,7 +176,7 @@ Azure supports two endpoint types:
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "gpt-4.1-mini",
       "messages": [
         {
           "role": "system",
@@ -185,7 +193,7 @@ Azure supports two endpoint types:
    **Localhost**:
    ```sh
    curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "gpt-4.1-mini",
       "messages": [
         {
           "role": "system",
@@ -203,7 +211,7 @@ Azure supports two endpoint types:
    **Cloud Provider LoadBalancer**:
    ```sh
    curl "$INGRESS_GW_ADDRESS/azure" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "gpt-4.1-mini",
       "messages": [
         {
           "role": "system",
@@ -220,7 +228,7 @@ Azure supports two endpoint types:
    **Localhost**:
    ```sh
    curl "localhost:8080/azure" -H content-type:application/json  -d '{
-      "model": "",
+      "model": "gpt-4.1-mini",
       "messages": [
         {
           "role": "system",
