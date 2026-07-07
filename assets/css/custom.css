@@ -223,6 +223,17 @@ h6 {
     color: #9ca3af !important;
 }
 
+/* docs-theme-extras v0.1.14 shifted the centralized .sidebar-nav-wrapper top
+   padding from 0 to 1rem so the first sidebar item lines up with the module's
+   own hx:pt-6 (1.5rem) content pane. Agw's docs templates use a tighter hx:pt-2
+   (0.5rem) content pane, so that 1rem now pushes the first sidebar link ~1rem
+   below the first line of content. Restore the 0 top padding (the more-specific
+   selector wins over the module's .sidebar-nav-wrapper) to keep them aligned;
+   the right/bottom padding still comes from the module shorthand. */
+aside.sidebar-container > .sidebar-nav-wrapper {
+    padding-top: 0;
+}
+
 /* Hextra tabs - data-state show/hide and active styling */
 .hextra-tabs-panel {
     display: none;
