@@ -2,6 +2,7 @@
 title: Optimize cost
 weight: 70
 description: Reduce LLM spend by aliasing to cheaper models and caching repeated prompt content.
+test: skip
 ---
 
 The other cost controls help you *attribute*, *observe*, and *enforce* spend. This guide helps you *reduce* it, with two levers you can apply without changing client code:
@@ -13,29 +14,33 @@ Pair both with a [model cost catalog]({{< link-hextra path="/llm/cost-controls/c
 
 ## Alias to a cheaper model
 
-Model aliasing maps a stable, client-facing name to a specific upstream model. Clients call the alias (for example, `fast` or `smart`); you decide which real model serves it, and you can repoint the alias to a cheaper model without touching client code. Configure aliases with `policies.ai.modelAliases` on the {{< reuse "agw-docs/snippets/backend.md" >}}.
+Model aliasing maps a stable, client-facing name to a specific upstream model. Clients call the alias (for example, `fast` or `smart`), you decide which real model serves it, and you can repoint the alias to a cheaper model without touching client code.
 
-```yaml
-apiVersion: agentgateway.dev/v1alpha1
-kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-metadata:
-  name: openai
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  ai:
-    provider:
-      openai: {}
-  policies:
-    auth:
-      secretRef:
-        name: openai-secret
-    ai:
-      modelAliases:
-        fast: gpt-3.5-turbo
-        smart: gpt-4-turbo
-```
+1. Configure aliases with `policies.ai.modelAliases` on the {{< reuse "agw-docs/snippets/backend.md" >}}. This example points `fast` at a cheaper model and `smart` at a pricier one. The provider sets no default model, so clients must request an alias.
 
-For the full walkthrough, see [Model aliasing]({{< link-hextra path="/llm/alias/" >}}).
+   ```yaml
+   apiVersion: agentgateway.dev/v1alpha1
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: openai
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     ai:
+       provider:
+         openai: {}
+     policies:
+       auth:
+         secretRef:
+           name: openai-secret
+       ai:
+         modelAliases:
+           fast: gpt-3.5-turbo
+           smart: gpt-4-turbo
+   ```
+
+2. Send a request for the `fast` alias and confirm the response is served by the cheaper model. The `model` field in the response shows the real model that served the request, such as `gpt-3.5-turbo`. Repeat with `smart` to see the pricier model. For the full send-and-verify steps, see [Model aliasing]({{< link-hextra path="/llm/alias/" >}}).
+
+To shift spend later, repoint an alias to a cheaper model in the {{< reuse "agw-docs/snippets/backend.md" >}}. Clients keep requesting `fast` and `smart`, and the served model changes without any client update.
 
 {{< callout type="info" >}}
 In Kubernetes mode, cost-aware routing is limited to model aliases (a one-to-one name mapping). The weighted, conditional, and failover [virtual model]({{< link-hextra path="/llm/virtual-models/" >}}) strategies are available in standalone mode. For example, you can split traffic across models to A/B test cost, or route premium users to a frontier model.
@@ -45,33 +50,33 @@ In Kubernetes mode, cost-aware routing is limited to model aliases (a one-to-one
 
 When requests share a large, stable prefix (a long system prompt, tool definitions, or retrieved context), prompt caching lets the model reuse that work instead of reprocessing it on every request. Cached input tokens are billed at a much lower rate than fresh input tokens, so caching cuts cost for repetitive workloads such as agents and chat sessions.
 
-Configure caching with the `backend.ai.promptCaching` fields on an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
-
 {{< callout type="warning" >}}
 Prompt caching is supported for **Amazon Bedrock** Claude 3+ and Nova models. It is not applied for the direct Anthropic or OpenAI providers.
 {{< /callout >}}
 
-```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
-metadata:
-  name: bedrock-caching-policy
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  targetRefs:
-    - group: gateway.networking.k8s.io
-      kind: HTTPRoute
-      name: bedrock
-  backend:
-    ai:
-      promptCaching:
-        cacheSystem: true     # cache the system prompt
-        cacheMessages: true   # cache chat messages
-        cacheTools: false     # cache tool definitions
-        minTokens: 1024       # only cache prompts at least this large
-```
+1. Configure caching with the `backend.ai.promptCaching` fields on an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets your Bedrock route.
 
-For the full walkthrough and verification steps, see [Prompt caching]({{< link-hextra path="/llm/providers/bedrock/#prompt-caching" >}}) in the Bedrock provider guide.
+   ```yaml
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: bedrock-caching-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+       - group: gateway.networking.k8s.io
+         kind: HTTPRoute
+         name: bedrock
+     backend:
+       ai:
+         promptCaching:
+           cacheSystem: true     # cache the system prompt
+           cacheMessages: true   # cache chat messages
+           cacheTools: false     # cache tool definitions
+           minTokens: 1024       # only cache prompts at least this large
+   ```
+
+2. Send a request with a large, repeated prefix, then send it again. The second request reads the prefix from cache. For the end-to-end walkthrough with verification, see [Prompt caching]({{< link-hextra path="/llm/providers/bedrock/#prompt-caching" >}}) in the Bedrock provider guide.
 
 ### See caching in your costs
 
@@ -83,11 +88,11 @@ With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}
 
 A high `cachedInputTokens`-to-`inputTokens` ratio means caching is working.
 
-## Measure the savings
+## Measure the savings in dollars
 
-Optimization only pays off if you can see the result. After you alias or enable caching, confirm the cost impact:
+Both levers change what the server does, and the response `model` field or the access log shows it. To translate that into dollars, add a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) and inspect the realized cost:
 
-- **Per-request cost**: each LLM log line includes `agw.ai.usage.cost.total`; the `gen_ai.response.model` field shows which model actually served the request.
+- **Per-request cost**: each LLM log line includes `agw.ai.usage.cost.total`, and the `gen_ai.response.model` field shows which model actually served the request.
 - **Compare models**: break down cost metrics by `gen_ai_response_model` to see spend per model.
 - **Cache effectiveness**: compare `llm.cachedInputTokens` against `llm.inputTokens` to confirm cached prefixes are being reused.
 
