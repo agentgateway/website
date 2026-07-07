@@ -165,7 +165,7 @@ Enforce a dollar budget:
 Track how much of each user's budget has been consumed with the Prometheus metrics that agentgateway exposes.
 
 ```sh
-curl http://localhost:15000/metrics
+curl http://localhost:15020/metrics
 ```
 
 Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
