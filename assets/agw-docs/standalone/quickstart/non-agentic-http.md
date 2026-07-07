@@ -201,5 +201,3 @@ docker stop httpbin
 ```
 
 {{% /steps %}}
-
-For a routing configuration that matches requests by path and method, see the [traffic-http example](https://github.com/agentgateway/agentgateway/blob/main/examples/traffic-http/README.md).

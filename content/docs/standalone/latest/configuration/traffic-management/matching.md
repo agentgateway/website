@@ -267,6 +267,8 @@ routes:
     - host: api.example.com:8080
 ```
 
+For a complete, runnable configuration that matches requests by path and method, see the [traffic-http example](https://github.com/agentgateway/agentgateway/blob/main/examples/traffic-http/README.md).
+
 ## TCP routes
 
 For routes configured with [TCP listeners]({{< link-hextra path="/configuration/routes#tcp-routes" >}}), you can configure the following matching conditions.
