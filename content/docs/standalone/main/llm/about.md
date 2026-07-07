@@ -199,6 +199,8 @@ llm:
 
 Clients send `"model": "fast"` or `"model": "smart"`, and agentgateway translates these to the corresponding provider models.
 
+For a complete example that routes model names to different providers, see the [llm-basic example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-basic/README.md).
+
 ### Route priority
 
 When multiple models match a request, the more precise match takes precedence.

@@ -128,3 +128,4 @@ frontendPolicies:
 - [Keycloak integration]({{< link-hextra path="/integrations/auth/keycloak" >}})
 - [Auth0 integration]({{< link-hextra path="/integrations/auth/auth0" >}})
 - [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}}) for MCP-specific OAuth flows
+- [traffic-oidc example](https://github.com/agentgateway/agentgateway/blob/main/examples/traffic-oidc/README.md) for a runnable browser OIDC login flow with Keycloak

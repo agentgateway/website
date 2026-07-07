@@ -79,6 +79,8 @@ For catalog configuration and the full list of cost fields, see [Model costs]({{
 5. Open the [Jaeger UI](http://localhost:16686/search) and verify that you can see traces for your LLM request. 
    
 
+For a complete OpenTelemetry tracing configuration that you can export to Jaeger or Langfuse, see the [llm-telemetry example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-telemetry/README.md).
+
 ## View logs
 
 Agentgateway automatically logs information to stdout. When you run agentgateway on your local machine, you can view a log entry for each request that is sent to agentgateway in your CLI output. 

@@ -237,4 +237,5 @@ cd .. && rm -rf oauth2-proxy-test
 {{< cards >}}
   {{< card path="/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
+  {{< card link="https://github.com/agentgateway/agentgateway/blob/main/examples/traffic-oauth2-proxy/README.md" title="OAuth2 Proxy example" subtitle="Runnable GitHub OAuth configuration" icon="external-link" >}}
 {{< /cards >}}

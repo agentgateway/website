@@ -154,6 +154,8 @@ binds:
               grpc: {}
 ```
 
+For a runnable configuration that fetches upstream OAuth tokens from Keycloak by using token exchange and client-credentials grants, see the [traffic-backend-oauth example](https://github.com/agentgateway/agentgateway/blob/main/examples/traffic-backend-oauth/README.md).
+
 ## Conditional execution
 
 To choose between multiple external authorization servers based on the request, use the `conditional` field. For example, you can send admin paths to a stricter authorization server and route every other request to a standard one. For details, see [Conditional policies]({{< link-hextra path="/configuration/policies/conditional-policies" >}}).

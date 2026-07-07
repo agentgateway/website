@@ -189,3 +189,5 @@ mcpAuthorization:
 ```
 
 Refer to the [CEL reference]({{< link-hextra path="/reference/cel/" >}}) for additional variables.
+
+For a runnable configuration that pairs JWT authentication with CEL tool-authorization rules, see the [mcp-authorization example](https://github.com/agentgateway/agentgateway/blob/main/examples/mcp-authorization/README.md).

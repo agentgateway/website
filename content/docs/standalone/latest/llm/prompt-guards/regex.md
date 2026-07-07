@@ -195,6 +195,8 @@ The following example rejects requests that contain PII data, such as Social Sec
    }
    ```
 
+For a runnable configuration that combines regex rejection with webhook moderation, see the [llm-prompt-guard example](https://github.com/agentgateway/agentgateway/blob/main/examples/llm-prompt-guard/README.md).
+
 ## Mask PII in responses
 
 You can also filter LLM responses to redact sensitive data before it reaches the client. When a match is found, agentgateway replaces built-in pattern matches with `<ENTITY_TYPE>` (for example, `<CREDIT_CARD>`) and custom pattern matches with `<masked>`. The following example masks credit card numbers in responses.

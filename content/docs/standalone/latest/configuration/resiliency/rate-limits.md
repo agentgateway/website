@@ -96,6 +96,8 @@ localRateLimit:
 > [!NOTE]
 > The term "tokens" is used for two distinct meanings. In `maxTokens` and `tokensPerFill`, it indicates the "token" in the token bucket counter. Each token can allow either 1 LLM token, or 1 HTTP request, based on the `type`.
 
+For a runnable local rate limiting configuration, see the [traffic-ratelimiting-local example](https://github.com/agentgateway/agentgateway/blob/main/examples/traffic-ratelimiting-local/README.md).
+
 ### Remote
 
 Remote rate limits are not defined directly in agentgateway.
@@ -181,6 +183,8 @@ remoteRateLimit:
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |
+
+For a complete remote rate limiting setup that uses the Envoy rate limit service with Redis, see the [traffic-ratelimiting-global example](https://github.com/agentgateway/agentgateway/blob/main/examples/traffic-ratelimiting-global/README.md).
 
 ## Conditional execution
 

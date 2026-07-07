@@ -126,3 +126,5 @@ policies:
 ## Passthrough
 
 When the MCP server already implements OAuth authentication, no additional configuration is needed. Agentgateway passes requests through without modification.
+
+For runnable configurations that cover spec-compliant, remote, and vendor-specific authorization servers, see the [mcp-authentication example](https://github.com/agentgateway/agentgateway/blob/main/examples/mcp-authentication/README.md).

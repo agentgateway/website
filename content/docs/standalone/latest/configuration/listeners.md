@@ -57,6 +57,8 @@ listeners:
     key: examples/tls/certs/key-wildcard.pem
 ```
 
+For a complete HTTPS listener configuration, see the [mcp-tls example](https://github.com/agentgateway/agentgateway/blob/main/examples/mcp-tls/README.md).
+
 ### Redirect HTTP to HTTPS
 
 To serve both HTTP and HTTPS, configure an HTTP listener that redirects all traffic to the HTTPS listener with a `requestRedirect` policy. The following example listens for plaintext HTTP on port 80 and redirects it to HTTPS, while serving encrypted traffic on port 443.
