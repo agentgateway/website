@@ -113,7 +113,7 @@ To specify an explicit configuration file, use `-f`:
 agentgateway -f config.yaml
 ```
 
-You might start with [this simple example configuration file](https://agentgateway.dev/examples/basic/config.yaml).
+You might start with [this simple example configuration file](https://agentgateway.dev/examples/mcp-basic/config.yaml).
 
 Open <http://localhost:15000/ui> to get started!
 

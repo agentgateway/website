@@ -8,7 +8,7 @@ Steps to create a Jaeger instance:
 
    ```sh
    cat > otel-collector-config.yaml <<'EOF'
-   {{< github url="https://agentgateway.dev/examples/telemetry/otel-collector-config.yaml" >}}
+   {{< github url="https://agentgateway.dev/examples/mcp-telemetry/otel-collector-config.yaml" >}}
    EOF
    ```
 
@@ -16,6 +16,6 @@ Steps to create a Jaeger instance:
 
    ```sh
    docker compose -f - up -d <<EOF
-   {{< github url="https://agentgateway.dev/examples/telemetry/docker-compose.yaml" >}}
+   {{< github url="https://agentgateway.dev/examples/mcp-telemetry/docker-compose.yaml" >}}
    EOF
    ```

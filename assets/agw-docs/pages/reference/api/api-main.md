@@ -746,6 +746,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `roleArn` _string_ | AWS IAM role ARN to assume. |  | MinLength: 1 <br />Pattern: `^arn:aws[a-z-]*:iam::[0-9]\{12\}:role/.+$` <br />Required: \{\} <br /> |
+| `sessionName` _string_ | SessionName is a custom session name (RoleSessionName) for CloudTrail and<br />Cost & Usage Report attribution. If unset, AWS generates a random name. |  | Pattern: `^[\w+=,.@-]\{2,64\}$` <br />Optional: \{\} <br /> |
+| `tags` _[AwsSessionTag](#awssessiontag) array_ | Tags are session tags passed to STS AssumeRole. Once activated as cost<br />allocation tags, they appear in the AWS Cost & Usage Report for cost<br />attribution. STS allows at most 50 session tags per role session. |  | MaxItems: 50 <br />Optional: \{\} <br /> |
 
 
 #### AwsAuth
@@ -781,6 +783,24 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `agentCore` _[AwsAgentCoreBackend](#awsagentcorebackend)_ | Amazon Bedrock AgentCore backend settings. |  | Optional: \{\} <br /> |
+
+
+#### AwsSessionTag
+
+
+
+AwsSessionTag is an AWS STS session tag: a key/value pair passed to AssumeRole
+for cost attribution.
+
+
+
+_Appears in:_
+- [AwsAssumeRole](#awsassumerole)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _string_ | Key is the tag key. |  | MaxLength: 128 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `value` _string_ | Value is the tag value. |  | MaxLength: 256 <br />Required: \{\} <br /> |
 
 
 #### AzureAuth
