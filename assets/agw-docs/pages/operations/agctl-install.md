@@ -27,8 +27,8 @@ If you choose to build `agctl` from source, you must also install [Go](https://g
 
 Download the `agctl` binary for your platform from the [releases page](https://github.com/agentgateway/agentgateway/releases) or build it from source.
 
-{{< tabs items="Linux,macOS,Windows,Build from source" tabTotal="4" >}}
-{{% tab tabName="Linux" %}}
+{{< tabs >}}
+{{% tab name="Linux" %}}
 
 Download the pre-compiled binary:
 
@@ -39,7 +39,7 @@ sudo mv agctl /usr/local/bin/agctl
 ```
 
 {{% /tab %}}
-{{% tab tabName="macOS" %}}
+{{% tab name="macOS" %}}
 
 Download the pre-compiled binary:
 
@@ -55,12 +55,12 @@ sudo mv agctl /usr/local/bin/agctl
 ```
 
 {{% /tab %}}
-{{% tab tabName="Windows" %}}
+{{% tab name="Windows" %}}
 
 Download `agctl-windows-amd64.exe` from the [releases page](https://github.com/agentgateway/agentgateway/releases) and add it to your `PATH`.
 
 {{% /tab %}}
-{{% tab tabName="Build from source" %}}
+{{% tab name="Build from source" %}}
 
 1. Clone the agentgateway repository.
 
