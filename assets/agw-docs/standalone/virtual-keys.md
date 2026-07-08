@@ -412,13 +412,14 @@ For more information about rate limiting configuration options, see [Rate limits
 
 Agentgateway exposes token usage as Prometheus metrics on its stats endpoint, which listens on port `15020` by default (not the `15000` admin port). The `agentgateway_gen_ai_client_token_usage` metric is a histogram that records the tokens used per request.
 
-By default, this metric is broken down by dimensions such as the model (`gen_ai_request_model`) and token type (`gen_ai_token_type`), but *not* by key. To attribute usage to each virtual key, add a `user_id` label that reads the `user` metadata from the authenticated key, then query Prometheus.
+By default, this metric is broken down by dimensions such as the model (`gen_ai_request_model`) and token type (`gen_ai_token_type`), but *not* by key. To attribute usage to each virtual key, add a label such as `user_id` that reads the `user` metadata from the authenticated key, then query Prometheus.
 
-{{< callout type="info" >}}
-The token usage metric only appears after a request *succeeds* and the LLM returns a usage count. Requests that are rejected (for example, a `401` from an invalid key or a `429` from the rate limit) never reach the LLM, so they do not produce token usage metrics.
-{{< /callout >}}
+> [!NOTE]
+> The token usage metric only appears after a request *succeeds* and the LLM returns a usage count. Requests that are rejected (for example, a `401` from an invalid key or a `429` from the rate limit) never reach the LLM, so they do not produce token usage metrics.
 
 ### Add a per-key metric label
+
+You can add a per-key metric label such as to track metrics by user ID. Note that the `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
 
 1. Update your configuration to add a `user_id` metric label. The `add` field maps a label name to a CEL expression that is evaluated per request. Use `apiKey.user` to read the `user` metadata from the authenticated key. This example builds on the previous configuration.
 
@@ -460,10 +461,6 @@ The token usage metric only appears after a request *succeeds* and the LLM retur
    | -- | -- |
    | `config.metrics.fields.add` | A map of metric label names to CEL expressions. Each expression is evaluated per request and its result is attached as a Prometheus label on the metrics. |
    | `user_id: apiKey.user` | Adds a `user_id` label whose value is the `user` metadata from the authenticated API key. If the expression cannot be evaluated (for example, on an unauthenticated request), the label value is `unknown`. |
-
-   {{< callout type="warning" >}}
-   The `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
-   {{< /callout >}}
 
 2. Restart agentgateway with the updated configuration, then send successful requests with each key so the metrics have per-key data to report. Because the earlier rate-limit budget is small, raise `maxTokens` or wait for the bucket to refill so the requests are not rejected.
 
@@ -512,33 +509,127 @@ The raw curl output in the previous step is a quick sanity check, but it returns
      prom/prometheus
    ```
 
-3. Verify that Prometheus is scraping agentgateway. Open [http://localhost:9090/targets](http://localhost:9090/targets) and confirm that the `agentgateway` target is **UP**.
+3. Verify that Prometheus is scraping agentgateway. Open [http://localhost:9090/targets](http://localhost:9090/targets) and confirm that the `agentgateway` target is **UP**. You might need to restart the container or refresh the page.
 
-4. Query token usage per key. Open the [Prometheus expression browser](http://localhost:9090/graph) and run a PromQL query, or send the query to the Prometheus HTTP API with curl.
+   {{< reuse-image-light src="img/prom-agw.png">}}
+   {{< reuse-image-dark srcDark="img/prom-agw-dark.png">}}
 
+4. Query token usage per key. The following query returns the total tokens consumed by each virtual key. The token usage metric carries a separate series per token type, so match both `input` and `output` in a *single* selector with `=~` and sum them. 
+   
+   {{< tabs >}}
+   {{% tab name="Query"%}}
+   ```promql
+   sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"})
+   ```
+   {{% /tab %}}
+   {{% tab name="Prometheus UI"%}}
+   Open the [Prometheus expression browser](http://localhost:9090/query?) and run a PromQL query
+
+   {{< reuse-image-light src="img/prom-agw-query.png">}}
+   {{< reuse-image-dark srcDark="img/prom-agw-query-dark.png">}}
+
+   {{% /tab %}}
+   {{% tab name="curl"%}}
    ```sh
    curl -s http://localhost:9090/api/v1/query \
-     --data-urlencode 'query=sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"} + agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"})' \
+     --data-urlencode 'query=sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type=~"input|output"})' \
      | jq .
    ```
+   
+   Example output:
+   ```json
+   {
+     "status": "success",
+     "data": {
+       "resultType": "vector",
+       "result": [
+         {
+           "metric": {
+             "user_id": "bob"
+           },
+           "value": [
+             1783540709.896,
+             "253"
+           ]
+         },
+         {
+           "metric": {
+             "user_id": "alice"
+           },
+           "value": [
+             1783540709.896,
+             "262"
+           ]
+         }
+       ]
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
-   This returns the total tokens consumed by each virtual key.
+5. Estimate costs by multiplying token counts by your provider's pricing. Input and output tokens are usually priced differently, so aggregate each type separately, then add the two results. Each `sum by (user_id)` collapses the `gen_ai_token_type` label, so the `+` matches on `user_id`.
 
-5. Estimate costs by multiplying token counts by your provider's pricing. For example, with OpenAI GPT-3.5:
+   > [!NOTE]
+   > Queries that use `rate()` or `increase()` over a range such as `[24h]` need that much scrape history to return meaningful values. While testing locally, query the raw `_sum` counters or use a shorter range such as `[5m]`.
+   > 
+   > This query *estimates* cost for OpenAI GPT-3.5 by applying your own pricing to token counts. To have agentgateway compute the *realized* USD cost per request from a model cost catalog, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
+
+   {{< tabs >}}
+   {{% tab name="Query"%}}
 
    ```promql
    # Estimated cost per key (assuming $0.50 per 1M input tokens, $1.50 per 1M output tokens)
-   sum by (user_id) (
-     ((agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"} / 1000000) * 0.50) +
-     ((agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"} / 1000000) * 1.50)
-   )
+   sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"} / 1000000 * 0.50)
+   +
+   sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"} / 1000000 * 1.50)
    ```
+   {{% /tab %}}
+   {{% tab name="Prometheus UI"%}}
+   Open the [Prometheus expression browser](http://localhost:9090/query?) and run a PromQL query
 
-   {{< callout type="info" >}}
-   Queries that use `rate()` or `increase()` over a range such as `[24h]` need that much scrape history to return meaningful values. While testing locally, query the raw `_sum` counters or use a shorter range such as `[5m]`.
+   {{< reuse-image-light src="img/prom-agw-query-add.png">}}
+   {{< reuse-image-dark srcDark="img/prom-agw-query-add-dark.png">}}
 
-   This query *estimates* cost by applying your own pricing to token counts. To have agentgateway compute the *realized* USD cost per request from a model cost catalog, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
-   {{< /callout >}}
+   {{% /tab %}}
+   {{% tab name="curl"%}}
+   ```sh
+   curl -s http://localhost:9090/api/v1/query \
+     --data-urlencode 'query=(sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="input"} / 1000000 * 0.50))+(sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum{gen_ai_token_type="output"} / 1000000 * 1.50))' \
+     | jq .
+   ```
+   
+   Example output:
+   ```json
+   {
+     "status": "success",
+     "data": {
+       "resultType": "vector",
+       "result": [
+         {
+           "metric": {
+             "user_id": "bob"
+           },
+           "value": [
+             1783541276.199,
+             "0.0003675"
+           ]
+         },
+         {
+           "metric": {
+             "user_id": "alice"
+           },
+           "value": [
+             1783541276.199,
+             "0.000381"
+           ]
+         }
+       ]
+     }
+   }
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 ## What's next
 
