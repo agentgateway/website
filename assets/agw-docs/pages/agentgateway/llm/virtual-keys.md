@@ -538,7 +538,7 @@ The token usage metric only appears after a request *succeeds* and the LLM retur
 
 ### Before you begin {#monitor-prereqs}
 
-Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics. The [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}) walks you through the full setup; at a minimum, complete the [Prometheus step]({{< link-hextra path="/observability/otel-stack/#prometheus" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
+Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics, such as by completed the [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
 
 ### Add a per-key metric label
 
