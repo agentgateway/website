@@ -28,7 +28,7 @@ Two pieces of configuration power the dashboard:
    config:
      adminAddr: localhost:15000
      database:
-       url: "sqlite:///data.db"
+       url: "sqlite://./data.db?mode=rwc"
      modelCatalog:
      - file: ./costs/catalog.json
    llm:
