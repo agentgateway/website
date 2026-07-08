@@ -47,32 +47,9 @@ For example, the standalone agentgateway configuration defines the synthetic
 service in `services`, and the route backend references it as
 `default/my-model`.
 
-```yaml
-services:
-- name: my-model
-  namespace: default
-  hostname: my-model
-  vips: []
-  ports:
-    8000: 8000
 
-binds:
-- port: 8081
-  listeners:
-  - routes:
-    - backends:
-      - service:
-          name: default/my-model
-          port: 8000
-        policies:
-          inferenceRouting:
-            endpointPicker:
-              host: 127.0.0.1:9002
-            destinationMode: passthrough
-```
-
-For more examples, see the [standalone EPP example](https://github.com/agentgateway/agentgateway/blob/main/examples/standalone-epp/README.md).
+{{% github-yaml url="https://agentgateway.dev/examples/llm-standalone-epp/config.yaml" %}}
 
 {{< cards>}}
-  {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/guides/standalone/#deploy-as-a-standalone-request-scheduler" title="Deploy a standalone request scheduler" icon="external-link" >}}
+  {{< card link="https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md" title="Agentgateway llm-standalone-epp example" icon="external-link" >}}
 {{< /cards >}}

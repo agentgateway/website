@@ -299,3 +299,30 @@ llm:
 EOF
 agentgateway -f config4-simplified.yaml --validate-only
 {{< /doc-test >}}
+
+## AWS AgentCore
+
+The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. AgentCore is a routing-based backend, so it is configured under `binds`.
+
+Agentgateway derives the connection details from the `agentRuntimeArn` value: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path set to the runtime's invocation endpoint. Agentgateway signs each request with AWS SigV4 by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the environment.
+
+The following configuration is from the [`traffic-aws-agentcore` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-aws-agentcore) in the agentgateway repository.
+
+{{% github-yaml url="https://agentgateway.dev/examples/traffic-aws-agentcore/config.yaml" %}}
+
+| Setting | Description |
+| -- | -- |
+| `agentRuntimeArn` | The ARN of the AgentCore agent runtime to invoke, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`. |
+| `qualifier` | Optional runtime version or endpoint qualifier to invoke. If unset, the default endpoint is used. |
+| `policies.requestHeaderModifier` | Optional headers to set before the request is sent upstream, such as the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header that identifies the user to the AgentCore runtime. |
+
+{{< doc-test paths="backends" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The AWS AgentCore backend config from the traffic-aws-agentcore example,
+#     embedded on this page, is accepted by agentgateway.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * That requests are actually signed and proxied to AgentCore at runtime —
+#     requires AWS credentials and a real agent runtime the page omits.
+curl -L https://agentgateway.dev/examples/traffic-aws-agentcore/config.yaml -o config5.yaml
+agentgateway -f config5.yaml --validate-only
+{{< /doc-test >}}
