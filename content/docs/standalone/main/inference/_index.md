@@ -51,6 +51,5 @@ service in `services`, and the route backend references it as
 {{% github-yaml url="https://agentgateway.dev/examples/llm-standalone-epp/config.yaml" %}}
 
 {{< cards>}}
-  {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/guides/standalone/#deploy-as-a-standalone-request-scheduler" title="Deploy a standalone request scheduler" icon="external-link" >}}
   {{< card link="https://github.com/agentgateway/agentgateway/blob/main/examples/llm-standalone-epp/README.md" title="Agentgateway llm-standalone-epp example" icon="external-link" >}}
 {{< /cards >}}
