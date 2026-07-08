@@ -355,6 +355,70 @@ Remote rate limits are not defined directly in agentgateway.
 Instead, agentgateway is configured to connect to an external rate limit server, and which "descriptors" to send to the server.
 The rate limit server is responsible for defining, and enforcing, the appropriate limits matching the descriptors.
 
+#### Deploy a rate limit server
+
+Agentgateway connects to any server that implements the [Envoy Rate Limit gRPC service](https://www.envoyproxy.io/docs/envoy/latest/api-v3/service/ratelimit/v3/rls.proto). The Envoy project provides a reference [`ratelimit`](https://github.com/envoyproxy/ratelimit) server that stores counters in Redis. If you already run a compatible service, skip to [Connect agentgateway to the rate limit server](#connect-agentgateway-to-the-rate-limit-server) and point `host` at it instead.
+
+The following example runs the `ratelimit` server and its Redis backing store locally with Docker Compose.
+
+1. Create a rate limit configuration for the server. The `domain` and each descriptor `key` must match the `domain` and descriptor entries that agentgateway sends (configured in the next section). This example limits each distinct `organization` value to 5,000 requests per hour.
+
+   ```yaml
+   # ratelimit-config/config.yaml
+   domain: example.com
+   descriptors:
+     - key: organization
+       rate_limit:
+         unit: hour
+         requests_per_unit: 5000
+   ```
+
+2. Create a Docker Compose file to run the rate limit server and Redis. The server loads every `*.yaml` file under the mounted config directory, and serves the gRPC API on port `8081`.
+
+   ```yaml
+   # docker-compose.yaml
+   services:
+     redis:
+       image: redis:7-alpine
+       ports: ["6379:6379"]
+
+     ratelimit:
+       image: envoyproxy/ratelimit:master
+       depends_on: [redis]
+       ports:
+         - "8081:8081"   # gRPC port that agentgateway connects to
+       environment:
+         USE_STATSD: "false"
+         LOG_LEVEL: debug
+         REDIS_SOCKET_TYPE: tcp
+         REDIS_URL: redis:6379
+         RUNTIME_ROOT: /data
+         RUNTIME_SUBDIRECTORY: ratelimit
+         RUNTIME_WATCH_ROOT: "false"
+       volumes:
+         - ./ratelimit-config:/data/ratelimit/config
+   ```
+
+3. Start the server.
+
+   ```sh
+   docker compose up -d
+   ```
+
+4. Verify that the server is running. The `ratelimit` container logs the descriptors it loaded from your config.
+
+   ```sh
+   docker compose logs ratelimit
+   ```
+
+{{< callout type="info" >}}
+Setting `LOG_LEVEL: debug` makes the server log every descriptor it receives from agentgateway at request time, which is the fastest way to confirm that your `domain` and descriptor keys line up on both sides.
+{{< /callout >}}
+
+#### Connect agentgateway to the rate limit server
+
+With the server running, configure agentgateway to connect to it and specify which descriptors to send. Each descriptor value is a [CEL expression]({{< link-hextra path="/configuration/traffic-management/transformations" >}}).
+
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -363,7 +427,7 @@ llm:
   policies:
     remoteRateLimit:
       # The address to access the rate limit server
-      host: localhost:9090
+      host: localhost:8081
       # Arbitrary 'domain' to match limits on the rate limit server
       domain: example.com
       descriptors:
@@ -391,7 +455,7 @@ mcp:
   policies:
     remoteRateLimit:
       # The address to access the rate limit server
-      host: localhost:9090
+      host: localhost:8081
       # Arbitrary 'domain' to match limits on the rate limit server
       domain: example.com
       descriptors:
@@ -421,7 +485,7 @@ binds:
     - policies:
         remoteRateLimit:
           # The address to access the rate limit server
-          host: localhost:9090
+          host: localhost:8081
           # Arbitrary 'domain' to match limits on the rate limit server
           domain: example.com
           descriptors:
@@ -459,7 +523,7 @@ binds:
     - policies:
         remoteRateLimit:
           # The address to access the rate limit server
-          host: localhost:9090
+          host: localhost:8081
           # Arbitrary 'domain' to match limits on the rate limit server
           domain: example.com
           descriptors:
@@ -483,7 +547,7 @@ llm:
   policies:
     remoteRateLimit:
       # The address to access the rate limit server
-      host: localhost:9090
+      host: localhost:8081
       # Arbitrary 'domain' to match limits on the rate limit server
       domain: example.com
       descriptors:
@@ -511,7 +575,7 @@ mcp:
   policies:
     remoteRateLimit:
       # The address to access the rate limit server
-      host: localhost:9090
+      host: localhost:8081
       # Arbitrary 'domain' to match limits on the rate limit server
       domain: example.com
       descriptors:
@@ -533,8 +597,6 @@ EOF
 agentgateway -f config3-mcp.yaml --validate-only
 {{< /doc-test >}}
 
-Each descriptor value is a [CEL expression]({{< link-hextra path="/configuration/traffic-management/transformations" >}}).
-
 #### Failure behavior
 
 By default, if the remote rate limit service is unavailable or returns an error, agentgateway **fails closed**: the request is denied with a `500 Internal Server Error`. This prevents unmetered traffic in the event of a service outage.
@@ -543,7 +605,7 @@ To allow requests through when the rate limit service is unavailable, set `failu
 
 ```yaml
 remoteRateLimit:
-  host: localhost:9090
+  host: localhost:8081
   domain: example.com
   failureMode: failOpen
   descriptors:
