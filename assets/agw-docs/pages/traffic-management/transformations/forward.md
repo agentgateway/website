@@ -6,12 +6,12 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to construct a
 
 In this example, you concatenate `request.scheme`, `request.host`, and `request.path` to build a full URL and inject it into the `x-forwarded-uri` request header before forwarding to the upstream service.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="forward"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -98,6 +98,6 @@ In this example, you concatenate `request.scheme`, `request.host`, and `request.
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="forward"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```
 

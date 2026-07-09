@@ -94,13 +94,13 @@ For more information, see the LLM provider docs:
 
 ### TrafficPolicy for Gemini, Vertex {#policy}
 
-Google uses an HTTP stream protocol which requires special handling. {{< reuse "agw-docs/snippets/agentgateway.md" >}} automatically handles this for Gemini and Vertex when you configure the route type with a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+Google uses an HTTP stream protocol which requires special handling. {{< reuse "agw-docs/snippets/agentgateway.md" >}} automatically handles this for Gemini and Vertex when you configure the route type with a {{< reuse "agw-docs/snippets/policy.md" >}}.
 
-In the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} for the HTTPRoute to the LLM provider, set the `routeType` option to `CHAT_STREAMING`, such as the following example:
+In the {{< reuse "agw-docs/snippets/policy.md" >}} for the HTTPRoute to the LLM provider, set the `routeType` option to `CHAT_STREAMING`, such as the following example:
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gemini-opt
   namespace: default

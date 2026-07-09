@@ -18,10 +18,10 @@ sequenceDiagram
 ```
 
 1. The MCP client, such as the MCP inspector tool, sends a request to the agentgateway proxy with the JWT token in the `Authorization` header. 
-2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. This policy is applied to the agentgateway proxy. 
-3. If the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, agentgateway validates these claims and either grants or denies access. 
+2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/policy.md" >}} resource. This policy is applied to the agentgateway proxy. 
+3. If the {{< reuse "agw-docs/snippets/policy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, agentgateway validates these claims and either grants or denies access. 
 4. If successfully validated and authorized, the agentgateway proxy forwards the request to the MCP backend. 
-5. The MCP backend verifies access to the MCP server tools. By default, all tool access is allowed. To limit tool access, you create another {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with the CEL expression that must be matched to view a specific tool. Consider the following sample CEL expressions: 
+5. The MCP backend verifies access to the MCP server tools. By default, all tool access is allowed. To limit tool access, you create another {{< reuse "agw-docs/snippets/policy.md" >}} with the CEL expression that must be matched to view a specific tool. Consider the following sample CEL expressions: 
    * `'mcp.tool.name == "add_issue_comment"'`: Users can only view the `add_issue_comment` tool. All other tools are hidden.
    * `'jwt.sub == "alice"'`: Only JWT tokens with a `sub=alice` claim can access tools. Because no CEL expression is provided for the type of tool, the JWT token with this claim can see all the tools that are exposed on the MCP server.
    * `'jwt.sub == "alice" && mcp.tool.name == "add_issue_comment"'`: JWT tokens with the `sub=alice` claim can access the `add_issue_comment` tool. Access to all other tools is denied. 
@@ -34,11 +34,11 @@ sequenceDiagram
 
 ## View MCP tools
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. To learn more about how JWT validation works in the agentgateway proxy and the details of this policy, see the [secure access to an MCP server]({{< link-hextra path="/mcp/mcp-access/" >}}) guide.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. To learn more about how JWT validation works in the agentgateway proxy and the details of this policy, see the [secure access to an MCP server]({{< link-hextra path="/mcp/mcp-access/" >}}) guide.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -114,11 +114,11 @@ sequenceDiagram
 
 ## Limit tool access
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your RBAC rules for the MCP tools. In the following example, you only want to allow access to the `get_me` tool if the JWT has a `sub` of `alice`. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your RBAC rules for the MCP tools. In the following example, you only want to allow access to the `get_me` tool if the JWT has a `sub` of `alice`. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt-rbac
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -163,7 +163,7 @@ sequenceDiagram
         ]
       }
       ```
-   2. Try to access a different tool, such as `search_repositories`. Verify that the request fails, because this tool is not allowed in your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. 
+   2. Try to access a different tool, such as `search_repositories`. Verify that the request fails, because this tool is not allowed in your {{< reuse "agw-docs/snippets/policy.md" >}}. 
       ```sh
       npx @modelcontextprotocol/inspector@{{< reuse "agw-docs/versions/mcp-inspector.md" >}} \
       --cli http://localhost:8080/mcp-github \
@@ -201,7 +201,7 @@ sequenceDiagram
       ```
    {{% /tab %}}
    {{% tab name="UI" %}}
-   1. Go to the MCP inspector tool, and re-connect with Alice's token. From the **Tools** tab, click **Clear**. Then click **List Tools**. Verify that you can now only see the `get_me` tool that you authorized in your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. 
+   1. Go to the MCP inspector tool, and re-connect with Alice's token. From the **Tools** tab, click **Clear**. Then click **List Tools**. Verify that you can now only see the `get_me` tool that you authorized in your {{< reuse "agw-docs/snippets/policy.md" >}}. 
    
       {{< reuse-image-light src="img/mcp-github-tool.png" >}}
       {{< reuse-image-dark srcDark="img/mcp-github-tool-dark.png" >}}
@@ -213,7 +213,7 @@ sequenceDiagram
   
    3. From the **Tools** tab, click **Clear**. Then click **List Tools**. 
 
-      Verify that you cannot see any tools. Bob's JWT token does not contain the `sub=alice` claim that is required to access the `get_me` tool. Because no other matching condition is found in the RBAC rules that you defined in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, access to all tools is denied.  
+      Verify that you cannot see any tools. Bob's JWT token does not contain the `sub=alice` claim that is required to access the `get_me` tool. Because no other matching condition is found in the RBAC rules that you defined in the {{< reuse "agw-docs/snippets/policy.md" >}}, access to all tools is denied.  
    
    
       {{< reuse-image-light src="img/mcp-github-no-tool.png" >}}
@@ -233,6 +233,6 @@ sequenceDiagram
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} github-mcp-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete HTTPRoute mcp-github -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt-rbac -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt-rbac -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

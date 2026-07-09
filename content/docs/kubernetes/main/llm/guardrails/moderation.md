@@ -15,8 +15,8 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 1. Configure the prompt guard to use OpenAI Moderation:
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: openai-prompt-guard
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -88,5 +88,5 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} openai-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} openai-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```

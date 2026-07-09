@@ -4,7 +4,7 @@ weight: 9
 description: Inject context at the gateway layer to improve LLM output accuracy on Kubernetes
 ---
 
-Improve LLM output accuracy by injecting system and user prompts at the gateway layer using {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources on Kubernetes. This centralizes prompt management so every request gets the right context without changing application code.
+Improve LLM output accuracy by injecting system and user prompts at the gateway layer using {{< reuse "agw-docs/snippets/policy.md" >}} resources on Kubernetes. This centralizes prompt management so every request gets the right context without changing application code.
 
 ## What you'll build
 
@@ -12,7 +12,7 @@ In this tutorial, you will:
 
 1. Set up a local Kubernetes cluster with agentgateway and an LLM backend
 2. Send a request without prompt enrichment and observe the raw response
-3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to automatically prepend system prompts to every request
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} to automatically prepend system prompts to every request
 4. See how gateway-injected prompts transform unstructured text into structured CSV format
 5. Override the gateway prompt on a per-request basis
 
@@ -254,12 +254,12 @@ Without a system prompt, the LLM treats this as a conversational input. You'll g
 
 ## Step 6: Add prompt enrichment with an AgentgatewayPolicy
 
-Now create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that automatically prepends a system prompt to every request on the `llm` HTTPRoute. This tells the LLM to parse unstructured text into CSV format.
+Now create an {{< reuse "agw-docs/snippets/policy.md" >}} that automatically prepends a system prompt to every request on the `llm` HTTPRoute. This tells the LLM to parse unstructured text into CSV format.
 
 ```bash
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: prompt-enrichment
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -399,8 +399,8 @@ You can also prepend user-level prompts. This is useful for adding behavioral co
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: prompt-enrichment
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

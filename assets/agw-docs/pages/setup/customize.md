@@ -19,7 +19,7 @@ You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewa
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the logging format from `text` to `json`. For other examples, see [Built-in customization]({{< link-hextra path="/setup/customize/configs/#built-in-customization" >}}). 
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: agentgateway-config
@@ -44,7 +44,7 @@ You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewa
      infrastructure:
        parametersRef:
          name: agentgateway-config
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
      listeners:
        - name: http
@@ -77,7 +77,7 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/setup/customize/configs/#overlays" >}}). 
    ```yaml {paths="customize"}
    kubectl apply --server-side -f- <<'EOF'
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: agentgateway-config
@@ -103,7 +103,7 @@ You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewaypa
      infrastructure:
        parametersRef:
          name: agentgateway-config
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
      listeners:
        - name: http
@@ -154,7 +154,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example sets up a simple direct response listener on port 3000 that returns a `200 OK` response with the body `"hello!"` for requests to the `/direct` path.
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: agentgateway-config
@@ -191,7 +191,7 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
      infrastructure:
        parametersRef:
          name: agentgateway-config
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}  
+         group: {{< reuse "agw-docs/snippets/group.md" >}}  
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}       
      listeners:
        - name: http

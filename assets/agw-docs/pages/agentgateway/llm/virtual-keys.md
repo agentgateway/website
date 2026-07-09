@@ -43,7 +43,7 @@ When a request arrives:
 
 **Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
 
-**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute, one policy silently overwrites the other based on creation order, even though both report `ACCEPTED/ATTACHED` status. There is no error to indicate that one policy's settings are not taking effect. To avoid this conflict, combine the settings that apply to the same target into a single policy. For example, this guide puts API key authentication and per-key rate limiting in one policy rather than two.
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/policy.md" >}} resources target the same Gateway or HTTPRoute, one policy silently overwrites the other based on creation order, even though both report `ACCEPTED/ATTACHED` status. There is no error to indicate that one policy's settings are not taking effect. To avoid this conflict, combine the settings that apply to the same target into a single policy. For example, this guide puts API key authentication and per-key rate limiting in one policy rather than two.
 
 ## Before you begin
 
@@ -93,7 +93,7 @@ EOF
 
 ### Configure API key authentication
 
-Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
 
 {{< tabs >}}
 {{% tab name="Single Secret (secretRef)" %}}
@@ -101,8 +101,8 @@ Reference a single Secret by name. This example uses the `llm-api-keys` Secret t
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: api-key-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -130,8 +130,8 @@ Then reference the label with `secretSelector` instead of `secretRef`.
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: api-key-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -544,12 +544,12 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
 
 You can add a per-key metric label such as to track metrics by user ID. Note that the `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: per-user-metrics
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -798,7 +798,7 @@ For more advanced rate limiting patterns, see the [budget and spend limits guide
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}

@@ -1,19 +1,19 @@
-Configure authentication for backends in Google Cloud Platform (GCP) with an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}}.
+Configure authentication for backends in Google Cloud Platform (GCP) with an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
-By default, the proxy uses ambient credentials from the cluster provider environment, such as [Workload Identity on GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity), or the `GOOGLE_APPLICATION_CREDENTIALS` environment variable set to a service account key file. To use token-based credentials, apply an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} with GCP auth to your backend.
+By default, the proxy uses ambient credentials from the cluster provider environment, such as [Workload Identity on GKE](https://cloud.google.com/kubernetes-engine/docs/how-to/workload-identity), or the `GOOGLE_APPLICATION_CREDENTIALS` environment variable set to a service account key file. To use token-based credentials, apply an {{< reuse "agw-docs/snippets/policy.md" >}} with GCP auth to your backend.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
 ## Configure GCP backend authentication
 
-Create an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} that uses GCP authentication to sign requests to your backend.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} that uses GCP authentication to sign requests to your backend.
 
 For **access token** authentication (used for most GCP services):
 
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
-kind: {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gcp-backend-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -34,7 +34,7 @@ For **ID token** authentication (used for Cloud Run and other audience-based ser
 ```yaml
 kubectl apply -f- <<EOF
 apiVersion: agentgateway.dev/v1alpha1
-kind: {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gcp-backend-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -59,5 +59,5 @@ EOF
 ## Cleanup
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} gcp-backend-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} gcp-backend-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

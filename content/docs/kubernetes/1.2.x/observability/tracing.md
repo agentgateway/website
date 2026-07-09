@@ -14,7 +14,7 @@ test:
     path: tracing
 ---
 
-Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -89,11 +89,11 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 
 ## Set up tracing
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your tracing configuration. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your tracing configuration. 
    ```yaml {paths="tracing"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: tracing
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -226,9 +226,9 @@ frontend:
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-1. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
+1. Delete the {{< reuse "agw-docs/snippets/policy.md" >}} resource.
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} tracing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
 2. Uninstall the OpenTelemetry collector.

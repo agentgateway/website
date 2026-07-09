@@ -207,12 +207,12 @@ EOF
 
 ### Step 5: Apply the guardrails policy
 
-Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that attaches MCP guardrails to the {{< reuse "agw-docs/snippets/backend.md" >}}.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches MCP guardrails to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 ```yaml {paths="mcp-guardrails"}
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: mcp-guardrails
 spec:
@@ -430,7 +430,7 @@ The guardrails callout has no deadline by default. If the ExtMCP server is slow 
 
 Apply a request timeout to the ExtMCP server. When the timeout is reached, agentgateway applies the processor's `failureMode` configuration. If `failureMode` is set to `FailClosed`, the client receives a JSON-RPC error. If the mode is set to `FailOpen`, the request proceeds without the guardrail.
 
-The timeout policy must be configured in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder for the ExtMCP server. The hostname is not used for traffic to your MCP servers, and clients continue to call the gateway on the `/mcp` path from Step 4.
+The timeout policy must be configured in an {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets the `ext-mcp` Service. A backend policy that targets a `Service` attaches only after the Service becomes part of the proxy data plane configuration, which happens when a route references it. The HTTPRoute in the following example exists only to bring the `ext-mcp` Service into the data plane configuration so that the timeout policy attaches. The `ext-mcp.internal` hostname is a placeholder for the ExtMCP server. The hostname is not used for traffic to your MCP servers, and clients continue to call the gateway on the `/mcp` path from Step 4.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -450,7 +450,7 @@ spec:
         port: 4445
 ---
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: ext-mcp-timeout
 spec:
@@ -469,8 +469,8 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-guardrails
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} ext-mcp-timeout --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-guardrails
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} ext-mcp-timeout --ignore-not-found
 kubectl delete HTTPRoute mcp
 kubectl delete HTTPRoute ext-mcp-route --ignore-not-found
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} mcp-backend

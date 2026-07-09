@@ -9,7 +9,7 @@ You can apply CEL transformations to routes for LLM providers, MCP servers, infe
 Transformations can modify the headers and body of a request or response. Each transformation is expressed as static values, built-in CEL functions, or context variables to extract and inject information.
 
 
-{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} structure for transformations:
+{{< reuse "agw-docs/snippets/policy.md" >}} structure for transformations:
 ```yaml
 traffic:
   transformation:

@@ -34,10 +34,10 @@ Review the following table for example use cases and configuration guidance.
 
 | What you want | How to configure it |
 |--------------|---------------------|
-| Cap token spend on an LLM route | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} targeting `HTTPRoute`, `local[].tokens`. |
+| Cap token spend on an LLM route | {{< reuse "agw-docs/snippets/policy.md" >}} targeting `HTTPRoute`, `local[].tokens`. |
 | Limit requests independently of tokens | Add a second `local[]` entry with `requests`. |
 | Streaming-safe token limits | No special config — token limits are always applied post-stream. |
-| Hard token ceiling across the gateway | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} targeting `Gateway`, `local[].tokens`. |
+| Hard token ceiling across the gateway | {{< reuse "agw-docs/snippets/policy.md" >}} targeting `Gateway`, `local[].tokens`. |
 | Per-minute vs per-hour budget | Change `unit` — use `Minutes` for tighter windows, `Hours` for daily-style quotas. |
 
 Also, check out the rate limiting guides for other use cases:
@@ -57,8 +57,8 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 
    ```yaml {paths="llm-token-rate-limit"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: llm-token-budget
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -104,7 +104,7 @@ Local token rate limiting runs in-process on each agentgateway proxy replica. Th
 2. Verify the policy attached.
 
    ```sh
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}} \
      -o jsonpath='{.status.ancestors[0].conditions}' | jq .
    ```
 
@@ -251,8 +251,8 @@ You can apply both request-based and token-based limits to the same route. Both 
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: llm-combined-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -284,8 +284,8 @@ Apply a token budget across all LLM routes by targeting the Gateway resource.
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gateway-token-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -315,5 +315,5 @@ For detailed instructions on setting up global rate limiting with descriptors an
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="llm-token-rate-limit"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} llm-token-budget -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
