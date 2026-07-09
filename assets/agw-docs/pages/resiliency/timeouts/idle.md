@@ -22,8 +22,8 @@ The idle timeout is configured for entire HTTP/1 connections from a downstream s
 
    ```yaml {paths="idle-timeout"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: idle-time
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -116,7 +116,7 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
    
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} idle-time -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} idle-time -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```
 
 

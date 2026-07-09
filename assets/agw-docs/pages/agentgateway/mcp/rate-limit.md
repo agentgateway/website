@@ -40,8 +40,8 @@ Add a gateway-level policy as a hard backstop across all traffic: HTTP, MCP, and
 {{< details title="Example gateway-level policy" >}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gateway-ceiling
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -70,11 +70,11 @@ Review the following table for example use cases and configuration guidance.
 
 | What you want | How to configure it |
 |--------------|---------------------|
-| Cap tool call sessions per second | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} on `HTTPRoute`, `local[].requests`. Remember ~5 HTTP requests per session. |
+| Cap tool call sessions per second | {{< reuse "agw-docs/snippets/policy.md" >}} on `HTTPRoute`, `local[].requests`. Remember ~5 HTTP requests per session. |
 | Allow burst for session initialization | Add `burst` because each session needs several requests before the first tool call runs. |
-| Hard ceiling across all gateway traffic | {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} on `Gateway`, `local[].requests`. |
+| Hard ceiling across all gateway traffic | {{< reuse "agw-docs/snippets/policy.md" >}} on `Gateway`, `local[].requests`. |
 | Per-tool rate limits (e.g. tighter for expensive tools) | Global rate limit + CEL descriptors extracting `body.method` and `body.params.name`. |
-| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} or use separate policies. |
+| Combine auth + rate limiting | Apply both `mcp.authentication` and `traffic.rateLimit` in the same {{< reuse "agw-docs/snippets/policy.md" >}} or use separate policies. |
 
 Also, check out the rate limiting guides for other use cases:
 
@@ -94,8 +94,8 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 
    ```yaml {paths="mcp-local-rate-limit"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: mcp-rate-limit
      namespace: default
@@ -135,7 +135,7 @@ Local rate limiting runs in-process on each agentgateway proxy replica. The foll
 2. Verify that the policy is attached.
 
    ```sh
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-rate-limit -n default \
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} mcp-rate-limit -n default \
      -o jsonpath='{.status.ancestors[0].conditions}' | jq .
    ```
 
@@ -346,8 +346,8 @@ The following steps show how to set up global rate limiting infrastructure and c
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: mcp-tool-ratelimit
      namespace: default
@@ -384,7 +384,7 @@ The following steps show how to set up global rate limiting infrastructure and c
 3. Verify that the policy is attached. Both `Accepted` and `Attached` must be `True`.
 
    ```sh
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-tool-ratelimit -n default \
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} mcp-tool-ratelimit -n default \
      -o jsonpath='{.status.ancestors[0].conditions}' | jq .
    ```
 
@@ -482,5 +482,5 @@ The following steps show how to set up global rate limiting infrastructure and c
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="mcp-local-rate-limit"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-rate-limit -n default
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-rate-limit -n default
 ```

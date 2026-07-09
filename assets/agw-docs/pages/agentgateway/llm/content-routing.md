@@ -133,12 +133,12 @@ This example shows how to route requests to different backends based on the `mod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
+3. Create a {{< reuse "agw-docs/snippets/policy.md" >}} resource to extract the `model` field from the request body into the `x-model` header. The transformation uses a CEL expression to parse the JSON body and extract the model field. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
    ```yaml,paths="content-routing"
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: extract-model
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -359,8 +359,8 @@ This example shows routing based on a custom `priority` field in the request bod
          filters:
            - type: ExtensionRef
              extensionRef:
-               group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
-               kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+               group: {{< reuse "agw-docs/snippets/group.md" >}}
+               kind: {{< reuse "agw-docs/snippets/policy.md" >}}
                name: extract-priority
          backendRefs:
            - name: high-priority-backend
@@ -374,8 +374,8 @@ This example shows routing based on a custom `priority` field in the request bod
          filters:
            - type: ExtensionRef
              extensionRef:
-               group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
-               kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+               group: {{< reuse "agw-docs/snippets/group.md" >}}
+               kind: {{< reuse "agw-docs/snippets/policy.md" >}}
                name: extract-priority
          backendRefs:
            - name: standard-priority-backend
@@ -385,12 +385,12 @@ This example shows routing based on a custom `priority` field in the request bod
    EOF
    ```
 
-3. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to extract the custom field. Use the `coalesce()` function to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
+3. Create a {{< reuse "agw-docs/snippets/policy.md" >}} to extract the custom field. Use the `coalesce()` function to provide a default value if the field is not present. This policy must target the Gateway with `phase: PreRouting` to run before route selection.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: extract-priority
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -452,7 +452,7 @@ When implementing content-based routing, be aware of these limitations:
 
 ```shell
 kubectl delete httproute content-routing priority-routing -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} extract-model extract-priority -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} extract-model extract-priority -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai-backend anthropic-backend high-priority-backend standard-priority-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 

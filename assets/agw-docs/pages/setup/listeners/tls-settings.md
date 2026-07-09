@@ -1,9 +1,9 @@
-Use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to configure additional TLS settings for your listeners, such as the minimum and maximum TLS version, supported cipher suites, APN protocols, and the TLS handshake timeout. 
+Use an {{< reuse "agw-docs/snippets/policy.md" >}} resource to configure additional TLS settings for your listeners, such as the minimum and maximum TLS version, supported cipher suites, APN protocols, and the TLS handshake timeout. 
 
 ```yaml {paths="tls-settings"}
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: tls-settings
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

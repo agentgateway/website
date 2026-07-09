@@ -148,11 +148,11 @@ EOF
 
 You can enable ExtProc for a particular route in an HTTPRoute resource. 
    
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enables external processing for the agentgateway-proxy.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that enables external processing for the agentgateway-proxy.
    ```yaml {paths="extproc"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: extproc
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -259,8 +259,8 @@ The default body mode is `FullDuplexStreamed`. If the external processor must in
 The following example sends headers and trailers, buffers request bodies up to the 8KB limit, skips response bodies, and allows the external processor to override later processing phases after a matching header response.
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: extproc-processing-options
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -288,8 +288,8 @@ spec:
 You can also set `processingOptions` inside a conditional ExtProc policy. Each conditional policy can use different phase settings.
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: extproc-conditional-processing
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -329,7 +329,7 @@ To send only certain requests through external processing, use the `conditional`
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} extproc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} extproc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete deployment ext-proc-grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-proc-grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

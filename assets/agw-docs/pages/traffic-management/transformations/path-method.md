@@ -19,12 +19,12 @@ Common pseudo headers include:
 
 ## Update request paths and HTTP methods
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules. The policy rewrites the path to `/post` and the method to `POST` when the `foo: bar` request header is present. When the header is absent, the path and method are unchanged.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules. The policy rewrites the path to `/post` and the method to `POST` when the `foo: bar` request header is present. When the header is absent, the path and method are unchanged.
 
    ```yaml {paths="path-method"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -162,6 +162,6 @@ Common pseudo headers include:
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="path-method"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```
 

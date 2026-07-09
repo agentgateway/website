@@ -4,7 +4,7 @@ Apply local and global rate limits to HTTP traffic to protect your backend servi
 
 Rate limiting in agentgateway protects your services from being overwhelmed by excessive traffic. A runaway automation script, a misconfigured retry loop, or a deliberate flood can exhaust your upstream's capacity in seconds. Rate limiting gives you precise control over how much traffic reaches any route or the entire gateway — without any changes to the backend.
 
-Rate limiting in agentgateway is expressed through {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources. A policy attaches to a Gateway or HTTPRoute target, and defines limits in the `spec.traffic.rateLimit` field. Gateway-level policies act as a hard ceiling on total traffic, while route-level policies provide finer-grained control.
+Rate limiting in agentgateway is expressed through {{< reuse "agw-docs/snippets/policy.md" >}} resources. A policy attaches to a Gateway or HTTPRoute target, and defines limits in the `spec.traffic.rateLimit` field. Gateway-level policies act as a hard ceiling on total traffic, while route-level policies provide finer-grained control.
 
 Additionally, you can set up local or global rate limiting, depending on whether you want limits shared across Gateway instances.
 
@@ -24,8 +24,8 @@ Target your `Gateway` resource to apply a limit across all routes. This acts as 
 {{< details title="Example gateway policy" >}}
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: gateway-rate-limit
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -52,8 +52,8 @@ Route-level policies take precedence over gateway-level ones for their specific 
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: httpbin-rate-limit
   namespace: httpbin
@@ -100,8 +100,8 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
 
    ```yaml {paths="local-rate-limit"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: httpbin-rate-limit
      namespace: httpbin
@@ -149,7 +149,7 @@ Local rate limiting runs entirely inside the agentgateway proxy — no external 
 2. Verify that the policy is attached.
 
    ```sh
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-rate-limit -n httpbin \
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-rate-limit -n httpbin \
      -o jsonpath='{.status.ancestors[0].conditions}' | jq .
    ```
 
@@ -273,5 +273,5 @@ To apply different rate limits based on the request, use the `conditional` field
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="local-rate-limit"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-rate-limit -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-rate-limit -n httpbin
 ```

@@ -12,7 +12,7 @@ For an overview of supported CEL expressions, see the [agentgateway docs](https:
 
 ## About this guide
 
-This guide walks you through how to set up CEL-based transformations for the OpenAI LLM provider. Note that you can use the same {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to apply transformations to MCP server, inference, or agent routes. 
+This guide walks you through how to set up CEL-based transformations for the OpenAI LLM provider. Note that you can use the same {{< reuse "agw-docs/snippets/policy.md" >}} resource to apply transformations to MCP server, inference, or agent routes. 
 
 ## Before you begin
 
@@ -24,11 +24,11 @@ Note that this guide assumes that you want to apply the policy to the OpenAI LLM
 
 ## Set up transformations
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your transformation rules. In this example, you use a CEL expression to extract the path from the request. The request path is then added to the `response-gateway` header.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your transformation rules. In this example, you use a CEL expression to extract the path from the request. The request path is then added to the `response-gateway` header.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -104,5 +104,5 @@ Note that this guide assumes that you want to apply the policy to the OpenAI LLM
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

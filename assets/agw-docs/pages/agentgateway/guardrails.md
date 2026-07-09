@@ -92,7 +92,7 @@ Example configuration file:
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agw-override
@@ -220,13 +220,13 @@ The webhook server is configured to take the following actions:
 
 ### Step 2: Configure the gateway proxy to use the webhook server {#ai-gateway}
 
-Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to use the webhook server for prompt guarding.
+Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to use the webhook server for prompt guarding.
 
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -253,7 +253,7 @@ spec:
 EOF
 ```
 
-{{% reuse "agw-docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} API docs for AI.
+{{% reuse "agw-docs/snippets/review-table.md" %}} For more prompt guard options such as custom responses, see the {{< reuse "agw-docs/snippets/policy.md" >}} API docs for AI.
 
 | Setting | Description |
 |---------|-------------|
@@ -408,8 +408,8 @@ EOF
    kubectl delete deploy,svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=ai-guardrail
    ```
 
-2. Delete the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+2. Delete the {{< reuse "agw-docs/snippets/policy.md" >}}.
 
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} openai-prompt-guard
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} openai-prompt-guard
    ```

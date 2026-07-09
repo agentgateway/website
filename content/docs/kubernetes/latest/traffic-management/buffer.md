@@ -26,14 +26,14 @@ The `maxBytes` value accepts byte-size strings such as `32Ki`, `2Mi`, or `10M`. 
 
 ## Buffer request and response bodies
 
-Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure body buffering for a Gateway, HTTPRoute, or route rule.
+Use a {{< reuse "agw-docs/snippets/policy.md" >}} to configure body buffering for a Gateway, HTTPRoute, or route rule.
 
 1. Create a policy that buffers request bodies up to `64Ki` and response bodies up to `256Ki`.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: body-buffer
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -54,7 +54,7 @@ Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure body buffe
 2. Review the policy.
 
    ```sh
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} body-buffer -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} body-buffer -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o yaml
    ```
 
 ## Cleanup
@@ -62,5 +62,5 @@ Use a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to configure body buffe
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} body-buffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} body-buffer -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

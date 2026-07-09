@@ -8,7 +8,7 @@ When you use API keys, your services are only as secure as the API keys. Storing
 
 ## API key auth in agentgateway
 
-The agentgateway proxy comes with built-in API key auth support via the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. To secure your services with API keys, first provide your agentgateway proxy with your API keys in the form of Kubernetes secrets. Then in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource, you refer to the secrets in one of two ways.
+The agentgateway proxy comes with built-in API key auth support via the {{< reuse "agw-docs/snippets/policy.md" >}} resource. To secure your services with API keys, first provide your agentgateway proxy with your API keys in the form of Kubernetes secrets. Then in the {{< reuse "agw-docs/snippets/policy.md" >}} resource, you refer to the secrets in one of two ways.
 
 * Specify a **label selector** that matches the label of one or more API key secrets. Labels are the more flexible, scalable approach.
 * Refer to the **name and namespace** of each secret.
@@ -58,7 +58,7 @@ sequenceDiagram
 
 ## Set up API key auth
 
-Store your API keys in a Kubernetes secret so that you can reference it in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource.
+Store your API keys in a Kubernetes secret so that you can reference it in an {{< reuse "agw-docs/snippets/policy.md" >}} resource.
 
 1. From your API management tool, generate an API key. The examples in this guide use `N2YwMDIxZTEtNGUzNS1jNzgzLTRkYjAtYjE2YzRkZGVmNjcy`.
 
@@ -92,11 +92,11 @@ Store your API keys in a Kubernetes secret so that you can reference it in an {{
    kubectl get secret apikey -n {{< reuse "agw-docs/snippets/namespace.md" >}} -oyaml
    ```
 
-4. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that configures API key authentication for all routes that the Gateway serves and reference the `apikey` secret that you created earlier. The following example uses the `Strict` validation mode, which requires request to include a valid `Authorization` header to be authenticated successfully. For other common configuration examples, see [Other configuration examples](#other-configuration-examples).
+4. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that configures API key authentication for all routes that the Gateway serves and reference the `apikey` secret that you created earlier. The following example uses the `Strict` validation mode, which requires request to include a valid `Authorization` header to be authenticated successfully. For other common configuration examples, see [Other configuration examples](#other-configuration-examples).
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: apikey-auth
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -193,7 +193,7 @@ Store your API keys in a Kubernetes secret so that you can reference it in an {{
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} apikey-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} apikey-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete secret apikey -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
@@ -233,8 +233,8 @@ EOF
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: apikey-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -258,8 +258,8 @@ By default, API key authentication is enforced during routing. Use the `PreRouti
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: apikey-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -287,8 +287,8 @@ The `Optional` mode allows requests without an API key. Use this mode only when 
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: apikey-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

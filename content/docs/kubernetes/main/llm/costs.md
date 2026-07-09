@@ -138,7 +138,7 @@ For all options, see the [`agctl costs import`]({{< link-hextra path="/reference
      infrastructure:
        parametersRef:
          name: my-agwp
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
      listeners:
        - name: http

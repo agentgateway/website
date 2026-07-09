@@ -194,8 +194,8 @@ headers — without touching the inference service itself.
 4. Apply a transformation policy that reads the model name from the request and response body and injects them as response headers.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-echo-headers
      namespace: kserve-test
@@ -266,8 +266,8 @@ headers — without touching the inference service itself.
 4. Apply a transformation policy that reads the model name from the request and response body and injects them as response headers.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-echo-headers
      namespace: kserve-test
@@ -318,7 +318,7 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
 1. Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` that points at the llm-d-inference-sim service.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: mock-llm-backend
@@ -358,7 +358,7 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
          backendRefs:
            - name: mock-llm-backend
              namespace: kserve-test
-             group: {{< reuse "agw-docs/snippets/trafficpolicy-group.md" >}}
+             group: {{< reuse "agw-docs/snippets/group.md" >}}
              kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -470,11 +470,11 @@ KServe generates the `HTTPRoute` with a plain Kubernetes `Service` as the `backe
 
 How token counting works: Agentgateway reads `usage.total_tokens` from the JSON response body returned by the inference service. Each request deducts that many tokens from the bucket. When the bucket empties, subsequent requests receive `429 Too Many Requests` until the next fill interval.
 
-1. Apply an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that caps requests at **70 tokens per minute**. The policy targets the `mock-llm-ai` route that selects the `{{< reuse "agw-docs/snippets/backend.md" >}}`.
+1. Apply an {{< reuse "agw-docs/snippets/policy.md" >}} that caps requests at **70 tokens per minute**. The policy targets the `mock-llm-ai` route that selects the `{{< reuse "agw-docs/snippets/backend.md" >}}`.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: llm-token-budget
      namespace: kserve-test
@@ -580,7 +580,7 @@ How token counting works: Agentgateway reads `usage.total_tokens` from the JSON 
 Remove the resources created in this guide.
    ```shell
    kubectl delete agentgatewaypolicy llm-token-budget -n kserve-test
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n kserve-test model-echo-headers
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n kserve-test model-echo-headers
    kubectl delete httproute mock-llm-ai -n kserve-test
    kubectl delete agentgatewaybackend mock-llm-backend -n kserve-test
    kubectl delete inferenceservice mock-llm -n kserve-test

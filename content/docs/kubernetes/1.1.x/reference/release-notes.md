@@ -19,12 +19,12 @@ For more details, review the [GitHub release notes in the agentgateway repositor
 
 MCP authentication is configured at the traffic (route) level using `traffic.jwtAuthentication` with the `mcp` extension field, instead of the previous `backend.mcp.authentication` field. The route-level placement aligns MCP auth with standard JWT authentication and allows JWT claims to be used in other traffic policies such as authorization, rate limiting, and transformations.
 
-* **Before**: MCP authentication was configured under `backend.mcp.authentication`, targeting an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}. This previous `backend.mcp.authentication` field is deprecated but continues to work for backward compatibility. If both are set on the same route, the backend-level configuration is ignored.
+* **Before**: MCP authentication was configured under `backend.mcp.authentication`, targeting an {{< reuse "agw-docs/snippets/backend.md" >}}. This previous `backend.mcp.authentication` field is deprecated but continues to work for backward compatibility. If both are set on the same route, the backend-level configuration is ignored.
 * **After**: MCP authentication is configured under `traffic.jwtAuthentication` with an `mcp` field, targeting an HTTPRoute, such as in the following example. For more information, see [Set up MCP auth]({{< link-hextra path="/mcp/auth/setup/" >}}).
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: mcp-authn
 spec:

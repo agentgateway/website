@@ -5,11 +5,11 @@ description: Learn about the different policy sections.
 test: skip
 ---
 
-The {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} custom resource lets you apply traffic management, security, observability, and backend connection policies to your agentgateway resources.
+The {{< reuse "agw-docs/snippets/policy.md" >}} custom resource lets you apply traffic management, security, observability, and backend connection policies to your agentgateway resources.
 
 ## Policy sections
 
-Each {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} has three top-level sections in the `spec` field that control different stages of request processing. You can include one or more of these sections in a single policy.
+Each {{< reuse "agw-docs/snippets/policy.md" >}} has three top-level sections in the `spec` field that control different stages of request processing. You can include one or more of these sections in a single policy.
 
 | Section | Description | Available fields |
 | -- | -- | -- |

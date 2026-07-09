@@ -9,12 +9,12 @@ Use [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) to encode and 
 
 In this example, you read a plain-text request header and add its base64-encoded value as a response header.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that reads the `x-user-id` request header and encodes it to base64 before adding it as the `x-user-id-encoded` response header.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that reads the `x-user-id` request header and encodes it to base64 before adding it as the `x-user-id-encoded` response header.
 
    ```yaml {paths="encode"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -101,12 +101,12 @@ In this example, you read a plain-text request header and add its base64-encoded
 
 In this example, you take the encoded value from the encode example (`dXNlcjEyMw==`) and decode it back to its original plain-text value.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that reads the `x-user-id-encoded` request header, decodes it from base64, and adds the result as the `x-user-id-decoded` response header.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that reads the `x-user-id-encoded` request header, decodes it from base64, and adds the result as the `x-user-id-decoded` response header.
 
    ```yaml {paths="decode"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -184,6 +184,6 @@ In this example, you take the encoded value from the encode example (`dXNlcjEyMw
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="encode,decode"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```
 

@@ -1,11 +1,11 @@
-Update the `api-key-auth` {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} from the previous step to also enforce a per-user token budget.
+Update the `api-key-auth` {{< reuse "agw-docs/snippets/policy.md" >}} from the previous step to also enforce a per-user token budget.
 
 The policy sends a per-user token cost to the rate limit server. It extracts the `user_id` from each API key and reports the token usage of each response under that descriptor. The rate limit server holds the actual budget (100 tokens per day per user), which you deploy in the next step.
 
 ```yaml,paths="virtual-keys-with-ratelimit"
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: api-key-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
