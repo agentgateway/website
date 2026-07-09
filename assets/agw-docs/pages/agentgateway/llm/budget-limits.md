@@ -40,7 +40,7 @@ flowchart TD
 
 **Evaluation order**: Rate limiting is evaluated *before* prompt guards (content safety checks). This means that requests rejected by guardrails (403 Forbidden) still consume quota from the user's token budget. In contrast, authentication (JWT/OPA) is evaluated before rate limiting, so unauthenticated requests do not consume quota.
 
-**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
+**Multiple policies**: When multiple {{< reuse "agw-docs/snippets/policy.md" >}} resources target the same Gateway or HTTPRoute with overlapping `backend.ai` fields, one policy silently overwrites the other based on creation order. Both policies will show `ACCEPTED/ATTACHED` status. To avoid conflicts, use separate policies for different configuration areas (such as one for authentication, one for rate limiting, one for prompt guards).
 
 ## Before you begin
 
@@ -54,11 +54,11 @@ Complete the [Virtual key management]({{< link-hextra path="/llm/virtual-keys/" 
 
 Apply different budgets to different routes, such as higher limits for production and lower limits for development.
 
-1. Create separate {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resources for each HTTPRoute instead of targeting the Gateway.
+1. Create separate {{< reuse "agw-docs/snippets/policy.md" >}} resources for each HTTPRoute instead of targeting the Gateway.
 
    ```yaml
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: prod-token-budget
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -118,8 +118,8 @@ Use local rate limiting instead of global for simpler setups that don't require 
 {{< /callout >}}
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: local-token-budget
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

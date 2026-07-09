@@ -12,11 +12,11 @@ Keep the TCP connection alive by sending out probes after the connection has bee
 
 ### Set up TCP keepalive
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies TCP keepalive settings to the httpbin service. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies TCP keepalive settings to the httpbin service. 
    ```yaml {paths="tcp-keepalive"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: httpbin-keepalive
      namespace: httpbin
@@ -138,7 +138,7 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="tcp-keepalive"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-keepalive -n httpbin
 ```
 
 ## HTTP keepalive {#http-keepalive}
@@ -147,11 +147,11 @@ Keep the HTTP connection alive by sending out probes after the connection has be
 
 ### Set up HTTP keepalive
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies HTTP keepalive settings on the agentgateway proxy. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies HTTP keepalive settings on the agentgateway proxy. 
    ```yaml {paths="http-keepalive"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: httpbin-keepalive
      namespace: httpbin
@@ -274,7 +274,7 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="http-keepalive"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-keepalive -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-keepalive -n httpbin
 ```
 
 

@@ -18,7 +18,7 @@ For logging, CEL exposes these variable groups when enabled or applicable:
 * **LLM**: model, provider, token counts, and optional prompt/completion
 * **MCP**: tool, prompt, and resource name and target
 
-Use the `filter` field in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to define the requests that you want to apply your access log policy to. For example, you might want to apply the policy only to specific paths or response codes. Then, use the `attributes` list to add or remove fields from the access logs by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
+Use the `filter` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to define the requests that you want to apply your access log policy to. For example, you might want to apply the policy only to specific paths or response codes. Then, use the `attributes` list to add or remove fields from the access logs by using CEL expressions. For the full variable table, available functions, and examples, see the [CEL expressions reference]({{< link-hextra path="/reference/cel/" >}}).
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
@@ -27,12 +27,12 @@ Use the `filter` field in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
 
 You can set up access logs to write to a standard (stdout/stderr) stream. The following example writes access logs to a stdout stream in the `agentgateway-proxy` gateway.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails with a 404 HTTP response code. It also adds the actual response code to the log entry. This policy does not apply to requests that return a response code other than 404.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource to define your access logging rules. The following example writes access logs to the `stdout` stream of the gateway proxy container when a request fails with a 404 HTTP response code. It also adds the actual response code to the log entry. This policy does not apply to requests that return a response code other than 404.
 
    ```yaml {linenos=table,paths="access-logging"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: access-logs
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -163,7 +163,7 @@ You can set up access logs to write to a standard (stdout/stderr) stream. The fo
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following command.
 
 ```sh {paths="access-logging"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} access-logs -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 

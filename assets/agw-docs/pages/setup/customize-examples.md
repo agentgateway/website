@@ -12,7 +12,7 @@ Add custom environment variables to the agentgateway container. To set a default
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -35,7 +35,7 @@ Use the `image` config to specify a custom container image, such as in airgapped
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -64,7 +64,7 @@ spec:
 Change the logging format from `text` to `json`. 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -81,7 +81,7 @@ Configure CPU and memory requests and limits for the agentgateway container.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -107,7 +107,7 @@ Set a specific number of replicas for the agentgateway deployment.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -125,7 +125,7 @@ Add image pull secrets to pull container images from private registries.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -146,7 +146,7 @@ OpenShift manages security contexts through Security Context Constraints (SCCs).
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -172,7 +172,7 @@ Configure custom security settings for the pod and containers.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -195,7 +195,7 @@ Configure node selectors, affinities, tolerations, and topology spread constrain
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -239,7 +239,7 @@ Configure automatic scaling based on CPU utilization. The HPA resource is create
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -268,7 +268,7 @@ Configure a Pod Disruption Budget to ensure that at least one instance of your a
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -289,7 +289,7 @@ Mount a custom ConfigMap to the `agentgateway` container that runs inside your a
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -318,7 +318,7 @@ Use `$patch: replace` to completely replace a list of volumes instead of merging
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -347,7 +347,7 @@ Add custom labels and annotations to deployments, pods, and services.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -383,7 +383,7 @@ Remove a default label by setting it to `null`. Use `kubectl apply --server-side
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -404,7 +404,7 @@ Replace the default service ports with custom port configurations.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -431,7 +431,7 @@ Configure graceful shutdown timeouts using the `shutdown` config.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -449,7 +449,7 @@ Assign a static IP address to the LoadBalancer service.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -467,7 +467,7 @@ Configure GKE-specific features like Regional Backend Services (RBS) and static 
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -491,7 +491,7 @@ Configure AWS-specific load balancer features using service annotations.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -517,7 +517,7 @@ Configure Azure-specific load balancer features using service annotations.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -540,7 +540,7 @@ Add init containers that run before the main agentgateway container starts.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -566,7 +566,7 @@ Add sidecar containers alongside the main agentgateway container.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config
@@ -593,7 +593,7 @@ Add annotations to the ServiceAccount for a cloud provider IAM integration, such
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
 metadata:
   name: agentgateway-config

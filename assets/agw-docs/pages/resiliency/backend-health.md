@@ -17,12 +17,12 @@ When every endpoint of a backend is evicted, the load balancer falls back to ret
 
 The following example evicts an httpbin endpoint after it returns three consecutive `5xx` responses, keeps it out of the pool for 30 seconds, and then restores it with full health. Restoring full health does not guarantee that the endpoint has recovered. If it keeps failing, it is evicted again, but each subsequent eviction lasts longer because the `duration` uses a multiplicative backoff. This backoff prevents a tight evict-restore-fail loop from sending a steady stream of traffic to a persistently broken endpoint. To restore the endpoint more cautiously, set `restoreHealth` below 100 so that it returns with a degraded health score and receives less traffic until it proves healthy.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies backend health settings to the httpbin Service. Because the policy targets a Service, create it in the same namespace as the Service.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies backend health settings to the httpbin Service. Because the policy targets a Service, create it in the same namespace as the Service.
 
    ```yaml {paths="backend-health"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: httpbin-health
      namespace: httpbin
@@ -166,5 +166,5 @@ The following example evicts an httpbin endpoint after it returns three consecut
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} httpbin-health -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} httpbin-health -n httpbin
 ```

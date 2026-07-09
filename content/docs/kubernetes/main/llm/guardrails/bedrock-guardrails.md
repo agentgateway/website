@@ -52,8 +52,8 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 4. Configure the prompt guard. Add the ID, version, and region of your guardrail. 
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: openai-prompt-guard
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -161,7 +161,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} openai-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} openai-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 kubectl delete secret aws-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```
     

@@ -1,5 +1,5 @@
 
-[Basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) sends encoded user credentials in a standard header within the request. The agentgateway proxy authenticates the request against a dictionary of usernames and passwords that is stored in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. If the credentials in the `Authorization` request header match the credentials in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource, the request is authenticated and forwarded to the destination. If not, the proxy returns a 401 response.
+[Basic authentication](https://en.wikipedia.org/wiki/Basic_access_authentication) sends encoded user credentials in a standard header within the request. The agentgateway proxy authenticates the request against a dictionary of usernames and passwords that is stored in an {{< reuse "agw-docs/snippets/policy.md" >}} resource. If the credentials in the `Authorization` request header match the credentials in the {{< reuse "agw-docs/snippets/policy.md" >}} resource, the request is authenticated and forwarded to the destination. If not, the proxy returns a 401 response.
 
 The following diagram illustrates the flow: 
 
@@ -62,11 +62,11 @@ The agentgateway proxy requires the password that the user uses to authenticate 
    * Salt: `TYiryv0/`
    * Hashed password: `8BvzLUO9IfGPGGsPnAgSu1`
 
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your basic auth policy. The following example uses the `Strict` validation mode, which requires request to include a valid `Authorization` header to be authenticated successfully. For other common configuration examples, see [Other configuration examples](#other-configuration-examples).  
+2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your basic auth policy. The following example uses the `Strict` validation mode, which requires request to include a valid `Authorization` header to be authenticated successfully. For other common configuration examples, see [Other configuration examples](#other-configuration-examples).  
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: basic-auth
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -174,7 +174,7 @@ The agentgateway proxy requires the password that the user uses to authenticate 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} basic-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} basic-auth -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 
 ## Other configuration examples
@@ -187,8 +187,8 @@ Add multiple users by including additional entries in the `users` array.
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: basic-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -213,8 +213,8 @@ Set a custom realm that appears in the [realm name](https://developer.mozilla.or
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: basic-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -238,8 +238,8 @@ By default, basic auth is enforced during routing. Use the `PreRouting` phase to
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: basic-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -267,8 +267,8 @@ The `Optional` mode allows requests without credentials. Use this mode only when
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: basic-auth
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

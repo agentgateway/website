@@ -6,13 +6,13 @@ Secure your applications with JSON Web Token (JWT) authentication by using the a
 
 ## Set up JWT authentication
 
-Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to validate JWTs using a remote JWKS endpoint from Keycloak. This approach is recommended for production as it supports automatic key rotation.
+Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to validate JWTs using a remote JWKS endpoint from Keycloak. This approach is recommended for production as it supports automatic key rotation.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with JWT authentication configuration.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with JWT authentication configuration.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt-auth-policy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -60,7 +60,7 @@ Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to validate JWTs
 
 2. View the details of the policy. Verify that the policy is accepted.
    ```sh
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json | jq '.status'
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o json | jq '.status'
    ```
 
 ## Verify JWT authentication
@@ -143,7 +143,7 @@ Now that JWT authentication is configured, test the setup by obtaining a token f
 
 ## Other JWT auth examples
 
-Review other common JWT auth configuration examples that you can add to your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+Review other common JWT auth configuration examples that you can add to your {{< reuse "agw-docs/snippets/policy.md" >}}.
 
 ### Multiple JWT providers
 
@@ -272,6 +272,6 @@ traffic:
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete ns keycloak
 ```

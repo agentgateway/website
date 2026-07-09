@@ -18,14 +18,14 @@ Regex-based prompt guards let you inspect LLM requests and responses against cus
 
 ### Custom regex patterns
 
-Use the `regex.matches` field in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to define the regex pattern that you want to use to detect credentials, secrets, or application-specific sensitive data. 
+Use the `regex.matches` field in the {{< reuse "agw-docs/snippets/policy.md" >}} to define the regex pattern that you want to use to detect credentials, secrets, or application-specific sensitive data. 
 
 The following example blocks requests that try to override or reset the model's system instructions with phrases like "ignore all previous instructions" or "from now on you will". This is one of the most common prompt injection techniques that are used to hijack model behavior.
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -60,15 +60,15 @@ For other examples, see [Other configurations](#other-configurations).
 
 ## Block requests with PII
 
-Use the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and the `promptGuard` field to deny requests to the LLM provider that include PII, such as a `credit card` string in the request body.
+Use the {{< reuse "agw-docs/snippets/policy.md" >}} resource and the `promptGuard` field to deny requests to the LLM provider that include PII, such as a `credit card` string in the request body.
 
 
-1. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and add a custom prompt guard. The proxy blocks any requests that contain the `credit card` string in the request body. These requests are automatically denied with a custom response message.
+1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} resource and add a custom prompt guard. The proxy blocks any requests that contain the `credit card` string in the request body. These requests are automatically denied with a custom response message.
 
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: openai-prompt-guard
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -228,12 +228,12 @@ Use the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource and the `pro
 In the next step, you instruct agentgateway to mask credit card numbers that are returned by the LLM.
 
 
-1. Add the following credit card response matcher to the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. This time, use the built-in credit card regex match instead of a custom one.
+1. Add the following credit card response matcher to the {{< reuse "agw-docs/snippets/policy.md" >}} resource. This time, use the built-in credit card regex match instead of a custom one.
    
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: openai-prompt-guard
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -320,7 +320,7 @@ In the next step, you instruct agentgateway to mask credit card numbers that are
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```shell
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=agentgateway
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}} -l app=agentgateway
 ```
 
 ## Other configurations
@@ -331,8 +331,8 @@ Block requests that try to override or reset the model's system instructions wit
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -379,8 +379,8 @@ Block requests that try to unlock restricted model behavior by assigning the mod
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -427,8 +427,8 @@ Block requests that attempt to read back the model's hidden system prompt, such 
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -475,8 +475,8 @@ Reject requests that contain API keys, bearer tokens, passwords, private keys, o
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -527,8 +527,8 @@ Reject requests that ask for instructions on building weapons, synthesizing cont
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -576,8 +576,8 @@ Block requests that try to smuggle instructions past safety filters by encoding 
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -624,8 +624,8 @@ Block requests related to self-harm or suicide, hate speech targeting groups, an
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -672,8 +672,8 @@ Use agentgateway's built-in PII recognizers to reject requests that contain actu
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -724,8 +724,8 @@ Instead of rejecting requests that contain credentials, this configuration repla
 
 ```yaml
 kubectl apply -f - <<'EOF'
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: openai-prompt-guard
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
