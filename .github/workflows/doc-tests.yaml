@@ -155,7 +155,9 @@ jobs:
               # Capture the log first, then extract, so an early-exiting pipe (SIGPIPE under
               # `set -o pipefail`) can't fail the step.
               LOG=$(gh run view "$rid" --repo "$UPSTREAM" --log 2>/dev/null) || LOG=""
-              VER=$(printf '%s\n' "$LOG" | grep -oiE '0\.0\.0-alpha\.[0-9a-f]+' | head -n1) || VER=""
+              # here-string + `grep -m1` avoids a pipe, so grep can't be killed by SIGPIPE
+              # (which would fail the step under `set -o pipefail`); `|| true` covers no-match.
+              VER=$(grep -m1 -oiE '0\.0\.0-alpha\.[0-9a-f]+' <<<"$LOG" || true)
               [ -n "$VER" ] || continue
               if installable "$VER"; then
                 RESOLVED="$VER"
