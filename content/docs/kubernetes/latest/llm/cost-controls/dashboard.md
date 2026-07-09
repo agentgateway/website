@@ -95,10 +95,4 @@ In Kubernetes (xds) mode the Admin UI is read-only. You view the dashboard, but 
 
 ### Group by and measure
 
-Use the **Group by** control to break the same traffic down by **Model**, **Provider**, **User**, **Group**, or **User agent**, and toggle **Measure** between **Tokens**, **Cost**, and **Requests**. Set it to **Cost** to see realized spend in dollars. Use **Export** to pull the underlying numbers out for reporting.
-
-## What's next
-
-- [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) to configure the catalog that prices dashboard data
-- [Budget and spend limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) to enforce caps once you can see spend
-- [Metrics and logs]({{< link-hextra path="/llm/observability/" >}}) to view the same cost fields in Prometheus and access logs
+Use the **Group by** control to break the same traffic down by model, provider, user, group, or user agent*, and toggle **Measure** between tokens, cost, and requests. Set to **Cost** to see realized spend in dollars. Use **Export** to pull the underlying numbers out for reporting.

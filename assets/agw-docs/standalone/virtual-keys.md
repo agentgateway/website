@@ -625,10 +625,3 @@ The raw curl output in the previous step is a quick sanity check, but it returns
    ```
    {{% /tab %}}
    {{< /tabs >}}
-
-## What's next
-
-- [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) to price requests with a model cost catalog and expose realized USD costs
-- [LLM providers]({{< link-hextra path="/llm/providers/" >}}) for provider-specific authentication configuration
-- [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for advanced rate limiting configuration
-- [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs

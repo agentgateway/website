@@ -260,11 +260,13 @@ To budget on a single cost component instead of the total, use that field in the
 
 ## Cleanup
 
-For cleanup instructions, see the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide.
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
 
-## What's next
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
 
-- [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) for complete API key and rate limiting setup
-- [Track costs per request]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor actual spending
-- [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics
-- [Configure rate limiting]({{< link-hextra path="/llm/rate-limit/" >}}) for advanced rate limit patterns
+To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.

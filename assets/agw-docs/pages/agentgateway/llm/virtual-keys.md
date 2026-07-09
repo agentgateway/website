@@ -538,7 +538,7 @@ The token usage metric only appears after a request *succeeds* and the LLM retur
 
 ### Before you begin {#monitor-prereqs}
 
-Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics, such as by completed the [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
+Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics, such as by completing the [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
 
 ### Add a per-key metric label
 
@@ -805,10 +805,3 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse 
 ```
 
 To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
-
-## What's next
-
-- [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for detailed authentication configuration
-- [Budget and spend limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) for advanced rate limiting patterns
-- [Track costs per request]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) for cost calculation and monitoring
-- [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs

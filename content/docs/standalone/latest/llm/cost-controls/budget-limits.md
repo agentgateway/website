@@ -178,10 +178,3 @@ curl http://localhost:15020/metrics
 ```
 
 Query token usage by user with the `agentgateway_gen_ai_client_token_usage_sum` metric, or realized cost with `agw.ai.usage.cost.total`. For per-key spending queries and cost tracking, see [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/#monitor-per-key-spending" >}}) and [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
-
-## What's next
-
-- [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) for API key authentication and gateway-wide token budgets
-- [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) to price requests and populate `llm.cost` for dollar budgets
-- [Rate limits]({{< link-hextra path="/configuration/resiliency/rate-limits/" >}}) for the full rate limiting field reference
-- [Optimize cost]({{< link-hextra path="/llm/cost-controls/optimize/" >}}) to reduce spend with cheaper models and prompt caching

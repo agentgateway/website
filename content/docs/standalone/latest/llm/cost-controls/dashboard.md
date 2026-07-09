@@ -73,7 +73,7 @@ Use the **Group by** control to break the same traffic down by:
 - **Group**: spend per team or group (`agentgateway_group`).
 - **User agent**: spend per client, such as Cursor, Claude Code, or `openai-python` (`user_agent_name`).
 
-Toggle **Measure** between **Tokens**, **Cost**, and **Requests** to view the same breakdown either way. Set it to **Cost** to see realized spend in dollars.
+Toggle **Measure** between tokens, cost, and requests to view the same breakdown either way. Set it to **Cost** to see realized spend in dollars.
 
 {{< reuse-image-light src="img/ui-cost-dashboard-cost.png" alt="agentgateway Analytics dashboard measured in dollars, showing realized spend over time" >}}
 {{< reuse-image-dark srcDark="img/ui-cost-dashboard-cost-dark.png" alt="agentgateway Analytics dashboard measured in dollars, showing realized spend over time" >}}
@@ -95,13 +95,6 @@ Refresh the **Analytics** page and the request appears: tokens counted, cost cal
 ## Persistence and scaling
 
 The dashboard reads from the SQLite database at `config.database.url`. Point it at a persistent path so history survives restarts. For Helm-based deployments, the chart defaults to SQLite on a `ReadWriteOnce` volume; see [Helm deployment]({{< link-hextra path="/deployment/helm/" >}}) for storage options.
-
-## What's next
-
-- [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) to configure the catalog that prices dashboard data
-- [Observe traffic]({{< link-hextra path="/llm/observability/" >}}) to view the same cost fields in logs, metrics, and traces
-- [Budget and spend limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) to enforce caps once you can see spend
-- [Admin UI]({{< link-hextra path="/operations/ui/" >}}) for the full Admin UI reference
 
 {{< doc-test paths="cost-dashboard" >}}
 # Install agentgateway binary

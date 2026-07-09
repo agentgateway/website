@@ -190,10 +190,3 @@ To enforce per-user spending limits, combine cost tracking with rate limiting:
 3. Monitor actual spending with the metrics queries shown above to ensure rate limits align with budget goals.
 
 For more information, see the [budget and spend limits guide]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}).
-
-## What's next
-
-- [Set up budget and spend limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) to enforce per-user token budgets
-- [Set up API key authentication]({{< link-hextra path="/llm/api-keys/" >}}) to track costs per user
-- [View metrics and logs]({{< link-hextra path="/llm/observability/" >}}) for general observability
-- [Set up tracing]({{< link-hextra path="/observability/tracing/" >}}) for detailed request analysis

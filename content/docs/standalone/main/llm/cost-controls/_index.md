@@ -5,7 +5,7 @@ description: Attribute, observe, enforce, and optimize LLM spend through agentga
 test: skip
 ---
 
-Control LLM spend end to end, in four stages:
+Control LLM spend end to end, in three stages:
 
 - **Attribute**: Tie usage to teams and keys with [virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 - **Observe**: Compute the realized USD cost of every request with a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), see spend by model, provider, and user in the built-in [cost dashboard]({{< link-hextra path="/llm/cost-controls/dashboard/" >}}), and view it in metrics, logs, and traces with [Observe traffic]({{< link-hextra path="/llm/observability/" >}}).
