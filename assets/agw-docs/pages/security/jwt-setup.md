@@ -55,7 +55,7 @@ Configure an {{< reuse "agw-docs/snippets/policy.md" >}} to validate JWTs using 
    | `audiences` | List of allowed audience values. The JWT's `aud` claim must contain at least one of these values. If not specified, any audience is accepted. | `["my-application"]` |
    | `jwks.remote.jwksPath` | The path to the JWKS endpoint on the identity provider, relative to the backend root. This endpoint returns the public keys used to verify JWT signatures. | `/realms/master/protocol/openid-connect/certs` |
    | `jwks.remote.cacheDuration` | How long to cache the JWKS keys locally. This reduces load on the identity provider and improves performance. Keys are automatically refreshed when the cache expires. | `5m` (5 minutes) |
-   | `jwks.remote.backendRef` | Reference to the Kubernetes service that hosts the identity provider. Agentgateway uses this to fetch the JWKS from the identity provider. | Keycloak service |
+   | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this to fetch the JWKS from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider reached over TLS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls). | Keycloak service |
 
 
 2. View the details of the policy. Verify that the policy is accepted.
@@ -176,6 +176,65 @@ traffic:
             kind: Service
             port: 443
 ```
+
+### External identity provider over TLS
+
+When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/backend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
+
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the gateway proxy validates the provider's certificate against the system trust store.
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: okta-jwks
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     static:
+       host: myorg.okta.com
+       port: 443
+     policies:
+       tls:
+         sni: myorg.okta.com
+   EOF
+   ```
+
+2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that points `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created.
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: jwt-auth-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     # Target the Gateway to apply JWT authentication to all routes
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     # Configure JWT authentication
+     traffic:
+       jwtAuthentication:
+         mode: Strict
+         providers:
+         - issuer: "https://myorg.okta.com/oauth2/default"
+           audiences: ["my-application"]
+           jwks:
+             remote:
+               jwksPath: "/oauth2/default/v1/keys"
+               cacheDuration: "5m"
+               backendRef:
+                 group: {{< reuse "/agw-docs/snippets/group.md" >}}
+                 kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+                 name: okta-jwks
+                 port: 443
+   EOF
+   ```
+
+   {{< callout type="info" >}}
+   If the {{< reuse "/agw-docs/snippets/backend.md" >}} is in a different namespace than the {{< reuse "agw-docs/snippets/policy.md" >}}, add the `namespace` field to the `backendRef` and create a `ReferenceGrant` that permits the cross-namespace reference.
+   {{< /callout >}}
 
 ### Inline JWKS
 
