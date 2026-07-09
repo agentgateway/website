@@ -152,8 +152,10 @@ jobs:
               --status success --limit 15 --json databaseId --jq '.[].databaseId' 2>/dev/null || true)
             for rid in $RUN_IDS; do
               # The nightly records its version as `Nightly version: 0.0.0-alpha.<sha>` in the log.
-              VER=$(gh run view "$rid" --repo "$UPSTREAM" --log 2>/dev/null \
-                | grep -oE '0\.0\.0-alpha\.[0-9a-fA-F]+' | head -1)
+              # Capture the log first, then extract, so an early-exiting pipe (SIGPIPE under
+              # `set -o pipefail`) can't fail the step.
+              LOG=$(gh run view "$rid" --repo "$UPSTREAM" --log 2>/dev/null) || LOG=""
+              VER=$(printf '%s\n' "$LOG" | grep -oiE '0\.0\.0-alpha\.[0-9a-f]+' | head -n1) || VER=""
               [ -n "$VER" ] || continue
               if installable "$VER"; then
                 RESOLVED="$VER"
