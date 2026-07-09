@@ -56,7 +56,7 @@ The `/tmp` path is an ephemeral `emptyDir`, so the request-log history is per-po
      infrastructure:
        parametersRef:
          name: cost-dashboard-params
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
      listeners:
        - name: http

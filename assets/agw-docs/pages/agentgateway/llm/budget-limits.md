@@ -210,11 +210,11 @@ The budgets in the previous sections are measured in *tokens*. If you configure 
 - The rate limit `cost` expression must return an unsigned integer. Because USD costs are fractional (for example, `$0.0000057`), scale them to **micro-dollars** (USD × 1,000,000) with `uint()`. A budget of `1000000` micro-dollars equals `$1.00`.
 {{< /callout >}}
 
-1. Create a {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a global rate limit descriptor that uses `unit: Tokens` and a `cost` expression that converts the realized cost to micro-dollars. This example keys the budget on the API key's `user_id` metadata, so it builds on the API key authentication from the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide.
+1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} with a global rate limit descriptor that uses `unit: Tokens` and a `cost` expression that converts the realized cost to micro-dollars. This example keys the budget on the API key's `user_id` metadata, so it builds on the API key authentication from the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide.
 
    ```yaml
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: dollar-spend-limit
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -263,7 +263,7 @@ To budget on a single cost component instead of the total, use that field in the
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
