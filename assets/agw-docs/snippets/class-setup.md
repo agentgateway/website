@@ -25,4 +25,4 @@ spec:
 {{% /tab %}}
 {{< /tabs >}}
 
-The `kgateway.dev/kgateway` controller watches the resources in your cluster. When a Gateway resource is created that references the GatewayClass, the controller spins up an agentgateway proxy by using the configuration that is defined in the GatewayParameters resource. The controller also translates other resources, such as HTTPRoute, {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, HTTPListenerPolicy, and more, into valid agentgateway configuration, and applies the configuration to the gateway proxies it manages.
+The `kgateway.dev/kgateway` controller watches the resources in your cluster. When a Gateway resource is created that references the GatewayClass, the controller spins up an agentgateway proxy by using the configuration that is defined in the GatewayParameters resource. The controller also translates other resources, such as HTTPRoute, {{< reuse "agw-docs/snippets/policy.md" >}}, HTTPListenerPolicy, and more, into valid agentgateway configuration, and applies the configuration to the gateway proxies it manages.

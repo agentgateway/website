@@ -8,12 +8,12 @@ Learn how to return a customized response body by using [CEL expressions]({{< li
 
 In this example, you set the response body to a JSON string built from request context variables. The gateway intercepts the upstream response and replaces the body with the CEL expression result before returning it to the client. The upstream never sees the change — only the client receives the modified body. 
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that sets the response body to a JSON object containing the request path, method, and `x-request-id` header value.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that sets the response body to a JSON object containing the request path, method, and `x-request-id` header value.
 
    ```yaml {paths="inject-header-into-body"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -87,12 +87,12 @@ In this example, you set the response body to a JSON string built from request c
 
 In this example, you parse a JSON request body by using the `json()` function to extract a field and include it in the response body. Use `request.body` to access the raw incoming request body as a string.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource that reads the `name` field from the JSON request body and echoes it back in the response.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that reads the `name` field from the JSON request body and echoes it back in the response.
 
    ```yaml {paths="inject-body-field-into-body"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -167,6 +167,6 @@ In this example, you parse a JSON request body by using the `json()` function to
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="inject-header-into-body,inject-body-field-into-body"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```
 

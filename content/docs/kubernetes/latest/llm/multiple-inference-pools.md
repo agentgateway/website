@@ -12,7 +12,7 @@ This guide extends the [inference routing
 quickstart]({{< link-hextra path="/inference/#quickstart" >}}). In the
 quickstart, one `HTTPRoute` sends all inference requests to one simulated
 Qwen3 `InferencePool`. In this guide, you add a second simulated model server
-and `InferencePool`, then use an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+and `InferencePool`, then use an {{< reuse "agw-docs/snippets/policy.md" >}}
 to extract the requested model name before route matching.
 
 The example requests use OpenAI-style completions because the simulator exposes
@@ -37,7 +37,7 @@ the EPP and some related API types have also moved into llm-d.
 
 With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you do not need an
 external processing callout to BBR for this pattern. The
-{{< reuse "agw-docs/snippets/trafficpolicy.md" >}} runs as native
+{{< reuse "agw-docs/snippets/policy.md" >}} runs as native
 {{< reuse "agw-docs/snippets/agentgateway.md" >}} content-based routing before
 route selection, extracts the model name, and lets the `HTTPRoute` select the
 right `InferencePool`. This avoids an extra ext-proc hop, can reduce request
@@ -184,15 +184,15 @@ vllm-deepseek-r1    1m
 
 ## Extract the model name before routing
 
-Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that targets the
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} that targets the
 Gateway with `phase: PreRouting`. The policy reads the JSON request body,
 maps model aliases to a base model name, and writes the result to the
 `X-Gateway-Base-Model-Name` header before the `HTTPRoute` rules are evaluated.
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: inference-model-routing
 spec:
@@ -365,7 +365,7 @@ curl -i ${IP}:${PORT}/v1/chat/completions \
 
 If requests do not route as expected, check the following items.
 
-- The {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} targets the Gateway,
+- The {{< reuse "agw-docs/snippets/policy.md" >}} targets the Gateway,
   not the `HTTPRoute`, and uses `traffic.phase: PreRouting`.
 - The value in the request body `model` field exists in the policy map.
 - The header match values in the `HTTPRoute` match the base model values from
@@ -379,7 +379,7 @@ If requests do not route as expected, check the following items.
 
 ```bash
 kubectl delete httproute llm-route
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} inference-model-routing
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} inference-model-routing
 helm uninstall vllm-deepseek-r1
 kubectl delete deployment vllm-deepseek-r1
 ```

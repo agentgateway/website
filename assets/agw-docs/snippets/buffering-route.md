@@ -1,12 +1,12 @@
 ## Set up buffer limits per route
 
-You can configure connection buffer limits using a {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} to control how much data can be buffered per connection at the level of individual routes. This can provide more fine-grained control than applying the buffer limit at the Gateway, or can provide a method of overriding a buffer limit at the level of the Gateway.
+You can configure connection buffer limits using a {{< reuse "/agw-docs/snippets/policy.md" >}} to control how much data can be buffered per connection at the level of individual routes. This can provide more fine-grained control than applying the buffer limit at the Gateway, or can provide a method of overriding a buffer limit at the level of the Gateway.
 
-1. If you did not already, create a {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} called `transformation-buffer-body` that forces buffering by transforming the response from the httpbin sample app.
+1. If you did not already, create a {{< reuse "/agw-docs/snippets/policy.md" >}} called `transformation-buffer-body` that forces buffering by transforming the response from the httpbin sample app.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "/agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation-buffer-body
      namespace: httpbin
@@ -43,11 +43,11 @@ You can configure connection buffer limits using a {{< reuse "/agw-docs/snippets
    EOF
    ```
    
-3. In a separate {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}}, apply a buffer limit of `maxRequestSize: '1024'` to the httpbin app. This setting limits the request payload to 1024 bytes.
+3. In a separate {{< reuse "/agw-docs/snippets/policy.md" >}}, apply a buffer limit of `maxRequestSize: '1024'` to the httpbin app. This setting limits the request payload to 1024 bytes.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "/agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation-buffer-limit
      namespace: httpbin

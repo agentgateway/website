@@ -20,8 +20,8 @@ sequenceDiagram
 ```
 
 1. The MCP client, such as the MCP inspector tool, sends a request to the agentgateway proxy with the JWT token in the `Authorization` header. 
-2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource. This policy is applied to the agentgateway proxy. 
-3. If the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, the agentgateway proxy validates these claims and either grants or denies access. 
+2. The agentgateway proxy validates the JWT with the JWKS server that you define in the {{< reuse "agw-docs/snippets/policy.md" >}} resource. This policy is applied to the agentgateway proxy. 
+3. If the {{< reuse "agw-docs/snippets/policy.md" >}} further defines RBAC rules, such as to only grant access for JWT tokens with certain claims, the agentgateway proxy validates these claims and either grants or denies access. 
 4. If successfully validated and authorized, the agentgateway proxy forwards the request to the MCP backend. 
 
 {{< reuse "agw-docs/pages/agentgateway/mcp/mcp-auth-vs-jwt.md" >}}
@@ -37,11 +37,11 @@ For more information, see the [MCP auth docs]({{< link-hextra path="/mcp/auth/">
 
 You can configure your agentgateway proxy to validate JWT tokens that are sent by an MCP client in an `Authorization` header. 
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. In this example, you use an inline, local JSON Web Key Set (JWKS) to verify the JWT. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your JWT validation rules and apply it to the agentgateway proxy that you created before you began. In this example, you use an inline, local JSON Web Key Set (JWKS) to verify the JWT. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -254,11 +254,11 @@ You can configure your agentgateway proxy to validate JWT tokens that are sent b
 
 You can limit access to the MCP server based on specific JWT claims with CEL-based RBAC rules. 
 
-1. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to add your RBAC rules. In the following example, you use a CEL expression to only allow access to the MCP server if the JWT has the `sub=alice` claim. 
+1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} to add your RBAC rules. In the following example, you use a CEL expression to only allow access to the MCP server if the JWT has the `sub=alice` claim. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -371,7 +371,7 @@ Explore how to [control access to tools]({{< link-hextra path="/mcp/tool-access/
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} github-mcp-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete HTTPRoute mcp-github -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} jwt -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
    
 

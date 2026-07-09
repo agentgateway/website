@@ -8,12 +8,12 @@ The gateway inspects the JSON request body and fills in missing fields with defa
 
 In this example, `model` and `max_tokens` are optional. If a client omits them, the gateway adds the defaults before the request reaches the upstream.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="validate-defaults"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -103,12 +103,12 @@ Using `fail()` as the fallback in `default(expression, fail())` skips the transf
 
 In this example, the `x-user-id` request header is set from the `user_id` field in the request body. If `user_id` is present, the header is injected. If it is absent, the transformation is skipped and the header is not set.
 
-1. Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Update the {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="validate-skip"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -229,5 +229,5 @@ In this example, the `x-user-id` request header is set from the `user_id` field 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="validate-defaults,validate-skip"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin
 ```

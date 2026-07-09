@@ -789,8 +789,8 @@ _Appears in:_
 
 
 
-AwsSessionTag is an AWS STS session tag: a key/value pair passed to AssumeRole
-for cost attribution.
+AwsSessionTag is an AWS STS session tag passed to AssumeRole for cost
+attribution. Exactly one of value and expression must be set.
 
 
 
@@ -800,7 +800,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `key` _string_ | Key is the tag key. |  | MaxLength: 128 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `value` _string_ | Value is the tag value. |  | MaxLength: 256 <br />Required: \{\} <br /> |
+| `value` _string_ | Value is a static tag value. |  | MaxLength: 256 <br />Optional: \{\} <br /> |
+| `expression` _[CELExpression](#celexpression)_ | Expression is a CEL expression evaluated against each request to produce<br />the tag value, for example `jwt.sub` or `request.headers["x-app"]`. If the<br />expression does not produce a valid tag value at request time, the request<br />is rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### AzureAuth
@@ -1355,6 +1356,7 @@ _Appears in:_
 - [AttributeAdd](#attributeadd)
 - [AuthorizationExtractionLocation](#authorizationextractionlocation)
 - [AuthorizationPolicy](#authorizationpolicy)
+- [AwsSessionTag](#awssessiontag)
 - [DirectResponse](#directresponse)
 - [DirectResponseConditional](#directresponseconditional)
 - [DirectResponseHeader](#directresponseheader)

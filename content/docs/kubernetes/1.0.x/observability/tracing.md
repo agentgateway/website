@@ -3,7 +3,7 @@ title: Tracing
 weight: 90
 ---
 
-Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}.
+Integrate your agentgateway proxy with an OpenTelemetry (OTel) collector and configure custom metadata for your traces with an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 
@@ -59,11 +59,11 @@ Install an OpenTelemetry collector that the {{< reuse "agw-docs/snippets/agentga
 
 ## Set up tracing
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your tracing configuration. 
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your tracing configuration. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: tracing
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

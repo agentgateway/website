@@ -91,12 +91,12 @@ For more information, see the [CEL expression]({{< link-hextra path="/reference/
 
 ### External auth fail-closed
 
-External auth policies now fail closed when the `backendRef` to the auth server is invalid. This way, requests are rejected if the auth server cannot be reached or is misconfigured. You are affected if you have an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that specifies the `traffic.extAuth.backendRef` field as shown in the following example. 
+External auth policies now fail closed when the `backendRef` to the auth server is invalid. This way, requests are rejected if the auth server cannot be reached or is misconfigured. You are affected if you have an {{< reuse "agw-docs/snippets/policy.md" >}} that specifies the `traffic.extAuth.backendRef` field as shown in the following example. 
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
   name: gateway-ext-auth-policy
@@ -127,11 +127,11 @@ _After_: Requests to routes protected by this policy are rejected with a failure
 
 A critical correctness bug was fixed in MCP authorization. You are affected if you have an MCP authorization policy that uses `action: Deny` without any corresponding allow rules. 
 
-For example, review the following {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}. Previously, this policy denied all tool access, not just access to the `echo` tool. Starting in 1.0.0, only `echo` is denied and all other tools are allowed. 
+For example, review the following {{< reuse "agw-docs/snippets/policy.md" >}}. Previously, this policy denied all tool access, not just access to the `echo` tool. Starting in 1.0.0, only `echo` is denied and all other tools are allowed. 
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 spec:
   targetRefs:
   - group: agentgateway.dev
@@ -151,8 +151,8 @@ spec:
 The default MCP authentication mode now defaults to `Strict` mode instead of `Permissive`. Requests to MCP backends without valid credentials are rejected by default. To restore the `Permissive` behavior, see the following example:
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: permissive-mcp-auth
 spec:
@@ -254,8 +254,8 @@ You can now use the `phase: PreRouting` setting on JWT, basic auth, API key auth
 A key use case is body-based routing for LLM requests. The following example extracts the `model` field from a JSON request body and sets it as a header, which can then be used for routing decisions:
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: body-based-routing
 spec:
@@ -308,8 +308,8 @@ You can now use CEL expressions to dynamically compute and set fields in LLM req
 The following example caps `max_tokens` to 10 for all requests to the `openai` HTTPRoute:
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: cap-max-tokens
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
