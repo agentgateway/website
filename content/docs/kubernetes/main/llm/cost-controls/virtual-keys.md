@@ -4,30 +4,30 @@ weight: 10
 description: Issue API keys with per-key token budgets and cost tracking (also known as virtual keys).
 test:
   virtual-keys-auth:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/httpbun.md
+  - file: ${versionRoot}/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - file: content/docs/kubernetes/main/llm/cost-controls/virtual-keys.md
+  - file: ${versionRoot}/llm/cost-controls/virtual-keys.md
     path: virtual-keys
-  - file: content/docs/kubernetes/main/llm/cost-controls/virtual-keys.md
+  - file: ${versionRoot}/llm/cost-controls/virtual-keys.md
     path: virtual-keys-httpbun-test
   virtual-keys-ratelimit:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/llm/providers/httpbun.md
+  - file: ${versionRoot}/llm/providers/httpbun.md
     path: setup-httpbun-llm
-  - file: content/docs/kubernetes/main/security/rate-limit-global.md
+  - file: ${versionRoot}/security/rate-limit-global.md
     path: deploy-rate-limit-server
-  - file: content/docs/kubernetes/main/llm/cost-controls/virtual-keys.md
+  - file: ${versionRoot}/llm/cost-controls/virtual-keys.md
     path: virtual-keys
-  - file: content/docs/kubernetes/main/llm/cost-controls/virtual-keys.md
+  - file: ${versionRoot}/llm/cost-controls/virtual-keys.md
     path: virtual-keys-with-ratelimit
-  - file: content/docs/kubernetes/main/llm/cost-controls/virtual-keys.md
+  - file: ${versionRoot}/llm/cost-controls/virtual-keys.md
     path: virtual-keys-ratelimit-test
 ---
 

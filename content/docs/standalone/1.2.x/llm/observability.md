@@ -51,12 +51,12 @@ For more information, see the [Semantic conventions for generative AI metrics](h
    agentgateway -f config.yaml
    ```
 
-4. Send a request to the OpenAI provider. 
+4. Send a request to the OpenAI provider. In simplified LLM configuration mode, the LLM listener uses port `4000` by default (port `3000` is reserved for MCP), and requests use the OpenAI-compatible `/v1/chat/completions` path. 
    ```sh
-   curl 'http://0.0.0.0:3000/' \
+   curl http://localhost:4000/v1/chat/completions \
    --header 'Content-Type: application/json' \
-   --data ' {
-     "model": "gpt-3.5-turbo",
+   --data '{
+     "model": "gpt-4o",
      "messages": [
        {
          "role": "user",
@@ -78,7 +78,7 @@ Example for a successful request to the OpenAI LLM:
 2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
 src.addr=127.0.0.1:60862 http.method=POST http.host=localhost http.path=/openai http.version=HTTP/1.1
 http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
-gen_ai.request.model=gpt-3.5-turbo gen_ai.response.model=gpt-3.5-turbo-0125
+gen_ai.request.model=gpt-4o gen_ai.response.model=gpt-4o-2024-08-06
 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms
 ```
 
@@ -87,5 +87,5 @@ Example for a rate limited request:
 2025-12-12T21:40:18.687849Z	info	request gateway=agentgateway listener=http route=openai endpoint=api.openai.com:443
 src.addr=127.0.0.1:51794 http.method=POST http.host=localhost http.path=/openai http.version=HTTP/1.1
 http.status=429 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai
-gen_ai.request.model=gpt-3.5-turbo error=rate limit exceeded duration=206ms
+gen_ai.request.model=gpt-4o error=rate limit exceeded duration=206ms
 ```

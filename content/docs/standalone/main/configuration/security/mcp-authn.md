@@ -4,7 +4,7 @@ weight: 30
 description: Configure OAuth 2.0 protection for MCP servers with JWT validation.
 test:
   mcp-authn:
-  - file: content/docs/standalone/main/configuration/security/mcp-authn.md
+  - file: ${versionRoot}/configuration/security/mcp-authn.md
     path: mcp-authn
 ---
 

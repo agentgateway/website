@@ -4,7 +4,7 @@ weight: 10
 description: Set request and backend timeouts to prevent long-running requests.
 test:
   timeouts:
-  - file: content/docs/standalone/main/configuration/resiliency/timeouts.md
+  - file: ${versionRoot}/configuration/resiliency/timeouts.md
     path: timeouts
 ---
 

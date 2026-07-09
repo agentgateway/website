@@ -36,27 +36,29 @@
    agentgateway-proxy   1/1     1            1           6m11s
    ```
 
-3. Verify that the external IP has been created and is not `pending`.
+3. Get the address to access the agentgateway proxy. The steps depend on how your cluster exposes the proxy service.
 
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   Verify that the external IP has been created and is not `pending`.
    ```sh
    kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy
    ```
 
    Example output:
    ```txt
-   NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
-   agentgateway-proxy   LoadBalancer   172.20.200.127   <pending>     80:30752/TCP   7m6s
+   NAME                 TYPE           CLUSTER-IP       EXTERNAL-IP      PORT(S)        AGE
+   agentgateway-proxy   LoadBalancer   172.20.200.127   172.18.255.200   80:30752/TCP   7m6s
    ```
 
-4. Get the external address of the agentgateway proxy and save it in an environment variable.
-   {{< tabs >}}
-   {{% tab name="Cloud Provider LoadBalancer" %}}
+   Save the external address of the agentgateway proxy in an environment variable.
    ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $INGRESS_GW_ADDRESS
    ```
    {{% /tab %}}
    {{% tab name="Port-forward for local testing" %}}
+   For local testing, port-forward to the agentgateway proxy. Use this option if your cluster does not assign an external IP to `LoadBalancer` services, such as a default Kind cluster.
    ```sh
    kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
    ```

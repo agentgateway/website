@@ -113,6 +113,15 @@ class Extractor:
         self.visited: Set[Path] = set()
         self.recursion_edges: List[Tuple[str, str, str]] = []
 
+        # Memoization caches for link resolution. _route_for_file and
+        # _find_by_route_like_target are pure with respect to the (static)
+        # all_markdown_files set, but get called once per link per visited
+        # file. Without caching, walk() is ~O(links x files^2) of filesystem
+        # stat calls, which is pathologically slow for pages that link into
+        # densely cross-linked hub pages.
+        self._route_cache: Dict[Path, Optional[str]] = {}
+        self._target_cache: Dict[str, Optional[Path]] = {}
+
         self.all_markdown_files = [
             p
             for p in self.repo_root.rglob("*.md")
@@ -266,6 +275,13 @@ class Extractor:
         return found
 
     def _find_by_route_like_target(self, target: str) -> Optional[Path]:
+        if target in self._target_cache:
+            return self._target_cache[target]
+        result = self._find_by_route_like_target_uncached(target)
+        self._target_cache[target] = result
+        return result
+
+    def _find_by_route_like_target_uncached(self, target: str) -> Optional[Path]:
         stripped = target.strip().strip("/")
         if not stripped:
             return None
@@ -307,6 +323,13 @@ class Extractor:
         return best
 
     def _route_for_file(self, file_path: Path) -> Optional[str]:
+        if file_path in self._route_cache:
+            return self._route_cache[file_path]
+        route = self._route_for_file_uncached(file_path)
+        self._route_cache[file_path] = route
+        return route
+
+    def _route_for_file_uncached(self, file_path: Path) -> Optional[str]:
         p = file_path.resolve()
         if (self.repo_root / "content") in p.parents:
             rel = p.relative_to(self.repo_root / "content").as_posix()

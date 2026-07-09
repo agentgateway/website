@@ -69,31 +69,52 @@ The `paths=` attribute works identically to fenced blocks.
 
 On the page being tested, add a `test:` key to the YAML front matter. Each child key is a named test scenario. Each entry in the list is a `file`+`path` pair — a source file and the path selector to pull from it.
 
+### Version-relative `file:` values
+
+So that a page can be copied between `main` and `latest` without editing its front matter, prefer **version-relative** `file:` values over hardcoded paths. The runner resolves these against the page that declares the test:
+
+- **Omit `file:` entirely** when the source is the **declaring page itself**. `file:` defaults to the page that the `test:` block lives on.
+- **Use `${versionRoot}`** for sources in the **same version** as the declaring page. `${versionRoot}` expands to the path up to and including the version directory (e.g. `content/docs/kubernetes/main` for a page under `main/`). `${version}` is also available and expands to just the version segment (e.g. `main`).
+
+Both tokens are derived from the declaring page's own path, so a page copied from `main/` to `latest/` resolves every `${versionRoot}` to the new version directory with no edits. The literal-path form still works and is the right choice when an entry must point at a *different* version on purpose.
+
+> The `${...}` syntax (not `{...}`) is deliberate: a YAML value starting with `{` is parsed as a flow mapping and would need quoting, whereas a leading `$` is a plain scalar, so `${versionRoot}/...` is valid unquoted.
+
 ```yaml
 ---
 title: CORS
 test:
   cors-in-httproute:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: experimental
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/security/cors.md
-    path: cors-in-httproute
+  - path: cors-in-httproute            # file: omitted -> the declaring page
 
   cors-in-agentgatewaypolicy:
-  - file: content/docs/kubernetes/main/quickstart/install.md
+  - file: ${versionRoot}/quickstart/install.md
     path: standard
-  - file: content/docs/kubernetes/main/setup/gateway.md
+  - file: ${versionRoot}/setup/gateway.md
     path: all
-  - file: content/docs/kubernetes/main/install/sample-app.md
+  - file: ${versionRoot}/install/sample-app.md
     path: install-httpbin
-  - file: content/docs/kubernetes/main/security/cors.md
-    path: cors-in-agentgatewaypolicy
+  - path: cors-in-agentgatewaypolicy   # file: omitted -> the declaring page
 ---
 ```
+
+The literal equivalent (hardcoding `main`) is still accepted, but then copying the page to `latest` requires rewriting every `file:` line:
+
+```yaml
+  cors-in-httproute:
+  - file: content/docs/kubernetes/main/quickstart/install.md
+    path: experimental
+  - file: content/docs/kubernetes/main/security/cors.md
+    path: cors-in-httproute
+```
+
+> Token resolution currently applies to the `kubernetes` and `standalone` sections. A `file:` value that doesn't match the `content/docs/<section>/<version>/` layout is left unchanged.
 
 Multiple scenarios on the same page each get their own kind cluster and generated script.
 
@@ -445,7 +466,9 @@ On macOS, you might need to run either the `python3 scripts/doc_test_run.py` com
 
 **File paths differ between `latest` and `main`**
 
-When copying a test chain from `main` to `latest` (or vice versa), update every `file:` path in the front matter. A `main` chain references files under `content/docs/kubernetes/main/`, while `latest` uses `content/docs/kubernetes/latest/`. Using the wrong version directory causes the extractor to pull blocks from a different version's content, or fail silently if the file doesn't exist.
+Prefer version-relative `file:` values (`${versionRoot}/...`, or omit `file:` for the declaring page — see [Version-relative `file:` values](#version-relative-file-values)). A page written this way can be copied between `main` and `latest` with no front-matter edits, because the tokens resolve against the version directory of whichever page declares the test.
+
+If a chain still uses **literal** paths (e.g. `content/docs/kubernetes/main/...`), then when you copy it to `latest` you must update every `file:` line to the target version directory. Using the wrong version directory causes the extractor to pull blocks from a different version's content, or fail silently if the file doesn't exist.
 
 **Wrong prerequisite file paths**
 

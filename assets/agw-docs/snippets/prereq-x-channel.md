@@ -1,6 +1,6 @@
 1. **Important**: Install the experimental channel of the Kubernetes Gateway API to use this feature.
    ```shell
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/experimental-install.yaml
+   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version-exp.md" >}}/experimental-install.yaml
    ```
 
 2. [Upgrade]({{< link-hextra path="/operations/upgrade/" >}}) or [install]({{< link-hextra path="/install/" >}}) {{< reuse "agw-docs/snippets/kgateway.md" >}} with the `KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES` environment variable. This setting defaults to `false` and must be explicitly enabled to use Gateway API experimental features.
@@ -9,7 +9,7 @@
    ```sh
    helm upgrade -i {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}}  \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --version v{{< reuse "agw-docs/versions/n-patch.md" >}} \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
      --set controller.image.pullPolicy=Always \
      --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true
    ```

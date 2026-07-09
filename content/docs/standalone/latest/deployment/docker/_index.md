@@ -6,7 +6,6 @@ description: Overview of how to deploy agentgateway with Docker.
 
 To run agentgateway as a Docker container, agentgateway publishes official Docker images at `cr.agentgateway.dev/agentgateway`.
 
-
 ## Docker
 
 To run agentgateway with Docker, you may either mount your [configuration file]({{< link-hextra path="/configuration/" >}}) directly, or mount a directory

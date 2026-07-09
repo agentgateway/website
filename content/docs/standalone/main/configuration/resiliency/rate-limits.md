@@ -4,7 +4,7 @@ weight: 10
 description: Enforce budget and spend limits per key by controlling request and token usage.
 test:
   rate-limits:
-  - file: content/docs/standalone/main/configuration/resiliency/rate-limits.md
+  - file: ${versionRoot}/configuration/resiliency/rate-limits.md
     path: rate-limits
 ---
 
@@ -90,6 +90,11 @@ binds:
       backends:
       - host: localhost:8080
 ```
+{{< /tab >}}
+{{< tab name="traffic-ratelimiting-local example" >}}
+For a runnable version of the routing-based configuration, see the [`traffic-ratelimiting-local` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-local) in the agentgateway repository.
+
+{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-local/config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 
@@ -596,6 +601,18 @@ mcp:
 EOF
 agentgateway -f config3-mcp.yaml --validate-only
 {{< /doc-test >}}
+
+Each descriptor value is a [CEL expression]({{< link-hextra path="/configuration/traffic-management/transformations" >}}).
+
+For a complete runnable setup, including the Envoy rate limit service configuration and the Docker commands to run it with Redis, see the [`traffic-ratelimiting-global` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-ratelimiting-global) in the agentgateway repository.
+
+{{% details title="Configuration from the traffic-ratelimiting-global example" closed="true" %}}
+{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/config.yaml" %}}
+
+The example also defines the limits on the rate limit server side:
+
+{{% github-yaml url="https://agentgateway.dev/examples/traffic-ratelimiting-global/ratelimit-config.yaml" %}}
+{{% /details %}}
 
 #### Failure behavior
 

@@ -58,6 +58,12 @@ Review the following details about session management.
 
 Add the `oidc` policy to a route to protect it with browser-based OIDC authentication.
 
+Agentgateway requires the `OIDC_COOKIE_SECRET` environment variable to encrypt session cookies when an `oidc` policy is configured. Set it to a random value before you start the gateway, such as in the following example.
+
+```bash
+export OIDC_COOKIE_SECRET="$(python3 -c 'import os; print(os.urandom(32).hex())')"
+```
+
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
 ```yaml
@@ -193,6 +199,11 @@ binds:
           - profile
           - email
 ```
+{{< /tab >}}
+{{< tab name="traffic-oidc example" >}}
+For a complete runnable setup, including a Compose file that starts a preconfigured local Keycloak instance, see the [`traffic-oidc` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-oidc) in the agentgateway repository.
+
+{{% github-yaml url="https://agentgateway.dev/examples/traffic-oidc/config.yaml" %}}
 {{< /tab >}}
 {{< /tabs >}}
 

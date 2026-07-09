@@ -221,4 +221,5 @@ ls -la /var/run/tailscale/tailscaled.sock
 {{< cards >}}
   {{< card path="/configuration/security/external-authz" title="External authorization" subtitle="ExtAuthz configuration reference" >}}
   {{< card path="/configuration/security/" title="Security configuration" subtitle="Complete security options" >}}
+  {{< card link="https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-tailscale-auth" title="traffic-tailscale-auth example" subtitle="Agentgateway config example that protects a plain HTTP backend" >}}
 {{< /cards >}}

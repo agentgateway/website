@@ -4,7 +4,7 @@ weight: 16
 description: Configure simple username and password authentication for your routes.
 test:
   basic-authn:
-  - file: content/docs/standalone/main/configuration/security/basic-authn.md
+  - file: ${versionRoot}/configuration/security/basic-authn.md
     path: basic-authn
 ---
 

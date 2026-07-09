@@ -4,7 +4,7 @@ weight: 10
 description: Send copies of requests to alternative backends for shadow testing.
 test:
   mirroring:
-  - file: content/docs/standalone/main/configuration/resiliency/mirroring.md
+  - file: ${versionRoot}/configuration/resiliency/mirroring.md
     path: mirroring
 ---
 
