@@ -181,7 +181,7 @@ traffic:
 
 When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/backend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
 
-1. Create an {{< reuse "/agw-docs/snippets/agentgateway/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the gateway proxy validates the provider's certificate against the system trust store.
+1. Create an {{< reuse "/agw-docs/snippets/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the gateway proxy validates the provider's certificate against the system trust store.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
@@ -199,23 +199,37 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
    EOF
    ```
 
-2. In your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, point `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created.
+2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that points `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created.
    ```yaml
-   traffic:
-     jwtAuthentication:
-       mode: Strict
-       providers:
-       - issuer: "https://myorg.okta.com/oauth2/default"
-         audiences: ["my-application"]
-         jwks:
-           remote:
-             jwksPath: "/oauth2/default/v1/keys"
-             cacheDuration: "5m"
-             backendRef:
-               group: {{< reuse "/agw-docs/snippets/group.md" >}}
-               kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
-               name: okta-jwks
-               port: 443
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   metadata:
+     name: jwt-auth-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     # Target the Gateway to apply JWT authentication to all routes
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     # Configure JWT authentication
+     traffic:
+       jwtAuthentication:
+         mode: Strict
+         providers:
+         - issuer: "https://myorg.okta.com/oauth2/default"
+           audiences: ["my-application"]
+           jwks:
+             remote:
+               jwksPath: "/oauth2/default/v1/keys"
+               cacheDuration: "5m"
+               backendRef:
+                 group: {{< reuse "/agw-docs/snippets/group.md" >}}
+                 kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
+                 name: okta-jwks
+                 port: 443
+   EOF
    ```
 
    {{< callout type="info" >}}
