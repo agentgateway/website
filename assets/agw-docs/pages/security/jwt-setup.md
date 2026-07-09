@@ -199,11 +199,11 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
    EOF
    ```
 
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that points `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created.
+2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that points `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: jwt-auth-policy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -233,7 +233,7 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
    ```
 
    {{< callout type="info" >}}
-   If the {{< reuse "/agw-docs/snippets/backend.md" >}} is in a different namespace than the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, add the `namespace` field to the `backendRef` and create a `ReferenceGrant` that permits the cross-namespace reference.
+   If the {{< reuse "/agw-docs/snippets/backend.md" >}} is in a different namespace than the {{< reuse "agw-docs/snippets/policy.md" >}}, add the `namespace` field to the `backendRef` and create a `ReferenceGrant` that permits the cross-namespace reference.
    {{< /callout >}}
 
 ### Inline JWKS
