@@ -55,7 +55,7 @@ Configure an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to validate JWTs
    | `audiences` | List of allowed audience values. The JWT's `aud` claim must contain at least one of these values. If not specified, any audience is accepted. | `["my-application"]` |
    | `jwks.remote.jwksPath` | The path to the JWKS endpoint on the identity provider, relative to the backend root. This endpoint returns the public keys used to verify JWT signatures. | `/realms/master/protocol/openid-connect/certs` |
    | `jwks.remote.cacheDuration` | How long to cache the JWKS keys locally. This reduces load on the identity provider and improves performance. Keys are automatically refreshed when the cache expires. | `5m` (5 minutes) |
-   | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this to fetch the JWKS from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider reached over TLS, reference an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls). | Keycloak service |
+   | `jwks.remote.backendRef` | Reference to the backend that hosts the identity provider. Agentgateway uses this to fetch the JWKS from the identity provider. For an in-cluster provider, reference a Kubernetes Service. For an external provider reached over TLS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} instead. See [External identity provider over TLS](#external-identity-provider-over-tls). | Keycloak service |
 
 
 2. View the details of the policy. Verify that the policy is accepted.
@@ -179,13 +179,13 @@ traffic:
 
 ### External identity provider over TLS
 
-When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
+When your identity provider runs outside the cluster (for example, Okta, Auth0, or Microsoft Entra ID) and is served over HTTPS, reference an {{< reuse "/agw-docs/snippets/backend.md" >}} in the `jwks.remote.backendRef` instead of a Kubernetes Service. The {{< reuse "/agw-docs/snippets/backend.md" >}} sets the upstream host and TLS SNI together, so the JWKS fetch connects to the provider with the correct hostname and certificate.
 
-1. Create an {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the gateway proxy validates the provider's certificate against the system trust store.
+1. Create an {{< reuse "/agw-docs/snippets/agentgateway/backend.md" >}} for the identity provider. Set `static.host` to the provider's public hostname and `policies.tls.sni` to the same hostname. Because no `caCertificateRefs` are set, the gateway proxy validates the provider's certificate against the system trust store.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}
+   apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
    metadata:
      name: okta-jwks
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -199,7 +199,7 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
    EOF
    ```
 
-2. In your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, point `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} that you created by setting `group: agentgateway.dev` and `kind: AgentgatewayBackend`.
+2. In your {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, point `jwks.remote.backendRef` at the {{< reuse "/agw-docs/snippets/backend.md" >}} that you created.
    ```yaml
    traffic:
      jwtAuthentication:
@@ -212,14 +212,14 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
              jwksPath: "/oauth2/default/v1/keys"
              cacheDuration: "5m"
              backendRef:
-               group: agentgateway.dev
-               kind: AgentgatewayBackend
+               group: {{< reuse "/agw-docs/snippets/group.md" >}}
+               kind: {{< reuse "/agw-docs/snippets/backend.md" >}}
                name: okta-jwks
                port: 443
    ```
 
    {{< callout type="info" >}}
-   If the {{< reuse "/agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} is in a different namespace than the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, add the `namespace` field to the `backendRef` and create a `ReferenceGrant` that permits the cross-namespace reference.
+   If the {{< reuse "/agw-docs/snippets/backend.md" >}} is in a different namespace than the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, add the `namespace` field to the `backendRef` and create a `ReferenceGrant` that permits the cross-namespace reference.
    {{< /callout >}}
 
 ### Inline JWKS
