@@ -26,6 +26,7 @@ jobs:
     outputs:
       matrix: ${{ steps.list.outputs.matrix }}
       has_tests: ${{ steps.list.outputs.has_tests }}
+      dev_version: ${{ steps.dev-version.outputs.dev_version }}
     steps:
       - name: Checkout website repo
         uses: actions/checkout@v6
@@ -95,6 +96,79 @@ jobs:
         env:
           CHANGED_FILES: ${{ steps.changed-files.outputs.files }}
 
+      # Resolve an installable version for the development ("main"/experimental) install
+      # snippets. Those pages install the nightly chart pinned in
+      # assets/agw-docs/versions/patch-dev.md (normally the floating `0.0.0-latest-dev`).
+      #
+      # A failed upstream nightly (agentgateway/agentgateway) still publishes the
+      # `0.0.0-latest-dev` chart, but with an `appVersion` pointing at a proxy image whose
+      # build/push was skipped, so the image never lands in the registry. The deployer then
+      # tries to pull a `v0.0.0-alpha.<sha>` image that does not exist -> ImagePullBackOff ->
+      # every dev-channel doc test times out.
+      #
+      # We can do nothing to fix an upstream nightly, so instead of going red we resolve the
+      # newest *fully published* build: keep `0.0.0-latest-dev` when its chart's image
+      # actually exists, otherwise fall back to the most recent successful nightly's immutable
+      # `0.0.0-alpha.<sha>` chart (which has both a chart and a matching image). Any failure in
+      # this step falls back to the documented default, i.e. today's behavior.
+      - name: Resolve installable dev build version
+        id: dev-version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -uo pipefail
+          REG=cr.agentgateway.dev
+          CHART="oci://${REG}/charts/agentgateway"
+          IMG="${REG}/agentgateway"
+          UPSTREAM=agentgateway/agentgateway
+          DEFAULT=$(cat assets/agw-docs/versions/patch-dev.md)
+          RESOLVED="$DEFAULT"
+
+          # True if the container image tag exists in the registry (anonymous, public).
+          img_exists() { docker buildx imagetools inspect "${IMG}:$1" >/dev/null 2>&1; }
+
+          # Echo a chart version's appVersion, or nothing if the chart tag does not exist.
+          chart_appversion() {
+            helm show chart "$CHART" --version "$1" 2>/dev/null \
+              | awk -F': *' '/^appVersion:/ { gsub(/"/,"",$2); print $2; exit }'
+          }
+
+          # True if a chart version exists AND the proxy image its appVersion resolves to
+          # exists. The deployer prefixes the appVersion with `v` when it is absent.
+          installable() {
+            local av; av=$(chart_appversion "$1")
+            [ -n "$av" ] || return 1
+            case "$av" in
+              v*) img_exists "$av" ;;
+              *)  img_exists "v$av" || img_exists "$av" ;;
+            esac
+          }
+
+          if installable "$DEFAULT"; then
+            echo "Default dev build '$DEFAULT' is installable; using it."
+          else
+            echo "Default dev build '$DEFAULT' is not installable (broken upstream nightly?); searching last successful nightly."
+            RUN_IDS=$(gh run list --repo "$UPSTREAM" --workflow nightly.yml \
+              --status success --limit 15 --json databaseId --jq '.[].databaseId' 2>/dev/null || true)
+            for rid in $RUN_IDS; do
+              # The nightly records its version as `Nightly version: 0.0.0-alpha.<sha>` in the log.
+              VER=$(gh run view "$rid" --repo "$UPSTREAM" --log 2>/dev/null \
+                | grep -oE '0\.0\.0-alpha\.[0-9a-fA-F]+' | head -1)
+              [ -n "$VER" ] || continue
+              if installable "$VER"; then
+                RESOLVED="$VER"
+                echo "Falling back to last good nightly build '$VER' (run $rid)."
+                break
+              fi
+            done
+            if [ "$RESOLVED" = "$DEFAULT" ]; then
+              echo "No installable fallback found; leaving default '$DEFAULT' in place."
+            fi
+          fi
+
+          echo "dev_version=$RESOLVED" >> "$GITHUB_OUTPUT"
+          echo "Resolved dev build version: $RESOLVED"
+
   run-test:
     name: "${{ matrix.shard_name }}"
     needs: discover
@@ -133,6 +207,15 @@ jobs:
 
       - name: Install yamltest
         run: npm install -g yamltest@latest
+
+      # Redirect the development install snippets to the version resolved in `discover`.
+      # Only rewrites the checkout used by this run; the committed docs still ship
+      # `0.0.0-latest-dev`. No-op when the default is already installable.
+      - name: Pin dev build version
+        if: needs.discover.outputs.dev_version != '' && needs.discover.outputs.dev_version != '0.0.0-latest-dev'
+        run: |
+          printf '%s' '${{ needs.discover.outputs.dev_version }}' > assets/agw-docs/versions/patch-dev.md
+          echo "Pinned assets/agw-docs/versions/patch-dev.md to ${{ needs.discover.outputs.dev_version }} for this run."
 
       - name: Run doc tests
         env:
