@@ -57,7 +57,7 @@ Prompt caching is supported for **Amazon Bedrock** Claude 3+ and Nova models. It
 1. Configure caching with the `backend.ai.promptCaching` fields on an {{< reuse "agw-docs/snippets/policy.md" >}} resource that targets your Bedrock route.
 
    ```yaml
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: bedrock-caching-policy

@@ -213,7 +213,7 @@ The budgets in the previous sections are measured in *tokens*. If you configure 
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} with a global rate limit descriptor that uses `unit: Tokens` and a `cost` expression that converts the realized cost to micro-dollars. This example keys the budget on the API key's `user_id` metadata, so it builds on the API key authentication from the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide.
 
    ```yaml
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: dollar-spend-limit
