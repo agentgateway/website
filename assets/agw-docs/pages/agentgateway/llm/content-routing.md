@@ -462,4 +462,4 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai-backend anthr
 - Route to [multiple inference pools]({{< link-hextra path="/llm/multiple-inference-pools/" >}}) with native body-based routing
 - Set up [load balancing]({{< link-hextra path="/llm/load-balancing/" >}}) across multiple providers
 - Configure [failover]({{< link-hextra path="/llm/failover/" >}}) for high availability
-- Use [cost tracking]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor spending per route
+- Use [cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor spending per route

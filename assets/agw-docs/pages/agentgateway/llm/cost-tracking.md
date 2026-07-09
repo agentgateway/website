@@ -1,20 +1,27 @@
 Track and monitor LLM costs per request using token usage metrics.
 
 {{< callout type="info" >}}
-This guide *estimates* cost from token usage metrics by applying your own pricing model in PromQL. To have {{< reuse "agw-docs/snippets/agentgateway.md" >}} compute the *realized* USD cost of each request from a model cost catalog and expose it in logs, traces, metrics, and CEL, see [Model costs]({{< link-hextra path="/llm/costs/" >}}).
+This guide *estimates* cost from token usage metrics by applying your own pricing model in PromQL. To have {{< reuse "agw-docs/snippets/agentgateway.md" >}} compute the *realized* USD cost of each request from a model cost catalog and expose it in logs, traces, metrics, and CEL, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
 {{< /callout >}}
 
 ## About
 
-Cost tracking (also known as spend monitoring or usage tracking) helps you monitor and control expenses from LLM API calls. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} automatically tracks token consumption for every request and response, allowing you to calculate costs based on your provider's pricing model.
+Cost tracking (also known as spend monitoring or usage tracking) helps you monitor and control expenses from LLM API calls. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} automatically tracks token consumption for every request and response, which you can turn into cost in two ways.
 
-Token metrics are exposed through Prometheus metrics and OpenTelemetry traces. You can use these metrics to:
-- Calculate costs per request, per user, or per model
+| Approach | What it does | When to use it |
+|----------|--------------|----------------|
+| **Realized cost (recommended)** | {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the exact USD cost of each request from a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) and exposes it in logs, traces, metrics, and CEL as `agw.ai.usage.cost.*`, `llm.cost`, and `llm.costRates`. | You want per-request dollar cost, accurate cache and tiered pricing, and cost available to policies and access logs. |
+| **Estimated cost (this guide)** | You apply your own per-token pricing to the `agentgateway_gen_ai_client_token_usage` metric in PromQL to estimate aggregate cost. | You have no catalog configured, or you want ad hoc aggregate cost math and alerts in Prometheus without changing gateway config. |
+
+For most deployments, configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) first so that cost is computed for you. Use the PromQL approach in this guide when you need aggregate spend estimates, dashboards, or alerts on top of the raw token metrics.
+
+You can use the token metrics in this guide to:
+- Estimate costs per request, per user, or per model
 - Set up budget alerts and spending limits
 - Analyze usage patterns to optimize costs
 - Generate cost reports for chargeback or showback
 
-This guide shows you how to access token usage data and calculate costs from that data.
+This guide shows you how to access token usage data and estimate costs from that data.
 
 ## Before you begin
 
@@ -67,7 +74,11 @@ For more information about the token usage metric, see the [Semantic conventions
 
 ## Calculate costs from token metrics
 
-To calculate costs, multiply token counts by your provider's pricing. Most LLM providers charge separately for input tokens and output tokens.
+{{< callout type="info" >}}
+This section estimates cost by applying pricing that you maintain by hand. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost for you and exposes `agw.ai.usage.cost.total` in access logs and `llm.cost` in CEL, so you do not need the manual formulas below.
+{{< /callout >}}
+
+To estimate costs, multiply token counts by your provider's pricing. Most LLM providers charge separately for input tokens and output tokens.
 
 ### Common pricing models
 
@@ -111,7 +122,7 @@ If you have Prometheus set up, you can query aggregate costs using PromQL. This 
 
 ## Track costs per user
 
-To track costs per user, combine token metrics with user identification from API keys or JWT claims. For a complete example that integrates API keys, token budgets, and cost tracking, see the [virtual key management guide]({{< link-hextra path="/llm/virtual-keys/" >}}).
+To track costs per user, combine token metrics with user identification from API keys or JWT claims. For a complete example that integrates API keys, token budgets, and cost tracking, see the [virtual key management guide]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 
 1. Set up API key authentication to identify users. See the [API key management guide]({{< link-hextra path="/llm/api-keys/" >}}) for details.
 
@@ -164,21 +175,18 @@ OpenTelemetry traces include token usage as span attributes. You can view per-re
 
 3. Calculate costs using the same formula as above, using the token counts from trace attributes.
 
+{{< callout type="info" >}}
+With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) configured, traces also include the realized cost breakdown directly (`agw.ai.usage.cost.total`, `agw.ai.usage.cost.input`, `agw.ai.usage.cost.output`, `agw.ai.usage.cost.cache_read`, and so on), so you can view per-request dollar cost in your tracing backend without calculating it.
+{{< /callout >}}
+
 ## Enforce spending limits
 
 To enforce per-user spending limits, combine cost tracking with rate limiting:
 
-1. Set up token-based rate limiting with `type: TOKEN` keyed by `X-User-ID`. See the [budget and spend limits guide]({{< link-hextra path="/llm/budget-limits/" >}}).
+1. Set up token-based rate limiting with global rate limit descriptors that use `unit: Tokens`, keyed by a per-user value such as the `X-User-ID` header. See the [budget and spend limits guide]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}).
 
 2. Configure the daily token limit based on your budget. For example, a $10 daily budget for GPT-4 allows approximately 166,000 input tokens or 166,000 output tokens (assuming mixed usage).
 
 3. Monitor actual spending with the metrics queries shown above to ensure rate limits align with budget goals.
 
-For more information, see the [budget and spend limits guide]({{< link-hextra path="/llm/budget-limits/" >}}).
-
-## What's next
-
-- [Set up budget and spend limits]({{< link-hextra path="/llm/budget-limits/" >}}) to enforce per-user token budgets
-- [Set up API key authentication]({{< link-hextra path="/llm/api-keys/" >}}) to track costs per user
-- [View metrics and logs]({{< link-hextra path="/llm/observability/" >}}) for general observability
-- [Set up tracing]({{< link-hextra path="/observability/tracing/" >}}) for detailed request analysis
+For more information, see the [budget and spend limits guide]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}).

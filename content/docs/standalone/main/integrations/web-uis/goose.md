@@ -109,6 +109,6 @@ Goose can also use MCP servers as tools. To proxy and govern MCP tool calls thro
 
 {{< cards >}}
   {{< card path="/quickstart/mcp/" title="MCP quickstart" subtitle="Front an MCP server with agentgateway." >}}
-  {{< card path="/llm/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits to LLM and tool traffic." >}}
+  {{< card path="/llm/cost-controls/virtual-keys/" title="Virtual key management" subtitle="Apply rate limits to LLM and tool traffic." >}}
   {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs." >}}
 {{< /cards >}}
