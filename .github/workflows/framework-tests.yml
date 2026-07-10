@@ -1,5 +1,18 @@
 # Hugo + Hextra docs-framework harness, run against agw-oss's built site.
 #
+# One Hugo build feeds two Playwright projects (defined in docs-theme-extras'
+# playwright.config.ts):
+#   --project=static   layout / theme-behavior specs (render the theme)
+#   --project=content  scanners that depend on the consumer's real content
+#                      (markdown-leaks walks the built HTML for rendering
+#                      leaks; curl-quotes lints source markdown)
+# The `content` scanners are the reason this workflow's path filter includes
+# CONTENT paths (assets/agw-docs/**, content/**), not just layout paths: a
+# content-only PR must still run the leak scan, since that is exactly the kind
+# of PR that introduces content rendering breaks. Both projects share the same
+# build, so running the (fast, mostly fixture-bound) layout specs on a content
+# PR too costs almost nothing — not worth a second workflow to avoid.
+#
 # The harness lives in solo-io/docs-theme-extras and is checked out at the
 # version pinned in go.mod (semver tag or pseudo-version). Layouts and tests
 # stay in lockstep — bumping the module pin is one PR that updates both.
@@ -13,6 +26,10 @@ name: Framework tests
 on:
   pull_request:
     paths:
+      # Content — so the `content` scanners run on content-only PRs.
+      - 'assets/agw-docs/**'
+      - 'content/**'
+      # Layout / build inputs.
       - 'layouts/**'
       - 'static/**'
       - 'assets/css/**'
@@ -25,8 +42,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  framework-test-static:
-    name: Static checks
+  framework-test:
+    name: Static + content checks
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
@@ -98,19 +115,20 @@ jobs:
         working-directory: docs-theme-extras
         run: npm ci
 
-      - name: Run static specs
+      - name: Run static + content specs
         working-directory: docs-theme-extras
         env:
           DOCS_TEST_CONFIG: ${{ github.workspace }}/.docs-test.toml
         run: |
-          npx playwright test --project=static --reporter=list,html 2>&1 | tee playwright-output.txt
+          # One invocation runs both projects against the single build above.
+          npx playwright test --project=static --project=content --reporter=list,html 2>&1 | tee playwright-output.txt
 
       - name: Append summary to PR check
         if: always()
         working-directory: docs-theme-extras
         run: |
           {
-            echo "## Framework tests — static (informational)"
+            echo "## Framework tests (informational)"
             echo ""
             echo '```'
             tail -25 playwright-output.txt 2>/dev/null || echo "No test output captured."
@@ -121,6 +139,6 @@ jobs:
         if: always()
         uses: actions/upload-artifact@bbbca2ddaa5d8feaa63e36b76fdaad77386f024f # v7
         with:
-          name: framework-test-static-report
+          name: framework-test-report
           path: docs-theme-extras/playwright-report
           retention-days: 7
