@@ -1,4 +1,4 @@
-Exchange the incoming request's credential for a per-backend token at an OAuth authorization server before forwarding the request, by using an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} with the `oauthTokenExchange` backend authentication method.
+Exchange the incoming request's credential for a per-backend token at an OAuth authorization server before forwarding the request, by using an {{< reuse "agw-docs/snippets/policy.md" >}} with the `oauthTokenExchange` backend authentication method.
 
 ## About
 
@@ -23,9 +23,9 @@ In Kubernetes mode, agentgateway configures the token endpoint (authorization se
 
 ## Before you begin
 
-{{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
+{{< reuse "agw-docs/snippets/prereq.md" >}}
 
-3. Have an OAuth authorization server that supports token exchange (such as Keycloak, Microsoft Entra ID, Okta, Auth0, or ZITADEL), and an OAuth client registered for the gateway.
+4. Have an OAuth authorization server that supports token exchange (such as Keycloak, Microsoft Entra ID, Okta, Auth0, or ZITADEL), and an OAuth client registered for the gateway.
 
 ## Configure token exchange
 
@@ -60,12 +60,12 @@ In Kubernetes mode, agentgateway configures the token endpoint (authorization se
    EOF
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} that attaches the `oauthTokenExchange` method to your backend. The `tokenEndpoint` field references the {{< reuse "agw-docs/snippets/backend.md" >}} from step 1, and `tokenEndpointPath` (or the `path` on the reference) sets the token endpoint path.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to your backend. The `tokenEndpoint` field references the {{< reuse "agw-docs/snippets/backend.md" >}} from step 1, and `tokenEndpointPath` (or the `path` on the reference) sets the token endpoint path.
 
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: backend-token-exchange
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -175,7 +175,7 @@ Make sure the incoming credential's issuer matches the token endpoint's issuer a
 ## Cleanup
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} backend-token-exchange -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} backend-token-exchange -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} token-endpoint -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete secret oauth-client -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
