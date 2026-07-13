@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 500" font-family="Figtree, system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-labelledby="title description">
+  <title id="title">Cost-based semantic routing with agentgateway and vLLM Semantic Router</title>
+  <desc id="description">A coding agent sends model auto to agentgateway. vLLM Semantic Router selects either GPT-5.4 nano for routine coding or GPT-5.5 for complex coding. Agentgateway records catalog-priced telemetry.</desc>
+  <defs>
+    <linearGradient id="gatewayGradient" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7C3AED"/>
+      <stop offset="100%" stop-color="#6D28D9"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="6" flood-color="#0F172A" flood-opacity="0.14"/>
+    </filter>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#94A3B8" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+    </marker>
+  </defs>
+
+  <!-- Request and selection flow. -->
+  <g fill="none" stroke="#94A3B8" stroke-width="2">
+    <line x1="212" y1="224" x2="252" y2="224" marker-end="url(#arrow)"/>
+    <line x1="478" y1="224" x2="518" y2="224" marker-end="url(#arrow)"/>
+    <path d="M690,224 C719,224 724,120 756,120" marker-end="url(#arrow)"/>
+    <path d="M690,224 C719,224 724,322 756,322" marker-end="url(#arrow)"/>
+    <line x1="365" y1="296" x2="365" y2="361" marker-end="url(#arrow)"/>
+  </g>
+
+  <!-- Coding agent. -->
+  <g filter="url(#softShadow)">
+    <rect x="32" y="183" width="180" height="82" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  </g>
+  <text x="122" y="216" text-anchor="middle" font-size="19" font-weight="700" fill="#0F172A">Coding agent</text>
+  <text x="122" y="241" text-anchor="middle" font-size="13.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#7C3AED">model: auto</text>
+
+  <!-- Gateway is the decision and accounting surface. -->
+  <g filter="url(#softShadow)">
+    <rect x="254" y="152" width="224" height="144" rx="16" fill="url(#gatewayGradient)"/>
+  </g>
+  <text x="366" y="195" text-anchor="middle" font-size="21" font-weight="800" fill="#FFFFFF">agentgateway</text>
+  <text x="366" y="222" text-anchor="middle" font-size="13.5" fill="#FFFFFF" opacity="0.9">routes the selected model</text>
+  <text x="366" y="247" text-anchor="middle" font-size="11.5" fill="#FFFFFF" opacity="0.78" letter-spacing="0.25">records the routing outcome</text>
+  <rect x="300" y="260" width="132" height="21" rx="10.5" fill="#FFFFFF" opacity="0.16"/>
+  <text x="366" y="275" text-anchor="middle" font-size="11.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#FFFFFF">OpenAI-compatible</text>
+
+  <!-- The external semantic decision. -->
+  <g filter="url(#softShadow)">
+    <rect x="520" y="190" width="170" height="68" rx="34" fill="#F5F3FF" stroke="#C4B5FD"/>
+  </g>
+  <text x="605" y="217" text-anchor="middle" font-size="15" font-weight="700" fill="#5B21B6">vSR semantic policy</text>
+  <text x="605" y="238" text-anchor="middle" font-size="12.5" fill="#6D28D9">selects the model tier</text>
+
+  <!-- Selected model tiers. -->
+  <g filter="url(#softShadow)">
+    <rect x="756" y="74" width="212" height="92" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  </g>
+  <rect x="756" y="74" width="6" height="92" rx="3" fill="#0F766E"/>
+  <text x="780" y="107" font-size="16" font-weight="700" fill="#0F172A">Routine coding</text>
+  <text x="780" y="130" font-size="12.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#0F766E">gpt-5.4-nano</text>
+  <text x="780" y="150" font-size="12.5" fill="#64748B">lower-cost model</text>
+
+  <g filter="url(#softShadow)">
+    <rect x="756" y="276" width="212" height="92" rx="14" fill="#FFFFFF" stroke="#E2E8F0"/>
+  </g>
+  <rect x="756" y="276" width="6" height="92" rx="3" fill="#B45309"/>
+  <text x="780" y="309" font-size="16" font-weight="700" fill="#0F172A">Complex coding</text>
+  <text x="780" y="332" font-size="12.5" font-family="ui-monospace, SFMono-Regular, Menlo, monospace" fill="#B45309">gpt-5.5</text>
+  <text x="780" y="352" font-size="12.5" fill="#64748B">higher-capability model</text>
+
+  <!-- Gateway telemetry. -->
+  <g filter="url(#softShadow)">
+    <rect x="220" y="362" width="292" height="92" rx="14" fill="#FFFFFF" stroke="#CCFBF1"/>
+  </g>
+  <rect x="220" y="362" width="6" height="92" rx="3" fill="#0F766E"/>
+  <text x="244" y="395" font-size="16" font-weight="700" fill="#0F172A">Catalog-priced telemetry</text>
+  <text x="244" y="418" font-size="12.5" fill="#0F766E">model selection, tokens, cost, latency</text>
+  <text x="244" y="438" font-size="12.5" fill="#64748B">Prometheus, logs, traces, Grafana</text>
+</svg>
