@@ -371,5 +371,5 @@ kubectl delete httproute loadbalanced-route -n {{< reuse "agw-docs/snippets/name
 ## Next steps
 
 - Configure [failover]({{< link-hextra path="/llm/failover/" >}}) with priority groups for high availability
-- Set up [cost tracking]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor spending across providers
-- Use [budget limits]({{< link-hextra path="/llm/budget-limits/" >}}) to control costs per provider or user
+- Set up [cost tracking]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor spending across providers
+- Use [budget limits]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}) to control costs per provider or user

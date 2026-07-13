@@ -18,12 +18,12 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
 
 ## Set up RBAC permissions
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with your CEL rules. The following example allows requests with the `x-llm: gemini` header.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with your CEL rules. The following example allows requests with the `x-llm: gemini` header.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: rbac-policy
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -121,7 +121,7 @@ Configure access to an LLM provider such as Gemini. You can use any other LLM pr
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```shell
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} rbac-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} rbac-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute google -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} google -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete secret google-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}}

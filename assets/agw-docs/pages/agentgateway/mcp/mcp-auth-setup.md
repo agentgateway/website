@@ -20,13 +20,13 @@ For more information, see the [JWT auth docs]({{< link-hextra path="/mcp/mcp-acc
 
 ## Configure MCP auth
 
-With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enforces authentication for the MCP backend.
+With Keycloak deployed and your MCP backend configured, you can now create an {{< reuse "agw-docs/snippets/policy.md" >}} that enforces authentication for the MCP backend.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with MCP authentication configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and allows you to use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with MCP authentication configuration. MCP authentication is configured at the route level by using `traffic.jwtAuthentication` with the `mcp` extension field. The route-level placement aligns MCP auth with standard JWT authentication and allows you to use JWT claims in other route-level policies, such as authorization, rate limiting, and transformations.
    ```yaml {paths="mcp-auth-setup"}
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: mcp-echo-authn
    spec:
@@ -88,7 +88,7 @@ With Keycloak deployed and your MCP backend configured, you can now create an {{
 
 2. Verify that the policy was accepted.
    ```sh {paths="mcp-auth-setup"}
-   kubectl get {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-echo-authn -o yaml
+   kubectl get {{< reuse "agw-docs/snippets/policy.md" >}} mcp-echo-authn -o yaml
    ```
 
 {{< doc-test paths="mcp-auth-setup" >}}
@@ -276,6 +276,6 @@ EOF
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} mcp-echo-authn
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} mcp-echo-authn
 kubectl delete httproute mcp
 ```

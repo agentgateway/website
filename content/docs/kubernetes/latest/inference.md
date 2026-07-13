@@ -76,8 +76,8 @@ custom provider, agentgateway can parse the LLM response usage and enforce the
 token limit while still using the InferencePool for endpoint selection.
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: qwen-token-budget
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

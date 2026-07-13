@@ -7,12 +7,12 @@ Update the response status based on request query parameters by using [CEL expre
 
 In this example, the transformation applies after routing and targets a specific HTTPRoute. You change the value of the `:status` response header to 401 if the request URI contains the `foo=bar` query parameter. If the request URI does not contain `foo=bar`, you return a 403 HTTP response code.
 
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with your transformation rules.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your transformation rules.
 
    ```yaml {paths="change-response-status"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -139,6 +139,6 @@ In this example, the transformation applies after routing and targets a specific
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh {paths="change-response-status"}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} transformation -n httpbin --ignore-not-found
 ```
 

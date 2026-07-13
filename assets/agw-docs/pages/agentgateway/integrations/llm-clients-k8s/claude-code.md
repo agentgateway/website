@@ -264,12 +264,12 @@ If you have a Claude Teams or Pro account, use this configuration instead of the
    EOF
    ```
 
-2. Create an `{{< reuse "agw-docs/snippets/trafficpolicy.md" >}}` to raise the body buffer limit to 10 MB, which is required for Claude's OAuth token flow.
+2. Create an `{{< reuse "agw-docs/snippets/policy.md" >}}` to raise the body buffer limit to 10 MB, which is required for Claude's OAuth token flow.
 
    ```bash
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: claude-buffer
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

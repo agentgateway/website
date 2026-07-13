@@ -10,8 +10,8 @@ Example configuration that uses all three layers:
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-layered
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

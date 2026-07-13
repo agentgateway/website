@@ -158,11 +158,11 @@ Set up retries to the sample app.
       EOF
       ```
 
-   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the HTTPRoute rule.
+   2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies a retry policy to the HTTPRoute rule.
       ```yaml {paths="retry-in-agentgateway"}
       kubectl apply -f- <<EOF
-      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
       metadata:
         name: retry
         namespace: httpbin
@@ -268,11 +268,11 @@ Set up retries to the sample app.
             port: 8000
       EOF
       ```
-   2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.
+   2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that applies a retry policy to the `agentgateway-proxy` Gateway listener. You set up this Gateway in the [before you begin](#before-you-begin) section.
       ```yaml {paths="retry-in-gatewaylistener"}
       kubectl apply -f- <<EOF
-      apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-      kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+      apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+      kind: {{< reuse "agw-docs/snippets/policy.md" >}}
       metadata:
         name: retry
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -498,8 +498,8 @@ Simulate a failure for the sample app so that you can verify that the request is
    ```sh
    kubectl delete httproute retry -n httpbin
    ```
-2. If you created an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}, delete it from the namespace you created it in.
+2. If you created an {{< reuse "agw-docs/snippets/policy.md" >}}, delete it from the namespace you created it in.
    ```sh
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n httpbin
-   kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} retry -n httpbin
+   kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} retry -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```

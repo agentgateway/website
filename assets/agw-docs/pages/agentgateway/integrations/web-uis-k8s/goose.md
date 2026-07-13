@@ -141,6 +141,6 @@ The following table describes each environment variable:
 ## Next steps
 
 {{< cards >}}
-  {{< card path="/llm/budget-limits/" title="Control spending" subtitle="Apply rate limits to LLM and tool traffic." >}}
+  {{< card path="/llm/cost-controls/budget-limits/" title="Control spending" subtitle="Apply rate limits to LLM and tool traffic." >}}
   {{< card path="/llm/observability/" title="LLM observability" subtitle="Metrics, traces, and access logs." >}}
 {{< /cards >}}

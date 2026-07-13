@@ -110,8 +110,8 @@ Example configuration that masks credit cards in responses:
 
 ```yaml,paths="content-safety-regex"
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-regex
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -141,8 +141,8 @@ Example that rejects requests containing specific restricted terms:
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-custom
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -287,8 +287,8 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 2. Configure the prompt guard to use OpenAI Moderation:
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: content-safety-openai
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -371,8 +371,8 @@ For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails
 2. Configure the prompt guard:
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: content-safety-bedrock
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -434,8 +434,8 @@ Configure a prompt guard to call your webhook service:
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-webhook
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -472,8 +472,8 @@ Example configuration that uses all three layers:
 
 ```yaml
 kubectl apply -f - <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: content-safety-layered
   namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -529,5 +529,5 @@ EOF
 
 - [Configure prompt guards]({{< link-hextra path="/llm/prompt-guards/" >}}) for step-by-step examples of regex-based guards
 - [Guardrail Webhook API]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}) for implementing custom content safety logic
-- [Track costs]({{< link-hextra path="/llm/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
+- [Track costs]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}) to monitor the impact of blocked requests on your budget
 - [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to track content safety metrics

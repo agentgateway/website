@@ -596,6 +596,8 @@ _Appears in:_
 - [APIKeyAuthentication](#apikeyauthentication)
 - [BasicAuthentication](#basicauthentication)
 - [JWTAuthentication](#jwtauthentication)
+- [OAuthActorToken](#oauthactortoken)
+- [OAuthTokenSpec](#oauthtokenspec)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -635,6 +637,7 @@ _Validation:_
 
 _Appears in:_
 - [BackendAuth](#backendauth)
+- [OAuthTokenExchange](#oauthtokenexchange)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -789,8 +792,8 @@ _Appears in:_
 
 
 
-AwsSessionTag is an AWS STS session tag: a key/value pair passed to AssumeRole
-for cost attribution.
+AwsSessionTag is an AWS STS session tag passed to AssumeRole for cost
+attribution. Exactly one of value and expression must be set.
 
 
 
@@ -800,7 +803,8 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `key` _string_ | Key is the tag key. |  | MaxLength: 128 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `value` _string_ | Value is the tag value. |  | MaxLength: 256 <br />Required: \{\} <br /> |
+| `value` _string_ | Value is a static tag value. |  | MaxLength: 256 <br />Optional: \{\} <br /> |
+| `expression` _[CELExpression](#celexpression)_ | Expression is a CEL expression evaluated against each request to produce<br />the tag value, for example `jwt.sub` or `request.headers["x-app"]`. If the<br />expression does not produce a valid tag value at request time, the request<br />is rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### AzureAuth
@@ -944,7 +948,7 @@ _Appears in:_
 
 
 _Validation:_
-- ExactlyOneOf: [key secretRef passthrough aws azure gcp]
+- ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange]
 
 _Appears in:_
 - [BackendFull](#backendfull)
@@ -959,6 +963,7 @@ _Appears in:_
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the backend.<br />When omitted, default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the backend.<br />When omitted, default Google credential discovery is used. |  | Optional: \{\} <br /> |
+| `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted.<br />If omitted, credentials are written to the `Authorization` header with the `Bearer ` prefix.<br />This applies to `key`, `secretRef`, and `passthrough`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 
 
@@ -1012,7 +1017,7 @@ _Appears in:_
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend.<br />If this field is set, TLS will be initiated to the backend; the system trusted CA certificates will be used to<br />validate the server, and the SNI will automatically be set based on the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend. |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections, with behavior like `HTTPS_PROXY`, to the backend. |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp] <br />Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
@@ -1079,7 +1084,7 @@ _Appears in:_
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend.<br />If this field is set, TLS will be initiated to the backend; the system trusted CA certificates will be used to<br />validate the server, and the SNI will automatically be set based on the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend. |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections, with behavior like `HTTPS_PROXY`, to the backend. |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp] <br />Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 
 
 #### BackendTCP
@@ -1161,7 +1166,7 @@ _Appears in:_
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend.<br />If this field is set, TLS will be initiated to the backend; the system trusted CA certificates will be used to<br />validate the server, and the SNI will automatically be set based on the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend. |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections, with behavior like `HTTPS_PROXY`, to the backend. |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp] <br />Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Settings for passive and active health checking. |  | Optional: \{\} <br /> |
@@ -1355,6 +1360,7 @@ _Appears in:_
 - [AttributeAdd](#attributeadd)
 - [AuthorizationExtractionLocation](#authorizationextractionlocation)
 - [AuthorizationPolicy](#authorizationpolicy)
+- [AwsSessionTag](#awssessiontag)
 - [DirectResponse](#directresponse)
 - [DirectResponseConditional](#directresponseconditional)
 - [DirectResponseHeader](#directresponseheader)
@@ -1368,6 +1374,7 @@ _Appears in:_
 - [HeaderTransformation](#headertransformation)
 - [Health](#health)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
+- [OAuthTokenExchange](#oauthtokenexchange)
 - [OtlpAccessLog](#otlpaccesslog)
 - [RateLimitDescriptor](#ratelimitdescriptor)
 - [RateLimitDescriptorEntry](#ratelimitdescriptorentry)
@@ -2633,6 +2640,8 @@ _Appears in:_
 - [BackendTLS](#backendtls)
 - [BasicAuthentication](#basicauthentication)
 - [GcpAuth](#gcpauth)
+- [OAuthClientAuth](#oauthclientauth)
+- [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -3000,6 +3009,252 @@ _Appears in:_
 | `pathPrefix` _[LongString](#longstring)_ | Overrides the default base path prefix, such as `/v1`, for upstream requests.<br />Path translation for cross-format requests still applies using this prefix.<br />Only supported for OpenAI and Anthropic providers. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
+
+
+#### OAuthActorToken
+
+
+
+
+
+
+
+_Appears in:_
+- [OAuthTokenExchange](#oauthtokenexchange)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `source` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where to read the actor token. Actor tokens have no default source. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Required: \{\} <br /> |
+| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth token type. Empty defaults to AccessToken. |  | Optional: \{\} <br /> |
+| `mayAct` _[OAuthMayActValidationMode](#oauthmayactvalidationmode)_ | may_act claim validation mode. When omitted, may_act is not enforced. |  | Optional: \{\} <br /> |
+
+
+#### OAuthClientAuth
+
+
+
+OAuthClientAuth configures token endpoint client authentication.
+
+
+
+_Appears in:_
+- [OAuthTokenExchange](#oauthtokenexchange)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `clientId` _string_ | Client ID sent to the token endpoint. |  | MinLength: 1 <br />Required: \{\} <br /> |
+| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Secret providing the `clientSecret` key. When omitted, client_id is sent<br />without a secret, which is only valid with ClientSecretPost. |  | Optional: \{\} <br /> |
+| `privateKeyJwt` _[OAuthPrivateKeyJWT](#oauthprivatekeyjwt)_ | privateKeyJwt client assertion settings. Required when method is PrivateKeyJwt. |  | Optional: \{\} <br /> |
+| `method` _[OAuthClientAuthMethod](#oauthclientauthmethod)_ | Defaults to ClientSecretBasic. |  | Optional: \{\} <br /> |
+
+
+#### OAuthClientAuthMethod
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [OAuthClientAuth](#oauthclientauth)
+
+| Field | Description |
+| --- | --- |
+| `ClientSecretBasic` |  |
+| `ClientSecretPost` |  |
+| `PrivateKeyJwt` |  |
+
+
+#### OAuthGrantType
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [OAuthTokenExchange](#oauthtokenexchange)
+
+| Field | Description |
+| --- | --- |
+| `TokenExchange` |  |
+| `JwtBearer` |  |
+
+
+#### OAuthInMemoryTokenCache
+
+
+
+
+
+
+
+_Appears in:_
+- [OAuthTokenCache](#oauthtokencache)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `maxEntries` _integer_ | Default 8192; 0 disables the cache. |  | Optional: \{\} <br /> |
+| `defaultTtl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | TTL used when the token endpoint omits expires_in. Default 300s. |  | Optional: \{\} <br /> |
+
+
+#### OAuthMayActValidationMode
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [OAuthActorToken](#oauthactortoken)
+
+| Field | Description |
+| --- | --- |
+| `Required` | Require the subject's may_act claim to authorize the actor.<br /> |
+
+
+#### OAuthPrivateKeyJWT
+
+
+
+OAuthPrivateKeyJWT configures RFC 7523 private_key_jwt client authentication.
+
+
+
+_Appears in:_
+- [OAuthClientAuth](#oauthclientauth)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `signingKeyRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Secret providing the `signingKey` key with a PEM-encoded RSA or EC private key. |  | Required: \{\} <br /> |
+| `alg` _[OAuthPrivateKeyJWTSigningAlgorithm](#oauthprivatekeyjwtsigningalgorithm)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
+| `kid` _string_ | Optional JWS key ID header. |  | Optional: \{\} <br /> |
+| `assertionAudience` _string_ | Audience for the client assertion, typically the token endpoint URL. |  | MinLength: 1 <br />Required: \{\} <br /> |
+
+
+#### OAuthPrivateKeyJWTSigningAlgorithm
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
+
+| Field | Description |
+| --- | --- |
+| `RS256` |  |
+| `RS384` |  |
+| `RS512` |  |
+| `ES256` |  |
+| `ES384` |  |
+
+
+#### OAuthTokenCache
+
+
+
+
+
+
+
+_Appears in:_
+- [OAuthTokenExchange](#oauthtokenexchange)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `inMemory` _[OAuthInMemoryTokenCache](#oauthinmemorytokencache)_ |  |  | Optional: \{\} <br /> |
+
+
+#### OAuthTokenEndpoint
+
+
+
+OAuthTokenEndpoint references a token endpoint backend and optional path.
+
+
+
+_Appears in:_
+- [OAuthTokenExchange](#oauthtokenexchange)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | Group is the group of the referent. For example, "gateway.networking.k8s.io".<br />When unspecified or empty string, core API group is inferred. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
+| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | Kind is the Kubernetes resource kind of the referent. For example<br />"Service".<br />Defaults to "Service" when not specified.<br />ExternalName services can refer to CNAME DNS records that may live<br />outside of the cluster and as such are difficult to reason about in<br />terms of conformance. They also may not be safe to forward to (see<br />CVE-2021-25740 for more information). Implementations SHOULD NOT<br />support ExternalName Services.<br />Support: Core (Services with a type other than ExternalName)<br />Support: Implementation-specific (Services with type ExternalName) | Service | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Optional: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name is the name of the referent. |  | Required: \{\} <br /> |
+| `namespace` _[Namespace](#namespace)_ | Namespace is the namespace of the backend. When unspecified, the local<br />namespace is inferred.<br />Note that when a namespace different than the local namespace is specified,<br />a ReferenceGrant object is required in the referent namespace to allow that<br />namespace's owner to accept the reference. See the ReferenceGrant<br />documentation for details.<br />Support: Core |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?$` <br />Optional: \{\} <br /> |
+| `port` _[PortNumber](#portnumber)_ | Port specifies the destination port number to use for this resource.<br />Port is required when the referent is a Kubernetes Service. In this<br />case, the port number is the service port number, not the target port.<br />For other resources, destination port might be derived from the referent<br />resource or this field. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
+| `path` _string_ | Token endpoint path; defaults to "/". Must start with "/". |  | Pattern: `^/` <br />Optional: \{\} <br /> |
+
+
+#### OAuthTokenExchange
+
+
+
+OAuth token exchange settings for backend authentication.
+
+
+
+_Appears in:_
+- [BackendAuth](#backendauth)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `tokenEndpoint` _[OAuthTokenEndpoint](#oauthtokenendpoint)_ | RFC 8693 token endpoint backend and path. |  | Required: \{\} <br /> |
+| `grantType` _[OAuthGrantType](#oauthgranttype)_ | RFC followed by the request. Defaults to TokenExchange (RFC 8693). |  | Optional: \{\} <br /> |
+| `subjectToken` _[OAuthTokenSpec](#oauthtokenspec)_ | Subject token / assertion source and type. Defaults to Authorization Bearer, AccessToken. |  | Optional: \{\} <br /> |
+| `actorToken` _[OAuthActorToken](#oauthactortoken)_ | RFC 8693 delegation actor token. TokenExchange grant only. |  | Optional: \{\} <br /> |
+| `audiences` _string array_ | Audiences sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `requestedTokenType` _[OAuthTokenType](#oauthtokentype)_ | RFC 8693 requested_token_type. |  | Optional: \{\} <br /> |
+| `additionalParams` _object (keys:string, values:[CELExpression](#celexpression))_ | Extra form params; values are CEL expressions over the incoming request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `clientAuth` _[OAuthClientAuth](#oauthclientauth)_ | Client authentication for the token endpoint. When unset, none is sent. |  | Optional: \{\} <br /> |
+| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the exchanged token is written to the backend request.<br />Defaults to Authorization: Bearer. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+| `cache` _[OAuthTokenCache](#oauthtokencache)_ | Response cache configuration. |  | Optional: \{\} <br /> |
+
+
+#### OAuthTokenSpec
+
+
+
+
+
+
+
+_Appears in:_
+- [OAuthTokenExchange](#oauthtokenexchange)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `source` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where to read the token. CEL `expression` variant is permitted. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
+| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth token type. Empty defaults to AccessToken. |  | Optional: \{\} <br /> |
+
+
+#### OAuthTokenType
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [OAuthActorToken](#oauthactortoken)
+- [OAuthTokenExchange](#oauthtokenexchange)
+- [OAuthTokenSpec](#oauthtokenspec)
+
+| Field | Description |
+| --- | --- |
+| `AccessToken` |  |
+| `Jwt` |  |
+| `IdToken` |  |
+| `IdJag` |  |
 
 
 #### OTLPProtocol

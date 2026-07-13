@@ -101,8 +101,8 @@
 /docs/llm /docs/standalone/latest/llm 301
 /docs/llm/ /docs/standalone/latest/llm 301
 /docs/llm/* /docs/standalone/latest/llm/:splat 301
-/docs/standalone/main/llm/spending /docs/standalone/main/llm/costs 301
-/docs/standalone/latest/llm/spending /docs/standalone/latest/llm/costs 301
+/docs/standalone/main/llm/spending /docs/standalone/main/llm/cost-controls/costs 301
+/docs/standalone/latest/llm/spending /docs/standalone/latest/llm/cost-controls/costs 301
 
 # Inference routing
 /docs/inference /docs/standalone/latest/inference 301
@@ -133,3 +133,17 @@
 /docs/faqs /docs/standalone/latest/faqs 301
 /docs/faqs/ /docs/standalone/latest/faqs 301
 
+
+# Cost controls section reorg (issue solo-io/docs#2921)
+/docs/kubernetes/main/llm/costs /docs/kubernetes/main/llm/cost-controls/costs 301
+/docs/kubernetes/main/llm/cost-tracking /docs/kubernetes/main/llm/cost-controls/cost-tracking 301
+/docs/kubernetes/main/llm/budget-limits /docs/kubernetes/main/llm/cost-controls/budget-limits 301
+/docs/kubernetes/main/llm/virtual-keys /docs/kubernetes/main/llm/cost-controls/virtual-keys 301
+/docs/kubernetes/latest/llm/costs /docs/kubernetes/latest/llm/cost-controls/costs 301
+/docs/kubernetes/latest/llm/cost-tracking /docs/kubernetes/latest/llm/cost-controls/cost-tracking 301
+/docs/kubernetes/latest/llm/budget-limits /docs/kubernetes/latest/llm/cost-controls/budget-limits 301
+/docs/kubernetes/latest/llm/virtual-keys /docs/kubernetes/latest/llm/cost-controls/virtual-keys 301
+/docs/standalone/main/llm/costs /docs/standalone/main/llm/cost-controls/costs 301
+/docs/standalone/main/llm/virtual-keys /docs/standalone/main/llm/cost-controls/virtual-keys 301
+/docs/standalone/latest/llm/costs /docs/standalone/latest/llm/cost-controls/costs 301
+/docs/standalone/latest/llm/virtual-keys /docs/standalone/latest/llm/cost-controls/virtual-keys 301

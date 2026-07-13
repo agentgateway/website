@@ -244,7 +244,7 @@ Use the Kubernetes Gateway API to define header manipulation rules that you appl
 
 ### Transformations
 
-Use {{< reuse "/agw-docs/snippets/kgateway.md" >}}'s {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} to apply a transformation policy to the httpbin2 app. 
+Use {{< reuse "/agw-docs/snippets/kgateway.md" >}}'s {{< reuse "/agw-docs/snippets/policy.md" >}} to apply a transformation policy to the httpbin2 app. 
 
 1. If you have not done so yet, create an HTTPRoute for the httpbin2 app. You use this HTTPRoute to apply your transformation policy in the next step. 
    ```yaml
@@ -270,11 +270,11 @@ Use {{< reuse "/agw-docs/snippets/kgateway.md" >}}'s {{< reuse "/agw-docs/snippe
    EOF
    ```
 
-2. Create a {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} that applies a transformation policy to the httpbin2 app. In this example, the base64-encoded value from the `x-base64-encoded` header is decoded and added to the `x-base64-decoded` header, starting from the 11th character. 
+2. Create a {{< reuse "/agw-docs/snippets/policy.md" >}} that applies a transformation policy to the httpbin2 app. In this example, the base64-encoded value from the `x-base64-encoded` header is decoded and added to the `x-base64-decoded` header, starting from the 11th character. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "/agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/policy.md" >}}
    metadata:
      name: transformation
      namespace: httpbin
@@ -345,9 +345,9 @@ Use {{< reuse "/agw-docs/snippets/kgateway.md" >}}'s {{< reuse "/agw-docs/snippe
    }
    ```
 
-4. Optional: Remove the {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} and HTTPRoute that you created in this guide. 
+4. Optional: Remove the {{< reuse "/agw-docs/snippets/policy.md" >}} and HTTPRoute that you created in this guide. 
    ```sh
-   kubectl delete {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+   kubectl delete {{< reuse "/agw-docs/snippets/policy.md" >}} transformation -n httpbin
    kubectl delete httproute httpbin2 -n httpbin
    ```
 
@@ -377,11 +377,11 @@ Use {{< reuse "/agw-docs/snippets/kgateway.md" >}}'s {{< reuse "/agw-docs/snippe
    EOF
    ```
    
-2. Create a {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} that applies a local rate limiting policy to the httpbin2 app. In this example, only one request is allowed within 30 seconds. 
+2. Create a {{< reuse "/agw-docs/snippets/policy.md" >}} that applies a local rate limiting policy to the httpbin2 app. In this example, only one request is allowed within 30 seconds. 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "/agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "/agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "/agw-docs/snippets/policy.md" >}}
    metadata:
      name: ratelimit
      namespace: httpbin
@@ -427,9 +427,9 @@ Use {{< reuse "/agw-docs/snippets/kgateway.md" >}}'s {{< reuse "/agw-docs/snippe
    local_rate_limited%    
    ```
    
-4. Optional: Remove the {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} and HTTPRoute. 
+4. Optional: Remove the {{< reuse "/agw-docs/snippets/policy.md" >}} and HTTPRoute. 
    ```sh
-   kubectl delete {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} ratelimit -n httpbin
+   kubectl delete {{< reuse "/agw-docs/snippets/policy.md" >}} ratelimit -n httpbin
    kubectl delete httproute httpbin2 -n httpbin
    ```
 
@@ -564,7 +564,7 @@ kubectl delete deployment httpbin3 -n httpbin
 kubectl delete serviceaccount client -n httpbin
 kubectl delete service client -n httpbin
 kubectl delete deployment client -n httpbin
-kubectl delete {{< reuse "/agw-docs/snippets/trafficpolicy.md" >}} transformation -n httpbin
+kubectl delete {{< reuse "/agw-docs/snippets/policy.md" >}} transformation -n httpbin
 kubectl delete authorizationpolicy httpbin-authz -n httpbin
 ```
 

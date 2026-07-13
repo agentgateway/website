@@ -43,11 +43,11 @@ The following rule is applied during schema validation:
    EOF
    ```
 
-2. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} resource with a `directResponse` configuration. The policy is applied on the HTTPRoute that you created earlier and returns a 200 HTTP response code with a custom message body.
+2. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with a `directResponse` configuration. The policy is applied on the HTTPRoute that you created earlier and returns a 200 HTTP response code with a custom message body.
    ```yaml {paths="direct-response"}
    kubectl apply -f- <<EOF
    apiVersion: agentgateway.dev/v1alpha1
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: direct-response
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -139,7 +139,7 @@ To return a direct response only when a CEL expression matches, use the `conditi
 {{< reuse "agw-docs/snippets/cleanup.md" >}} Run the following commands.
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} health-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} health-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute direct-response -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 

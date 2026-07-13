@@ -10,7 +10,7 @@ test: skip
 Each policy section can only target specific Kubernetes resource types. If you set a `targetRef` or `targetSelector` to an invalid resource type for the policy section, the Kubernetes API server rejects the request with a validation error. Invalid targeting is **not** silently ignored.
 
 {{< callout type="info">}}
-A single {{< reuse "agw-docs/snippets/agentgateway/agentgatewaypolicy.md" >}} can only target one kind of resource. For example, you cannot target both a Gateway and an HTTPRoute in the same policy. All entries in `targetRefs` or `targetSelectors` must reference the same `kind`.
+A single {{< reuse "agw-docs/snippets/policy.md" >}} can only target one kind of resource. For example, you cannot target both a Gateway and an HTTPRoute in the same policy. All entries in `targetRefs` or `targetSelectors` must reference the same `kind`.
 {{< /callout >}}
 
 ### Targeting rules
@@ -21,7 +21,7 @@ The following table shows which resource types each policy section can target.
 | -- | -- | -- | -- |
 | `frontend` | Gateway | Not allowed | Applies to all listeners on the targeted Gateway. |
 | `traffic` | Gateway, HTTPRoute, GRPCRoute, ListenerSet | Optional | When targeting a Gateway, the `sectionName` selects a specific listener. When targeting an HTTPRoute or GRPCRoute, the `sectionName` selects a specific route rule. |
-| `backend` | Gateway, HTTPRoute, GRPCRoute, ListenerSet, Service, {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} | Optional | When targeting a Service, the `sectionName` selects a specific port. When targeting an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}}, the `sectionName` selects a specific sub-backend. |
+| `backend` | Gateway, HTTPRoute, GRPCRoute, ListenerSet, Service, {{< reuse "agw-docs/snippets/backend.md" >}} | Optional | When targeting a Service, the `sectionName` selects a specific port. When targeting an {{< reuse "agw-docs/snippets/backend.md" >}}, the `sectionName` selects a specific sub-backend. |
 
 ### Backend section restrictions
 
@@ -29,8 +29,8 @@ Some `backend` sub-fields have additional targeting restrictions.
 
 | Field | Restriction |
 | -- | -- |
-| `backend.ai` | Cannot target a Service. Use an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} instead. |
-| `backend.mcp` | Cannot target a Service. Use an {{< reuse "agw-docs/snippets/agentgateway/agentgatewaybackend.md" >}} instead. |
+| `backend.ai` | Cannot target a Service. Use an {{< reuse "agw-docs/snippets/backend.md" >}} instead. |
+| `backend.mcp` | Cannot target a Service. Use an {{< reuse "agw-docs/snippets/backend.md" >}} instead. |
 
 ### Traffic phase restrictions
 

@@ -9,7 +9,7 @@ For {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can set up failover a
 Failover in {{< reuse "agw-docs/snippets/agentgateway.md" >}} has two parts:
 
 - **Priority groups** in the {{< reuse "agw-docs/snippets/backend.md" >}} define the failover order. Each group is a tier. Models within the same group are load balanced equally. When all models in a group are evicted, requests fail over to the next group.
-- **A health policy** in an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
+- **A health policy** in an {{< reuse "agw-docs/snippets/policy.md" >}} defines what counts as an unhealthy response (such as 5xx errors or 429 rate limits) and how to evict unhealthy backends. Without a health policy, backends are not evicted and failover does not occur.
 
 This approach increases the resiliency of your network environment by ensuring that apps that call LLMs can keep working without problems, even if one model has issues.
 
@@ -386,7 +386,7 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
    ```
    
 
-3. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} with a health policy that targets the {{< reuse "agw-docs/snippets/backend.md" >}}. The health policy defines which responses are considered unhealthy and how to evict backends. Without this policy, backends are not evicted and failover does not occur.
 
    The `unhealthyCondition` field is an optional [CEL expression](https://github.com/cel-expr/cel-spec) that classifies each response. When you set it, `true` means the response counts as unhealthy toward eviction. The `eviction` settings control how many failures and how long an unhealthy backend stays out of its priority group.
 
@@ -397,8 +397,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-failover-health
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -423,8 +423,8 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-failover-health
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -455,12 +455,12 @@ For weight-based traffic distribution within a priority group (such as 80/20 spl
 
 4. Verify that failover works by temporarily configuring the health policy to treat all responses as unhealthy. This policy forces each backend to be evicted after its first response, so you can watch requests progress through the priority groups.
 
-   Update the {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} to set `unhealthyCondition` to `"true"`:
+   Update the {{< reuse "agw-docs/snippets/policy.md" >}} to set `unhealthyCondition` to `"true"`:
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: model-failover-health
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -548,7 +548,7 @@ Now that you tested failover, restore the health policy to your production confi
 
 ```shell
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} model-failover-health -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} model-failover-health -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute model-failover -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
 

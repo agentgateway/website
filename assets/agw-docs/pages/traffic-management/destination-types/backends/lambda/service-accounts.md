@@ -171,7 +171,7 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
 1. Create a {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to specify the `eks.amazonaws.com/role-arn` IRSA annotation for the gateway proxy service account.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
    metadata:
      name: http-lambda
@@ -198,7 +198,7 @@ Be sure that you [deployed the Amazon EKS Pod Identity Webhook](#webhook) to you
      infrastructure:
        parametersRef:
          name: http-lambda
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}        
      listeners:
      - protocol: HTTP
@@ -251,7 +251,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
 1. Create a Backend resource that references the AWS region, ID of the account that contains the IAM role, and `echo` function that you created.
    ```yaml
    kubectl apply -f - <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/gatewayparam-apiversion.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: Backend
    metadata:
      name: lambda
@@ -287,7 +287,7 @@ Create `Backend` and `HTTPRoute` resources to route requests to the Lambda funct
        backendRefs:
        - name: lambda
          namespace: {{< reuse "/agw-docs/snippets/namespace.md" >}}
-         group: {{< reuse "agw-docs/snippets/gatewayparam-group.md" >}}
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: Backend
    EOF
    ```

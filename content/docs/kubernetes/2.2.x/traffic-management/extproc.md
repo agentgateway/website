@@ -119,11 +119,11 @@ Use a sample ExtProc server implementation to try out the ExtProc functionality 
 
 You can enable ExtProc for a particular route in an HTTPRoute resource. 
    
-1. Create an {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} that enables external processing for the agentgateway-proxy.
+1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that enables external processing for the agentgateway-proxy.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/trafficpolicy-apiversion.md" >}}
-   kind: {{< reuse "agw-docs/snippets/trafficpolicy.md" >}}
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: extproc
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
@@ -193,7 +193,7 @@ You can enable ExtProc for a particular route in an HTTPRoute resource.
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/trafficpolicy.md" >}} extproc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} extproc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete deployment ext-proc-grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service ext-proc-grpc -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```

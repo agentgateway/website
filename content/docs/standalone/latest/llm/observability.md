@@ -8,7 +8,7 @@ Get prompt logging, cost tracking, and a full audit trail: review LLM-specific m
 
 ## Before you begin
 
-Complete an LLM guide, such as the [virtual key management]({{< link-hextra path="/llm/virtual-keys/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
+Complete an LLM guide, such as the [virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide. This guide sends a request to the LLM and receives a response. You can use this request and response example to verify metrics, logs, and traces.  
 
 ## View LLM metrics
 
@@ -27,13 +27,13 @@ For more information, see the [Semantic conventions for generative AI metrics](h
 
 ## View realized costs
 
-When you configure a [model cost catalog]({{< link-hextra path="/llm/costs/" >}}), agentgateway computes the realized USD cost of each LLM request and exposes it across the observability surface:
+When you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), agentgateway computes the realized USD cost of each LLM request and exposes it across the observability surface:
 
 * **Logs**: each LLM request log line includes `agw.ai.usage.cost.total`. Add the cost breakdown or applied rates with CEL `llm.cost` and `llm.costRates` fields.
 * **Metrics**: the `agentgateway_cost_catalog_lookups_total` counter tracks lookups by `status` (`Exact`, `Unpriced`, `Missing`, or `NoCatalog`) and by provider and model, so you can confirm that your catalog prices your traffic.
 * **Traces**: cost attributes are attached to the request span.
 
-For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/costs/" >}}).
+For catalog configuration and the full list of cost fields, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
 
 ## View traces
 
