@@ -532,11 +532,17 @@ Track token usage and spending for each virtual key by using Prometheus metrics.
 
 By default, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} token usage metric (`agentgateway_gen_ai_client_token_usage`) is broken down by dimensions such as the model and token type, but *not* by user. To attribute usage to each virtual key, add a `user_id` label to the metrics with a metrics policy, then query Prometheus.
 
+{{< callout type="info" >}}
+The token usage metric only appears after a request *succeeds* and the LLM returns a usage count. Requests that are rejected (for example, a `401` from an invalid key or a `429` from the rate limit) never reach the LLM, so they do not produce token usage metrics.
+{{< /callout >}}
+
 ### Before you begin {#monitor-prereqs}
 
-Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics. The [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}) walks you through the full setup; at a minimum, complete the [Prometheus step]({{< link-hextra path="/observability/otel-stack/#prometheus" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
+Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway.md" >}} metrics, such as by completing the [OpenTelemetry stack guide]({{< link-hextra path="/observability/otel-stack/" >}}). The following steps assume the `kube-prometheus-stack` release exists in the `telemetry` namespace, as deployed by that guide.
 
-### Add a per-user metric label
+### Add a per-key metric label
+
+You can add a per-key metric label such as to track metrics by user ID. Note that the `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that adds the `user_id` from each API key as a label on all Prometheus metrics. The `frontend.metrics` field can only be set on a policy that targets the Gateway.
 
@@ -567,10 +573,6 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
    |-------------|-------------|
    | `frontend.metrics.attributes.add[].name` | The name of the Prometheus label to add (`user_id`). |
    | `frontend.metrics.attributes.add[].expression` | A CEL expression that is evaluated per request. Use `apiKey.user_id` to read the `user_id` from the authenticated API key. If the expression fails to evaluate (for example, on an unauthenticated request), the label value is set to `unknown`. |
-
-   {{< callout type="warning" >}}
-   The `user_id` label is high cardinality: every unique value creates a new metric series, which increases Prometheus memory and storage. This is acceptable for tens or hundreds of keys, but avoid attaching unbounded identifiers (such as raw end-user IDs) to metrics at large scale. Prefer lower-cardinality dimensions like tier or team when possible.
-   {{< /callout >}}
 
 2. Send a few requests with each virtual key so that the metrics have per-user data to report. You can reuse the requests from [Test the virtual keys](#test-the-virtual-keys).
 
@@ -663,7 +665,7 @@ Set up a Prometheus instance to scrape {{< reuse "agw-docs/snippets/agentgateway
    {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782410758.432,"0"]},{"metric":{"user_id":"bob"},"value":[1782410758.432,"6.101636101191084e-09"]},{"metric":{"user_id":"alice"},"value":[1782410758.432,"5.106526900820178e-09"]}]}}
    ```
 
-For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-tracking/" >}}).
+For more information on cost tracking, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
 
 ## Advanced configuration
 
@@ -789,7 +791,7 @@ descriptors:
           requests_per_unit: 50000
 ```
 
-For more advanced rate limiting patterns, see the [budget and spend limits guide]({{< link-hextra path="/llm/budget-limits/" >}}).
+For more advanced rate limiting patterns, see the [budget and spend limits guide]({{< link-hextra path="/llm/cost-controls/budget-limits/" >}}).
 
 ## Cleanup
 
@@ -803,10 +805,3 @@ kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse 
 ```
 
 To remove the rate limit server, follow the [cleanup steps]({{< link-hextra path="/security/rate-limit-global#cleanup" >}}) in the global rate limiting guide.
-
-## What's next
-
-- [Manage API keys]({{< link-hextra path="/llm/api-keys/" >}}) for detailed authentication configuration
-- [Budget and spend limits]({{< link-hextra path="/llm/budget-limits/" >}}) for advanced rate limiting patterns
-- [Track costs per request]({{< link-hextra path="/llm/cost-tracking/" >}}) for cost calculation and monitoring
-- [Set up observability]({{< link-hextra path="/llm/observability/" >}}) to view token usage metrics and logs
