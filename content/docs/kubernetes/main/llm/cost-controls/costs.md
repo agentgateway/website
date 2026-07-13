@@ -261,7 +261,7 @@ for i in $(seq 1 12); do
   cost=$(kubectl logs deployment/agentgateway-proxy -n agentgateway-system --tail=500 2>/dev/null \
     | grep -oE 'agw\.ai\.usage\.cost\.total[^0-9-]*[0-9]+(\.[0-9]+)?' \
     | grep -oE '[0-9]+(\.[0-9]+)?$' \
-    | sort -rn | head -1)
+    | sort -rn | head -1 || true)
   if [ -n "$cost" ] && awk "BEGIN{exit !(${cost} > 0)}"; then
     priced=true
     break
