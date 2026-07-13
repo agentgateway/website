@@ -8,11 +8,17 @@ Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
 
 ## About
 
-Instead of attaching a fixed credential to backend requests, the `oauth` backend authentication method exchanges the incoming request's credential for a new, backend-specific token at an OAuth authorization server, then forwards that token to the backend. Token exchange is useful when a client authenticates to the gateway with one identity, but the backend requires a different, narrowly scoped token.
+Instead of attaching a fixed credential to backend requests, the `oauthTokenExchange` backend authentication method exchanges the incoming request's credential for a new, backend-specific token at an OAuth authorization server, then forwards that token to the backend. Token exchange is useful when a client authenticates to the gateway with one identity, but the backend requires a different, narrowly scoped token.
+
+Because the gateway performs the exchange, backend credentials are injected by the infrastructure and are never exposed to the AI models or agents that send requests through the gateway. The user's identity is preserved end-to-end, and the exchange can optionally carry an agent identity acting on behalf of the user (see `actorToken`), which keeps a consistent identity chain for auditing. This is a single-leg exchange, in which the gateway calls one authorization server.
 
 By default, the proxy reads the incoming credential from the `Authorization: Bearer` header, exchanges it at the configured token endpoint, and attaches the returned token to the backend request as `Authorization: Bearer`.
 
-The `oauth` method supports two grants:
+Validation of the incoming credential is the job of a route-level policy, such as [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) or [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn/" >}}), not the exchange itself. The exchange only reads the credential and presents it to the authorization server.
+
+Authorization servers that implement these grants include Keycloak, Microsoft Entra ID, Okta, Auth0, and ZITADEL.
+
+The `oauthTokenExchange` method supports two grants:
 
 | Grant | `grantType` | Standard | The incoming credential is sent as |
 | -- | -- | -- | -- |
@@ -23,7 +29,7 @@ The token endpoint is configured as a backend reference: a `host` in `host:port`
 
 ## Configuration
 
-The following table describes the most common `oauth` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
+The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
 
 | Field | Description |
 | -- | -- |
@@ -31,7 +37,7 @@ The following table describes the most common `oauth` fields. For the full set o
 | `tokenEndpointPath` | Path of the token endpoint on the backend. Defaults to `/`. |
 | `grantType` | `tokenExchange` (default, RFC 8693) or `jwtBearer` (RFC 7523). |
 | `clientAuth` | Client authentication for the token endpoint. Supported methods are `clientSecretBasic` (default), `clientSecretPost`, and `privateKeyJwt`. |
-| `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. |
+| `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
 | `subjectToken` | Where to read the incoming credential and its token type. Defaults to the `Authorization: Bearer` header with token type `access_token`. |
 | `actorToken` | Optional RFC 8693 delegation actor token (`tokenExchange` grant only). Has no default source. |
 | `authorizationLocation` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header with a `Bearer ` prefix. |
@@ -42,7 +48,7 @@ To read the incoming credential from a custom location and place the exchanged t
 
 ```yaml
 backendAuth:
-  oauth:
+  oauthTokenExchange:
     host: idp.example.com:443
     tokenEndpointPath: /token
     # Read the incoming credential from a custom header and declare its token type.
@@ -63,7 +69,7 @@ For the RFC 8693 token exchange grant only, an actor token can be sent for [dele
 
 ```yaml
 backendAuth:
-  oauth:
+  oauthTokenExchange:
     host: idp.example.com:443
     tokenEndpointPath: /token
     actorToken:
@@ -78,7 +84,7 @@ backendAuth:
 
 The following examples run against local Keycloak stacks from the agentgateway repository. Install:
 
-- [agentgateway](https://github.com/agentgateway/agentgateway/releases) version 1.4.0-alpha.1 or later
+- [agentgateway](https://github.com/agentgateway/agentgateway/releases) version 1.4.0 or later
 - [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/)
 - [`jq`](https://jqlang.github.io/jq/) for reading token responses
 - A local clone of the [agentgateway repository](https://github.com/agentgateway/agentgateway), which contains the example stacks:
@@ -98,7 +104,7 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
    docker compose -f examples/traffic-token-exchange/oauth-rfc8693/docker-compose.yaml up -d
    ```
 
-2. Review the gateway configuration. The `oauth` method points at the Keycloak token endpoint, authenticates as the confidential client `requester-client`, and requests a token for `audience=target-client`. Because `grantType` is omitted, the gateway uses the default RFC 8693 token exchange grant.
+2. Review the gateway configuration. The `oauthTokenExchange` method points at the Keycloak token endpoint, authenticates as the confidential client `requester-client`, and requests a token for `audience=target-client`. Because `grantType` is omitted, the gateway uses the default RFC 8693 token exchange grant.
 
    {{% github-yaml url="https://agentgateway.dev/examples/traffic-token-exchange/oauth-rfc8693/config.yaml" %}}
 
@@ -206,7 +212,7 @@ The JWT bearer grant is also the shape used by the Microsoft Entra [on-behalf-of
 
 ```yaml
 backendAuth:
-  oauth:
+  oauthTokenExchange:
     host: login.microsoftonline.com:443
     tokenEndpointPath: /<TENANT_ID>/oauth2/v2.0/token
     grantType: jwtBearer
@@ -224,9 +230,9 @@ The `jwt-authz-grant` example includes an `/obo` route and a mock token endpoint
 
 ## Related examples
 
-The [`traffic-token-exchange` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange) in the agentgateway repository also include an `extauthz` example that performs a token exchange by building the token request by hand with [external authorization]({{< link-hextra path="/configuration/security/external-authz/" >}}) and CEL, as an alternative to the built-in `oauth` method.
+The [`traffic-token-exchange` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange) in the agentgateway repository also include an `extauthz` example that performs a token exchange by building the token request by hand with [external authorization]({{< link-hextra path="/configuration/security/external-authz/" >}}) and CEL, as an alternative to the built-in `oauthTokenExchange` method.
 
 ## What's next
 
-- Call a downstream API as the authenticated end user with [Cross App Access (ID-JAG)]({{< link-hextra path="/configuration/security/backend-authn/cross-app-access/" >}}).
+- Read the [Shielding AI agents from sensitive credentials](https://agentgateway.dev/blog/2026-07-12-agentgateway-token-exchange-jwt-assertion-entra-obo/) blog post for a walkthrough of token exchange, JWT assertion, and Entra on-behalf-of.
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) policy.
