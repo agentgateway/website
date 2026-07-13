@@ -252,44 +252,24 @@ kubectl rollout status deployment/agentgateway-proxy -n agentgateway-system --ti
 # always logs agw.ai.usage.cost.total for LLM requests (Step 4); a value greater than 0 means
 # the catalog priced the gpt-4 model. Read the cost from the proxy access log rather than the
 # stats endpoint, which is not reachable from outside the proxy pod in automated tests.
-#
-# WORKAROUND (remove once the deployer mounts the catalog reliably): the model-catalog
-# ConfigMap is delivered to the proxy through a subPath volume mount, and on the pinned dev
-# build that mount intermittently comes up as a directory instead of a file (a kubelet subPath
-# race). A pod in that state logs "model catalog load failed ... Is a directory" and never
-# loads the catalog, so no request is ever priced. The bad mount does not self-heal, so waiting
-# does not help; instead we restart the proxy to draw a fresh pod (each pod gets an independent
-# mount) and retry until the catalog loads.
 export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n agentgateway-system -o jsonpath="{.status.addresses[0].value}")
 priced=false
-for attempt in $(seq 1 5); do
-  for i in $(seq 1 6); do
-    curl -s --max-time 15 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
-      -H "content-type: application/json" \
-      -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}' || true
-    cost=$(kubectl logs deployment/agentgateway-proxy -n agentgateway-system --tail=500 2>/dev/null \
-      | grep -oE 'agw\.ai\.usage\.cost\.total[^0-9-]*[0-9]+(\.[0-9]+)?' \
-      | grep -oE '[0-9]+(\.[0-9]+)?$' \
-      | sort -rn | head -1 || true)
-    if [ -n "$cost" ] && awk "BEGIN{exit !(${cost} > 0)}"; then
-      priced=true
-      break
-    fi
-    # A directory mount never loads the catalog on this pod, so stop early and roll to a fresh
-    # pod instead of waiting out the rest of the request loop.
-    if kubectl logs deployment/agentgateway-proxy -n agentgateway-system --tail=500 2>/dev/null \
-        | grep -q "model catalog load failed"; then
-      break
-    fi
-    sleep 5
-  done
-  [ "$priced" = "true" ] && break
-  echo "Attempt ${attempt}: catalog not loaded (likely the subPath directory-mount race); restarting the proxy to retry."
-  kubectl rollout restart deployment/agentgateway-proxy -n agentgateway-system
-  kubectl rollout status deployment/agentgateway-proxy -n agentgateway-system --timeout=180s
+for i in $(seq 1 12); do
+  curl -s --max-time 15 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
+    -H "content-type: application/json" \
+    -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}' || true
+  cost=$(kubectl logs deployment/agentgateway-proxy -n agentgateway-system --tail=500 2>/dev/null \
+    | grep -oE 'agw\.ai\.usage\.cost\.total[^0-9-]*[0-9]+(\.[0-9]+)?' \
+    | grep -oE '[0-9]+(\.[0-9]+)?$' \
+    | sort -rn | head -1 || true)
+  if [ -n "$cost" ] && awk "BEGIN{exit !(${cost} > 0)}"; then
+    priced=true
+    break
+  fi
+  sleep 5
 done
 if [ "$priced" != "true" ]; then
-  echo "FAIL: catalog did not price gpt-4 traffic (no non-zero agw.ai.usage.cost.total in access log after 5 proxy restarts)"
+  echo "FAIL: catalog did not price gpt-4 traffic (no non-zero agw.ai.usage.cost.total in access log)"
   exit 1
 fi
 echo "PASS: catalog priced gpt-4 traffic (agw.ai.usage.cost.total=${cost})"
