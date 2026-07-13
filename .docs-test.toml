@@ -32,12 +32,10 @@ scanRoots = [
 versionFromPath = "^/docs/kubernetes/(?<version>[^/]+)/"
 versions        = ["main", "latest", "2.2.x", "1.0.x"]
 
-# All checks default to enabled. Turn off the slow / opt-in projects.
-[checks]
-# Smoke is for cross-product runs (SMOKE_PRODUCT env); agw-oss is a
-# single site, so skip.
-smoke        = false
-crossBrowser = false
+# All checks default to enabled. No [checks] overrides are needed: agw-oss
+# runs the full default set. (The former `smoke`/`crossBrowser` toggles were
+# removed from the harness — smoke folded into the `content` project scoped by
+# CONTENT_DIR, and cross-browser is now selected per Playwright project.)
 
 # Allowlists for known-benign noise that surfaces against real product
 # content (test fixture has none of this). Tighten as content is fixed.
