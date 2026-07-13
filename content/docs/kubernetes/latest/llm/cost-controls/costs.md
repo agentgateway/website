@@ -248,38 +248,31 @@ kubectl rollout status deployment/agentgateway-proxy -n agentgateway-system --ti
 {{< /doc-test >}}
 
 {{< doc-test paths="costs" >}}
-# Send priced traffic through the httpbun route and confirm the catalog prices it
-# (the lookup metric records status="Exact" for the gpt-4 model). The stats port (15020)
-# is not exposed through the gateway load balancer, and automated doc tests cannot use
-# port-forwarding, so read it from an in-cluster helper pod that requests the proxy pod
-# IP directly.
+# Send priced traffic through the httpbun route and confirm the catalog prices it. The proxy
+# always logs agw.ai.usage.cost.total for LLM requests (Step 4); a value greater than 0 means
+# the catalog priced the gpt-4 model. Read the cost from the proxy access log rather than the
+# stats endpoint, which is not reachable from outside the proxy pod in automated tests.
 export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n agentgateway-system -o jsonpath="{.status.addresses[0].value}")
-POD_IP=$(kubectl get pods -n agentgateway-system \
-  -l gateway.networking.k8s.io/gateway-name=agentgateway-proxy \
-  -o jsonpath="{.items[0].status.podIP}")
-kubectl run costs-metrics-probe -n agentgateway-system --image=busybox:1.36 \
-  --restart=Never --command -- sleep 600
-trap 'kubectl delete pod costs-metrics-probe -n agentgateway-system --ignore-not-found --wait=false' EXIT
-kubectl wait --for=condition=Ready pod/costs-metrics-probe -n agentgateway-system --timeout=90s
 priced=false
 for i in $(seq 1 12); do
-  curl -s -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
+  curl -s --max-time 15 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
     -H "content-type: application/json" \
-    -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}'
-  if kubectl exec -n agentgateway-system costs-metrics-probe -- \
-      wget -q -O - "http://${POD_IP}:15020/metrics" \
-      | grep -E 'agentgateway_cost_catalog_lookups_total\{status="Exact"' \
-      | grep -q 'gen_ai_request_model="gpt-4"'; then
+    -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}' || true
+  cost=$(kubectl logs deployment/agentgateway-proxy -n agentgateway-system --tail=500 2>/dev/null \
+    | grep -oE 'agw\.ai\.usage\.cost\.total[^0-9-]*[0-9]+(\.[0-9]+)?' \
+    | grep -oE '[0-9]+(\.[0-9]+)?$' \
+    | sort -rn | head -1)
+  if [ -n "$cost" ] && awk "BEGIN{exit !(${cost} > 0)}"; then
     priced=true
     break
   fi
   sleep 5
 done
 if [ "$priced" != "true" ]; then
-  echo "FAIL: catalog did not price gpt-4 traffic (no status=Exact lookup)"
+  echo "FAIL: catalog did not price gpt-4 traffic (no non-zero agw.ai.usage.cost.total in access log)"
   exit 1
 fi
-echo "PASS: catalog priced gpt-4 traffic (status=Exact)"
+echo "PASS: catalog priced gpt-4 traffic (agw.ai.usage.cost.total=${cost})"
 {{< /doc-test >}}
 
 {{< doc-test paths="costs" >}}
