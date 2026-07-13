@@ -25,7 +25,7 @@ Kagent agents running in Kubernetes need enterprise governance:
 ## Before you begin
 {{< reuse "agw-docs/snippets/prereq.md" >}}
 
-4. Follow the [Ollama]({{< link-hextra path="llm/providers/ollama/">}}) guide to install and setup Ollama.
+4. Follow the [Ollama]({{< link-hextra path="/llm/providers/ollama/">}}) guide to install and setup Ollama.
 
 ## Architecture
 
