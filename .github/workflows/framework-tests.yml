@@ -109,7 +109,9 @@ jobs:
           # but isn't installed by default in this runner. Mirror the
           # install pattern from links.yml so Hugo can find it via npx.
           npm i -D postcss postcss-cli autoprefixer
-          hugo --gc --minify
+          # Capture the build log so hugo-warnings.spec can scan it for ERROR /
+          # WARN lines; surface it and fail if the build itself fails.
+          hugo --gc --minify > .build.log 2>&1 || { cat .build.log; exit 1; }
 
       - name: Install harness dependencies
         working-directory: docs-theme-extras
