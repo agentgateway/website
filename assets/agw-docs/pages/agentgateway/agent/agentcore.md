@@ -21,8 +21,8 @@ AgentCore runtimes support two authentication modes, which you choose when you d
 
 Additionally, make sure that you have the following:
 
-* An Amazon Bedrock AgentCore agent runtime that is deployed in your AWS account, and its ARN in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`.
-* Credentials for the runtime's authentication mode:
+1. An Amazon Bedrock AgentCore agent runtime that is deployed in your AWS account. For steps to build and deploy a runtime, see the [Amazon Bedrock AgentCore documentation](https://docs.aws.amazon.com/bedrock-agentcore/). You also need the runtime's ARN, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`.
+2. Credentials for the runtime's authentication mode:
   * For **IAM (SigV4)**, AWS credentials that are available to the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy and that are allowed to invoke the runtime. The proxy uses the standard AWS credential chain, such as an IAM role, environment variables, or an instance profile. On Amazon EKS, the recommended approach is [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html): associate an IAM role with the proxy's Kubernetes service account.
   * For a **JWT authorizer**, a valid OIDC bearer token that the runtime's authorizer accepts, such as an Amazon Cognito access or ID token.
 
@@ -89,7 +89,7 @@ EOF
 
 ## Step 2: Route to the AgentCore backend {#route}
 
-Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} replaces the entire request path with the runtime's invocation endpoint before the request is sent upstream. As a result, any subpath that a client appends after `/agentcore` is not forwarded to the runtime.
+1. Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} replaces the entire request path with the runtime's invocation endpoint before the request is sent upstream. As a result, any subpath that a client appends after `/agentcore` is not forwarded to the runtime.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -114,7 +114,7 @@ spec:
 EOF
 ```
 
-Optionally, add a `RequestHeaderModifier` filter to the route rule to identify the calling user to the AgentCore runtime. AgentCore uses the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header to associate requests with a user session.
+2. Optional: Add a `RequestHeaderModifier` filter to the route rule to identify the calling user to the AgentCore runtime. AgentCore uses the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header to associate requests with a user session.
 
 ```yaml
     filters:
