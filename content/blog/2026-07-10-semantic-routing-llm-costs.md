@@ -35,8 +35,8 @@ vSR evaluates semantic, complexity, keyword, context, and structure signals,
 then returns the selected model. Agentgateway forwards the request and records
 what happened.
 
-I do not ask vSR to use historic request cost as a classifier input. Cost is an
-outcome that agentgateway measures after the request. That keeps the policy
+vSR does not use historic request cost as a classifier input. Instead, cost is
+an outcome that agentgateway measures after the request. That keeps the policy
 explainable: the routing configuration says which work merits the stronger
 model, while the gateway shows what that decision actually cost.
 
@@ -89,10 +89,9 @@ the tail.
 
 The chart gives me the guardrail I need. It reached 83.3% tier agreement on the
 checked-in coding sample and sent 8 of the 12 prompts labelled complex to
-GPT-5.5. This is not a claim of perfect model selection. I read it as
-evidence that the savings did not come from a blanket downgrade: one-third of
-the routed requests still used the expensive model, including most of the
-complex sample.
+GPT-5.5. This does not claim perfect model selection. It does show that the
+savings did not come from a blanket downgrade: one-third of routed requests
+still used the expensive model, including most complex prompts in the sample.
 
 That is the useful scope for this example. It keeps higher-risk work on a more
 capable model by policy and makes the exceptions visible. It is not a general
