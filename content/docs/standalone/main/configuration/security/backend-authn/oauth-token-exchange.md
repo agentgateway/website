@@ -273,7 +273,7 @@ backendAuth:
 
 The `jwt-authz-grant` example includes an `/obo` route and a mock token endpoint so that you can inspect the exact on-behalf-of request the gateway sends. For details, see the [example README](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange/jwt-authz-grant).
 
-## What's next
+## Next steps
 
 - Read the [Shielding AI agents from sensitive credentials](https://agentgateway.dev/blog/2026-07-12-agentgateway-token-exchange-jwt-assertion-entra-obo/) blog post for a walkthrough of token exchange, JWT assertion, and Entra on-behalf-of.
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) policy.
