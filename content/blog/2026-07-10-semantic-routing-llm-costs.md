@@ -126,7 +126,8 @@ When I want to change the policy, I edit the fetched vSR values, redeploy with
 
 Codex lets me choose a model manually, but that is one more decision to keep in
 my head during a long development task. A user-level Codex profile can instead
-send every request to the corporate gateway with the stable `auto` model name:
+send every request to the gateway, e.g. agentgateway, with the stable `auto`
+model name:
 
 ```toml
 # ~/.codex/agentgateway.config.toml
