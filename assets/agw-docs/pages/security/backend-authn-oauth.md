@@ -29,23 +29,27 @@ The following guide walks through a complete, reproducible example: it deploys a
 
 ## Deploy Keycloak
 
-Deploy a Keycloak authorization server into your cluster to act as the token endpoint. This example uses the same pre-seeded `backend-oauth` realm as the [standalone token exchange guide]({{< link-hextra path="/configuration/security/backend-authn/oauth-token-exchange/" >}}): it has an `initial-client` that mints the user's inbound token, a confidential `requester-client` (the gateway's client, with token exchange enabled), a `target-client` audience, and a `testuser` / `testpass` user.
+Deploy a Keycloak authorization server into your cluster to act as the token endpoint. This example imports two realms so that you can exercise both grants:
 
-{{% steps %}}
+* `backend-oauth`: The resource realm that performs the exchange. It has an `initial-client` (mints the user's inbound token for the RFC 8693 grant), a confidential `requester-client` (the gateway's client, with token exchange enabled), a `target-client` audience, and `testuser` / `testpass` user credentials.
+* `idp`: A separate identity provider realm that issues the `assertion` for the RFC 7523 JWT bearer grant. The `backend-oauth` realm trusts it through a JWT Authorization Grant identity provider.
 
-### Step 1: Import the realm
-
-1. Download the realm definition and load it into a ConfigMap in the `httpbin` namespace, alongside the sample app.
+1. Download the realm definitions and load them into a ConfigMap in the `httpbin` namespace, alongside the sample app. The `sed` command rewrites the issuer host in the import (which is pinned to `localhost:7080` for local Docker use) to the in-cluster Keycloak address, so that the realms trust each other when Keycloak runs in the cluster.
 
    ```sh
-   curl -sL https://agentgateway.dev/examples/traffic-token-exchange/oauth-rfc8693/backend-oauth-realm.json -o backend-oauth-realm.json
+   BASE=https://agentgateway.dev/examples/traffic-token-exchange/jwt-authz-grant/jwtbearer-import
+   for realm in backend-oauth-realm idp-realm; do
+     curl -sL "$BASE/$realm.json" \
+       | sed 's#http://localhost:7080#http://keycloak.httpbin.svc.cluster.local:8080#g' \
+       > "$realm.json"
+   done
 
-   kubectl create configmap backend-oauth-realm -n httpbin --from-file=backend-oauth-realm.json
+   kubectl create configmap backend-oauth-realm -n httpbin \
+     --from-file=backend-oauth-realm.json \
+     --from-file=idp-realm.json
    ```
 
-### Step 2: Deploy Keycloak
-
-1. Deploy Keycloak and its Service into the `httpbin` namespace. The `KC_HOSTNAME` variable pins the token issuer to the in-cluster DNS name, so that tokens minted through a port-forward and the gateway's token-exchange call agree on the issuer (`iss`). Without this, Keycloak rejects the `subject_token` with an issuer mismatch.
+2. Deploy Keycloak and its Service into the `httpbin` namespace. The `--features=preview` flag enables Keycloak's JWT Authorization Grant, which the RFC 7523 JWT bearer grant requires. The `KC_HOSTNAME` variable pins the token issuer to the in-cluster DNS name, so that tokens minted through a port-forward and the gateway's token-exchange call agree on the issuer (`iss`). Without this, Keycloak rejects the token with an issuer mismatch.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -66,8 +70,8 @@ Deploy a Keycloak authorization server into your cluster to act as the token end
        spec:
          containers:
          - name: keycloak
-           image: quay.io/keycloak/keycloak:26.3
-           args: ["start-dev", "--import-realm", "--http-port=8080"]
+           image: quay.io/keycloak/keycloak:26.5
+           args: ["start-dev", "--import-realm", "--http-port=8080", "--features=preview"]
            env:
            - name: KEYCLOAK_ADMIN
              value: admin
@@ -105,67 +109,59 @@ Deploy a Keycloak authorization server into your cluster to act as the token end
    EOF
    ```
 
-2. Wait for Keycloak to be ready.
+3. Wait for Keycloak to be ready.
 
    ```sh
    kubectl rollout status deployment/keycloak -n httpbin --timeout=180s
    ```
 
-{{% /steps %}}
-
 ## Configure token exchange
 
-{{% steps %}}
+Configure agentgateway to exchange tokens.
 
-### Step 1: Create the token endpoint backend
+1. Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, pointing at the in-cluster Keycloak Service.
 
-Create an {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, pointing at the in-cluster Keycloak Service. Because Keycloak serves plain HTTP on port `8080` in this example, no backend TLS is configured. For an external authorization server on port `443`, backend TLS is enabled automatically.
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: keycloak-token-endpoint
+     namespace: httpbin
+   spec:
+     static:
+       host: keycloak.httpbin.svc.cluster.local
+       port: 8080
+   EOF
+   ```
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
-kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-metadata:
-  name: keycloak-token-endpoint
-  namespace: httpbin
-spec:
-  static:
-    host: keycloak.httpbin.svc.cluster.local
-    port: 8080
-EOF
-```
+2. Create a Kubernetes Secret with the gateway client's secret. This matches the `requester-client` secret from the imported realm.
 
-### Step 2: Create the client secret
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: Secret
+   metadata:
+     name: oauth-client
+     namespace: httpbin
+   type: Opaque
+   stringData:
+     clientSecret: requester-secret
+   EOF
+   ```
 
-Create a Kubernetes Secret with the gateway client's secret. This matches the `requester-client` secret from the imported realm.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the `httpbin` Service. The `tokenEndpoint` field references the {{< reuse "agw-docs/snippets/backend.md" >}}, and `path` sets the token endpoint path.
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: v1
-kind: Secret
-metadata:
-  name: oauth-client
-  namespace: httpbin
-type: Opaque
-stringData:
-  clientSecret: requester-secret
-EOF
-```
+   Choose the tab for the grant you want. All three tabs define the same single policy with a different `grantType` (and, for Entra, different client authentication and parameters). The [verification steps](#verify-the-exchange) that follow cover both the **RFC 8693** and **JWT bearer** grants against the local Keycloak.
 
-### Step 3: Attach the token exchange policy
-
-Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the `httpbin` Service. The `tokenEndpoint` field references the {{< reuse "agw-docs/snippets/backend.md" >}} from Step 1, and `path` sets the token endpoint path.
-
-Choose the tab for the grant you want. All three tabs define the *same single policy* with a different `grantType` (and, for Entra, different client authentication and parameters). The [verification steps](#verify-the-exchange) that follow use the default **RFC 8693** grant against the local Keycloak.
-
-{{< tabs >}}
+   {{< tabs >}}
 {{% tab name="RFC 8693 (default)" %}}
 
 The default token exchange grant sends the incoming credential as the `subject_token`.
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: backend-token-exchange
@@ -179,7 +175,7 @@ spec:
     auth:
       oauthTokenExchange:
         tokenEndpoint:
-          group: agentgateway.dev
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: keycloak-token-endpoint
           path: /realms/backend-oauth/protocol/openid-connect/token
@@ -199,9 +195,12 @@ EOF
 
 The RFC 7523 JWT bearer grant sends the incoming credential as the `assertion` instead of the `subject_token`. Set `grantType: JwtBearer`; the rest of the policy is the same.
 
+> [!NOTE]
+> In this example, the assertion is a token from the `idp` realm, which the `backend-oauth` realm trusts through its JWT Authorization Grant identity provider. [Verify the exchange](#verify-the-exchange) shows how to mint it.
+
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: backend-token-exchange
@@ -215,7 +214,7 @@ spec:
     auth:
       oauthTokenExchange:
         tokenEndpoint:
-          group: agentgateway.dev
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: keycloak-token-endpoint
           path: /realms/backend-oauth/protocol/openid-connect/token
@@ -230,18 +229,14 @@ spec:
 EOF
 ```
 
-{{< callout type="info" >}}
-The imported `backend-oauth` realm is configured for the RFC 8693 grant. To run the JWT bearer grant end to end, use an authorization server and client configured for RFC 7523.
-{{< /callout >}}
-
 {{% /tab %}}
 {{% tab name="Microsoft Entra OBO" %}}
 
-The [Microsoft Entra on-behalf-of (OBO)](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow) flow is a vendor-specific variant of the JWT bearer grant. Point the token endpoint at your Entra tenant, use `ClientSecretPost` client authentication, and add the `requested_token_use=on_behalf_of` parameter through `additionalParams`. Values in `additionalParams` are CEL expressions, so the literal string is quoted.
+The [Microsoft Entra on-behalf-of (OBO)](https://learn.microsoft.com/en-us/entra/identity-platform/v2-oauth2-on-behalf-of-flow) flow is a vendor-specific variant of the JWT bearer grant. Point the token endpoint at your Entra tenant, use `ClientSecretPost` client authentication, and add the `requested_token_use=on_behalf_of` parameter through `additionalParams`. Values in `additionalParams` are CEL expressions, so the literal string is quoted. Make sure to include your Entra `<TENANT_ID>` and `<CLIENT_ID>` values.
 
 ```yaml
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: backend-token-exchange
@@ -255,7 +250,7 @@ spec:
     auth:
       oauthTokenExchange:
         tokenEndpoint:
-          group: agentgateway.dev
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: entra-token-endpoint
           path: /<TENANT_ID>/oauth2/v2.0/token
@@ -273,30 +268,26 @@ EOF
 ```
 
 {{% /tab %}}
-{{< /tabs >}}
+   {{< /tabs >}}
 
-{{% /steps %}}
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.oauthTokenExchange" >}}).
 
-The following table describes the most common `oauthTokenExchange` fields.
-
-| Field | Description |
-| -- | -- |
-| `tokenEndpoint` | Reference to the {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, with an optional `path`. |
-| `tokenEndpointPath` | Path of the token endpoint. Alternative to `tokenEndpoint.path`. Defaults to `/`. |
-| `grantType` | `TokenExchange` (default, RFC 8693) or `JwtBearer` (RFC 7523). |
-| `clientAuth` | Client authentication for the token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
-| `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
-| `subjectToken` | Where to read the incoming credential and its `tokenType` (`AccessToken`, `Jwt`, and so on). Defaults to the `Authorization: Bearer` header. |
-| `actorToken` | Optional RFC 8693 delegation actor token (`TokenExchange` grant only). |
-| `location` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header. |
-| `additionalParams` | Extra form parameters appended to the token request. Values are CEL expressions. |
-| `cache` | In-memory token cache. Defaults to 8192 entries. Set `inMemory.maxEntries: 0` to disable. |
+   | Field | Description |
+   | -- | -- |
+   | `tokenEndpoint` | Reference to the {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, with an optional `path`. |
+   | `tokenEndpointPath` | Path of the token endpoint. Alternative to `tokenEndpoint.path`. Defaults to `/`. |
+   | `grantType` | `TokenExchange` (default, RFC 8693) or `JwtBearer` (RFC 7523). |
+   | `clientAuth` | Client authentication for the token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
+   | `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
+   | `subjectToken` | Where to read the incoming credential and its `tokenType` (`AccessToken`, `Jwt`, and so on). Defaults to the `Authorization: Bearer` header. |
+   | `actorToken` | Optional RFC 8693 delegation actor token (`TokenExchange` grant only). |
+   | `location` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header. |
+   | `additionalParams` | Extra form parameters appended to the token request. Values are CEL expressions. |
+   | `cache` | In-memory token cache. Defaults to 8192 entries. Set `inMemory.maxEntries: 0` to disable. |
 
 ## Verify the exchange
 
-{{% steps %}}
-
-### Step 1: Mint an inbound token
+Mint an inbound credential, send a request through agentgateway with it, and verify that the forwarded token was exchanged: it is issued for the `target-client` audience with `requester-client` as the authorized party (`azp`), not the client that minted the inbound credential.
 
 1. Port-forward the Keycloak Service so that you can reach its token endpoint locally.
 
@@ -304,40 +295,58 @@ The following table describes the most common `oauthTokenExchange` fields.
    kubectl port-forward -n httpbin svc/keycloak 8080:8080
    ```
 
-2. In another terminal, mint a user token from Keycloak as `initial-client`, and save it as the inbound credential. Tokens expire, so re-mint if you come back later.
+2. In another terminal, mint the inbound credential. Use the tab for the grant that you configured. Tokens expire, so re-mint if you come back later.
 
-   ```sh
-   export SUBJECT_TOKEN="$(curl -s http://localhost:8080/realms/backend-oauth/protocol/openid-connect/token \
-     -u initial-client:initial-secret -d grant_type=password \
-     -d username=testuser -d password=testpass | jq -r .access_token)"
-   echo $SUBJECT_TOKEN
-   ```
+   {{< tabs >}}
+{{% tab name="RFC 8693 (default)" %}}
 
-### Step 2: Send a request through the gateway
+Mint a user token from the `backend-oauth` realm as `initial-client`. The gateway sends this as the `subject_token`.
 
-1. Send a request to the httpbin `/headers` endpoint through the gateway, with the inbound token. The gateway exchanges the token at Keycloak and forwards the request to httpbin with the *exchanged* token. Because httpbin reflects the request headers, you can see the token that the gateway forwarded.
+```sh
+export INBOUND_TOKEN="$(curl -s http://localhost:8080/realms/backend-oauth/protocol/openid-connect/token \
+  -u initial-client:initial-secret -d grant_type=password \
+  -d username=testuser -d password=testpass | jq -r .access_token)"
+echo $INBOUND_TOKEN
+```
+
+{{% /tab %}}
+{{% tab name="JWT bearer" %}}
+
+Mint a token from the `idp` realm as `idp-app`. The gateway presents this as the RFC 7523 `assertion` to the `backend-oauth` realm, which trusts the `idp` realm.
+
+```sh
+export INBOUND_TOKEN="$(curl -s http://localhost:8080/realms/idp/protocol/openid-connect/token \
+  -u idp-app:idp-secret -d grant_type=password \
+  -d username=idpuser -d password=idppass | jq -r .access_token)"
+echo $INBOUND_TOKEN
+```
+
+{{% /tab %}}
+   {{< /tabs >}}
+
+3. Send a request to the httpbin `/headers` endpoint through the gateway, with the inbound credential. The gateway exchanges the credential at Keycloak and forwards the request to httpbin with the *exchanged* token. Because httpbin reflects the request headers, you can see the token that the gateway forwarded.
 
    ```sh
    curl -s http://$INGRESS_GW_ADDRESS:80/headers \
      -H "host: www.example.com" \
-     -H "authorization: Bearer $SUBJECT_TOKEN"
+     -H "authorization: Bearer $INBOUND_TOKEN"
    ```
 
    In the response, note that the `Authorization` header reflected by httpbin contains a *different* token than the one you sent.
 
-2. Copy the forwarded token from the `Authorization` header in the response, and save it to an environment variable.
+4. Copy the forwarded token from the `Authorization` header in the response, and save it to an environment variable.
 
    ```sh
    export FORWARDED_TOKEN=eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUI...
    ```
 
-3. Decode the token's payload to confirm the exchange.
+5. Decode the token's payload to confirm the exchange.
 
    ```sh
    echo "$FORWARDED_TOKEN" | cut -d. -f2 | jq -R 'gsub("-";"+") | gsub("_";"/") | . + ("=" * ((4 - (length % 4)) % 4)) | @base64d | fromjson'
    ```
 
-   The decoded token was issued for the target audience (`aud`), and its authorized party (`azp`) is the gateway's client (`requester-client`), not the original `initial-client`.
+   The decoded token was issued for the target audience (`aud`), and its authorized party (`azp`) is the gateway's client (`requester-client`), not the client that minted the inbound credential. Both grants produce the same exchanged token.
 
    ```json
    {
@@ -347,8 +356,6 @@ The following table describes the most common `oauthTokenExchange` fields.
      "sub": "4f5b414b-1f66-4251-ae2c-fc7f488ab141"
    }
    ```
-
-{{% /steps %}}
 
 <!--
 
