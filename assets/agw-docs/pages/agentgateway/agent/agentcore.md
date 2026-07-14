@@ -23,8 +23,8 @@ Additionally, make sure that you have the following:
 
 1. An Amazon Bedrock AgentCore agent runtime that is deployed in your AWS account. For steps to build and deploy a runtime, see the [Amazon Bedrock AgentCore documentation](https://docs.aws.amazon.com/bedrock-agentcore/). You also need the runtime's ARN, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`.
 2. Credentials for the runtime's authentication mode:
-  * For **IAM (SigV4)**, AWS credentials that are available to the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy and that are allowed to invoke the runtime. The proxy uses the standard AWS credential chain, such as an IAM role, environment variables, or an instance profile. On Amazon EKS, the recommended approach is [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html): associate an IAM role with the proxy's Kubernetes service account.
-  * For a **JWT authorizer**, a valid OIDC bearer token that the runtime's authorizer accepts, such as an Amazon Cognito access or ID token.
+   * For **IAM (SigV4)**, AWS credentials that are available to the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy and that are allowed to invoke the runtime. The proxy uses the standard AWS credential chain, such as an IAM role, environment variables, or an instance profile. On Amazon EKS, the recommended approach is [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html): associate an IAM role with the proxy's Kubernetes service account.
+   * For a **JWT authorizer**, a valid OIDC bearer token that the runtime's authorizer accepts, such as an Amazon Cognito access or ID token.
 
 ## Step 1: Create a backend for the AgentCore runtime {#backend}
 
