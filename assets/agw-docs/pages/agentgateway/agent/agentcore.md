@@ -2,11 +2,14 @@ With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can route requests d
 
 ## About AWS Bedrock AgentCore {#about}
 
-Amazon Bedrock AgentCore is a runtime that hosts deployed agents, each with its own invocation endpoint. To reach an AgentCore runtime, you supply its Amazon Resource Name (ARN) to an `{{< reuse "agw-docs/snippets/backend.md" >}}` of type `aws`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} derives the connection details from the ARN: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path set to the runtime's invocation endpoint.
+Amazon Bedrock AgentCore is a runtime that hosts deployed agents, each with its own invocation endpoint. To reach an AgentCore runtime, you supply its Amazon Resource Name (ARN) to an `{{< reuse "agw-docs/snippets/backend.md" >}}` of type `aws`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} derives the connection details from the ARN: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path rewritten to the runtime's invocation endpoint. You do not construct the endpoint or encode the ARN yourself.
 
-{{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with AWS Signature Version 4 (SigV4) by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the proxy's environment. This way, you do not store long-lived credentials in the gateway configuration.
+### Authentication {#authentication}
 
-<!-- This page documents only the SigV4/IAM auth path, which is what the native aws.agentCore backend supports. A second AgentCore auth mode, a Cognito (OIDC) JWT authorizer, is NOT documented here yet. Working theory: a JWT-authorizer runtime is fronted with a plain `host`/static AgentgatewayBackend pointed at the bedrock-agentcore endpoint plus a backendAuth policy (key or passthrough, see /configuration/security/backend-authn/), NOT the aws.agentCore backend type, since SigV4 signing and a JWT bearer are likely mutually exclusive. Before documenting the Cognito JWT variant, confirm with engineering: (1) the exact Kubernetes AgentgatewayBackend + policy config for a JWT-authorizer runtime; (2) whether backendAuth can attach to an aws.agentCore backend at all, or only to a plain host backend; (3) the token-rotation story, since Cognito JWTs expire while SigV4/IRSA rotates automatically; (4) a validated end-to-end example. Issue solo-io/docs#1916 has Cognito-JWT and IRSA/SigV4 workshop gists that can seed this. -->
+AgentCore runtimes support two authentication modes, which you choose when you deploy the runtime in AWS. The `aws.agentCore` backend supports both:
+
+* **IAM (SigV4)**: The default. {{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with AWS Signature Version 4 (SigV4) by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the proxy's environment, such as [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) on Amazon EKS. You do not store long-lived credentials in the gateway configuration, and IRSA credentials rotate automatically.
+* **JWT authorizer** (for example, Amazon Cognito): The runtime validates an OIDC bearer token on each request. To use this mode, attach a backend authentication policy that sends the token in the `Authorization` header. This overrides the default SigV4 signing. Unlike SigV4 credentials, a JWT expires, so you must refresh the token in the backing Kubernetes Secret before it expires.
 
 This integration does not use the A2A protocol. Because AgentCore is configured as an AWS backend, you do not set the `appProtocol: kgateway.dev/a2a` field or use the `a2a` backend type.
 
@@ -17,11 +20,17 @@ This integration does not use the A2A protocol. Because AgentCore is configured 
 Additionally, make sure that you have the following:
 
 * An Amazon Bedrock AgentCore agent runtime that is deployed in your AWS account, and its ARN in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`.
-* AWS credentials that are available to the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy so that it can sign requests with SigV4. The proxy uses the standard AWS credential chain, such as an IAM role, environment variables, or an instance profile. On Amazon EKS, the recommended approach is [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html): associate an IAM role that is allowed to invoke the AgentCore runtime with the proxy's Kubernetes service account. Unlike a static token, IRSA credentials rotate automatically.
+* Credentials for the runtime's authentication mode:
+  * For **IAM (SigV4)**, AWS credentials that are available to the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy and that are allowed to invoke the runtime. The proxy uses the standard AWS credential chain, such as an IAM role, environment variables, or an instance profile. On Amazon EKS, the recommended approach is [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html): associate an IAM role with the proxy's Kubernetes service account.
+  * For a **JWT authorizer**, a valid OIDC bearer token that the runtime's authorizer accepts, such as an Amazon Cognito access or ID token.
 
 ## Step 1: Create a backend for the AgentCore runtime {#backend}
 
-Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource that represents the AgentCore runtime. The `aws.agentCore` settings point {{< reuse "agw-docs/snippets/agentgateway.md" >}} to the runtime that you want to invoke.
+Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource that represents the AgentCore runtime. The `aws.agentCore` settings point {{< reuse "agw-docs/snippets/agentgateway.md" >}} to the runtime that you want to invoke. The configuration depends on the runtime's [authentication mode](#authentication).
+
+{{< tabs >}}
+{{% tab name="IAM (SigV4)" %}}
+Create the backend with only the `aws.agentCore` settings. {{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with SigV4 by using the proxy's environment credentials. You do not add an authentication policy.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -37,15 +46,48 @@ spec:
       # qualifier: production
 EOF
 ```
+{{% /tab %}}
+{{% tab name="JWT authorizer" %}}
+1. Store the bearer token that the runtime's authorizer accepts in a Kubernetes Secret. When you use the default Secret resolver, the token must be stored under the `Authorization` key.
+
+   ```sh
+   kubectl create secret generic agentcore-jwt \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --from-literal=Authorization="$AGENTCORE_JWT"
+   ```
+
+2. Create the backend and reference the Secret with a `policies.auth.secretRef` setting. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends the token in the `Authorization` header with a `Bearer` prefix, which overrides the default SigV4 signing. The endpoint, region, and invocation path are still derived from the ARN.
+
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   metadata:
+     name: agentcore-backend
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     aws:
+       agentCore:
+         agentRuntimeArn: arn:aws:bedrock-agentcore:us-west-2:111122223333:runtime/my-agent-runtime
+         # qualifier: production
+     policies:
+       auth:
+         secretRef:
+           name: agentcore-jwt
+   EOF
+   ```
+{{% /tab %}}
+{{< /tabs >}}
 
 | Setting | Description |
 | -- | -- |
 | `aws.agentCore.agentRuntimeArn` | The ARN of the AgentCore agent runtime to invoke, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} derives the endpoint, region, and invocation path from this value. |
 | `aws.agentCore.qualifier` | Optional. The runtime version or endpoint qualifier to invoke. If you omit this setting, the default endpoint is used. |
+| `policies.auth` | Optional. Overrides the default authentication for the backend. Omit this setting to sign requests with SigV4 (IAM). To authenticate to a runtime that uses a JWT authorizer, set `policies.auth.secretRef` (or `policies.auth.key`) to a bearer token. By default, the token is sent in the `Authorization` header with a `Bearer` prefix. When you use `secretRef` with the default resolver, store the token under the Secret's `Authorization` key. |
 
 ## Step 2: Route to the AgentCore backend {#route}
 
-Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} rewrites the request to the runtime's invocation endpoint and signs it before it is sent upstream.
+Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} rewrites the request to the runtime's invocation endpoint before it is sent upstream.
 
 ```yaml
 kubectl apply -f- <<EOF
@@ -107,7 +149,7 @@ Optionally, add a `RequestHeaderModifier` filter to the route rule to identify t
      -d '{"prompt": "Hello from agentgateway!"}'
    ```
 
-   If the request is signed successfully and the runtime is reachable, you get a response from your agent. If you get a `403` error, verify that the proxy's AWS credentials are allowed to invoke the AgentCore runtime.
+   If the runtime is reachable and the request is authenticated, you get a response from your agent. A `403` error indicates an authentication problem: for IAM, verify that the proxy's AWS credentials are allowed to invoke the runtime; for a JWT authorizer, verify that the token in the Secret is valid and not expired.
 
 ## Cleanup
 
@@ -116,4 +158,5 @@ Optionally, add a `RequestHeaderModifier` filter to the route rule to identify t
 ```sh
 kubectl delete HTTPRoute agentcore -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} agentcore-backend -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete secret agentcore-jwt -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 ```
