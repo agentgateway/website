@@ -101,7 +101,7 @@ and user-feedback measures.
 ## Try It
 
 I made the demo do the setup work that I would otherwise forget or repeat by
-hand. Behind the scenes, it uses the merged [agentgateway semantic-routing
+hand. Behind the scenes, it uses the [agentgateway semantic-routing
 example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing),
 creates or reuses a kind cluster, and installs agentgateway, vSR, a model cost
 catalog, and the OpenTelemetry stack. Before the primary requests run, it
