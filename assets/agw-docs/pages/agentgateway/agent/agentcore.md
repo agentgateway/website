@@ -91,39 +91,39 @@ EOF
 
 1. Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} replaces the entire request path with the runtime's invocation endpoint before the request is sent upstream. As a result, any subpath that a client appends after `/agentcore` is not forwarded to the runtime.
 
-```yaml
-kubectl apply -f- <<EOF
-apiVersion: gateway.networking.k8s.io/v1
-kind: HTTPRoute
-metadata:
-  name: agentcore
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  parentRefs:
-  - name: agentgateway-proxy
-    namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-  rules:
-  - matches:
-    - path:
-        type: PathPrefix
-        value: /agentcore
-    backendRefs:
-      - name: agentcore-backend
-        group: {{< reuse "agw-docs/snippets/group.md" >}}
-        kind: {{< reuse "agw-docs/snippets/backend.md" >}}
-EOF
-```
+   ```yaml
+   kubectl apply -f- <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: agentcore
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     rules:
+     - matches:
+       - path:
+           type: PathPrefix
+           value: /agentcore
+       backendRefs:
+         - name: agentcore-backend
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
+           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+   EOF
+   ```
 
 2. Optional: Add a `RequestHeaderModifier` filter to the route rule to identify the calling user to the AgentCore runtime. AgentCore uses the `X-Amzn-Bedrock-AgentCore-Runtime-User-Id` header to associate requests with a user session.
 
-```yaml
-    filters:
-    - type: RequestHeaderModifier
-      requestHeaderModifier:
-        set:
-        - name: X-Amzn-Bedrock-AgentCore-Runtime-User-Id
-          value: user-123
-```
+   ```yaml
+       filters:
+       - type: RequestHeaderModifier
+         requestHeaderModifier:
+           set:
+           - name: X-Amzn-Bedrock-AgentCore-Runtime-User-Id
+             value: user-123
+   ```
 
 ## Step 3: Verify the connection {#verify}
 
