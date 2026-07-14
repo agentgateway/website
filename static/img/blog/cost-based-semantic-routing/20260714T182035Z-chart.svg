@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="570" viewBox="0 0 960 570" role="img" aria-labelledby="title description">
-  <title id="title">Semantic routing experiment results</title>
-  <desc id="description">Semantic routing spend, routing agreement, model mix, and latency for run 20260713T184930Z.</desc>
+  <title id="title">Semantic routing evaluation results</title>
+  <desc id="description">Semantic routing spend, routing agreement, model mix, and latency for run 20260714T182035Z.</desc>
   <style>
     text { font-family: Arial, Helvetica, sans-serif; fill: #0f172a; }
     .title { font-size: 26px; font-weight: 700; }
@@ -13,12 +13,12 @@
     .metric-detail { font-size: 13px; fill: #475569; }
   </style>
   <rect width="960" height="570" fill="#ffffff"/>
-  <text class="title" x="48" y="46">Semantic routing experiment</text>
-  <text class="subtitle" x="48" y="70">Run 20260713T184930Z | Catalog-priced agentgateway metrics</text>
+  <text class="title" x="48" y="46">Semantic routing evaluation</text>
+  <text class="subtitle" x="48" y="70">Run 20260714T182035Z | Catalog-priced agentgateway metrics</text>
   <line x1="48" y1="91" x2="912" y2="91" stroke="#cbd5e1"/>
 
   <text class="kpi-label" x="48" y="121">SPEND REDUCTION</text>
-  <text class="kpi-value" x="48" y="151">42.9%</text>
+  <text class="kpi-value" x="48" y="151">45.5%</text>
   <text class="subtitle" x="48" y="173">Routed versus always expensive</text>
   <line x1="337" y1="112" x2="337" y2="177" stroke="#cbd5e1"/>
   <text class="kpi-label" x="370" y="121">ROUTING AGREEMENT</text>
@@ -26,11 +26,11 @@
   <text class="subtitle" x="370" y="173">Expected tiers in this coding sample</text>
   <line x1="655" y1="112" x2="655" y2="177" stroke="#cbd5e1"/>
   <text class="kpi-label" x="688" y="121">ROUTED P50 LATENCY</text>
-  <text class="kpi-value" x="688" y="151">3.96 s</text>
-  <text class="subtitle" x="688" y="173">-64.1% versus always expensive</text>
+  <text class="kpi-value" x="688" y="151">4.85 s</text>
+  <text class="subtitle" x="688" y="173">-35.7% versus always expensive</text>
 
   <text class="section" x="48" y="218">COST PER DEMO RUN (USD)</text>
-  <text class="lane" x="48" y="269">Semantic routing</text><rect x="225" y="252" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="252" width="240.0" height="24" fill="#0f766e"/><text class="value" x="665" y="269">$0.2319</text><text class="lane" x="48" y="314">Always expensive</text><rect x="225" y="297" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="297" width="420.0" height="24" fill="#475569"/><text class="value" x="665" y="314">$0.4058</text>
+  <text class="lane" x="48" y="269">Semantic routing</text><rect x="225" y="252" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="252" width="229.0" height="24" fill="#0f766e"/><text class="value" x="665" y="269">$0.2274</text><text class="lane" x="48" y="314">Always expensive</text><rect x="225" y="297" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="297" width="420.0" height="24" fill="#475569"/><text class="value" x="665" y="314">$0.4170</text>
   <line x1="48" y1="360" x2="912" y2="360" stroke="#cbd5e1"/>
 
   <text class="section" x="48" y="395">ROUTED MODEL MIX</text>
@@ -48,9 +48,9 @@
 
   <line x1="655" y1="386" x2="655" y2="505" stroke="#cbd5e1"/>
   <text class="section" x="688" y="395">END-TO-END LATENCY</text>
-  <text class="metric" x="688" y="429">3.96 s p50</text>
-  <text class="metric-detail" x="688" y="454">19.48 s p95 semantic routing</text>
-  <text class="metric-detail" x="688" y="481">Always expensive: 11.02 s p50, 20.12 s p95</text>
+  <text class="metric" x="688" y="429">4.85 s p50</text>
+  <text class="metric-detail" x="688" y="454">19.24 s p95 semantic routing</text>
+  <text class="metric-detail" x="688" y="481">Always expensive: 7.55 s p50, 20.83 s p95</text>
 
   <text class="note" x="48" y="548">Agreement uses expected tiers in the checked-in coding sample; it is a routing sanity check, not answer scoring.</text>
 </svg>

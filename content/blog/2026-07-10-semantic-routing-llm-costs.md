@@ -76,16 +76,16 @@ I deliberately leave out a forced-cheap lane. It would make the comparison
 larger, but it would not answer the question I care about: does routing save
 money while still escalating the work that deserves the expensive model?
 
-In a clean run on July 13, 2026, all 48 primary requests completed with exact
+In a clean run on July 14, 2026, all 48 primary requests completed with exact
 model-catalog lookups. vSR selected `gpt-5.4-nano` for 16 requests and
-`gpt-5.5` for 8. Catalog-priced agentgateway metrics reported `$0.231896` for
-the routed lane versus `$0.405800` for the always-expensive lane, a **42.9%
-cost reduction**. Routed p50 latency was **3.96 seconds**, compared with
-**11.02 seconds** for the always-expensive lane. P95 was similar at 19.48 and
-20.12 seconds because the requests that still use GPT-5.5 naturally determine
+`gpt-5.5` for 8. Catalog-priced agentgateway metrics reported `$0.227359` for
+the routed lane versus `$0.417020` for the always-expensive lane, a **45.5%
+cost reduction**. Routed p50 latency was **4.85 seconds**, compared with
+**7.55 seconds** for the always-expensive lane. P95 was similar at 19.24 and
+20.83 seconds because the requests that still use GPT-5.5 naturally determine
 the tail.
 
-![Catalog-priced semantic-routing result](/img/blog/cost-based-semantic-routing/20260713T184930Z-chart.svg)
+![Catalog-priced semantic-routing result](/img/blog/cost-based-semantic-routing/20260714T182035Z-chart.svg)
 
 The chart gives me the guardrail I need. It reached 83.3% tier agreement on the
 checked-in coding sample and sent 8 of the 12 prompts labelled complex to
