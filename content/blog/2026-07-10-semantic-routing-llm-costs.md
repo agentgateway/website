@@ -123,6 +123,37 @@ evaluation-scoped Prometheus report, and an SVG chart under `results/`.
 When I want to change the policy, I edit the fetched vSR values, redeploy with
 `./demo.sh router`, and run `./demo.sh eval --yes` again.
 
+## Use It From Codex
+
+Codex lets me choose a model manually, but that is one more decision to keep in
+my head during a long Go or Rust task. A user-level Codex profile can instead
+send every request to the corporate gateway with the stable `auto` model name:
+
+```toml
+# ~/.codex/agentgateway.config.toml
+model = "auto"
+model_provider = "agentgateway"
+
+[model_providers.agentgateway]
+name = "Corporate agentgateway"
+base_url = "https://my.corp.agentgateway.com/v1"
+wire_api = "responses"
+env_key = "OPENAI_API_KEY"
+```
+
+With `OPENAI_API_KEY` set to my OpenAI API key, I start Codex with
+`codex --profile agentgateway`. The client sends OpenAI Responses API traffic
+to agentgateway; vSR selects the actual tier and agentgateway records the
+decision and realized cost. I validated this path with a routine table-driven
+Go test request, which selected `gpt-5.4-nano`, and an advanced leader-election
+request, which selected `gpt-5.5`.
+
+The profile keeps credentials out of the configuration file. A company that
+needs to prevent direct model selection can enforce that separately at the
+gateway; `auto` is the supported path for this routing policy. Codex documents
+[custom model providers](https://learn.chatgpt.com/docs/config-file/config-advanced#custom-model-providers)
+and user-level [configuration profiles](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles).
+
 ## From Example to Rollout
 
 I would not treat semantic routing as a magic cost switch. I would start with
