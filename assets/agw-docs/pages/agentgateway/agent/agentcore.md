@@ -1,5 +1,8 @@
 With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can route requests directly to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime by using an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource. You do not need a separate proxy, custom code, or the AWS SDK.
 
+> [!NOTE]
+> This page routes to a deployed AgentCore agent runtime. To use Amazon Bedrock for direct LLM model invocation instead, see [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}).
+
 ## About AWS Bedrock AgentCore {#about}
 
 Amazon Bedrock AgentCore is a runtime that hosts deployed agents, each with its own invocation endpoint. To reach an AgentCore runtime, you supply its Amazon Resource Name (ARN) to an `{{< reuse "agw-docs/snippets/backend.md" >}}` of type `aws`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} derives the connection details from the ARN: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path rewritten to the runtime's invocation endpoint. You do not construct the endpoint or encode the ARN yourself.
@@ -87,7 +90,7 @@ EOF
 
 ## Step 2: Route to the AgentCore backend {#route}
 
-Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} rewrites the request to the runtime's invocation endpoint before it is sent upstream.
+Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} replaces the entire request path with the runtime's invocation endpoint before the request is sent upstream. As a result, any subpath that a client appends after `/agentcore` is not forwarded to the runtime.
 
 ```yaml
 kubectl apply -f- <<EOF
