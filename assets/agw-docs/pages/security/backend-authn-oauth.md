@@ -377,6 +377,14 @@ Make sure the incoming credential's issuer matches the token endpoint's issuer a
 
 -->
 
+## Next steps
+
+This guide uses a demo Keycloak and the httpbin sample app. To use token exchange in production:
+
+* **Point at your own authorization server.** Create an {{< reuse "agw-docs/snippets/backend.md" >}} for your IdP (such as Keycloak, Microsoft Entra, Okta, Auth0, or ZITADEL). Use port `443` for automatic backend TLS. Replace the demo realm, client IDs, audiences, and Kubernetes Secret with your own. The JWT bearer walkthrough relies on a Keycloak preview feature, so confirm that your provider supports the grant you need (for example, Microsoft Entra on-behalf-of is generally available).
+* **Attach the policy to the backends that need scoped tokens.** Target the {{< reuse "agw-docs/snippets/policy.md" >}} at the Services or {{< reuse "agw-docs/snippets/backend.md" >}}s that require their own credential, such as MCP servers, upstream APIs, or LLM providers. Pair it with route-level [JWT authentication]({{< link-hextra path="/security/jwt/" >}}) to validate the inbound credential first.
+* **Use token exchange to preserve agent and user identity.** Token exchange lets the gateway hand each backend a narrowly scoped, per-backend token while preserving the caller's identity end-to-end. In agentic flows, the exchange can carry an agent acting on behalf of a user, so every downstream call keeps an auditable, least-privilege identity chain instead of sharing one broad credential.
+
 ## Cleanup
 
 ```sh
