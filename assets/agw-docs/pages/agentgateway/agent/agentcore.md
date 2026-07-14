@@ -1,11 +1,11 @@
 With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can route requests directly to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime by using an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource. You do not need a separate proxy, custom code, or the AWS SDK.
 
 > [!NOTE]
-> This page routes to a deployed AgentCore agent runtime. To use Amazon Bedrock for direct LLM model invocation instead, see [Amazon Bedrock]({{< link-hextra path="/llm/providers/bedrock/" >}}).
+> Unlike connecting to [agent-to-agent (A2A) servers]({{< link-hextra path="/agent/a2a/" >}}), this integration does not use the A2A protocol. AgentCore is configured as an AWS backend, so you do not set the `appProtocol: kgateway.dev/a2a` field or use the `a2a` backend type.
 
 ## About AWS Bedrock AgentCore {#about}
 
-Amazon Bedrock AgentCore is a runtime that hosts deployed agents, each with its own invocation endpoint. To reach an AgentCore runtime, you supply its Amazon Resource Name (ARN) to an `{{< reuse "agw-docs/snippets/backend.md" >}}` of type `aws`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} derives the connection details from the ARN: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path rewritten to the runtime's invocation endpoint. You do not construct the endpoint or encode the ARN yourself.
+Amazon Bedrock AgentCore is a runtime that hosts deployed agents, each with its own invocation endpoint. To reach an AgentCore runtime, you supply its Amazon Resource Name (ARN) to an `{{< reuse "agw-docs/snippets/backend.md" >}}` of type `aws`. {{< reuse "agw-docs/snippets/agentgateway.md" >}} uses the ARN to determine where to send each request. It connects over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, then rewrites the request path to target the specific runtime. You do not construct the endpoint or encode the ARN yourself.
 
 ### Authentication {#authentication}
 
@@ -14,7 +14,6 @@ AgentCore runtimes support two authentication modes, which you choose when you d
 * **IAM (SigV4)**: The default. {{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with AWS Signature Version 4 (SigV4) by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the proxy's environment, such as [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) on Amazon EKS. You do not store long-lived credentials in the gateway configuration, and IRSA credentials rotate automatically.
 * **JWT authorizer** (for example, Amazon Cognito): The runtime validates an OIDC bearer token on each request. To use this mode, attach a backend authentication policy that sends the token in the `Authorization` header. This overrides the default SigV4 signing. Unlike SigV4 credentials, a JWT expires, so you must refresh the token in the backing Kubernetes Secret before it expires.
 
-This integration does not use the A2A protocol. Because AgentCore is configured as an AWS backend, you do not set the `appProtocol: kgateway.dev/a2a` field or use the `a2a` backend type.
 
 ## Before you begin {#before-you-begin}
 
