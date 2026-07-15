@@ -1,24 +1,8 @@
-{{- /* Hidden stand-ins for Hextra's bundled main.js, which wires the mobile
-       hamburger toggle with NO null guard: it does
-       document.querySelector('.hextra-hamburger-menu') then immediately
-       menu.querySelector('svg') / menu.addEventListener(...), and likewise
-       derefs .hextra-sidebar-container. agw ships a custom navbar (.hamburger)
-       that omits Hextra's toggle markup, so without these the script throws
-       "Cannot read properties of null" on EVERY page load. This hook renders
-       on every page (Hextra's footer.html calls custom/footer.html), so it is
-       the right place to satisfy both lookups site-wide — docs, tutorials,
-       blog, and the homepage alike. The .hextra-hamburger-menu MUST wrap an
-       <svg> (isMenuOpen reads menu.querySelector('svg')). On pages that render
-       a real sidebar the genuine .hextra-sidebar-container precedes this in the
-       DOM, so querySelector still resolves to it; these stand-ins only take
-       effect where the real elements are absent. Both the old unprefixed names
-       and the current hextra-prefixed names are kept so a Hextra class rename
-       in either direction can't silently re-break this (it broke once when
-       Hextra renamed .hamburger-menu → .hextra-hamburger-menu). */ -}}
-<div class="mobile-menu-overlay hextra-overlay hx:hidden" style="display: none !important;"></div>
-<div class="hamburger-menu hextra-hamburger-menu hx:hidden" style="display: none !important;"><svg></svg></div>
-<div class="sidebar-container hextra-sidebar-container hx:hidden" style="display: none !important;"></div>
-
+{{- /* The hidden Hextra-main.js stand-in shims that used to live here moved
+       into docs-theme-extras' module footer (layouts/partials/footer.html),
+       which renders site-wide and can't be shadowed by this hook — so the
+       null-deref fix is centralized for every consumer. This file now carries
+       only agw-oss's own footer content. */ -}}
 <div class="py-8 text-center">
   <p class="text-sm">
     For website terms of use, trademark policy and other project policies, please see

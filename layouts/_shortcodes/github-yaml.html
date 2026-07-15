@@ -6,6 +6,14 @@
     - url: The remote URL of the YAML file to fetch and display.
 
   Example: {{< github-yaml url="https://raw.githubusercontent.com/org/repo/main/config.yaml" >}}
+
+  On the SUCCESS path nothing extra is emitted — just the code block. On FAILURE
+  (dead/moved URL) the error message renders the URL as a real <a href>. That is
+  deliberate: the link checker scans rendered HTML and follows <a href> links, so
+  a broken include surfaces as a reported dead link instead of silent error text.
+  CI builds cache-cold, so a URL that is dead at build time always lands on this
+  branch. The standalone error block is not inside a <pre>, so lychee extracts the
+  anchor (anchors inside code blocks are skipped by default).
 */ -}}
 {{- $url := .Get "url" -}}
 {{- /* Use daily cache key to ensure content refreshes at least once per day */ -}}
@@ -16,5 +24,5 @@
 ```
 
 {{- else -}}
-  <p><strong>Error:</strong> Unable to load code from {{ $url }}</p>
+  <p><strong>Error:</strong> Unable to load code from <a href="{{ $url }}">{{ $url }}</a></p>
 {{- end -}}

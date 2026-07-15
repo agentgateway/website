@@ -147,8 +147,23 @@ framework-test-static:
 		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=static; \
 		result=$$?; npx playwright show-report; exit $$result)
 
-# Build the site and run chromium browser specs (tabs, mermaid, theme toggle,
-# copy-md, console errors, viewport, contrast).
+# Build the site and run only the content specs (markdown-leaks,
+# built-html-integrity, copy-md-fidelity, hugo-warnings, dev-build, plus the
+# source scanners curl-quotes/tab-syntax/shortcode-args/include-form/
+# cascade-type). This is the project a content-only PR needs; mirrors CI.
+.PHONY: framework-test-content
+framework-test-content:
+	@$(MAKE) _framework_test_preflight
+	rm -rf public
+	hugo160 --gc --minify > .build.log 2>&1
+	cd $(FRAMEWORK_EXTRAS_DIR) && \
+		(DOCS_TEST_CONFIG=$(abspath ./.docs-test.toml) npx playwright test --project=content; \
+		result=$$?; npx playwright show-report; exit $$result)
+
+# Build the site and run chromium browser specs (theme toggle, mermaid,
+# contrast, viewport, sidebar rail, toc, alerts, back-to-top, brand). The
+# all-page console-error crawl is a separate "browser-crawl" project; the
+# full `framework-test` target runs it.
 .PHONY: framework-test-browser
 framework-test-browser:
 	@$(MAKE) _framework_test_preflight
