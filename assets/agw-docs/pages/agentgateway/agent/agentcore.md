@@ -91,6 +91,9 @@ EOF
 
 1. Create an HTTPRoute that routes incoming traffic to the `{{< reuse "agw-docs/snippets/backend.md" >}}`. The following route matches the `/agentcore` path so that the runtime has a unique address on the gateway. You do not need to rewrite the path, because {{< reuse "agw-docs/snippets/agentgateway.md" >}} replaces the entire request path with the runtime's invocation endpoint before the request is sent upstream. As a result, any subpath that a client appends after `/agentcore` is not forwarded to the runtime.
 
+   > [!NOTE]
+   > AgentCore identifies a runtime entirely by its ARN, not by a URL subpath, so a path such as `/agentcore/my-agent` does not select a different agent. The `my-agent` subpath is dropped, and the request still reaches the ARN in the backend. To route to more than one runtime, create a separate `{{< reuse "agw-docs/snippets/backend.md" >}}` (each with its own `agentRuntimeArn`) and a separate route for each one. To target a different version or endpoint of the same runtime, set `aws.agentCore.qualifier` instead.
+
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
