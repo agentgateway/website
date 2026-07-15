@@ -1,7 +1,7 @@
 ---
 title: Listeners
 weight: 12
-description: Configure listeners for agentgateway.
+description: Define the ports, protocols, and TLS settings where agentgateway accepts incoming traffic.
 test:
   listeners:
   - file: ${versionRoot}/configuration/listeners.md

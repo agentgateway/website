@@ -165,6 +165,17 @@ func toPropertyMapWithResolver(node *yaml.Node, parentRequired []string, resolve
 			}
 		}
 
+		// If a $ref-based field would otherwise be labeled the generic "object",
+		// surface the referenced type name instead (e.g. "LocalLLMModels").
+		if propType == "object" || propType == "object[]" {
+			if refName, refArray := refTypeName(decodeMapping(resolveAlias(propNode))); refName != "" {
+				if refArray {
+					propType = refName + "[]"
+				} else {
+					propType = refName
+				}
+			}
+		}
 		pm.keys = append(pm.keys, name)
 		pm.props[name] = propertyDef{
 			description: getString(propRaw, "description"),
@@ -375,6 +386,44 @@ func getString(m nodeMap, key string) string {
 		return n.Value
 	}
 	return ""
+}
+
+// refTypeName extracts the named type a property points to via $ref, so the widget
+// can label the field with the type name (e.g. "LocalLLMModels") instead of a generic
+// "object". It finds the ref directly, inside an anyOf/oneOf branch (how optional
+// fields serialize), or as array items. Returns the base type name and whether the
+// field is an array of that type; returns "" when there is no single named type
+// (e.g. inline objects or maps), leaving the caller's label untouched.
+func refTypeName(raw nodeMap) (string, bool) {
+	base := func(ref string) string {
+		if ref == "" {
+			return ""
+		}
+		return ref[strings.LastIndex(ref, "/")+1:]
+	}
+	fromRefOrUnion := func(m nodeMap) string {
+		if n := base(getString(m, "$ref")); n != "" {
+			return n
+		}
+		for _, key := range []string{"anyOf", "oneOf"} {
+			alts := getNode(m, key)
+			if alts == nil || alts.Kind != yaml.SequenceNode {
+				continue
+			}
+			for _, alt := range alts.Content {
+				if n := base(getString(decodeMapping(alt), "$ref")); n != "" {
+					return n
+				}
+			}
+		}
+		return ""
+	}
+	if items := getNode(raw, "items"); items != nil {
+		if n := fromRefOrUnion(decodeMapping(items)); n != "" {
+			return n, true
+		}
+	}
+	return fromRefOrUnion(raw), false
 }
 
 func getTypeString(m nodeMap, key string) string {
