@@ -194,23 +194,6 @@ Set `grantType: jwtBearer` to use the RFC 7523 JWT bearer grant, which sends the
 
 The [`traffic-token-exchange` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange) in the agentgateway repository also include an `extauthz` example that performs a token exchange by building the token request by hand with [external authorization]({{< link-hextra path="/configuration/security/external-authz/" >}}) and CEL, as an alternative to the built-in `oauthTokenExchange` method.
 
-### Configuration reference
-
-The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
-
-| Field | Description |
-| -- | -- |
-| `host`, `policies` | The token endpoint, referenced as a backend. A `host` port of `443` automatically enables backend TLS. |
-| `tokenEndpointPath` | Path of the token endpoint on the backend. Defaults to `/`. |
-| `grantType` | `tokenExchange` (default, RFC 8693) or `jwtBearer` (RFC 7523). |
-| `clientAuth` | Client authentication for the token endpoint. Supported methods are `clientSecretBasic` (default), `clientSecretPost`, and `privateKeyJwt`. |
-| `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
-| `subjectToken` | Where to read the incoming credential and its token type. Defaults to the `Authorization: Bearer` header with token type `access_token`. |
-| `actorToken` | Optional RFC 8693 delegation actor token (`tokenExchange` grant only). Has no default source. |
-| `authorizationLocation` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header with a `Bearer ` prefix. |
-| `additionalParams` | Extra form parameters appended to the token request. Values are CEL expressions. |
-| `cache` | In-memory token cache. Defaults to 8192 entries with a 300-second TTL when the response omits `expires_in`. Set `maxEntries: 0` to disable. |
-
 ### Custom headers
 
 To read the incoming credential from a custom location and place the exchanged token somewhere other than the `Authorization` header, update the source header.
@@ -219,7 +202,7 @@ To read the incoming credential from a custom location and place the exchanged t
 backendAuth:
   oauthTokenExchange:
     host: idp.example.com:443
-    tokenEndpointPath: /token
+    path: /token
     # Read the incoming credential from a custom header and declare its token type.
     subjectToken:
       tokenType: urn:ietf:params:oauth:token-type:jwt
@@ -242,7 +225,7 @@ For the RFC 8693 token exchange grant only, an actor token can be sent for [dele
 backendAuth:
   oauthTokenExchange:
     host: idp.example.com:443
-    tokenEndpointPath: /token
+    path: /token
     actorToken:
       tokenType: urn:ietf:params:oauth:token-type:access_token
       source:
@@ -259,7 +242,7 @@ The JWT bearer grant is also the shape used by the [Microsoft Entra on-behalf-of
 backendAuth:
   oauthTokenExchange:
     host: login.microsoftonline.com:443
-    tokenEndpointPath: /<TENANT_ID>/oauth2/v2.0/token
+    path: /<TENANT_ID>/oauth2/v2.0/token
     grantType: jwtBearer
     clientAuth:
       clientId: $CLIENT_ID
@@ -272,6 +255,23 @@ backendAuth:
 ```
 
 The `jwt-authz-grant` example includes an `/obo` route and a mock token endpoint so that you can inspect the exact on-behalf-of request the gateway sends. For details, see the [example README](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange/jwt-authz-grant).
+
+## Configuration reference
+
+The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
+
+| Field | Description |
+| -- | -- |
+| `host`, `policies` | The token endpoint, referenced as a backend. A `host` port of `443` automatically enables backend TLS. |
+| `path` | Path of the token endpoint on the backend. Must start with `/`. Defaults to `/`. |
+| `grantType` | `tokenExchange` (default, RFC 8693) or `jwtBearer` (RFC 7523). |
+| `clientAuth` | Client authentication for the token endpoint. Supported methods are `clientSecretBasic` (default), `clientSecretPost`, and `privateKeyJwt`. |
+| `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
+| `subjectToken` | Where to read the incoming credential and its token type. Defaults to the `Authorization: Bearer` header with token type `access_token`. |
+| `actorToken` | Optional RFC 8693 delegation actor token (`tokenExchange` grant only). Has no default source. |
+| `authorizationLocation` | Where to place the exchanged token in the backend request. Defaults to the `Authorization` header with a `Bearer ` prefix. |
+| `additionalParams` | Extra form parameters appended to the token request. Values are CEL expressions. |
+| `cache` | In-memory token cache. Defaults to 8192 entries with a 300-second TTL when the response omits `expires_in`. Set `maxEntries: 0` to disable. |
 
 ## Next steps
 

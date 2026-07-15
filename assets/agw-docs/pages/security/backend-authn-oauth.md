@@ -1,4 +1,4 @@
-Exchange the incoming request's credential for a per-backend token at an OAuth authorization server before forwarding the request, by using an {{< reuse "agw-docs/snippets/policy.md" >}} with the `oauthTokenExchange` backend authentication method.
+Set up OAuth token exchange with an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
 ## About
 
@@ -15,13 +15,11 @@ The method supports two grants:
 | Token exchange (default) | `TokenExchange` | [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) | `subject_token` |
 | JWT bearer | `JwtBearer` | [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) | `assertion` |
 
-Both grants are configured on the same policy. You choose the grant with the `grantType` field, as shown in the [Configure token exchange](#configure-token-exchange) tabs. Validation of the incoming credential is the job of a route-level policy, such as [JWT authentication]({{< link-hextra path="/security/jwt/" >}}), not the exchange itself.
+Both grants are configured on the same policy. You choose the grant with the `grantType` field, as shown in the [Configure token exchange](#configure-token-exchange) tabs. Validation of the incoming credential is the job of a route-level policy, such as [JWT authentication]({{< link-hextra path="/security/jwt/" >}}), not the exchange itself. Some IdPs might have vendor-specific variants of a grant type, such as Microsoft Entra's on-behalf-of flow for JWT bearer as shown later in this guide.
 
 ### Configuration
 
-In Kubernetes mode, the token endpoint (authorization server) is configured as its own {{< reuse "agw-docs/snippets/backend.md" >}}, which the {{< reuse "agw-docs/snippets/policy.md" >}} then references through `tokenEndpoint`. The gateway's OAuth client secret is read from a Kubernetes Secret through `clientAuth.secretRef`. The policy attaches to the backend workload with `targetRefs`, so the exchange runs whenever the gateway forwards a request to that backend.
-
-The following guide walks through a complete, reproducible example: it deploys a Keycloak authorization server into your cluster, attaches an `oauthTokenExchange` policy to the httpbin sample app, and verifies that the token forwarded to httpbin is the exchanged token rather than the one the client sent.
+The token endpoint (authorization server) is configured as its own {{< reuse "agw-docs/snippets/backend.md" >}}, which the {{< reuse "agw-docs/snippets/policy.md" >}} then references through `backendRef`. The gateway's OAuth client secret is read from a Kubernetes Secret through `clientAuth.secretRef`. The policy attaches to the backend workload with `targetRefs`, so the exchange runs whenever the gateway forwards a request to that backend.
 
 ## Before you begin
 
@@ -33,6 +31,8 @@ Deploy a Keycloak authorization server into your cluster to act as the token end
 
 * `backend-oauth`: The resource realm that performs the exchange. It has an `initial-client` (mints the user's inbound token for the RFC 8693 grant), a confidential `requester-client` (the gateway's client, with token exchange enabled), a `target-client` audience, and `testuser` / `testpass` user credentials.
 * `idp`: A separate identity provider realm that issues the `assertion` for the RFC 7523 JWT bearer grant. The `backend-oauth` realm trusts it through a JWT Authorization Grant identity provider.
+
+Steps to deploy Keycloak:
 
 1. Download the realm definitions and load them into a ConfigMap in the `httpbin` namespace, alongside the sample app. The `sed` command rewrites the issuer host in the import (which is pinned to `localhost:7080` for local Docker use) to the in-cluster Keycloak address, so that the realms trust each other when Keycloak runs in the cluster.
 
@@ -150,7 +150,7 @@ Configure agentgateway to exchange tokens.
    EOF
    ```
 
-3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the `httpbin` Service. The `tokenEndpoint` field references the {{< reuse "agw-docs/snippets/backend.md" >}}, and `path` sets the token endpoint path.
+3. Create an {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `oauthTokenExchange` method to the `httpbin` Service. The `backendRef` field references the {{< reuse "agw-docs/snippets/backend.md" >}}, and `path` sets the token endpoint path.
 
    Choose the tab for the grant you want. All three tabs define the same single policy with a different `grantType` (and, for Entra, different client authentication and parameters). The [verification steps](#verify-the-exchange) that follow cover both the **RFC 8693** and **JWT bearer** grants against the local Keycloak.
 
@@ -174,11 +174,11 @@ spec:
   backend:
     auth:
       oauthTokenExchange:
-        tokenEndpoint:
+        backendRef:
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: keycloak-token-endpoint
-          path: /realms/backend-oauth/protocol/openid-connect/token
+        path: /realms/backend-oauth/protocol/openid-connect/token
         grantType: TokenExchange
         audiences:
         - target-client
@@ -213,11 +213,11 @@ spec:
   backend:
     auth:
       oauthTokenExchange:
-        tokenEndpoint:
+        backendRef:
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: keycloak-token-endpoint
-          path: /realms/backend-oauth/protocol/openid-connect/token
+        path: /realms/backend-oauth/protocol/openid-connect/token
         grantType: JwtBearer
         audiences:
         - target-client
@@ -249,11 +249,11 @@ spec:
   backend:
     auth:
       oauthTokenExchange:
-        tokenEndpoint:
+        backendRef:
           group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
           name: entra-token-endpoint
-          path: /<TENANT_ID>/oauth2/v2.0/token
+        path: /<TENANT_ID>/oauth2/v2.0/token
         grantType: JwtBearer
         clientAuth:
           clientId: <CLIENT_ID>
@@ -274,8 +274,8 @@ EOF
 
    | Field | Description |
    | -- | -- |
-   | `tokenEndpoint` | Reference to the {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint, with an optional `path`. |
-   | `tokenEndpointPath` | Path of the token endpoint. Alternative to `tokenEndpoint.path`. Defaults to `/`. |
+   | `backendRef` | Reference to the {{< reuse "agw-docs/snippets/backend.md" >}} for the token endpoint. |
+   | `path` | Path of the token endpoint on the backend. Must start with `/`. Defaults to `/`. |
    | `grantType` | `TokenExchange` (default, RFC 8693) or `JwtBearer` (RFC 7523). |
    | `clientAuth` | Client authentication for the token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
    | `audiences`, `scopes`, `resources` | The `audience`, `scope`, and `resource` parameters sent to the token endpoint. `resources` are [RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707) resource indicators. |
@@ -320,6 +320,9 @@ export INBOUND_TOKEN="$(curl -s http://localhost:8080/realms/idp/protocol/openid
   -d username=idpuser -d password=idppass | jq -r .access_token)"
 echo $INBOUND_TOKEN
 ```
+
+> [!NOTE]
+> If you configured the **Microsoft Entra OBO** tab, update the curl against your own Entra tenant rather than the local Keycloak. Mint a user access token from Entra as the inbound credential, send it through the gateway, and inspect the exchanged (on-behalf-of) token that the gateway forwards.
 
 {{% /tab %}}
    {{< /tabs >}}
