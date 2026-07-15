@@ -1,37 +1,25 @@
-Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to route requests through your agentgateway proxy.
+Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to
+route requests through agentgateway running in Kubernetes.
 
 ## Before you begin
 
-1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Install the Codex CLI](https://developers.openai.com/codex/cli/).
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
+2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/llm/providers/openai/" >}}).
+3. [Install the Codex CLI](https://developers.openai.com/codex/cli/).
 
-## Configure agentgateway
+## Set the gateway URL
 
-Start agentgateway with an OpenAI backend configuration. The wildcard `*` model name accepts any model. Codex sends the model in each request, so you do not need to pin a specific model.
+The [OpenAI quickstart]({{< link-hextra path="/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
+uses `INGRESS_GW_ADDRESS` for the Gateway address. Set the Codex base URL from
+that value. The `/v1` suffix is required because Codex sends Responses API
+requests to `/v1/responses`.
 
-1. Create a configuration file.
+```sh
+export AGENTGATEWAY_BASE_URL="http://${INGRESS_GW_ADDRESS}/v1"
+```
 
-   ```yaml
-   cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   llm:
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
-   EOF
-   ```
-
-2. Start agentgateway.
-
-   ```bash
-   agentgateway -f config.yaml
-   ```
-
-{{< callout type="info" >}}
-For wildcard model matching, rate limiting, and other options, see the [OpenAI provider page]({{< link-hextra path="/llm/providers/openai" >}}).
-{{< /callout >}}
+For a TLS-enabled gateway, set `AGENTGATEWAY_BASE_URL` to its HTTPS URL ending
+in `/v1`.
 
 ## Connect Codex to agentgateway
 
@@ -44,20 +32,25 @@ Point Codex at agentgateway through one of the following methods.
 {{< tabs >}}
 {{% tab name="Environment variable" %}}
 
-Codex uses the [OPENAI_BASE_URL](https://developers.openai.com/codex/config-advanced) environment variable to override the default OpenAI endpoint. Use a base URL that includes `/v1` so requests go to `/v1/responses` and OpenAI does not return 404.
+Codex uses the [OPENAI_BASE_URL](https://developers.openai.com/codex/config-advanced)
+environment variable to override the default OpenAI endpoint.
 
 ```sh
-export OPENAI_BASE_URL="http://localhost:4000/v1"
+export OPENAI_BASE_URL="$AGENTGATEWAY_BASE_URL"
 codex
 ```
 
 {{% /tab %}}
 {{% tab name="CLI override" %}}
 
-To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
+To override the base URL for a single run, set `model_provider` and the
+provider's `name` and `base_url` (the `-c` values are TOML).
 
 ```sh
-codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via agentgateway"' -c 'model_providers.proxy.base_url="http://localhost:4000/v1"'
+codex -c 'model_provider="agentgateway"' \
+  -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' \
+  -c "model_providers.agentgateway.base_url=\"${AGENTGATEWAY_BASE_URL}\"" \
+  -c 'model_providers.agentgateway.wire_api="responses"'
 ```
 
 {{% /tab %}}
@@ -66,19 +59,20 @@ codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via age
 To configure the base URL persistently without changing your default Codex
 configuration, create a profile. For more information, see [Codex
 profiles](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles).
-The `name` field is required for custom providers.
 
-```toml
+```sh
+mkdir -p ~/.codex
+cat > ~/.codex/agentgateway.config.toml <<EOF
 model_provider = "agentgateway"
 
 [model_providers.agentgateway]
 name = "OpenAI via agentgateway"
-base_url = "http://localhost:4000/v1"
+base_url = "${AGENTGATEWAY_BASE_URL}"
 wire_api = "responses"
+EOF
 ```
 
-Save the configuration as `~/.codex/agentgateway.config.toml`, then start
-Codex with the profile:
+Start Codex with the profile:
 
 ```sh
 codex --profile agentgateway
@@ -99,12 +93,12 @@ user-level configuration, then restart the ChatGPT desktop app:
 
 ```sh
 cp ~/.codex/config.toml ~/.codex/config.toml.bak
-cat > ~/.codex/config.toml <<'EOF'
+cat > ~/.codex/config.toml <<EOF
 model_provider = "agentgateway"
 
 [model_providers.agentgateway]
 name = "OpenAI via agentgateway"
-base_url = "http://localhost:4000/v1"
+base_url = "${AGENTGATEWAY_BASE_URL}"
 wire_api = "responses"
 EOF
 ```
@@ -115,20 +109,27 @@ Open config.toml** and apply the same provider configuration.
 
 ## Verify the connection
 
-1. Send a test prompt through agentgateway. For the profile configuration,
-   include the profile name:
+1. Follow [Step 4 of the OpenAI quickstart]({{< link-hextra path="/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
+   to verify that the configured Gateway can reach the LLM provider.
 
-   ```bash
+2. Send a test prompt through agentgateway from the configured Codex CLI. For
+   the profile configuration, include the profile name:
+
+   ```sh
    codex --profile agentgateway "Hello"
    ```
 
-2. Verify that the request appears in the agentgateway logs.
+   Or send a task from Codex in the ChatGPT desktop app.
 
-   Example output:
+3. Verify that the request appears in the agentgateway proxy logs.
 
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --since=5m \
+     | grep 'http.path=/v1/responses' \
+     | tail -n 5
    ```
-   info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
-   ```
+
+   A successful entry has `http.status=200` and `http.path=/v1/responses`.
 
 Codex also probes `/v1/models` to discover model metadata. Until
 [agentgateway issue #1462](https://github.com/agentgateway/agentgateway/issues/1462)
