@@ -2,6 +2,8 @@ Get the external address of the gateway and save it in an environment variable.
    
    {{< tabs >}}
    {{< tab name="Cloud Provider LoadBalancer" >}}
+   {{< reuse "agw-docs/snippets/kind-loadbalancer-tip.md" >}}
+
    ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} ai-gateway -o jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $INGRESS_GW_ADDRESS  
