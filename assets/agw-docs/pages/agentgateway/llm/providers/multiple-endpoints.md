@@ -82,7 +82,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    EOF
    ```
 
-3. **Alternative: define routes in a {{< reuse "agw-docs/snippets/policy.md" >}}**
+3. **Alternative: define routes in an {{< reuse "agw-docs/snippets/policy.md" >}}**
 
    Instead of setting up the `routes` map on the {{< reuse "agw-docs/snippets/backend.md" >}}, you can configure them in a separate {{< reuse "agw-docs/snippets/policy.md" >}} attached to the HTTPRoute. This decouples routing configuration from the backend definition.
 
@@ -90,7 +90,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
@@ -113,7 +113,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
      name: openai-routes
