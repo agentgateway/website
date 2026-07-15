@@ -229,9 +229,9 @@ The gateway acts as a confidential OAuth client and performs a two-leg exchange 
 3. **JWT-bearer grant.** The gateway presents the ID-JAG to the resource's authorization server with an [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT-bearer grant and receives a Bearer access token that is scoped to the downstream API.
 4. **Attach and cache.** The Bearer token is added as `Authorization: Bearer <token>` to the upstream request and cached until shortly before it expires.
 
-The following configuration from the [`traffic-identity-assertion` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-identity-assertion) in the agentgateway repository configures the `crossAppAccess` method next to the `jwtAuth` policy that authenticates the user. Note that the gateway requires two separate client registrations, one at the IdP and one at the resource authorization server, each with its own client ID and credentials.
+The following configuration from the [`traffic-cross-app-access` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the agentgateway repository configures the `crossAppAccess` method next to the `jwtAuth` policy that authenticates the user. Note that the gateway requires two separate client registrations, one at the IdP and one at the resource authorization server, each with its own client ID and credentials.
 
-{{% github-yaml url="https://agentgateway.dev/examples/traffic-identity-assertion/config.yaml" %}}
+{{% github-yaml url="https://agentgateway.dev/examples/traffic-cross-app-access/okta-auth0/gateway.yaml" %}}
 
 | Setting | Description |
 | -- | -- |

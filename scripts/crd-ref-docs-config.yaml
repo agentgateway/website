@@ -38,6 +38,12 @@ render:
     - name: ObjectName
       package: sigs.k8s.io/gateway-api/apis/v1
       link: https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname
+    - name: Namespace
+      package: sigs.k8s.io/gateway-api/apis/v1
+      link: https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#namespace
+    - name: PortNumber
+      package: sigs.k8s.io/gateway-api/apis/v1
+      link: https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#portnumber
     - name: ParentReference
       package: sigs.k8s.io/gateway-api/apis/v1
       link: https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference
