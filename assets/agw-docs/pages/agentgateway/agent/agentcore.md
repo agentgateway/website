@@ -32,7 +32,7 @@ Create an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource that represent
 
 {{< tabs >}}
 {{% tab name="IAM (SigV4)" %}}
-Create the backend with only the `aws.agentCore` settings. {{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with SigV4 by using the proxy's environment credentials. You do not add an authentication policy.
+Create the backend with only the `aws.agentCore` settings. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} signs each request with SigV4 by using the proxy's environment credentials. You do not add an authentication policy.
 
 ```yaml
 kubectl apply -f- <<EOF
