@@ -86,10 +86,9 @@ For more configuration options, see the [**Codex CLI documentation**](https://de
 
 ### Codex in the ChatGPT Desktop App
 
-Codex is available in the ChatGPT desktop app.
-
-To use the same provider configuration with the app, back up and replace the
-user-level configuration, then restart the ChatGPT desktop app:
+Codex is available in the ChatGPT desktop app. To use the same provider
+configuration with the app, back up and replace the user-level configuration,
+then restart the ChatGPT desktop app:
 
 ```sh
 cp ~/.codex/config.toml ~/.codex/config.toml.bak
