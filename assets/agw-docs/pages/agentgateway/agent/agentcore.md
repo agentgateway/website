@@ -58,7 +58,7 @@ EOF
      --from-literal=Authorization="$AGENTCORE_JWT"
    ```
 
-2. Create the backend and reference the Secret with a `policies.auth.secretRef` setting. {{< reuse "agw-docs/snippets/agentgateway.md" >}} sends the token in the `Authorization` header with a `Bearer` prefix, which overrides the default SigV4 signing. The endpoint, region, and invocation path are still derived from the ARN.
+2. Create the backend and reference the Secret with a `policies.auth.secretRef` setting. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} sends the token in the `Authorization` header with a `Bearer` prefix, which overrides the default SigV4 signing. The endpoint, region, and invocation path are still derived from the ARN.
 
    ```yaml
    kubectl apply -f- <<EOF
