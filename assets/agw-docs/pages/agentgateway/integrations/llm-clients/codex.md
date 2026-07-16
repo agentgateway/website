@@ -78,12 +78,15 @@ codex --profile agentgateway
 {{% /tab %}}
 {{< /tabs >}}
 
+{{< callout type="info" >}}
+This configuration was tested with `codex-cli 0.144.4`.
+{{< /callout >}}
+
 For more configuration options, see the [**Codex CLI documentation**](https://developers.openai.com/codex/cli/).
 
 ### Codex in the ChatGPT Desktop App
 
-Codex is available in the ChatGPT desktop app. This configuration was tested
-with ChatGPT desktop app version `26.707.72221`.
+Codex is available in the ChatGPT desktop app.
 
 To use the same provider configuration with the app, back up and replace the
 user-level configuration, then restart the ChatGPT desktop app:
@@ -103,6 +106,10 @@ EOF
 Replacing `~/.codex/config.toml` also replaces other user-level Codex settings.
 To edit the file through the app instead, open **Settings > Configuration >
 Open config.toml** and apply the same provider configuration.
+
+{{< callout type="info" >}}
+This configuration was tested with ChatGPT desktop app version `26.707.72221`.
+{{< /callout >}}
 
 For more information, see the [**Codex app documentation**](https://learn.chatgpt.com/docs/environments/modes)
 and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/config-basic).
