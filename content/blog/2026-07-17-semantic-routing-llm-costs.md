@@ -33,7 +33,7 @@ it is measured after the request, keeping the policy explainable.
 
 `auto` opts into that automatic selection. A client can instead request
 `gpt-5.4-nano` or `gpt-5.5` directly to force a tier and bypass automatic
-routing; the request still passes through vSR and agentgateway. Organizations
+routing; the request still passes through agentgateway. Organizations
 that require the policy can [validate and reject unsupported model
 values](https://agentgateway.dev/docs/kubernetes/latest/traffic-management/transformations/validate/),
 including anything other than `auto`.
