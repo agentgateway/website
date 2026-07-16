@@ -78,6 +78,23 @@ codex --profile agentgateway
 {{% /tab %}}
 {{< /tabs >}}
 
+#### Verify the CLI connection
+
+1. Send a test prompt through agentgateway. For the profile configuration,
+   include the profile name:
+
+   ```bash
+   codex --profile agentgateway "Hello"
+   ```
+
+2. Verify that the request appears in the agentgateway logs.
+
+   Example output:
+
+   ```
+   info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
+   ```
+
 {{< callout type="info" >}}
 This configuration was tested with `codex-cli 0.144.4`.
 {{< /callout >}}
@@ -106,21 +123,9 @@ Replacing `~/.codex/config.toml` also replaces other user-level Codex settings.
 To edit the file through the app instead, open **Settings > Configuration >
 Open config.toml** and apply the same provider configuration.
 
-{{< callout type="info" >}}
-This configuration was tested with ChatGPT desktop app version `26.707.72221`.
-{{< /callout >}}
+#### Verify the app connection
 
-For more information, see the [**Codex app documentation**](https://learn.chatgpt.com/docs/environments/modes)
-and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/config-basic).
-
-## Verify the connection
-
-1. Send a test prompt through agentgateway. For the profile configuration,
-   include the profile name:
-
-   ```bash
-   codex --profile agentgateway "Hello"
-   ```
+1. Send a task from Codex in the ChatGPT desktop app.
 
 2. Verify that the request appears in the agentgateway logs.
 
@@ -129,6 +134,13 @@ and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/
    ```
    info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
    ```
+
+{{< callout type="info" >}}
+This configuration was tested with ChatGPT desktop app version `26.707.72221`.
+{{< /callout >}}
+
+For more information, see the [**Codex app documentation**](https://learn.chatgpt.com/docs/environments/modes)
+and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/config-basic).
 
 Codex also probes `/v1/models` to discover model metadata. Until
 [agentgateway issue #1462](https://github.com/agentgateway/agentgateway/issues/1462)

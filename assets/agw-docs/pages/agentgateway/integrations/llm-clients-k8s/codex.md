@@ -22,6 +22,11 @@ export AGENTGATEWAY_BASE_URL="http://${INGRESS_GW_ADDRESS}/v1"
 For a TLS-enabled gateway, set `AGENTGATEWAY_BASE_URL` to its HTTPS URL ending
 in `/v1`.
 
+## Verify gateway connectivity
+
+Follow [Step 4 of the OpenAI quickstart]({{< link-hextra path="/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
+to verify that the configured Gateway can reach the LLM provider.
+
 ## Connect Codex to agentgateway
 
 ### Codex CLI
@@ -69,6 +74,25 @@ codex --profile agentgateway
 {{% /tab %}}
 {{< /tabs >}}
 
+#### Verify the CLI connection
+
+1. Send a test prompt through agentgateway. For the profile configuration,
+   include the profile name:
+
+   ```sh
+   codex --profile agentgateway "Hello"
+   ```
+
+2. Verify that the request appears in the agentgateway proxy logs.
+
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --since=5m \
+     | grep 'http.path=/v1/responses' \
+     | tail -n 5
+   ```
+
+   A successful entry has `http.status=200` and `http.path=/v1/responses`.
+
 {{< callout type="info" >}}
 This configuration was tested with `codex-cli 0.144.4`.
 {{< /callout >}}
@@ -97,28 +121,11 @@ Replacing `~/.codex/config.toml` also replaces other user-level Codex settings.
 To edit the file through the app instead, open **Settings > Configuration >
 Open config.toml** and apply the same provider configuration.
 
-{{< callout type="info" >}}
-This configuration was tested with ChatGPT desktop app version `26.707.72221`.
-{{< /callout >}}
+#### Verify the app connection
 
-For more information, see the [**Codex app documentation**](https://learn.chatgpt.com/docs/environments/modes)
-and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/config-basic).
+1. Send a task from Codex in the ChatGPT desktop app.
 
-## Verify the connection
-
-1. Follow [Step 4 of the OpenAI quickstart]({{< link-hextra path="/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
-   to verify that the configured Gateway can reach the LLM provider.
-
-2. Send a test prompt through agentgateway from the configured Codex CLI. For
-   the profile configuration, include the profile name:
-
-   ```sh
-   codex --profile agentgateway "Hello"
-   ```
-
-   Or send a task from Codex in the ChatGPT desktop app.
-
-3. Verify that the request appears in the agentgateway proxy logs.
+2. Verify that the request appears in the agentgateway proxy logs.
 
    ```sh
    kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --since=5m \
@@ -127,6 +134,13 @@ and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/
    ```
 
    A successful entry has `http.status=200` and `http.path=/v1/responses`.
+
+{{< callout type="info" >}}
+This configuration was tested with ChatGPT desktop app version `26.707.72221`.
+{{< /callout >}}
+
+For more information, see the [**Codex app documentation**](https://learn.chatgpt.com/docs/environments/modes)
+and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/config-basic).
 
 Codex also probes `/v1/models` to discover model metadata. Until
 [agentgateway issue #1462](https://github.com/agentgateway/agentgateway/issues/1462)
