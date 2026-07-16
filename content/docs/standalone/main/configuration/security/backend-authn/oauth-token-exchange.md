@@ -51,7 +51,7 @@ In this example, a user authenticates to Keycloak as one client, and the gateway
    docker compose -f examples/traffic-token-exchange/oauth-rfc8693/docker-compose.yaml up -d
    ```
 
-2. Review the gateway configuration. The `oauthTokenExchange` method points at the Keycloak token endpoint, authenticates as the confidential client `requester-client`, and requests a token for `audience=target-client`. Because `grantType` is omitted, the gateway uses the default RFC 8693 token exchange grant. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
+2. Review the gateway configuration. The `oauthTokenExchange` method points at the Keycloak token endpoint, authenticates as the confidential client `requester-client`, and requests a token for `audience=target-client`. Because `grantType` is omitted, the gateway uses the default RFC 8693 token exchange grant. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
 
    {{% github-yaml url="https://agentgateway.dev/examples/traffic-token-exchange/oauth-rfc8693/config.yaml" %}}
 
@@ -130,7 +130,7 @@ Set `grantType: jwtBearer` to use the RFC 7523 JWT bearer grant, which sends the
    docker compose -f examples/traffic-token-exchange/jwt-authz-grant/docker-compose.yaml up -d
    ```
 
-2. Review the gateway configuration. The `/jwt-bearer-kc` route runs a full exchange against real Keycloak; the `/jwt-bearer` and `/obo` routes point at a mock token endpoint that logs the exact request the gateway sends. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
+2. Review the gateway configuration. The `/jwt-bearer-kc` route runs a full exchange against real Keycloak; the `/jwt-bearer` and `/obo` routes point at a mock token endpoint that logs the exact request the gateway sends. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
 
    {{% github-yaml url="https://agentgateway.dev/examples/traffic-token-exchange/jwt-authz-grant/config.yaml" %}}
 
@@ -258,7 +258,7 @@ The `jwt-authz-grant` example includes an `/obo` route and a mock token endpoint
 
 ## Configuration reference
 
-The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
+The following table describes the most common `oauthTokenExchange` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
 
 | Field | Description |
 | -- | -- |
