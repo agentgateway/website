@@ -31,6 +31,13 @@ keyword, context, and structure signals before selecting a model. Agentgateway
 forwards the request and records the outcome. Cost is not a classifier input;
 it is measured after the request, keeping the policy explainable.
 
+`auto` opts into that automatic selection. A client can instead request
+`gpt-5.4-nano` or `gpt-5.5` directly to force a tier and bypass automatic
+routing; the request still passes through vSR and agentgateway. Organizations
+that require the policy can [validate and reject unsupported model
+values](https://agentgateway.dev/docs/kubernetes/latest/traffic-management/transformations/validate/),
+including anything other than `auto`.
+
 ## Price the Outcome at the Gateway
 
 My company needs prices, not just token counts, to make a budget decision.
@@ -125,8 +132,7 @@ API traffic to agentgateway; vSR selects the tier and agentgateway records the
 decision and realized cost. I validated routine Go test traffic to nano and an
 advanced leader-election request to GPT-5.5.
 
-The profile keeps credentials out of the configuration file. A company can
-separately enforce `auto` at the gateway. Codex documents
+The profile keeps credentials out of the configuration file. Codex documents
 [custom model providers](https://learn.chatgpt.com/docs/config-file/config-advanced#custom-model-providers)
 and user-level [configuration profiles](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles).
 
