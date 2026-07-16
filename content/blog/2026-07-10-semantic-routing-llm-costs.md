@@ -59,7 +59,7 @@ engineering and finance can inspect the same model-selection event:
 ## A Small, Reproducible Evaluation
 
 I built the [cost-based semantic routing demo](https://github.com/danehans/agentgateway-demos/tree/main/cost-based-semantic-routing)
-around a compact 24-prompt Go and Rust dataset. Half of the prompts are routine
+around a compact 50-prompt Go and Rust dataset. Half of the prompts are routine
 implementation or test work; the other half involve correctness or
 distributed-systems problems. I send every prompt through two lanes:
 
@@ -76,27 +76,33 @@ I deliberately leave out a forced-cheap lane. It would make the comparison
 larger, but it would not answer the question I care about: does routing save
 money while still escalating the work that deserves the expensive model?
 
-In a clean run on July 14, 2026, all 48 primary requests completed with exact
-model-catalog lookups. vSR selected `gpt-5.4-nano` for 16 requests and
-`gpt-5.5` for 8. Catalog-priced agentgateway metrics reported `$0.227359` for
-the routed lane versus `$0.417020` for the always-expensive lane, a **45.5%
-cost reduction**. Routed p50 latency was **4.85 seconds**, compared with
-**7.55 seconds** for the always-expensive lane. P95 was similar at 19.24 and
-20.83 seconds because the requests that still use GPT-5.5 naturally determine
-the tail.
+In a clean run on July 16, 2026, all 100 primary requests completed with exact
+model-catalog lookups. vSR selected `gpt-5.4-nano` for 41 requests and
+`gpt-5.5` for 9. Catalog-priced agentgateway metrics reported `$0.280899` for
+the routed lane versus `$0.915050` for the always-expensive lane, a **69.3%
+cost reduction**. Routed p50 latency was **4.13 seconds**, compared with
+**7.45 seconds** for the always-expensive lane. P95 was 15.96 seconds for
+routed traffic and 17.89 seconds for the always-expensive lane.
 
-![Catalog-priced semantic-routing result](/img/blog/cost-based-semantic-routing/20260714T182035Z-chart.svg)
+![Catalog-priced semantic-routing result](/img/blog/cost-based-semantic-routing/20260716T181919Z-chart.svg)
 
-The chart gives me the guardrail I need. It reached 83.3% tier agreement on the
-checked-in coding sample and sent 8 of the 12 prompts labelled complex to
-GPT-5.5. This does not claim perfect model selection. It does show that the
-savings did not come from a blanket downgrade: one-third of routed requests
-still used the expensive model, including most complex prompts in the sample.
+The chart gives me the guardrail I need. It reached 68% tier agreement on the
+checked-in coding sample and sent 9 of the 25 prompts labelled complex to
+GPT-5.5. This is not a claim of perfect model selection. It does show that the
+savings did not come from a blanket downgrade: 18% of routed requests still
+used the expensive model, including explicitly complex prompts in the sample.
 
 That is the useful scope for this example. It keeps higher-risk work on a more
 capable model by policy and makes the exceptions visible. It is not a general
 answer-quality benchmark or a substitute for an application's own task-success
 and user-feedback measures.
+
+The default dataset uses independent requests. For long-running coding agents,
+the demo also offers an optional cache-transition evaluation: two ordered
+ten-turn Go and Rust conversations with a stable prefix. It reports
+provider-observed cache reads by model transition, which makes the cost of
+switching tiers visible without mixing cache behavior into the primary routing
+evaluation.
 
 ## Try It
 
@@ -115,8 +121,8 @@ export OPENAI_API_KEY='sk-...'
 ./demo.sh all --yes
 ```
 
-The default run sends 54 billable requests: two routing probes, four smoke-test
-requests, and 48 primary requests. It writes request-level JSONL, an
+The default run sends 106 billable requests: two routing probes, four smoke-test
+requests, and 100 primary requests. It writes request-level JSONL, an
 evaluation-scoped Prometheus report, and an SVG chart under `results/`.
 
 When I want to change the policy, I edit the fetched vSR values, redeploy with
@@ -138,15 +144,13 @@ model_provider = "agentgateway"
 name = "Corporate agentgateway"
 base_url = "https://my.corp.agentgateway.com/v1"
 wire_api = "responses"
-env_key = "OPENAI_API_KEY"
 ```
 
-With `OPENAI_API_KEY` set to my OpenAI API key, I start Codex with
-`codex --profile agentgateway`. The client sends OpenAI Responses API traffic
-to agentgateway; vSR selects the actual tier and agentgateway records the
-decision and realized cost. I validated this path with a routine table-driven
-Go test request, which selected `gpt-5.4-nano`, and an advanced leader-election
-request, which selected `gpt-5.5`.
+I start Codex with `codex --profile agentgateway`. The client sends OpenAI
+Responses API traffic to agentgateway; vSR selects the actual tier and
+agentgateway records the decision and realized cost. I validated this path with
+a routine table-driven Go test request, which selected `gpt-5.4-nano`, and an
+advanced leader-election request, which selected `gpt-5.5`.
 
 The profile keeps credentials out of the configuration file. A company that
 needs to prevent direct model selection can enforce that separately at the
