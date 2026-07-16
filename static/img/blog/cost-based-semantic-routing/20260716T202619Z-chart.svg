@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="661" viewBox="0 0 960 661" role="img" aria-labelledby="title description">
   <title id="title">Semantic routing evaluation results</title>
-  <desc id="description">Semantic routing spend, routing agreement, model mix, latency, and cache transitions for run 20260716T193923Z.</desc>
+  <desc id="description">Semantic routing spend, routing agreement, model mix, latency, and cache transitions for run 20260716T202619Z.</desc>
   <style>
     text { font-family: Arial, Helvetica, sans-serif; fill: #0f172a; }
     .title { font-size: 26px; font-weight: 700; }
@@ -15,43 +15,43 @@
   </style>
   <rect width="960" height="661" fill="#ffffff"/>
   <text class="title" x="48" y="46">Semantic routing evaluation</text>
-  <text class="subtitle" x="48" y="70">Run 20260716T193923Z | Catalog-priced agentgateway metrics</text>
+  <text class="subtitle" x="48" y="70">Run 20260716T202619Z | Catalog-priced agentgateway metrics</text>
   <line x1="48" y1="91" x2="912" y2="91" stroke="#cbd5e1"/>
 
   <text class="kpi-label" x="48" y="121">SPEND REDUCTION</text>
-  <text class="kpi-value" x="48" y="151">59.0%</text>
+  <text class="kpi-value" x="48" y="151">35.4%</text>
   <text class="subtitle" x="48" y="173">Routed versus always expensive</text>
   <line x1="337" y1="112" x2="337" y2="177" stroke="#cbd5e1"/>
   <text class="kpi-label" x="370" y="121">ROUTING AGREEMENT</text>
-  <text class="kpi-value" x="370" y="151">74.0%</text>
+  <text class="kpi-value" x="370" y="151">90.0%</text>
   <text class="subtitle" x="370" y="173">Expected tiers in this coding sample</text>
   <line x1="655" y1="112" x2="655" y2="177" stroke="#cbd5e1"/>
   <text class="kpi-label" x="688" y="121">ROUTED P50 LATENCY</text>
-  <text class="kpi-value" x="688" y="151">5.58 s</text>
-  <text class="subtitle" x="688" y="173">-28.0% versus always expensive</text>
+  <text class="kpi-value" x="688" y="151">5.22 s</text>
+  <text class="subtitle" x="688" y="173">-30.8% versus always expensive</text>
 
   <text class="section" x="48" y="218">COST PER DEMO RUN (USD)</text>
-  <text class="lane" x="48" y="269">Semantic routing</text><rect x="225" y="252" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="252" width="172.2" height="24" fill="#0f766e"/><text class="value" x="665" y="269">$0.3760</text><text class="lane" x="48" y="314">Always expensive</text><rect x="225" y="297" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="297" width="420.0" height="24" fill="#475569"/><text class="value" x="665" y="314">$0.9169</text>
+  <text class="lane" x="48" y="269">Semantic routing</text><rect x="225" y="252" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="252" width="271.5" height="24" fill="#0f766e"/><text class="value" x="665" y="269">$0.5914</text><text class="lane" x="48" y="314">Always expensive</text><rect x="225" y="297" width="420" height="24" fill="#e2e8f0"/><rect x="225" y="297" width="420.0" height="24" fill="#475569"/><text class="value" x="665" y="314">$0.9148</text>
   <line x1="48" y1="360" x2="912" y2="360" stroke="#cbd5e1"/>
 
   <text class="section" x="48" y="395">ROUTED MODEL MIX</text>
   <rect x="48" y="410" width="230" height="18" fill="#475569"/>
-  <rect x="48" y="410" width="174.8" height="18" fill="#0f766e"/>
-  <text class="metric" x="48" y="460">76% lower-cost</text>
-  <text class="metric-detail" x="48" y="481">38 gpt-5.4-nano | 12 gpt-5.5</text>
+  <rect x="48" y="410" width="138.0" height="18" fill="#0f766e"/>
+  <text class="metric" x="48" y="460">60% lower-cost</text>
+  <text class="metric-detail" x="48" y="481">30 gpt-5.4-nano | 20 gpt-5.5</text>
 
   <line x1="337" y1="386" x2="337" y2="505" stroke="#cbd5e1"/>
   <text class="section" x="370" y="395">COMPLEX-PROMPT ESCALATION</text>
   <rect x="370" y="410" width="230" height="18" fill="#e2e8f0"/>
-  <rect x="370" y="410" width="110.4" height="18" fill="#0f766e"/>
-  <text class="metric" x="370" y="460">48% to GPT-5.5</text>
-  <text class="metric-detail" x="370" y="481">12/25 complex prompts sent to GPT-5.5</text>
+  <rect x="370" y="410" width="184.0" height="18" fill="#0f766e"/>
+  <text class="metric" x="370" y="460">80% to GPT-5.5</text>
+  <text class="metric-detail" x="370" y="481">20/25 complex prompts sent to GPT-5.5</text>
 
   <line x1="655" y1="386" x2="655" y2="505" stroke="#cbd5e1"/>
   <text class="section" x="688" y="395">END-TO-END LATENCY</text>
-  <text class="metric" x="688" y="429">5.58 s p50</text>
-  <text class="metric-detail" x="688" y="454">17.18 s p95 semantic routing</text>
-  <text class="metric-detail" x="688" y="481">Always expensive: 7.75 s p50, 19.18 s p95</text>
+  <text class="metric" x="688" y="429">5.22 s p50</text>
+  <text class="metric-detail" x="688" y="454">19.09 s p95 semantic routing</text>
+  <text class="metric-detail" x="688" y="481">Always expensive: 7.55 s p50, 19.61 s p95</text>
 
   <line x1="48" y1="515" x2="912" y2="515" stroke="#cbd5e1"/>
   <text class="section" x="48" y="550">CONVERSATION CACHE TRANSITIONS</text>

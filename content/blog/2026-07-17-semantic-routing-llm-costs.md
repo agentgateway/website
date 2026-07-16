@@ -67,18 +67,18 @@ cluster traffic. I deliberately leave out a forced-cheap lane: the useful
 comparison is whether routing saves money while still escalating complex work.
 
 In a clean run on July 16, 2026, all 100 primary requests completed with exact
-model-catalog lookups. vSR selected `gpt-5.4-nano` for 38 requests and
-`gpt-5.5` for 12. Catalog-priced agentgateway metrics reported `$0.375954` for
-the routed lane versus `$0.916940` for the always-expensive lane, a **59.0%
-cost reduction**. Routed p50 latency was **5.58 seconds**, compared with
-**7.75 seconds** for the always-expensive lane. P95 was 17.18 seconds for
-routed traffic and 19.18 seconds for the always-expensive lane.
+model-catalog lookups. vSR selected `gpt-5.4-nano` for 30 requests and
+`gpt-5.5` for 20. Catalog-priced agentgateway metrics reported `$0.591444` for
+the routed lane versus `$0.914840` for the always-expensive lane, a **35.4%
+cost reduction**. Routed p50 latency was **5.22 seconds**, compared with
+**7.55 seconds** for the always-expensive lane. P95 was 19.09 seconds for
+routed traffic and 19.61 seconds for the always-expensive lane.
 
-![Catalog-priced semantic-routing result](/img/blog/cost-based-semantic-routing/20260716T193923Z-chart.svg)
+![Catalog-priced semantic-routing result](/img/blog/cost-based-semantic-routing/20260716T202619Z-chart.svg)
 
-The chart reached 74% tier agreement and sent 12 of 25 prompts labelled complex
+The chart reached 90% tier agreement. It sent 20 of 25 prompts labelled complex
 to GPT-5.5. This is not a claim of perfect model selection, but it shows the
-savings did not come from a blanket downgrade: 24% of routed requests still
+savings did not come from a blanket downgrade: 40% of routed requests still
 used the expensive model. It is a policy sanity check, not an answer-quality
 benchmark or a substitute for application task-success and user-feedback data.
 
