@@ -57,17 +57,19 @@ configuration, create a profile. For more information, see [Codex
 profiles](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles).
 The `name` field is required for custom providers.
 
-```toml
+```sh
+mkdir -p ~/.codex
+cat > ~/.codex/agentgateway.config.toml <<'EOF'
 model_provider = "agentgateway"
 
 [model_providers.agentgateway]
 name = "OpenAI via agentgateway"
 base_url = "http://localhost:4000/v1"
 wire_api = "responses"
+EOF
 ```
 
-Save the configuration as `~/.codex/agentgateway.config.toml`, then start
-Codex with the profile:
+Start Codex with the profile:
 
 ```sh
 codex --profile agentgateway
