@@ -10,8 +10,8 @@ route requests through agentgateway running in Kubernetes.
 
 ## Set the gateway URL
 
-The [OpenAI quickstart]({{< link-hextra path="/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
-uses `INGRESS_GW_ADDRESS` for the Gateway address. Set the Codex base URL from
+The [installation quickstart]({{< link-hextra path="/quickstart/install/" >}})
+sets `INGRESS_GW_ADDRESS` to the Gateway address. Set the Codex base URL from
 that value. The `/v1` suffix is required because Codex sends Responses API
 requests to `/v1/responses`.
 
