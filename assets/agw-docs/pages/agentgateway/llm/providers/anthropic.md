@@ -245,7 +245,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
    }
    ```
 
-## Extended thinking and reasoing
+## Extended thinking and reasoning
 
 Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
 
