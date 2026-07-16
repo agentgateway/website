@@ -117,7 +117,6 @@ wire_api = "responses"
 EOF
 ```
 
-Replacing `~/.codex/config.toml` also replaces other user-level Codex settings.
 To edit the file through the app instead, open **Settings > Configuration >
 Open config.toml** and apply the same provider configuration.
 
