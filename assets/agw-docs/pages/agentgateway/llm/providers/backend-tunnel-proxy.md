@@ -2,7 +2,7 @@ Use the {{< reuse "agw-docs/snippets/backend.md" >}} `tunnel` policy to route ba
 
 ## About the tunnel policy
 
-The `tunnel` field on a {{< reuse "agw-docs/snippets/backend.md" >}} configures an HTTP CONNECT tunnel to the target backend. Agentgateway establishes an HTTP tunnel through the proxy and forwards all requests to the upstream endpoint. This works like an `HTTPS_PROXY` environment variable but is applied at the agentgateway policy level.
+The `tunnel` field on a {{< reuse "agw-docs/snippets/backend.md" >}} configures an HTTP CONNECT tunnel to the target backend. Agentgateway establishes an HTTP tunnel through the proxy and forwards all requests to the upstream endpoint.
 
 The tunnel supports `Service` and {{< reuse "agw-docs/snippets/backend.md" >}} types as the proxy target.
 
