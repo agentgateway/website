@@ -1,7 +1,5 @@
 With {{< reuse "agw-docs/snippets/agentgateway.md" >}}, you can route requests directly to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime by using an `{{< reuse "agw-docs/snippets/backend.md" >}}` resource. You do not need a separate proxy, custom code, or the AWS SDK.
 
-> [!NOTE]
-> Unlike connecting to [agent-to-agent (A2A) servers]({{< link-hextra path="/agent/a2a/" >}}), this integration does not use the A2A protocol. AgentCore is configured as an AWS backend, so you do not set the `appProtocol: kgateway.dev/a2a` field or use the `a2a` backend type.
 
 ## About AWS Bedrock AgentCore {#about}
 
