@@ -13,7 +13,7 @@ The `crossAppAccess` backend authentication method implements the [OAuth Identit
 The gateway acts as a confidential OAuth client and performs a two-leg exchange on each backend call:
 
 1. **Authenticate the user.** The inbound request carries the user's OIDC ID token, validated by the [`jwtAuth` policy]({{< link-hextra path="/configuration/security/jwt-authn/" >}}). The validated token is the subject of the exchange. The `jwtAuth` policy must validate an OIDC ID token, not an arbitrary access token, because the identity provider expects an ID token as the subject.
-2. **Exchange the token.**: Depending on the type of exchange that you want to perform:
+2. **Exchange the token.** The gateway performs two sequential exchanges:
    1. **RFC 8693 token exchange.** The gateway calls the user's identity provider (IdP) authorization server with an [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange and receives an ID-JAG assertion that is bound to the resource authorization server.
    2. **RFC 7523 JWT-bearer grant.** The gateway presents the ID-JAG to the resource's authorization server with an [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT-bearer grant and receives a Bearer access token that is scoped to the downstream API.
 3. **Attach and cache.** The Bearer token is added as `Authorization: Bearer <token>` to the upstream request and cached until shortly before it expires.
@@ -165,7 +165,7 @@ Send a request through the gateway as the demo user and confirm that the downstr
    bad token  -> 401
    ```
 
-4. Clean up the demo when you are done.
+4. Clean up the demo when you are done. The `lsof` command stops the echo backend that runs in the background on port `9000` and the gateway on port `3030`.
 
    ```sh
    docker rm -f kc-idjag
@@ -186,7 +186,7 @@ The [`okta-auth0`](https://github.com/agentgateway/agentgateway/tree/main/exampl
 
 ## Configuration reference
 
-The following table describes the most common `crossAppAccess` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/config/" >}}).
+The following table describes the most common `crossAppAccess` fields. For the full set of fields, see the [configuration reference]({{< link-hextra path="/reference/configuration/" >}}).
 
 | Field | Description |
 | -- | -- |
