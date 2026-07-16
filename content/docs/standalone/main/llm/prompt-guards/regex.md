@@ -1,7 +1,7 @@
 ---
 title: Regex filters
 weight: 10
-description: Use custom regex patterns and built-in PII detectors to filter LLM requests and responses.
+description: Match and redact prompt content with custom regex patterns or agentgateway's built-in PII detectors.
 ---
 
 Use custom regex patterns and built-in PII detectors to filter LLM requests and responses.

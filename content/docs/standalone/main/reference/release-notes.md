@@ -1,7 +1,7 @@
 ---
 title: Release notes
 weight: 20
-description: Review the release notes for agentgateway standalone.
+description: What's new, changed, and fixed in each agentgateway standalone release.
 test: skip
 ---
 

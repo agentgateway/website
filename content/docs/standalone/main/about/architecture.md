@@ -1,7 +1,7 @@
 ---
 title: Architecture
 weight: 30
-description: Explore how agentgateway provides AI connectivity for agents, tools, and LLMs.
+description: A visual overview of where agentgateway sits between clients and the MCP servers, agents, and OpenAPI backends it connects.
 ---
 
 The following figure shows how agentgateway provides AI connectivity for agents, tools, and LLMs in any environment.

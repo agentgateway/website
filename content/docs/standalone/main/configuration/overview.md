@@ -1,7 +1,7 @@
 ---
 title: Overview
 weight: 10
-description: Manage agentgateway through configuration files in JSON or YAML format.
+description: Understand agentgateway's top-level configuration sections and how to write, update, and run a configuration file.
 next: /configuration/listeners
 ---
 

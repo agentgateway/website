@@ -1,7 +1,7 @@
 ---
 title: About guardrails
 weight: 5
-description: Protect LLM requests and responses from sensitive data exposure and harmful content using layered content safety controls (PII detection, DLP).
+description: How agentgateway's content safety controls, such as PII detection and DLP, layer to guard LLM requests and responses.
 ---
 
 Protect LLM requests and responses from sensitive data exposure and harmful content using layered content safety controls.
