@@ -2,7 +2,7 @@
 title: Together AI
 weight: 20
 icon: /integrations/providers/bw/togetherai.svg
-description: Configuration and setup for Together AI LLM provider
+description: Route agentgateway LLM traffic to models hosted on Together AI.
 ---
 
 Configure Together AI as an LLM provider in agentgateway.

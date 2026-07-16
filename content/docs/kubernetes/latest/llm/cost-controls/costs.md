@@ -80,7 +80,7 @@ Use `agctl costs import` to generate a catalog JSON file, then load it into a Co
    ...   
    ```
 
-4. Reference the ConfigMap from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, as shown in the next section, [Configure a catalog as a ConfigMap](#configure-a-catalog-as-a-configmap).
+4. Reference the ConfigMap from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, as shown in the next section, [Configure a catalog as a ConfigMap](#step-2-configure-a-catalog-as-a-configmap).
 
 For all options, see the [`agctl costs import`]({{< link-hextra path="/reference/agctl/agctl-costs-import/" >}}) reference.
 
@@ -248,31 +248,31 @@ kubectl rollout status deployment/agentgateway-proxy -n agentgateway-system --ti
 {{< /doc-test >}}
 
 {{< doc-test paths="costs" >}}
-# Send priced traffic through the httpbun route and confirm the catalog prices it
-# (the lookup metric records status="Exact" for the gpt-4 model).
+# Send priced traffic through the httpbun route and confirm the catalog prices it. The proxy
+# always logs agw.ai.usage.cost.total for LLM requests (Step 4); a value greater than 0 means
+# the catalog priced the gpt-4 model. Read the cost from the proxy access log rather than the
+# stats endpoint, which is not reachable from outside the proxy pod in automated tests.
 export INGRESS_GW_ADDRESS=$(kubectl get gateway agentgateway-proxy -n agentgateway-system -o jsonpath="{.status.addresses[0].value}")
-kubectl port-forward deployment/agentgateway-proxy -n agentgateway-system 15020:15020 > /dev/null 2>&1 &
-PF_PID=$!
-trap 'kill $PF_PID 2>/dev/null' EXIT
-sleep 3
 priced=false
 for i in $(seq 1 12); do
-  curl -s -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
+  curl -s --max-time 15 -o /dev/null "http://${INGRESS_GW_ADDRESS}:80/v1/chat/completions" \
     -H "content-type: application/json" \
-    -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}'
-  if curl -s http://localhost:15020/metrics \
-      | grep -E 'agentgateway_cost_catalog_lookups_total\{status="Exact"' \
-      | grep -q 'gen_ai_request_model="gpt-4"'; then
+    -d '{"model":"gpt-4","messages":[{"role":"user","content":"hi"}]}' || true
+  cost=$(kubectl logs deployment/agentgateway-proxy -n agentgateway-system --tail=500 2>/dev/null \
+    | grep -oE 'agw\.ai\.usage\.cost\.total[^0-9-]*[0-9]+(\.[0-9]+)?' \
+    | grep -oE '[0-9]+(\.[0-9]+)?$' \
+    | sort -rn | head -1 || true)
+  if [ -n "$cost" ] && awk "BEGIN{exit !(${cost} > 0)}"; then
     priced=true
     break
   fi
   sleep 5
 done
 if [ "$priced" != "true" ]; then
-  echo "FAIL: catalog did not price gpt-4 traffic (no status=Exact lookup)"
+  echo "FAIL: catalog did not price gpt-4 traffic (no non-zero agw.ai.usage.cost.total in access log)"
   exit 1
 fi
-echo "PASS: catalog priced gpt-4 traffic (status=Exact)"
+echo "PASS: catalog priced gpt-4 traffic (agw.ai.usage.cost.total=${cost})"
 {{< /doc-test >}}
 
 {{< doc-test paths="costs" >}}

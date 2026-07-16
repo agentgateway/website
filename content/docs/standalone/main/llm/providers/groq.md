@@ -2,7 +2,7 @@
 title: Groq
 weight: 20
 icon: /integrations/providers/bw/groq.svg
-description: Configuration and setup for Groq LLM provider
+description: Route agentgateway LLM traffic to models served by Groq.
 ---
 
 Configure Groq as an LLM provider in agentgateway.

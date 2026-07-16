@@ -1,6 +1,6 @@
 ---
 title: Operations
-description: Manage the standalone agentgateway lifecycle with debugging and inspection tools.
+description: Debug, inspect, and trace a running standalone agentgateway instance.
 weight: 70
 icon: settings
 test: skip

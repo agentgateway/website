@@ -245,7 +245,7 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
    }
    ```
 
-## Extended thinking and reasoing
+## Extended thinking and reasoning
 
 Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
 
@@ -745,6 +745,6 @@ Before you begin, [install agentgateway with the nightly build]({{< link-hextra 
 
 ## Connect to Claude Code
 
-{{% conditional-text include-if="kubernetes,standalone" %}}To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).{{% /conditional-text %}}{{% conditional-text include-if="kubernetes" %}} For a full tutorial with prompt guards and observability, see the [Claude Code CLI proxy tutorial]({{< link-hextra path="/tutorials/claude-code-proxy" >}}).{{% /conditional-text %}}
+{{% conditional-text include-if="kubernetes,standalone" %}}To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).{{% /conditional-text %}}
 
 {{< reuse "agw-docs/snippets/agentgateway/llm-next.md" >}}
