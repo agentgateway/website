@@ -3,7 +3,8 @@ Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to r
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. [Install the Codex CLI](https://developers.openai.com/codex/cli/).
+2. Install either the [Codex CLI](https://developers.openai.com/codex/cli/) or
+   the [ChatGPT desktop app](https://chatgpt.com/download/).
 
 ## Configure agentgateway
 

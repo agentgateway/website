@@ -5,7 +5,8 @@ route requests through agentgateway running in Kubernetes.
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/llm/providers/openai/" >}}).
-3. [Install the Codex CLI](https://developers.openai.com/codex/cli/).
+3. Install either the [Codex CLI](https://developers.openai.com/codex/cli/) or
+   the [ChatGPT desktop app](https://chatgpt.com/download/).
 
 ## Set the gateway URL
 
