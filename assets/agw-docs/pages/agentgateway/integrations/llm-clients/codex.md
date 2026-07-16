@@ -46,7 +46,7 @@ Point Codex at agentgateway through one of the following methods.
 To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
 
 ```sh
-codex -c 'model_provider="proxy"' -c 'model_providers.proxy.name="OpenAI via agentgateway"' -c 'model_providers.proxy.base_url="http://localhost:4000/v1"'
+codex -c 'model_provider="agentgateway"' -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' -c 'model_providers.agentgateway.base_url="http://localhost:4000/v1"'
 ```
 
 {{% /tab %}}
