@@ -170,6 +170,12 @@ Agentgateway gives me the accounting and observability plane; vSR makes the
 semantic decision. Together, they let me cut routine-model spend without
 hiding a blanket downgrade behind an attractive cost chart.
 
+This example is intentionally static: it uses configured keywords, semantic
+candidates, weights, and thresholds rather than learning from application
+outcomes. Those signals need periodic review as traffic changes. The
+agentgateway community and vSR project are continuing work to make semantic
+routing easier to tune, operate, and measure against real application traffic.
+
 ## What's Next
 
 I see cost-based semantic routing as one part of an LLM cost-management
@@ -179,7 +185,3 @@ to attribute usage with virtual keys, observe realized spend by model and
 consumer, and enforce budget or spend limits where I need them. That turns a
 routing result into an operating model for keeping AI spend visible and under
 control.
-
-The agentgateway community is continuing to improve cost-based routing and the
-tools around it. Future work will make it easier to tune, operate, and measure
-model-tier decisions as real application traffic evolves.
