@@ -1,0 +1,88 @@
+# Preview build — untrusted half of the fork-preview pipeline.
+#
+# WHY TWO WORKFLOWS:
+# Cloudflare Pages' native Git integration does not build preview deployments
+# for PRs opened from forks: a fork cannot be trusted with the Cloudflare
+# credentials, so Cloudflare skips it. GitHub Actions has the same constraint —
+# a `pull_request` run triggered by a fork gets a read-only GITHUB_TOKEN and NO
+# access to repository secrets. That is exactly what we want here.
+#
+# This workflow runs in the FORK's context on every PR. It builds the site from
+# the PR's (untrusted) code with no secrets present, so there is nothing for a
+# malicious PR to steal. It uploads the built `public/` output plus the PR
+# number as artifacts. The companion `preview-deploy.yml` workflow then picks
+# those artifacts up in a TRUSTED context (where the Cloudflare token lives) and
+# does the actual deploy. It never executes any code from the fork — it only
+# ships the already-built static HTML.
+#
+# Do NOT add secrets, `pull_request_target`, or deploy steps to this file.
+# Anything that needs credentials belongs in preview-deploy.yml.
+
+name: Preview build
+
+on:
+  pull_request:
+    # Mirror the paths that actually affect the rendered site, matching
+    # framework-tests.yml. Drop this filter if you'd rather build on every PR.
+    paths:
+      - 'assets/**'
+      - 'content/**'
+      - 'layouts/**'
+      - 'static/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'hugo.yaml'
+      - '.github/workflows/preview-build.yml'
+
+# Cancel superseded builds when a PR is pushed to repeatedly.
+concurrency:
+  group: preview-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build site
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Hugo pulls the theme as a Hugo Module (see go.mod), so Go is required.
+      - uses: actions/setup-go@4b73464bb391d4059bd26b0524d20df3927bd417 # v6.3.0
+        with:
+          go-version: 'stable'
+          cache: false
+
+      - uses: peaceiris/actions-hugo@75d2e84710de30f6ff7268e08f310b60ef14033f # v3
+        with:
+          hugo-version: '0.160.1'
+          extended: true
+
+      # Production-style build, same flags as `make build`.
+      # --minify + --gc; no drafts/future content.
+      - name: Build
+        run: hugo --gc --minify
+
+      - name: Upload site
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: preview-site
+          path: public/
+          retention-days: 3
+          if-no-files-found: error
+
+      # Persist the PR number so the deploy workflow knows where to comment.
+      # workflow_run does not reliably carry the PR number for fork PRs, so we
+      # pass it explicitly through an artifact.
+      - name: Save PR metadata
+        run: echo "${{ github.event.pull_request.number }}" > pr-number.txt
+
+      - name: Upload PR metadata
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: preview-pr-meta
+          path: pr-number.txt
+          retention-days: 3
+          if-no-files-found: error
