@@ -217,9 +217,9 @@ clientAuth:
 
 The following parts of the Identity Assertion Authorization Grant draft are not yet supported:
 
-- DPoP sender-constrained tokens (RFC 9449)
-- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly)
-- SAML or refresh-token subject types (only OIDC ID tokens are used as the subject)
+- DPoP sender-constrained tokens (RFC 9449).
+- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly).
+- SAML or refresh-token subject types (only OIDC ID tokens are used as the subject).
 
 ## Next steps
 
