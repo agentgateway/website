@@ -8,38 +8,50 @@ Attaches to: {{< badge content="Backend" path="/configuration/backends/" >}}
 
 ## About
 
-The `crossAppAccess` backend authentication method implements the [OAuth Identity Assertion Authorization Grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/), also called "ID-JAG" or "Cross App Access" (XAA). With this method, agentgateway calls a downstream API *as the authenticated end user*, without requiring the user to interactively log in to that downstream app. This pattern is common in agentic scenarios where an agent calls other apps' APIs on behalf of the user, such as per-user access to MCP servers ([MCP enterprise-managed authorization](https://modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization)).
+The `crossAppAccess` backend authentication method implements the [OAuth Identity Assertion Authorization Grant](https://datatracker.ietf.org/doc/draft-ietf-oauth-identity-assertion-authz-grant/), also called "ID-JAG" or "Cross App Access" (XAA). With this method, agentgateway calls a downstream API as the authenticated end user, without requiring the user to interactively log in to that downstream app. This pattern is common in agentic scenarios where an agent calls other apps' APIs on behalf of the user, such as per-user access to MCP servers ([MCP enterprise-managed authorization](https://modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization)).
 
 The gateway acts as a confidential OAuth client and performs a two-leg exchange on each backend call:
 
 1. **Authenticate the user.** The inbound request carries the user's OIDC ID token, validated by the [`jwtAuth` policy]({{< link-hextra path="/configuration/security/jwt-authn/" >}}). The validated token is the subject of the exchange. The `jwtAuth` policy must validate an OIDC ID token, not an arbitrary access token, because the identity provider expects an ID token as the subject.
-2. **Token exchange.** The gateway calls the user's identity provider (IdP) authorization server with an [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange and receives an ID-JAG assertion that is bound to the resource authorization server.
-3. **JWT-bearer grant.** The gateway presents the ID-JAG to the resource's authorization server with an [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT-bearer grant and receives a Bearer access token that is scoped to the downstream API.
-4. **Attach and cache.** The Bearer token is added as `Authorization: Bearer <token>` to the upstream request and cached until shortly before it expires.
+2. **Exchange the token.**: Depending on the type of exchange that you want to perform:
+   1. **RFC 8693 token exchange.** The gateway calls the user's identity provider (IdP) authorization server with an [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) token exchange and receives an ID-JAG assertion that is bound to the resource authorization server.
+   2. **RFC 7523 JWT-bearer grant.** The gateway presents the ID-JAG to the resource's authorization server with an [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT-bearer grant and receives a Bearer access token that is scoped to the downstream API.
+3. **Attach and cache.** The Bearer token is added as `Authorization: Bearer <token>` to the upstream request and cached until shortly before it expires.
 
-```
-client ──ID token──▶ agentgateway ──(1) token exchange──▶ IdP ──ID-JAG──▶ agentgateway
-                                   ──(2) jwt-bearer grant──▶ resource authz server ──access token──▶ agentgateway
-                                   ──Authorization: Bearer <access token>──▶ downstream API
+```mermaid
+flowchart LR
+    Client -- ID token --> AGW[Agentgateway]
+    AGW -- "(a) token exchange" --> IdP[Identity provider]
+    IdP -- ID-JAG --> AGW
+    AGW -- "(b) jwt-bearer grant" --> RAS[Resource authorization server]
+    RAS -- access token --> AGW
+    AGW -- "Authorization: Bearer<br>access token" --> API[Downstream API]
 ```
 
 Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/configuration/security/backend-authn/oauth-token-exchange/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
 
 ## Before you begin
 
-The following walkthrough runs a complete Cross App Access flow locally, with a Keycloak container that acts as both the IdP and the resource authorization server. Make sure that you have the following tools installed:
+The following walkthrough runs a complete Cross App Access flow locally, with a Keycloak container that acts as both the IdP and the resource authorization server.
 
-- An agentgateway binary [built from the `main` branch](https://github.com/agentgateway/agentgateway/blob/main/DEVELOPMENT.md), such as with `cargo build --release --bin agentgateway`. Releases up to and including `v1.4.0-alpha.1` use an older configuration shape for the token endpoints and cannot run the following examples.
-- [Docker](https://docs.docker.com/get-docker/)
-- `python3` and `curl`
-- A local clone of the [agentgateway repository](https://github.com/agentgateway/agentgateway), which contains the example setup scripts:
+1. Make sure that you have the following tools installed.
 
-  ```sh
-  git clone https://github.com/agentgateway/agentgateway.git
-  cd agentgateway/examples/traffic-cross-app-access/keycloak
-  ```
+   - [agentgateway binary]({{< link-hextra path="/deployment/binary/" >}})
+   - [Docker](https://docs.docker.com/get-docker/)
+   - `python3` and `curl`
 
-## Set up the identity provider
+2. Clone the [agentgateway repository](https://github.com/agentgateway/agentgateway) and navigate to the example setup scripts.
+
+   ```sh
+   git clone https://github.com/agentgateway/agentgateway.git
+   cd agentgateway/examples/traffic-cross-app-access/keycloak
+   ```
+
+## Local example
+
+In this example, you deploy Keycloak to act as the IdP that authenticates the user as well as the authorization server for the token exchange.
+
+### Set up Keycloak as the IdP
 
 Run and configure a local Keycloak that supports ID-JAG issuance. The demo uses a Keycloak build with the experimental `identity-assertion-jwt` feature, packaged as the `ceposta/keycloak:id-jag` container image.
 
@@ -86,11 +98,17 @@ Run and configure a local Keycloak that supports ID-JAG issuance. The demo uses 
    python3 echo-backend.py &
    ```
 
-## Configure the gateway
+### Configure the gateway
 
 Run agentgateway with the Cross App Access policy.
 
-1. Review the gateway configuration. The `jwtAuth` policy validates the inbound OIDC ID token, and the `crossAppAccess` policy configures the two token endpoints: `identityProvider` authenticates as `agent-client` and `resourceAuthorizationServer` authenticates as `resource-client`. The `audience` value must equal the resource identifier that the resource client is registered with.
+1. Review the gateway configuration.
+   
+   - `jwtAuth` validates the inbound OIDC ID token.
+   - `crossAppAccess` configures the two token endpoints: 
+     - `identityProvider` authenticates as `agent-client`.
+     - `resourceAuthorizationServer` authenticates as `resource-client`. 
+   - `audience` must equal the resource identifier that the resource client is registered with.
 
    {{% github-yaml url="https://agentgateway.dev/examples/traffic-cross-app-access/keycloak/gateway.yaml" %}}
 
@@ -101,7 +119,7 @@ Run agentgateway with the Cross App Access policy.
    agentgateway -f ./gateway.yaml
    ```
 
-## Verify the exchange
+### Verify the exchange
 
 Send a request through the gateway as the demo user and confirm that the downstream API receives a different, backend-scoped access token.
 
@@ -156,13 +174,15 @@ Send a request through the gateway as the demo user and confirm that the downstr
 
 ## Try it against hosted providers
 
-The [`traffic-cross-app-access` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the agentgateway repository include two more demos of the same policy against real, separate trust domains:
+The [`traffic-cross-app-access` examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the agentgateway repository include two more demos of the same policy against real, separate trust domains.
 
-- [`xaa-dev`](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access/xaa-dev): The public [xaa.dev](https://xaa.dev) playground, with the hosted IdenX IdP issuing the ID-JAG and a hosted resource authorization server protecting a Todo API. Registration is free, and the interactive login mints the inbound ID token. Note that the exchange endpoints use the `https://` host form, while the route backend uses `host:port` with an explicit `backendTLS` policy.
+### xaa.dev
 
-  {{% github-yaml url="https://agentgateway.dev/examples/traffic-cross-app-access/xaa-dev/gateway.yaml" %}}
+The [`xaa-dev`](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access/xaa-dev) example uses the public [xaa.dev](https://xaa.dev) playground, with the hosted IdenX IdP issuing the ID-JAG and a hosted resource authorization server protecting a Todo API. Registration is free, and the interactive login mints the inbound ID token. Note that the exchange endpoints use the `https://` host form, while the route backend uses `host:port` with an explicit `backendTLS` policy.
 
-- [`okta-auth0`](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access/okta-auth0): The enterprise topology with Okta as the IdP (Cross App Access early access) and Auth0 as the resource authorization server (XAA beta).
+### Okta and Auth0
+
+The [`okta-auth0`](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access/okta-auth0) example uses an enterprise topology with Okta as the IdP (Cross App Access early access) and Auth0 as the resource authorization server (XAA beta).
 
 ## Configuration reference
 
@@ -180,7 +200,7 @@ The following table describes the most common `crossAppAccess` fields. For the f
 
 ## Private key JWT client authentication
 
-Enterprise IdPs such as Okta commonly require the `privateKeyJwt` client authentication method, in which the gateway authenticates with a signed JWT assertion instead of a client secret. Because token endpoints are configured as backend references rather than raw URLs, `privateKeyJwt` requires an explicit `assertionAudience`:
+Enterprise IdPs such as Okta commonly require the `privateKeyJwt` client authentication method, in which the gateway authenticates with a signed JWT assertion instead of a client secret. Because token endpoints are configured as backend references rather than raw URLs, `privateKeyJwt` requires an explicit `assertionAudience`.
 
 ```yaml
 clientAuth:
@@ -195,11 +215,13 @@ clientAuth:
 
 ## Limitations
 
-{{< callout type="info" >}}
-The following parts of the Identity Assertion Authorization Grant draft are not yet supported: DPoP sender-constrained tokens (RFC 9449), `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly), and SAML or refresh-token subject types (only OIDC ID tokens are used as the subject).
-{{< /callout >}}
+The following parts of the Identity Assertion Authorization Grant draft are not yet supported:
 
-## What's next
+- DPoP sender-constrained tokens (RFC 9449)
+- `.well-known` endpoint discovery (RFC 8414, endpoints must be configured explicitly)
+- SAML or refresh-token subject types (only OIDC ID tokens are used as the subject)
+
+## Next steps
 
 - Exchange the incoming credential for a per-backend token at a single authorization server with [OAuth token exchange]({{< link-hextra path="/configuration/security/backend-authn/oauth-token-exchange/" >}}).
 - Validate incoming JWTs with the [JWT authentication]({{< link-hextra path="/configuration/security/jwt-authn/" >}}) policy.
