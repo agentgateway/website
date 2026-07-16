@@ -1,0 +1,100 @@
+# Preview cleanup — removes Cloudflare Pages previews that are no longer needed.
+#
+# Cloudflare Pages has no time-to-live on preview deployments — a preview lives
+# until something deletes it. (`--temporary` is a Workers feature, not Pages, and
+# the build's artifact retention only expires the GitHub artifacts, not the live
+# preview.) This one workflow handles both ways a preview becomes stale:
+#
+#   1. pull_request_target [closed]  — the normal case. When a PR is merged or
+#      closed, delete every deployment made under its `pr-<number>` branch.
+#   2. schedule (daily)              — a backstop. Reconcile against open PRs and
+#      delete any `pr-*` previews whose PR is no longer open, in case an on-close
+#      run failed or a PR predates this pipeline.
+#
+# It deliberately does NOT delete by age: an age-based sweep would wipe the
+# preview of a still-open, long-lived PR. Reconciling against the open-PR list
+# only ever removes previews for PRs that are actually gone.
+#
+# WHY pull_request_target: a plain `pull_request` run from a fork gets no secrets
+# (the same limitation behind the build/deploy split). pull_request_target runs
+# in the base repo's context with secrets. Safe here because it checks out no code
+# and runs no fork scripts — it only reads the PR number and calls APIs.
+#
+# If you'd rather not run a scheduled job, delete the `schedule:` trigger below;
+# the on-close teardown alone covers the common case.
+
+name: Preview cleanup
+
+on:
+  pull_request_target:
+    types: [closed]
+  schedule:
+    - cron: '0 3 * * *' # daily 03:00 UTC
+  workflow_dispatch: {}   # manual reconciliation sweep
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: preview-cleanup-${{ github.event.pull_request.number || 'sweep' }}
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    name: Delete stale previews
+    runs-on: ubuntu-latest
+    env:
+      CF_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CF_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      CF_PROJECT: ${{ vars.CLOUDFLARE_PROJECT_NAME }}
+      EVENT_NAME: ${{ github.event_name }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      GH_REPO: ${{ github.repository }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: Delete preview deployments
+        run: |
+          set -euo pipefail
+          api="https://api.cloudflare.com/client/v4/accounts/${CF_ACCOUNT_ID}/pages/projects/${CF_PROJECT}/deployments"
+
+          # Snapshot every deployment as {id, branch}, paginating the API.
+          all="$(mktemp)"
+          page=1
+          while : ; do
+            resp=$(curl -sf -H "Authorization: Bearer ${CF_API_TOKEN}" "${api}?page=${page}&per_page=25")
+            count=$(echo "$resp" | jq '.result | length')
+            [ "$count" -eq 0 ] && break
+            echo "$resp" | jq -c '.result[] | {id, branch: .deployment_trigger.metadata.branch}' >> "$all"
+            page=$((page + 1))
+          done
+
+          # Decide which pr-<n> branches to delete.
+          if [ "$EVENT_NAME" = "pull_request_target" ]; then
+            # On close: just this PR's branch.
+            targets="pr-${PR_NUMBER}"
+          else
+            # Sweep: every pr-* branch whose PR is no longer open.
+            open="$(gh api --paginate "repos/${GH_REPO}/pulls?state=open" --jq '.[].number' | sed 's/^/pr-/' || true)"
+            branches=$(jq -r 'select(.branch != null and (.branch | test("^pr-[0-9]+$"))) | .branch' "$all" | sort -u)
+            targets=""
+            for b in $branches; do
+              if ! grep -qxF "$b" <<< "$open"; then
+                targets="$targets $b"
+              fi
+            done
+          fi
+
+          deleted=0
+          for b in $targets; do
+            ids=$(jq -r --arg b "$b" 'select(.branch == $b) | .id' "$all")
+            for id in $ids; do
+              echo "Deleting deployment ${id} (branch ${b})"
+              # ?force=true also removes deployments that still hold an alias.
+              curl -sf -X DELETE \
+                -H "Authorization: Bearer ${CF_API_TOKEN}" \
+                "${api}/${id}?force=true" > /dev/null
+              deleted=$((deleted + 1))
+            done
+          done
+          echo "Deleted ${deleted} deployment(s)"
