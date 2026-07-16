@@ -19,8 +19,10 @@ requests to `/v1/responses`.
 export AGENTGATEWAY_BASE_URL="http://${INGRESS_GW_ADDRESS}/v1"
 ```
 
+{{< callout type="info" >}}
 For a TLS-enabled gateway, set `AGENTGATEWAY_BASE_URL` to its HTTPS URL ending
 in `/v1`.
+{{< /callout >}}
 
 ## Verify gateway connectivity
 
