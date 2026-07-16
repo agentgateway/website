@@ -41,16 +41,6 @@ For wildcard model matching, rate limiting, and other options, see the [OpenAI p
 Point Codex at agentgateway through one of the following methods.
 
 {{< tabs >}}
-{{% tab name="Environment variable" %}}
-
-Codex uses the [OPENAI_BASE_URL](https://developers.openai.com/codex/config-advanced) environment variable to override the default OpenAI endpoint. Use a base URL that includes `/v1` so requests go to `/v1/responses` and OpenAI does not return 404.
-
-```sh
-export OPENAI_BASE_URL="http://localhost:4000/v1"
-codex
-```
-
-{{% /tab %}}
 {{% tab name="CLI override" %}}
 
 To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).

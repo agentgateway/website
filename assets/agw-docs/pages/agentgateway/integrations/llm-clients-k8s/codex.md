@@ -29,17 +29,6 @@ in `/v1`.
 Point Codex at agentgateway through one of the following methods.
 
 {{< tabs >}}
-{{% tab name="Environment variable" %}}
-
-Codex uses the [OPENAI_BASE_URL](https://developers.openai.com/codex/config-advanced)
-environment variable to override the default OpenAI endpoint.
-
-```sh
-export OPENAI_BASE_URL="$AGENTGATEWAY_BASE_URL"
-codex
-```
-
-{{% /tab %}}
 {{% tab name="CLI override" %}}
 
 To override the base URL for a single run, set `model_provider` and the
