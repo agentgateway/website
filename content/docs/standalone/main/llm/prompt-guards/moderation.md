@@ -1,7 +1,7 @@
 ---
 title: OpenAI moderation
 weight: 15
-description: Detects potentially harmful content across categories including hate, harassment, self-harm, sexual content, and violence with the OpenAI moderation API.
+description: Use the OpenAI Moderation API as a prompt guard to screen LLM traffic for harmful content.
 ---
 
 The OpenAI Moderation API detects potentially harmful content across categories including hate, harassment, self-harm, sexual content, and violence.

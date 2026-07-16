@@ -1,7 +1,7 @@
 ---
 title: MCP target policies
 weight: 50
-description: Apply policies to individual MCP backend targets
+description: Scope policies to a single MCP server inside a multiplexed (virtual) MCP backend.
 ---
 
 Apply policies at the MCP target level to control behavior for individual MCP servers within a multiplexed backend.
