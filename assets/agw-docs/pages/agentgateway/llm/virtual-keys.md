@@ -186,12 +186,22 @@ metadata:
 spec:
   ai:
     provider:
-      openai:
-        model: gpt-3.5-turbo
+      openai: {}
+        # Optional: specify a default  model
+        #model: gpt-3.5-turbo
+     # Optional: custom host and port, if needed
+     # host: api.openai.com  
+     # port: 443
   policies:
     auth:
       secretRef:
         name: openai-secret
+    ai:
+      routes:
+        "/v1/responses": "Responses"
+        "/v1/chat/completions": "Completions"
+        "/v1/models": "Models"          # also silences Codex's model-metadata probe
+        "*": "Passthrough"
 EOF
 ```
 
@@ -220,7 +230,7 @@ spec:
       backendRefs:
         - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-          group: agentgateway.dev
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
