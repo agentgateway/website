@@ -7,11 +7,18 @@ Amazon Bedrock AgentCore is a runtime that hosts deployed agents, each with its 
 
 ### Authentication {#authentication}
 
-AgentCore runtimes support two authentication modes, which you choose when you deploy the runtime in AWS. The `aws.agentCore` backend supports both:
+AgentCore runtimes support two authentication modes, which you choose when you deploy the runtime in AWS. The `aws.agentCore` backend supports both IAM (SigV4) or JWT authorization.
 
-* **IAM (SigV4)**: The default. {{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with AWS Signature Version 4 (SigV4) by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the proxy's environment, such as [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) on Amazon EKS. You do not store long-lived credentials in the gateway configuration, and IRSA credentials rotate automatically.
-* **JWT authorizer** (for example, Amazon Cognito): The runtime validates an OIDC bearer token on each request. To use this mode, attach a backend authentication policy that sends the token in the `Authorization` header. This overrides the default SigV4 signing. Unlike SigV4 credentials, a JWT expires, so you must refresh the token in the backing Kubernetes Secret before it expires.
+{{< tabs >}}
+{{% tab name="IAM (SigV4)" %}}
+IAM (SigV4) is the default. {{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with AWS Signature Version 4 (SigV4) by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the proxy's environment, such as [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) on Amazon EKS. You do not store long-lived credentials in the gateway configuration, and IRSA credentials rotate automatically.
+{{% /tab %}}
+{{% tab name="JWT authorization" %}}
+JWT authorization, such as with Amazon Cognito. The AgentCore runtime validates an OIDC bearer token on each request. To use this mode, attach a backend authentication policy that sends the token in the `Authorization` header. This overrides the default SigV4 signing. Unlike SigV4 credentials, a JWT expires, so you must refresh the token in the backing Kubernetes Secret before it expires.
 
+This mode works only if the AgentCore runtime was deployed with **Inbound Auth** configured to accept JSON Web Tokens (a `customJWTAuthorizer`). The authorizer's `discoveryUrl` and `allowedClients` list must match the token you send: the token's issuer (`iss`) must match the discovery URL's user pool, and the token's client ID must be in `allowedClients`. If the runtime uses the default IAM authorization instead, it rejects bearer tokens with an authorization-method mismatch. You configure Inbound Auth when you deploy the runtime in AWS, not on the gateway. For more information, see the [AgentCore Identity documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity-inbound-auth.html).
+{{% /tab %}}
+{{< /tabs >}}
 
 ## Before you begin {#before-you-begin}
 
@@ -20,9 +27,15 @@ AgentCore runtimes support two authentication modes, which you choose when you d
 Additionally, make sure that you have the following:
 
 1. An Amazon Bedrock AgentCore agent runtime that is deployed in your AWS account. For steps to build and deploy a runtime, see the [Amazon Bedrock AgentCore documentation](https://docs.aws.amazon.com/bedrock-agentcore/). You also need the runtime's ARN, in the format `arn:aws:bedrock-agentcore:<region>:<account-id>:runtime/<runtime-id>`.
-2. Credentials for the runtime's authentication mode:
-   * For **IAM (SigV4)**, AWS credentials that are available to the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy and that are allowed to invoke the runtime. The proxy uses the standard AWS credential chain, such as an IAM role, environment variables, or an instance profile. On Amazon EKS, the recommended approach is [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html): associate an IAM role with the proxy's Kubernetes service account.
-   * For a **JWT authorizer**, a valid OIDC bearer token that the runtime's authorizer accepts, such as an Amazon Cognito access or ID token.
+2. Credentials for the runtime's authentication mode.
+   {{< tabs >}}
+{{% tab name="IAM (SigV4)" %}}
+For **IAM (SigV4)**, AWS credentials that are available to the {{< reuse "agw-docs/snippets/agentgateway.md" >}} proxy and that are allowed to invoke the runtime. The proxy uses the standard AWS credential chain, such as an IAM role, environment variables, or an instance profile. On Amazon EKS, the recommended approach is [IAM Roles for Service Accounts (IRSA)](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html): associate an IAM role with the proxy's Kubernetes service account.
+{{% /tab %}}
+{{% tab name="JWT authorization" %}}
+For a **JWT authorizer** such as Amazon Cognito, the AgentCore runtime must be deployed with Inbound Auth configured to accept JSON Web Tokens, including the correct discovery URL and allowed client ID for the identity provider that issues your tokens. You also need a valid OIDC bearer token that the runtime's authorizer accepts, such as an Amazon Cognito access token. AgentCore validates the token's `client_id` claim, which is present in Cognito access tokens but not ID tokens, so use the access token.
+{{% /tab %}}
+   {{< /tabs >}}
 
 ## Step 1: Create a backend for the AgentCore runtime {#backend}
 
@@ -48,7 +61,45 @@ EOF
 ```
 {{% /tab %}}
 {{% tab name="JWT authorizer" %}}
-1. Store the bearer token that the runtime's authorizer accepts in a Kubernetes Secret. When you use the default Secret resolver, the token must be stored under the `Authorization` key.
+1. Get a bearer token that the runtime's authorizer accepts. The following example authenticates a user against an Amazon Cognito user pool and captures the resulting access token. The app client must have the `USER_PASSWORD_AUTH` flow enabled. For browser-based sign-in or machine-to-machine access, use the [Cognito Hosted UI or an OAuth flow](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-app-integration.html) instead. Which command you run depends on whether the app client has a client secret.
+
+   > [!IMPORTANT]
+   > Capture the **access token** (`AuthenticationResult.AccessToken`), not the ID token. AgentCore validates the token's `client_id` claim against the runtime's `allowedClients`. Cognito puts the client ID in the `client_id` claim of access tokens, but in the `aud` claim of ID tokens, so an ID token fails with a `client_id` mismatch. The user pool that issues the token must also be the one in the runtime's discovery URL, or the token fails with an `iss` mismatch.
+
+   * **No client secret**: Replace the app client ID, username, password, and region with your own values.
+
+     ```sh
+     export AGENTCORE_JWT=$(aws cognito-idp initiate-auth \
+       --auth-flow USER_PASSWORD_AUTH \
+       --client-id <app-client-id> \
+       --auth-parameters USERNAME=<username>,PASSWORD=<password> \
+       --region <region> \
+       --query 'AuthenticationResult.AccessToken' --output text)
+     ```
+
+   * **With client secret**: If the app client has a secret, Cognito requires a `SECRET_HASH` parameter, which is a Base64-encoded HMAC-SHA256 of the username and client ID keyed by the client secret. Replace the placeholder values with your own. The `USERNAME` value must be identical in both the hash and the `initiate-auth` call. To find the client secret, run `aws cognito-idp describe-user-pool-client --user-pool-id <user-pool-id> --client-id <app-client-id> --query 'UserPoolClient.ClientSecret' --output text`. A client secret is set when the app client is created and cannot be removed afterward.
+
+     ```sh
+     CLIENT_ID=<app-client-id>
+     CLIENT_SECRET=<client-secret>
+     USERNAME=<username>
+
+     SECRET_HASH=$(printf "%s" "${USERNAME}${CLIENT_ID}" \
+       | openssl dgst -sha256 -hmac "$CLIENT_SECRET" -binary \
+       | openssl base64)
+
+     export AGENTCORE_JWT=$(aws cognito-idp initiate-auth \
+       --auth-flow USER_PASSWORD_AUTH \
+       --client-id "$CLIENT_ID" \
+       --auth-parameters USERNAME="$USERNAME",PASSWORD='<password>',SECRET_HASH="$SECRET_HASH" \
+       --region <region> \
+       --query 'AuthenticationResult.AccessToken' --output text)
+     ```
+
+   > [!NOTE]
+   > Cognito tokens expire (one hour by default). When the token expires, get a new one and update the Secret. You can use the refresh token from the initial response with the `REFRESH_TOKEN_AUTH` flow to avoid re-entering credentials.
+
+2. Store the bearer token that the runtime's authorizer accepts in a Kubernetes Secret. When you use the default Secret resolver, the token must be stored under the `Authorization` key.
 
    ```sh
    kubectl create secret generic agentcore-jwt \
@@ -56,7 +107,7 @@ EOF
      --from-literal=Authorization="$AGENTCORE_JWT"
    ```
 
-2. Create the backend and reference the Secret with a `policies.auth.secretRef` setting. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} sends the token in the `Authorization` header with a `Bearer` prefix, which overrides the default SigV4 signing. The endpoint, region, and invocation path are still derived from the ARN.
+3. Create the backend and reference the Secret with a `policies.auth.secretRef` setting. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} sends the token in the `Authorization` header with a `Bearer` prefix, which overrides the default SigV4 signing. The endpoint, region, and invocation path are still derived from the ARN.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -152,7 +203,15 @@ EOF
      -d '{"prompt": "Hello from agentgateway!"}'
    ```
 
-   If the runtime is reachable and the request is authenticated, you get a response from your agent. A `403` error indicates an authentication problem: for IAM, verify that the proxy's AWS credentials are allowed to invoke the runtime; for a JWT authorizer, verify that the token in the Secret is valid and not expired.
+   Example output:
+
+   ```json
+   {"result": {"role": "assistant", "content": [{"text": "Hello! 👋 \n\nNice to meet you! I'm Claude, an AI assistant made by Anthropic. I'm here to help with a wide variety of tasks—whether that's answering questions, helping with writing, coding, analysis, creative projects, math, or just having a conversation.\n\nWhat can I help you with today?"}]}}
+   ```
+
+   If the runtime is reachable and the request is authenticated, you get a response from your agent. A `403` error indicates an authentication problem:
+   * For IAM, verify that the proxy's AWS credentials are allowed to invoke the runtime.
+   * For a JWT authorizer, verify that the token in the Secret is valid and not expired. Also make sure that the AgentCore runtime is set up with the Inbound Auth details that match the IdP, such as the discovery URL and client ID.
 
 ## Cleanup
 
