@@ -16,7 +16,7 @@ The dashboard is populated from a local database that agentgateway writes for ev
 
 Two pieces of configuration power the dashboard:
 
-- `config.database`: the SQLite database where agentgateway records a `request_logs` row for each request. It is the store behind the dashboard's time series and breakdowns.
+- `config.database`: the database where agentgateway records an entry for each request. It is the store behind the dashboard's time series and breakdowns.
 - `config.modelCatalog`: the [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) that turns token counts into dollars. Without a catalog, the dashboard still shows token and call volume, but the cost is `0`.
 
 ## Enable the dashboard
@@ -90,11 +90,11 @@ curl -s http://localhost:4000/v1/chat/completions \
   -d '{"model":"gpt-4o-mini","messages":[{"role":"user","content":"Hello from agentgateway!"}]}'
 ```
 
-Refresh the **Analytics** page and the request appears: tokens counted, cost calculated against the catalog, and attributed to the model, provider, and (if present) user. Each request is stored as a `request_logs` row with the realized `cost` alongside `input_tokens`, `output_tokens`, and `total_tokens`, which is why the same fields you see in [logs and metrics]({{< link-hextra path="/llm/observability/" >}}) also drive the dashboard.
+Refresh the **Analytics** page and the request appears: tokens counted, cost calculated against the catalog, and attributed to the model, provider, and (if present) user. The realized `cost` is recorded alongside token counts, which is why the same fields you see in [logs and metrics]({{< link-hextra path="/llm/observability/" >}}) also drive the dashboard.
 
 ## Persistence and scaling
 
-The dashboard reads from the SQLite database at `config.database.url`. Point it at a persistent path so history survives restarts. For Helm-based deployments, the chart defaults to SQLite on a `ReadWriteOnce` volume; see [Helm deployment]({{< link-hextra path="/deployment/helm/" >}}) for storage options.
+The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/integrations/observability/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.
 
 {{< doc-test paths="cost-dashboard" >}}
 # Install agentgateway binary
