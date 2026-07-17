@@ -7,11 +7,10 @@ The primary use case is routing Claude Code to non-Anthropic LLM backends (such 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
 2. Install the [Claude Code CLI](https://code.claude.com/docs) (`npm install -g @anthropic-ai/claude-code`).
 
-{{< alert type="info" >}}
-The `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` environment variable disables Claude Code's experimental beta features. You typically **do not need** this variable when proxying to non-Anthropic backends or standard Anthropic routing.
-
-Only set this variable if you encounter errors like `Extra inputs are not permitted` when using advanced Anthropic features (such as experimental translation or extended thinking). If you use a non-Anthropic backend, this variable can be safely omitted.
-{{< /alert >}}
+> [!NOTE]
+> The `CLAUDE_CODE_DISABLE_EXPERIMENTAL_BETAS` environment variable disables Claude Code's experimental beta features. You typically **do not need** this variable when proxying to non-Anthropic backends or standard Anthropic routing.
+>
+> Only set this variable if you encounter errors like `Extra inputs are not permitted` when using advanced Anthropic features (such as experimental translation or extended thinking). If you use a non-Anthropic backend, this variable can be safely omitted.
 
 ## Configure agentgateway with OpenAI-compatible backend
 

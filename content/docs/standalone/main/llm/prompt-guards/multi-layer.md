@@ -1,7 +1,7 @@
 ---
 title: Multi-layered guardrails
 weight: 60
-description: Run prompt guards in sequence, creating defense-in-depth protection.
+description: Chain multiple prompt guards so each request passes every check in order, for defense in depth.
 ---
 
 You can configure multiple prompt guards that run in sequence, creating defense-in-depth protection. Guards are evaluated in the order they appear in the configuration.

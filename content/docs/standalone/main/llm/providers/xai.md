@@ -2,7 +2,7 @@
 title: xAI
 weight: 20
 icon: /integrations/providers/bw/xai.svg
-description: Configuration and setup for xAI (Grok) LLM provider
+description: Route agentgateway LLM traffic to xAI's Grok models.
 ---
 
 Configure xAI (Grok) as an LLM provider in agentgateway.

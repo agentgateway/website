@@ -1,7 +1,7 @@
 ---
 title: Rewrites
 weight: 13
-description: Modify URL hostnames and paths of incoming requests dynamically.
+description: Rewrite the host or path of a request before agentgateway forwards it to a backend.
 test:
   rewrites:
   - file: ${versionRoot}/configuration/traffic-management/rewrites.md

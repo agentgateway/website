@@ -2,7 +2,7 @@
 title: Vertex AI
 weight: 15
 icon: /integrations/providers/bw/vertex.svg
-description: Configuration and setup for Google Cloud Vertex AI provider
+description: Route agentgateway LLM traffic to models on Google Cloud Vertex AI.
 ---
 
 Configure Google Cloud Vertex AI as an LLM provider in agentgateway.
