@@ -2,7 +2,7 @@ Use the {{< reuse "agw-docs/snippets/backend.md" >}} `tunnel` policy to route ba
 
 ## About the tunnel policy
 
-The `tunnel` field on a {{< reuse "agw-docs/snippets/backend.md" >}} configures an HTTP CONNECT tunnel to the target backend. Agentgateway establishes an HTTP tunnel through the proxy and forwards all requests to the upstream endpoint.
+The `tunnel` field on an {{< reuse "agw-docs/snippets/backend.md" >}} configures an HTTP CONNECT tunnel to the target backend. Agentgateway establishes an HTTP tunnel through the proxy and forwards all requests to the upstream endpoint.
 
 The tunnel supports `Service` and {{< reuse "agw-docs/snippets/backend.md" >}} types as the proxy target.
 
@@ -15,11 +15,11 @@ The tunnel supports `Service` and {{< reuse "agw-docs/snippets/backend.md" >}} t
 
 This example configures an {{< reuse "agw-docs/snippets/agentgateway.md" >}} backend that connects to an upstream identity provider (IdP) through a Squid forward proxy. The tunnel is used for JWKS (JSON Web Key Set) retrieval.
 
-1. Deploy the proxy backend {{< reuse "agw-docs/snippets/backend.md" >}} that points to your proxy server:
+1. Deploy the proxy backend {{< reuse "agw-docs/snippets/backend.md" >}} that points to your proxy server.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: squid-proxy
@@ -31,11 +31,11 @@ This example configures an {{< reuse "agw-docs/snippets/agentgateway.md" >}} bac
    EOF
    ```
 
-2. Create the main backend with the `tunnel` policy that references the proxy:
+2. Create the main backend with the `tunnel` policy that references the proxy.
 
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: idp-proxied
@@ -49,7 +49,7 @@ This example configures an {{< reuse "agw-docs/snippets/agentgateway.md" >}} bac
          insecureSkipVerify: true
        tunnel:
          backendRef:
-           group: agentgateway.dev
+           group: {{< reuse "agw-docs/snippets/group.md" >}}
            kind: {{< reuse "agw-docs/snippets/backend.md" >}}
            name: squid-proxy
            port: 3128
