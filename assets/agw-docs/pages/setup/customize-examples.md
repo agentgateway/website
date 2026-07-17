@@ -101,9 +101,8 @@ EOF
 
 Run the managed gateway proxy as a DaemonSet instead of the default Deployment. DaemonSet mode creates one agentgateway pod on each schedulable matching node. Use the `daemonSet` overlay for DaemonSet-specific settings such as update strategy, node selectors, affinities, and tolerations.
 
-{{< callout type="warning" >}}
-The `deployment` and `horizontalPodAutoscaler` overlays are not valid for DaemonSet workloads. When changing workload kinds, move applicable pod template customizations to the matching overlay and remove fields that apply only to the previous kind, such as `spec.replicas` for Deployments.
-{{< /callout >}}
+> [!WARNING]
+> The `deployment` and `horizontalPodAutoscaler` overlays are not valid for DaemonSet workloads. When changing workload kinds, move applicable pod template customizations to the matching overlay and remove fields that apply only to the previous kind, such as `spec.replicas` for Deployments.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
@@ -292,9 +291,8 @@ EOF
 
 Configure automatic scaling based on CPU utilization. The HPA resource is created only when you specify this overlay.
 
-{{< callout type="warning" >}}
-The `horizontalPodAutoscaler` overlay is valid only for Deployment workloads. Do not use this overlay with `workload.kind: DaemonSet`.
-{{< /callout >}}
+> [!WARNING]
+> The `horizontalPodAutoscaler` overlay is valid only for Deployment workloads. Do not use this overlay with `workload.kind: DaemonSet`.
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
