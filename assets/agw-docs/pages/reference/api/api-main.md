@@ -362,6 +362,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `workload` _[AgentgatewayParametersWorkload](#agentgatewayparametersworkload)_ | `workload` selects the Kubernetes workload kind for the managed Gateway<br />data plane. If unset, Deployment is used. |  | Optional: \{\} <br /> |
 | `logging` _[AgentgatewayParametersLogging](#agentgatewayparameterslogging)_ | Logging configuration. By default, all logs are set to<br />`info` level. |  | Optional: \{\} <br /> |
 | `rawConfig` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io)_ | Raw agentgateway configuration to merge into the generated config file.<br />This is merged with<br />configuration derived from typed fields like `logging.format`, and those<br />typed fields will take precedence.<br />Example:<br />	rawConfig:<br />	  binds:<br />	  - port: 3000<br />	    listeners:<br />	    - routes:<br />	      - policies:<br />	          cors:<br />	            allowOrigins:<br />	            - "*"<br />	            allowHeaders:<br />	            - mcp-protocol-version<br />	            - content-type<br />	            - cache-control<br />	        backends:<br />	        - mcp:<br />	            targets:<br />	            - name: everything<br />	              stdio:<br />	                cmd: npx<br />	                args: ["@modelcontextprotocol/server-everything"] |  | Type: object <br />Optional: \{\} <br /> |
 | `image` _[Image](#image)_ | The agentgateway container image. See<br />https://kubernetes.io/docs/concepts/containers/images<br />for details.<br />Default values, which may be overridden individually:<br />	registry: cr.agentgateway.dev<br />	repository: agentgateway<br />	tag: <agentgateway version><br />	pullPolicy: <omitted, relying on Kubernetes defaults which depend on the tag> |  | Optional: \{\} <br /> |
@@ -421,10 +422,11 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `deployment` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`Deployment` resource. |  | Optional: \{\} <br /> |
+| `daemonSet` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`DaemonSet` resource. |  | Optional: \{\} <br /> |
 | `service` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated `Service`<br />resource. |  | Optional: \{\} <br /> |
 | `serviceAccount` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`ServiceAccount` resource. |  | Optional: \{\} <br /> |
-| `podDisruptionBudget` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `PodDisruptionBudget` for the<br />agentgateway proxy. If absent, no PDB is created. If present, a PDB is<br />created with its selector automatically configured to target the<br />agentgateway proxy `Deployment`. The `metadata` and `spec` fields from<br />this overlay are applied to the generated PDB. |  | Optional: \{\} <br /> |
-| `horizontalPodAutoscaler` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `HorizontalPodAutoscaler`<br />for the agentgateway proxy. If absent, no HPA is created. If present, an<br />HPA is created with its `scaleTargetRef` automatically configured to<br />target the agentgateway proxy `Deployment`. The `metadata` and `spec`<br />fields from this overlay are applied to the generated HPA. |  | Optional: \{\} <br /> |
+| `podDisruptionBudget` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `PodDisruptionBudget` for the<br />agentgateway proxy. If absent, no PDB is created. If present, a PDB is<br />created with its selector automatically configured to target the selected<br />generated workload. The `metadata` and `spec` fields from this overlay are<br />applied to the generated PDB. |  | Optional: \{\} <br /> |
+| `horizontalPodAutoscaler` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `HorizontalPodAutoscaler`<br />for Deployment-backed agentgateway proxies. If absent, no HPA is created.<br />If present, an HPA is created with its `scaleTargetRef` automatically<br />configured to target the generated `Deployment`. The `metadata` and `spec`<br />fields from this overlay are applied to the generated HPA. |  | Optional: \{\} <br /> |
 
 
 #### AgentgatewayParametersSpec
@@ -440,6 +442,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
+| `workload` _[AgentgatewayParametersWorkload](#agentgatewayparametersworkload)_ | `workload` selects the Kubernetes workload kind for the managed Gateway<br />data plane. If unset, Deployment is used. |  | Optional: \{\} <br /> |
 | `logging` _[AgentgatewayParametersLogging](#agentgatewayparameterslogging)_ | Logging configuration. By default, all logs are set to<br />`info` level. |  | Optional: \{\} <br /> |
 | `rawConfig` _[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io)_ | Raw agentgateway configuration to merge into the generated config file.<br />This is merged with<br />configuration derived from typed fields like `logging.format`, and those<br />typed fields will take precedence.<br />Example:<br />	rawConfig:<br />	  binds:<br />	  - port: 3000<br />	    listeners:<br />	    - routes:<br />	      - policies:<br />	          cors:<br />	            allowOrigins:<br />	            - "*"<br />	            allowHeaders:<br />	            - mcp-protocol-version<br />	            - content-type<br />	            - cache-control<br />	        backends:<br />	        - mcp:<br />	            targets:<br />	            - name: everything<br />	              stdio:<br />	                cmd: npx<br />	                args: ["@modelcontextprotocol/server-everything"] |  | Type: object <br />Optional: \{\} <br /> |
 | `image` _[Image](#image)_ | The agentgateway container image. See<br />https://kubernetes.io/docs/concepts/containers/images<br />for details.<br />Default values, which may be overridden individually:<br />	registry: cr.agentgateway.dev<br />	repository: agentgateway<br />	tag: <agentgateway version><br />	pullPolicy: <omitted, relying on Kubernetes defaults which depend on the tag> |  | Optional: \{\} <br /> |
@@ -449,10 +452,11 @@ _Appears in:_
 | `istio` _[IstioSpec](#istiospec)_ | Istio integration settings. If enabled, agentgateway can natively connect to Istio-enabled pods with mTLS. |  | Optional: \{\} <br /> |
 | `modelCatalog` _[ModelCatalogSpec](#modelcatalogspec)_ | Model cost catalog sources. Only effective when set on a Gateway-level<br />AgentgatewayParameters (via Gateway.spec.infrastructure.parametersRef);<br />ignored on GatewayClass-level parameters because ConfigMap references<br />are resolved from the Gateway's deployment namespace. |  | Optional: \{\} <br /> |
 | `deployment` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`Deployment` resource. |  | Optional: \{\} <br /> |
+| `daemonSet` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`DaemonSet` resource. |  | Optional: \{\} <br /> |
 | `service` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated `Service`<br />resource. |  | Optional: \{\} <br /> |
 | `serviceAccount` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Overrides for the generated<br />`ServiceAccount` resource. |  | Optional: \{\} <br /> |
-| `podDisruptionBudget` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `PodDisruptionBudget` for the<br />agentgateway proxy. If absent, no PDB is created. If present, a PDB is<br />created with its selector automatically configured to target the<br />agentgateway proxy `Deployment`. The `metadata` and `spec` fields from<br />this overlay are applied to the generated PDB. |  | Optional: \{\} <br /> |
-| `horizontalPodAutoscaler` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `HorizontalPodAutoscaler`<br />for the agentgateway proxy. If absent, no HPA is created. If present, an<br />HPA is created with its `scaleTargetRef` automatically configured to<br />target the agentgateway proxy `Deployment`. The `metadata` and `spec`<br />fields from this overlay are applied to the generated HPA. |  | Optional: \{\} <br /> |
+| `podDisruptionBudget` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `PodDisruptionBudget` for the<br />agentgateway proxy. If absent, no PDB is created. If present, a PDB is<br />created with its selector automatically configured to target the selected<br />generated workload. The `metadata` and `spec` fields from this overlay are<br />applied to the generated PDB. |  | Optional: \{\} <br /> |
+| `horizontalPodAutoscaler` _[KubernetesResourceOverlay](#kubernetesresourceoverlay)_ | Creates a `HorizontalPodAutoscaler`<br />for Deployment-backed agentgateway proxies. If absent, no HPA is created.<br />If present, an HPA is created with its `scaleTargetRef` automatically<br />configured to target the generated `Deployment`. The `metadata` and `spec`<br />fields from this overlay are applied to the generated HPA. |  | Optional: \{\} <br /> |
 
 
 #### AgentgatewayParametersStatus
@@ -466,6 +470,42 @@ Current status for these provisioning settings.
 _Appears in:_
 - [AgentgatewayParameters](#agentgatewayparameters)
 
+
+
+#### AgentgatewayParametersWorkload
+
+
+
+AgentgatewayParametersWorkload selects the Kubernetes workload kind used for
+a managed Gateway data plane.
+
+
+
+_Appears in:_
+- [AgentgatewayParametersConfigs](#agentgatewayparametersconfigs)
+- [AgentgatewayParametersSpec](#agentgatewayparametersspec)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `kind` _[AgentgatewayParametersWorkloadKind](#agentgatewayparametersworkloadkind)_ | Kind selects the Kubernetes workload kind. When unset, Deployment is used. |  | Optional: \{\} <br /> |
+
+
+#### AgentgatewayParametersWorkloadKind
+
+_Underlying type:_ _string_
+
+AgentgatewayParametersWorkloadKind selects the Kubernetes workload kind used
+for a managed Gateway data plane.
+
+
+
+_Appears in:_
+- [AgentgatewayParametersWorkload](#agentgatewayparametersworkload)
+
+| Field | Description |
+| --- | --- |
+| `Deployment` | AgentgatewayParametersWorkloadDeployment uses a Deployment for the managed<br />Gateway data plane.<br /> |
+| `DaemonSet` | AgentgatewayParametersWorkloadDaemonSet uses a DaemonSet for the managed<br />Gateway data plane.<br /> |
 
 
 #### AgentgatewayPolicy
@@ -741,7 +781,8 @@ _Appears in:_
 
 AWS STS AssumeRole settings for backend authentication.
 
-
+_Validation:_
+- AtMostOneOf: [sessionName sessionNameExpression]
 
 _Appears in:_
 - [AwsAuth](#awsauth)
@@ -750,6 +791,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `roleArn` _string_ | AWS IAM role ARN to assume. |  | MinLength: 1 <br />Pattern: `^arn:aws[a-z-]*:iam::[0-9]\{12\}:role/.+$` <br />Required: \{\} <br /> |
 | `sessionName` _string_ | SessionName is a custom session name (RoleSessionName) for CloudTrail and<br />Cost & Usage Report attribution. If unset, AWS generates a random name. |  | Pattern: `^[\w+=,.@-]\{2,64\}$` <br />Optional: \{\} <br /> |
+| `sessionNameExpression` _[CELExpression](#celexpression)_ | SessionNameExpression is a CEL expression evaluated against each request<br />to produce the session name (RoleSessionName), for example `jwt.sub` or<br />`request.headers["x-team"]`. If the expression does not produce a valid<br />session name at request time, the request is rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `tags` _[AwsSessionTag](#awssessiontag) array_ | Tags are session tags passed to STS AssumeRole. Once activated as cost<br />allocation tags, they appear in the AWS Cost & Usage Report for cost<br />attribution. STS allows at most 50 session tags per role session. |  | MaxItems: 50 <br />Optional: \{\} <br /> |
 
 
@@ -767,7 +809,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, containing the AWS credentials. When using the default Secret<br />resolver, the `Secret` must have keys `accessKey`, `secretKey`, and<br />optionally `sessionToken`. |  | Optional: \{\} <br /> |
-| `assumeRole` _[AwsAssumeRole](#awsassumerole)_ | AWS STS AssumeRole settings to use before signing backend requests.<br />Ambient AWS credentials are used as the source credentials for STS. |  | Optional: \{\} <br /> |
+| `assumeRole` _[AwsAssumeRole](#awsassumerole)_ | AWS STS AssumeRole settings to use before signing backend requests.<br />Ambient AWS credentials are used as the source credentials for STS. |  | AtMostOneOf: [sessionName sessionNameExpression] <br />Optional: \{\} <br /> |
 | `serviceName` _[ShortString](#shortstring)_ | AWS SigV4 signing service name, for example<br />`bedrock`, `bedrock-agentcore`, or `execute-api`). If unset, typed AWS<br />backends may provide this automatically. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -958,7 +1000,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `key` _string_ | Inline key to use as the value of the<br />`Authorization` header. This option is the least secure; usage of a<br />`Secret` is preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
-| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing the key to use as the authorization value. When using<br />the default Secret resolver, this must be stored in the `Authorization`<br />key. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing the key to use as the authorization value. When using<br />the default Secret resolver, this must be stored in the `Authorization`<br />key by default; override via `secretRef.key`. A `Bearer ` prefix on the<br />stored value is stripped only when reading the default `Authorization`<br />key. |  | Optional: \{\} <br /> |
 | `passthrough` _[BackendAuthPassthrough](#backendauthpassthrough)_ | Passes through an existing token that has been sent by the<br />client and validated. Other policies, like JWT and API key<br />authentication, will strip the original client credentials. Passthrough backend authentication<br />causes the original token to be added back into the request. If there are no client authentication policies on the<br />request, the original token would be unchanged, so this would have no effect. |  | Optional: \{\} <br /> |
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the backend.<br />When omitted, default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
@@ -1189,7 +1231,7 @@ _Appears in:_
 | `mode` _[BasicAuthenticationMode](#basicauthenticationmode)_ | Validation mode for basic authentication. | Strict | Optional: \{\} <br /> |
 | `realm` _string_ | `realm` value to return in the `WWW-Authenticate`<br />header for failed authentication requests. If unset, `Restricted` will<br />be used. |  | Optional: \{\} <br /> |
 | `users` _string array_ | Inline list of username and password pairs that will<br />be accepted. Each entry represents one line of the `htpasswd` format:<br />https://httpd.apache.org/docs/2.4/programs/htpasswd.html.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	users:<br />	- "user1:$apr1$ivPt0D4C$DmRhnewfHRSrb3DQC.WHC."<br />	- "user2:$2y$05$r3J4d3VepzFkedkd/q1vI.pBYIpSqjfN0qOARV3ScUHysatnS0cL2" |  | MaxItems: 256 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing the `.htaccess` file. When using the default Secret<br />resolver, the `Secret` must have a key named `.htaccess`, and should<br />contain the complete `.htaccess` file.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: basic-auth<br />	stringData:<br />	  .htaccess: \|<br />	    alice:$apr1$3zSE0Abt$IuETi4l5yO87MuOrbSE4V.<br />	    bob:$apr1$Ukb5LgRD$EPY2lIfY.A54jzLELNIId/ |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing the `.htaccess` file. When using the default Secret<br />resolver, the `Secret` must have a key named `.htaccess` by default;<br />override via `secretRef.key`. The value should contain the complete<br />`.htaccess` file.<br />Note: passwords should be the hash of the password, not the raw password. Use the `htpasswd` or similar commands<br />to generate a hash. MD5, bcrypt, crypt, and SHA-1 are supported.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: basic-auth<br />	stringData:<br />	  .htaccess: \|<br />	    alice:$apr1$3zSE0Abt$IuETi4l5yO87MuOrbSE4V.<br />	    bob:$apr1$Ukb5LgRD$EPY2lIfY.A54jzLELNIId/ |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where Basic credentials are read from.<br />If omitted, credentials are read from the `Authorization` header with the `Basic ` prefix. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
 
 
@@ -1360,6 +1402,7 @@ _Appears in:_
 - [AttributeAdd](#attributeadd)
 - [AuthorizationExtractionLocation](#authorizationextractionlocation)
 - [AuthorizationPolicy](#authorizationpolicy)
+- [AwsAssumeRole](#awsassumerole)
 - [AwsSessionTag](#awssessiontag)
 - [DirectResponse](#directresponse)
 - [DirectResponseConditional](#directresponseconditional)
@@ -1972,7 +2015,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `type` _[GcpAuthType](#gcpauthtype)_ | The type of token to generate. To authenticate to GCP services,<br />generally an `AccessToken` is used. To authenticate to Cloud Run, an<br />`IdToken` is used. |  | Optional: \{\} <br /> |
-| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, containing ADC-compatible Google credential JSON. When using<br />the default Secret resolver, this must be stored in the `credentials.json`<br />key. When omitted, ambient credentials are used. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, containing ADC-compatible Google credential JSON. When using<br />the default Secret resolver, this must be stored in the `credentials.json`<br />key by default; override via `secretRef.key`. When omitted, ambient<br />credentials are used. |  | Optional: \{\} <br /> |
 | `audience` _[ShortString](#shortstring)_ | Explicit `aud` value for the ID token. Only<br />valid with `IdToken` type. If not set, the `aud` is automatically<br />derived from the backend hostname. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -2623,6 +2666,32 @@ _Appears in:_
 | `Hours` |  |
 
 
+#### LocalSecretKeyRef
+
+
+
+References a same-namespace credential and, optionally, a specific key
+within it whose value should be used. Set only `name` to reference a
+Kubernetes Secret. When `key` is omitted, a location-specific default key
+is used.
+
+
+
+_Appears in:_
+- [BackendAuth](#backendauth)
+- [BasicAuthentication](#basicauthentication)
+- [GcpAuth](#gcpauth)
+- [OAuthClientAuth](#oauthclientauth)
+- [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | The name of the referenced credential. |  | Required: \{\} <br /> |
+| `group` _string_ | The API group of the referenced credential.<br />Empty selects the core API group. |  | Optional: \{\} <br /> |
+| `kind` _string_ | The kind of the referenced credential.<br />Empty defaults to `Secret`. |  | Optional: \{\} <br /> |
+| `key` _string_ | The key in the referenced Secret whose value is used. If omitted, a<br />location-specific default key is used. |  | MaxLength: 253 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
 #### LocalSecretObjectRef
 
 
@@ -2636,12 +2705,7 @@ _Appears in:_
 - [APIKeyAuthentication](#apikeyauthentication)
 - [AwsAuth](#awsauth)
 - [AzureAuth](#azureauth)
-- [BackendAuth](#backendauth)
 - [BackendTLS](#backendtls)
-- [BasicAuthentication](#basicauthentication)
-- [GcpAuth](#gcpauth)
-- [OAuthClientAuth](#oauthclientauth)
-- [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -2709,6 +2773,7 @@ _Appears in:_
 | `targets` _[McpTargetSelector](#mcptargetselector) array_ | MCP targets to use for this backend. Policies<br />targeting MCP targets must use `targetRefs[].sectionName` to select<br />the target by name. |  | ExactlyOneOf: [selector static] <br />MaxItems: 32 <br />MinItems: 1 <br />Required: \{\} <br /> |
 | `sessionRouting` _[SessionRouting](#sessionrouting)_ | MCP session routing behavior.<br />Defaults to `Stateful` if not set. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when MCP targets fail to initialize or<br />become unavailable at runtime. `FailOpen` skips failed targets and<br />continues serving from healthy ones. `FailClosed` (default) fails the<br />entire session if any target fails. |  | Optional: \{\} <br /> |
+| `prefixMode` _[PrefixMode](#prefixmode)_ | How tool and prompt names are prefixed with the target name. Resource URIs<br />always retain target routing information when multiplexing and are unaffected.<br />`Conditional` (default) prefixes only when there are multiple targets.<br />`Always` prefixes even with a single target. `Never` exposes unprefixed<br />names and routes calls by looking up which target serves the name;<br />names must be unique across targets. |  | Optional: \{\} <br /> |
 
 
 #### MCPGuardrails
@@ -3043,7 +3108,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `clientId` _string_ | Client ID sent to the token endpoint. |  | MinLength: 1 <br />Required: \{\} <br /> |
-| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Secret providing the `clientSecret` key. When omitted, client_id is sent<br />without a secret, which is only valid with ClientSecretPost. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Secret providing the `clientSecret` key by default; override via<br />`secretRef.key`. When omitted, client_id is sent without a secret, which<br />is only valid with ClientSecretPost. |  | Optional: \{\} <br /> |
 | `privateKeyJwt` _[OAuthPrivateKeyJWT](#oauthprivatekeyjwt)_ | privateKeyJwt client assertion settings. Required when method is PrivateKeyJwt. |  | Optional: \{\} <br /> |
 | `method` _[OAuthClientAuthMethod](#oauthclientauthmethod)_ | Defaults to ClientSecretBasic. |  | Optional: \{\} <br /> |
 
@@ -3129,7 +3194,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `signingKeyRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Secret providing the `signingKey` key with a PEM-encoded RSA or EC private key. |  | Required: \{\} <br /> |
+| `signingKeyRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Secret providing the `signingKey` key by default with a PEM-encoded RSA<br />or EC private key; override the key name via `signingKeyRef.key`. |  | Required: \{\} <br /> |
 | `alg` _[OAuthPrivateKeyJWTSigningAlgorithm](#oauthprivatekeyjwtsigningalgorithm)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
 | `kid` _string_ | Optional JWS key ID header. |  | Optional: \{\} <br /> |
 | `assertionAudience` _string_ | Audience for the client assertion, typically the token endpoint URL. |  | MinLength: 1 <br />Required: \{\} <br /> |
@@ -3171,27 +3236,6 @@ _Appears in:_
 | `inMemory` _[OAuthInMemoryTokenCache](#oauthinmemorytokencache)_ |  |  | Optional: \{\} <br /> |
 
 
-#### OAuthTokenEndpoint
-
-
-
-OAuthTokenEndpoint references a token endpoint backend and optional path.
-
-
-
-_Appears in:_
-- [OAuthTokenExchange](#oauthtokenexchange)
-
-| Field | Description | Default | Validation |
-| --- | --- | --- | --- |
-| `group` _[Group](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#group)_ | Group is the group of the referent. For example, "gateway.networking.k8s.io".<br />When unspecified or empty string, core API group is inferred. |  | MaxLength: 253 <br />Pattern: `^$\|^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
-| `kind` _[Kind](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#kind)_ | Kind is the Kubernetes resource kind of the referent. For example<br />"Service".<br />Defaults to "Service" when not specified.<br />ExternalName services can refer to CNAME DNS records that may live<br />outside of the cluster and as such are difficult to reason about in<br />terms of conformance. They also may not be safe to forward to (see<br />CVE-2021-25740 for more information). Implementations SHOULD NOT<br />support ExternalName Services.<br />Support: Core (Services with a type other than ExternalName)<br />Support: Implementation-specific (Services with type ExternalName) | Service | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-zA-Z]([-a-zA-Z0-9]*[a-zA-Z0-9])?$` <br />Optional: \{\} <br /> |
-| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name is the name of the referent. |  | Required: \{\} <br /> |
-| `namespace` _[Namespace](#namespace)_ | Namespace is the namespace of the backend. When unspecified, the local<br />namespace is inferred.<br />Note that when a namespace different than the local namespace is specified,<br />a ReferenceGrant object is required in the referent namespace to allow that<br />namespace's owner to accept the reference. See the ReferenceGrant<br />documentation for details.<br />Support: Core |  | MaxLength: 63 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?$` <br />Optional: \{\} <br /> |
-| `port` _[PortNumber](#portnumber)_ | Port specifies the destination port number to use for this resource.<br />Port is required when the referent is a Kubernetes Service. In this<br />case, the port number is the service port number, not the target port.<br />For other resources, destination port might be derived from the referent<br />resource or this field. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
-| `path` _string_ | Token endpoint path; defaults to "/". Must start with "/". |  | Pattern: `^/` <br />Optional: \{\} <br /> |
-
-
 #### OAuthTokenExchange
 
 
@@ -3205,7 +3249,8 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `tokenEndpoint` _[OAuthTokenEndpoint](#oauthtokenendpoint)_ | RFC 8693 token endpoint backend and path. |  | Required: \{\} <br /> |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | RFC 8693 token endpoint backend. |  | Required: \{\} <br /> |
+| `path` _string_ | Token endpoint path; defaults to "/". Must start with "/". |  | Pattern: `^/` <br />Optional: \{\} <br /> |
 | `grantType` _[OAuthGrantType](#oauthgranttype)_ | RFC followed by the request. Defaults to TokenExchange (RFC 8693). |  | Optional: \{\} <br /> |
 | `subjectToken` _[OAuthTokenSpec](#oauthtokenspec)_ | Subject token / assertion source and type. Defaults to Authorization Bearer, AccessToken. |  | Optional: \{\} <br /> |
 | `actorToken` _[OAuthActorToken](#oauthactortoken)_ | RFC 8693 delegation actor token. TokenExchange grant only. |  | Optional: \{\} <br /> |
@@ -3422,6 +3467,24 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `inheritance` _[PolicyInheritance](#policyinheritance)_ | Controls whether less-specific traffic policies prevent more-specific traffic policies<br />from contributing to the effective policy.<br />This field is only valid on traffic policies. Frontend and backend policy merging does not use<br />inheritance.<br />When unset or set to `Default`, traffic policy fields are merged by specificity, with more-specific<br />attachment points such as routes and route rules able to override fields from less-specific<br />attachment points such as gateways and listeners.<br />In other words, this policy provides `Default`s that can be overridden. For example, you may provide a `Default`<br />timeout policy for the entire Gateway that is overridden by specific routes.<br />When set to `Override`, this policy blocks traffic policies at more-specific attachment points from<br />being included in the effective policy. This is useful when a gateway-level policy must remain<br />authoritative for all routes below it. |  | Optional: \{\} <br /> |
+
+
+#### PrefixMode
+
+_Underlying type:_ _string_
+
+
+
+
+
+_Appears in:_
+- [MCPBackend](#mcpbackend)
+
+| Field | Description |
+| --- | --- |
+| `Conditional` | Conditional prefixes tool and prompt names only when there are multiple targets.<br /> |
+| `Always` | Always prefixes tool and prompt names, even with a single target.<br /> |
+| `Never` | Never prefixes tool and prompt names; calls are routed by target lookup.<br />Names must be unique across targets.<br /> |
 
 
 #### PriorityGroup

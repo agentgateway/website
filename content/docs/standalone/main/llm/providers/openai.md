@@ -2,7 +2,7 @@
 title: OpenAI
 weight: 10
 icon: /integrations/providers/bw/openai.svg
-description: Configuration and setup for OpenAI LLM provider
+description: Route agentgateway LLM traffic to OpenAI's GPT models.
 ---
 
 Configure OpenAI as an LLM provider in agentgateway.

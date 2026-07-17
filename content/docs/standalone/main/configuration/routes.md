@@ -1,7 +1,7 @@
 ---
 title: Routes
 weight: 14
-description: Configure routes on listeners for agentgateway.
+description: Match HTTP and TCP traffic on a listener and forward it to backends.
 next: /configuration/traffic-management
 ---
 
