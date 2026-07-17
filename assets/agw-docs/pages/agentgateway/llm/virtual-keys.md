@@ -16,28 +16,26 @@ This composable approach gives you more flexibility in how you configure and app
 Virtual keys combine authentication, rate limiting, and observability to create isolated token budgets for each API key:
 
 ```mermaid
-flowchart TD
-  A[Request arrives with API key] --> B[Validate API key]
-  B --> C[Extract user ID]
-  C --> D[Check user's token budget]
-  D --> E{Budget available?}
-  E -->|Yes| F[Forward to LLM]
-  F --> G[Track token usage]
-  G --> H[Deduct from budget]
-  E -->|No| I[Reject with 429]
+flowchart LR
+  A[Request with key] --> B[Validate key, extract user ID, check budget]
+  B --> C{Budget available?}
+  C -->|Yes| D[Forward to LLM]
+  D --> E[Track token usage]
+  E --> F[Deduct from budget]
+  C -->|No| I[Reject with 429]
   subgraph refill["Budget refills periodically"]
-    H
+    F
   end
 ```
 
 When a request arrives:
-1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key
-2. The user ID is extracted from a request header
-3. The request is checked against the user's token budget
-4. If budget is available, the request proceeds to the LLM
-5. Token usage is tracked and deducted from the user's budget
-6. If budget is exhausted, the request is rejected with a 429 status code
-7. Budgets refill at the configured interval (daily, hourly, etc.)
+
+1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key, extracts the user ID from a request header, and checks the request against the user's token budget.
+2. If budget is available:
+   1. The request proceeds to the LLM.
+   2. Agentgateway tracks token usage and deducts tokens from the user's budget.
+   3. Budgets refill at the configured interval (such as daily, hourly).
+3. If budget is exhausted, the request is rejected with a 429 status code
 
 ### More considerations
 
