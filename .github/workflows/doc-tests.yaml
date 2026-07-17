@@ -309,7 +309,7 @@ jobs:
           message: "Doc Test Results"
           blocks: ${{ steps.summary.outputs.slack_blocks }}
           thread_blocks: ${{ steps.summary.outputs.slack_thread_blocks }}
-          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications' }}
+          channel: ${{ github.event_name == 'workflow_dispatch' && inputs.slack_channel || 'product-excellence-test-notifications,doctopus-tests' }}
           token: ${{ secrets.SLACK_BOT_TOKEN }}
 
       - name: List untested docs

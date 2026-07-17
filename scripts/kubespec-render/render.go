@@ -176,6 +176,19 @@ func toPropertyMapWithResolver(node *yaml.Node, parentRequired []string, resolve
 		}
 	}
 
+	// Externally-tagged enum variants serialize as a single-key object wrapper,
+	// e.g. {"full": "..."} for HostRedirect::Full. schemars attaches the variant's
+	// doc comment to the wrapper (this node's description) rather than to the inner
+	// property, so the field would otherwise render as "No description". Surface the
+	// wrapper description on the sole field when that field has none of its own.
+	if pm.description != "" && len(pm.keys) == 1 {
+		only := pm.keys[0]
+		if p := pm.props[only]; p.description == "" {
+			p.description = pm.description
+			pm.props[only] = p
+		}
+	}
+
 	return pm
 }
 

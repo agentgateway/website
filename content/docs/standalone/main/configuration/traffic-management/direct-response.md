@@ -1,7 +1,7 @@
 ---
 title: Direct Response
 weight: 14
-description: Return custom responses directly without forwarding to a backend.
+description: Serve a fixed status code and response body directly from agentgateway instead of forwarding to a backend.
 test:
   direct-response:
   - file: ${versionRoot}/configuration/traffic-management/direct-response.md

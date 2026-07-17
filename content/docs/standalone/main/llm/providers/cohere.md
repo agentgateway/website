@@ -2,7 +2,7 @@
 title: Cohere
 weight: 20
 icon: /integrations/providers/bw/cohere.svg
-description: Configuration and setup for Cohere LLM provider
+description: Route agentgateway LLM traffic to Cohere's models.
 ---
 
 Configure Cohere as an LLM provider in agentgateway.

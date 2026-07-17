@@ -2,7 +2,7 @@
 title: Azure
 weight: 15
 icon: /integrations/providers/bw/azure.svg
-description: Configuration and setup for Azure AI services provider
+description: Route agentgateway LLM traffic to models hosted on Microsoft Azure AI.
 ---
 
 Configure Microsoft Azure AI as an LLM provider in agentgateway.
