@@ -97,6 +97,61 @@ spec:
 EOF
 ```
 
+### Run as a DaemonSet {#daemonset-workload}
+
+Run the managed gateway proxy as a DaemonSet instead of the default Deployment. DaemonSet mode creates one agentgateway pod on each schedulable matching node. Use the `daemonSet` overlay for DaemonSet-specific settings such as update strategy, node selectors, affinities, and tolerations.
+
+{{< callout type="warning" >}}
+The `deployment` and `horizontalPodAutoscaler` overlays are not valid for DaemonSet workloads. When changing workload kinds, move applicable pod template customizations to the matching overlay and remove fields that apply only to the previous kind, such as `spec.replicas` for Deployments.
+{{< /callout >}}
+
+```yaml
+kubectl apply --server-side -f- <<'EOF'
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+metadata:
+  name: agentgateway-daemonset
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  workload:
+    kind: DaemonSet
+  daemonSet:
+    spec:
+      updateStrategy:
+        type: RollingUpdate
+      template:
+        spec:
+          tolerations:
+            - operator: Exists
+EOF
+```
+
+Attach the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to a Gateway to apply the DaemonSet workload mode to that Gateway.
+
+```yaml
+kubectl apply --server-side -f- <<'EOF'
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: agentgateway-daemonset
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
+  infrastructure:
+    parametersRef:
+      group: {{< reuse "agw-docs/snippets/group.md" >}}
+      kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+      name: agentgateway-daemonset
+  listeners:
+    - name: http
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: All
+EOF
+```
+
 ## Overlays
 
 To learn more about overlays, see [Overlays]({{< link-hextra path="/setup/customize/options/#overlays" >}}).
@@ -236,6 +291,10 @@ EOF
 ### HorizontalPodAutoscaler (HPA) {#hpa}
 
 Configure automatic scaling based on CPU utilization. The HPA resource is created only when you specify this overlay.
+
+{{< callout type="warning" >}}
+The `horizontalPodAutoscaler` overlay is valid only for Deployment workloads. Do not use this overlay with `workload.kind: DaemonSet`.
+{{< /callout >}}
 
 ```yaml
 kubectl apply --server-side -f- <<'EOF'
