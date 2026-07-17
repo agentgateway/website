@@ -1,7 +1,7 @@
 ---
 title: "Reduce LLM Spend With Semantic Routing You Can Measure"
 category: "Deep Dive"
-toc: false
+toc: true
 publishDate: 2026-07-17
 author: "Daneyon Hansen"
 description: "Use agentgateway, vLLM Semantic Router, and catalog-priced telemetry to reduce routine coding-model spend without routing every request to the cheapest model."
