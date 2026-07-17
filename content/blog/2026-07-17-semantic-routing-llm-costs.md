@@ -14,7 +14,7 @@ premium-model credits. Sending every request to a cheaper model is not the
 answer: distributed-systems design, correctness work, and difficult debugging
 need more capable help.
 
-This example combines [vLLM Semantic Router (vSR)](https://vllm-semantic-router.com/)
+This example combines [vLLM Semantic Router (vSR)](https://vllm-sr.ai/)
 with [agentgateway](https://agentgateway.dev/) to send routine Go and Rust
 coding tasks to `gpt-5.4-nano` and escalate complex correctness,
 distributed-systems, and deep-debugging work to `gpt-5.5`. The goal is a
@@ -95,6 +95,10 @@ creates or reuses a kind cluster, and installs agentgateway, vSR, a model cost
 catalog, and the OpenTelemetry stack. It checks readiness, routing,
 catalog-priced metrics, logs, and traces before the primary requests run.
 
+Before running it, review the [demo requirements](https://github.com/danehans/agentgateway-demos/tree/main/cost-based-semantic-routing#requirements):
+12 GiB of Docker memory, 30 GiB of free disk, the required CLIs, an OpenAI API
+key, and access to both models.
+
 ```bash
 git clone https://github.com/danehans/agentgateway-demos.git
 cd agentgateway-demos/cost-based-semantic-routing
@@ -131,6 +135,9 @@ I start Codex with `codex --profile agentgateway`. It sends OpenAI Responses
 API traffic to agentgateway; vSR selects the tier and agentgateway records the
 decision and realized cost. I validated routine Go test traffic to nano and an
 advanced leader-election request to GPT-5.5.
+
+Current Codex emits an `unknown model auto` fallback-metadata warning. Routing
+still works, but Codex warns that the fallback metadata may degrade behavior.
 
 The profile keeps credentials out of the configuration file. Codex documents
 [custom model providers](https://learn.chatgpt.com/docs/config-file/config-advanced#custom-model-providers)
