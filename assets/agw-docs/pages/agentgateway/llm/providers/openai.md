@@ -100,7 +100,7 @@ spec:
     - backendRefs:
       - name: openai
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
@@ -122,10 +122,16 @@ spec:
     - path:
         type: PathPrefix
         value: /openai
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /v1/chat/completions
     backendRefs:
     - name: openai
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-      group: agentgateway.dev
+      group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```

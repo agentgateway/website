@@ -207,7 +207,7 @@ For detailed instructions on creating backends and storing provider API keys, se
 
 ### Create a route to the backend
 
-Create an HTTPRoute that routes requests to your LLM backend.
+Create an HTTPRoute that routes requests to your LLM backend. The following example creates an `/openai` route that is rewritten to the OpenAI default `v1/chat/completions` that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
@@ -225,6 +225,12 @@ spec:
         - path:
             type: PathPrefix
             value: /openai
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /v1/chat/completions
       backendRefs:
         - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

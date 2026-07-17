@@ -37,11 +37,18 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
    spec:
      ai:
        provider:
-         openai:
-           model: gpt-3.5-turbo 
+         openai: {}
+           #optionally pin the model or other OpenAI settings
+           #model: gpt-3.5-turbo 
      policies:
        auth:
          key: $TOKEN
+       ai:
+         routes:
+           "/v1/responses": "Responses"
+           "/v1/chat/completions": "Completions"
+           "/v1/models": "Models"
+           "*": "Passthrough"
    EOF
    ```
 
@@ -71,10 +78,16 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
        - path:
            type: PathPrefix
            value: /openai
+         filters:
+         - type: URLRewrite
+           urlRewrite:
+             path:
+               type: ReplacePrefixMatch
+               replacePrefixMatch: /v1/chat/completions
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -230,7 +243,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
@@ -366,7 +379,7 @@ Pass through an existing token directly from the client or a successful OpenID C
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
