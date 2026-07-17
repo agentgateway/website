@@ -16,28 +16,26 @@ This composable approach gives you more flexibility in how you configure and app
 Virtual keys combine authentication, rate limiting, and observability to create isolated token budgets for each API key:
 
 ```mermaid
-flowchart TD
-  A[Request arrives with API key] --> B[Validate API key]
-  B --> C[Extract user ID]
-  C --> D[Check user's token budget]
-  D --> E{Budget available?}
-  E -->|Yes| F[Forward to LLM]
-  F --> G[Track token usage]
-  G --> H[Deduct from budget]
-  E -->|No| I[Reject with 429]
+flowchart LR
+  A[Request with key] --> B[Validate key, extract user ID, check budget]
+  B --> C{Budget available?}
+  C -->|Yes| D[Forward to LLM]
+  D --> E[Track token usage]
+  E --> F[Deduct from budget]
+  C -->|No| I[Reject with 429]
   subgraph refill["Budget refills periodically"]
-    H
+    F
   end
 ```
 
 When a request arrives:
-1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key
-2. The user ID is extracted from a request header
-3. The request is checked against the user's token budget
-4. If budget is available, the request proceeds to the LLM
-5. Token usage is tracked and deducted from the user's budget
-6. If budget is exhausted, the request is rejected with a 429 status code
-7. Budgets refill at the configured interval (daily, hourly, etc.)
+
+1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key, extracts the user ID from a request header, and checks the request against the user's token budget.
+2. If budget is available:
+   1. The request proceeds to the LLM.
+   2. Agentgateway tracks token usage and deducts tokens from the user's budget.
+   3. Budgets refill at the configured interval (such as daily, hourly).
+3. If budget is exhausted, the request is rejected with a 429 status code
 
 ### More considerations
 
@@ -186,12 +184,22 @@ metadata:
 spec:
   ai:
     provider:
-      openai:
-        model: gpt-3.5-turbo
+      openai: {}
+        # Optional: specify a default  model
+        #model: gpt-3.5-turbo
+     # Optional: custom host and port, if needed
+     # host: api.openai.com  
+     # port: 443
   policies:
     auth:
       secretRef:
         name: openai-secret
+    ai:
+      routes:
+        "/v1/responses": "Responses"
+        "/v1/chat/completions": "Completions"
+        "/v1/models": "Models"          # also silences Codex's model-metadata probe
+        "*": "Passthrough"
 EOF
 ```
 
@@ -199,7 +207,7 @@ For detailed instructions on creating backends and storing provider API keys, se
 
 ### Create a route to the backend
 
-Create an HTTPRoute that routes requests to your LLM backend.
+Create an HTTPRoute that routes requests to your LLM backend. The following example creates an `/openai` route that is rewritten to the OpenAI default `v1/chat/completions` that you set up in the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
@@ -217,10 +225,16 @@ spec:
         - path:
             type: PathPrefix
             value: /openai
+      filters:
+      - type: URLRewrite
+        urlRewrite:
+          path:
+            type: ReplacePrefixMatch
+            replacePrefixMatch: /v1/chat/completions
       backendRefs:
         - name: openai
           namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-          group: agentgateway.dev
+          group: {{< reuse "agw-docs/snippets/group.md" >}}
           kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```

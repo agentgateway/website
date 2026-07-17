@@ -24,7 +24,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
 1. Update your {{< reuse "agw-docs/snippets/backend.md" >}} resource to include a `routes` field that maps API paths to route types.
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: agentgateway.dev/v1alpha1
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    metadata:
      name: openai
@@ -32,8 +32,9 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    spec:
      ai:
        provider:
-         openai:
-           model: gpt-3.5-turbo  # Optional: specify default model
+         openai: {}
+           # Optional: specify default model
+           #model: gpt-3.5-turbo
         # host: api.openai.com  # Optional: custom host if needed
         # port: 443  # Optional: custom port
      policies:
@@ -56,7 +57,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    | `v1/models` | Routes to the models endpoint with `Passthrough` processing. This endpoint is used to get basic information about the models that are available. For more information, see the [OpenAI API docs for the endpoint](https://developers.openai.com/api/reference/resources/models/methods/list).|
    | `*` | Matches any path that doesn't match the specific endpoints otherwise set. Typically, you set this value to `Passthrough` to pass through to the provider API without LLM-specific processing.|
 
-2. Create an HTTPRoute resource that routes traffic to the OpenAI {{< reuse "agw-docs/snippets/backend.md" >}} along the `/openai` path matcher. Note that because you set up the `routes` map on the {{< reuse "agw-docs/snippets/backend.md" >}}, you do not need to create any URLRewrite filters to point your route matcher to the correct LLM provider endpoint.
+2. Create an HTTPRoute resource that routes traffic to the OpenAI {{< reuse "agw-docs/snippets/backend.md" >}} along the `/openai` path matcher.
 
    ```yaml
    kubectl apply -f- <<EOF
@@ -74,10 +75,16 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
        - path:
            type: PathPrefix
            value: /openai
+       filters:
+       - type: URLRewrite
+         urlRewrite:
+           path:
+             type: ReplacePrefixMatch
+             replacePrefixMatch: /v1/chat/completions
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
    EOF
    ```
