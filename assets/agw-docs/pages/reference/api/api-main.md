@@ -139,7 +139,7 @@ _Appears in:_
 
 
 _Validation:_
-- ExactlyOneOf: [secretRef secretSelector]
+- ExactlyOneOf: [secretRef secretSelector configMapSelector]
 
 _Appears in:_
 - [Traffic](#traffic)
@@ -147,8 +147,9 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `mode` _[APIKeyAuthenticationMode](#apikeyauthenticationmode)_ | Validation mode for API key authentication. | Strict | Optional: \{\} <br /> |
-| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing a set of API keys. If there are many Secret-backed<br />keys, `secretSelector` can be used instead.<br />Each entry in the credential data represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with `key` or `keyHash`, plus optional `metadata`.<br />  `key` contains the API key. `keyHash` contains a hashed API key in<br />  `sha256:<hex>` format. `metadata` contains arbitrary JSON metadata<br />  associated with the key, which may be used by other policies. For<br />  example, you may write an authorization policy allowing<br />  `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456"<br />	  client3: \|<br />	    \{<br />	      "keyHash": "sha256:efa299afb8c12a36e47a790cbbf929caa06d13285950410463fb759af17d0dad",<br />	      "metadata": \{<br />	        "group": "engineering"<br />	      \}<br />	    \} |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing a set of API keys. If many keys are needed,<br />`secretSelector` or `configMapSelector` can be used instead.<br />Note that ConfigMap-backed API keys only support `keyHash`.<br />Each entry in the credential data represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with `key` or `keyHash`, plus optional `metadata`.<br />  `key` contains the API key. `keyHash` contains a hashed API key in<br />  `sha256:<hex>` format. `metadata` contains arbitrary JSON metadata<br />  associated with the key, which may be used by other policies. For<br />  example, you may write an authorization policy allowing<br />  `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456"<br />	  client3: \|<br />	    \{<br />	      "keyHash": "sha256:efa299afb8c12a36e47a790cbbf929caa06d13285950410463fb759af17d0dad",<br />	      "metadata": \{<br />	        "group": "engineering"<br />	      \}<br />	    \} |  | Optional: \{\} <br /> |
 | `secretSelector` _[SecretSelector](#secretselector)_ | Selects multiple Kubernetes `Secret` resources<br />containing API keys. It is Secret-only; use `secretRef` for other<br />credential kinds. If the same key is defined in multiple secrets, the<br />behavior is undefined.<br />Each entry in the `Secret` data represents one API key. The key is an<br />arbitrary identifier. The value can either be:<br />* A string representing the API key.<br />* A JSON object with `key` or `keyHash`, plus optional `metadata`.<br />  `key` contains the API key. `keyHash` contains a hashed API key in<br />  `sha256:<hex>` format. `metadata` contains arbitrary JSON metadata<br />  associated with the key, which may be used by other policies. For<br />  example, you may write an authorization policy allowing<br />  `apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: Secret<br />	metadata:<br />	  name: api-key<br />	stringData:<br />	  client1: \|<br />	    \{<br />	      "key": "k-123",<br />	      "metadata": \{<br />	        "group": "sales",<br />	        "created_at": "2024-10-01T12:00:00Z"<br />	      \}<br />	    \}<br />	  client2: "k-456" |  | Optional: \{\} <br /> |
+| `configMapSelector` _[ConfigMapSelector](#configmapselector)_ | Selects multiple Kubernetes `ConfigMap` resources<br />containing API keys. It is ConfigMap-only; use `secretRef` or<br />`secretSelector` for Secret-backed credentials. If the same key is<br />defined in multiple ConfigMaps, the behavior is undefined.<br />Because ConfigMaps are not confidential, every entry sourced from a<br />ConfigMap must use `keyHash`; a raw `key` value is rejected.<br />Each entry in the `ConfigMap` data represents one API key. The key is<br />an arbitrary identifier. The value must be a JSON object with<br />`keyHash`, plus optional `metadata`. `keyHash` contains a hashed API<br />key in `sha256:<hex>` format. `metadata` contains arbitrary JSON<br />metadata associated with the key, which may be used by other<br />policies. For example, you may write an authorization policy allowing<br />`apiKey.group == 'sales'`.<br />Example:<br />	apiVersion: v1<br />	kind: ConfigMap<br />	metadata:<br />	  name: api-key<br />	data:<br />	  client1: \|<br />	    \{<br />	      "keyHash": "sha256:efa299afb8c12a36e47a790cbbf929caa06d13285950410463fb759af17d0dad",<br />	      "metadata": \{<br />	        "group": "sales"<br />	      \}<br />	    \} |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where API keys are read from.<br />If omitted, credentials are read from the `Authorization` header with the `Bearer ` prefix. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
 
 
@@ -1487,6 +1488,22 @@ _Appears in:_
 
 
 
+#### ConfigMapSelector
+
+
+
+
+
+
+
+_Appears in:_
+- [APIKeyAuthentication](#apikeyauthentication)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected ConfigMap. |  | Required: \{\} <br /> |
+
+
 #### CustomProvider
 
 
@@ -1729,6 +1746,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external processor is unavailable or returns an error.<br />"FailOpen" allows the request to continue, as long as the request body has not<br />been sent (or started streaming) to the ext_proc. Once the request body has<br />started streaming to the ext_proc, the request will fail closed on error.<br />"FailClosed" (default) rejects the request on any failure. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
 | `metadataContext` _object (keys:string, values:[map[string]CELExpression](#map[string]celexpression))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `requestAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Request attributes to send to the external processor in the request<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
@@ -1766,6 +1784,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
+| `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external processor is unavailable or returns an error.<br />"FailOpen" allows the request to continue, as long as the request body has not<br />been sent (or started streaming) to the ext_proc. Once the request body has<br />started streaming to the ext_proc, the request will fail closed on error.<br />"FailClosed" (default) rejects the request on any failure. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
 | `metadataContext` _object (keys:string, values:[map[string]CELExpression](#map[string]celexpression))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `requestAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Request attributes to send to the external processor in the request<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
@@ -1785,6 +1804,8 @@ _Appears in:_
 - [BufferBody](#bufferbody)
 - [ExtAuth](#extauth)
 - [ExtAuthOrConditional](#extauthorconditional)
+- [ExtProc](#extproc)
+- [ExtProcOrConditional](#extprocorconditional)
 - [GlobalRateLimit](#globalratelimit)
 - [MCPBackend](#mcpbackend)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
@@ -2885,6 +2906,7 @@ _Appears in:_
 | `Keycloak` |  |
 | `Okta` |  |
 | `Descope` |  |
+| `Authentik` |  |
 
 
 #### McpSelector
@@ -4054,7 +4076,7 @@ _Appears in:_
 | `authorization` _[Authorization](#authorization)_ | Access rules based on roles and<br />permissions.<br />If multiple authorization rules are applied across different policies, at the same or different attachment points,<br />all rules are merged. |  | Optional: \{\} <br /> |
 | `jwtAuthentication` _[JWTAuthentication](#jwtauthentication)_ | Authenticates users based on JWT tokens. |  | Optional: \{\} <br /> |
 | `basicAuthentication` _[BasicAuthentication](#basicauthentication)_ | Authenticates users based on the `Basic`<br />authentication scheme (RFC 7617), where a username and password are<br />encoded in the request. |  | ExactlyOneOf: [users secretRef] <br />Optional: \{\} <br /> |
-| `apiKeyAuthentication` _[APIKeyAuthentication](#apikeyauthentication)_ | Authenticates users based on a configured API<br />key. |  | ExactlyOneOf: [secretRef secretSelector] <br />Optional: \{\} <br /> |
+| `apiKeyAuthentication` _[APIKeyAuthentication](#apikeyauthentication)_ | Authenticates users based on a configured API<br />key. |  | ExactlyOneOf: [secretRef secretSelector configMapSelector] <br />Optional: \{\} <br /> |
 | `directResponse` _[DirectResponseOrConditional](#directresponseorconditional)_ | Sends a direct response to the<br />client. |  | Optional: \{\} <br /> |
 | `buffer` _[Buffer](#buffer)_ | Buffers request and response bodies. Buffered bodies are accumulated in memory<br />by the proxy until completion before being forwarded. This changes the proxies default behavior, which streams bodies.<br />Warning: large bodies can lead to excessive memory usage in the proxy. Utilize with care, or with strict limits. |  | Optional: \{\} <br /> |
 
