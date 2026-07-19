@@ -1,38 +1,33 @@
-Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to route requests through your agentgateway proxy.
+Configure [Codex](https://chatgpt.com/codex), the AI coding tool by OpenAI, to
+route requests through agentgateway running in Kubernetes.
 
 ## Before you begin
 
-1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Install either the [Codex CLI](https://developers.openai.com/codex/cli/) or
+1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
+2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/llm/providers/openai/" >}}).
+3. Install either the [Codex CLI](https://developers.openai.com/codex/cli/) or
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
-## Configure agentgateway
+## Set the gateway URL
 
-Start agentgateway with an OpenAI backend configuration. The wildcard `*` model name accepts any model. Codex sends the model in each request, so you do not need to pin a specific model.
+The [installation quickstart]({{< link-hextra path="/quickstart/install/" >}})
+sets `INGRESS_GW_ADDRESS` to the Gateway address. Set the Codex base URL from
+that value. The `/v1` suffix is required because Codex sends Responses API
+requests to `/v1/responses`.
 
-1. Create a configuration file.
-
-   ```yaml
-   cat > config.yaml << 'EOF'
-   # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   llm:
-     models:
-     - name: "*"
-       provider: openAI
-       params:
-         apiKey: "$OPENAI_API_KEY"
-   EOF
-   ```
-
-2. Start agentgateway.
-
-   ```bash
-   agentgateway -f config.yaml
-   ```
+```sh
+export AGENTGATEWAY_BASE_URL="http://${INGRESS_GW_ADDRESS}/v1"
+```
 
 {{< callout type="info" >}}
-For wildcard model matching, rate limiting, and other options, see the [OpenAI provider page]({{< link-hextra path="/llm/providers/openai" >}}).
+For a TLS-enabled gateway, set `AGENTGATEWAY_BASE_URL` to its HTTPS URL ending
+in `/v1`.
 {{< /callout >}}
+
+## Verify gateway connectivity
+
+Follow [Step 4 of the OpenAI quickstart]({{< link-hextra path="/quickstart/llm/#step-4-send-a-request-to-the-llm" >}})
+to verify that the configured Gateway can reach the LLM provider.
 
 ## Connect Codex to agentgateway
 
@@ -43,10 +38,14 @@ Point Codex at agentgateway through one of the following methods.
 {{< tabs >}}
 {{% tab name="CLI override" %}}
 
-To override the base URL for a single run, set `model_provider` and the provider's `name` and `base_url` (the `-c` values are TOML).
+To override the base URL for a single run, set `model_provider` and the
+provider's `name` and `base_url` (the `-c` values are TOML).
 
 ```sh
-codex -c 'model_provider="agentgateway"' -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' -c 'model_providers.agentgateway.base_url="http://localhost:4000/v1"'
+codex -c 'model_provider="agentgateway"' \
+  -c 'model_providers.agentgateway.name="OpenAI via agentgateway"' \
+  -c "model_providers.agentgateway.base_url=\"${AGENTGATEWAY_BASE_URL}\"" \
+  -c 'model_providers.agentgateway.wire_api="responses"'
 ```
 
 {{% /tab %}}
@@ -55,16 +54,15 @@ codex -c 'model_provider="agentgateway"' -c 'model_providers.agentgateway.name="
 To configure the base URL persistently without changing your default Codex
 configuration, create a profile. For more information, see [Codex
 profiles](https://learn.chatgpt.com/docs/config-file/config-advanced#profiles).
-The `name` field is required for custom providers.
 
 ```sh
 mkdir -p ~/.codex
-cat > ~/.codex/agentgateway.config.toml <<'EOF'
+cat > ~/.codex/agentgateway.config.toml <<EOF
 model_provider = "agentgateway"
 
 [model_providers.agentgateway]
 name = "OpenAI via agentgateway"
-base_url = "http://localhost:4000/v1"
+base_url = "${AGENTGATEWAY_BASE_URL}"
 wire_api = "responses"
 EOF
 ```
@@ -83,17 +81,19 @@ codex --profile agentgateway
 1. Send a test prompt through agentgateway. For the profile configuration,
    include the profile name:
 
-   ```bash
+   ```sh
    codex --profile agentgateway "Hello"
    ```
 
-2. Verify that the request appears in the agentgateway logs.
+2. Verify that the request appears in the agentgateway proxy logs.
 
-   Example output:
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --since=5m \
+     | grep 'http.path=/v1/responses' \
+     | tail -n 5
+   ```
 
-   ```
-   info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
-   ```
+   A successful entry has `http.status=200` and `http.path=/v1/responses`.
 
 {{< callout type="info" >}}
 This configuration was tested with `codex-cli 0.144.4`.
@@ -109,12 +109,12 @@ then restart the ChatGPT desktop app:
 
 ```sh
 cp ~/.codex/config.toml ~/.codex/config.toml.bak
-cat > ~/.codex/config.toml <<'EOF'
+cat > ~/.codex/config.toml <<EOF
 model_provider = "agentgateway"
 
 [model_providers.agentgateway]
 name = "OpenAI via agentgateway"
-base_url = "http://localhost:4000/v1"
+base_url = "${AGENTGATEWAY_BASE_URL}"
 wire_api = "responses"
 EOF
 ```
@@ -126,13 +126,15 @@ Open config.toml** and apply the same provider configuration.
 
 1. Send a task from Codex in the ChatGPT desktop app.
 
-2. Verify that the request appears in the agentgateway logs.
+2. Verify that the request appears in the agentgateway proxy logs.
 
-   Example output:
+   ```sh
+   kubectl logs deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --since=5m \
+     | grep 'http.path=/v1/responses' \
+     | tail -n 5
+   ```
 
-   ```
-   info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
-   ```
+   A successful entry has `http.status=200` and `http.path=/v1/responses`.
 
 {{< callout type="info" >}}
 This configuration was tested with ChatGPT desktop app version `26.707.72221`.

@@ -185,7 +185,7 @@ gateway:
 
 The chart defaults to one replica with SQLite on a `ReadWriteOnce` volume. This is the simplest mode for a standalone deployment.
 
-To run more than one replica, deploy your own PostgreSQL instance and use shared `ReadWriteMany` config storage, or provide an existing claim that supports `ReadWriteMany`.
+To run more than one replica, deploy your own PostgreSQL instance and switch `config.database.url` to a `postgres://` URL. Agentgateway creates the required schema on first startup — no migration step is needed. You also need shared `ReadWriteMany` config storage (or provide an existing claim that supports `ReadWriteMany`) so all replicas share the same `config.yaml`.
 
 ```yaml
 replicaCount: 2

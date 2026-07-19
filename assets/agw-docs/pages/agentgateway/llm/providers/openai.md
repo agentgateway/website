@@ -44,7 +44,7 @@ Create an {{< reuse "agw-docs/snippets/backend.md" >}} resource to configure an 
 
 ```yaml {paths="openai-setup"}
 kubectl apply -f- <<EOF
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: openai
@@ -52,9 +52,9 @@ metadata:
 spec:
   ai:
     provider:
-      openai:
+      openai: {}
         # Optional: specify a default  model
-        model: gpt-3.5-turbo
+        #model: gpt-3.5-turbo
      # Optional: custom host and port, if needed
      # host: api.openai.com  
      # port: 443
@@ -62,6 +62,12 @@ spec:
     auth:
       secretRef:
         name: openai-secret
+    ai:
+      routes:
+        "/v1/responses": "Responses"
+        "/v1/chat/completions": "Completions"
+        "/v1/models": "Models"          # also silences Codex's model-metadata probe
+        "*": "Passthrough"
 EOF
 ```
 
@@ -94,7 +100,7 @@ spec:
     - backendRefs:
       - name: openai
         namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-        group: agentgateway.dev
+        group: {{< reuse "agw-docs/snippets/group.md" >}}
         kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```
@@ -116,10 +122,16 @@ spec:
     - path:
         type: PathPrefix
         value: /openai
+    filters:
+    - type: URLRewrite
+      urlRewrite:
+        path:
+          type: ReplacePrefixMatch
+          replacePrefixMatch: /v1/chat/completions
     backendRefs:
     - name: openai
       namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-      group: agentgateway.dev
+      group: {{< reuse "agw-docs/snippets/group.md" >}}
       kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 EOF
 ```

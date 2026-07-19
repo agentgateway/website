@@ -1,6 +1,6 @@
 ---
 title: Cost controls
-weight: 60
+weight: 30
 description: Attribute, observe, enforce, and optimize LLM spend through agentgateway.
 test: skip
 ---
