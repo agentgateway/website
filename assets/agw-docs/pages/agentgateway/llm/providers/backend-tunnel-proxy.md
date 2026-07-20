@@ -9,7 +9,7 @@ The tunnel supports `Service` and {{< reuse "agw-docs/snippets/backend.md" >}} t
 ## Before you begin
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup" >}}).
-2. Have access to an HTTP proxy (forward proxy) in your cluster, such as [Squid](https://squid-cache.org/).
+2. Have access to an HTTP proxy (forward proxy) in your cluster, such as [Squid](https://www.squid-cache.org/).
 
 ## Configure a tunnel for JWKS fetching
 

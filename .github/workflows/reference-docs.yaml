@@ -197,6 +197,10 @@ jobs:
 
           # Simplify complex struct types
           sed -i.bak -E 's/_Underlying type:_ _\[?struct\{[^}]*\}[]\)]*(\\([^)]+\\))?_/_Underlying type:_ _struct_/g' "$TARGET_FILE"
+          # Drop the broken intra-page anchor crd-ref-docs emits for map-alias
+          # underlying types (e.g. `map[string]CELExpression` -> #map[string]celexpression,
+          # which never gets a heading), keeping the readable type text.
+          sed -i.bak -E 's/_Underlying type:_ _\[(map\[[^]]*\][^]]*)\]\(#[^)]*\)_/_Underlying type:_ _\1_/g' "$TARGET_FILE"
           rm -f "$TARGET_FILE.bak"
 
           rm "./out.md"

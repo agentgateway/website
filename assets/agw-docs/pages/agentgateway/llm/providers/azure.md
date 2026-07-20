@@ -1,4 +1,4 @@
-Configure [Azure](https://learn.microsoft.com/en-us/azure/ai-services/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
+Configure [Azure](https://learn.microsoft.com/en-us/azure/foundry/) as an LLM provider in {{< reuse "agw-docs/snippets/agentgateway.md" >}}.
 
 Azure supports two endpoint types:
 

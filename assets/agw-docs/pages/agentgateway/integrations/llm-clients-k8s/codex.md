@@ -5,7 +5,7 @@ route requests through agentgateway running in Kubernetes.
 
 1. Set up an [agentgateway proxy]({{< link-hextra path="/setup/gateway/" >}}).
 2. [Set up access to the OpenAI LLM provider]({{< link-hextra path="/llm/providers/openai/" >}}).
-3. Install either the [Codex CLI](https://developers.openai.com/codex/cli/) or
+3. Install either the [Codex CLI](https://learn.chatgpt.com/docs/codex/cli) or
    the [ChatGPT desktop app](https://chatgpt.com/download/).
 
 ## Set the gateway URL
@@ -99,7 +99,7 @@ codex --profile agentgateway
 This configuration was tested with `codex-cli 0.144.4`.
 {{< /callout >}}
 
-For more configuration options, see the [**Codex CLI documentation**](https://developers.openai.com/codex/cli/).
+For more configuration options, see the [**Codex CLI documentation**](https://learn.chatgpt.com/docs/codex/cli).
 
 ### Codex in the ChatGPT Desktop App
 
@@ -152,5 +152,5 @@ found. That warning does not prevent `/v1/responses` traffic from routing.
 
 {{< cards >}}
   {{< card path="/llm/providers/openai" title="OpenAI provider" subtitle="Complete OpenAI provider configuration" >}}
-  {{< card path="/llm/prompt-guards/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
+  {{< card path="/llm/guardrails/" title="Prompt guards" subtitle="Set up guardrails for LLM requests and responses" >}}
 {{< /cards >}}
