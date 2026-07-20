@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="960" height="661" viewBox="0 0 960 661" role="img" aria-labelledby="title description">
   <title id="title">Semantic routing evaluation results</title>
-  <desc id="description">Semantic routing spend, routing agreement, model mix, latency, and cache transitions for run 20260716T202619Z.</desc>
+  <desc id="description">Semantic routing spend, expected-tier agreement, model mix, latency, and cache transitions for run 20260716T202619Z.</desc>
   <style>
     text { font-family: Arial, Helvetica, sans-serif; fill: #0f172a; }
     .title { font-size: 26px; font-weight: 700; }
@@ -22,9 +22,9 @@
   <text class="kpi-value" x="48" y="151">35.4%</text>
   <text class="subtitle" x="48" y="173">Routed versus always expensive</text>
   <line x1="337" y1="112" x2="337" y2="177" stroke="#cbd5e1"/>
-  <text class="kpi-label" x="370" y="121">ROUTING AGREEMENT</text>
+  <text class="kpi-label" x="370" y="121">EXPECTED-TIER AGREEMENT</text>
   <text class="kpi-value" x="370" y="151">90.0%</text>
-  <text class="subtitle" x="370" y="173">Expected tiers in this coding sample</text>
+  <text class="subtitle" x="370" y="173">Selected tier matched the dataset label</text>
   <line x1="655" y1="112" x2="655" y2="177" stroke="#cbd5e1"/>
   <text class="kpi-label" x="688" y="121">ROUTED P50 LATENCY</text>
   <text class="kpi-value" x="688" y="151">5.22 s</text>

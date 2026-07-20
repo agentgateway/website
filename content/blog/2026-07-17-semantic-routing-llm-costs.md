@@ -1,5 +1,5 @@
 ---
-title: "Reduce LLM Spend With Semantic Routing You Can Measure"
+title: "Reduce LLM Spend with Semantic Routing"
 category: "Deep Dive"
 toc: true
 publishDate: 2026-07-17
@@ -66,6 +66,11 @@ Each run has an ID on every request, so its cost query excludes unrelated
 cluster traffic. I deliberately leave out a forced-cheap lane: the useful
 comparison is whether routing saves money while still escalating complex work.
 
+Each prompt has an expected tier in the checked-in dataset: 25 routine prompts
+expect `gpt-5.4-nano`, and 25 complex prompts expect `gpt-5.5`. Expected-tier
+agreement is the share of requests where vSR selected that labelled tier. It
+checks the routing policy, not the quality of the model's answer.
+
 In a clean run on July 16, 2026, all 100 primary requests completed with exact
 model-catalog lookups. vSR selected `gpt-5.4-nano` for 30 requests and
 `gpt-5.5` for 20. Catalog-priced agentgateway metrics reported `$0.591444` for
@@ -76,8 +81,9 @@ routed traffic and 19.61 seconds for the always-expensive lane.
 
 ![Catalog-priced semantic-routing result](/img/blog/cost-based-semantic-routing/20260716T202619Z-chart.svg)
 
-The chart reached 90% tier agreement. It sent 20 of 25 prompts labelled complex
-to GPT-5.5. This is not a claim of perfect model selection, but it shows the
+The chart reached **90% expected-tier agreement (45 of 50 prompts)**. All 25
+routine prompts stayed on nano, and 20 of 25 complex prompts escalated to
+GPT-5.5. This is not a claim of perfect model selection, but it shows the
 savings did not come from a blanket downgrade: 40% of routed requests still
 used the expensive model. It is a policy sanity check, not an answer-quality
 benchmark or a substitute for application task-success and user-feedback data.
