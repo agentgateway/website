@@ -2,7 +2,7 @@
 title: Fireworks AI
 weight: 20
 icon: /integrations/providers/bw/fireworks.svg
-description: Configuration and setup for Fireworks AI LLM provider
+description: Route agentgateway LLM traffic to models hosted on Fireworks AI.
 ---
 
 Configure Fireworks AI as an LLM provider in agentgateway.

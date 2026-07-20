@@ -1,6 +1,7 @@
 hugo
 node_modules/
 public/
+public-*/
 .hugo_build.lock
 hugo_stats.json
 .vscode/

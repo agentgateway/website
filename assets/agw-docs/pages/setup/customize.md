@@ -70,9 +70,32 @@ You can add your custom configuration to the {{< reuse "agw-docs/snippets/gatewa
    {"level":"info","time":"2025-12-16T15:58:18.248081Z","scope":"agent_xds::client","message":"received response","type_url":"type.googleapis.com/agentgateway.dev.workload.Address","size":44,"removes":0,"xds":{"id":1}}
    ```
 
+#### Run as a DaemonSet {#daemonset-workload}
+
+To run the managed agentgateway proxy as a DaemonSet instead of the default Deployment, set `workload.kind: DaemonSet` in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that is attached to your Gateway or GatewayClass. Use the `daemonSet` [overlay](#overlays) for DaemonSet-specific settings. The `deployment` and `horizontalPodAutoscaler` overlays are valid only for Deployment workloads.
+
+```yaml
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}
+metadata:
+  name: agentgateway-daemonset
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  workload:
+    kind: DaemonSet
+  daemonSet:
+    spec:
+      updateStrategy:
+        type: RollingUpdate
+      template:
+        spec:
+          tolerations:
+            - operator: Exists
+```
+
 ### Overlays {#overlays}
 
-You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to override default settings for the deployment, service, and service account that are created for an agentgateway proxy. 
+You can define Kubernetes overlays in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource to override default settings for the workload, service, and service account that are created for an agentgateway proxy. Use the `deployment` overlay for the default Deployment workload and the `daemonSet` overlay when `workload.kind` is set to `DaemonSet`.
 
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example changes the default replica count from 1 to 3. For other examples, see [Overlays]({{< link-hextra path="/setup/customize/configs/#overlays" >}}). 
    ```yaml {paths="customize"}

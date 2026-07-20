@@ -2,7 +2,7 @@
 title: Configuration
 weight: 22
 icon: tune
-description: Learn how to configure agentgateway proxies for intelligent routing, security, and resilience.
+description: Entry point to configuring binds, listeners, routes, backends, and policies in agentgateway.
 test: skip
 ---
 
