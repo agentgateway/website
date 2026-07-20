@@ -139,8 +139,7 @@ wire_api = "responses"
 
 I start Codex with `codex --profile agentgateway`. It sends OpenAI Responses
 API traffic to agentgateway; vSR selects the tier and agentgateway records the
-decision and realized cost. I validated routine Go test traffic to nano and an
-advanced leader-election request to GPT-5.5.
+decision and realized cost.
 
 Current Codex emits an `unknown model auto` fallback-metadata warning. Routing
 still works, but Codex warns that the fallback metadata may degrade behavior.
