@@ -85,7 +85,7 @@ assertion=<inbound token>
 audience=target-client
 ```
 
-This grant works for any authorization servers that support JWT Assertion Grant (RFC 7523). This is the grant Keycloak's [JWT Authorization Grant](https://www.keycloak.org/docs/latest/server_admin/#_jwt-authorization-grant) (preview in 26.5+) implements across realms — present a JWT from realm A, get a token from realm B that trusts A. Full two-realm walkthrough: [`examples/traffic-token-exchange/jwt-authz-grant`](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange/jwt-authz-grant).
+This grant works for any authorization servers that support JWT Assertion Grant (RFC 7523). This is the grant Keycloak's [JWT Authorization Grant](https://www.keycloak.org/securing-apps/jwt-authorization-grant) (preview in 26.5+) implements across realms — present a JWT from realm A, get a token from realm B that trusts A. Full two-realm walkthrough: [`examples/traffic-token-exchange/jwt-authz-grant`](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-token-exchange/jwt-authz-grant).
 
 ## Microsoft Entra OBO
 

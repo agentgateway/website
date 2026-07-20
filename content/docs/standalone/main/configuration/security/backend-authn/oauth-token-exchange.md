@@ -32,8 +32,8 @@ The token endpoint is configured as a backend reference: a `host` in `host:port`
 The following examples run against local Keycloak stacks from the agentgateway repository. Make sure that you have the following tools installed:
 
 - [agentgateway](https://github.com/agentgateway/agentgateway/releases)
-- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/)
-- [`jq`](https://jqlang.github.io/jq/) for reading token responses
+- [Docker](https://docs.docker.com/get-started/get-docker/) and [Docker Compose](https://docs.docker.com/compose/)
+- [`jq`](https://jqlang.org/) for reading token responses
 - A local clone of the [agentgateway repository](https://github.com/agentgateway/agentgateway), which contains the example stacks:
 
   ```sh
