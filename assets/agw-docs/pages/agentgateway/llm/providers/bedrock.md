@@ -1,8 +1,7 @@
 Configure [Amazon Bedrock](https://aws.amazon.com/bedrock/) as an LLM provider in agentgateway.
 
-{{< callout type="info" >}}
-Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completions` request body shape) and returns OpenAI-formatted responses, regardless of the route path that you configure. Agentgateway translates between OpenAI and Bedrock formats internally. Bedrock-native APIs such as the [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html) request and response shapes are not supported. Usage fields in responses follow the OpenAI shape (`prompt_tokens`, `completion_tokens`, `total_tokens`), not the Bedrock shape (`inputTokens`, `outputTokens`, `totalTokens`).
-{{< /callout >}}
+> [!NOTE]
+> Agentgateway accepts OpenAI-formatted requests (such as the `/v1/chat/completions` request body shape) and returns OpenAI-formatted responses, regardless of the route path that you configure. Agentgateway translates between OpenAI and Bedrock formats internally. Bedrock-native APIs such as the [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference.html) request and response shapes are not supported. Usage fields in responses follow the OpenAI shape (`prompt_tokens`, `completion_tokens`, `total_tokens`), not the Bedrock shape (`inputTokens`, `outputTokens`, `totalTokens`).
 
 ## Before you begin
 
