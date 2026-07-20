@@ -31,20 +31,20 @@ If a tool or other resource is not allowed, the gateway automatically filters it
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
   port: 3000
+  policies:
+    mcpAuthorization:
+      rules:
+      # Allow anyone to call 'echo'
+      - 'mcp.tool.name == "echo"'
+      # Only the test-user can call 'add'
+      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+      # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
   targets:
   - name: everything
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-    policies:
-      mcpAuthorization:
-        rules:
-        # Allow anyone to call 'echo'
-        - 'mcp.tool.name == "echo"'
-        # Only the test-user can call 'add'
-        - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-        # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-        - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 {{< /tab >}}
 {{< tab name="Routing-based" >}}
@@ -54,22 +54,22 @@ binds:
 - port: 3000
   listeners:
   - routes:
-    - backends:
+    - policies:
+        mcpAuthorization:
+          rules:
+          # Allow anyone to call 'echo'
+          - 'mcp.tool.name == "echo"'
+          # Only the test-user can call 'add'
+          - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+          # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+          - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+      backends:
       - mcp:
           targets:
           - name: everything
             stdio:
               cmd: npx
               args: ["@modelcontextprotocol/server-everything"]
-            policies:
-              mcpAuthorization:
-                rules:
-                # Allow anyone to call 'echo'
-                - 'mcp.tool.name == "echo"'
-                # Only the test-user can call 'add'
-                - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-                # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-                - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -90,42 +90,42 @@ binds:
 - port: 3000
   listeners:
   - routes:
-    - backends:
+    - policies:
+        mcpAuthorization:
+          rules:
+          # Allow anyone to call 'echo'
+          - 'mcp.tool.name == "echo"'
+          # Only the test-user can call 'add'
+          - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+          # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+          - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+      backends:
       - mcp:
           targets:
           - name: everything
             stdio:
               cmd: npx
               args: ["@modelcontextprotocol/server-everything"]
-            policies:
-              mcpAuthorization:
-                rules:
-                # Allow anyone to call 'echo'
-                - 'mcp.tool.name == "echo"'
-                # Only the test-user can call 'add'
-                - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-                # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-                - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 EOF
 
 cat <<'EOF' > config-mcp.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 mcp:
   port: 3000
+  policies:
+    mcpAuthorization:
+      rules:
+      # Allow anyone to call 'echo'
+      - 'mcp.tool.name == "echo"'
+      # Only the test-user can call 'add'
+      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+      # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
   targets:
   - name: everything
     stdio:
       cmd: npx
       args: ["@modelcontextprotocol/server-everything"]
-    policies:
-      mcpAuthorization:
-        rules:
-        # Allow anyone to call 'echo'
-        - 'mcp.tool.name == "echo"'
-        # Only the test-user can call 'add'
-        - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-        # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-        - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
 EOF
 agentgateway -f config-mcp.yaml --validate-only
 {{< /doc-test >}}

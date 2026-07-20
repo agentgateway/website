@@ -117,9 +117,7 @@ binds:
           http:
             requestTimeout: 1s
           tcp:
-            connectTimeout:
-              secs: 10
-              nanos: 0
+            connectTimeout: 10s
             # Required when setting tcp connection options; {} keeps keepalive defaults
             keepalives: {}
 ```
@@ -142,9 +140,7 @@ binds:
           http:
             requestTimeout: 1s
           tcp:
-            connectTimeout:
-              secs: 10
-              nanos: 0
+            connectTimeout: 10s
             # Required when setting tcp connection options; {} keeps keepalive defaults
             keepalives: {}
 EOF
