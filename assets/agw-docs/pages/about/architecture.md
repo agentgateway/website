@@ -74,7 +74,7 @@ Each proxy subscribes to the configuration that is scoped to its Gateway, plus t
 
 ### Deployer
 
-The deployer manages the lifecycle of the proxy deployments. When you create a Gateway that uses the `agentgateway` GatewayClass, the deployer provisions and configures an agentgateway proxy for it. You can customize the generated deployment, such as the proxy image and logging settings, through the AgentgatewayParameters resource referenced by the GatewayClass.
+The deployer manages the lifecycle of the proxy workloads. When you create a Gateway that uses the `agentgateway` GatewayClass, the deployer provisions and configures an agentgateway proxy for it. By default, the proxy runs as a Deployment. You can customize the generated workload, such as the proxy image, logging settings, and whether the proxy runs as a Deployment or DaemonSet, through the AgentgatewayParameters resource referenced by the GatewayClass or Gateway.
 
 ### Status
 
