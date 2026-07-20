@@ -7,14 +7,14 @@ Amazon Bedrock AgentCore is a runtime that hosts deployed agents, each with its 
 
 ### Authentication {#authentication}
 
-AgentCore runtimes support two authentication modes, which you choose when you deploy the runtime in AWS. The `aws.agentCore` backend supports both IAM (SigV4) or JWT authorization.
+AgentCore runtimes support two authentication modes, which you choose when you deploy the runtime in AWS. The `aws.agentCore` backend supports both IAM (SigV4) and JWT authorization.
 
 {{< tabs >}}
 {{% tab name="IAM (SigV4)" %}}
 IAM (SigV4) is the default. {{< reuse "agw-docs/snippets/agentgateway.md" >}} signs each request with AWS Signature Version 4 (SigV4) by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the proxy's environment, such as [IRSA](https://docs.aws.amazon.com/eks/latest/userguide/iam-roles-for-service-accounts.html) on Amazon EKS. You do not store long-lived credentials in the gateway configuration, and IRSA credentials rotate automatically.
 {{% /tab %}}
 {{% tab name="JWT authorization" %}}
-JWT authorization, such as with Amazon Cognito. The AgentCore runtime validates an OIDC bearer token on each request. To use this mode, attach a backend authentication policy that sends the token in the `Authorization` header. This overrides the default SigV4 signing. Unlike SigV4 credentials, a JWT expires, so you must refresh the token in the backing Kubernetes Secret before it expires.
+Amazon Cognito is an example tool to use for JWT authorization. The AgentCore runtime validates an OIDC bearer token on each request. To use this mode, attach a backend authentication policy that sends the token in the `Authorization` header. This overrides the default SigV4 signing. Unlike SigV4 credentials, a JWT expires, so you must refresh the token in the backing Kubernetes Secret before it expires.
 
 This mode works only if the AgentCore runtime was deployed with **Inbound Auth** configured to accept JSON Web Tokens (a `customJWTAuthorizer`). The authorizer's `discoveryUrl` and `allowedClients` list must match the token you send: the token's issuer (`iss`) must match the discovery URL's user pool, and the token's client ID must be in `allowedClients`. If the runtime uses the default IAM authorization instead, it rejects bearer tokens with an authorization-method mismatch. You configure Inbound Auth when you deploy the runtime in AWS, not on the gateway. For more information, see the [AgentCore Identity documentation](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/identity-inbound-auth.html).
 {{% /tab %}}
@@ -60,7 +60,7 @@ spec:
 EOF
 ```
 {{% /tab %}}
-{{% tab name="JWT authorizer" %}}
+{{% tab name="JWT authorization" %}}
 1. Get a bearer token that the runtime's authorizer accepts. The following example authenticates a user against an Amazon Cognito user pool and captures the resulting access token. The app client must have the `USER_PASSWORD_AUTH` flow enabled. For browser-based sign-in or machine-to-machine access, use the [Cognito Hosted UI or an OAuth flow](https://docs.aws.amazon.com/cognito/latest/developerguide/cognito-user-pools-app-integration.html) instead. Which command you run depends on whether the app client has a client secret.
 
    > [!IMPORTANT]
