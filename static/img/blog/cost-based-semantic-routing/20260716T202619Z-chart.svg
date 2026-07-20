@@ -66,5 +66,5 @@
   <text class="section" x="673" y="550">CACHE READS BY TRANSITION</text>
   <text class="cache-detail" x="673" y="580">No ordered multi-turn transitions in this run</text>
 
-  <text class="note" x="48" y="639">Agreement uses expected tiers in the checked-in coding sample; cache tokens are reported by the upstream provider.</text>
+  <text class="note" x="48" y="639">Expected-tier agreement compares the selected tier with the checked-in dataset label; cache tokens are reported by the upstream provider.</text>
 </svg>
