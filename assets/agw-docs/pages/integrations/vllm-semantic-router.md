@@ -4,7 +4,7 @@ This integration is distinct from using [vLLM as an inference provider]({{< link
 
 ## How the integration works
 
-The following diagram shows the cost-based routing example. A coding agent requests the stable `auto` model, vSR selects a lower-cost or higher-capability model, and agentgateway forwards the request and records the result.
+The following diagram shows the [cost-based routing example](/blog/2026-07-17-semantic-routing-llm-costs/). A coding agent requests the stable `auto` model, vSR selects a lower-cost or higher-capability model, and agentgateway forwards the request and records the result.
 
 {{< reuse-image-light src="img/integrations/vllm-semantic-router-cost-routing.svg" alt="A coding agent sends model auto to agentgateway. Agentgateway asks vLLM Semantic Router to select a model, routes the request to a lower-cost or higher-capability model, and records catalog-priced telemetry." >}}
 {{< reuse-image-dark srcDark="img/integrations/vllm-semantic-router-cost-routing.svg" alt="A coding agent sends model auto to agentgateway. Agentgateway asks vLLM Semantic Router to select a model, routes the request to a lower-cost or higher-capability model, and records catalog-priced telemetry." >}}
