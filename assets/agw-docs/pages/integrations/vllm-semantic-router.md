@@ -1,4 +1,4 @@
-[vLLM Semantic Router (vSR)](https://vllm-sr.ai/) classifies OpenAI-compatible LLM requests and selects a model based on prompt content. With agentgateway, you can make this semantic decision before routing while continuing to apply gateway policies and record model, token, latency, and cost telemetry.
+[vLLM Semantic Router (vSR)](https://vllm-sr.ai/) classifies LLM requests and selects a model based on prompt content. With agentgateway, you can make this semantic decision before routing while continuing to apply gateway policies and record model, token, latency, and cost telemetry. See the [vSR Router API reference](https://vllm-sr.ai/docs/api/router/) for supported frontend and backend API types.
 
 This integration is distinct from using [vLLM as an inference provider]({{< link-hextra path="/llm/providers/vllm/" >}}). vSR provides the model-selection policy. Your configured provider, Kubernetes Service, or InferencePool serves the selected model.
 
@@ -11,7 +11,7 @@ The following diagram shows the cost-based routing example. A coding agent reque
 
 The request follows these component boundaries:
 
-1. A client sends an OpenAI-compatible request to agentgateway.
+1. A client sends a supported request to agentgateway.
 2. An AgentgatewayPolicy calls vSR as an external processor during the `PreRouting` phase.
 3. vSR evaluates its semantic, complexity, keyword, context, and structure signals. It returns the selected model in its processing response.
 4. Agentgateway applies the routing decision and forwards the request to the configured provider or inference workload.
