@@ -8,21 +8,36 @@
   Example: {{< github-yaml url="https://raw.githubusercontent.com/org/repo/main/config.yaml" >}}
 
   On the SUCCESS path nothing extra is emitted — just the code block. On FAILURE
-  (dead/moved URL) the error message renders the URL as a real <a href>. That is
-  deliberate: the link checker scans rendered HTML and follows <a href> links, so
-  a broken include surfaces as a reported dead link instead of silent error text.
-  CI builds cache-cold, so a URL that is dead at build time always lands on this
-  branch. The standalone error block is not inside a <pre>, so lychee extracts the
-  anchor (anchors inside code blocks are skipped by default).
+  (dead/moved URL, or a slow/unreachable remote that trips the timeout) the error
+  message renders the URL as a real <a href> AND logs a build WARN. The <a href>
+  is deliberate: the link checker scans rendered HTML and follows <a href> links,
+  so a broken include surfaces as a reported dead link instead of silent error
+  text. CI builds cache-cold, so a URL that is dead at build time always lands on
+  this branch. The standalone error block is not inside a <pre>, so lychee
+  extracts the anchor (anchors inside code blocks are skipped by default).
+
+  `timeout` caps how long a slow/unreachable remote can block the build. These
+  URLs redirect to raw.githubusercontent.com, which throttles/stalls CI runners;
+  without a cap a cold build hangs (~90s per fetch, compounding across every
+  github-yaml page) until the job is killed. `try` is required as of Hugo v0.141,
+  which removed `resource.Err`: a network error/timeout now surfaces through the
+  try wrapper's `.Err`, while a dead/404 URL returns a nil `.Value`. Both are
+  handled below.
 */ -}}
 {{- $url := .Get "url" -}}
 {{- /* Use daily cache key to ensure content refreshes at least once per day */ -}}
 {{- $cacheKey := printf "%s-%s" $url (now.Format "2006-01-02") -}}
-{{- with resources.GetRemote $url (dict "key" $cacheKey) -}}
+{{- $attempt := try (resources.GetRemote $url (dict "key" $cacheKey "timeout" "15s")) -}}
+{{- with $attempt.Value -}}
 ```yaml {base_url="{{ $url | path.Dir}}",filename="{{ $url | path.Base}}"}
 {{ .Content | replaceRE "^# yaml-language-server.*\n" "" | safe.HTML}}
 ```
 
 {{- else -}}
+  {{- with $attempt.Err -}}
+    {{- warnf "github-yaml: failed to fetch %q: %s" $url . -}}
+  {{- else -}}
+    {{- warnf "github-yaml: no content at %q (dead or moved URL)" $url -}}
+  {{- end -}}
   <p><strong>Error:</strong> Unable to load code from <a href="{{ $url }}">{{ $url }}</a></p>
 {{- end -}}
