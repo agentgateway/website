@@ -9,11 +9,11 @@ toc: false
 
 {{< reuse-image src="img/blog/mcp-update-july/blog-image.png" width="700px" >}}
 
-The next revision of the Model Context Protocol (MCP) is _supposed_ to make implementation infrastructure (ie, gateways, routers, etc) easier to reuse/implement. The draft (`2026-07-28`) is intended to **make every request self-contained and independently routable, and clean up anything that got in the way of that.** Sessions, the `initialize` handshake, server-to-client callbacks, etc are all gone or deprecated.
+The next revision of the Model Context Protocol (MCP) is _supposed_ to make implementation infrastructure (ie, gateways, routers, etc) easier to reuse/implement. The draft (`2026-07-28`) is **intended** to make every request self-contained and independently routable, and clean up anything that got in the way of that. Sessions, the `initialize` handshake, server-to-client callbacks, etc are all gone or deprecated.
 
-If you expose MCP servers from a MCP/agentgateway, this is a consequential set of changes. And it's already prompting a question I am hearing from platform teams: *if MCP is now stateless and its routing fields live in HTTP headers, can't I just use a plain L7 load balancer or API gateway? Do I need an MCP native data plane like agentgateway?*
+If you expose MCP servers from a MCP/agentgateway, this is a consequential set of changes. And it's already prompting a question I am hearing from platform teams: *if MCP is now stateless and its routing fields live in HTTP headers, can't I just use a plain L7 load balancer or API gateway?*
 
-The premise is misunderstood. The short answer is **no!**  and the new spec actually makes a naive header-only proxy **more** dangerous, not less. This post walks through what changed, why a traditional proxy breaks under it, and what an MCP-native data plane like [agentgateway](https://agentgateway.dev) does instead. We'll even give you the most basic, runnable demo to prove it out.
+The premise is misunderstood. The short answer is **no!**  and the new spec actually **makes a naive header-only proxy more dangerous**, not less. This post walks through what changed, why a traditional proxy breaks under it, and what an MCP-native data plane like [agentgateway](https://agentgateway.dev) does instead. We'll even give you the most basic, runnable demo to prove it out.
 
 ## What actually changed
 
