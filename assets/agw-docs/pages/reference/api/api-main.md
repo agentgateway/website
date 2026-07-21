@@ -793,7 +793,7 @@ _Appears in:_
 | `roleArn` _string_ | AWS IAM role ARN to assume. |  | MinLength: 1 <br />Pattern: `^arn:aws[a-z-]*:iam::[0-9]\{12\}:role/.+$` <br />Required: \{\} <br /> |
 | `sessionName` _string_ | SessionName is a custom session name (RoleSessionName) for CloudTrail and<br />Cost & Usage Report attribution. If unset, AWS generates a random name. |  | Pattern: `^[\w+=,.@-]\{2,64\}$` <br />Optional: \{\} <br /> |
 | `sessionNameExpression` _[CELExpression](#celexpression)_ | SessionNameExpression is a CEL expression evaluated against each request<br />to produce the session name (RoleSessionName), for example `jwt.sub` or<br />`request.headers["x-team"]`. If the expression does not produce a valid<br />session name at request time, the request is rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `tags` _[AwsSessionTag](#awssessiontag) array_ | Tags are session tags passed to STS AssumeRole. Once activated as cost<br />allocation tags, they appear in the AWS Cost & Usage Report for cost<br />attribution. STS allows at most 50 session tags per role session. |  | MaxItems: 50 <br />Optional: \{\} <br /> |
+| `tags` _[AwsSessionTag](#awssessiontag) array_ | Session tags passed to STS AssumeRole for cost attribution in the AWS Cost<br />& Usage Report, once activated. STS allows at most 50 per role session. |  | MaxItems: 50 <br />Optional: \{\} <br /> |
 
 
 #### AwsAuth
@@ -809,7 +809,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, containing the AWS credentials. When using the default Secret<br />resolver, the `Secret` must have keys `accessKey`, `secretKey`, and<br />optionally `sessionToken`. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source for AWS credentials, defaulting to a Kubernetes `Secret`.<br />The default Secret resolver expects `accessKey`, `secretKey`, and optional<br />`sessionToken` keys. |  | Optional: \{\} <br /> |
 | `assumeRole` _[AwsAssumeRole](#awsassumerole)_ | AWS STS AssumeRole settings to use before signing backend requests.<br />Ambient AWS credentials are used as the source credentials for STS. |  | AtMostOneOf: [sessionName sessionNameExpression] <br />Optional: \{\} <br /> |
 | `serviceName` _[ShortString](#shortstring)_ | AWS SigV4 signing service name, for example<br />`bedrock`, `bedrock-agentcore`, or `execute-api`). If unset, typed AWS<br />backends may provide this automatically. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
@@ -847,7 +847,7 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `key` _string_ | Key is the tag key. |  | MaxLength: 128 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `value` _string_ | Value is a static tag value. |  | MaxLength: 256 <br />Optional: \{\} <br /> |
-| `expression` _[CELExpression](#celexpression)_ | Expression is a CEL expression evaluated against each request to produce<br />the tag value, for example `jwt.sub` or `request.headers["x-app"]`. If the<br />expression does not produce a valid tag value at request time, the request<br />is rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `expression` _[CELExpression](#celexpression)_ | CEL expression evaluated against each request to produce the tag value,<br />for example `jwt.sub` or `request.headers["x-app"]`. Requests with invalid<br />tag values are rejected. |  | MaxLength: 16384 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### AzureAuth
@@ -867,9 +867,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, containing the Azure credentials. When using the default Secret<br />resolver, the `Secret` must have keys `clientID`, `tenantID`, and<br />`clientSecret`. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source for Azure credentials, defaulting to a Kubernetes<br />`Secret`. The default Secret resolver expects `clientID`, `tenantID`, and<br />`clientSecret` keys. |  | Optional: \{\} <br /> |
 | `managedIdentity` _[AzureManagedIdentity](#azuremanagedidentity)_ | Managed identity authentication settings. |  | Optional: \{\} <br /> |
-| `workloadIdentity` _[AzureWorkloadIdentity](#azureworkloadidentity)_ | Workload identity authentication settings. Uses the federated token<br />projected into the data plane pod (via the `AZURE_FEDERATED_TOKEN_FILE`,<br />`AZURE_CLIENT_ID`, `AZURE_TENANT_ID`, and `AZURE_AUTHORITY_HOST`<br />environment variables) to authenticate. This is the recommended method<br />when running on Azure Kubernetes Service (AKS) with Workload Identity<br />enabled. |  | Optional: \{\} <br /> |
+| `workloadIdentity` _[AzureWorkloadIdentity](#azureworkloadidentity)_ | Workload identity authentication settings. Uses the federated token and<br />Azure env vars projected into the data plane pod. Recommended on AKS with<br />Workload Identity enabled. |  | Optional: \{\} <br /> |
 
 
 #### AzureConfig
@@ -1001,13 +1001,13 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `key` _string_ | Inline key to use as the value of the<br />`Authorization` header. This option is the least secure; usage of a<br />`Secret` is preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
-| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, storing the key to use as the authorization value. When using<br />the default Secret resolver, this must be stored in the `Authorization`<br />key by default; override via `secretRef.key`. A `Bearer ` prefix on the<br />stored value is stripped only when reading the default `Authorization`<br />key. |  | Optional: \{\} <br /> |
-| `passthrough` _[BackendAuthPassthrough](#backendauthpassthrough)_ | Passes through an existing token that has been sent by the<br />client and validated. Other policies, like JWT and API key<br />authentication, will strip the original client credentials. Passthrough backend authentication<br />causes the original token to be added back into the request. If there are no client authentication policies on the<br />request, the original token would be unchanged, so this would have no effect. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source for the authorization value, defaulting to a Kubernetes<br />`Secret`. By default, the value is read from the `Authorization` key; set<br />`secretRef.key` to override it. A `Bearer ` prefix is stripped only from<br />the default `Authorization` key. |  | Optional: \{\} <br /> |
+| `passthrough` _[BackendAuthPassthrough](#backendauthpassthrough)_ | Reuses a client token already validated by another policy. Those policies<br />may strip client credentials; passthrough adds the original token back to<br />the backend request. Without client auth policies, this has no effect. |  | Optional: \{\} <br /> |
 | `aws` _[AwsAuth](#awsauth)_ | Explicit AWS authentication method for the backend.<br />When omitted, default AWS SDK credential discovery is used. |  | Optional: \{\} <br /> |
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the backend.<br />When omitted, default Google credential discovery is used. |  | Optional: \{\} <br /> |
 | `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication. |  | Optional: \{\} <br /> |
-| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted.<br />If omitted, credentials are written to the `Authorization` header with the `Bearer ` prefix.<br />This applies to `key`, `secretRef`, and `passthrough`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted. Defaults to the `Authorization`<br />header with the `Bearer ` prefix. Applies to `key`, `secretRef`, and<br />`passthrough`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 
 
 #### BackendAuthPassthrough
@@ -1039,7 +1039,7 @@ _Appears in:_
 | `duration` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Base time a backend should be evicted after being marked unhealthy.<br />Subsequent evictions use multiplicative backoff (duration * times_evicted).<br />If all endpoints are evicted, the load balancer falls back to returning evicted endpoints<br />rather than failing entirely.<br />If unset, defaults to `3s`. | 3s | Optional: \{\} <br /> |
 | `restoreHealth` _integer_ | Health score from 0 to 100 assigned to a backend when it returns from eviction.<br />For gradual recovery, set below 100; for full recovery immediately, set 100.<br />If unset, the backend resumes with the health it had when evicted. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
 | `consecutiveFailures` _integer_ | Number of consecutive unhealthy responses required before the backend is evicted.<br />For example, a value of 5 means the backend must receive 5 unhealthy responses in a row before being evicted.<br />When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.<br />When neither is set, a single unhealthy response can trigger eviction. |  | Minimum: 0 <br />Optional: \{\} <br /> |
-| `healthThreshold` _integer_ | EWMA health score threshold, expressed as 0 to 100.<br />When set, a backend is only evicted if its computed health drops below this value after an unhealthy response.<br />For example, 50 means the backend is evicted when its EWMA health falls below 50% following failures.<br />Unlike consecutiveFailures (which counts consecutive failures), this uses a sliding-window average<br />so a single success in a stream of failures can delay eviction.<br />When both consecutiveFailures and healthThreshold are set, the backend is evicted when either condition is met.<br />When neither is set, a single unhealthy response triggers eviction. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
+| `healthThreshold` _integer_ | EWMA health score threshold, from 0 to 100. When set, a backend is evicted<br />only if its computed health drops below this value after an unhealthy<br />response (e.g. 50 evicts when EWMA health falls below 50%). Unlike<br />consecutiveFailures, this sliding-window average lets a single success delay<br />eviction. If both are set, either condition evicts; if neither, a single<br />unhealthy response evicts. |  | Maximum: 100 <br />Minimum: 0 <br />Optional: \{\} <br /> |
 
 
 #### BackendFull
@@ -1056,11 +1056,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend. |  | Optional: \{\} <br /> |
-| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend.<br />If this field is set, TLS will be initiated to the backend; the system trusted CA certificates will be used to<br />validate the server, and the SNI will automatically be set based on the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
-| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend. |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections, with behavior like `HTTPS_PROXY`, to the backend. |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
@@ -1083,7 +1083,7 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `version` _[HTTPVersion](#httpversion)_ | HTTP protocol version to use when connecting to<br />the backend.<br />If not specified, the version is automatically determined:<br />* `Service` types can specify it with `appProtocol` on the `Service`<br />  port.<br />* If traffic is identified as gRPC, `HTTP2` is used.<br />* If the incoming traffic was plaintext HTTP, the original protocol will<br />  be used.<br />* If the incoming traffic was HTTPS, `HTTP1` will be used. This is<br />  because most clients will transparently upgrade HTTPS traffic to<br />  `HTTP2`, even if the backend doesn't support it. |  | Optional: \{\} <br /> |
+| `version` _[HTTPVersion](#httpversion)_ | HTTP protocol version for backend connections. If unset, it is inferred:<br />`Service` appProtocol, `HTTP2` for gRPC, the original protocol for<br />plaintext HTTP, or `HTTP1` for HTTPS because clients often upgrade HTTPS<br />to HTTP/2 even when the backend does not support it. |  | Optional: \{\} <br /> |
 | `requestTimeout` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Deadline for receiving a response from the backend. |  | Optional: \{\} <br /> |
 
 
@@ -1123,11 +1123,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend. |  | Optional: \{\} <br /> |
-| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend.<br />If this field is set, TLS will be initiated to the backend; the system trusted CA certificates will be used to<br />validate the server, and the SNI will automatically be set based on the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
-| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend. |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections, with behavior like `HTTPS_PROXY`, to the backend. |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 
 
 #### BackendTCP
@@ -1165,9 +1165,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend, using the<br />specified key (`tls.key`) and cert (`tls.crt`) from the referenced<br />credential source, defaulting to a Kubernetes `Secret`.<br />An optional `ca.cert` field, if present, will be used to verify the<br />server certificate. If `caCertificateRefs` is also specified, the<br />`caCertificateRefs` field takes priority.<br />If unspecified, no client certificate will be used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
+| `mtlsCertificateRef` _[LocalSecretObjectRef](#localsecretobjectref) array_ | Enables mutual TLS to the backend using `tls.key` and `tls.crt` from the<br />referenced credential source (defaulting to a Kubernetes `Secret`). An<br />optional `ca.cert`, if present, verifies the server certificate, but<br />`caCertificateRefs` takes priority. If unspecified, no client certificate<br />is used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
 | `caCertificateRefs` _[LocalObjectReference](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#localobjectreference-v1-core) array_ | CA certificate `ConfigMap` to use to<br />verify the server certificate.<br />If unset, the system's trusted certificates are used. |  | MaxItems: 1 <br />Optional: \{\} <br /> |
-| `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate.<br />WARNING: This is an insecure option that should only be used if the risks are understood.<br />There are two modes:<br />* `All` disables all TLS verification.<br />* `Hostname` verifies the CA certificate is trusted, but ignores any<br />  mismatch of hostname or SANs. Note that this method is still insecure;<br />  prefer setting `verifySubjectAltNames` to customize the valid hostnames<br />  if possible. |  | Optional: \{\} <br /> |
+| `insecureSkipVerify` _[InsecureTLSMode](#insecuretlsmode)_ | Originates TLS but skips verification of the backend's certificate<br />WARNING: insecure; only use if the risks are understood<br />Modes:<br />* `All` disables all TLS verification<br />* `Hostname` trusts the CA certificate but ignores hostname/SAN mismatches.<br />  Still insecure; prefer `verifySubjectAltNames` where possible. |  | Optional: \{\} <br /> |
 | `sni` _[SNI](#sni)_ | Server Name Indicator (`SNI`) to use in the TLS<br />handshake. If unset, the `SNI` is automatically set based on the<br />destination hostname. |  | MaxLength: 253 <br />MinLength: 1 <br />Pattern: `^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$` <br />Optional: \{\} <br /> |
 | `verifySubjectAltNames` _[ShortString](#shortstring) array_ | Subject Alternative Names (`SAN`)<br />to verify in the server certificate.<br />If not present, the destination hostname is automatically used. |  | MaxItems: 16 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `alpnProtocols` _[TinyString](#tinystring)_ | Application-Layer Protocol Negotiation (`ALPN`)<br />value to use in the TLS handshake.<br />If not present, defaults to `["h2", "http/1.1"]`. |  | MaxItems: 16 <br />MaxLength: 64 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
@@ -1205,11 +1205,11 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend. |  | Optional: \{\} <br /> |
-| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend.<br />If this field is set, TLS will be initiated to the backend; the system trusted CA certificates will be used to<br />validate the server, and the SNI will automatically be set based on the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
-| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend. |  | Optional: \{\} <br /> |
-| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections, with behavior like `HTTPS_PROXY`, to the backend. |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend. |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Settings for passive and active health checking. |  | Optional: \{\} <br /> |
@@ -1418,6 +1418,7 @@ _Appears in:_
 - [HeaderTransformation](#headertransformation)
 - [Health](#health)
 - [MCPGuardrailsRemote](#mcpguardrailsremote)
+- [NamespacedMetadataContext](#namespacedmetadatacontext)
 - [OAuthTokenExchange](#oauthtokenexchange)
 - [OtlpAccessLog](#otlpaccesslog)
 - [RateLimitDescriptor](#ratelimitdescriptor)
@@ -1748,7 +1749,7 @@ _Appears in:_
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external processor is unavailable or returns an error.<br />"FailOpen" allows the request to continue, as long as the request body has not<br />been sent (or started streaming) to the ext_proc. Once the request body has<br />started streaming to the ext_proc, the request will fail closed on error.<br />"FailClosed" (default) rejects the request on any failure. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
-| `metadataContext` _object (keys:string, values:[map[string]CELExpression](#map[string]celexpression))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `metadataContext` _object (keys:string, values:[NamespacedMetadataContext](#namespacedmetadatacontext))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `requestAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Request attributes to send to the external processor in the request<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `responseAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Response attributes to send to the external processor in the response<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per response. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 
@@ -1786,7 +1787,7 @@ _Appears in:_
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | External Processor server to reach.<br />Supported types: `Service` and `Backend`. |  | Optional: \{\} <br /> |
 | `failureMode` _[FailureMode](#failuremode)_ | Behavior when the external processor is unavailable or returns an error.<br />"FailOpen" allows the request to continue, as long as the request body has not<br />been sent (or started streaming) to the ext_proc. Once the request body has<br />started streaming to the ext_proc, the request will fail closed on error.<br />"FailClosed" (default) rejects the request on any failure. |  | Optional: \{\} <br /> |
 | `processingOptions` _[ProcessingOptions](#processingoptions)_ | How request and response phases are sent to ext_proc. |  | Optional: \{\} <br /> |
-| `metadataContext` _object (keys:string, values:[map[string]CELExpression](#map[string]celexpression))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
+| `metadataContext` _object (keys:string, values:[NamespacedMetadataContext](#namespacedmetadatacontext))_ | Metadata to send to the external processor in the<br />`metadata_context.filter_metadata` field of the ProcessingRequest.<br />Keyed by metadata namespace, then by key within that namespace; values are<br />CEL expressions evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `requestAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Request attributes to send to the external processor in the request<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `responseAttributes` _object (keys:string, values:[CELExpression](#celexpression))_ | Response attributes to send to the external processor in the response<br />`attributes` field of the ProcessingRequest. Values are CEL expressions<br />evaluated per response. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `conditional` _[ExtProcConditional](#extprocconditional) array_ | Conditional policy execution. Set this or the top-level extProc fields.<br />The first matching policy will be executed.<br />A single policy may be provided without a condition set; if so, it must be the last policy and will be the fallback<br />in case no conditions are met. |  | MaxItems: 16 <br />MinItems: 1 <br />Optional: \{\} <br /> |
@@ -2036,7 +2037,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `type` _[GcpAuthType](#gcpauthtype)_ | The type of token to generate. To authenticate to GCP services,<br />generally an `AccessToken` is used. To authenticate to Cloud Run, an<br />`IdToken` is used. |  | Optional: \{\} <br /> |
-| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source, defaulting to a Kubernetes<br />`Secret`, containing ADC-compatible Google credential JSON. When using<br />the default Secret resolver, this must be stored in the `credentials.json`<br />key by default; override via `secretRef.key`. When omitted, ambient<br />credentials are used. |  | Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source for ADC-compatible Google credential JSON, defaulting to<br />a Kubernetes `Secret`. By default, the value is read from<br />`credentials.json`; set `secretRef.key` to override it. When omitted,<br />ambient credentials are used. |  | Optional: \{\} <br /> |
 | `audience` _[ShortString](#shortstring)_ | Explicit `aud` value for the ID token. Only<br />valid with `IdToken` type. If not set, the `aud` is automatically<br />derived from the backend hostname. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
@@ -2691,10 +2692,9 @@ _Appears in:_
 
 
 
-References a same-namespace credential and, optionally, a specific key
-within it whose value should be used. Set only `name` to reference a
-Kubernetes Secret. When `key` is omitted, a location-specific default key
-is used.
+References a same-namespace credential and optional key
+Set only `name` for a Kubernetes Secret. When `key` is omitted, a
+location-specific default key is used.
 
 
 
@@ -2707,18 +2707,18 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | The name of the referenced credential. |  | Required: \{\} <br /> |
-| `group` _string_ | The API group of the referenced credential.<br />Empty selects the core API group. |  | Optional: \{\} <br /> |
-| `kind` _string_ | The kind of the referenced credential.<br />Empty defaults to `Secret`. |  | Optional: \{\} <br /> |
-| `key` _string_ | The key in the referenced Secret whose value is used. If omitted, a<br />location-specific default key is used. |  | MaxLength: 253 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced credential |  | Required: \{\} <br /> |
+| `group` _string_ | API group of the referenced credential; empty selects the core API group |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind of the referenced credential; empty defaults to `Secret` |  | Optional: \{\} <br /> |
+| `key` _string_ | Key in the referenced Secret. If omitted, a location-specific default is used |  | MaxLength: 253 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### LocalSecretObjectRef
 
 
 
-References a same-namespace credential.
-Set only `name` to reference a Kubernetes Secret.
+References a same-namespace credential
+Set only `name` for a Kubernetes Secret
 
 
 
@@ -2730,9 +2730,9 @@ _Appears in:_
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
-| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | The name of the referenced credential. |  | Required: \{\} <br /> |
-| `group` _string_ | The API group of the referenced credential.<br />Empty selects the core API group. |  | Optional: \{\} <br /> |
-| `kind` _string_ | The kind of the referenced credential.<br />Empty defaults to `Secret`. |  | Optional: \{\} <br /> |
+| `name` _[ObjectName](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#objectname)_ | Name of the referenced credential |  | Required: \{\} <br /> |
+| `group` _string_ | API group of the referenced credential; empty selects the core API group |  | Optional: \{\} <br /> |
+| `kind` _string_ | Kind of the referenced credential; empty defaults to `Secret` |  | Optional: \{\} <br /> |
 
 
 #### LogTracingAttributes
@@ -3094,6 +3094,21 @@ _Appears in:_
 | `port` _integer_ | Port to send requests to. |  | Maximum: 65535 <br />Minimum: 1 <br />Optional: \{\} <br /> |
 | `path` _[LongString](#longstring)_ | URL path to use for LLM provider API requests.<br />This is useful when you need to route requests to a different API endpoint while maintaining<br />compatibility with the original provider's API structure.<br />If not specified, the default path for the provider is used. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `pathPrefix` _[LongString](#longstring)_ | Overrides the default base path prefix, such as `/v1`, for upstream requests.<br />Path translation for cross-format requests still applies using this prefix.<br />Only supported for OpenAI and Anthropic providers. |  | MaxLength: 1024 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+
+
+#### NamespacedMetadataContext
+
+_Underlying type:_ _map[string]CELExpression_
+
+NamespacedMetadataContext holds the CEL expressions for a single metadata
+namespace, keyed by the metadata key within that namespace.
+
+
+
+_Appears in:_
+- [ExtProc](#extproc)
+- [ExtProcOrConditional](#extprocorconditional)
+
 
 
 
