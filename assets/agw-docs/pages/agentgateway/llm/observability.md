@@ -84,8 +84,8 @@ Example for a successful request to the OpenAI LLM:
 2025-12-12T21:56:02.809082Z	info	request gateway=agentgateway-system/agentgateway-proxy listener=http
 route=agentgateway-system/openai endpoint=api.openai.com:443 src.addr=127.0.0.1:60862 http.method=POST
 http.host=localhost http.path=/openai http.version=HTTP/1.1 http.status=200 protocol=llm gen_ai.
-operation.name=chat gen_ai.provider.name=openai gen_ai.request.model=gpt-3.5-turbo gen_ai.response.
-model=gpt-3.5-turbo-0125 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms 
+operation.name=chat gen_ai.provider.name=openai gen_ai.request.model={{< reuse "agw-docs/snippets/openai-model.md" >}} gen_ai.response.
+model={{< reuse "agw-docs/snippets/openai-model.md" >}}-0125 gen_ai.usage.input_tokens=68 gen_ai.usage.output_tokens=298 duration=2488ms 
 ```
 
 {{< doc-test paths="llm-observability" >}}

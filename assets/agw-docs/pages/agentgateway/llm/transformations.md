@@ -125,7 +125,7 @@ EOF
    curl "$INGRESS_GW_ADDRESS/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "max_completion_tokens": 5000,
      "messages": [
        {
@@ -142,7 +142,7 @@ EOF
    curl "localhost:8080/v1/chat/completions" \
    -H "content-type: application/json" \
    -d '{
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "max_completion_tokens": 5000,
      "messages": [
        {
@@ -176,7 +176,7 @@ EOF
    Example output: 
    ```console {hl_lines=[5,28]}
    {
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "usage": {
        "prompt_tokens": 12,
        "completion_tokens": 10,
@@ -361,8 +361,8 @@ EOF
    content-type: application/json
    < x-requested-model: gpt-4
    x-requested-model: gpt-4
-   < x-actual-model: gpt-3.5-turbo-0125
-   x-actual-model: gpt-3.5-turbo-0125
+   < x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
+   x-actual-model: {{< reuse "agw-docs/snippets/openai-model.md" >}}-0125
    ...
    ```
 
