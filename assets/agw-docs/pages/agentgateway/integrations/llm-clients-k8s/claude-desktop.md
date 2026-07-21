@@ -160,7 +160,7 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} anthropic-desktop -n {{< reuse "agw-docs/snippets/namespace.md" >}}
    ```
 
-2. Restore Claude Desktop to your original settings. For example, you might delete the `~/Library/Application Support/Claude-3p/` direcotry to remove third-party inference settings and use the default `~/Library/Application Support/Claude/` settings. For more information, see the [Claude docs](https://claude.com/docs/cowork/3p/overview).
+2. Restore Claude Desktop to your original settings. For example, you might delete the `~/Library/Application Support/Claude-3p/` direcotry to remove third-party inference settings and use the default `~/Library/Application Support/Claude/` settings. For more information, see the [Claude docs](https://claude.com/docs/third-party/claude-desktop/overview).
 
 
 ## Next steps

@@ -11,7 +11,7 @@ description: Integrate agentgateway with Descope for authentication and identity
 - **MCP-native OAuth 2.1 compliance** - [MCP Servers](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) let you protect your MCP gateway with a full OAuth 2.1 compliant provider. [CIMD](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers/registration-methods#client-id-metadata-documents-cimd) and [DCR](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers/registration-methods#dynamic-client-registration-dcr) are both supported as registration methods
 - **Agent Directory** - View all of your [agentic identities](https://docs.descope.com/agentic-identity-hub/core-components/agents) within one centralized IAM platform
 - **Machine-to-machine access** - [Client credentials flow](https://docs.descope.com/agentic-identity-hub/core-components/clients#client-credentials) for agents and backends that need unattended access
-- **Policies** - Enforce [policy](https://docs.descope.com/identity-federation/policies) rules for agent access to downstream services, in conjunction with agentgateway authorization rules using JWT `roles` claims
+- **Policies** - Enforce [policy](https://docs.descope.com/policies) rules for agent access to downstream services, in conjunction with agentgateway authorization rules using JWT `roles` claims
 - **User consent for agents** - [Visual consent flows](https://docs.descope.com/flows) let users explicitly approve which MCP scopes and tools an agent can access
 
 ## Configuration

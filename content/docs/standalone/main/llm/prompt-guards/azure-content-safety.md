@@ -11,7 +11,7 @@ Azure AI Content Safety guardrails are model-agnostic and can be applied to any 
 ## Before you begin
 
 1. {{< reuse "agw-docs/snippets/prereq-agentgateway.md" >}}
-2. Create an [Azure AI Content Safety resource](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/how-to/deploy) in the Azure portal.
+2. Create an [Azure AI Content Safety resource](https://learn.microsoft.com/en-us/azure/ai-services/content-safety/quickstart-text) in the Azure portal.
 3. Note the endpoint hostname of your resource, such as `<resource-name>.cognitiveservices.azure.com`.
 4. Authenticate with Azure. By default, agentgateway detects the authentication method from the environment: workload identity on Kubernetes, managed identity on Azure VMs, or Azure developer tools such as the Azure CLI locally. Make sure that the identity has a role with permission to call the Content Safety APIs, such as the **Cognitive Services User** role.
 

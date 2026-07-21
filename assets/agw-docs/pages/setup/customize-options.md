@@ -12,7 +12,7 @@ To see a setup example for each option, see [Customize the gateway]({{< link-hex
 
 ## Built-in customization (recommended) {#built-in}
 
-The {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource comes with built-in customization options that you can use to change certain aspects of your agentgateway proxy, such as the image that you use, logging configuration, resource limits and requests, or environment variables. These built-in config options are automatically validated when you create the agentgateway proxy from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource. 
+The {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource comes with built-in customization options that you can use to change certain aspects of your agentgateway proxy, such as the image that you use, logging configuration, resource limits and requests, environment variables, or the Kubernetes workload kind that runs the proxy. These built-in config options are automatically validated when you create the agentgateway proxy from your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 
 Review the built-in configurations that are provided via the [{{< reuse "agw-docs/snippets/gatewayparameters.md" >}}]({{< link-hextra path="/reference/api/#agentgatewayparameters" >}}) resource. 
 
@@ -22,6 +22,7 @@ Review the built-in configurations that are provided via the [{{< reuse "agw-doc
 | `image` | Provide a custom image for the agentgateway proxy. This setting is useful if you deploy your proxy in an airgapped environment.  | 
 | `logging` | Change the log level and format of the agentgateway proxy logs.   | 
 | `resources` | Set resource limits and requests. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/). | 
+| `workload` | Select the Kubernetes workload kind for the managed Gateway data plane. |
 
 {{< callout type="info" >}}
 Because the built-in customization options are provided by the agentgateway API, they are considered stable and do not change between upgrades. Use the built-in customization options where possible. To change configuration that is not exposed via the built-in options, use [overlays](#overlays) instead, or [add raw upstream agentgateway configuration](#raw-config) to your proxies. 
@@ -40,23 +41,30 @@ Review the following table for the resource types that you can overlay in the {{
 
 | Field | Resource Type | Description |
 |-------|--------------|-------------|
-| `deployment` | Deployment | The agentgateway proxy deployment. Common use cases include adding image pull secrets to pull images from private registries, removing default security contexts, configuring node selectors, affinities, and tolerations, adding custom labels and annotations, or mounting custom ConfigMaps or Secrets as volumes.   |
+| `deployment` | Deployment | The agentgateway proxy deployment. Common use cases include adding image pull secrets to pull images from private registries, removing default security contexts, configuring node selectors, affinities, and tolerations, adding custom labels and annotations, or mounting custom ConfigMaps or Secrets as volumes. Use this overlay only when `workload.kind` is unset or set to `Deployment`.   |
+| `daemonSet` | DaemonSet | The agentgateway proxy DaemonSet. Common use cases include configuring DaemonSet update strategy, node selectors, affinities, and tolerations. Use this overlay only when `workload.kind` is set to `DaemonSet`. |
 | `service` | Service | The service that exposes the agentgateway proxy. A common use case is configuring cloud provider-specific service annotations.  |
 | `serviceAccount` | ServiceAccount | The service account for the proxy pods |
-| `horizontalPodAutoscaler` | HorizontalPodAutoscaler (HPA) | Unlike Deployment, Service, and ServiceAccount, HPA are created **only** when an overlay is specified.|
-| `podDisruptionBudget` | PodDisruptionBudget (PBD) | Unlike Deployment, Service, and ServiceAccount, PDBs are created **only** when an overlay is specified. |
+| `horizontalPodAutoscaler` | HorizontalPodAutoscaler (HPA) | Unlike Deployment, Service, and ServiceAccount, HPA are created **only** when an overlay is specified. HPA overlays are valid only for Deployment workloads. |
+| `podDisruptionBudget` | PodDisruptionBudget (PDB) | Unlike Deployment, Service, and ServiceAccount, PDBs are created **only** when an overlay is specified. |
+
+### Deployment and DaemonSet workloads
+
+Managed Gateways use a Deployment by default. To run a Gateway proxy as a DaemonSet, set `spec.workload.kind` to `DaemonSet` in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that is resolved for the Gateway. DaemonSet mode preserves the same Gateway API, service, listener, route, policy, and xDS behavior, but deploys proxy pods as a DaemonSet instead of a Deployment, resulting in exactly one proxy pod per schedulable node.
+
+Use the overlay that matches the selected workload kind: `deployment` for Deployment workloads and `daemonSet` for DaemonSet workloads. When changing workload kinds, move any reusable pod template customizations to the matching overlay and remove fields that apply only to the previous kind, such as `spec.replicas` for Deployments. HPA overlays are rejected for DaemonSet workloads.
 
 ### How overlays work
 
 Overlays are applied **after** the agentgateway control plane renders the base Kubernetes resources. The control plane runs through the following steps: 
 
 1. The control plane reads built-in customization options from the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource, such as `image`, `logging`, and `resources`. 
-2. The control plane generates the base resources for the agentgateway proxy, including the Deployment, Service, and ServiceAccount.
+2. The control plane generates the base resources for the agentgateway proxy, including the selected workload kind, Service, and ServiceAccount.
 3. The control plane applies any overlays that you specified in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 4. The control plane creates or updates the resources in the cluster. 
 
 {{< callout context="warning" >}}
-Unlike the built-in customization options, overlays are **not validated** by the agentgateway control plane when you create the Gateway. Instead, the resulting resources, such as the Deployment is validated by Kubernetes when the Deployment is created or updated. 
+Unlike the built-in customization options, overlays are **not validated** by the agentgateway control plane when you create the Gateway. Instead, the resulting resources, such as the Deployment or DaemonSet, are validated by Kubernetes when the resources are created or updated.
 
 Keep in mind that the overlay API is **not stable** and might change between Kubernetes versions, which can lead to breaking changes or unexpected behaviors. Make sure to test your overlay configurations thoroughly after each upgrade and use these configurations only if the customization cannot be achieved with the built-in option. 
 {{< /callout >}}
@@ -142,6 +150,8 @@ You can attach an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resourc
 4. **Overlay configuration in Gateway overrides GatewayClass settings** - If conflicting overlay configuration is specified on the Gateway, the configuration in the GatewayClass is overridden by using strategic merge patch semantics. Consider the following examples: 
    - For scalar values, such as `replicas`, the Gateway configuration takes precedence.
    - For maps, such as `labels`, the label keys are merged. If both the Gateway and GatewayClass specify the same label key, the label key on the Gateway takes precedence.  
+
+The selected workload kind follows the same precedence. A GatewayClass-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource can set `workload.kind: DaemonSet` as the default for all Gateways in the class. A Gateway-level {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource that is referenced by `spec.infrastructure.parametersRef` can override that setting for one Gateway. If neither level sets `workload.kind`, the control plane creates a Deployment.
 
 
 **Example:**
