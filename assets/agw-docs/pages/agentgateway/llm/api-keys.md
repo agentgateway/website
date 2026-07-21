@@ -39,7 +39,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
        provider:
          openai: {}
            #optionally pin the model or other OpenAI settings
-           #model: gpt-3.5-turbo 
+           #model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
      policies:
        auth:
          key: $TOKEN
@@ -57,7 +57,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.openai` | Define the OpenAI provider. |
-   | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+   | `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
    | `policies.auth` | Configure the authentication token for the OpenAI API. The example uses an inline token.|
 
 3. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. The `URLRewrite` filter rewrites the path from `/openai` to the path of the API in the LLM provider that you want to use, `/v1/chat/completions`.
@@ -137,7 +137,7 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
      "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
      "object": "chat.completion",
      "created": 1727967462,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,
@@ -204,7 +204,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
      ai:
        provider:
          openai:
-           model: gpt-3.5-turbo  # Optional: specify default model
+           model: {{< reuse "agw-docs/snippets/openai-model.md" >}}  # Optional: specify default model
         # host: api.openai.com  # Optional: custom host if needed
         # port: 443  # Optional: custom port
      policies:
@@ -219,7 +219,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.openai` | Define the OpenAI provider. |
-   | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+   | `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
    | `policies.auth` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created.|
 
 5. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created. 
@@ -293,7 +293,7 @@ Store the API key in a Kubernetes secret. Then, refer to the secret in the {{< r
      "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
      "object": "chat.completion",
      "created": 1727967462,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,
@@ -343,7 +343,7 @@ Pass through an existing token directly from the client or a successful OpenID C
      ai:
        provider:
          openai:
-           model: gpt-3.5-turbo  
+           model: {{< reuse "agw-docs/snippets/openai-model.md" >}} 
      policies:
        auth:
          passthrough: {}
@@ -355,7 +355,7 @@ Pass through an existing token directly from the client or a successful OpenID C
    | Setting     | Description |
    |-------------|-------------|
    | `ai.provider.openai` | Define the OpenAI provider. |
-   | `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+   | `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
    | `policies.auth` | Configure the authentication token for OpenAI API. The example uses passthrough authentication.|
 
 3. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}. The following example sets up a route on the `/openai` path to the {{< reuse "agw-docs/snippets/backend.md" >}} that you previously created.
@@ -429,7 +429,7 @@ Pass through an existing token directly from the client or a successful OpenID C
      "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
      "object": "chat.completion",
      "created": 1727967462,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,

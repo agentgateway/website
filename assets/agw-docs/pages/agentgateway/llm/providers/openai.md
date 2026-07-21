@@ -54,7 +54,7 @@ spec:
     provider:
       openai: {}
         # Optional: specify a default  model
-        #model: gpt-3.5-turbo
+        #model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
      # Optional: custom host and port, if needed
      # host: api.openai.com  
      # port: 443
@@ -76,7 +76,7 @@ EOF
 | Setting     | Description |
 |-------------|-------------|
 | `ai.provider.openai` | Define the OpenAI provider. |
-| `openai.model`     | The OpenAI model to use, such as `gpt-3.5-turbo`.  |
+| `openai.model`     | The OpenAI model to use, such as `{{< reuse "agw-docs/snippets/openai-model.md" >}}`.  |
 | `policies.auth` | Configure the authentication token for OpenAI API. The example refers to the secret that you previously created.|
 
 ### Step 3: Route to the backend
@@ -244,7 +244,7 @@ YAMLTest -f - <<'EOF'
       content-type: application/json
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
         "messages": [
           {
             "role": "user",
@@ -275,7 +275,7 @@ Example output:
   "id": "chatcmpl-AEHYs2B0XUlEioCduH1meERmMwBGF",
   "object": "chat.completion",
   "created": 1727967462,
-  "model": "gpt-3.5-turbo-0125",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
   "choices": [
     {
       "index": 0,
