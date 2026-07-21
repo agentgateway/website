@@ -159,14 +159,14 @@ EOF
    
 ### Step 4: Send a request to the LLM
 
-Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API.
+Send a request to the LLM provider API along the route that you previously created. Verify that the request succeeds and that you get back a response from the chat completion API. If you did not pin a model in the {{< reuse "agw-docs/snippets/backend.md" >}}, include the model in the request.
    
 {{< tabs >}}
 {{% tab name="OpenAI v1/chat/completions" %}}
 **Cloud Provider LoadBalancer**:
 ```sh
 curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
@@ -183,7 +183,7 @@ curl "$INGRESS_GW_ADDRESS/v1/chat/completions" -H content-type:application/json 
 **Localhost**:
 ```sh
 curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
@@ -201,7 +201,7 @@ curl "localhost:8080/v1/chat/completions" -H content-type:application/json  -d '
 **Cloud Provider LoadBalancer**:
 ```sh
 curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
@@ -218,7 +218,7 @@ curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json  -d '{
 **Localhost**:
 ```sh
 curl "localhost:8080/openai" -H content-type:application/json  -d '{
-   "model": "",
+   "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
    "messages": [
      {
        "role": "system",
