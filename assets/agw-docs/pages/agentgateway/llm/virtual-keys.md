@@ -186,7 +186,7 @@ spec:
     provider:
       openai: {}
         # Optional: specify a default  model
-        #model: gpt-3.5-turbo
+        #model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
      # Optional: custom host and port, if needed
      # host: api.openai.com  
      # port: 443
@@ -272,7 +272,7 @@ YAMLTest -f - <<'EOF'
       Authorization: "Bearer sk-alice-abc123def456"
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
         "messages": [{"role": "user", "content": "Hello"}]
       }
   source:
@@ -289,7 +289,7 @@ YAMLTest -f - <<'EOF'
       Authorization: "Bearer sk-bob-xyz789uvw012"
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
         "messages": [{"role": "user", "content": "Hello"}]
       }
   source:
@@ -306,7 +306,7 @@ YAMLTest -f - <<'EOF'
       Authorization: "Bearer invalid-key"
     body: |
       {
-        "model": "gpt-3.5-turbo",
+        "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
         "messages": [{"role": "user", "content": "Hello"}]
       }
   source:
@@ -447,7 +447,7 @@ EOF
      -H "Authorization: Bearer sk-alice-abc123def456" \
       -H "Content-Type: application/json" \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }'
    ```
@@ -458,7 +458,7 @@ EOF
      -H "Authorization: Bearer sk-alice-abc123def456" \
       -H "Content-Type: application/json" \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }'
    ```
@@ -471,7 +471,7 @@ EOF
      "id": "chatcmpl-abc123",
      "object": "chat.completion",
      "created": 1234567890,
-     "model": "gpt-3.5-turbo",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
      "choices": [{
        "index": 0,
        "message": {
@@ -496,7 +496,7 @@ EOF
        "$INGRESS_GW_ADDRESS/openai" \
        -H "Authorization: Bearer sk-alice-abc123def456" \
        -H "Content-Type: application/json" \
-       -d '{"model": "gpt-3.5-turbo", "messages": [{"role": "user", "content": "Hello!"}]}')
+       -d '{"model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}", "messages": [{"role": "user", "content": "Hello!"}]}')
      echo "Request $i: HTTP $STATUS"
    done
    ```
@@ -520,7 +520,7 @@ EOF
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \
       -H "Content-Type: application/json" \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }'
    ```
@@ -531,7 +531,7 @@ EOF
      -H "Authorization: Bearer sk-bob-xyz789uvw012" \
       -H "Content-Type: application/json" \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }'
    ```

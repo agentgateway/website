@@ -175,7 +175,7 @@ Send a request with a fake credit card number and verify it gets masked in the r
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```sh
 curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-  "model": "gpt-3.5-turbo",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
   "messages": [
     {
       "role": "user",
@@ -189,7 +189,7 @@ curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
 {{% tab name="Port-forward for local testing" %}}
 ```sh
 curl "localhost:8080/openai" -H content-type:application/json -d '{
-  "model": "gpt-3.5-turbo",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
   "messages": [
     {
       "role": "user",

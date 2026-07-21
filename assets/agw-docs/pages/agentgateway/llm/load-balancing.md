@@ -122,7 +122,7 @@ spec:
                   name: openai-secret
           - name: openai-gpt35
             openai:
-              model: gpt-3.5-turbo
+              model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
             policies:
               auth:
                 secretRef:
