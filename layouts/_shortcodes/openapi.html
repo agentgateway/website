@@ -6,14 +6,44 @@
     - url: The URL of the OpenAPI/Swagger specification file (JSON or YAML).
 
   Example: {{< openapi url="https://example.com/api/openapi.json" >}}
+
+  The spec is fetched at BUILD TIME only to set the page <title>; the Swagger UI
+  below loads the same spec CLIENT-SIDE (see `url:` in the script), so the page
+  still works in the browser even when the build-time fetch fails.
+
+  Resilience: `timeout` caps a slow/unreachable remote (cold CI builds hit
+  raw.githubusercontent.com, which throttles/stalls runners — without a cap the
+  build hangs). `try` (required since Hugo v0.141 removed `resource.Err`) turns a
+  network error, a timeout, a dead URL, or an unparseable spec into a build WARN +
+  a fallback title + a link-checker-visible <a href>, instead of the previous
+  hang (no timeout) or nil-deref crash (`$spec.info.title` on a failed fetch).
 */ -}}
 {{ $url := .Get "url" }}
-{{ $spec := resources.GetRemote $url | transform.Unmarshal }}
+{{ $title := "API reference" }}
+{{ $failed := false }}
+{{ $attempt := try (resources.GetRemote $url (dict "timeout" "15s")) }}
+{{ with $attempt.Err }}
+  {{ warnf "openapi: failed to fetch spec %q: %s" $url . }}
+  {{ $failed = true }}
+{{ else }}
+  {{ with $attempt.Value }}
+    {{ $parsed := try (transform.Unmarshal .Content) }}
+    {{ with $parsed.Err }}
+      {{ warnf "openapi: spec %q did not parse: %s" $url . }}
+      {{ $failed = true }}
+    {{ else }}
+      {{ with $parsed.Value.info }}{{ with .title }}{{ $title = . }}{{ end }}{{ end }}
+    {{ end }}
+  {{ else }}
+    {{ warnf "openapi: no spec found at %q (dead or moved URL)" $url }}
+    {{ $failed = true }}
+  {{ end }}
+{{ end }}
 
 <!DOCTYPE html>
 <html>
   <head>
-    <title>{{ $spec.info.title }}</title>
+    <title>{{ $title }}</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link
@@ -62,6 +92,9 @@
     </style>
   </head>
   <body>
+    {{- if $failed -}}
+    <p>Unable to load the API specification at build time. View the source: <a href="{{ $url }}">{{ $url }}</a></p>
+    {{- end -}}
     <div class="swagger-container">
       <div id="swagger-ui"></div>
     </div>
