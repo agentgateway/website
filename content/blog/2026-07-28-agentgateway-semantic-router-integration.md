@@ -28,24 +28,7 @@ vSR's *routing decision* happens on the request side of that hook. It receives t
 
 Here is the actual request lifecycle for the single-provider setup:
 
-```text
-client                    agentgateway                     vSR (ExtProc)          OpenAI
-  │  POST /v1/chat/completions   │                              │                    │
-  │  { "model": "auto", ... }    │                              │                    │
-  ├─────────────────────────────▶│                              │                    │
-  │                              │  request headers + body      │                    │
-  │                              ├─────────────────────────────▶│                    │
-  │                              │                              │ vSR:
-  │                              │                              │   1. classify prompt
-  │                              │                              │   2. rewrite body.model → gpt-5.5
-  │                              │                              │   3. add x-vsr-selected-model header
-  │                              │  rewritten request           │                    │
-  │                              │◀─────────────────────────────┤                    │
-  │                              │  forward with chosen model   │                    │
-  │                              ├──────────────────────────────┼───────────────────▶│
-  │                              │◀─────────────────────────────┼────────────────────┤
-  │◀─────────────────────────────┤  price + trace the response  │                    │
-```
+{{< reuse-image src="img/blog/agentgateway-vsr-integration/agw-vsr-request-flow.png" >}}
 
 *(The response also passes back through vSR — for caching, safety, and usage accounting. It is omitted here to keep the routing path clear.)*
 
