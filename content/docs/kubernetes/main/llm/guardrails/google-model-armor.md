@@ -178,7 +178,7 @@ In your GKE cluster, set up workload identity.
          promptGuard:
            request:
            - googleModelArmor:
-               templateId: <template-ID
+               templateId: <template-ID>
                projectId: <project-ID>
                location: <location>
                policies:
@@ -187,7 +187,7 @@ In your GKE cluster, set up workload identity.
                      type: AccessToken
            response:
            - googleModelArmor:
-               templateId: <template-ID
+               templateId: <template-ID>
                projectId: <project-ID>
                location: <location>
                policies:
@@ -275,7 +275,7 @@ The `policies` field configures how agentgateway connects and authenticates to G
 
 ### Authentication
 
-Set the authentication method under `policies.auth`.
+Under `policies.auth`, set the credential source.
 
 | Method | Description |
 | -- | -- |
@@ -309,3 +309,16 @@ For example, the following prompt guard sets a request timeout for the calls to 
 
 For the full set of fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
 
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} google-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+If you set up a local cluster (kind), also delete the credentials secret. For a GKE cluster that uses workload identity, no secret is created.
+
+```sh
+kubectl delete secret gcp-credentials -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```

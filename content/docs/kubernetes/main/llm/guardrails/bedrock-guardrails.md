@@ -55,7 +55,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
    metadata:
-     name: openai-prompt-guard
+     name: bedrock-prompt-guard
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      targetRefs:
@@ -69,7 +69,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
            - bedrockGuardrails:
                identifier: <guardrail-ID>
                version: "<version>" 
-               region: <region>>
+               region: <region>
                policies:
                  auth:
                    aws: 
@@ -79,7 +79,7 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
            - bedrockGuardrails:
                identifier: <guardrail-ID>
                version: "<version>" 
-               region: <region>>
+               region: <region>
                policies:
                  auth:
                    aws: 
@@ -162,13 +162,13 @@ The `policies` field configures how agentgateway connects and authenticates to t
 
 ### Authentication
 
-Under `policies.auth`, set one credential source (`aws`, `key`, or `secretRef`). Optionally, set `location` to control where the credential is placed.
+Under `policies.auth`, set one credential source (`aws`, `secretRef`, or `key`). Optionally, set `location` to control where the credential is placed.
 
 | Method | Description |
 | -- | -- |
 | `aws` | Authenticate with AWS credentials. Set `aws: {}` to use the default AWS credential chain (IAM role, environment variables, or instance profile), or set `aws.secretRef` to read credentials from a Kubernetes secret. |
+| `secretRef` | Read the API key from a Kubernetes secret. By default, the key that matches the credential location is used, such as `Authorization` for the default header location. To use a different key, set `secretRef.key`. |
 | `key` | Send an inline API key in the `Authorization` header. This option is the least secure. Use a secret instead when possible. |
-| `secretRef` | Read the API key from a Kubernetes secret. By default, the value is read from the secret's `Authorization` key. To use a different key, set `secretRef.key`. |
 | `location` | Where to place the credential. Defaults to the `Authorization` header with a `Bearer` prefix. To change it, set a `header`, `queryParameter`, or `cookie`. |
 
 ### Backend connection settings
@@ -205,7 +205,7 @@ For the full set of fields, see the [API reference]({{< link-hextra path="/refer
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} openai-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} bedrock-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 kubectl delete secret aws-secret -n {{< reuse "agw-docs/snippets/namespace.md" >}} 
 ```
     

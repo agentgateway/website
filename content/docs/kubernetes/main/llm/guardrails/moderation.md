@@ -93,7 +93,7 @@ Under `policies.auth`, set one credential source (`secretRef` or `key`). Optiona
 
 | Method | Description |
 | -- | -- |
-| `secretRef` | Read the API key from a Kubernetes secret. By default, the value is read from the secret's `Authorization` key. To use a different key, set `secretRef.key`. |
+| `secretRef` | Read the API key from a Kubernetes secret. By default, the key that matches the credential location is used, such as `Authorization` for the default header location. To use a different key, set `secretRef.key`. |
 | `key` | Send an inline API key in the `Authorization` header. This option is the least secure. Use a secret instead when possible. |
 | `location` | Where to place the credential. Defaults to the `Authorization` header with a `Bearer` prefix. To change it, set a `header`, `queryParameter`, or `cookie`. |
 
