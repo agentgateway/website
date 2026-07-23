@@ -636,6 +636,7 @@ _Validation:_
 _Appears in:_
 - [APIKeyAuthentication](#apikeyauthentication)
 - [BasicAuthentication](#basicauthentication)
+- [CrossAppAccessSubjectToken](#crossappaccesssubjecttoken)
 - [JWTAuthentication](#jwtauthentication)
 - [OAuthActorToken](#oauthactortoken)
 - [OAuthTokenSpec](#oauthtokenspec)
@@ -678,7 +679,9 @@ _Validation:_
 
 _Appears in:_
 - [BackendAuth](#backendauth)
+- [BedrockGuardrailsAuth](#bedrockguardrailsauth)
 - [OAuthTokenExchange](#oauthtokenexchange)
+- [OpenAIModerationAuth](#openaimoderationauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -806,12 +809,14 @@ AWS authentication settings for the backend.
 
 _Appears in:_
 - [BackendAuth](#backendauth)
+- [BedrockGuardrailsAuth](#bedrockguardrailsauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `secretRef` _[LocalSecretObjectRef](#localsecretobjectref)_ | Credential source for AWS credentials, defaulting to a Kubernetes `Secret`.<br />The default Secret resolver expects `accessKey`, `secretKey`, and optional<br />`sessionToken` keys. |  | Optional: \{\} <br /> |
 | `assumeRole` _[AwsAssumeRole](#awsassumerole)_ | AWS STS AssumeRole settings to use before signing backend requests.<br />Ambient AWS credentials are used as the source credentials for STS. |  | AtMostOneOf: [sessionName sessionNameExpression] <br />Optional: \{\} <br /> |
 | `serviceName` _[ShortString](#shortstring)_ | AWS SigV4 signing service name, for example<br />`bedrock`, `bedrock-agentcore`, or `execute-api`). If unset, typed AWS<br />backends may provide this automatically. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
+| `region` _[ShortString](#shortstring)_ | AWS SigV4 signing region, for example `us-east-1`. Set this when the<br />target AWS service is in a different region than the gateway. If unset,<br />typed AWS backends may provide this automatically; otherwise the ambient<br />AWS region is used. |  | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 
 
 #### AwsBackend
@@ -991,7 +996,7 @@ _Appears in:_
 
 
 _Validation:_
-- ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange]
+- ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess]
 
 _Appears in:_
 - [BackendFull](#backendfull)
@@ -1007,6 +1012,7 @@ _Appears in:_
 | `azure` _[AzureAuth](#azureauth)_ | Azure authentication method for the backend. |  | AtMostOneOf: [secretRef managedIdentity workloadIdentity] <br />Optional: \{\} <br /> |
 | `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for the backend.<br />When omitted, default Google credential discovery is used. |  | Optional: \{\} <br /> |
 | `oauthTokenExchange` _[OAuthTokenExchange](#oauthtokenexchange)_ | OAuth 2.0 token exchange (RFC 8693) / jwt-bearer (RFC 7523) authentication. |  | Optional: \{\} <br /> |
+| `crossAppAccess` _[CrossAppAccessAuth](#crossappaccessauth)_ | Cross App Access (Identity Assertion / ID-JAG) authentication. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted. Defaults to the `Authorization`<br />header with the `Bearer ` prefix. Applies to `key`, `secretRef`, and<br />`passthrough`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 
 
@@ -1021,6 +1027,27 @@ _Appears in:_
 _Appears in:_
 - [BackendAuth](#backendauth)
 
+
+
+#### BackendConnectionPolicy
+
+
+
+BackendConnectionPolicy configures common connection behavior for auxiliary backend calls.
+
+
+
+_Appears in:_
+- [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
+- [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
+- [OpenAIModerationPolicy](#openaimoderationpolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
 
 
 #### BackendEviction
@@ -1060,7 +1087,7 @@ _Appears in:_
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `mcp` _[BackendMCP](#backendmcp)_ | Settings for MCP workloads. This is only applicable when<br />connecting to a `Backend` of type `mcp`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
@@ -1077,9 +1104,13 @@ _Appears in:_
 
 
 _Appears in:_
+- [BackendConnectionPolicy](#backendconnectionpolicy)
 - [BackendFull](#backendfull)
 - [BackendSimple](#backendsimple)
 - [BackendWithAI](#backendwithai)
+- [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
+- [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
+- [OpenAIModerationPolicy](#openaimoderationpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1116,10 +1147,7 @@ _Appears in:_
 _Appears in:_
 - [BackendFull](#backendfull)
 - [BackendWithAI](#backendwithai)
-- [BedrockGuardrails](#bedrockguardrails)
-- [GoogleModelArmor](#googlemodelarmor)
 - [McpTarget](#mcptarget)
-- [OpenAIModeration](#openaimoderation)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1127,7 +1155,7 @@ _Appears in:_
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess] <br />Optional: \{\} <br /> |
 
 
 #### BackendTCP
@@ -1139,9 +1167,13 @@ _Appears in:_
 
 
 _Appears in:_
+- [BackendConnectionPolicy](#backendconnectionpolicy)
 - [BackendFull](#backendfull)
 - [BackendSimple](#backendsimple)
 - [BackendWithAI](#backendwithai)
+- [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
+- [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
+- [OpenAIModerationPolicy](#openaimoderationpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1159,9 +1191,13 @@ _Validation:_
 - AtMostOneOf: [verifySubjectAltNames insecureSkipVerify]
 
 _Appears in:_
+- [BackendConnectionPolicy](#backendconnectionpolicy)
 - [BackendFull](#backendfull)
 - [BackendSimple](#backendsimple)
 - [BackendWithAI](#backendwithai)
+- [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
+- [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
+- [OpenAIModerationPolicy](#openaimoderationpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1183,9 +1219,13 @@ _Appears in:_
 
 
 _Appears in:_
+- [BackendConnectionPolicy](#backendconnectionpolicy)
 - [BackendFull](#backendfull)
 - [BackendSimple](#backendsimple)
 - [BackendWithAI](#backendwithai)
+- [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
+- [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
+- [OpenAIModerationPolicy](#openaimoderationpolicy)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -1209,7 +1249,7 @@ _Appears in:_
 | `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
 | `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
 | `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
-| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange] <br />Optional: \{\} <br /> |
+| `auth` _[BackendAuth](#backendauth)_ | Settings for managing authentication to the backend |  | ExactlyOneOf: [key secretRef passthrough aws azure gcp oauthTokenExchange crossAppAccess] <br />Optional: \{\} <br /> |
 | `ai` _[BackendAI](#backendai)_ | Settings for AI workloads. This is only applicable when<br />connecting to a `Backend` of type `ai`. |  | Optional: \{\} <br /> |
 | `transformation` _[Transformation](#transformation)_ | Mutates and transforms requests and responses sent to and from the backend. |  | Optional: \{\} <br /> |
 | `health` _[Health](#health)_ | Settings for passive and active health checking. |  | Optional: \{\} <br /> |
@@ -1289,7 +1329,47 @@ _Appears in:_
 | `identifier` _[ShortString](#shortstring)_ | Identifier of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `version` _[ShortString](#shortstring)_ | Version of the Guardrail policy to use for the backend. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `region` _[ShortString](#shortstring)_ | AWS region where the guardrail is deployed, for example<br />`us-west-2`). |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
-| `policies` _[BackendSimple](#backendsimple)_ | Policies for communicating with AWS Bedrock Guardrails. |  | Optional: \{\} <br /> |
+| `policies` _[BedrockGuardrailsPolicy](#bedrockguardrailspolicy)_ | Policies for communicating with AWS Bedrock Guardrails. |  | Optional: \{\} <br /> |
+
+
+#### BedrockGuardrailsAuth
+
+
+
+BedrockGuardrailsAuth configures credentials for AWS Bedrock Guardrails requests.
+
+_Validation:_
+- ExactlyOneOf: [key secretRef aws]
+
+_Appears in:_
+- [BedrockGuardrailsPolicy](#bedrockguardrailspolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `aws` _[AwsAuth](#awsauth)_ | AWS authentication method for Bedrock Guardrails. Use `aws: \{\}` for<br />default AWS SDK credential discovery. |  | Optional: \{\} <br /> |
+| `key` _string_ | Inline API key to use as the value of the `Authorization` header.<br />This option is the least secure; usage of a `Secret` is preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source for the API key, defaulting to a Kubernetes `Secret`.<br />By default, the value is read from the `Authorization` key; set<br />`secretRef.key` to override it. A `Bearer ` prefix is stripped only from<br />the default `Authorization` key. |  | Optional: \{\} <br /> |
+| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where API keys are inserted. Defaults to the `Authorization` header with<br />the `Bearer ` prefix. Applies to `key` and `secretRef`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+
+
+#### BedrockGuardrailsPolicy
+
+
+
+BedrockGuardrailsPolicy configures calls to AWS Bedrock Guardrails.
+
+
+
+_Appears in:_
+- [BedrockGuardrails](#bedrockguardrails)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `auth` _[BedrockGuardrailsAuth](#bedrockguardrailsauth)_ | Settings for authenticating to AWS Bedrock Guardrails. |  | ExactlyOneOf: [key secretRef aws] <br />Optional: \{\} <br /> |
 
 
 #### BodySendMode
@@ -1405,6 +1485,7 @@ _Appears in:_
 - [AuthorizationPolicy](#authorizationpolicy)
 - [AwsAssumeRole](#awsassumerole)
 - [AwsSessionTag](#awssessiontag)
+- [Delay](#delay)
 - [DirectResponse](#directresponse)
 - [DirectResponseConditional](#directresponseconditional)
 - [DirectResponseHeader](#directresponseheader)
@@ -1505,6 +1586,62 @@ _Appears in:_
 | `matchLabels` _object (keys:string, values:string)_ | Labels that must be present on each selected ConfigMap. |  | Required: \{\} <br /> |
 
 
+#### CrossAppAccessAuth
+
+
+
+Cross App Access settings for backend authentication.
+
+
+
+_Appears in:_
+- [BackendAuth](#backendauth)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `identityProvider` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | User identity provider authorization server, used for the RFC 8693 ID-JAG exchange. |  | Required: \{\} <br /> |
+| `resourceAuthorizationServer` _[CrossAppAccessEndpoint](#crossappaccessendpoint)_ | Resource authorization server, used for the RFC 7523 jwt-bearer exchange. |  | Required: \{\} <br /> |
+| `audience` _[ShortString](#shortstring)_ | Identifier of the resource authorization server. The issued ID-JAG is bound to this audience. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
+| `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `subjectToken` _[CrossAppAccessSubjectToken](#crossappaccesssubjecttoken)_ | Subject token sent to the identity provider. Defaults to an OpenID Connect<br />ID token read from the Authorization Bearer header. |  | Optional: \{\} <br /> |
+| `cache` _[OAuthTokenCache](#oauthtokencache)_ | Response cache configuration. |  | Optional: \{\} <br /> |
+
+
+#### CrossAppAccessEndpoint
+
+
+
+
+
+
+
+_Appears in:_
+- [CrossAppAccessAuth](#crossappaccessauth)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | Token endpoint backend. |  | Required: \{\} <br /> |
+| `path` _string_ | Token endpoint path; defaults to "/". Must start with "/". |  | Pattern: `^/` <br />Optional: \{\} <br /> |
+| `clientAuth` _[OAuthClientAuth](#oauthclientauth)_ | Client authentication for the token endpoint. |  | Required: \{\} <br /> |
+
+
+#### CrossAppAccessSubjectToken
+
+
+
+
+
+
+
+_Appears in:_
+- [CrossAppAccessAuth](#crossappaccessauth)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `source` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where to read the subject token. Defaults to the Authorization Bearer header. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
+
+
 #### CustomProvider
 
 
@@ -1544,6 +1681,22 @@ _Appears in:_
 | --- | --- | --- | --- |
 | `message` _string_ | Custom response message to return to the client. If not specified, defaults to<br />`The request was rejected due to inappropriate content`. | The request was rejected due to inappropriate content | Optional: \{\} <br /> |
 | `statusCode` _integer_ | Status code to return to the client. Defaults to 403. | 403 | Maximum: 599 <br />Minimum: 200 <br />Optional: \{\} <br /> |
+
+
+#### Delay
+
+
+
+Artificial latency injection for fault-injection testing.
+
+
+
+_Appears in:_
+- [Traffic](#traffic)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `duration` _[CELExpression](#celexpression)_ | Latency to inject before forwarding the request to the backend. Either a duration string such<br />as `2s`, or a CEL expression evaluated against the request that returns a duration (e.g.<br />`duration("500ms")`) or a number interpreted as milliseconds (e.g. `random() < 0.1 ? 500 : 0`<br />for probabilistic delay, or `int(random() * 500)` for jitter). A non-positive result injects<br />no delay.<br />The injected delay counts against the request timeout. |  | MaxLength: 16384 <br />MinLength: 1 <br />Required: \{\} <br /> |
 
 
 #### DirectResponse
@@ -2033,6 +2186,7 @@ Google Cloud authentication settings.
 
 _Appears in:_
 - [BackendAuth](#backendauth)
+- [GoogleModelArmorAuth](#googlemodelarmorauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -2112,7 +2266,44 @@ _Appears in:_
 | `templateId` _[ShortString](#shortstring)_ | Template ID for Google Model Armor. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `projectId` _[ShortString](#shortstring)_ | Google Cloud project ID. |  | MaxLength: 256 <br />MinLength: 1 <br />Required: \{\} <br /> |
 | `location` _[ShortString](#shortstring)_ | Google Cloud location, for example `us-central1`.<br />Defaults to `us-central1` if not specified. | us-central1 | MaxLength: 256 <br />MinLength: 1 <br />Optional: \{\} <br /> |
-| `policies` _[BackendSimple](#backendsimple)_ | Policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
+| `policies` _[GoogleModelArmorPolicy](#googlemodelarmorpolicy)_ | Policies for communicating with Google Model Armor. |  | Optional: \{\} <br /> |
+
+
+#### GoogleModelArmorAuth
+
+
+
+GoogleModelArmorAuth configures credentials for Google Model Armor requests.
+
+_Validation:_
+- ExactlyOneOf: [gcp]
+
+_Appears in:_
+- [GoogleModelArmorPolicy](#googlemodelarmorpolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `gcp` _[GcpAuth](#gcpauth)_ | Google authentication method for Model Armor. Use `gcp: \{\}` for default<br />Google credential discovery. |  | Optional: \{\} <br /> |
+
+
+#### GoogleModelArmorPolicy
+
+
+
+GoogleModelArmorPolicy configures calls to Google Model Armor.
+
+
+
+_Appears in:_
+- [GoogleModelArmor](#googlemodelarmor)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `auth` _[GoogleModelArmorAuth](#googlemodelarmorauth)_ | Settings for authenticating to Google Model Armor. |  | ExactlyOneOf: [gcp] <br />Optional: \{\} <br /> |
 
 
 #### HTTPHeaderCase
@@ -2701,9 +2892,12 @@ location-specific default key is used.
 _Appears in:_
 - [BackendAuth](#backendauth)
 - [BasicAuthentication](#basicauthentication)
+- [BedrockGuardrailsAuth](#bedrockguardrailsauth)
 - [GcpAuth](#gcpauth)
+- [MCPAuthentication](#mcpauthentication)
 - [OAuthClientAuth](#oauthclientauth)
 - [OAuthPrivateKeyJWT](#oauthprivatekeyjwt)
+- [OpenAIModerationAuth](#openaimoderationauth)
 
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
@@ -2776,6 +2970,7 @@ _Appears in:_
 | `jwks` _[RemoteJWKS](#remotejwks)_ | Remote JSON Web Key used to validate the signature of<br />the JWT. |  | Required: \{\} <br /> |
 | `mode` _[JWTAuthenticationMode](#jwtauthenticationmode)_ | Validation mode for JWT authentication. | Strict | Optional: \{\} <br /> |
 | `clientId` _string_ | Client ID to use for short-circuiting Dynamic Client Registration.<br />If set, the gateway will not proxy registration requests to the IDP and instead return this client ID. |  | Optional: \{\} <br /> |
+| `clientSecretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Reference to a Kubernetes Secret holding the OAuth client secret of the app<br />registration identified by `clientId` (for example Entra ID confidential clients,<br />which require the secret at the token endpoint). The gateway injects it into the<br />token requests it proxies to the provider. Defaults to the `clientSecret` key;<br />override via `clientSecretRef.key`. |  | Optional: \{\} <br /> |
 
 
 #### MCPBackend
@@ -2907,6 +3102,7 @@ _Appears in:_
 | `Okta` |  |
 | `Descope` |  |
 | `Authentik` |  |
+| `Entra` |  |
 
 
 #### McpSelector
@@ -3127,7 +3323,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `source` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where to read the actor token. Actor tokens have no default source. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Required: \{\} <br /> |
-| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth token type. Empty defaults to AccessToken. |  | Optional: \{\} <br /> |
+| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth token type. Empty defaults to AccessToken. Custom absolute URI values<br />are supported for actor tokens. |  | Optional: \{\} <br /> |
 | `mayAct` _[OAuthMayActValidationMode](#oauthmayactvalidationmode)_ | may_act claim validation mode. When omitted, may_act is not enforced. |  | Optional: \{\} <br /> |
 
 
@@ -3140,6 +3336,7 @@ OAuthClientAuth configures token endpoint client authentication.
 
 
 _Appears in:_
+- [CrossAppAccessEndpoint](#crossappaccessendpoint)
 - [OAuthTokenExchange](#oauthtokenexchange)
 
 | Field | Description | Default | Validation |
@@ -3266,6 +3463,7 @@ _Appears in:_
 
 
 _Appears in:_
+- [CrossAppAccessAuth](#crossappaccessauth)
 - [OAuthTokenExchange](#oauthtokenexchange)
 
 | Field | Description | Default | Validation |
@@ -3289,12 +3487,12 @@ _Appears in:_
 | `backendRef` _[BackendObjectReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#backendobjectreference)_ | RFC 8693 token endpoint backend. |  | Required: \{\} <br /> |
 | `path` _string_ | Token endpoint path; defaults to "/". Must start with "/". |  | Pattern: `^/` <br />Optional: \{\} <br /> |
 | `grantType` _[OAuthGrantType](#oauthgranttype)_ | RFC followed by the request. Defaults to TokenExchange (RFC 8693). |  | Optional: \{\} <br /> |
-| `subjectToken` _[OAuthTokenSpec](#oauthtokenspec)_ | Subject token / assertion source and type. Defaults to Authorization Bearer, AccessToken. |  | Optional: \{\} <br /> |
+| `subjectToken` _[OAuthTokenSpec](#oauthtokenspec)_ | Subject token / assertion source and type. Defaults to Authorization Bearer, AccessToken.<br />The token type may be a built-in value or a custom absolute URI for providers<br />that support custom token exchange profiles. |  | Optional: \{\} <br /> |
 | `actorToken` _[OAuthActorToken](#oauthactortoken)_ | RFC 8693 delegation actor token. TokenExchange grant only. |  | Optional: \{\} <br /> |
-| `audiences` _string array_ | Audiences sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
+| `audiences` _[ShortString](#shortstring) array_ | Audiences sent to the token endpoint. |  | MaxItems: 64 <br />MaxLength: 256 <br />MinItems: 1 <br />MinLength: 1 <br />Optional: \{\} <br /> |
 | `scopes` _string array_ | Scopes sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
 | `resources` _string array_ | Resources sent to the token endpoint. |  | MaxItems: 64 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-| `requestedTokenType` _[OAuthTokenType](#oauthtokentype)_ | RFC 8693 requested_token_type. |  | Optional: \{\} <br /> |
+| `requestedTokenType` _[OAuthTokenType](#oauthtokentype)_ | RFC 8693 requested_token_type. Unlike subject/actor token types, only the<br />built-in values may be requested; custom URIs are not supported here. |  | Enum: [AccessToken Jwt IdToken IdJag] <br />Optional: \{\} <br /> |
 | `additionalParams` _object (keys:string, values:[CELExpression](#celexpression))_ | Extra form params; values are CEL expressions over the incoming request. |  | MaxProperties: 64 <br />Optional: \{\} <br /> |
 | `clientAuth` _[OAuthClientAuth](#oauthclientauth)_ | Client authentication for the token endpoint. When unset, none is sent. |  | Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the exchanged token is written to the backend request.<br />Defaults to Authorization: Bearer. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
@@ -3315,14 +3513,17 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `source` _[AuthorizationExtractionLocation](#authorizationextractionlocation)_ | Where to read the token. CEL `expression` variant is permitted. |  | ExactlyOneOf: [header queryParameter cookie expression] <br />Optional: \{\} <br /> |
-| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth token type. Empty defaults to AccessToken. |  | Optional: \{\} <br /> |
+| `tokenType` _[OAuthTokenType](#oauthtokentype)_ | OAuth token type. Empty defaults to AccessToken. Custom absolute URI values<br />are supported for subject tokens. |  | Optional: \{\} <br /> |
 
 
 #### OAuthTokenType
 
 _Underlying type:_ _string_
 
-
+OAuthTokenType is an RFC 8693 token type. The built-in values below are
+translated to their URN form; any other value must be a custom absolute URI
+and is passed through unchanged. It is intentionally not a closed enum so
+subject/actor tokens can use provider-specific token type URIs.
 
 
 
@@ -3405,7 +3606,46 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `model` _string_ | Moderation model to use. For example,<br />`omni-moderation`. |  | Optional: \{\} <br /> |
-| `policies` _[BackendSimple](#backendsimple)_ | Policies for communicating with OpenAI. |  | Optional: \{\} <br /> |
+| `policies` _[OpenAIModerationPolicy](#openaimoderationpolicy)_ | Policies for communicating with OpenAI. |  | Optional: \{\} <br /> |
+
+
+#### OpenAIModerationAuth
+
+
+
+OpenAIModerationAuth configures credentials for OpenAI Moderation requests.
+
+_Validation:_
+- ExactlyOneOf: [key secretRef]
+
+_Appears in:_
+- [OpenAIModerationPolicy](#openaimoderationpolicy)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `key` _string_ | Inline key to use as the value of the<br />`Authorization` header. This option is the least secure; usage of a<br />`Secret` is preferred. |  | MaxLength: 2048 <br />Optional: \{\} <br /> |
+| `secretRef` _[LocalSecretKeyRef](#localsecretkeyref)_ | Credential source for the authorization value, defaulting to a Kubernetes<br />`Secret`. By default, the value is read from the `Authorization` key; set<br />`secretRef.key` to override it. A `Bearer ` prefix is stripped only from<br />the default `Authorization` key. |  | Optional: \{\} <br /> |
+| `location` _[AuthorizationLocation](#authorizationlocation)_ | Where backend credentials are inserted. Defaults to the `Authorization`<br />header with the `Bearer ` prefix. Applies to `key` and `secretRef`. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
+
+
+#### OpenAIModerationPolicy
+
+
+
+OpenAIModerationPolicy configures calls to the OpenAI Moderation API.
+
+
+
+_Appears in:_
+- [OpenAIModeration](#openaimoderation)
+
+| Field | Description | Default | Validation |
+| --- | --- | --- | --- |
+| `tcp` _[BackendTCP](#backendtcp)_ | Settings for managing TCP connections to the backend |  | Optional: \{\} <br /> |
+| `tls` _[BackendTLS](#backendtls)_ | Settings for managing TLS connections to the backend<br />When set, TLS is originated to the backend using the system trusted CA<br />certificates, and SNI is inferred from the destination. |  | AtMostOneOf: [verifySubjectAltNames insecureSkipVerify] <br />Optional: \{\} <br /> |
+| `http` _[BackendHTTP](#backendhttp)_ | Settings for managing HTTP requests to the backend |  | Optional: \{\} <br /> |
+| `tunnel` _[BackendTunnel](#backendtunnel)_ | Settings for managing tunnel connections to the backend, like `HTTPS_PROXY` |  | Optional: \{\} <br /> |
+| `auth` _[OpenAIModerationAuth](#openaimoderationauth)_ | Settings for authenticating to OpenAI. |  | ExactlyOneOf: [key secretRef] <br />Optional: \{\} <br /> |
 
 
 #### OtlpAccessLog
@@ -4094,6 +4334,7 @@ _Appears in:_
 | `apiKeyAuthentication` _[APIKeyAuthentication](#apikeyauthentication)_ | Authenticates users based on a configured API<br />key. |  | ExactlyOneOf: [secretRef secretSelector configMapSelector] <br />Optional: \{\} <br /> |
 | `directResponse` _[DirectResponseOrConditional](#directresponseorconditional)_ | Sends a direct response to the<br />client. |  | Optional: \{\} <br /> |
 | `buffer` _[Buffer](#buffer)_ | Buffers request and response bodies. Buffered bodies are accumulated in memory<br />by the proxy until completion before being forwarded. This changes the proxies default behavior, which streams bodies.<br />Warning: large bodies can lead to excessive memory usage in the proxy. Utilize with care, or with strict limits. |  | Optional: \{\} <br /> |
+| `delay` _[Delay](#delay)_ | Injects artificial latency before forwarding requests, for<br />fault-injection testing. |  | Optional: \{\} <br /> |
 
 
 #### TrailerSendMode
