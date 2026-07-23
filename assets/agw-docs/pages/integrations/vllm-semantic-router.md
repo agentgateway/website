@@ -12,7 +12,7 @@ The following diagram shows the [cost-based routing example](/blog/2026-07-17-se
 The request follows these component boundaries:
 
 1. A client sends a supported request to agentgateway.
-2. An AgentgatewayPolicy calls vSR as an external processor during the `PreRouting` phase.
+2. An {{< reuse "agw-docs/snippets/policy.md" >}} calls vSR as an external processor during the `PreRouting` phase.
 3. vSR evaluates its semantic, complexity, keyword, context, and structure signals. It returns the selected model in its processing response.
 4. Agentgateway applies the routing decision and forwards the request to the configured provider or inference workload.
 5. Agentgateway records the requested and selected models alongside usage, latency, and optional catalog-priced cost data.
