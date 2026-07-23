@@ -24,6 +24,9 @@ flowchart LR
 
 Cross App Access differs from [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}) in that it crosses a trust boundary: the IdP and the resource's authorization server are separate parties, so the gateway performs two exchanges and holds two client registrations, one at each token endpoint. For a single-leg exchange at one authorization server, use `oauthTokenExchange` instead.
 
+> [!NOTE]
+> To keep the demo self-contained, a single Keycloak instance acts as both parties: the user's IdP and the resource authorization server. In production, these parties are typically separate trust domains. For examples against separate providers, review the [traffic-cross-app-access examples](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-cross-app-access) in the upstream `agentgateway` repository. That example uses `xaa-dev` (hosted IdenX IdP + hosted resource authorization server) and `okta-auth0` (Okta IdP + Auth0 resource authorization server). These IdPs illustrate the two-party topology, but note that the configs are written for standalone mode, not Kubernetes.
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
