@@ -40,6 +40,8 @@ The OpenAI Moderation API detects potentially harmful content across categories 
    EOF
    ```
 
+   The `policies` field supports more than the `secretRef` authentication shown here. You can choose a different authentication method or tune the connection that agentgateway opens to the Moderation API, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
+
 2. Test with content that triggers moderation. 
    {{< tabs >}}
 

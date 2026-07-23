@@ -197,6 +197,8 @@ In your GKE cluster, set up workload identity.
    EOF
    ```
 
+   The `policies` field supports more than the `gcp` authentication shown here. You can also tune the connection that agentgateway opens to Model Armor, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
+
 2. Send a request to the Gemini provider that triggers the guardrail. 
    {{< tabs >}}
    {{% tab name="Gemini default" %}}

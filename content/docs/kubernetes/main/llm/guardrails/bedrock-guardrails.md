@@ -92,6 +92,8 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
    {{< /callout >}}
 
+   The `policies` field supports more than the `aws` credential source shown here. You can choose a different authentication method or tune the connection that agentgateway opens to Bedrock, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
+
 
 5. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 
    {{< tabs >}}
