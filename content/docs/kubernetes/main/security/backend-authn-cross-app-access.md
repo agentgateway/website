@@ -1,6 +1,6 @@
 ---
 title: Cross App Access (ID-JAG)
-weight: 30
+weight: 20
 description: Call a downstream API as the authenticated end user with the OAuth Identity Assertion Authorization Grant.
 test:
   cross-app-access:
