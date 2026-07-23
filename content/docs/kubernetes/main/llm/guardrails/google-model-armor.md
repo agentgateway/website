@@ -269,3 +269,43 @@ In your GKE cluster, set up workload identity.
    The request was rejected due to inappropriate content
    ```
 
+## Backend connection and authentication policies
+
+The `policies` field configures how agentgateway connects and authenticates to Google Model Armor when it evaluates a request or response.
+
+### Authentication
+
+Set the authentication method under `policies.auth`.
+
+| Method | Description |
+| -- | -- |
+| `gcp` | Authenticate with GCP credentials. Set `gcp: {}` to use the default Google credential discovery, or set the credential `type` to use, such as `AccessToken`. |
+
+### Backend connection settings
+
+You can also tune the connection that agentgateway opens to the Model Armor backend by setting the following `BackendConnectionPolicy` fields under `policies`.
+
+| Setting | Description |
+| -- | -- |
+| `tls` | TLS settings for the connection, such as a custom CA certificate or SNI. |
+| `http` | HTTP settings, such as the `requestTimeout` and HTTP protocol `version`. |
+| `tcp` | TCP connection settings. |
+| `tunnel` | Tunnel settings, such as an `HTTPS_PROXY`, used to reach the backend. |
+
+For example, the following prompt guard sets a request timeout for the calls to Model Armor.
+
+```yaml
+- googleModelArmor:
+    templateId: <template-ID>
+    projectId: <project-ID>
+    location: <location>
+    policies:
+      auth:
+        gcp:
+          type: AccessToken
+      http:
+        requestTimeout: 5s
+```
+
+For the full set of fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
+

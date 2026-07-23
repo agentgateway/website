@@ -156,6 +156,50 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    The request was rejected due to inappropriate content
    ```
 
+## Backend connection and authentication policies
+
+The `policies` field configures how agentgateway connects and authenticates to the AWS Bedrock Guardrails service when it evaluates a request or response.
+
+### Authentication
+
+Under `policies.auth`, set one credential source (`aws`, `key`, or `secretRef`). Optionally, set `location` to control where the credential is placed.
+
+| Method | Description |
+| -- | -- |
+| `aws` | Authenticate with AWS credentials. Set `aws: {}` to use the default AWS credential chain (IAM role, environment variables, or instance profile), or set `aws.secretRef` to read credentials from a Kubernetes secret. |
+| `key` | Send an inline API key in the `Authorization` header. This option is the least secure. Use a secret instead when possible. |
+| `secretRef` | Read the API key from a Kubernetes secret. By default, the value is read from the secret's `Authorization` key. To use a different key, set `secretRef.key`. |
+| `location` | Where to place the credential. Defaults to the `Authorization` header with a `Bearer` prefix. To change it, set a `header`, `queryParameter`, or `cookie`. |
+
+### Backend connection settings
+
+You can also tune the connection that agentgateway opens to the Bedrock Guardrails backend by setting the following `BackendConnectionPolicy` fields under `policies`.
+
+| Setting | Description |
+| -- | -- |
+| `tls` | TLS settings for the connection, such as a custom CA certificate or SNI. |
+| `http` | HTTP settings, such as the `requestTimeout` and HTTP protocol `version`. |
+| `tcp` | TCP connection settings. |
+| `tunnel` | Tunnel settings, such as an `HTTPS_PROXY`, used to reach the backend. |
+
+For example, the following prompt guard authenticates with a secret and sets a request timeout for the calls to Bedrock.
+
+```yaml
+- bedrockGuardrails:
+    identifier: <guardrail-ID>
+    version: "<version>"
+    region: <region>
+    policies:
+      auth:
+        aws:
+          secretRef:
+            name: aws-secret
+      http:
+        requestTimeout: 5s
+```
+
+For the full set of fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
