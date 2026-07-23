@@ -30,7 +30,7 @@ flowchart LR
 
 When a request arrives:
 
-1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key, extracts the user ID from a request header, and checks the request against the user's token budget.
+1. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} validates the API key, extracts the user ID from the key's metadata, and checks the request against the user's token budget.
 2. If budget is available:
    1. The request proceeds to the LLM.
    2. Agentgateway tracks token usage and deducts tokens from the user's budget.
@@ -53,6 +53,60 @@ This example creates two virtual keys (for Alice and Bob) with independent daily
 
 ### Create API keys for users
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Because a ConfigMap is not confidential, each entry stores a SHA-256 *hash* of the API key (`keyHash`) rather than the raw key. Clients still send the raw key in the `Authorization: Bearer` header. {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} hashes the presented key and compares it to the stored hash, so the plaintext key never has to exist in the cluster.
+
+> [!IMPORTANT]
+> ConfigMaps with hashed keys (as opposed to Secrets) are the recommended way to store virtual keys. If you need to use Kubernetes Secrets, refer to the [API key authentication guide]({{< link-hextra path="/security/apikey/" >}}) for an example.
+
+1. Generate a `sha256:<hex>` hash for each user's API key. The hash is computed over the exact key bytes, so do not include a trailing newline.
+
+   ```sh
+   printf '%s' 'sk-alice-abc123def456' | sha256sum   # alice
+   printf '%s' 'sk-bob-xyz789uvw012' | sha256sum     # bob
+   ```
+
+2. Create a ConfigMap that stores the hash and metadata for each user. Add a label so that the authentication policy can select the ConfigMap in the next step.
+
+   ```yaml,paths="virtual-keys"
+   kubectl apply -f- <<EOF
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: llm-api-keys
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       agentgateway.dev/apikey: "true"
+   data:
+     alice: |
+       {
+         "keyHash": "sha256:477fe4bee6e6d46cc4fa5827b4c375f045b01701de265deea7c26a74d4f86d1f",
+         "metadata": {
+           "user_id": "alice"
+         }
+       }
+     bob: |
+       {
+         "keyHash": "sha256:b2bd46e01122f51b540cc49cfdd020484776e67f5d3966c099e689eac4b8d93e",
+         "metadata": {
+           "user_id": "bob"
+         }
+       }
+   EOF
+   ```
+
+   {{% reuse "agw-docs/snippets/review-table.md" %}}
+
+   | Setting     | Description |
+   |-------------|-------------|
+   | `metadata.labels` | A label that the authentication policy uses to select this ConfigMap. Because ConfigMap sources are selected by label, this label is required. |
+   | `data.<name>` | Each entry in `data` represents a user. The value is a JSON object with a `keyHash` and optional `metadata`. |
+   | `keyHash` | A SHA-256 hash of the user's API key, in `sha256:<hex>` format. The raw key is never stored. |
+   | `metadata.user_id` | The user identifier that rate limiting and metrics policies read (as `apiKey.user_id`) to attribute usage per user. |
+
+{{< /version >}}
+
+{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 Create an API key secret that stores keys and metadata for each user.
 
 ```yaml,paths="virtual-keys"
@@ -88,9 +142,44 @@ EOF
 | `stringData.<name>` | Each key in `stringData` represents a user. The value is a JSON object containing the API key and metadata. |
 | `key` | The API key value that users include in their `Authorization: Bearer` header. |
 | `metadata.user_id` | The user identifier extracted by rate limiting policies to enforce per-user budgets. |
+{{< /version >}}
 
 ### Configure API key authentication
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires API key authentication for all requests to the gateway. Use `configMapSelector` to select every ConfigMap that carries the label you added in the previous step. ConfigMap sources are selected by label only, so this also selects a single ConfigMap by its label.
+
+```yaml,paths="virtual-keys"
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: api-key-auth
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+  traffic:
+    apiKeyAuthentication:
+      mode: Strict
+      configMapSelector:
+        matchLabels:
+          agentgateway.dev/apikey: "true"
+EOF
+```
+
+{{% reuse "agw-docs/snippets/review-table.md" %}}
+
+| Setting     | Description |
+|-------------|-------------|
+| `targetRefs` | Apply the policy to the entire Gateway so all routes require API keys. |
+| `apiKeyAuthentication.mode` | Set to `Strict` to require a valid API key for all requests. |
+| `configMapSelector.matchLabels` | Selects all ConfigMaps that carry the given labels, combining their keys. Every entry in a selected ConfigMap must use `keyHash`; a raw `key` value is rejected because ConfigMaps are not confidential. |
+{{< /version >}}
+
+{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires API key authentication for all requests to the gateway. You can source the API keys from a single Secret with `secretRef`, or from multiple Secrets selected by label with `secretSelector`. Use `secretSelector` when you want to spread keys across many Secrets, such as one Secret per team or tenant, instead of maintaining a single Secret.
 
 {{< tabs >}}
@@ -161,6 +250,7 @@ EOF
 | `apiKeyAuthentication.mode` | Set to `Strict` to require a valid API key for all requests. |
 | `secretRef.name` | References a single Secret containing API keys and user metadata. Use this or `secretSelector`, not both. |
 | `secretSelector.matchLabels` | Selects all Secrets that carry the given labels, combining their keys. Use instead of `secretRef` when keys are spread across multiple Secrets. Secret-only. |
+{{< /version >}}
 
 ### Configure per-key token budgets
 
@@ -687,8 +777,40 @@ For more information on cost tracking, see the [cost tracking guide]({{< link-he
 
 Provide different budget tiers for free, standard, and premium users.
 
-1. Add tier metadata to each API key in the Secret.
+1. Add tier metadata to each API key.
 
+   {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum`.
+
+   ```yaml
+   apiVersion: v1
+   kind: ConfigMap
+   metadata:
+     name: llm-api-keys
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+     labels:
+       agentgateway.dev/apikey: "true"
+   data:
+     alice: |
+       {
+         "keyHash": "sha256:477fe4bee6e6d46cc4fa5827b4c375f045b01701de265deea7c26a74d4f86d1f",
+         "metadata": {
+           "user_id": "alice",
+           "tier": "premium"
+         }
+       }
+     charlie: |
+       {
+         "keyHash": "sha256:1dfa4e699a31bc3bdcb34c74b43f7a4e58d38c51cec243b4add27b16de599355",
+         "metadata": {
+           "user_id": "charlie",
+           "tier": "free"
+         }
+       }
+   ```
+   {{< /version >}}
+
+   {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
    ```yaml
    apiVersion: v1
    kind: Secret
@@ -714,6 +836,7 @@ Provide different budget tiers for free, standard, and premium users.
          }
        }
    ```
+   {{< /version >}}
 
 2. Configure rate limiting to use the tier and user_id from API key metadata.
 
@@ -813,7 +936,8 @@ For more advanced rate limiting patterns, see the [budget and spend limits guide
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} api-key-auth per-user-metrics -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
-kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete configmap llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete secret llm-api-keys -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete httproute openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete {{< reuse "agw-docs/snippets/backend.md" >}} openai -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
