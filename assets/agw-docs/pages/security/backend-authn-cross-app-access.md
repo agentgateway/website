@@ -70,6 +70,15 @@ Issuing and consuming an ID-JAG requires the experimental `identity-assertion-jw
              value: "false"
            ports:
            - containerPort: 8080
+           # Report ready only once Keycloak is actually serving, so that later
+           # steps (realm configuration, JWKS fetch) do not race its startup.
+           readinessProbe:
+             httpGet:
+               path: /realms/master
+               port: 8080
+             initialDelaySeconds: 15
+             periodSeconds: 5
+             failureThreshold: 60
    ---
    apiVersion: v1
    kind: Service
@@ -86,10 +95,10 @@ Issuing and consuming an ID-JAG requires the experimental `identity-assertion-jw
    EOF
    ```
 
-2. Wait for Keycloak to be ready. Startup can take a few minutes.
+2. Wait for Keycloak to be ready. The readiness probe reports the pod ready only after Keycloak serves requests, so this command returns when Keycloak is available to configure. Startup can take a few minutes.
 
    ```sh {paths="cross-app-access"}
-   kubectl rollout status deployment/keycloak -n httpbin --timeout=240s
+   kubectl rollout status deployment/keycloak -n httpbin --timeout=300s
    ```
 
 3. Configure the `idjag-demo` realm with a script from the agentgateway repository. Clone the repository and go to the example setup scripts.
