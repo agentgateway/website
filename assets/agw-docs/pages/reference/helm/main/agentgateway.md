@@ -65,14 +65,16 @@
 | istio.namespace | string | Namespace where the Istio control plane the controller integrates with is installed.    Defaults to "istio-system". | `""` |
 | istio.network | string | Istio network for mesh-integrated gateways. | `""` |
 | istio.revision | string | Revision of the Istio control plane the controller integrates with.   If unset, the default revision is used. | `""` |
-| monitoring | object | Configure Prometheus and Grafana monitoring resources. | `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"namespaceSelector":{}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}` |
+| monitoring | object | Configure Prometheus and Grafana monitoring resources. | `{"enabled":false,"grafanaDashboard":{"enabled":true,"labels":{"grafana_dashboard":"1"}},"proxy":{"gatewayClassNames":["agentgateway"],"namespaceSelector":{},"podMonitor":{"enabled":true}},"serviceMonitor":{"enabled":true,"extraLabels":{},"interval":"15s"}}` |
 | monitoring.enabled | bool | Create monitoring resources (ServiceMonitors and Grafana dashboard ConfigMap). Requires the Prometheus Operator CRDs to be installed in the cluster. | `false` |
 | monitoring.grafanaDashboard.enabled | bool | Create the Grafana dashboard ConfigMap. | `true` |
 | monitoring.grafanaDashboard.labels | object | Labels that the Grafana sidecar uses to discover dashboards. | `{"grafana_dashboard":"1"}` |
-| monitoring.proxy.namespaceSelector | object | Namespace selector used by the proxy ServiceMonitor. The proxy ServiceMonitor always selects Services with gateway.networking.k8s.io/gateway-class-name=agentgateway. | `{}` |
-| monitoring.serviceMonitor.enabled | bool | Create ServiceMonitor resources. | `true` |
-| monitoring.serviceMonitor.extraLabels | object | Additional labels to add to both ServiceMonitor resources (e.g. release: prometheus). | `{}` |
-| monitoring.serviceMonitor.interval | string | Scrape interval for both ServiceMonitors. | `"15s"` |
+| monitoring.proxy.gatewayClassNames | list | GatewayClass names whose proxy pods are selected by the proxy PodMonitor. | `["agentgateway"]` |
+| monitoring.proxy.namespaceSelector | object | Namespace selector used by the proxy PodMonitor. Defaults to the release namespace only. | `{}` |
+| monitoring.proxy.podMonitor.enabled | bool | Create a PodMonitor that scrapes provisioned proxy pods on the pod's    metrics port (15020) directly, without requiring a metrics port on the    provisioned Service. | `true` |
+| monitoring.serviceMonitor.enabled | bool | Create the controller ServiceMonitor. | `true` |
+| monitoring.serviceMonitor.extraLabels | object | Additional labels to add to the controller ServiceMonitor and the proxy PodMonitor (e.g. release: prometheus). | `{}` |
+| monitoring.serviceMonitor.interval | string | Scrape interval for the controller ServiceMonitor and the proxy PodMonitor. | `"15s"` |
 | nameOverride | string | Add a name to the default Helm base release, which is 'agentgateway'. If you set 'nameOverride: "foo", the name of the resources that the Helm release creates become 'agentgateway-foo', such as the deployment, service, and service account for the agentgateway control plane in the agentgateway-system namespace. | `""` |
 | nodeSelector | object | Set node selector labels for pod scheduling, such as 'kubernetes.io/arch: amd64'. | `{}` |
 | podAnnotations | object | Add annotations to the agentgateway pods. | `{"prometheus.io/scrape":"true"}` |
