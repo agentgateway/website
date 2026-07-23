@@ -811,6 +811,8 @@ Provide different budget tiers for free, standard, and premium users.
    {{< /version >}}
 
    {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+   Store the keys in a Secret, with one entry per user.
+
    ```yaml
    apiVersion: v1
    kind: Secret
