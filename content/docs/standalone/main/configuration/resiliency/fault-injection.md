@@ -2,10 +2,13 @@
 title: Fault injection
 weight: 20
 description: Inject artificial latency into requests to test how your clients and services handle slow responses.
-test:
-  fault-injection:
-  - file: ${versionRoot}/configuration/resiliency/fault-injection.md
-    path: fault-injection
+# TODO: re-enable once the agentgateway:latest-dev image includes the standalone
+# `delay` policy (added in agentgateway#2613 / commit c844384d). Until then the
+# --validate-only doc-test fails with "unknown field `delay`".
+# test:
+#   fault-injection:
+#   - file: ${versionRoot}/configuration/resiliency/fault-injection.md
+#     path: fault-injection
 ---
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
