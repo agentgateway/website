@@ -99,7 +99,7 @@ Set up an HTTPS listener on your Gateway.
           namespaces:
             from: All        
         listeners:
-        - protocol: HTTPS
+        - protocol: HTTP
           port: 80
           name: http-mock
           allowedRoutes:
