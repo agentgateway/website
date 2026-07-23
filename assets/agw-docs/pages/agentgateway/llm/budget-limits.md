@@ -232,6 +232,8 @@ cost = (50,000 / 1,000,000 × $30) + (50,000 / 1,000,000 × $60)
 
 For more information on cost calculation, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
 
+<!--TODO dollar budget
+
 ## Enforce a dollar budget
 
 The budgets in the previous sections are measured in *tokens*. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each request and exposes it to CEL as `llm.cost`. You can then rate limit on *dollars* directly, which enforces a true spend cap regardless of which model or input/output token mix each user hits.
@@ -294,6 +296,8 @@ The budgets in the previous sections are measured in *tokens*. If you configure 
 {{< callout type="info" >}}
 To budget on a single cost component instead of the total, use that field in the expression. For example, `cost: 'uint(llm.cost.output * 1000000)'` budgets only on output-token spend.
 {{< /callout >}}
+
+-->
 
 ## Cleanup
 
