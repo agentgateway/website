@@ -69,10 +69,10 @@ Set up an HTTPS listener on your Gateway.
         gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
         allowedListeners:
           namespaces:
-            from: All        
+            from: All
         listeners:
         - protocol: HTTP
-port: 80
+          port: 80
           name: http-mock
           allowedRoutes:
             namespaces:
