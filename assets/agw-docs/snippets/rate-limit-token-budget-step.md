@@ -2,6 +2,47 @@ Update the `api-key-auth` {{< reuse "agw-docs/snippets/policy.md" >}} from the p
 
 The policy sends a per-user token cost to the rate limit server. It extracts the `user_id` from each API key and reports the token usage of each response under that descriptor. The rate limit server holds the actual budget (100 tokens per day per user), which you deploy in the next step.
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+```yaml,paths="virtual-keys-with-ratelimit"
+kubectl apply -f- <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: api-key-auth
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+    - group: gateway.networking.k8s.io
+      kind: Gateway
+      name: agentgateway-proxy
+  traffic:
+    apiKeyAuthentication:
+      mode: Strict
+      configMapSelector:
+        matchLabels:
+          agentgateway.dev/apikey: "true"
+    rateLimit:
+      global:
+        domain: agentgateway
+        backendRef:
+          kind: Service
+          name: ratelimit
+          namespace: ratelimit
+          port: 8081
+        descriptors:
+          - entries:
+              - name: user_id
+                expression: 'apiKey.user_id'
+            unit: Tokens
+EOF
+```
+
+{{< callout type="info" >}}
+This example keeps the `configMapSelector` authentication from the previous step. If you used `secretRef` or `secretSelector` instead, keep that block in place of `configMapSelector`.
+{{< /callout >}}
+{{< /version >}}
+
+{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```yaml,paths="virtual-keys-with-ratelimit"
 kubectl apply -f- <<EOF
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -38,6 +79,7 @@ EOF
 {{< callout type="info" >}}
 This example keeps the `secretRef` authentication from the previous step. If you used `secretSelector` instead, keep your `secretSelector` block in place of `secretRef`.
 {{< /callout >}}
+{{< /version >}}
 
 {{< doc-test paths="virtual-keys-with-ratelimit" >}}
 YAMLTest -f - <<'EOF'
