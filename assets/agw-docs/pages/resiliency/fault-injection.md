@@ -93,7 +93,7 @@ Because `duration` accepts a CEL expression, you can inject latency into only a 
 | -- | -- |
 | `duration("500ms")` | A fixed 500ms delay, expressed as a CEL duration. |
 | `random() < 0.1 ? 500 : 0` | A 500ms delay on approximately 10% of requests, and no delay otherwise. |
-| `int(random() * 500)` | A random delay between 0 and 500ms (jitter) on every request. |
+| `int(random() * 500.0)` | A random delay between 0 and 500ms (jitter) on every request. |
 
 For example, the following policy delays approximately 10% of requests by 500ms.
 
