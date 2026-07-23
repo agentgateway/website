@@ -72,7 +72,7 @@ Store your API keys in a Kubernetes ConfigMap so that you can reference them in 
 2. Generate a `sha256:<hex>` hash of the API key. The hash is computed over the exact key bytes, so do not include a trailing newline.
 
    ```sh
-   printf '%s' 'N2YwMDIxZTEtNGUzNS1jNzgzLTRkYjAtYjE2YzRkZGVmNjcy' | sha256sum
+   printf '%s' 'N2YwMDIxZTEtNGUzNS1jNzgzLTRkYjAtYjE2YzRkZGVmNjcy' | sha256sum | awk '{print "sha256:"$1}'
    ```
 
 3. Create a ConfigMap to store your API key hashes. Each entry represents one valid API key, as a JSON object with a `keyHash` and optional `metadata`. Add a label so that the policy can select the ConfigMap.
@@ -160,7 +160,7 @@ Store your API keys in a Kubernetes secret so that you can reference it in an {{
    kubectl get secret apikey -n {{< reuse "agw-docs/snippets/namespace.md" >}} -oyaml
    ```
 
-4. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that configures API key authentication for all routes that the Gateway serves and reference the `apikey` secret that you created earlier. The following example uses the `Strict` validation mode, which requires request to include a valid `Authorization` header to be authenticated successfully. For other common configuration examples, see [Other configuration examples](#other-configuration-examples).
+4. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource that configures API key authentication for all routes that the Gateway serves and reference the `apikey` secret that you created earlier. The following example uses the `Strict` validation mode, which requires requests to include a valid `Authorization` header to be authenticated successfully. For other common configuration examples, see [Other configuration examples](#other-configuration-examples).
    ```yaml
    kubectl apply -f- <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}

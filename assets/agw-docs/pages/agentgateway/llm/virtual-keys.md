@@ -62,8 +62,8 @@ Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Beca
 1. Generate a `sha256:<hex>` hash for each user's API key. The hash is computed over the exact key bytes, so do not include a trailing newline.
 
    ```sh
-   printf '%s' 'sk-alice-abc123def456' | sha256sum   # alice
-   printf '%s' 'sk-bob-xyz789uvw012' | sha256sum     # bob
+   printf '%s' 'sk-alice-abc123def456' | sha256sum | awk '{print "sha256:"$1}'   # alice
+   printf '%s' 'sk-bob-xyz789uvw012' | sha256sum | awk '{print "sha256:"$1}'     # bob
    ```
 
 2. Create a ConfigMap that stores the hash and metadata for each user. Add a label so that the authentication policy can select the ConfigMap in the next step.
@@ -147,7 +147,7 @@ EOF
 ### Configure API key authentication
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires API key authentication for all requests to the gateway. Use `configMapSelector` to select every ConfigMap that carries the label you added in the previous step. ConfigMap sources are selected by label only, so this also selects a single ConfigMap by its label.
+Create an {{< reuse "agw-docs/snippets/policy.md" >}} that requires API key authentication for all requests to the gateway. Unlike Secrets, which you can reference directly by name, ConfigMaps can be selected only by label. Use `configMapSelector` to match every ConfigMap that carries the label you added in the previous step, whether that is a single ConfigMap or several.
 
 ```yaml,paths="virtual-keys"
 kubectl apply -f- <<EOF
@@ -780,7 +780,7 @@ Provide different budget tiers for free, standard, and premium users.
 1. Add tier metadata to each API key.
 
    {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-   Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum`.
+   Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum | awk '{print "sha256:"$1}'`.
 
    ```yaml
    apiVersion: v1
