@@ -2,9 +2,9 @@
 title: "Semantic Routing, Assembled: agentgateway and vLLM Semantic Router in Practice"
 category: "Deep Dive"
 toc: false
-publishDate: 2026-07-21
+publishDate: 2026-07-28
 author: "Duncan Doyle"
-description: "The previous post showed the cost savings semantic routing can deliver. This one shows how the pieces actually connect: what vLLM Semantic Router is, how agentgateway calls it as an ExtProc, and how to stand up a single-provider routing setup yourself."
+description: "The previous post showed the cost savings semantic routing can deliver. This post shows how the pieces actually connect: what vLLM Semantic Router is, how agentgateway calls it as an ExtProc, and how to stand up a single-provider routing setup yourself."
 ---
 
 In our previous post on semantic routing with Agentgateway and vLLM Semantic Router we focussed on the benefits model selection can bring to agentic systems in terms of costs. We demonstrated that by analysing and classifying each prompt, we can send routine work to cheap models, while keeping the frontier models doing the hard stuff. As a result, workloads can be processed ~40% cheaper, without the model consumer ever having to explicitly pick a model. In that post, we treated the router as a black box: agentgateway sends the received prompt to the router, the router picks a model, agentgateway routes the request to the selected model, processes the response and records the conversation's metrics.
