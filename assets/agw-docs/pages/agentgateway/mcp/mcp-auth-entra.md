@@ -127,15 +127,17 @@ With your MCP backend configured, create an {{< reuse "agw-docs/snippets/policy.
    EOF
    ```
 
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information about the `traffic.jwtAuthentication` field, see the [API docs]({{< link-hextra path="/reference/api/#jwtauthentication" >}}).
+
    | Setting | Description |
    | -- | -- |
-   | `traffic.jwtAuthentication.providers[].issuer` | The Entra token issuer URL. Use the v2 form `https://login.microsoftonline.com/<tenant-id>/v2.0` or the v1 form `https://sts.windows.net/<tenant-id>/`, depending on which version your app registration mints. This value must match the `iss` claim in the token. |
-   | `traffic.jwtAuthentication.providers[].audiences` | The accepted audiences. List both `api://<client-id>` and the bare `<client-id>` to accept the `aud` claim formats that Entra mints for v1 and v2 tokens. |
-   | `traffic.jwtAuthentication.providers[].jwks.remote.backendRef` | The `entra-jwks` backend that points to `login.microsoftonline.com`. |
-   | `traffic.jwtAuthentication.providers[].jwks.remote.jwksPath` | The path to Entra's JWKS endpoint for your tenant. |
-   | `traffic.jwtAuthentication.mcp.provider` | The identity provider. Set to `Entra` to enable the native Entra bridging behavior. |
-   | `traffic.jwtAuthentication.mcp.clientId` | The Application (client) ID of your Entra app registration. Because Entra has no Dynamic Client Registration, agentgateway answers registration requests with this value. |
-   | `traffic.jwtAuthentication.mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
+   | `providers[].issuer` | The Entra token issuer URL. Use the v2 form `https://login.microsoftonline.com/<tenant-id>/v2.0` or the v1 form `https://sts.windows.net/<tenant-id>/`, depending on which version your app registration mints. This value must match the `iss` claim in the token. |
+   | `providers[].audiences` | The accepted audiences. List both `api://<client-id>` and the bare `<client-id>` to accept the `aud` claim formats that Entra mints for v1 and v2 tokens. |
+   | `providers[].jwks.remote.backendRef` | The `entra-jwks` backend that points to `login.microsoftonline.com`. |
+   | `providers[].jwks.remote.jwksPath` | The path to Entra's JWKS endpoint for your tenant. |
+   | `mcp.provider` | The identity provider. Set to `Entra` to enable the native Entra bridging behavior. |
+   | `mcp.clientId` | The Application (client) ID of your Entra app registration. Because Entra has no Dynamic Client Registration, agentgateway answers registration requests with this value. |
+   | `mcp.resourceMetadata` | MCP OAuth resource metadata for discovery. Includes the resource identifier, supported scopes, and bearer token methods. |
 
 2. Verify that the policy was accepted.
    ```sh {paths="setup-entra"}
