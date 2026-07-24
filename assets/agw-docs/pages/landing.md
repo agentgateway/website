@@ -4,7 +4,7 @@
 **New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!
 {{< /callout >}}
 
-{{< reuse-image src="img/architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
+{{< reuse-image src="img/architecture.svg" srcDark="img/architecture-dark.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 
 ## Why agentgateway?
 
