@@ -777,10 +777,8 @@ For more information on cost tracking, see the [cost tracking guide]({{< link-he
 
 Provide different budget tiers for free, standard, and premium users.
 
-1. Add tier metadata to each API key.
-
-   {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-   Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum | awk '{print "sha256:"$1}'`.
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+1. Add tier metadata to each API key. Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum | awk '{print "sha256:"$1}'`.
 
    ```yaml
    apiVersion: v1
@@ -808,10 +806,9 @@ Provide different budget tiers for free, standard, and premium users.
          }
        }
    ```
-   {{< /version >}}
-
-   {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-   Store the keys in a Secret, with one entry per user.
+{{< /version >}}
+{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+1. Add tier metadata to each API key. Store the keys in a Secret, with one entry per user.
 
    ```yaml
    apiVersion: v1
@@ -838,7 +835,7 @@ Provide different budget tiers for free, standard, and premium users.
          }
        }
    ```
-   {{< /version >}}
+{{< /version >}}
 
 2. Configure rate limiting to use the tier and user_id from API key metadata.
 
