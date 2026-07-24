@@ -12,7 +12,7 @@ Review the following information about supported release versions for the [agent
 
 `*` Gateway API versions: The agentgateway project is conformant to the Kubernetes Gateway API specification. For more details, see the [Gateway API docs](https://gateway-api.sigs.k8s.io/docs/implementations/list/#agentgateway) and agentgateway conformance report per version, such as Gateway API [v1.5.0](https://github.com/kubernetes-sigs/gateway-api/tree/main/conformance/reports/v1.5.0/agentgateway-agentgateway).
 
-`†` Agentgateway supports the MCP spec at the listed version. Earlier versions might also work, but are not guaranteed. Make sure that your MCP clients are not running at a more recent version than your MCP servers.
+`†` Agentgateway supports the MCP spec at the listed version. {{< version include-if="latest" >}}Earlier versions might also work, but are not guaranteed. Make sure that your MCP clients are not running at a more recent version than your MCP servers.{{< /version >}}{{< version include-if="main" >}}For more information, see [MCP spec compatibility]({{< link-hextra path="/mcp/spec-compatibility.md" >}}).{{< /version >}}
 
 `‡` Istio versions: Istio must run on a compatible version of Kubernetes. For example, Istio 1.29 is tested, but not supported, on Kubernetes 1.30. For more information, see the [Istio docs](https://istio.io/latest/docs/releases/supported-releases/).
 
