@@ -40,26 +40,27 @@
     </symbol>
 
     <style>
-      .canvas{fill:#fbfbfe}
-      .grid-line{fill:none;stroke:#0f1323;stroke-opacity:.035}
-      .halo-core{stop-opacity:.20}
-      .halo-edge{stop-opacity:.045}
-      .eyebrow{fill:#73798d;font:600 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em}
-      .eyebrow-strong{fill:#2a2f45;font:700 13px Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:.16em}
-      .trace{fill:none;stroke:#0f1323;stroke-opacity:.18;stroke-width:1.25}
+      :root{color-scheme:dark}
+      .canvas{fill:#0b0e18}
+      .grid-line{fill:none;stroke:#fff;stroke-opacity:.025}
+      .halo-core{stop-opacity:.34}
+      .halo-edge{stop-opacity:.08}
+      .eyebrow{fill:#8b90a3;font:600 11px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;letter-spacing:.12em}
+      .eyebrow-strong{fill:#e6e8f2;font:700 13px Inter,ui-sans-serif,system-ui,sans-serif;letter-spacing:.16em}
+      .trace{fill:none;stroke:#fff;stroke-opacity:.16;stroke-width:1.25}
       .trace-accent{fill:none;stroke:#8a3ffc;stroke-opacity:.72;stroke-width:1.5}
-      .node{fill:#fff;stroke:#dee0ee;stroke-opacity:1}
-      .icon-bg{fill:#f6f7fb;fill-opacity:1;stroke:#dee0ee;stroke-opacity:1}
-      .icon{fill:none;stroke:#252a3d;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
-      .icon-fill,.brand{fill:#252a3d;stroke:none}
-      .mcp{fill:none;stroke:#252a3d;stroke-width:14;stroke-linecap:round}
-      .label{fill:#151927;font:500 14px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;dominant-baseline:middle}
-      .sub{fill:#73798d;font:400 10px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;dominant-baseline:middle}
-      .pill{fill:#fff;stroke:#dee0ee;stroke-opacity:1}
-      .pill-label{fill:#151927;font:500 13px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-anchor:middle;dominant-baseline:middle}
-      .leader{fill:none;stroke:#b0b4c8;stroke-opacity:1;stroke-dasharray:2 4}
-      .pin{fill:#0f1323;fill-opacity:.18}
-      .arrow{fill:#73798d}
+      .node{fill:#161b2b;stroke:#fff;stroke-opacity:.13}
+      .icon-bg{fill:#fff;fill-opacity:.045;stroke:#fff;stroke-opacity:.11}
+      .icon{fill:none;stroke:#e8eaf2;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}
+      .icon-fill,.brand{fill:#e8eaf2;stroke:none}
+      .mcp{fill:none;stroke:#e8eaf2;stroke-width:14;stroke-linecap:round}
+      .label{fill:#f5f6fa;font:500 14px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;dominant-baseline:middle}
+      .sub{fill:#9297aa;font:400 10px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;dominant-baseline:middle}
+      .pill{fill:#161b2b;stroke:#fff;stroke-opacity:.16}
+      .pill-label{fill:#f5f6fa;font:500 13px Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-anchor:middle;dominant-baseline:middle}
+      .leader{fill:none;stroke:#fff;stroke-opacity:.22;stroke-dasharray:2 4}
+      .pin{fill:#fff;fill-opacity:.18}
+      .arrow{fill:#8b90a3}
     </style>
   </defs>
 
