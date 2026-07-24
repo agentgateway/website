@@ -48,6 +48,12 @@ versions        = ["main", "latest", "2.2.x", "1.0.x"]
 hugoWarnings = [
   "\\.Site\\.Data was deprecated",
   "'items' parameter of the 'tabs' shortcode is deprecated",
+  # FlexSearch bundle couldn't be fetched from the CDN at build time, so the
+  # theme fell back to a runtime CDN <script> tag instead of failing the build.
+  # This is a transient, network-only CI failure we don't control; the fallback
+  # keeps the site working. The warnf is allowlisted so a blip doesn't turn CI
+  # red, but it stays in the build log as a trace.
+  "FlexSearch: could not fetch .* at build time",
 ]
 
 # NOTE: agw-oss previously allowlisted two Hextra main.min.js null-dereferences
