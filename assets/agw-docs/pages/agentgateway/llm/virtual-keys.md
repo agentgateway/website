@@ -58,6 +58,8 @@ Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Beca
 
 > [!IMPORTANT]
 > ConfigMaps with hashed keys (as opposed to Secrets) are the recommended way to store virtual keys. If you need to use Kubernetes Secrets, refer to the [API key authentication guide]({{< link-hextra path="/security/apikey/" >}}) for an example.
+>
+> Already storing virtual keys in a Secret? Instead of recreating them by hand, use the [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) command to convert your existing Secrets into the recommended ConfigMap format.
 
 1. Generate a `sha256:<hex>` hash for each user's API key. The hash is computed over the exact key bytes, so do not include a trailing newline.
 
@@ -94,6 +96,9 @@ Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Beca
        }
    EOF
    ```
+
+   > [!TIP]
+   > If you already store virtual keys in a Kubernetes Secret, you do not have to build this ConfigMap by hand. Use the [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) command to generate an equivalent ConfigMap (with hashed keys) from your existing Secrets, for example `agctl migrate --apply virtualkeys-to-configmap -n {{< reuse "agw-docs/snippets/namespace.md" >}} | kubectl apply -f -`.
 
    {{% reuse "agw-docs/snippets/review-table.md" %}}
 
