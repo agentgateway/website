@@ -2,6 +2,17 @@
 title: Virtual models
 weight: 30
 description: Publish one client-facing model name and route requests across several models with weighted, failover, or conditional routing.
+test:
+  virtual-models:
+  - file: ${versionRoot}/quickstart/install.md
+    path: experimental
+  - file: ${versionRoot}/setup/gateway.md
+    path: all
+  - file: ${versionRoot}/llm/providers/httpbun.md
+    path: setup-httpbun-llm
+  - file: ${versionRoot}/llm/models/serve.md
+    path: serve-model
+  - path: virtual-models
 ---
 
 Publish one client-facing model name and route requests across several models.
@@ -94,6 +105,28 @@ Example output:
 {"error":{"message":"Model not found","type":"invalid_request_error","code":"model_not_found"}}
 ```
 
+{{< doc-test paths="virtual-models" >}}
+YAMLTest -f - <<'EOF'
+- name: internal models cannot be requested directly
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+    method: POST
+    headers:
+      Content-Type: application/json
+    body: |
+      {"model": "internal-fast", "messages": []}
+  source:
+    type: local
+  retries: 3
+  expect:
+    statusCode: 404
+    bodyJsonPath:
+      - path: "$.error.code"
+        comparator: equals
+        value: "model_not_found"
+EOF
+{{< /doc-test >}}
+
 ## Split traffic with weighted routing
 
 Use `virtualModel.weighted` to distribute requests across targets by relative weight.
@@ -153,6 +186,35 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
      14 "model":"resolved-internal-premium"
    ```
 
+   {{< doc-test paths="virtual-models" >}}
+   for i in $(seq 1 60); do
+     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
+       -H "Content-Type: application/json" \
+       -d '{"model":"balanced","messages":[],"httpbun":{"content":"warmup"}}' && break
+     sleep 2
+   done
+
+   YAMLTest -f - <<'EOF'
+   - name: weighted virtual model resolves to one of its targets
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         Content-Type: application/json
+       body: |
+         {"model": "balanced", "messages": [], "httpbun": {"content": "hi"}}
+     source:
+       type: local
+     retries: 3
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.model"
+           comparator: contains
+           value: "resolved-internal-"
+   EOF
+   {{< /doc-test >}}
+
 ## Choose a model by request context
 
 Use `virtualModel.conditional` to select a target with a CEL expression. Targets are evaluated in order, and the first match wins.
@@ -205,6 +267,36 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
    {"model":"resolved-internal-premium","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
+   {{< doc-test paths="virtual-models" >}}
+   for i in $(seq 1 60); do
+     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
+       -H "Content-Type: application/json" -H "x-model-tier: premium" \
+       -d '{"model":"smart","messages":[],"httpbun":{"content":"warmup"}}' && break
+     sleep 2
+   done
+
+   YAMLTest -f - <<'EOF'
+   - name: conditional routing selects the premium target on a matching header
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         Content-Type: application/json
+         x-model-tier: premium
+       body: |
+         {"model": "smart", "messages": [], "httpbun": {"content": "hi"}}
+     source:
+       type: local
+     retries: 3
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.model"
+           comparator: equals
+           value: "resolved-internal-premium"
+   EOF
+   {{< /doc-test >}}
+
 3. Send a request without the header. The fallback target serves it.
 
    ```sh
@@ -218,6 +310,28 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
    ```json
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
+
+   {{< doc-test paths="virtual-models" >}}
+   YAMLTest -f - <<'EOF'
+   - name: conditional routing falls back when no condition matches
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         Content-Type: application/json
+       body: |
+         {"model": "smart", "messages": [], "httpbun": {"content": "hi"}}
+     source:
+       type: local
+     retries: 3
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.model"
+           comparator: equals
+           value: "resolved-internal-fast"
+   EOF
+   {{< /doc-test >}}
 
 ## Fail over when a model degrades
 
@@ -320,6 +434,46 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
    {"model":"resolved-internal-fast","usage":{"prompt_tokens":0,"completion_tokens":1,"total_tokens":1},"choices":[{"message":{"content":"hi","role":"assistant"},"finish_reason":"stop","index":0}],"object":"chat.completion"}
    ```
 
+   {{< doc-test paths="virtual-models" >}}
+   # Wait until the virtual model is served at all. The priority 0 target is
+   # unreachable, so this request is expected to fail; only the fact that the
+   # gateway answers matters here.
+   for i in $(seq 1 60); do
+     curl -s --max-time 5 -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
+       -H "Content-Type: application/json" \
+       -d '{"model":"resilient","messages":[],"httpbun":{"content":"warmup"}}' && break
+     sleep 2
+   done
+
+   # This request evicts the unreachable priority 0 target. It fails by design,
+   # so it is not asserted.
+   curl -s -o /dev/null -X POST "http://${INGRESS_GW_ADDRESS}/v1/chat/completions" \
+     -H "Content-Type: application/json" \
+     -d '{"model":"resilient","messages":[],"httpbun":{"content":"trigger"}}'
+
+   sleep 2
+
+   YAMLTest -f - <<'EOF'
+   - name: failover routes to the next priority group after eviction
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         Content-Type: application/json
+       body: |
+         {"model": "resilient", "messages": [], "httpbun": {"content": "hi"}}
+     source:
+       type: local
+     retries: 3
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.model"
+           comparator: equals
+           value: "resolved-internal-fast"
+   EOF
+   {{< /doc-test >}}
+
    > [!WARNING]
    > Failover is not a per-request retry. The request that triggers eviction still fails and returns an error to the client, and only later requests route to the next priority group. Evicted targets are restored after the eviction duration expires. To retry a failed request, configure a retry policy on the Gateway with an {{< reuse "agw-docs/snippets/policy.md" >}}.
 
@@ -343,6 +497,27 @@ Example output:
   "object": "list"
 }
 ```
+
+{{< doc-test paths="virtual-models" >}}
+YAMLTest -f - <<'EOF'
+- name: discovery lists virtual models and hides internal targets
+  http:
+    url: "http://${INGRESS_GW_ADDRESS}/v1/models"
+    method: GET
+  source:
+    type: local
+  retries: 3
+  expect:
+    statusCode: 200
+    bodyJsonPath:
+      - path: "$.data[*].id"
+        comparator: contains
+        value: "balanced"
+      - path: "$.data[*].id"
+        comparator: contains
+        value: "resilient"
+EOF
+{{< /doc-test >}}
 
 ## Cleanup
 
