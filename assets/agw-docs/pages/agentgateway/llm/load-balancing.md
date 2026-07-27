@@ -1,6 +1,6 @@
 Distribute requests across multiple LLM providers automatically (also known as Power of Two Choices, or P2C).
 
-{{< version include-if="1.4.x" >}}
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
 > **Model-centric alternative**: To split traffic across models by weight, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
 {{< /version >}}
