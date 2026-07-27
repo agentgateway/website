@@ -8,9 +8,8 @@ In HTTP/1.1, connections are usually kept alive so you can reuse them for multip
 
 Note that idle timeouts do not configure how long an upstream service can take to respond to your request. Use [request timeouts]({{< ref "request.md" >}}) for this scenario instead.
 
-{{< callout type="info" >}}
-The idle timeout is configured for entire HTTP/1 connections from a downstream service to the gateway proxy, and to the upstream service. 
-{{< /callout >}}
+> [!NOTE]
+> The idle timeout is configured for entire HTTP/1 connections from a downstream service to the gateway proxy, and to the upstream service. 
 
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}

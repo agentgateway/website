@@ -120,9 +120,8 @@ EOF
 kill $AGW_CUSTOM_PID 2>/dev/null || true
 {{< /doc-test >}}
 
-{{< callout type="info" >}}
-If you change <code>adminAddr</code>, update any agentgateway admin API commands to use the new address. For example, change <code>curl http://localhost:15000/logging</code> to use the new port.
-{{< /callout >}}
+> [!NOTE]
+> If you change <code>adminAddr</code>, update any agentgateway admin API commands to use the new address. For example, change <code>curl http://localhost:15000/logging</code> to use the new port.
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 ## Secure the Admin UI {#secure-admin-ui}

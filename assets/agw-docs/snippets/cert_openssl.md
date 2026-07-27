@@ -1,4 +1,7 @@
-{{< callout type="info" >}} The default `openssl` version that is included in macOS is LibreSSL, which does not work with these instructions. Make sure that you have the OpenSSL version of `openssl`, not LibreSSL. {{< /callout >}} The `openssl` version must be at least 1.1.
+> [!NOTE]
+> The default `openssl` version that is included in macOS is LibreSSL, which does not work with these instructions. Make sure that you have the OpenSSL version of `openssl`, not LibreSSL.
+
+The `openssl` version must be at least 1.1.
    1. Check your `openssl` version. If you see **LibreSSL** in the output, continue to the next step.
       ```shell
       openssl version

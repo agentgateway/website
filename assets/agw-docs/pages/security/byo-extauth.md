@@ -34,17 +34,15 @@ sequenceDiagram
 
 {{< reuse "agw-docs/snippets/agw-prereq-llm.md" >}}
 
-{{< callout type="info" >}}
-Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server, agents, and Kubernetes services. Make sure to adjust these steps to apply to your {{< reuse "agw-docs/snippets/backend.md" >}} type or Kubernetes service.
-{{< /callout >}}
+> [!NOTE]
+> Note that this guide assumes that you want to apply the policy to the OpenAI LLM provider. You can use other LLM providers or apply external auth to an MCP server, agents, and Kubernetes services. Make sure to adjust these steps to apply to your {{< reuse "agw-docs/snippets/backend.md" >}} type or Kubernetes service.
 
 ## Deploy your own external authorization service {#byo-ext-auth}
 
 Deploy your own external authorization service as a backend service that is accessible to your agentgateway proxy.
 
-{{< callout type="info" >}}
-Keep in mind that your external authorization service must conform to the [Envoy external auth proto](https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/auth/v3/external_auth.proto). The external authorization service also configures the conditions for authorizing a request, such as the inclusion of a certain header or other credentials.
-{{< /callout >}}
+> [!NOTE]
+> Keep in mind that your external authorization service must conform to the [Envoy external auth proto](https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/auth/v3/external_auth.proto). The external authorization service also configures the conditions for authorizing a request, such as the inclusion of a certain header or other credentials.
 
 1. Deploy your external authorization service. The following example uses the [Istio external authorization service](https://github.com/istio/istio/tree/master/samples/extauthz) for quick testing purposes. This service is configured to allow requests with the `x-ext-authz: allow` header.
 

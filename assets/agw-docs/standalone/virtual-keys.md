@@ -36,9 +36,8 @@ flowchart TD
 
 {{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 
-{{< callout type="info" >}}
-You can manage virtual keys two ways: interactively in the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
-{{< /callout >}}
+> [!NOTE]
+> You can manage virtual keys two ways: interactively in the built-in [Admin UI]({{< link-hextra path="/operations/ui/" >}}), or declaratively in your config file. The UI is convenient for exploring and one-off changes. The config file is the source of truth for GitOps workflows.
 
 ## Set up virtual keys (Admin UI)
 
@@ -219,9 +218,8 @@ EOF
 
 LLMs typically charge per input and output token. Without spending control, users can quickly generate large bills by submitting long prompts, streaming or retrying requests, or running recursive agent loops. To protect against unexpected bills, scaling surprises, and abuse, use token-based rate limits to cap the number of tokens that can be used.
 
-{{< callout type="warning" >}}
-`localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
-{{< /callout >}}
+> [!WARNING]
+> `localRateLimit` is a **gateway-wide** limit, not a per-key limit. It enforces a single shared token budget across **all** requests and API keys.
 
 ### How rate limiting works
 
@@ -284,9 +282,8 @@ EOF
 
 2. Send a prompt to the LLM. At the time the prompt is sent, the number of tokens required for the completion is unknown. Make sure to include a virtual key in the authorization header. Because `tokenize: true` is not set on the model, the prompt count is not estimated. As a result, the prompt is allowed.
 
-   {{< callout type="info">}}
-   The LLM typically returns the number of tokens required for completion in its response. Agentgateway uses this number and counts it against the rate limit.
-   {{< /callout >}}
+   > [!NOTE]
+   > The LLM typically returns the number of tokens required for completion in its response. Agentgateway uses this number and counts it against the rate limit.
 
    ```sh
    curl http://localhost:4000/v1/chat/completions \
@@ -492,9 +489,8 @@ The raw curl output in the previous step is a quick sanity check, but it returns
    EOF
    ```
 
-   {{< callout type="info" >}}
-   Use `host.docker.internal:15020` when you run Prometheus in Docker, as in the next step. If you run the Prometheus binary directly on your machine, use `localhost:15020` instead.
-   {{< /callout >}}
+   > [!NOTE]
+   > Use `host.docker.internal:15020` when you run Prometheus in Docker, as in the next step. If you run the Prometheus binary directly on your machine, use `localhost:15020` instead.
 
 2. Start Prometheus with this configuration.
 

@@ -24,17 +24,15 @@ To learn more about how to use CEL, refer to the following resources:
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 - [Agentgateway reference docs](https://agentgateway.dev/docs/standalone/latest/reference/cel/)
 
-{{< callout type="info" >}}
-Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
-{{< /callout >}}
+> [!NOTE]
+> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
 
 ### Header transformation
 
 You can add, set, or remove request and response headers with agentgateway's transformation policies. 
 
-{{< callout type="info" >}}
-To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
-{{< /callout >}}
+> [!NOTE]
+> To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 
 #### Route-level header transformation
 
@@ -348,9 +346,8 @@ agentgateway -f config2-mcp.yaml --validate-only
 
 You can provide a custom body for a request or response. 
 
-{{< callout type="info" >}}
-To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
-{{< /callout >}}
+> [!NOTE]
+> To provide a specific string value, add your string in single quotes `'` followed by double quotes `"`. This way, the string is interpreted as a string value. If you provide the value without quotes or with double quotes only, it is interpreted as a CEL expression. 
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}

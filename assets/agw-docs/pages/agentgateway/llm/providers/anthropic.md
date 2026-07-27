@@ -249,9 +249,8 @@ Configure [Anthropic (Claude)](https://claude.ai/login) as an LLM provider in {{
 
 Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
 
-{{< callout type="info" >}}
-Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
-{{< /callout >}}
+> [!NOTE]
+> Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
 
 {{< tabs >}}
 {{% tab name="Anthropic v1/messages" %}}
@@ -606,9 +605,8 @@ Example output:
 [Claude Platform on AWS](https://docs.aws.amazon.com/claude-platform/latest/userguide/welcome.html) hosts Anthropic's native Messages API on AWS infrastructure at `aws-external-anthropic.{region}.api.aws`. Because the API is the same Anthropic Messages API, you point the `anthropic` provider at the AWS endpoint and choose either API-key or AWS SigV4 authentication.
 
 <!--TODO 1.3 release -->
-{{< callout type="info" >}}
-Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/install/">}}).
-{{< /callout >}}
+> [!NOTE]
+> Before you begin, [install agentgateway with the nightly build]({{< link-hextra path="/quickstart/install/">}}).
 
 {{< tabs >}}
 {{% tab name="API key" %}}

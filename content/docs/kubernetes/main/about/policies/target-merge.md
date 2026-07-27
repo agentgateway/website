@@ -9,9 +9,8 @@ test: skip
 
 Each policy section can only target specific Kubernetes resource types. If you set a `targetRef` or `targetSelector` to an invalid resource type for the policy section, the Kubernetes API server rejects the request with a validation error. Invalid targeting is **not** silently ignored.
 
-{{< callout type="info">}}
-A single {{< reuse "agw-docs/snippets/policy.md" >}} can only target one kind of resource. For example, you cannot target both a Gateway and an HTTPRoute in the same policy. All entries in `targetRefs` or `targetSelectors` must reference the same `kind`.
-{{< /callout >}}
+> [!NOTE]
+> A single {{< reuse "agw-docs/snippets/policy.md" >}} can only target one kind of resource. For example, you cannot target both a Gateway and an HTTPRoute in the same policy. All entries in `targetRefs` or `targetSelectors` must reference the same `kind`.
 
 ### Targeting rules
 

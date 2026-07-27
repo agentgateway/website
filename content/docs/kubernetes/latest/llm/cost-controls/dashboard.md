@@ -14,9 +14,8 @@ Two pieces of configuration power the dashboard:
 - A request-log database (`config.database`). The Kubernetes {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource has no typed field for it, so you set it through `rawConfig`, which merges raw agentgateway configuration into the proxy's config file. Point it at a writable path in the pod, such as the `/tmp` volume.
 - A [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) (`spec.modelCatalog`) so requests are priced. Without a catalog, the dashboard still shows token and call volume, but the cost is `0`.
 
-{{< callout type="warning" >}}
-The `/tmp` path is an ephemeral `emptyDir`, so the request-log history is per-pod and is lost when the pod restarts or scales. For durable history, back `config.database` with a persistent volume, and note that each replica keeps its own local database.
-{{< /callout >}}
+> [!WARNING]
+> The `/tmp` path is an ephemeral `emptyDir`, so the request-log history is per-pod and is lost when the pod restarts or scales. For durable history, back `config.database` with a persistent volume, and note that each replica keeps its own local database.
 
 ## Enable the dashboard
 
@@ -89,9 +88,8 @@ Every request that flows through the proxy is now recorded and priced. Port-forw
    {{< reuse-image-light src="img/agentgateway-ui-kube-cost-dashboard.png" alt="agentgateway Analytics cost dashboard in the Kubernetes Admin UI" >}}
    {{< reuse-image-dark srcDark="img/agentgateway-ui-kube-cost-dashboard-dark.png" alt="agentgateway Analytics cost dashboard in the Kubernetes Admin UI" >}}
 
-{{< callout type="info" >}}
-In Kubernetes (xds) mode the Admin UI is read-only. You view the dashboard, but you manage configuration through Kubernetes resources rather than the UI.
-{{< /callout >}}
+> [!NOTE]
+> In Kubernetes (xds) mode the Admin UI is read-only. You view the dashboard, but you manage configuration through Kubernetes resources rather than the UI.
 
 ### Group by and measure
 

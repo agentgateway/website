@@ -13,9 +13,8 @@ Agentgateway offers two ways to configure LLM providers, each optimized for diff
 
 Use this decision tree to choose the right configuration mode.
 
-{{< callout type="info" >}}
-You can use both configuration modes in the same file if needed, but typically one mode is sufficient for most use cases.
-{{< /callout >}}
+> [!NOTE]
+> You can use both configuration modes in the same file if needed, but typically one mode is sufficient for most use cases.
 
 | Question | Answer | Recommendation |
 |----------|--------|----------------|

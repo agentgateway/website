@@ -4,9 +4,8 @@ If you no longer need your {{< reuse "/agw-docs/snippets/kgateway.md" >}} enviro
 
 Remove the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane and gateway proxies.
 
-{{< callout type="info" >}}
-Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Skip to the [Argo CD steps](#argocd). For Flux installations, skip to the [Flux steps](#flux).
-{{< /callout >}}
+> [!NOTE]
+> Did you use Argo CD to install {{< reuse "/agw-docs/snippets/kgateway.md" >}}? Skip to the [Argo CD steps](#argocd). For Flux installations, skip to the [Flux steps](#flux).
 
 1. Get all HTTP routes in your environment. 
    

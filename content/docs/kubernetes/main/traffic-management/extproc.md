@@ -242,9 +242,8 @@ EOF
 
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processor, and streams request and response bodies. To change which request or response phases are sent to the external processor, configure `traffic.extProc.processingOptions`.
 
-{{< callout type="info" >}}
-The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the 8KB buffer limit.
-{{< /callout >}}
+> [!NOTE]
+> The default body mode is `FullDuplexStreamed`. If the external processor must inspect a complete body before the gateway forwards it, use `Buffered` or `BufferedPartial` and account for the 8KB buffer limit.
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |

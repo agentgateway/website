@@ -1,8 +1,7 @@
 Configure [Ollama](https://ollama.com/) to serve local models through {{< reuse "agw-docs/snippets/kgateway.md" >}}. Ollama runs on a machine outside your cluster, and agentgateway routes requests to it over the network.
 
-{{< callout type="info" >}}
-In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider: ollama` and automatically fills `params.baseUrl: http://localhost:11434/v1`. The current Kubernetes `AgentgatewayBackend` API still uses `ai.provider.openai` for Ollama's OpenAI-compatible `/v1/chat/completions` endpoint, so the examples below use that shape.
-{{< /callout >}}
+> [!NOTE]
+> In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider: ollama` and automatically fills `params.baseUrl: http://localhost:11434/v1`. The current Kubernetes `AgentgatewayBackend` API still uses `ai.provider.openai` for Ollama's OpenAI-compatible `/v1/chat/completions` endpoint, so the examples below use that shape.
 
 ## Before you begin
 
@@ -31,9 +30,8 @@ In standalone mode, agentgateway 1.3 supports the first-class shortcut `provider
    export OLLAMA_HOST=0.0.0.0:11434
    ```
 
-   {{< callout type="warning" >}}
-   Binding Ollama to `0.0.0.0` exposes it on all network interfaces. Use firewall rules to restrict access to your Kubernetes cluster nodes only.
-   {{< /callout >}}
+   > [!WARNING]
+   > Binding Ollama to `0.0.0.0` exposes it on all network interfaces. Use firewall rules to restrict access to your Kubernetes cluster nodes only.
 
 3. Restart Ollama to apply the new setting.
 

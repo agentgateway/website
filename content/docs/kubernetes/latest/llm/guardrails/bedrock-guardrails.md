@@ -88,9 +88,8 @@ AWS Bedrock Guardrails are model-agnostic and can be applied to any Large Langua
    EOF
    ```
 
-   {{< callout type="info" >}}
-   The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
-   {{< /callout >}}
+   > [!NOTE]
+   > The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
 
 
 5. Test the guardrail. The following commands assume that you set up your guardrail to block requests that contain email information. 

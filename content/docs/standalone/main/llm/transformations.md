@@ -15,9 +15,8 @@ To learn more about CEL, see the following resources:
 - [CEL expression reference]({{< link-hextra path="/reference/cel/" >}})
 - [cel.dev tutorial](https://cel.dev/tutorials/cel-get-started-tutorial)
 
-{{< callout type="info" >}}
-Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
-{{< /callout >}}
+> [!NOTE]
+> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
 
 ## Before you begin
 
@@ -49,9 +48,8 @@ Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/
    | -- | -- |
    | `transformation` | A map of LLM request field names to CEL expressions. Each key is the field to set; each value is a CEL expression evaluated against the original request. Use the `llmRequest` variable to access the original LLM request body. |
 
-   {{< callout type="info" >}}
-   You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
-   {{< /callout >}}
+   > [!NOTE]
+   > You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
 
 2. Run the agentgateway.
    ```sh

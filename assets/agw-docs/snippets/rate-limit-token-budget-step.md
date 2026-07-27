@@ -37,9 +37,8 @@ spec:
 EOF
 ```
 
-{{< callout type="info" >}}
-This example keeps the `configMapSelector` authentication from the previous step. If you used `secretRef` or `secretSelector` instead, keep that block in place of `configMapSelector`.
-{{< /callout >}}
+> [!NOTE]
+> This example keeps the `configMapSelector` authentication from the previous step. If you used `secretRef` or `secretSelector` instead, keep that block in place of `configMapSelector`.
 {{< /version >}}
 
 {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
@@ -76,9 +75,8 @@ spec:
 EOF
 ```
 
-{{< callout type="info" >}}
-This example keeps the `secretRef` authentication from the previous step. If you used `secretSelector` instead, keep your `secretSelector` block in place of `secretRef`.
-{{< /callout >}}
+> [!NOTE]
+> This example keeps the `secretRef` authentication from the previous step. If you used `secretSelector` instead, keep your `secretSelector` block in place of `secretRef`.
 {{< /version >}}
 
 {{< doc-test paths="virtual-keys-with-ratelimit" >}}

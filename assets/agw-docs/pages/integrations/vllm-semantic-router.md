@@ -30,9 +30,8 @@ The vSR and agentgateway projects provide complementary guides. Choose the one t
 
 The vSR deployment guide owns the installation, Helm values, and semantic-router configuration. The agentgateway example owns the cost-routing policy and runnable gateway resources. Keeping those details with their projects avoids version drift in this integration overview.
 
-{{< callout type="info" >}}
-Current vSR examples require agentgateway 1.3.0 or later for the external-processing options that control request streaming and mode overrides.
-{{< /callout >}}
+> [!NOTE]
+> Current vSR examples require agentgateway 1.3.0 or later for the external-processing options that control request streaming and mode overrides.
 
 ## Integration considerations
 

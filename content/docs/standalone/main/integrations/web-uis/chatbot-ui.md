@@ -69,19 +69,18 @@ The following table describes each environment variable:
 | `OPENAI_API_HOST` | The base URL of the agentgateway proxy. |
 | `OPENAI_API_KEY` | Must be non-empty for Chatbot UI to start, but it is not used to call OpenAI — agentgateway holds the real key. |
 
-{{< callout type="info" >}}
-If you run Chatbot UI via Docker, replace `localhost` with `host.docker.internal` so the container can reach agentgateway on your host machine:
-
-```sh
-docker run --rm -p 3000:3000 \
-  --add-host=host.docker.internal:host-gateway \
-  -e OPENAI_API_KEY=placeholder \
-  -e OPENAI_API_HOST=http://host.docker.internal:3001 \
-  ghcr.io/mckaywrigley/chatbot-ui:main
-```
-
-The `--add-host` flag ensures `host.docker.internal` resolves correctly on Linux.
-{{< /callout >}}
+> [!NOTE]
+> If you run Chatbot UI via Docker, replace `localhost` with `host.docker.internal` so the container can reach agentgateway on your host machine:
+>
+> ```sh
+> docker run --rm -p 3000:3000 \
+>   --add-host=host.docker.internal:host-gateway \
+>   -e OPENAI_API_KEY=placeholder \
+>   -e OPENAI_API_HOST=http://host.docker.internal:3001 \
+>   ghcr.io/mckaywrigley/chatbot-ui:main
+> ```
+>
+> The `--add-host` flag ensures `host.docker.internal` resolves correctly on Linux.
 
 If you are running a Supabase-backed build of Chatbot UI, the equivalent variable is the OpenAI base URL field in the user **Settings** screen; set it to `http://localhost:3001/v1`.
 

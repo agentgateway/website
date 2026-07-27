@@ -38,13 +38,11 @@ sequenceDiagram
 
 First, deploy your own external authorization service as a backend service that is accessible to kgateway. To do so, you configure a custom GatewayExtension resource that points to your external authorization service via gRPC.
 
-{{< callout type="info" >}}
-Keep in mind that your external authorization service must conform to the [Envoy external auth proto](https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/auth/v3/external_auth.proto). The external authorization service also configures the conditions for authorizing a request, such as the inclusion of a certain header or other credentials.
-{{< /callout >}}
+> [!NOTE]
+> Keep in mind that your external authorization service must conform to the [Envoy external auth proto](https://github.com/envoyproxy/envoy/blob/main/api/envoy/service/auth/v3/external_auth.proto). The external authorization service also configures the conditions for authorizing a request, such as the inclusion of a certain header or other credentials.
 
-{{< callout type="info" >}}
-Note that in the following example, resources are created in the same namespace to simplify setup. For example, the external auth service and GatewayExtension are in the same `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace, and the {{< reuse "agw-docs/snippets/policy.md" >}}, HTTPRoute, and backing Service for the sample app are in the same `httpbin` namespace. To create the resources in different namespaces, make sure that you set up a [Kubernetes ReferenceGrant](https://gateway-api.sigs.k8s.io/api-types/referencegrant/) from the GatewayExtension to the Services that back the external auth service. 
-{{< /callout >}}
+> [!NOTE]
+> Note that in the following example, resources are created in the same namespace to simplify setup. For example, the external auth service and GatewayExtension are in the same `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace, and the {{< reuse "agw-docs/snippets/policy.md" >}}, HTTPRoute, and backing Service for the sample app are in the same `httpbin` namespace. To create the resources in different namespaces, make sure that you set up a [Kubernetes ReferenceGrant](https://gateway-api.sigs.k8s.io/api-types/referencegrant/) from the GatewayExtension to the Services that back the external auth service. 
 
 1. Deploy your external authorization service. The following example uses the [Istio external authorization service](https://github.com/istio/istio/tree/master/samples/extauthz) for quick testing purposes. This service is configured to allow requests with the `x-ext-authz: allow` header.
 

@@ -46,9 +46,8 @@ binds:
           key: "$OPENAI_API_KEY"
 ```
 
-{{< callout type="info" >}}
-For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
 
 ## Using the API
 
@@ -74,9 +73,8 @@ curl 'http://localhost:4000/v1/chat/completions' \
 {{% /tab %}}
 {{% tab name="Python" %}}
 
-{{< callout type="info" >}}
-The `api_key` parameter is required in the OpenAI library. Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
-{{< /callout >}}
+> [!NOTE]
+> The `api_key` parameter is required in the OpenAI library. Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
 
 ```python
 import openai
