@@ -20,29 +20,11 @@ For more details, check out the [release blog](https://agentgateway.dev/blog/202
 
 Agentgateway now builds against Gateway API v1.6, and the controller uses the `v1` version of `TCPRoute` instead of `v1alpha2`. Re-apply the Gateway API CRDs that match this release before you upgrade, and update any automation that references `TCPRoute` by its `v1alpha2` version.
 
-### Backend TLS `insecureSkipVerify` is now an enum
-
-<!-- ref: insecureSkipVerify changed from a boolean to an All/Hostname enum -->
-
-The `insecureSkipVerify` field on backend TLS policies changed from a boolean to an enum. Replace `insecureSkipVerify: true` with `insecureSkipVerify: All` to skip all verification, or `insecureSkipVerify: Hostname` to skip only hostname verification.
-
 ### MCP request-phase guardrail rejections return HTTP 200
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2331 -->
 
 When an MCP guardrail rejects a request during the request phase, agentgateway now returns the rejection as an HTTP 200 with a JSON-RPC error body, matching the existing response-phase behavior. Update any clients or tests that expected a non-200 status for request-phase rejections.
-
-### `auth.location` no longer nests `expression`
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2411 -->
-
-The `auth.location` configuration no longer uses a double-nested `expression` field. Update any policies that set a custom token location to use the flattened form.
-
-### musl container images removed
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2574 -->
-
-The `musl`-based container image variants are no longer published. Switch to the standard (glibc) images.
 
 ## 🌟 New features {#v14-new-features}
 
@@ -151,22 +133,35 @@ The controller supports `metadataContext`, `requestAttributes`, and `responseAtt
 
 ### LLM gateway enhancements
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2173 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2548 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2384 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2444 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2455 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2571 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2251 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2023 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2539 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2301 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2190 -->
 
-- **Frontend TLS with multiple CAs**: Client certificate validation can trust multiple CAs.
 - **Bedrock**: Added Responses-to-Bedrock image translation, sanitized tool names that exceed the 64-character Converse limit, and propagated cache-write tokens to the access log.
 - **Gemini**: Fixed embeddings handling and `generateContent` model and usage extraction in detect mode.
-- **A2A v1.0**: Support for the A2A v1.0 agent card format in URL rewriting.
+- **Vertex AI**: Gemini requests use the native `generateContent` and `streamGenerateContent` endpoints, and `rawPredict` requests are rewritten for any publisher, not only Anthropic.
 - **Azure AI Foundry**: Support for Anthropic endpoints on Foundry.
+- **Detect mode and audio**: Fixed the detect-mode and audio endpoint paths.
 
 For the list of supported providers, see the [LLM providers]({{< link-hextra path="/llm/providers/" >}}) docs.
+
+### A2A v1.0 agent cards
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2251 -->
+
+Agentgateway supports the A2A v1.0 agent card format when it rewrites agent card URLs. For more information, see the [A2A]({{< link-hextra path="/agent/a2a/" >}}) docs.
+
+### Frontend TLS with multiple CAs
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2173 -->
+
+Frontend TLS client certificate validation can trust multiple CAs, so you can rotate or federate client CAs without downtime. For the available fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
 
 ### Deployment and operations
 

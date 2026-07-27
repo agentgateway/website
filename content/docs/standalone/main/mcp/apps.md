@@ -1,6 +1,6 @@
 ---
 title: MCP Apps
-weight: 14
+weight: 25
 description: Serve interactive MCP Apps (UI resources) through agentgateway, including across federated MCP servers.
 test: skip
 ---

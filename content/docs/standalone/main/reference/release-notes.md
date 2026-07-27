@@ -13,12 +13,6 @@ For more details, check out the [release blog](https://agentgateway.dev/blog/202
 
 ## 🔥 Breaking changes {#v14-breaking-changes}
 
-### Backend TLS `insecureSkipVerify` is now an enum
-
-<!-- ref: insecureSkipVerify changed from a boolean to an All/Hostname enum -->
-
-The `insecureSkipVerify` field on backend TLS configuration changed from a boolean to an enum. Replace `insecureSkipVerify: true` with `insecureSkipVerify: All` to skip all verification, or `insecureSkipVerify: Hostname` to skip only hostname verification.
-
 ### MCP request-phase guardrail rejections return HTTP 200
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2331 -->
@@ -154,15 +148,24 @@ External processing (`extProc`) supports a `failureMode` for fail-open or fail-c
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2444 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2455 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2571 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2251 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2023 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2539 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2301 -->
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2190 -->
 
 - **Bedrock**: Added Responses-to-Bedrock image translation, sanitized tool names that exceed the 64-character Converse limit, and propagated cache-write tokens to the access log.
 - **Gemini**: Fixed embeddings handling and `generateContent` model and usage extraction in detect mode.
-- **A2A v1.0**: Support for the A2A v1.0 agent card format in URL rewriting.
+- **Vertex AI**: Gemini requests use the native `generateContent` and `streamGenerateContent` endpoints, and `rawPredict` requests are rewritten for any publisher, not only Anthropic.
 - **Azure AI Foundry**: Support for Anthropic endpoints on Foundry.
+- **Detect mode and audio**: Fixed the detect-mode and audio endpoint paths.
 
 For the list of supported providers, see the [LLM providers]({{< link-hextra path="/llm/providers/" >}}) docs.
+
+### A2A v1.0 agent cards
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2251 -->
+
+Agentgateway supports the A2A v1.0 agent card format when it rewrites agent card URLs. For more information, see the [A2A]({{< link-hextra path="/agent/a2a/" >}}) docs.
 
 ### Operations and packaging
 
