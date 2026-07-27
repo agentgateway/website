@@ -155,20 +155,34 @@ EOF
    EOF
    ```
 
-   {{< callout type="info" >}}
-   **Failure mode**: By default, agentgateway uses `FailClosed` behavior, which means that if any MCP target fails to initialize or becomes unavailable during a fanout, the entire session fails. To allow the gateway to skip failed targets and continue serving from the healthy ones, set the `failureMode` field to `FailOpen` on the {{< reuse "agw-docs/snippets/backend.md" >}}:
+   > [!NOTE]
+   > **Failure mode**: By default, agentgateway uses `FailClosed` behavior, which means that if any MCP target fails to initialize or becomes unavailable during a fanout, the entire session fails. To allow the gateway to skip failed targets and continue serving from the healthy ones, set the `failureMode` field to `FailOpen` on the {{< reuse "agw-docs/snippets/backend.md" >}}:
+   > 
+   > ```yaml
+   > 
+   > spec:
+   >   mcp:
+   >     failureMode: FailOpen
+   >     targets:
+   >       ...
+   > ```
+   >
+   > With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
 
-   ```yaml
-   
-   spec:
-     mcp:
-       failureMode: FailOpen
-       targets:
-         ...
-   ```
-
-   With `FailOpen`, if one MCP server is down, the gateway still serves tools from the remaining healthy servers. If all targets fail, the gateway returns an error.
-   {{< /callout >}}
+   > [!NOTE]
+   > **Tool name prefixing**: When multiplexing, agentgateway namespaces tool and prompt names with the target name so that identical names from different servers do not collide. Resource URIs always retain target routing information and are unaffected. Control this behavior with the `prefixMode` field on the {{< reuse "agw-docs/snippets/backend.md" >}}:
+   > 
+   > * `Conditional` (default): Prefix names only when the backend has more than one target.
+   > * `Always`: Always prefix names, even with a single target.
+   > * `Never`: Never prefix names. Calls are routed by looking up which target serves the name, so names must be unique across all targets. Use this mode when clients need plain tool names, such as for [MCP Apps]({{< link-hextra path="/mcp/apps" >}}).
+   >
+   > ```yaml
+   > spec:
+   >   mcp:
+   >     prefixMode: Never
+   >     targets:
+   >       ...
+   > ```
 
 ## Step 2: Route with agentgateway {#agentgateway}
 

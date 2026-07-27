@@ -8,7 +8,7 @@ Federate tools of multiple MCP servers on the agentgateway by using MCP {{< glos
 
 ## About multiplexing {#about}
 
-Multiplexing combines multiple MCP servers (targets) within a single backend into one unified MCP server. All targets are exposed together so that clients can access tools from all targets simultaneously. Tools are prefixed with the target name (e.g., `time_get_current_time`, `everything_echo`) 
+Multiplexing combines multiple MCP servers (targets) within a single backend into one unified MCP server. All targets are exposed together so that clients can access tools from all targets simultaneously. By default, when a backend has more than one target, tool names are prefixed with the target name (e.g., `time_get_current_time`, `everything_echo`) to avoid collisions. You can change this behavior with the `prefixMode` field, described in [Tool name prefixing](#tool-name-prefixing).
 
 {{% details title="Example multiplexing configuration" closed="false" %}}
 
@@ -128,6 +128,34 @@ routes:
 
       {{< reuse-image-light src="img/ui-tool-time-current.png" >}}
       {{< reuse-image-dark srcDark="img/ui-tool-time-current-dark.png" >}}
+
+## Tool name prefixing {#tool-name-prefixing}
+
+When you multiplex multiple targets, agentgateway namespaces tool and prompt names with the target name so that identical names from different servers do not collide. Resource URIs retain target routing information and are unaffected. Control this behavior with the `prefixMode` field on the MCP configuration.
+
+| `prefixMode` | Behavior |
+|--------------|----------|
+| `conditional` (default) | Prefix tool and prompt names only when the backend has more than one target. |
+| `always` | Always prefix names, even when the backend has a single target. |
+| `never` | Never prefix names. Calls are routed by looking up which target serves the name, so names must be unique across all targets. |
+
+Use `never` when clients need to call tools by their plain names, such as for [MCP Apps]({{< link-hextra path="/mcp/apps" >}}) that issue tool calls from a rendered UI. Because unprefixed names must be unique, agentgateway fails to start if two targets expose the same tool name in this mode.
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  prefixMode: never
+  targets:
+  - name: time
+    stdio:
+      cmd: uvx
+      args: ["mcp-server-time"]
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
 
 ## Next steps
 

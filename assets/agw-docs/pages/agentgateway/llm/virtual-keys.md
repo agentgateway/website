@@ -58,6 +58,8 @@ Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Beca
 
 > [!IMPORTANT]
 > ConfigMaps with hashed keys (as opposed to Secrets) are the recommended way to store virtual keys. If you need to use Kubernetes Secrets, refer to the [API key authentication guide]({{< link-hextra path="/security/apikey/" >}}) for an example.
+>
+> Already storing virtual keys in a Secret? Instead of recreating them by hand, use the [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) command to convert your existing Secrets into the recommended ConfigMap format.
 
 1. Generate a `sha256:<hex>` hash for each user's API key. The hash is computed over the exact key bytes, so do not include a trailing newline.
 
@@ -94,6 +96,9 @@ Store your virtual keys in a Kubernetes ConfigMap, with one entry per user. Beca
        }
    EOF
    ```
+
+   > [!TIP]
+   > If you already store virtual keys in a Kubernetes Secret, you do not have to build this ConfigMap by hand. Use the [`agctl migrate`]({{< link-hextra path="/reference/agctl/agctl-migrate/" >}}) command to generate an equivalent ConfigMap (with hashed keys) from your existing Secrets, for example `agctl migrate --apply virtualkeys-to-configmap -n {{< reuse "agw-docs/snippets/namespace.md" >}} | kubectl apply -f -`.
 
    {{% reuse "agw-docs/snippets/review-table.md" %}}
 
@@ -777,10 +782,8 @@ For more information on cost tracking, see the [cost tracking guide]({{< link-he
 
 Provide different budget tiers for free, standard, and premium users.
 
-1. Add tier metadata to each API key.
-
-   {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
-   Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum | awk '{print "sha256:"$1}'`.
+{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+1. Add tier metadata to each API key. Store the keys in a ConfigMap, using the `keyHash` of each key. Generate each hash with `printf '%s' '<key>' | sha256sum | awk '{print "sha256:"$1}'`.
 
    ```yaml
    apiVersion: v1
@@ -808,9 +811,10 @@ Provide different budget tiers for free, standard, and premium users.
          }
        }
    ```
-   {{< /version >}}
+{{< /version >}}
+{{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
+1. Add tier metadata to each API key. Store the keys in a Secret, with one entry per user.
 
-   {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
    ```yaml
    apiVersion: v1
    kind: Secret
@@ -836,7 +840,7 @@ Provide different budget tiers for free, standard, and premium users.
          }
        }
    ```
-   {{< /version >}}
+{{< /version >}}
 
 2. Configure rate limiting to use the tier and user_id from API key metadata.
 

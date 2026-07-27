@@ -6,4 +6,4 @@ description: Explore how agentgateway provides AI connectivity for agents, tools
 
 The following figure shows how agentgateway provides AI connectivity for agents, tools, and LLMs in any environment.
 
-{{< reuse-image src="img/architecture.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
+{{< reuse-image src="img/architecture.svg" srcDark="img/architecture-dark.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
