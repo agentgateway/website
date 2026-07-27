@@ -10,146 +10,169 @@ Review the release notes for agentgateway.
 > [!NOTE]
 > For more details, check out the [release blog](https://agentgateway.dev/blog/2026-06-17-agentgateway-v1.3.0/), or review the [GitHub release notes in the agentgateway repository](https://github.com/agentgateway/agentgateway/releases).
 
-## 🔥 Breaking changes {#v13-breaking-changes}
+## 🔥 Breaking changes {#v14-breaking-changes}
 
-### `agctl` commands reorganized under `proxy` and `controller`
+### Gateway API v1.6 and TCPRoute v1
 
-The experimental `agctl` CLI now groups its inspection and management commands under the `proxy` and `controller` parent commands, and adds new commands for log-level management and version information. Update any scripts or automation that call the previous top-level commands.
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2360 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2389 -->
 
-Before:
+Agentgateway now builds against Gateway API v1.6, and the controller uses the `v1` version of `TCPRoute` instead of `v1alpha2`. Re-apply the Gateway API CRDs that match this release before you upgrade, and update any automation that references `TCPRoute` by its `v1alpha2` version.
 
-```sh
-agctl config all gateway/agentgateway-proxy -n agentgateway-system -o yaml
-agctl config backends gateway/agentgateway-proxy -n agentgateway-system
-agctl trace gateway/agentgateway-proxy -n agentgateway-system --port 80 -- http://www.example.com/
-```
+### MCP request-phase guardrail rejections return HTTP 200
 
-Now:
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2331 -->
 
-```sh
-agctl proxy config all gateway/agentgateway-proxy -n agentgateway-system -o yaml
-agctl proxy config backends gateway/agentgateway-proxy -n agentgateway-system
-agctl proxy trace gateway/agentgateway-proxy -n agentgateway-system --port 80 -- http://www.example.com/
-```
+When an MCP guardrail rejects a request during the request phase, agentgateway now returns the rejection as an HTTP 200 with a JSON-RPC error body, matching the existing response-phase behavior. Update any clients or tests that expected a non-200 status for request-phase rejections.
 
-The reorganization also introduces the following new capabilities:
+## 🌟 New features {#v14-new-features}
 
-- `agctl proxy log` gets or sets the proxy log level at runtime. For more information, see [Debug your setup]({{< link-hextra path="/operations/debug/#debug-logs" >}}).
-- `agctl controller log` gets or sets the agentgateway controller log level per component at runtime. For more information, see [Debug your setup]({{< link-hextra path="/operations/debug/#debug-logs" >}}).
-- `agctl version` prints version information for the `agctl` CLI.
+### MCP protocol 2026-07-28 support
 
-For more information, see [Install `agctl`]({{< link-hextra path="/operations/agctl/" >}}), [Inspect agentgateway configuration]({{< link-hextra path="/operations/inspect-config/" >}}), [Trace requests with `agctl`]({{< link-hextra path="/operations/trace-requests/" >}}), and the [`agctl` CLI reference]({{< link-hextra path="/reference/agctl/" >}}).
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2345 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2365 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2417 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2477 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2531 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2559 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2520 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2475 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2599 -->
 
-## 🌟 New features {#v13-new-features}
+Agentgateway adds support for the upcoming [MCP `2026-07-28` protocol version](https://blog.modelcontextprotocol.io/posts/2026-07-28-release-candidate/).
 
-### New UI
+- **Stateful and stateless servers**: Agentgateway supports both stateful and stateless MCP servers, including closing the [SEP-2575](https://github.com/modelcontextprotocol/modelcontextprotocol) server-stateless conformance gap and skipping the synthetic `initialize` handshake for modern requests.
+- **Trace context propagation**: Distributed trace context propagates through the MCP `_meta` field ([SEP-414](https://github.com/modelcontextprotocol/modelcontextprotocol)).
+- **MCP Apps**: Basic support for MCP Apps, including multiplexing fixes for app-originated tool calls.
+- **Capability and multiplexing improvements**: Preserved multi-resource tool result (MRTR) capabilities for modern clients, multi-target subscriptions and listen, and opaque resource URI multiplexing.
 
-A refreshed UI exposes the new LLM capabilities through LLM, MCP, and traffic-native views, aligned with the new model-based routing model. Configure providers, models, costs, and guardrails and inspect MCP and traffic configuration from one place.
+Because the MCP `2026-07-28` support is new in this release, most of it is not yet covered by a dedicated guide. For the fields available today, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
 
-### ExtMCP: MCP-aware external auth and processing
+### Cross App Access (XAA) for MCP
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1842 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2436 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2534 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2529 -->
 
-External authorization and external processing integrations can now make decisions using MCP request context, such as the tool being called and its arguments, rather than only generic HTTP metadata. This change makes it possible to enforce fine-grained, MCP-aware policy in an external service. For more information, see the [MCP guardrail docs]({{< link-hextra path="/mcp/guardrails/">}}).
+Agentgateway supports MCP [Enterprise-Managed Authorization](https://modelcontextprotocol.io/extensions/auth/enterprise-managed-authorization) through the OAuth Identity Assertion Authorization Grant (ID-JAG), also known as Cross App Access (XAA). An enterprise identity provider can broker access between a client application and the MCP server without the end user completing a separate OAuth flow for each downstream app. For more information, see [Cross App Access (ID-JAG)]({{< link-hextra path="/security/backend-authn-cross-app-access/" >}}).
 
-### External processing enhancements
+### OAuth token exchange backend authentication
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1787 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2010 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2071 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2189 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2338 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2458 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2580 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2316 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2518 -->
 
-- **Per-phase processing modes**: Control whether headers, body, and trailers are sent to the ext_proc server for each phase, choose how the body is delivered (none, buffered, partially buffered, or full-duplex streamed), and optionally allow the ext_proc server to override the mode.
-- **`ImmediateResponse` from body phases**: An ext_proc server can now return an `ImmediateResponse` from the request body and response body phases and have it returned to the client.
+Agentgateway can exchange an incoming token for a backend credential by using [RFC 8693](https://datatracker.ietf.org/doc/html/rfc8693) OAuth 2.0 token exchange and the [RFC 7523](https://datatracker.ietf.org/doc/html/rfc7523) JWT bearer grant. This release adds controller support, custom token types and OAuth 2.1 exchange defaults, the ability to inject multiple secret-sourced headers, and an override for the resolved secret key. For more information, see [OAuth token exchange]({{< link-hextra path="/security/backend-authn-oauth/" >}}).
 
-### Request buffering
+### Microsoft Entra ID as an MCP authentication provider
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2017 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2408 -->
 
-A new buffering policy can accumulate request and response bodies in memory before forwarding, with configurable size limits. This change enables policies and extensions that need full request-body access before backend selection or dispatch. For more information, see [Body buffering]({{< link-hextra path="/traffic-management/buffer/" >}}).
+Agentgateway includes a native `Entra` MCP authentication provider that bridges the OAuth behaviors that Microsoft Entra ID (Azure AD) implements differently from the MCP authorization specification, such as serving RFC 8414 metadata from Entra's OIDC discovery document, stripping the RFC 8707 `resource` parameter, and short-circuiting Dynamic Client Registration with your pre-registered application ID. For more information, see [Set up Microsoft Entra ID]({{< link-hextra path="/mcp/auth/entra/" >}}).
 
-### Dynamic SSL certificates
+### Virtual keys from ConfigMaps and hashed keys
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2134 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2570 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2240 -->
 
-Dynamic SSL certificate support was added for listener TLS, improving certificate handling for deployments where serving certificates are supplied or rotated dynamically.
-
-### LLM gateway enhancements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2135 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1932 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2039 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2164 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2128 -->
-
-- **Rerank support**: Added rerank request and response support.
-- **Custom LLM providers for InferencePool**: InferencePool backends can now use custom LLM providers.
-- **AI backend policy composition**: Multiple AI backend policies can be composed on the same backend.
-- **Per-model routing precision**: Model matching now prefers more exact matches, and the model can be detected from the request path when not set.
-- **Per-model authorization**: LLM authorization can be configured per model, and `/v1/models` listings are gated by authorization.
-- **Bedrock**: Detect-passthrough support, Application Inference Profile prompt-cache support, Anthropic beta header allowlisting, host override, URL-encoded model IDs, and reasoning-signature replay.
-- **Anthropic**: Support for system messages and extra-high thinking.
-- **Telemetry attributes**: LLM requests now expose latency and throughput attributes.
-
-### MCP improvements
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1831 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2100 -->
-
-- Added Okta as a first-class MCP authentication provider.
-- Added resource subscribe and unsubscribe support, and improved resource multiplexing.
-- Advertised prompt, resource, and tool list-change capabilities.
-- Added explicit service selector target names for MCP backends.
-
-### Authorization and authentication
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2175 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1844 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1923 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1946 -->
-
-- Authorization can now run in the pre-routing phase, including CORS.
-- External auth now supports caching, with a configurable cache key and a TTL that can be a duration or a CEL expression.
-- External auth derives scheme from `X-Forwarded-Proto` and preserves invalid header values.
-- Webhook guardrails support `failureMode` for fail-open or fail-closed behavior.
-
-### Backend references, TLS, and policy attachment
-
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2131 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2081 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2142 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2056 -->
-
-- Generalized backend references and added a `BackendReferenceGrantMode` setting to control reference-grant enforcement.
-- Generalized and cleaned up backend TLS policy handling, including multi-gateway backend mTLS and config-dump visibility.
-- Added policy inheritance strategy configuration.
+Virtual keys can now be sourced from a `ConfigMap` in addition to a `Secret`, and API keys can be stored as SHA-256 hashes so that raw key material never needs to live in the cluster. For more information, see [Virtual keys]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}).
 
 ### CEL enhancements
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2102 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2230 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2295 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2300 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2313 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2285 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2589 -->
 
-- Added route metadata to the CEL context and gRPC status to the response context.
-- Added raw JWT bearer token access via `jwt.rawToken`.
-- Added URL encode/decode functions, timestamp conversion helpers, and bit operations on bytes.
-- Added support for CEL expressions in direct responses and retry conditions, and mTLS certificate passthrough via CEL.
+- **Custom CEL functions**: Register custom CEL functions for use in policies.
+- **CEL filters for telemetry**: An opt-in CEL filter selects which requests emit OpenTelemetry spans, exposed in Kubernetes, and CEL filters decouple OTLP log fields and filtering from stdout logging.
+- **New CEL context and functions**: Access inbound `CONNECT` request headers through `source.connectHeaders`, and use a CEL replace mode for header transformations.
 
-### Traffic, TLS, and networking
+For the full CEL surface, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1846 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2165 -->
+### Fault injection: request delay
 
-- Added support for terminating inbound `CONNECT` requests.
-- Added service route port filtering and HTTP/1 header-case preservation.
-- Added case-insensitive WebSocket upgrade tokens.
-- Added configurable admin interfaces, including disablement and Unix Domain Socket support.
-- Added AWS AssumeRole support, custom AWS service names, and request-signing allowlists.
-- Added custom `secretRef` group and kind options, and waypoint endpoint resolution for ingress-use-waypoint.
-- Updated to Gateway API v1.6.0-rc.1.
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2613 -->
 
-### Operations and observability
+A new `delay` traffic policy injects latency before a request is forwarded to the backend, for fault-injection and chaos testing. The `delay.duration` field accepts a duration string or a CEL expression that returns a duration (or a number interpreted as milliseconds), so you can inject latency conditionally, for example on a percentage of requests. Injected delay counts against the request timeout. For more information, see [Fault injection]({{< link-hextra path="/resiliency/fault-injection/" >}}).
 
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/1784 -->
-<!-- ref: https://github.com/agentgateway/agentgateway/pull/2061 -->
+### AWS assume-role session tags and session name
 
-- Added proxy timing measurements and a configuration synchronization metric.
-- Added request and connection IDs for troubleshooting.
-- Improved distributed trace output, including JSON mode, raw-output file opening, body snapshots, effective gateway and route policies, and CEL expression registration.
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2435 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2447 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2508 -->
+
+AWS `assumeRole` backend authentication supports STS session tags and a configurable `RoleSessionName`. Both the session name (`sessionNameExpression`) and per-tag values (`tags[].expression`) can be set from CEL expressions that are evaluated per request, so you can propagate identity attributes such as `jwt.sub` into the assumed AWS session. For the available fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
+
+### Guardrail enhancements
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2614 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2388 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2575 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2551 -->
+
+- **Backend connection policy for callouts**: A `BackendConnectionPolicy` controls the TCP, TLS, HTTP, and tunnel settings agentgateway uses when it calls out to a guardrail service, and is available on the OpenAI moderation, Bedrock guardrails, and Google Model Armor policies.
+- **Default callout timeouts**: Guardrail callouts now apply a default timeout.
+- **Improved logs and UI**: Guardrail decisions surface more clearly in logs and the UI.
+- **`failureMode` for external processing**: External processing (`extProc`) supports a `failureMode` for fail-open or fail-closed behavior.
+
+For more information, see the [LLM guardrails]({{< link-hextra path="/llm/guardrails/" >}}) and [MCP guardrails]({{< link-hextra path="/mcp/guardrails/" >}}) docs.
+
+### External processing enhancements
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2369 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2551 -->
+
+The controller supports `metadataContext`, `requestAttributes`, and `responseAttributes` for external processing, and `extProc` exposes a `failureMode`. For more information, see [External processing]({{< link-hextra path="/traffic-management/extproc/" >}}).
+
+### LLM gateway enhancements
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2548 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2384 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2444 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2455 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2571 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2023 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2539 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2301 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2190 -->
+
+- **Bedrock**: Added Responses-to-Bedrock image translation, sanitized tool names that exceed the 64-character Converse limit, and propagated cache-write tokens to the access log.
+- **Gemini**: Fixed embeddings handling and `generateContent` model and usage extraction in detect mode.
+- **Vertex AI**: Gemini requests use the native `generateContent` and `streamGenerateContent` endpoints, and `rawPredict` requests are rewritten for any publisher, not only Anthropic.
+- **Azure AI Foundry**: Support for Anthropic endpoints on Foundry.
+- **Detect mode and audio**: Fixed the detect-mode and audio endpoint paths.
+
+For the list of supported providers, see the [LLM providers]({{< link-hextra path="/llm/providers/" >}}) docs.
+
+### A2A v1.0 agent cards
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2251 -->
+
+Agentgateway supports the A2A v1.0 agent card format when it rewrites agent card URLs. For more information, see the [A2A]({{< link-hextra path="/agent/a2a/" >}}) docs.
+
+### Frontend TLS with multiple CAs
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2173 -->
+
+Frontend TLS client certificate validation can trust multiple CAs, so you can rotate or federate client CAs without downtime. For the available fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
+
+### Deployment and operations
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2208 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2542 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2591 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2399 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2497 -->
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2191 -->
+
+- **DaemonSet workloads**: Deploy the data plane as a `DaemonSet`.
+- **Sidecars in control plane pods**: A Helm `extraContainers` value runs sidecar containers in control plane pods.
+- **Metrics scraping**: Scrape proxy metrics with a `PodMonitor`, and a new `agentgateway_controller_build_info` metric reports controller build details.
+- **XDS resource versioning**: XDS resources are now versioned.
+- **Security hardening**: Fixed timing attacks in authentication and added an admin IP allowlist.
