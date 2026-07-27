@@ -4,8 +4,8 @@
 
 You do not need to configure anything to use MCP Apps through agentgateway. UI resources pass through the gateway like any other MCP resource, with two behaviors worth knowing about:
 
-- **Multiplexing**: When you [federate multiple MCP servers]({{< link-hextra path="/mcp/connect/virtual" >}}) into one endpoint, agentgateway rewrites the `ui://` resource URIs so that they still route to the correct upstream target while remaining valid `ui://` URIs that hosts can render.
-- **Authorization**: Any [MCP authorization]({{< link-hextra path="/mcp/mcp-authz" >}}) rules that you configure also apply to UI resources. If a rule denies access to a UI resource, agentgateway does not advertise it to the client.
+- **Multiplexing**: When you federate multiple MCP servers into one endpoint, agentgateway rewrites the `ui://` resource URIs so that they still route to the correct upstream target while remaining valid `ui://` URIs that hosts can render. For more information, see the {{< conditional-text include-if="standalone" >}}[Virtual MCP]({{< link-hextra path="/mcp/connect/virtual" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Virtual MCP]({{< link-hextra path="/mcp/virtual" >}}){{< /conditional-text >}} guide.
+- **Authorization**: Any authorization rules that you configure also apply to UI resources. If a rule denies access to a UI resource, agentgateway does not advertise it to the client. For more information, see {{< conditional-text include-if="standalone" >}}[MCP authorization]({{< link-hextra path="/mcp/mcp-authz" >}}){{< /conditional-text >}}{{< conditional-text include-if="kubernetes" >}}[Tool access]({{< link-hextra path="/mcp/tool-access" >}}){{< /conditional-text >}}.
 
 ## MCP Apps and tool name prefixing
 
