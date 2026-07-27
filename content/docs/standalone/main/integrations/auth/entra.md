@@ -41,9 +41,8 @@ Register an application in Microsoft Entra ID and collect the values that agentg
      - **Mobile and desktop applications** for public clients that use PKCE, such as local MCP clients. Public clients do not require a client secret.
      - **Web** for confidential clients. Entra requires a client secret at the token endpoint for Web-platform apps.
 
-     {{< callout type="warning" >}}
-     Do not use the **Single-page application (SPA)** platform. Entra redeems SPA-issued authorization codes only through browser cross-origin requests (`AADSTS9002327`), which does not work behind the gateway's token proxy.
-     {{< /callout >}}
+     > [!WARNING]
+     > Do not use the **Single-page application (SPA)** platform. Entra redeems SPA-issued authorization codes only through browser cross-origin requests (`AADSTS9002327`), which does not work behind the gateway's token proxy.
 
 3. After registration, collect the following values from the app's **Overview** page. Save them as environment variables.
 
@@ -169,9 +168,8 @@ Whether you need a `clientSecret` depends on the platform of your Entra app regi
 - **Public clients** (**Mobile and desktop applications** platform with public client flows enabled) authenticate with PKCE only. Omit `clientSecret`. The flow is pure PKCE end to end.
 - **Confidential clients** (**Web** platform) require client authentication at the token endpoint in addition to PKCE (`AADSTS7000218` otherwise). Set `clientSecret` to the secret that you created for your app registration. Agentgateway attaches it server-side, only to `authorization_code` and `refresh_token` requests for the configured `clientId`.
 
-{{< callout type="info" >}}
-`clientSecret` is the credential of your own app registration, not a credential that MCP clients supply. MCP clients always remain public clients that use PKCE: the gateway advertises `token_endpoint_auth_method: none` in the registration response.
-{{< /callout >}}
+> [!NOTE]
+> `clientSecret` is the credential of your own app registration, not a credential that MCP clients supply. MCP clients always remain public clients that use PKCE: the gateway advertises `token_endpoint_auth_method: none` in the registration response.
 
 ## Connect an MCP client {#connect}
 

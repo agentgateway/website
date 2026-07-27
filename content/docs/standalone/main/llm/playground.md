@@ -7,9 +7,8 @@ test: skip
 
 Use the built-in LLM playground in the agentgateway admin UI to send a chat completion request through your configured LLM provider. The playground sends a real request through the gateway, so you can confirm that your provider, model, and policies work before you point an application at agentgateway.
 
-{{< callout type="info" >}}
-The LLM playground is available in the agentgateway UI in version 1.3 and later.
-{{< /callout >}}
+> [!NOTE]
+> The LLM playground is available in the agentgateway UI in version 1.3 and later.
 
 ## Before you begin
 

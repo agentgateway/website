@@ -261,9 +261,8 @@ EOF
 
 Use the `Optional` mode to validate credentials when present, but allow requests without credentials. This mode is useful for services that offer both authenticated and unauthenticated access.
 
-{{< callout type="warning" >}}
-The `Optional` mode allows requests without credentials. Use this mode only when you intend to allow unauthenticated access to your services.
-{{< /callout >}}
+> [!WARNING]
+> The `Optional` mode allows requests without credentials. Use this mode only when you intend to allow unauthenticated access to your services.
 
 ```yaml
 kubectl apply -f- <<EOF

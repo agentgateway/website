@@ -55,9 +55,8 @@ Depending on the API used in the request, and the provider selected, agentgatewa
 This enables a unified API regardless of the provider used, allowing seamlessly connecting clients (regardless of which API they use) to any provider.
 
 Below shows some basic examples using the Chat Completions API
-{{< callout type="info" >}}
-For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
 
 {{< tabs >}}
 {{% tab name="Curl" %}}
@@ -80,10 +79,9 @@ curl 'http://localhost:4000/v1/chat/completions' \
 {{% /tab %}}
 {{% tab name="Python" %}}
 
-{{< callout type="info" >}}
-The `api_key` parameter is required in the OpenAI library.
-Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
-{{< /callout >}}
+> [!NOTE]
+> The `api_key` parameter is required in the OpenAI library.
+> Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
 
 ```python
 import openai
@@ -231,6 +229,5 @@ llm:
 
 In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
 
-{{< callout type="info" >}}
-For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/llm/virtual-models/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/llm/virtual-models/" >}}).

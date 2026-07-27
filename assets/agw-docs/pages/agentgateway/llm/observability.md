@@ -1,19 +1,16 @@
 Review LLM-specific metrics and logs.
 
-{{< callout type="info" >}}
-To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> To calculate costs from token usage metrics, see the [cost tracking guide]({{< link-hextra path="/llm/cost-controls/cost-tracking/" >}}).
 
 {{< conditional-text include-if="kubernetes" >}}
-{{< callout type="info" >}}
-For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
 {{< /conditional-text >}}
 
 {{< conditional-text include-if="standalone" >}}
-{{< callout type="info" >}}
-For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For external logging platforms (also known as prompt logging, request/response logging, or audit trail) like Langfuse and LangSmith, see the [LLM Observability integrations]({{< link-hextra path="/integrations/llm-observability/" >}}).
 {{< /conditional-text >}}
 
 ## Before you begin

@@ -15,9 +15,8 @@ Both modes serve traffic on a [gateway]({{< link-hextra path="/configuration/gat
 
 Use this decision tree to choose the right configuration mode.
 
-{{< callout type="info" >}}
-You can use both configuration modes in the same file if needed, but typically one mode is sufficient for most use cases.
-{{< /callout >}}
+> [!NOTE]
+> You can use both configuration modes in the same file if needed, but typically one mode is sufficient for most use cases.
 
 | Question | Answer | Recommendation |
 |----------|--------|----------------|

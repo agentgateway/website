@@ -1,8 +1,7 @@
 Track and monitor LLM costs per request using token usage metrics.
 
-{{< callout type="info" >}}
-This guide *estimates* cost from token usage metrics by applying your own pricing model in PromQL. To have {{< reuse "agw-docs/snippets/agentgateway.md" >}} compute the *realized* USD cost of each request from a model cost catalog and expose it in logs, traces, metrics, and CEL, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> This guide *estimates* cost from token usage metrics by applying your own pricing model in PromQL. To have {{< reuse "agw-docs/snippets/agentgateway.md" >}} compute the *realized* USD cost of each request from a model cost catalog and expose it in logs, traces, metrics, and CEL, see [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}).
 
 ## About
 
@@ -74,9 +73,8 @@ For more information about the token usage metric, see the [Semantic conventions
 
 ## Calculate costs from token metrics
 
-{{< callout type="info" >}}
-This section estimates cost by applying pricing that you maintain by hand. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost for you and exposes `agw.ai.usage.cost.total` in access logs and `llm.cost` in CEL, so you do not need the manual formulas below.
-{{< /callout >}}
+> [!NOTE]
+> This section estimates cost by applying pricing that you maintain by hand. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost for you and exposes `agw.ai.usage.cost.total` in access logs and `llm.cost` in CEL, so you do not need the manual formulas below.
 
 To estimate costs, multiply token counts by your provider's pricing. Most LLM providers charge separately for input tokens and output tokens.
 
@@ -175,9 +173,8 @@ OpenTelemetry traces include token usage as span attributes. You can view per-re
 
 3. Calculate costs using the same formula as above, using the token counts from trace attributes.
 
-{{< callout type="info" >}}
-With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) configured, traces also include the realized cost breakdown directly (`agw.ai.usage.cost.total`, `agw.ai.usage.cost.input`, `agw.ai.usage.cost.output`, `agw.ai.usage.cost.cache_read`, and so on), so you can view per-request dollar cost in your tracing backend without calculating it.
-{{< /callout >}}
+> [!NOTE]
+> With a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) configured, traces also include the realized cost breakdown directly (`agw.ai.usage.cost.total`, `agw.ai.usage.cost.input`, `agw.ai.usage.cost.output`, `agw.ai.usage.cost.cache_read`, and so on), so you can view per-request dollar cost in your tracing backend without calculating it.
 
 ## Enforce spending limits
 

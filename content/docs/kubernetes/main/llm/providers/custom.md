@@ -185,13 +185,12 @@ spec:
       name: qwen-inferencepool
 ```
 
-{{< callout type="info" >}}
-Most users can keep the default llm-d Router OpenAI parser and send
-OpenAI-compatible requests, such as `/v1/chat/completions`. If clients send a
-different request format, configure the llm-d Router EPP parser, such as
-`router.epp.parser`, for that client-facing format. For parser options, see the
-[llm-d Router parser docs](https://github.com/llm-d/llm-d-router/blob/main/pkg/epp/framework/plugins/requesthandling/parsers/README.md).
-{{< /callout >}}
+> [!NOTE]
+> Most users can keep the default llm-d Router OpenAI parser and send
+> OpenAI-compatible requests, such as `/v1/chat/completions`. If clients send a
+> different request format, configure the llm-d Router EPP parser, such as
+> `router.epp.parser`, for that client-facing format. For parser options, see the
+> [llm-d Router parser docs](https://github.com/llm-d/llm-d-router/blob/main/pkg/epp/framework/plugins/requesthandling/parsers/README.md).
 
 ## Limitations
 

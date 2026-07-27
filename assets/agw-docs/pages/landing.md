@@ -1,8 +1,7 @@
 {{< reuse "agw-docs/snippets/about-agw.md" >}} Read on to learn how agentgateway addresses the unique demands of agent traffic.
 
-{{< callout type="info" >}}
-**New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!
-{{< /callout >}}
+> [!NOTE]
+> **New to agentgateway?** Get started in minutes with the [Quickstart guide]({{< link-hextra path="/quickstart/" >}})!
 
 {{< reuse-image src="img/architecture.svg" srcDark="img/architecture-dark.svg" caption="Figure: agentgateway works across compute environments to provide connectivity to various agentic tools, including MCP servers, agents, and OpenAPI endpoints." >}}
 

@@ -382,9 +382,8 @@ For AI-specific use cases:
 
 Limit requests based on the client's source IP address (10 requests per minute per IP, as configured in the rate limit service).
 
-{{< callout type="info" >}}
-The descriptor entry `name` in the policy must match the `key` in the rate limit service ConfigMap. For example, `name: remote_address` in the policy matches `key: remote_address` in the ConfigMap.
-{{< /callout >}}
+> [!NOTE]
+> The descriptor entry `name` in the policy must match the `key` in the rate limit service ConfigMap. For example, `name: remote_address` in the policy matches `key: remote_address` in the ConfigMap.
 
 1. Apply the policy.
 

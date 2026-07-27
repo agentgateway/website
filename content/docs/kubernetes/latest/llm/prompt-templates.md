@@ -94,9 +94,8 @@ Static templates use prompt enrichment to prepend or append fixed messages to ev
 
 Dynamic templates use CEL transformations to inject variables from the request context into prompts. This is ideal for personalizing prompts with user identity, adding request metadata, or applying conditional prompt modification based on headers or claims.
 
-{{< callout type="info" >}}
-JWT claims in transformations require JWT authentication to be configured. See the [JWT authentication guide]({{< link-hextra path="/security/jwt/">}}) for setup instructions.
-{{< /callout >}}
+> [!NOTE]
+> JWT claims in transformations require JWT authentication to be configured. See the [JWT authentication guide]({{< link-hextra path="/security/jwt/">}}) for setup instructions.
 
 ### Inject user identity from headers
 
@@ -181,9 +180,8 @@ For a complete list of available variables and functions, see the [CEL reference
 
 ### User context from JWT claims
 
-{{< callout type="warning" >}}
-JWT claims are not currently available in CEL transformations when using `mcpAuthentication`. This is tracked in [agentgateway issue #870](https://github.com/agentgateway/agentgateway/issues/870). Use `jwtAuthentication` in the traffic policy instead.
-{{< /callout >}}
+> [!WARNING]
+> JWT claims are not currently available in CEL transformations when using `mcpAuthentication`. This is tracked in [agentgateway issue #870](https://github.com/agentgateway/agentgateway/issues/870). Use `jwtAuthentication` in the traffic policy instead.
 
 Inject user identity and organization from JWT claims into the prompt.
 

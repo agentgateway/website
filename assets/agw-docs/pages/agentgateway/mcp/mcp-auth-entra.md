@@ -4,9 +4,8 @@ Secure your Model Context Protocol (MCP) servers with OAuth 2.0 authentication b
 
 In this guide, you configure the agentgateway proxy to protect a static MCP server with MCP auth by using Microsoft Entra ID as the authorization server. Because Entra does not fully implement the OAuth behaviors that the [MCP authorization specification](https://modelcontextprotocol.io/specification/draft/basic/authorization) assumes, agentgateway includes a native `Entra` provider that bridges the gaps. When you set `provider: Entra`, agentgateway serves RFC 8414 authorization server metadata from Entra's OIDC discovery document, strips the RFC 8707 `resource` parameter that Entra rejects, and short-circuits Dynamic Client Registration with your pre-registered application (client) ID.
 
-{{< callout type="warning" >}}
-This guide configures Entra app registrations that are **public clients** using PKCE, such as local MCP clients. Confidential clients (app registrations under the Entra **Web** platform) require a client secret at the token endpoint. On Kubernetes, injecting that secret through the recommended `jwtAuthentication.mcp` traffic policy is not yet supported. If you need confidential-client support today, use agentgateway in standalone mode, which accepts a `clientSecret` field on the MCP authentication policy.
-{{< /callout >}}
+> [!WARNING]
+> This guide configures Entra app registrations that are **public clients** using PKCE, such as local MCP clients. Confidential clients (app registrations under the Entra **Web** platform) require a client secret at the token endpoint. On Kubernetes, injecting that secret through the recommended `jwtAuthentication.mcp` traffic policy is not yet supported. If you need confidential-client support today, use agentgateway in standalone mode, which accepts a `clientSecret` field on the MCP authentication policy.
 
 For more information about MCP auth, see the [About MCP auth]({{< link-hextra path="/mcp/auth/about/" >}}) page.
 

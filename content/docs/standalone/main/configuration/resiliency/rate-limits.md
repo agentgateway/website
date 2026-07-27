@@ -416,9 +416,8 @@ The following example runs the `ratelimit` server and its Redis backing store lo
    docker compose logs ratelimit
    ```
 
-{{< callout type="info" >}}
-Setting `LOG_LEVEL: debug` makes the server log every descriptor it receives from agentgateway at request time, which is the fastest way to confirm that your `domain` and descriptor keys line up on both sides.
-{{< /callout >}}
+> [!NOTE]
+> Setting `LOG_LEVEL: debug` makes the server log every descriptor it receives from agentgateway at request time, which is the fastest way to confirm that your `domain` and descriptor keys line up on both sides.
 
 #### Connect agentgateway to the rate limit server
 
@@ -637,9 +636,8 @@ remoteRateLimit:
 | `failClosed` (default) | Deny requests with `500` when the rate limit service is unavailable |
 | `failOpen` | Allow requests through when the rate limit service is unavailable |
 
-{{< callout type="warning" >}}
-Be cautious when setting the failure mode to `failOpen`. While this setting prevents service disruptions if the rate limiting server is unavailable, rate limits are not enforced for your routes until the rate limiting server is available again.
-{{< /callout >}}
+> [!WARNING]
+> Be cautious when setting the failure mode to `failOpen`. While this setting prevents service disruptions if the rate limiting server is unavailable, rate limits are not enforced for your routes until the rate limiting server is available again.
 
 #### Backend connection policies
 

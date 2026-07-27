@@ -215,9 +215,8 @@ LibreChat requires MongoDB. Deploy both with a ConfigMap that points LibreChat a
    EOF
    ```
 
-{{< callout type="warning" >}}
-Replace `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CREDS_KEY`, and `CREDS_IV` with unique, secure random values before deploying to a shared or production environment. You can generate these with `openssl rand -hex 32` (for 64-char keys) or `openssl rand -hex 16` (for 32-char IVs). Use a Kubernetes Secret rather than plain env vars for production deployments.
-{{< /callout >}}
+> [!WARNING]
+> Replace `JWT_SECRET`, `JWT_REFRESH_SECRET`, `CREDS_KEY`, and `CREDS_IV` with unique, secure random values before deploying to a shared or production environment. You can generate these with `openssl rand -hex 32` (for 64-char keys) or `openssl rand -hex 16` (for 32-char IVs). Use a Kubernetes Secret rather than plain env vars for production deployments.
 
 The following table describes the relevant environment variable:
 

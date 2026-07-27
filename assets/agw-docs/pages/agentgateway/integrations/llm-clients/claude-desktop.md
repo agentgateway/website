@@ -48,16 +48,15 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    agentgateway -f config.yaml
    ```
 
-{{< callout type="info" >}}
-Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the following to the `passthrough` route policy in your config:
-
-```yaml
-policies:
-  requestHeaderModifier:
-    add:
-      anthropic-beta: oauth-2025-04-20
-```
-{{< /callout >}}
+> [!NOTE]
+> Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the following to the `passthrough` route policy in your config:
+>
+> ```yaml
+> policies:
+>   requestHeaderModifier:
+>     add:
+>       anthropic-beta: oauth-2025-04-20
+> ```
 
 ## Configure Claude Desktop
 

@@ -236,9 +236,8 @@ For example, let's assume you have a 50-page manual and you want to ask your mod
 
 Prompt caching is configured by using the `backend.ai.promptCaching` fields in the {{< reuse "agw-docs/snippets/policy.md" >}} resource. 
 
-{{< callout type="info" >}}
-Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
-{{< /callout >}}
+> [!NOTE]
+> Prompt caching is supported for Bedrock Claude 3+ and Nova models. 
 
 1. Create an {{< reuse "agw-docs/snippets/policy.md" >}} resource with your prompt cache settings. The following example enables caching for system prompts and conversation messages, but disables it for tool definitions. Bedrock requires you to set the minimum token count after which caching is enabled. By default, a minimum of 1024 tokens are required by Bedrock for caching to be effective. This is also referred to as a caching checkpoint. For more information, see the [API reference]({{< link-hextra path="/reference/api/#promptcachingconfig" >}}). 
    ```yaml

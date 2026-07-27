@@ -2,7 +2,7 @@ Agentgateway supports MCP servers and clients across MCP specification versions 
 
 ## Supported specification versions
 
-Agentgateway supports MCP protocol versions as described in [Version support]({{< link-hextra path="/reference/versions/" >}}). Earlier versions are automatically negotiated as described later and typically work, but are not guaranteed.
+Agentgateway supports MCP protocol versions{{< conditional-text include-if="kubernetes" >}} as described in [Version support]({{< link-hextra path="/reference/versions/" >}}){{< /conditional-text >}}. Earlier versions are automatically negotiated as described later and typically work, but are not guaranteed.
 
 ### 2026-07-28 support
 

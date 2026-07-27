@@ -139,9 +139,8 @@ The value for `extAuthz.host` is the path to the Tailscale daemon's local socket
 | macOS | `/var/run/tailscale/tailscaled.sock` |
 | Windows | Named pipe (not supported through a Unix socket) |
 
-{{< callout type="info" >}}
-On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
-{{< /callout >}}
+> [!NOTE]
+> On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
 
 ## Step 3: Start agentgateway
 

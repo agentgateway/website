@@ -1,8 +1,7 @@
 Specify the number of times and duration for the gateway to try a connection to an unresponsive backend service. You might commonly use retries alongside [Timeouts]({{< link-hextra path="/resiliency/timeouts/">}}) to ensure that your apps are available even if they are temporarily unavailable.
 
-{{< callout type="warning" >}}
-{{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 
 ## About request retries
 

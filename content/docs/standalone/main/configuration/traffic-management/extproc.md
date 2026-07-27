@@ -92,9 +92,8 @@ routes:
 
 By default, ExtProc sends request headers, response headers, request trailers, and response trailers to the external processing service, and streams request and response bodies. To change which request or response phases are sent to the processor, configure `extProc.processingOptions`.
 
-{{< callout type="info" >}}
-The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the 8KB ExtProc buffer limit. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/configuration/traffic-management/buffer/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> The default body mode is `fullDuplexStreamed`. If the external processor must inspect a complete body before agentgateway forwards it, use `buffered` or `bufferedPartial` and account for the 8KB ExtProc buffer limit. For general request and response body buffering outside of ExtProc, see [Body buffering]({{< link-hextra path="/configuration/traffic-management/buffer/" >}}).
 
 | Field | Default | Values | Description |
 | --- | --- | --- | --- |

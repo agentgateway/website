@@ -38,9 +38,8 @@ You can access the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane 
 
 3. Search for the `kgateway_agentgateway_xds_rejects_total` metric.
 
-   {{< callout type="info" >}}
-   The metric will only appear after at least one NACK has been reported. If no NACKs have occurred, the metric will not be present in the metrics output.
-   {{< /callout >}}
+   > [!NOTE]
+   > The metric will only appear after at least one NACK has been reported. If no NACKs have occurred, the metric will not be present in the metrics output.
 
    Example output:
 

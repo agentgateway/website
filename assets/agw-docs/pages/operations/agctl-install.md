@@ -169,9 +169,8 @@ Verify the new version.
 agctl --help
 ```
 
-{{< callout type="info" >}}
-Use the same `agctl` version as the agentgateway version that you run in your cluster. Slight skews within minor versions typically work, but compatibility across major versions is not guaranteed.
-{{< /callout >}}
+> [!NOTE]
+> Use the same `agctl` version as the agentgateway version that you run in your cluster. Slight skews within minor versions typically work, but compatibility across major versions is not guaranteed.
 
 ## Uninstall agctl
 

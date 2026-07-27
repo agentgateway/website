@@ -13,12 +13,11 @@ test:
 
 Use this page for providers that implement the OpenAI API format but do not have a first-class `provider:` support yet. For built-in providers such as [Baseten]({{< link-hextra path="/llm/providers/baseten/" >}}), [Cerebras]({{< link-hextra path="/llm/providers/cerebras/" >}}), [Cohere]({{< link-hextra path="/llm/providers/cohere/" >}}), [DeepInfra]({{< link-hextra path="/llm/providers/deepinfra/" >}}), [DeepSeek]({{< link-hextra path="/llm/providers/deepseek/" >}}), [Fireworks AI]({{< link-hextra path="/llm/providers/fireworks/" >}}), [Groq]({{< link-hextra path="/llm/providers/groq/" >}}), [Hugging Face]({{< link-hextra path="/llm/providers/huggingface/" >}}), [Mistral]({{< link-hextra path="/llm/providers/mistral/" >}}), [OpenRouter]({{< link-hextra path="/llm/providers/openrouter/" >}}), [Together AI]({{< link-hextra path="/llm/providers/togetherai/" >}}), [xAI]({{< link-hextra path="/llm/providers/xai/" >}}), and [Ollama]({{< link-hextra path="/llm/providers/ollama/" >}}), use the dedicated provider pages instead.
 
-{{< callout type="info" >}}
-Many providers provide "OpenAI compatible" or "Anthropic compatible" endpoints.
-While these _can_ be used with `provider: openai`/`provider: anthropic` and a customized `baseUrl`, prefer to use `provider: custom`.
-
-Using a specific vendor's provider may introduce semantics specific to that provider.
-{{< /callout >}}
+> [!NOTE]
+> Many providers provide "OpenAI compatible" or "Anthropic compatible" endpoints.
+> While these _can_ be used with `provider: openai`/`provider: anthropic` and a customized `baseUrl`, prefer to use `provider: custom`.
+>
+> Using a specific vendor's provider may introduce semantics specific to that provider.
 
 ## Before you begin
 

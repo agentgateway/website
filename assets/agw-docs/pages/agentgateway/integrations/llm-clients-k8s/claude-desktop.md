@@ -55,18 +55,17 @@ Configure [Claude Desktop](https://claude.com/download) to route requests throug
    EOF
    ```
 
-   {{< callout type="info" >}}
-   Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop might require this header to be set as well depending on your client version. If requests fail with a 400 error, add a request transformation to the {{< reuse "agw-docs/snippets/policy.md" >}} that injects the header.
-   
-   ```yaml
-   backend:
-     transformation:
-       request:
-         set:
-         - name: anthropic-beta
-           value: oauth-2025-04-20
-   ```
-   {{< /callout >}}
+   > [!NOTE]
+   > Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop might require this header to be set as well depending on your client version. If requests fail with a 400 error, add a request transformation to the {{< reuse "agw-docs/snippets/policy.md" >}} that injects the header.
+   >
+   > ```yaml
+   > backend:
+   >   transformation:
+   >     request:
+   >       set:
+   >       - name: anthropic-beta
+   >         value: oauth-2025-04-20
+   > ```
 
 3. Create an `HTTPRoute` that matches the `/claude` path prefix and rewrites it to `/` before forwarding to the backend.
 

@@ -30,9 +30,8 @@ The MCP endpoint is available at `http://localhost:8080/mcp/mcp`.
 
 {{< /tabs >}}
 
-{{< callout type="info" >}}
-The path `/mcp/mcp` assumes the default HTTPRoute path prefix of `/mcp` from the [Static MCP guide]({{< link-hextra path="/mcp/static-mcp" >}}). If you configured a different path in your HTTPRoute, adjust accordingly.
-{{< /callout >}}
+> [!NOTE]
+> The path `/mcp/mcp` assumes the default HTTPRoute path prefix of `/mcp` from the [Static MCP guide]({{< link-hextra path="/mcp/static-mcp" >}}). If you configured a different path in your HTTPRoute, adjust accordingly.
 
 {{< doc-test paths="mcp-clients-k8s" >}}
 for i in $(seq 1 60); do

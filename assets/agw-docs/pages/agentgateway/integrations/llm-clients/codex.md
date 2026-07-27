@@ -30,9 +30,8 @@ Start agentgateway with an OpenAI backend configuration. The wildcard `*` model 
    agentgateway -f config.yaml
    ```
 
-{{< callout type="info" >}}
-For wildcard model matching, rate limiting, and other options, see the [OpenAI provider page]({{< link-hextra path="/llm/providers/openai" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For wildcard model matching, rate limiting, and other options, see the [OpenAI provider page]({{< link-hextra path="/llm/providers/openai" >}}).
 
 ## Connect Codex to agentgateway
 
@@ -95,9 +94,8 @@ codex --profile agentgateway
    info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
    ```
 
-{{< callout type="info" >}}
-This configuration was tested with `codex-cli 0.144.4`.
-{{< /callout >}}
+> [!NOTE]
+> This configuration was tested with `codex-cli 0.144.4`.
 
 For more configuration options, see the [**Codex CLI documentation**](https://learn.chatgpt.com/docs/codex/cli).
 
@@ -134,9 +132,8 @@ Open config.toml** and apply the same provider configuration.
    info  request gateway=default/default listener=llm route=internal/model:* endpoint=api.openai.com:443 http.method=POST http.path=/v1/responses http.status=200 protocol=llm gen_ai.operation.name=chat gen_ai.provider.name=openai duration=1687ms
    ```
 
-{{< callout type="info" >}}
-This configuration was tested with ChatGPT desktop app version `26.707.72221`.
-{{< /callout >}}
+> [!NOTE]
+> This configuration was tested with ChatGPT desktop app version `26.707.72221`.
 
 For more information, see the [**Codex app documentation**](https://learn.chatgpt.com/docs/environments/modes)
 and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/config-basic).

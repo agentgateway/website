@@ -5,8 +5,7 @@ description: Capture a per-request trace as an agentgateway proxy handles the re
 test: skip
 ---
 
-{{< callout type="warning">}}
-{{< reuse "agw-docs/snippets/feature-experimental.md">}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/snippets/feature-experimental.md">}}
 
 {{< reuse "agw-docs/pages/operations/trace-requests.md" >}}

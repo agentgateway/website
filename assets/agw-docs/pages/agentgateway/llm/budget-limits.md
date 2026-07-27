@@ -110,12 +110,11 @@ Apply different budgets to different routes, such as higher limits for productio
 
 Use local rate limiting instead of global for simpler setups that don't require shared state across {{< reuse "agw-docs/snippets/agentgateway.md" >}} instances.
 
-{{< callout type="warning" >}}
-**Limitations of local rate limiting:**
-- The `tokens` field is request count, not LLM token count. With `tokens: 10000`, you get ~10,000 requests, regardless of how many LLM tokens each request consumes. For actual LLM-token-based budgets (e.g., limit users to 100K LLM tokens/day), use global rate limiting with `unit: Tokens` descriptors instead.
-- Limits apply per {{< reuse "agw-docs/snippets/agentgateway.md" >}} instance. If you have 3 instances and set a 100,000 token limit, each instance enforces 100,000 tokens, for a total of 300,000 tokens across all instances.
-- Local rate limiting only supports `Seconds`, `Minutes`, and `Hours` units. For daily budgets, use global rate limiting instead, which supports day-based limits.
-{{< /callout >}}
+> [!WARNING]
+> **Limitations of local rate limiting:**
+> - The `tokens` field is request count, not LLM token count. With `tokens: 10000`, you get ~10,000 requests, regardless of how many LLM tokens each request consumes. For actual LLM-token-based budgets (e.g., limit users to 100K LLM tokens/day), use global rate limiting with `unit: Tokens` descriptors instead.
+> - Limits apply per {{< reuse "agw-docs/snippets/agentgateway.md" >}} instance. If you have 3 instances and set a 100,000 token limit, each instance enforces 100,000 tokens, for a total of 300,000 tokens across all instances.
+> - Local rate limiting only supports `Seconds`, `Minutes`, and `Hours` units. For daily budgets, use global rate limiting instead, which supports day-based limits.
 
 ```yaml
 apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -238,16 +237,14 @@ For more information on cost calculation, see the [cost tracking guide]({{< link
 
 The budgets in the previous sections are measured in *tokens*. If you configure a [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}), {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the realized USD cost of each request and exposes it to CEL as `llm.cost`. You can then rate limit on *dollars* directly, which enforces a true spend cap regardless of which model or input/output token mix each user hits.
 
-{{< callout type="warning" >}}
-**Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build. The response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
-{{< /callout >}}
+> [!WARNING]
+> **Known limitation:** Cost-based (dollar) rate limiting is not enforced correctly on the current build. The response-time cost amendment fails with an empty-descriptor error, so the budget is not applied. Token-based budgets (the sections above) are unaffected. Track the fix before relying on dollar enforcement in production. This section documents the intended configuration.
 
-{{< callout type="warning" >}}
-**Requirements and behavior:**
-- A [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) must be configured so that `llm.cost` is populated. Without a catalog, `llm.cost.total` is `0` and no spend is counted.
-- Cost is evaluated *after* the response completes. The request that crosses the budget still completes; the user's *next* request is rejected with a 429. Budgets are therefore approximate at the boundary.
-- The rate limit `cost` expression must return an unsigned integer. Because USD costs are fractional (for example, `$0.0000057`), scale them to **micro-dollars** (USD × 1,000,000) with `uint()`. A budget of `1000000` micro-dollars equals `$1.00`.
-{{< /callout >}}
+> [!WARNING]
+> **Requirements and behavior:**
+> - A [model cost catalog]({{< link-hextra path="/llm/cost-controls/costs/" >}}) must be configured so that `llm.cost` is populated. Without a catalog, `llm.cost.total` is `0` and no spend is counted.
+> - Cost is evaluated *after* the response completes. The request that crosses the budget still completes; the user's *next* request is rejected with a 429. Budgets are therefore approximate at the boundary.
+> - The rate limit `cost` expression must return an unsigned integer. Because USD costs are fractional (for example, `$0.0000057`), scale them to **micro-dollars** (USD × 1,000,000) with `uint()`. A budget of `1000000` micro-dollars equals `$1.00`.
 
 1. Create a {{< reuse "agw-docs/snippets/policy.md" >}} with a global rate limit descriptor that uses `unit: Tokens` and a `cost` expression that converts the realized cost to micro-dollars. This example keys the budget on the API key's `user_id` metadata, so it builds on the API key authentication from the [Virtual key management]({{< link-hextra path="/llm/cost-controls/virtual-keys/" >}}) guide.
 
@@ -293,9 +290,8 @@ The budgets in the previous sections are measured in *tokens*. If you configure 
 
 3. Send requests as a user. After each response, {{< reuse "agw-docs/snippets/agentgateway.md" >}} computes the request's micro-dollar cost and sends it to the rate limit server as the request's cost. When the user's accumulated spend reaches the daily budget, further requests are rejected with a 429 until the budget refills.
 
-{{< callout type="info" >}}
-To budget on a single cost component instead of the total, use that field in the expression. For example, `cost: 'uint(llm.cost.output * 1000000)'` budgets only on output-token spend.
-{{< /callout >}}
+> [!NOTE]
+> To budget on a single cost component instead of the total, use that field in the expression. For example, `cost: 'uint(llm.cost.output * 1000000)'` budgets only on output-token spend.
 
 -->
 

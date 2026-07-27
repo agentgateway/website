@@ -117,9 +117,8 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
    claude -p "Hello"
    ```
 
-{{< callout type="info" >}}
-For pinned model configuration, extended thinking, and other options, see the [Anthropic provider page]({{< link-hextra path="/llm/providers/anthropic" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For pinned model configuration, extended thinking, and other options, see the [Anthropic provider page]({{< link-hextra path="/llm/providers/anthropic" >}}).
 
 ## Claude Teams or Pro account
 
