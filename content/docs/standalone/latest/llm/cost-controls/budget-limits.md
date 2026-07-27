@@ -54,6 +54,7 @@ To give each user their own budget, use `remoteRateLimit` with a descriptor keye
 2. Configure the rate limit server with a per-user daily token budget. The `key` matches the descriptor entry key that agentgateway sends.
 
    ```yaml
+   # ratelimit-config/config.yaml
    domain: token-budgets
    descriptors:
      - key: user_id
@@ -145,6 +146,7 @@ Enforce a dollar budget:
 2. Configure the rate limit server with the user's daily budget expressed in micro-dollars. Reuse the same rate limit server that you deployed for token budgets. Dollar enforcement uses the identical Envoy rate limit service and protocol. Use a separate `domain` (`spend-budgets`) so it does not collide with your token-budget descriptors. This example caps each user at `$1.00` per day (`1000000` micro-dollars).
 
    ```yaml
+   # ratelimit-config/config.yaml
    domain: spend-budgets
    descriptors:
      - key: user_id

@@ -2,7 +2,7 @@
 title: Cerebras
 weight: 20
 icon: /integrations/providers/bw/cerebras.svg
-description: Configuration and setup for Cerebras LLM provider
+description: Route agentgateway LLM traffic to models hosted on Cerebras.
 ---
 
 Configure Cerebras as an LLM provider in agentgateway.

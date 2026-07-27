@@ -2,7 +2,7 @@
 title: Anthropic
 weight: 15
 icon: /integrations/providers/bw/anthropic.svg
-description: Configuration and setup for Anthropic Claude provider
+description: Route agentgateway LLM traffic to Anthropic's Claude models.
 ---
 
 Configure Anthropic (Claude models) as an LLM provider in agentgateway.

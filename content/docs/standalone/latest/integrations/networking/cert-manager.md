@@ -95,22 +95,21 @@ Then reference it in your agentgateway config:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 443
-  listeners:
-  - name: https
+gateways:
+  default:
+    port: 443
     protocol: HTTPS
     tls:
       cert: /certs/tls.crt
       key: /certs/tls.key
-    routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: my-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: my-server
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
 ```
 
 ## Self-signed certificates for development

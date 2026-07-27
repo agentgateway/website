@@ -1,7 +1,7 @@
 ---
 title: Stdio
 weight: 10
-description: Expose MCP servers through the agentgateway. 
+description: Run a local MCP server as a subprocess and expose it through agentgateway over stdio.
 ---
 
 An MCP backend allows exposing MCP servers through the agentgateway using {{< gloss "STDIO (Standard Input/Output)" >}}STDIO{{< /gloss >}}.

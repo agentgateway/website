@@ -5,4 +5,4 @@ description: Reference for the `agctl costs` command.
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/reference/agctl/latest/agctl-costs.md" >}}
+{{< reuse "agw-docs/pages/reference/agctl/main/agctl-costs.md" >}}

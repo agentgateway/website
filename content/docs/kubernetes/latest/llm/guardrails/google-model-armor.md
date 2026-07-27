@@ -178,7 +178,7 @@ In your GKE cluster, set up workload identity.
          promptGuard:
            request:
            - googleModelArmor:
-               templateId: <template-ID
+               templateId: <template-ID>
                projectId: <project-ID>
                location: <location>
                policies:
@@ -187,7 +187,7 @@ In your GKE cluster, set up workload identity.
                      type: AccessToken
            response:
            - googleModelArmor:
-               templateId: <template-ID
+               templateId: <template-ID>
                projectId: <project-ID>
                location: <location>
                policies:
@@ -196,6 +196,8 @@ In your GKE cluster, set up workload identity.
                      type: AccessToken
    EOF
    ```
+
+   The `policies` field supports more than the `gcp` authentication shown here. You can also tune the connection that agentgateway opens to Model Armor, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
 
 2. Send a request to the Gemini provider that triggers the guardrail. 
    {{< tabs >}}
@@ -269,3 +271,56 @@ In your GKE cluster, set up workload identity.
    The request was rejected due to inappropriate content
    ```
 
+## Backend connection and authentication policies
+
+The `policies` field configures how agentgateway connects and authenticates to Google Model Armor when it evaluates a request or response.
+
+### Authentication
+
+Under `policies.auth`, set the credential source.
+
+| Method | Description |
+| -- | -- |
+| `gcp` | Authenticate with GCP credentials. Set `gcp: {}` to use the default Google credential discovery, or set the credential `type` to use, such as `AccessToken`. |
+
+### Backend connection settings
+
+You can also tune the connection that agentgateway opens to the Model Armor backend by setting the following `BackendConnectionPolicy` fields under `policies`.
+
+| Setting | Description |
+| -- | -- |
+| `tls` | TLS settings for the connection, such as a custom CA certificate or SNI. |
+| `http` | HTTP settings, such as the `requestTimeout` and HTTP protocol `version`. |
+| `tcp` | TCP connection settings. |
+| `tunnel` | Tunnel settings, such as an `HTTPS_PROXY`, used to reach the backend. |
+
+For example, the following prompt guard sets a request timeout for the calls to Model Armor.
+
+```yaml
+- googleModelArmor:
+    templateId: <template-ID>
+    projectId: <project-ID>
+    location: <location>
+    policies:
+      auth:
+        gcp:
+          type: AccessToken
+      http:
+        requestTimeout: 5s
+```
+
+For the full set of fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
+
+## Cleanup
+
+{{< reuse "agw-docs/snippets/cleanup.md" >}}
+
+```sh
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} google-prompt-guard -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```
+
+If you set up a local cluster (kind), also delete the credentials secret. For a GKE cluster that uses workload identity, no secret is created.
+
+```sh
+kubectl delete secret gcp-credentials -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+```

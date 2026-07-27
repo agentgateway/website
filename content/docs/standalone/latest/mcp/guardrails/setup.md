@@ -44,68 +44,68 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
 2. In another terminal, create a `config.yaml` file. The MCP backend exposes a local stdio MCP server, and the `mcpGuardrails` policy on the route sends selected MCP methods through the ExtMCP server.
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - policies:
-           cors:
-             allowOrigins:
-             - "*"
-             allowHeaders:
-             - mcp-protocol-version
-             - content-type
-             - mcp-session-id
-             exposeHeaders:
-             - "Mcp-Session-Id"
-           mcpGuardrails:
-             processors:
-             - kind: remote
-               host: "localhost:9001"
-               failureMode: failClosed
-               methods:
-                 tools/call: request
-                 tools/list: response
-         backends:
-         - mcp:
-             targets:
-             - name: everything
-               stdio:
-                 cmd: npx
-                 args: ["@modelcontextprotocol/server-everything"]
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - policies:
+       cors:
+         allowOrigins:
+         - "*"
+         allowHeaders:
+         - mcp-protocol-version
+         - content-type
+         - mcp-session-id
+         exposeHeaders:
+         - "Mcp-Session-Id"
+       mcpGuardrails:
+         processors:
+         - kind: remote
+           host: "localhost:9001"
+           failureMode: failClosed
+           methods:
+             tools/call: request
+             tools/list: response
+     backends:
+     - mcp:
+         targets:
+         - name: everything
+           stdio:
+             cmd: npx
+             args: ["@modelcontextprotocol/server-everything"]
    ```
 
    {{< doc-test paths="mcp-guardrails" >}}
    cat <<'EOF' > config.yaml
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - policies:
-           cors:
-             allowOrigins:
-             - "*"
-             allowHeaders:
-             - mcp-protocol-version
-             - content-type
-             - mcp-session-id
-             exposeHeaders:
-             - "Mcp-Session-Id"
-           mcpGuardrails:
-             processors:
-             - kind: remote
-               host: "localhost:9001"
-               failureMode: failClosed
-               methods:
-                 tools/call: request
-                 tools/list: response
-         backends:
-         - mcp:
-             targets:
-             - name: everything
-               stdio:
-                 cmd: npx
-                 args: ["@modelcontextprotocol/server-everything"]
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - policies:
+       cors:
+         allowOrigins:
+         - "*"
+         allowHeaders:
+         - mcp-protocol-version
+         - content-type
+         - mcp-session-id
+         exposeHeaders:
+         - "Mcp-Session-Id"
+       mcpGuardrails:
+         processors:
+         - kind: remote
+           host: "localhost:9001"
+           failureMode: failClosed
+           methods:
+             tools/call: request
+             tools/list: response
+     backends:
+     - mcp:
+         targets:
+         - name: everything
+           stdio:
+             cmd: npx
+             args: ["@modelcontextprotocol/server-everything"]
    EOF
    {{< /doc-test >}}
 

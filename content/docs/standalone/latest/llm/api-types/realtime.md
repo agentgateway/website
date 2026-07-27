@@ -38,41 +38,41 @@ Set up your agentgateway configuration with the `realtime` route type and a tran
    ```yaml {paths="realtime-standalone"}
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - matches:
-         - path:
-             pathPrefix: "/v1/realtime"
-         backends:
-         - ai:
-             name: openai
-             provider:
-               openAI: {}
-         policies:
-           ai:
-             routes:
-               "/v1/realtime": "realtime"
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           transformations:
-             request:
-               remove:
-               - sec-websocket-extensions
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4
-         policies:
-           ai:
-             routes:
-               "/v1/chat/completions": "completions"
-               "*": "passthrough"
-           backendAuth:
-             key: "$OPENAI_API_KEY"
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - matches:
+     - path:
+         pathPrefix: "/v1/realtime"
+     backends:
+     - ai:
+         name: openai
+         provider:
+           openAI: {}
+     policies:
+       ai:
+         routes:
+           "/v1/realtime": "realtime"
+       backendAuth:
+         key: "$OPENAI_API_KEY"
+       transformations:
+         request:
+           remove:
+           - sec-websocket-extensions
+   - backends:
+     - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-4
+     policies:
+       ai:
+         routes:
+           "/v1/chat/completions": "completions"
+           "*": "passthrough"
+       backendAuth:
+         key: "$OPENAI_API_KEY"
    EOF
    ```
 

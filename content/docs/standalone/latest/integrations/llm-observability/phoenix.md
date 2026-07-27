@@ -44,19 +44,19 @@ config:
     otlpEndpoint: http://localhost:4317
     randomSampling: true
 
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4o-mini
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI:
+          model: gpt-4o-mini
+  policies:
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
 ## Docker Compose example

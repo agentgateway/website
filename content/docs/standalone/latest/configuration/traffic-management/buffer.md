@@ -28,16 +28,16 @@ Use a `policies` block to configure body buffering at the listener, route, or ba
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          buffer:
-            request:
-              maxBytes: 64Ki
-            response:
-              maxBytes: 256Ki
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      buffer:
+        request:
+          maxBytes: 64Ki
+        response:
+          maxBytes: 256Ki
 ```
