@@ -1,6 +1,6 @@
 ---
 title: Gateways
-weight: 11
+weight: 20
 description: Define named gateways that set up the ports and listeners where LLM, MCP, UI, and routing traffic enters agentgateway.
 prev: /configuration/overview
 next: /configuration/listeners
@@ -14,9 +14,8 @@ Gateways are the entry point to agentgateway. Each gateway is a named port that 
 
 Because everything attaches to a gateway by name, you can serve several features on one port, or expose the same routes on more than one port.
 
-{{< callout type="info" >}}
-Gateways replace the `binds` field. The `binds` field still works, but it is deprecated. For help converting an existing configuration, see [Migrate from binds](#migrate-from-binds).
-{{< /callout >}}
+> [!NOTE]
+> Gateways replace the `binds` field. The `binds` field still works, but it is deprecated. For help converting an existing configuration, see [Migrate from binds](#migrate-from-binds).
 
 {{< doc-test paths="gateways" >}}
 {{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
@@ -39,6 +38,55 @@ Agentgateway configuration has three layers.
 * **Routes** define how traffic that reaches a gateway is matched and forwarded. Routes are configured at the top level and attach to gateways by name, which is what lets one route serve several gateways.
 
 The `llm`, `mcp`, and `ui` sections attach to gateways the same way that routes do.
+
+The following diagram shows traffic flowing left to right through the three layers, for two gateways.
+
+* The `default` gateway on port 3000 sets no `listeners`, so it gets one implicit listener that serves all hostnames. You do not configure that listener; the dotted box marks it as implied.
+* The `web` gateway on port 8443 splits its port into two named listeners that serve different hostnames.
+* Routes and features attach by name in the last column. A route that names `web` is served by every listener under that gateway, so both `discrete` and `wildcard` forward to it. A route that names `web/discrete` is served by that one listener only.
+
+```mermaid
+flowchart LR
+    C(["Client<br/>traffic"]):::client
+
+    subgraph gw["gateways: where traffic enters"]
+        GD["default<br/>port 3000"]:::gateway
+        GW["web<br/>port 8443"]:::gateway
+    end
+
+    subgraph ls["listeners: split one port by hostname"]
+        LI["implicit listener<br/>all hostnames"]:::implicit
+        LD["discrete<br/>a.example.com"]:::listener
+        LW["wildcard<br/>*.example.com"]:::listener
+    end
+
+    subgraph at["routes and features: attach by name"]
+        RD["route<br/>gateways: [default]"]:::route
+        FE["llm / mcp / ui<br/>gateways: [default]"]:::feature
+        RA["route<br/>gateways: [web/discrete]"]:::route
+        RW["route<br/>gateways: [web]"]:::route
+    end
+
+    C --> GD
+    C --> GW
+    GD --> LI
+    GW --> LD
+    GW --> LW
+    LI --> RD
+    LI --> FE
+    LD --> RA
+    LD --> RW
+    LW --> RW
+
+    %% Stroke-only styling, so node text follows the light or dark page theme.
+    %% Border weight and dashes carry the meaning, not color alone.
+    classDef client stroke:#7734be,stroke-width:1px,stroke-dasharray:4 3;
+    classDef gateway stroke:#7734be,stroke-width:3px;
+    classDef listener stroke:#7734be,stroke-width:2px,stroke-dasharray:6 3;
+    classDef implicit stroke:#7734be,stroke-width:1px,stroke-dasharray:2 3;
+    classDef route stroke:#7734be,stroke-width:1px;
+    classDef feature stroke:#7734be,stroke-width:1px,stroke-dasharray:2 2;
+```
 
 ## Define a gateway {#define}
 
@@ -321,9 +369,8 @@ ui: {}
 
 By default, the UI is served only on the admin interface on `localhost:15000`. Setting the `ui` section serves it on a gateway instead.
 
-{{< callout type="warning" >}}
-Serving the UI on a gateway exposes it to anyone who can reach that port. Protect it with authentication, typically [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}), before you expose it outside of localhost.
-{{< /callout >}}
+> [!WARNING]
+> Serving the UI on a gateway exposes it to anyone who can reach that port. Protect it with authentication, typically [OIDC]({{< link-hextra path="/configuration/security/oidc/" >}}), before you expose it outside of localhost.
 
 {{< doc-test paths="gateways" >}}
 # WHAT THIS TEST VALIDATES:
@@ -509,6 +556,5 @@ To convert a configuration:
 
 If you configure agentgateway through the UI, the UI detects an existing `binds` configuration and offers a one-click migration to gateways.
 
-{{< callout type="info" >}}
-You can keep `binds` and `gateways` in the same file while you migrate, as long as they do not claim the same port.
-{{< /callout >}}
+> [!NOTE]
+> You can keep `binds` and `gateways` in the same file while you migrate, as long as they do not claim the same port.
