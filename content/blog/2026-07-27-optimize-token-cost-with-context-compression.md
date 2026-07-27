@@ -39,7 +39,7 @@ POST /v1/compress
 
 The extension point is deliberately implementation neutral: you choose the implementation that delivers the best results for your use cases. This neutrality is a direct response to the state of the field. Techniques differ by content type: structured JSON tool output crushes to a fraction of its size, prose needs semantic selection, and source code yields the least. Results differ several-fold by workload, and the field is moving too fast to lock one algorithm into the data plane. So the gateway supplies the safe plumbing and the telemetry to judge any engine you put behind it. If a better engine ships next quarter, swapping it in is a config change.
 
-```
+```yaml
 llm:
   models:
   - name: "*"
