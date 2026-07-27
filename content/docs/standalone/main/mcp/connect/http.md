@@ -44,9 +44,8 @@ sequenceDiagram
 
 By default, agentgateway proxies streamable HTTP in **stateful** mode, as described in the previous section. You can instead run in **stateless** mode with the `statefulMode` field, so that agentgateway does not create a session or return an `Mcp-Session-Id` header. Each request is treated independently, and the client must send the full context that the request needs. This mode suits stateless agents, or MCP servers where the client handles state directly.
 
-{{< callout type="info" >}}
-The `statefulMode` field controls how agentgateway proxies session-based servers. It is separate from the newer, inherently sessionless `2026-07-28` MCP protocol, which agentgateway supports automatically through version negotiation. For more information, see [MCP spec compatibility]({{< link-hextra path="/mcp/spec-compatibility" >}}).
-{{< /callout >}}
+> [!NOTE]
+> The `statefulMode` field controls how agentgateway proxies session-based servers. It is separate from the newer, inherently sessionless `2026-07-28` MCP protocol, which agentgateway supports automatically through version negotiation. For more information, see [MCP spec compatibility]({{< link-hextra path="/mcp/spec-compatibility" >}}).
 
 To use stateless mode, set `statefulMode` to `stateless` on the MCP configuration.
 

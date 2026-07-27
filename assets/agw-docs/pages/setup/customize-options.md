@@ -24,9 +24,8 @@ Review the built-in configurations that are provided via the [{{< reuse "agw-doc
 | `resources` | Set resource limits and requests. For more information, see the [Kubernetes documentation](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/). | 
 | `workload` | Select the Kubernetes workload kind for the managed Gateway data plane. |
 
-{{< callout type="info" >}}
-Because the built-in customization options are provided by the agentgateway API, they are considered stable and do not change between upgrades. Use the built-in customization options where possible. To change configuration that is not exposed via the built-in options, use [overlays](#overlays) instead, or [add raw upstream agentgateway configuration](#raw-config) to your proxies. 
-{{< /callout >}}
+> [!NOTE]
+> Because the built-in customization options are provided by the agentgateway API, they are considered stable and do not change between upgrades. Use the built-in customization options where possible. To change configuration that is not exposed via the built-in options, use [overlays](#overlays) instead, or [add raw upstream agentgateway configuration](#raw-config) to your proxies. 
 
 To find common configuration examples, [Example configs]({{< link-hextra path="/setup/customize/configs/" >}}). 
 
@@ -63,11 +62,10 @@ Overlays are applied **after** the agentgateway control plane renders the base K
 3. The control plane applies any overlays that you specified in the {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 4. The control plane creates or updates the resources in the cluster. 
 
-{{< callout context="warning" >}}
-Unlike the built-in customization options, overlays are **not validated** by the agentgateway control plane when you create the Gateway. Instead, the resulting resources, such as the Deployment or DaemonSet, are validated by Kubernetes when the resources are created or updated.
-
-Keep in mind that the overlay API is **not stable** and might change between Kubernetes versions, which can lead to breaking changes or unexpected behaviors. Make sure to test your overlay configurations thoroughly after each upgrade and use these configurations only if the customization cannot be achieved with the built-in option. 
-{{< /callout >}}
+> [!WARNING]
+> Unlike the built-in customization options, overlays are **not validated** by the agentgateway control plane when you create the Gateway. Instead, the resulting resources, such as the Deployment or DaemonSet, are validated by Kubernetes when the resources are created or updated.
+>
+> Keep in mind that the overlay API is **not stable** and might change between Kubernetes versions, which can lead to breaking changes or unexpected behaviors. Make sure to test your overlay configurations thoroughly after each upgrade and use these configurations only if the customization cannot be achieved with the built-in option. 
 
 ### Remove or replace config
 
@@ -133,9 +131,8 @@ For configuration that is not exposed via the {{< reuse "agw-docs/snippets/gatew
 
 To find the raw configuration that you want to apply, review [Configuration](https://agentgateway.dev/docs/standalone/latest/configuration/) in the standalone agentgateway binary docs. 
 
-{{< callout context="danger">}}
-Note that raw configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
-{{< /callout >}}
+> [!CAUTION]
+> Note that raw configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
 
 For a setup example, see [Customize the gateway]({{< link-hextra path="/setup/customize/customize/#rawconfig" >}}). 
 

@@ -11,9 +11,8 @@ test:
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama-standalone.md" >}}
 
-{{< callout type="info" >}}
-Local providers like Ollama usually run over HTTP and do not require `llm.models[].auth` or `llm.models[].tls`. If your Ollama endpoint is behind HTTPS or requires authentication, configure `llm.models[].tls` and `llm.models[].auth` like any other upstream provider.
-{{< /callout >}}
+> [!NOTE]
+> Local providers like Ollama usually run over HTTP and do not require `llm.models[].auth` or `llm.models[].tls`. If your Ollama endpoint is behind HTTPS or requires authentication, configure `llm.models[].tls` and `llm.models[].auth` like any other upstream provider.
 
 {{< doc-test paths="ollama-standalone-validate" >}}
 # Install agentgateway binary for testing

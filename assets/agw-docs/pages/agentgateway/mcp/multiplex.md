@@ -2,9 +2,8 @@ To federate multiple MCP servers on the same gateway, you can use a label select
 
 This approach, also referred to as multiplexing, makes it easier for you to add more MCP servers by adding labels. It also lets your clients access tools from multiple MCP servers through a single endpoint and MCP connection.
 
-{{< callout type="warning" >}}
-Note that only streamable HTTP is currently supported for label selectors. If you have SSE, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
-{{< /callout >}}
+> [!WARNING]
+> Note that only streamable HTTP is currently supported for label selectors. If you have SSE, use a [static MCP Backend]({{< link-hextra path="/mcp/static-mcp/">}}).
 
 ## Before you begin
 
@@ -174,7 +173,7 @@ EOF
    > 
    > * `Conditional` (default): Prefix names only when the backend has more than one target.
    > * `Always`: Always prefix names, even with a single target.
-   > * `Never`: Never prefix names. Calls are routed by looking up which target serves the name, so names must be unique across all targets. Use this mode when clients need plain tool names, such as for [MCP Apps]({{< link-hextra path="/mcp/apps" >}}).
+   > * `Never`: Never prefix names. Calls are routed by looking up which target serves the name, so names must be unique across all targets. Use this mode when clients need plain tool names{{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}, such as for [MCP Apps]({{< link-hextra path="/mcp/apps" >}}){{< /version >}}.
    >
    > ```yaml
    > spec:

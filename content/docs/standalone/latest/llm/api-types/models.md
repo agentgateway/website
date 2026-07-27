@@ -25,9 +25,8 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-{{< callout type="info" >}}
-For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
 
 ## Using the API
 

@@ -22,9 +22,8 @@ The following image illustrates the route delegation hierarchy:
 **`child-team2` HTTPRoute**:
 * Carries the `team: team2` label and matches incoming traffic for the `/anything/team2/bar` exact path. Routes traffic to the httpbin app in the `team2` namespace.
 
-{{< callout type="info" >}}
-The label key and value are arbitrary. Pick a convention that makes sense for your environment, such as `team`, `app`, or `tier`. The parent and the children must agree on both the key and the value.
-{{< /callout >}}
+> [!NOTE]
+> The label key and value are arbitrary. Pick a convention that makes sense for your environment, such as `team`, `app`, or `tier`. The parent and the children must agree on both the key and the value.
 
 ## Before you begin
 

@@ -270,15 +270,14 @@ spec:
 EOF
 ```
 
-{{< callout type="info" >}}
-This example routes directly from the `HTTPRoute` to each `InferencePool`. To
-combine `InferencePool` endpoint selection with agentgateway LLM features such
-as token rate limiting, guardrails, transformations, and LLM observability,
-route the `HTTPRoute` to {{< reuse "agw-docs/snippets/backend.md" >}}
-resources that use custom providers with `InferencePool` `backendRef` targets.
-For more information, see [Use AI policies with
-InferencePools]({{< link-hextra path="/inference/#ai-policies" >}}).
-{{< /callout >}}
+> [!NOTE]
+> This example routes directly from the `HTTPRoute` to each `InferencePool`. To
+> combine `InferencePool` endpoint selection with agentgateway LLM features such
+> as token rate limiting, guardrails, transformations, and LLM observability,
+> route the `HTTPRoute` to {{< reuse "agw-docs/snippets/backend.md" >}}
+> resources that use custom providers with `InferencePool` `backendRef` targets.
+> For more information, see [Use AI policies with
+> InferencePools]({{< link-hextra path="/inference/#ai-policies" >}}).
 
 ## Try it out
 

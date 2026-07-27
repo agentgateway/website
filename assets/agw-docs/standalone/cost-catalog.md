@@ -2,9 +2,8 @@ Agentgateway can track LLM spend by mapping each request's provider, model, and 
 
 Agentgateway extracts token usage from supported LLM APIs automatically. To convert those token counts into cost, configure a model cost catalog. The catalog maps provider and model names to pricing data so agentgateway can attach realized USD cost to logs, traces, metrics, and CEL expressions.
 
-{{< callout type="info" >}}
-Cost analysis is best-effort and may not exactly match your provider bill in scenarios such as price changes, custom pricing, failed requests, or provider-specific billing rules.
-{{< /callout >}}
+> [!NOTE]
+> Cost analysis is best-effort and may not exactly match your provider bill in scenarios such as price changes, custom pricing, failed requests, or provider-specific billing rules.
 
 ## Before you begin
 
@@ -100,9 +99,8 @@ You can also load one or more catalog files with the `MODEL_CATALOG_PATHS` envir
 MODEL_CATALOG_PATHS=./costs/catalog.json,./costs/overrides.json agentgateway -f config.yaml
 ```
 
-{{< callout type="warning" >}}
-When `MODEL_CATALOG_PATHS` is set, it replaces any `config.modelCatalog` sources. Use one mechanism or the other.
-{{< /callout >}}
+> [!WARNING]
+> When `MODEL_CATALOG_PATHS` is set, it replaces any `config.modelCatalog` sources. Use one mechanism or the other.
 
 ## Use cost data
 
@@ -155,9 +153,8 @@ Every cost lookup increments the `agentgateway_cost_catalog_lookups_total` count
 
 A rising `Missing` or `Unpriced` count means requests are flowing through models that your catalog does not price. Add the missing providers or models to your catalog and reload.
 
-{{< callout type="info" >}}
-In traces, the corresponding cost-resolution `status` attribute uses lowercase values: `exact`, `unpriced`, `missing`, and `noCatalog`.
-{{< /callout >}}
+> [!NOTE]
+> In traces, the corresponding cost-resolution `status` attribute uses lowercase values: `exact`, `unpriced`, `missing`, and `noCatalog`.
 
 ## Enforce budgets
 

@@ -439,9 +439,8 @@ This example shows routing based on a custom `priority` field in the request bod
 
 When implementing content-based routing, be aware of these limitations:
 
-{{< callout type="warning" >}}
-**PreRouting phase required**: Content-based routing requires `traffic.phase: PreRouting` and must target the Gateway (not HTTPRoute). This way, transformations run before route selection. Without PreRouting, the extracted header arrives too late for route matching.
-{{< /callout >}}
+> [!WARNING]
+> **PreRouting phase required**: Content-based routing requires `traffic.phase: PreRouting` and must target the Gateway (not HTTPRoute). This way, transformations run before route selection. Without PreRouting, the extracted header arrives too late for route matching.
 
 - **Performance impact**: Extracting fields from the request body adds processing overhead. For high-throughput scenarios, consider using header-based routing when possible.
 - **JSON parsing**: The `json()` CEL function requires valid JSON. Malformed JSON in the request body will cause routing failures.

@@ -12,10 +12,9 @@ test:
     path: ollama-provider-setup
 ---
 
-{{< callout type="info" >}}
-This guide shows the simple OpenAI-compatible configuration for Ollama. To
-declare multiple Ollama API formats, such as chat completions and messages, use
-a [custom provider]({{< link-hextra path="/llm/providers/custom/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> This guide shows the simple OpenAI-compatible configuration for Ollama. To
+> declare multiple Ollama API formats, such as chat completions and messages, use
+> a [custom provider]({{< link-hextra path="/llm/providers/custom/" >}}).
 
 {{< reuse "agw-docs/pages/agentgateway/llm/providers/ollama.md" >}}

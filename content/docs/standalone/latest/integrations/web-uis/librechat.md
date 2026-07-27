@@ -78,13 +78,12 @@ endpoints:
 
 Set `fetch: false` and list your models explicitly in `models.default`. When agentgateway is configured with a wildcard (`*`) model, the `/v1/models` endpoint returns only the wildcard entry, which LibreChat cannot use to populate its model list.
 
-{{< callout type="info" >}}
-If LibreChat runs in Docker and agentgateway runs on your host machine, replace `localhost` with `host.docker.internal`:
-
-```yaml
-baseURL: "http://host.docker.internal:3000/v1"
-```
-{{< /callout >}}
+> [!NOTE]
+> If LibreChat runs in Docker and agentgateway runs on your host machine, replace `localhost` with `host.docker.internal`:
+>
+> ```yaml
+> baseURL: "http://host.docker.internal:3000/v1"
+> ```
 
 ### Step 4: Enable registration and restart LibreChat
 

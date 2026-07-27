@@ -121,9 +121,8 @@ The webhook server is configured to take the following actions:
 * If the content has the word `block`, the request is rejected with a 403 Forbidden response.
 * If the response has the word `mask`, the gateway transforms the word `mask` to asterisks (`****`) in the body with a 200 response.
 
-{{< callout type="warning" >}}
-{{% reuse "agw-docs/snippets/demo-disclaimer.md" %}}
-{{< /callout >}}
+> [!WARNING]
+> {{% reuse "agw-docs/snippets/demo-disclaimer.md" %}}
 
 ### Before you begin
 
