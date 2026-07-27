@@ -240,9 +240,8 @@ The agentgateway controller tracks a log level per component, such as the transl
    kubectl logs -n agentgateway-system deploy/agentgateway -f
    ```
 
-{{< callout type="info" >}}
-You can also get and set the proxy log level directly through the `/logging` admin endpoint, such as `curl -X POST "http://localhost:15000/logging?level=debug"` after you port-forward to the proxy pod. The endpoint accepts the same `RUST_LOG` filter syntax for fine-grained, per-module levels, such as `info,proxy::httpproxy=trace`.
-{{< /callout >}}
+> [!NOTE]
+> You can also get and set the proxy log level directly through the `/logging` admin endpoint, such as `curl -X POST "http://localhost:15000/logging?level=debug"` after you port-forward to the proxy pod. The endpoint accepts the same `RUST_LOG` filter syntax for fine-grained, per-module levels, such as `info,proxy::httpproxy=trace`.
 
 ## Capture profiles
 

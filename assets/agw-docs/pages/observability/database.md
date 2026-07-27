@@ -21,9 +21,8 @@ config:
 
 The path after `sqlite://` is the filesystem path to the database file.
 
-{{< callout type="warning" >}}
-Do not point multiple agentgateway instances at the same SQLite file — use PostgreSQL instead.
-{{< /callout >}}
+> [!WARNING]
+> Do not point multiple agentgateway instances at the same SQLite file — use PostgreSQL instead.
 
 ## PostgreSQL
 

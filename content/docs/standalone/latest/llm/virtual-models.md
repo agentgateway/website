@@ -134,6 +134,5 @@ llm:
           when: request.headers["x-tier"] == "pro"
 ```
 
-{{< callout type="info" >}}
-For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/llm/providers/multiple-llms/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For reusable provider defaults in simplified mode, see [Multiple LLM providers]({{< link-hextra path="/llm/providers/multiple-llms/" >}}).

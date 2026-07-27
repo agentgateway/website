@@ -100,11 +100,10 @@ EOF
    | `field` | The name of the LLM request field to set. Maximum 256 characters. |
    | `expression` | A CEL expression that computes the value for the field. Use the `llmRequest` variable to access the original LLM request body. Maximum 16,384 characters. |
 
-   {{< callout type="info" >}}
-   You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
-
-   Thinking budget fields, such as `reasoning_effort` and `thinking_budget_tokens` can also be set or capped by using transformations. This way, operators can enforce reasoning limits centrally without requiring client changes. For example, use `"field": "reasoning_effort"` with the expression `"medium"` to cap all requests to medium reasoning efforts regardless of what the client sends.
-   {{< /callout >}}
+   > [!NOTE]
+   > You can specify up to 64 transformations per policy. Transformations take priority over `overrides` for the same field. If an expression fails to evaluate, the field is silently removed from the request.
+   >
+   > Thinking budget fields, such as `reasoning_effort` and `thinking_budget_tokens` can also be set or capped by using transformations. This way, operators can enforce reasoning limits centrally without requiring client changes. For example, use `"field": "reasoning_effort"` with the expression `"medium"` to cap all requests to medium reasoning efforts regardless of what the client sends.
 
 2. Verify that the {{< reuse "agw-docs/snippets/policy.md" >}} is accepted.
 
@@ -114,9 +113,8 @@ EOF
 
 3. Send a request with `max_completion_tokens` set to a value greater than 10. The transformation limits it to 10 before the request reaches the LLM provider. Verify that the `completion_tokens` value in the response is 10 or fewer and the `finish_reason` is set to `length`.
 
-   {{< callout type="info" >}}
-   Some older OpenAI models use `max_tokens` instead of `max_completion_tokens`. If the transformation does not appear to take effect, check the model's API documentation for the correct field name and update the transformation's `field` value accordingly.
-   {{< /callout >}}
+   > [!NOTE]
+   > Some older OpenAI models use `max_tokens` instead of `max_completion_tokens`. If the transformation does not appear to take effect, check the model's API documentation for the correct field name and update the transformation's `field` value accordingly.
 
    {{< tabs >}}
 
@@ -377,9 +375,8 @@ EOF
    x-actual-model: gpt-4o-mini
    ```
 
-   {{< callout type="info" >}}
-   When sending traffic to the gateway with traffic compression enabled, such as `gzip` or `br`, the CEL expression could fail. If a header is missing from a response, try a different `accept-encoding` header in your request.
-   {{< /callout >}}
+   > [!NOTE]
+   > When sending traffic to the gateway with traffic compression enabled, such as `gzip` or `br`, the CEL expression could fail. If a header is missing from a response, try a different `accept-encoding` header in your request.
    
 <!-- metadata not working issue: https://github.com/agentgateway/agentgateway/issues/1554 -->
 <!--

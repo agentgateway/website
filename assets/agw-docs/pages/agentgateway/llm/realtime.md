@@ -6,9 +6,8 @@ The [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime
 
 To enable token usage tracking, you must prevent the client and server from negotiating WebSocket frame compression. When the `sec-websocket-extensions: permessage-deflate` header is present, the WebSocket frames are compressed and {{< reuse "agw-docs/snippets/agentgateway.md" >}} cannot parse the token usage data. Remove this header from the request so that frames remain uncompressed and parseable.
 
-{{< callout type="info" >}}
-The `Realtime` route type supports token usage tracking and observability. Other LLM policies such as prompt guards, prompt enrichment, and request-body rate limiting are not supported for WebSocket traffic.
-{{< /callout >}}
+> [!NOTE]
+> The `Realtime` route type supports token usage tracking and observability. Other LLM policies such as prompt guards, prompt enrichment, and request-body rate limiting are not supported for WebSocket traffic.
 
 ## Before you begin
 

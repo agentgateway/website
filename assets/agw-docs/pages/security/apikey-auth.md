@@ -2,9 +2,8 @@
 * You know the set of users that need access to your service. These users do not change often, or you have automation that easily generates or deletes the API key when the users do change.
 * You want direct control over how the credentials are generated and expire.
 
-{{< callout type="warning" >}}
-When you use API keys, your services are only as secure as the API keys. Storing and rotating the API key securely is up to the user.
-{{< /callout >}}
+> [!WARNING]
+> When you use API keys, your services are only as secure as the API keys. Storing and rotating the API key securely is up to the user.
 
 ## API key auth in agentgateway
 
@@ -120,9 +119,8 @@ Store your API keys in a Kubernetes ConfigMap so that you can reference them in 
    EOF
    ```
 
-{{< callout type="warning" >}}
-Every entry in a selected ConfigMap must use `keyHash`. If an entry uses a raw `key`, that entry is rejected and the policy reports a `PartiallyValid` status, while the valid entries continue to work.
-{{< /callout >}}
+> [!WARNING]
+> Every entry in a selected ConfigMap must use `keyHash`. If an entry uses a raw `key`, that entry is rejected and the policy reports a `PartiallyValid` status, while the valid entries continue to work.
 {{< /version >}}
 
 {{< version include-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
@@ -485,9 +483,8 @@ EOF
 
 Use the `Optional` mode to validate API keys when present, but allow requests without an API key. This mode is useful for services that offer both authenticated and unauthenticated access.
 
-{{< callout type="warning" >}}
-The `Optional` mode allows requests without an API key. Use this mode only when you intend to allow unauthenticated access to your services.
-{{< /callout >}}
+> [!WARNING]
+> The `Optional` mode allows requests without an API key. Use this mode only when you intend to allow unauthenticated access to your services.
 
 {{< version exclude-if="1.3.x,1.2.x,1.1.x,1.0.x,2.2.x" >}}
 ```yaml

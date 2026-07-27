@@ -339,15 +339,14 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 
 ## Known limitations
 
-{{< callout type="warning" >}}
-**Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
-- 503 Service Unavailable responses
-- Connection refused or timeout errors
-- DNS resolution failures
-- Other error codes (404, 500, etc.)
-
-Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
-{{< /callout >}}
+> [!WARNING]
+> **Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
+> - 503 Service Unavailable responses
+> - Connection refused or timeout errors
+> - DNS resolution failures
+> - Other error codes (404, 500, etc.)
+>
+> Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
 
 ## Monitoring load balancing
 

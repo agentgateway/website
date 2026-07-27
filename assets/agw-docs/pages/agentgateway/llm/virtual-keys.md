@@ -241,9 +241,8 @@ spec:
 EOF
 ```
 
-{{< callout type="warning" >}}
-`secretSelector` matches `Secret` resources only. Keep key identifiers unique across the selected Secrets: if the same key is defined in more than one Secret, the behavior is undefined.
-{{< /callout >}}
+> [!WARNING]
+> `secretSelector` matches `Secret` resources only. Keep key identifiers unique across the selected Secrets: if the same key is defined in more than one Secret, the behavior is undefined.
 {{% /tab %}}
 {{< /tabs >}}
 
@@ -336,9 +335,8 @@ EOF
 
 ### Test the virtual keys
 
-{{< callout type="info" >}}
-The following steps verify API key authentication, routing, and per-key token budget enforcement. Budget enforcement requires the rate limit server from the [previous step](#deploy-the-rate-limit-server).
-{{< /callout >}}
+> [!NOTE]
+> The following steps verify API key authentication, routing, and per-key token budget enforcement. Budget enforcement requires the rate limit server from the [previous step](#deploy-the-rate-limit-server).
 
 {{< doc-test paths="virtual-keys-openai-test" >}}
 # Test virtual key authentication and routing against the OpenAI route
@@ -641,9 +639,8 @@ Track token usage and spending for each virtual key by using Prometheus metrics.
 
 By default, the {{< reuse "agw-docs/snippets/agentgateway.md" >}} token usage metric (`agentgateway_gen_ai_client_token_usage`) is broken down by dimensions such as the model and token type, but *not* by user. To attribute usage to each virtual key, add a `user_id` label to the metrics with a metrics policy, then query Prometheus.
 
-{{< callout type="info" >}}
-The token usage metric only appears after a request *succeeds* and the LLM returns a usage count. Requests that are rejected (for example, a `401` from an invalid key or a `429` from the rate limit) never reach the LLM, so they do not produce token usage metrics.
-{{< /callout >}}
+> [!NOTE]
+> The token usage metric only appears after a request *succeeds* and the LLM returns a usage count. Requests that are rejected (for example, a `401` from an invalid key or a `429` from the rate limit) never reach the LLM, so they do not produce token usage metrics.
 
 ### Before you begin {#monitor-prereqs}
 
@@ -745,9 +742,8 @@ You can add a per-key metric label such as to track metrics by user ID. Note tha
    {"status":"success","data":{"resultType":"vector","result":[{"metric":{},"value":[1782411059.867,"0"]},{"metric":{"user_id":"bob"},"value":[1782411059.867,"370.95800165527817"]},{"metric":{"user_id":"alice"},"value":[1782411059.867,"307.9427844448483"]}]}}
    ```
 
-   {{< callout type="info" >}}
-   `increase()` and `rate()` need at least two samples within the time range to report a value, so a brand-new `user_id` series shows no result until it has been scraped a few times under continuous traffic. For a quick instant check, query the cumulative counter directly: `sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum)`.
-   {{< /callout >}}
+   > [!NOTE]
+   > `increase()` and `rate()` need at least two samples within the time range to report a value, so a brand-new `user_id` series shows no result until it has been scraped a few times under continuous traffic. For a quick instant check, query the cumulative counter directly: `sum by (user_id) (agentgateway_gen_ai_client_token_usage_sum)`.
 
 3. Calculate costs per user by multiplying token counts by your provider's pricing. Input and output tokens are usually priced differently, so reduce each token type to a per-user series with `sum by (user_id)` before adding them, which keeps the two sides matchable.
 

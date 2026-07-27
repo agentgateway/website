@@ -46,9 +46,8 @@ The PreRouting phase supports only the following filters, in order of execution.
 
 To run a filter in the PreRouting phase, set `phase: PreRouting` on the traffic policy.
 
-{{< callout type="info">}}
-PreRouting policies can only target a Gateway or ListenerSet.
-{{< /callout >}}
+> [!NOTE]
+> PreRouting policies can only target a Gateway or ListenerSet.
 
 | Order | Filter | Field |
 | :--: | -- | -- |

@@ -24,9 +24,8 @@ Configure [Cursor](https://cursor.com/), the AI code editor, to route requests t
 
    For example, if your HTTPRoute uses path `/openai` on your `ai-example.com` secured host, use `https://ai-example.com/openai`.
 
-   {{< callout type="info" >}}
-   You do not need to provide LLM provider credentials (such as an API key) through Cursor. The credentials are configured in agentgateway. Toggle off any API key overrides in Cursor.
-   {{< /callout >}}
+   > [!NOTE]
+   > You do not need to provide LLM provider credentials (such as an API key) through Cursor. The credentials are configured in agentgateway. Toggle off any API key overrides in Cursor.
 
 ## Verify the connection
 

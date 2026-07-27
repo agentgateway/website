@@ -123,11 +123,10 @@ policies:
       # Check for a specific Descope role
 ```
 
-{{< callout type="info" >}}
-Checking for a specific Descope role will depend on your [Authorization Claims Configuration](https://docs.descope.com/management/token/jwt-templates#authorization-claims-configuration).
-
-If using the Default Descope JWT, then roles will be found in `jwt.tenants["<YOUR TENANT ID>"].roles`, otherwise if using No Tenant Reference authorization claim format, then you can expect to find them in `jwt.roles`.
-{{< /callout >}}
+> [!NOTE]
+> Checking for a specific Descope role will depend on your [Authorization Claims Configuration](https://docs.descope.com/management/token/jwt-templates#authorization-claims-configuration).
+>
+> If using the Default Descope JWT, then roles will be found in `jwt.tenants["<YOUR TENANT ID>"].roles`, otherwise if using No Tenant Reference authorization claim format, then you can expect to find them in `jwt.roles`.
 
 ## Learn more
 

@@ -163,12 +163,11 @@ config:
 EOF
 ```
 
-{{< callout type="info" >}}
-To create the base64-encoded credentials for Langfuse Cloud, run the following command.
-```bash
-echo -n "public-key:secret-key" | base64
-```
-{{< /callout >}}
+> [!NOTE]
+> To create the base64-encoded credentials for Langfuse Cloud, run the following command.
+> ```bash
+> echo -n "public-key:secret-key" | base64
+> ```
 
 ## Verify integration
 

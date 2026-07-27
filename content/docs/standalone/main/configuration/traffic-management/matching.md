@@ -32,9 +32,8 @@ If no path match is specified, the default is to match all paths (`/`).
 | Prefix      | `{ "pathPrefix": "/foo" }`           | Matches any path starting with `/foo`       |
 | Regex       | `{ "regex": ["^/foo/[0-9]+$", 0] }`  | Matches paths using a regular expression    |
 
-{{< callout type="info">}}
-Only one of `exact`, `pathPrefix`, or `regex` can be specified per path matcher.
-{{< /callout >}}
+> [!NOTE]
+> Only one of `exact`, `pathPrefix`, or `regex` can be specified per path matcher.
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
 

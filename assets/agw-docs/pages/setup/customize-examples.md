@@ -393,9 +393,8 @@ spec:
 EOF
 ```
 
-{{< callout type="warning" >}}
-**Important:** Place `$patch: replace` as a separate list item before your actual items. If you include it in the same item as your config, you might end up with an empty list.
-{{< /callout >}}
+> [!WARNING]
+> **Important:** Place `$patch: replace` as a separate list item before your actual items. If you include it in the same item as your config, you might end up with an empty list.
 
 
 ### Custom labels and annotations {#labels-annotations}

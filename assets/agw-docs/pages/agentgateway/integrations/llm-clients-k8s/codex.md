@@ -19,10 +19,9 @@ requests to `/v1/responses`.
 export AGENTGATEWAY_BASE_URL="http://${INGRESS_GW_ADDRESS}/v1"
 ```
 
-{{< callout type="info" >}}
-For a TLS-enabled gateway, set `AGENTGATEWAY_BASE_URL` to its HTTPS URL ending
-in `/v1`.
-{{< /callout >}}
+> [!NOTE]
+> For a TLS-enabled gateway, set `AGENTGATEWAY_BASE_URL` to its HTTPS URL ending
+> in `/v1`.
 
 ## Verify gateway connectivity
 
@@ -95,9 +94,8 @@ codex --profile agentgateway
 
    A successful entry has `http.status=200` and `http.path=/v1/responses`.
 
-{{< callout type="info" >}}
-This configuration was tested with `codex-cli 0.144.4`.
-{{< /callout >}}
+> [!NOTE]
+> This configuration was tested with `codex-cli 0.144.4`.
 
 For more configuration options, see the [**Codex CLI documentation**](https://learn.chatgpt.com/docs/codex/cli).
 
@@ -136,9 +134,8 @@ Open config.toml** and apply the same provider configuration.
 
    A successful entry has `http.status=200` and `http.path=/v1/responses`.
 
-{{< callout type="info" >}}
-This configuration was tested with ChatGPT desktop app version `26.707.72221`.
-{{< /callout >}}
+> [!NOTE]
+> This configuration was tested with ChatGPT desktop app version `26.707.72221`.
 
 For more information, see the [**Codex app documentation**](https://learn.chatgpt.com/docs/environments/modes)
 and [**Codex configuration basics**](https://learn.chatgpt.com/docs/config-file/config-basic).

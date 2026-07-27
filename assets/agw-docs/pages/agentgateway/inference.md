@@ -151,9 +151,8 @@ Steps:
 
 4. Deploy the InferencePool and the Endpoint Picker extension (EPP/llm-d) via Helm. The InferencePool acts as a logical grouping of simulated AI model servers for load balancing and routing inference requests. The EPP provides intelligent selection among available model servers.
 
-   {{< callout type="info" >}}
-   The `GATEWAY_PROVIDER` is set to `none` because you install your own gateway provider, {{< reuse "agw-docs/snippets/kgateway.md" >}}.
-   {{< /callout >}}
+   > [!NOTE]
+   > The `GATEWAY_PROVIDER` is set to `none` because you install your own gateway provider, {{< reuse "agw-docs/snippets/kgateway.md" >}}.
 
    ```bash
    export IGW_CHART_VERSION=v1.5.0

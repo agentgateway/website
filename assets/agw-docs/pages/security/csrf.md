@@ -38,9 +38,8 @@ sequenceDiagram
     AGW-->>User: 200 OK
 ```
 
-{{< callout type="info" >}}
-Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
-{{< /callout >}}
+> [!NOTE]
+> Note that because CSRF attacks specifically target state-changing requests, the filter only acts on HTTP requests that have a state-changing method such as `POST` or `PUT`.
 
 {{< reuse "agw-docs/snippets/agentgateway/prereq.md" >}}
 

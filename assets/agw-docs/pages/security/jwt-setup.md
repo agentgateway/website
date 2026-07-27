@@ -232,9 +232,8 @@ When your identity provider runs outside the cluster (for example, Okta, Auth0, 
    EOF
    ```
 
-   {{< callout type="info" >}}
-   If the {{< reuse "/agw-docs/snippets/backend.md" >}} is in a different namespace than the {{< reuse "agw-docs/snippets/policy.md" >}}, add the `namespace` field to the `backendRef` and create a `ReferenceGrant` that permits the cross-namespace reference.
-   {{< /callout >}}
+   > [!NOTE]
+   > If the {{< reuse "/agw-docs/snippets/backend.md" >}} is in a different namespace than the {{< reuse "agw-docs/snippets/policy.md" >}}, add the `namespace` field to the `backendRef` and create a `ReferenceGrant` that permits the cross-namespace reference.
 
 ### Inline JWKS
 
