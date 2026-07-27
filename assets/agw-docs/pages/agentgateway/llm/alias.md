@@ -1,4 +1,10 @@
-Configure global or provider-specific aliases for your models to refer to your model by using user-friendly names. 
+Configure global or provider-specific aliases for your models to refer to your model by using user-friendly names.
+
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: The experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API aliases models by design, so it has no `modelAliases` field. Each resource publishes a client-facing name and rewrites it to the provider's name with a `model` transformation. For more information, see [About models]({{< link-hextra path="/llm/models/about/" >}}).
+{{< /version >}}
+
 
 ## Before you begin
 

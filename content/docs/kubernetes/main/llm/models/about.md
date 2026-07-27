@@ -99,6 +99,31 @@ A match must use one of the following forms. Wildcards in any other position are
 
 A wildcard model usually pairs with a `model` transformation, because the provider expects its own model name rather than the client-facing one. For an example, see [Serve a model]({{< link-hextra path="/llm/models/serve/" >}}).
 
+### Model aliasing
+
+A model resource is an alias by construction. The name that clients request is `metadata.name` or `match.model`, and the name that the provider receives comes from a `model` transformation. To publish `fast` as an alias for `gpt-3.5-turbo`, create a model named `fast` that rewrites the field.
+
+```yaml
+apiVersion: agentgateway.dev/v1alpha1
+kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+metadata:
+  name: fast
+  namespace: agentgateway-system
+spec:
+  parentRefs:
+  - group: gateway.networking.k8s.io
+    kind: Gateway
+    name: agentgateway-proxy
+    sectionName: http
+  provider: OpenAI
+  policies:
+    transformations:
+    - field: model
+      expression: '"gpt-3.5-turbo"'
+```
+
+Each alias is a separate resource, so it can carry its own credentials, authorization rules, and guardrails. For the {{< reuse "agw-docs/snippets/backend.md" >}} equivalent, see [Model aliasing]({{< link-hextra path="/llm/alias/" >}}).
+
 ## Visibility
 
 Use `spec.visibility` to control whether clients can request a model directly.

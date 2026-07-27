@@ -1,6 +1,6 @@
 ---
 title: Models
-weight: 12
+weight: 15
 description: Serve LLM models in Kubernetes with the model-centric AgentgatewayModel API.
 test: skip
 ---
