@@ -4,6 +4,8 @@
 | Key | Type | Description | Default |
 |-----|------|-------------|---------|
 | affinity | object | Set affinity rules for pod scheduling, such as 'nodeAffinity:'. | `{}` |
+| agentgatewayModels | object | Configure the experimental AgentgatewayModel API. | `{"enabled":false}` |
+| agentgatewayModels.enabled | bool | Enable AgentgatewayModel support in the agentgateway controller. | `false` |
 | commonLabels | object | Additional labels to add to all resources created by the Helm chart. | `{}` |
 | controller | object | Configure the agentgateway control plane deployment. | `{"extraContainers":[],"extraEnv":{},"extraVolumeMounts":[],"extraVolumes":[],"horizontalPodAutoscaler":{},"image":{"pullPolicy":"","registry":"","repository":"controller","tag":""},"logLevel":"info","podDisruptionBudget":{},"priorityClassName":"","replicaCount":1,"service":{"allocateLoadBalancerNodePorts":null,"annotations":{},"clusterIP":"","clusterIPs":[],"enabled":true,"externalIPs":[],"externalName":"","externalTrafficPolicy":"","extraLabels":{},"healthCheckNodePort":null,"internalTrafficPolicy":"","ipFamilies":[],"ipFamilyPolicy":"","loadBalancerClass":"","loadBalancerIP":"","loadBalancerSourceRanges":[],"ports":{"agwGrpc":9978,"health":9093,"metrics":9092},"publishNotReadyAddresses":false,"sessionAffinity":"","sessionAffinityConfig":{},"trafficDistribution":"","type":"ClusterIP"},"strategy":{},"verticalPodAutoscaler":{},"xds":{"mode":"tls"}}` |
 | controller.extraContainers | list | Add extra sidecar containers to the controller pod. | `[]` |
