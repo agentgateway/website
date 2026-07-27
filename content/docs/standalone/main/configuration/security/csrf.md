@@ -99,17 +99,17 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        csrf:
-          additionalOrigins:
-          - "https://www.example.com"
-          - "https://trusted.domain.com"
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    csrf:
+      additionalOrigins:
+      - "https://www.example.com"
+      - "https://trusted.domain.com"
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -117,25 +117,25 @@ binds:
 {{< doc-test paths="csrf" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The csrf policy with an additionalOrigins list is accepted by agentgateway
-#     in both the routing-based (binds) and simplified MCP (mcp.policies) forms.
+#     in both the routing-based (gateways) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That cross-site requests are actually blocked/allowed at runtime — requires
 #     a backend the page omits to forward to.
 #   * The standalone `additionalOrigins: []` snippet later on the page is a
-#     fragment (no binds:), so it is intentionally not tested.
+#     fragment (no `gateways:`), so it is intentionally not tested.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        csrf:
-          additionalOrigins:
-          - "https://www.example.com"
-          - "https://trusted.domain.com"
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    csrf:
+      additionalOrigins:
+      - "https://www.example.com"
+      - "https://trusted.domain.com"
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 

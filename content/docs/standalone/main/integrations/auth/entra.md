@@ -119,44 +119,44 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
-      - path:
-          pathPrefix: /.well-known/oauth-authorization-server/mcp
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-          exposeHeaders: ["Mcp-Session-Id"]
-        mcpAuthentication:
-          issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
-          audiences:
-          - api://<client-id>
-          - <client-id>
-          provider:
-            entra: {}
-          clientId: <client-id>
-          clientSecret: <client-secret>
-          resourceMetadata:
-            resource: http://localhost:3000/mcp
-            scopesSupported:
-            - api://<client-id>/mcp_access
-            bearerMethodsSupported:
-            - header
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  - path:
+      pathPrefix: /.well-known/oauth-authorization-server/mcp
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: ["*"]
+      exposeHeaders: ["Mcp-Session-Id"]
+    mcpAuthentication:
+      issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
+      audiences:
+      - api://<client-id>
+      - <client-id>
+      provider:
+        entra: {}
+      clientId: <client-id>
+      clientSecret: <client-secret>
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - api://<client-id>/mcp_access
+        bearerMethodsSupported:
+        - header
 ```
 {{< /tab >}}
 {{< /tabs >}}

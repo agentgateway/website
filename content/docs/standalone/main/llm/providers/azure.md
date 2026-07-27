@@ -98,22 +98,22 @@ For advanced Azure AI scenarios, use the traditional listener/route configuratio
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - matches:
-      - path:
-          pathPrefix: /azure
-      backends:
-      - ai:
-          name: azure
-          provider:
-            azure:
-              resourceName: "your-resource-name"
-              projectName: "your-project-name"
-              resourceType: foundry
-              model: gpt-4.1
+gateways:
+  default:
+    port: 3000
+routes:
+- matches:
+  - path:
+      pathPrefix: /azure
+  backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: "your-resource-name"
+          projectName: "your-project-name"
+          resourceType: foundry
+          model: gpt-4.1
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -127,30 +127,30 @@ binds:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - matches:
-      - path:
-          pathPrefix: /azure
-      policies:
-        backendAuth:
-          azure:
-            explicitConfig:
-              clientSecret:
-                tenantId: "<your-tenant-id>"
-                clientId: "<your-client-id>"
-                clientSecret: "<your-client-secret>"
-      backends:
-      - ai:
-          name: azure
-          provider:
-            azure:
-              resourceName: "your-resource-name"
-              projectName: "your-project-name"
-              resourceType: foundry
-              model: gpt-4.1
+gateways:
+  default:
+    port: 3000
+routes:
+- matches:
+  - path:
+      pathPrefix: /azure
+  policies:
+    backendAuth:
+      azure:
+        explicitConfig:
+          clientSecret:
+            tenantId: "<your-tenant-id>"
+            clientId: "<your-client-id>"
+            clientSecret: "<your-client-secret>"
+  backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: "your-resource-name"
+          projectName: "your-project-name"
+          resourceType: foundry
+          model: gpt-4.1
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -163,26 +163,26 @@ binds:
 **Client secret authentication**
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: azure
-          provider:
-            azure:
-              resourceName: "your-resource-name"
-              resourceType: openAI
-              model: gpt-4.1
-      policies:
-        backendAuth:
-          azure:
-            explicitConfig:
-              clientSecret:
-                tenantId: "<your-tenant-id>"
-                clientId: "<your-client-id>"
-                clientSecret: "<your-client-secret>"
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: "your-resource-name"
+          resourceType: openAI
+          model: gpt-4.1
+  policies:
+    backendAuth:
+      azure:
+        explicitConfig:
+          clientSecret:
+            tenantId: "<your-tenant-id>"
+            clientId: "<your-client-id>"
+            clientSecret: "<your-client-secret>"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -202,23 +202,23 @@ To use system-assigned managed identity:
 Leave the `managedIdentity` field empty so that the system assigns a managed identity to use.
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: azure
-          provider:
-            azure:
-              resourceName: "your-resource-name"
-              resourceType: openAI
-              model: gpt-4.1
-      policies:
-        backendAuth:
-          azure:
-            explicitConfig:
-              managedIdentity: {}
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: "your-resource-name"
+          resourceType: openAI
+          model: gpt-4.1
+  policies:
+    backendAuth:
+      azure:
+        explicitConfig:
+          managedIdentity: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -239,28 +239,28 @@ To use user-assigned managed identity:
 Specify the client ID of the user-assigned managed identity to use. You can also specify the object ID or resource ID instead.
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: azure
-          provider:
-            azure:
-              resourceName: "your-resource-name"
-              resourceType: openAI
-              model: gpt-4.1
-      policies:
-        backendAuth:
-          azure:
-            explicitConfig:
-              managedIdentity:
-                userAssignedIdentity:
-                  clientId: "<your-managed-identity-client-id>"
-                  # OR use objectId or resourceId instead
-                  # objectId: "your-managed-identity-object-id"
-                  # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: "your-resource-name"
+          resourceType: openAI
+          model: gpt-4.1
+  policies:
+    backendAuth:
+      azure:
+        explicitConfig:
+          managedIdentity:
+            userAssignedIdentity:
+              clientId: "<your-managed-identity-client-id>"
+              # OR use objectId or resourceId instead
+              # objectId: "your-managed-identity-object-id"
+              # resourceId: "/subscriptions/.../resourceGroups/.../providers/Microsoft.ManagedIdentity/userAssignedIdentities/..."
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -279,24 +279,24 @@ To use workload identity:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: azure
-          provider:
-            azure:
-              resourceName: "your-resource-name"
-              resourceType: openAI
-              model: gpt-4.1
-      policies:
-        backendAuth:
-          azure:
-            explicitConfig:
-              workloadIdentity: {}
-        backendTLS: {}
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: "your-resource-name"
+          resourceType: openAI
+          model: gpt-4.1
+  policies:
+    backendAuth:
+      azure:
+        explicitConfig:
+          workloadIdentity: {}
+    backendTLS: {}
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}

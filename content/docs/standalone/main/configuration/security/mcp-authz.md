@@ -50,26 +50,26 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        mcpAuthorization:
-          rules:
-          # Allow anyone to call 'echo'
-          - 'mcp.tool.name == "echo"'
-          # Only the test-user can call 'add'
-          - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-          # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-          - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    mcpAuthorization:
+      rules:
+      # Allow anyone to call 'echo'
+      - 'mcp.tool.name == "echo"'
+      # Only the test-user can call 'add'
+      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+      # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -86,26 +86,26 @@ binds:
 #   * The tool-arguments fragment later on the page is not a standalone config.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        mcpAuthorization:
-          rules:
-          # Allow anyone to call 'echo'
-          - 'mcp.tool.name == "echo"'
-          # Only the test-user can call 'add'
-          - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
-          # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
-          - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    mcpAuthorization:
+      rules:
+      # Allow anyone to call 'echo'
+      - 'mcp.tool.name == "echo"'
+      # Only the test-user can call 'add'
+      - 'jwt.sub == "test-user" && mcp.tool.name == "add"'
+      # Any authenticated user with the claim `nested.key == value` can access 'printEnv'
+      - 'mcp.tool.name == "printEnv" && jwt.nested.key == "value"'
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
 EOF
 
 cat <<'EOF' > config-mcp.yaml

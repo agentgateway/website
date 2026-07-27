@@ -64,17 +64,17 @@ In this example, a parent route matches the `/anything/team1` prefix and delegat
    ```sh
    cat > config.yaml <<'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - protocol: HTTP
-       routes:
-       - name: parent-team1
-         matches:
-         - path:
-             pathPrefix: /anything/team1
-         backends:
-         - routeGroup: team1-routes
+   gateways:
+     default:
+       port: 3000
+       protocol: HTTP
+   routes:
+   - name: parent-team1
+     matches:
+     - path:
+         pathPrefix: /anything/team1
+     backends:
+     - routeGroup: team1-routes
 
    routeGroups:
    - name: team1-routes
@@ -130,25 +130,25 @@ In this example, a parent route matches `/anything/team1` only when the `x-team`
    ```sh
    cat > config.yaml <<'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - protocol: HTTP
-       routes:
-       - name: parent-team1
-         matches:
-         - path:
-             pathPrefix: /anything/team1
-           headers:
-           - name: x-team
-             value:
-               exact: team1
-           query:
-           - name: env
-             value:
-               exact: prod
-         backends:
-         - routeGroup: team1-routes
+   gateways:
+     default:
+       port: 3000
+       protocol: HTTP
+   routes:
+   - name: parent-team1
+     matches:
+     - path:
+         pathPrefix: /anything/team1
+       headers:
+       - name: x-team
+         value:
+           exact: team1
+       query:
+       - name: env
+         value:
+           exact: prod
+     backends:
+     - routeGroup: team1-routes
 
    routeGroups:
    - name: team1-routes
@@ -208,17 +208,17 @@ In this example, a parent route delegates `/api` to a route group. One child han
    ```sh
    cat > config.yaml <<'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - protocol: HTTP
-       routes:
-       - name: parent-api
-         matches:
-         - path:
-             pathPrefix: /api
-         backends:
-         - routeGroup: api-routes
+   gateways:
+     default:
+       port: 3000
+       protocol: HTTP
+   routes:
+   - name: parent-api
+     matches:
+     - path:
+         pathPrefix: /api
+     backends:
+     - routeGroup: api-routes
 
    routeGroups:
    - name: api-routes
@@ -285,21 +285,21 @@ In this example, a parent route sets a `requestHeaderModifier` policy that adds 
    ```sh
    cat > config.yaml <<'EOF'
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - protocol: HTTP
-       routes:
-       - name: parent-team1
-         matches:
-         - path:
-             pathPrefix: /anything/team1
-         policies:
-           requestHeaderModifier:
-             add:
-               x-parent: from-parent
-         backends:
-         - routeGroup: team1-routes
+   gateways:
+     default:
+       port: 3000
+       protocol: HTTP
+   routes:
+   - name: parent-team1
+     matches:
+     - path:
+         pathPrefix: /anything/team1
+     policies:
+       requestHeaderModifier:
+         add:
+           x-parent: from-parent
+     backends:
+     - routeGroup: team1-routes
 
    routeGroups:
    - name: team1-routes

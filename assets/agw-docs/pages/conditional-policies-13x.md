@@ -32,26 +32,26 @@ Route to one of two external authorization servers based on the request path. Re
 {{< conditional-text include-if="standalone" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8000
-  policies:
-    extAuthz:
-      conditional:
-      # Admin paths go to the stricter authorization server.
-      - condition: request.path.startsWith("/admin")
-        host: localhost:9000
-        protocol:
-          grpc: {}
-        failureMode: deny
-      # Fallback for every other request. No condition, must be last.
-      - host: localhost:9001
-        protocol:
-          grpc: {}
-        failureMode: deny
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        extAuthz:
+          conditional:
+          # Admin paths go to the stricter authorization server.
+          - condition: request.path.startsWith("/admin")
+            host: localhost:9000
+            protocol:
+              grpc: {}
+            failureMode: deny
+          # Fallback for every other request. No condition, must be last.
+          - host: localhost:9001
+            protocol:
+              grpc: {}
+            failureMode: deny
 ```
 {{< /conditional-text >}}
 
@@ -94,24 +94,24 @@ Apply a stricter rate limit to write requests and a looser limit to all other tr
 
 {{< conditional-text include-if="standalone" >}}
 ```yaml
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8000
-  policies:
-    localRateLimit:
-      conditional:
-      - condition: request.method == "POST" || request.method == "PUT" || request.method == "DELETE"
-        maxTokens: 10
-        tokensPerFill: 10
-        fillInterval: 1m
-        type: requests
-      - maxTokens: 100
-        tokensPerFill: 100
-        fillInterval: 1m
-        type: requests
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        localRateLimit:
+          conditional:
+          - condition: request.method == "POST" || request.method == "PUT" || request.method == "DELETE"
+            maxTokens: 10
+            tokensPerFill: 10
+            fillInterval: 1m
+            type: requests
+          - maxTokens: 100
+            tokensPerFill: 100
+            fillInterval: 1m
+            type: requests
 ```
 {{< /conditional-text >}}
 
@@ -148,19 +148,19 @@ Add a tracing header when the request includes an `x-internal: true` header. Wit
 
 {{< conditional-text include-if="standalone" >}}
 ```yaml
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8000
-  policies:
-    transformations:
-      conditional:
-      - condition: request.headers["x-internal"] == "true"
-        request:
-          add:
-            x-trace-source: '"internal"'
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        transformations:
+          conditional:
+          - condition: request.headers["x-internal"] == "true"
+            request:
+              add:
+                x-trace-source: '"internal"'
 ```
 {{< /conditional-text >}}
 
@@ -194,18 +194,18 @@ Send requests on a path that starts with `/v1/chat` through an external processo
 
 {{< conditional-text include-if="standalone" >}}
 ```yaml
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8000
-  policies:
-    extProc:
-      conditional:
-      - condition: request.path.startsWith("/v1/chat")
-        host: localhost:9100
-        failureMode: failClosed
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        extProc:
+          conditional:
+          - condition: request.path.startsWith("/v1/chat")
+            host: localhost:9100
+            failureMode: failClosed
 ```
 {{< /conditional-text >}}
 
@@ -238,18 +238,18 @@ Return a `410 Gone` response for any path that starts with `/v0/`. Every other r
 
 {{< conditional-text include-if="standalone" >}}
 ```yaml
-gateways:
-  default:
-    port: 3000
-routes:
-- backends:
-  - host: localhost:8000
-  policies:
-    directResponse:
-      conditional:
-      - condition: request.path.startsWith("/v0/")
-        status: 410
-        body: "This API version is no longer available. Use /v1/."
+binds:
+- port: 3000
+  listeners:
+  - routes:
+    - backends:
+      - host: localhost:8000
+      policies:
+        directResponse:
+          conditional:
+          - condition: request.path.startsWith("/v0/")
+            status: 410
+            body: "This API version is no longer available. Use /v1/."
 ```
 {{< /conditional-text >}}
 

@@ -45,16 +45,16 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          backendAuth:
-            key:
-              value: $MY_API_KEY
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      backendAuth:
+        key:
+          value: $MY_API_KEY
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -62,24 +62,24 @@ binds:
 {{< doc-test paths="backend-authn" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The static-key backendAuth example config is accepted by agentgateway in
-#     both the routing-based (binds) and simplified MCP (mcp.policies) forms.
+#     both the routing-based (gateways) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * The other backendAuth snippets on this page (file path, location,
 #     passthrough, gcp, aws, crossAppAccess) are field-reference fragments
-#     with no `binds:`, so they are not standalone configs and are not
+#     with no `gateways:`, so they are not standalone configs and are not
 #     tested here.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          backendAuth:
-            key:
-              value: $MY_API_KEY
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      backendAuth:
+        key:
+          value: $MY_API_KEY
 EOF
 agentgateway -f config.yaml --validate-only
 

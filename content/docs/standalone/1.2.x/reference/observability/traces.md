@@ -4,4 +4,4 @@ weight: 20
 description: Configure distributed tracing with Jaeger and OpenTelemetry integration
 ---
 
-{{< reuse "agw-docs/pages/observability/traces.md" >}}
+{{< reuse "agw-docs/pages/observability/traces-13x.md" >}}

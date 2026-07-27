@@ -16,7 +16,7 @@ An MCP server exposes external data sources and tools so that LLM applications c
 
 With agentgateway, you can connect to one or multiple MCP servers in any environment. The agentgateway proxies requests to the MCP tool that is exposed on the server. You can also use the agentgateway to federate tools from multiple MCP servers. For more information, see the [virtual MCP]({{< link-hextra path="/mcp/connect/virtual" >}}) guide. 
 
-In standalone mode, MCP and LLM can run on separate listener ports (`llm.port` defaults to `4000`, `mcp.port` defaults to `3000`) or share one listener when both ports are set to the same value. If `llm.tls` is configured, do not share ports; keep `mcp.port` and `llm.port` separate. For details, see [Routing-based configuration for LLMs]({{< link-hextra path="/llm/configuration-modes/" >}}).
+In standalone mode, MCP and LLM traffic can share one gateway or use separate gateways. Attach the `mcp` and `llm` sections to the same gateway to serve both on one port, or to different gateways to keep them on separate ports. For details, see [Gateways]({{< link-hextra path="/configuration/gateways/" >}}) and [Routing-based configuration for LLMs]({{< link-hextra path="/llm/configuration-modes/" >}}).
 
 ## MCP vs. A2A
 

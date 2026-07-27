@@ -101,7 +101,7 @@ Open <http://localhost:15000/ui> to get started.
 
 ## Customize the configuration
 
-The chart bootstraps `/config/config.yaml` on first install. By default, the bootstrap configuration enables the admin UI on `0.0.0.0:15000`, uses SQLite at `/config/data.db`, and creates empty gateways for ports `8080` and `8443`.
+The chart bootstraps `/config/config.yaml` on first install. By default, the bootstrap configuration enables the admin UI on `0.0.0.0:15000`, uses SQLite at `/config/data.db`, and creates empty HTTP and HTTPS binds for ports `8080` and `8443`.
 
 Use the admin UI to add and save configuration updates after you install the chart. Throughout the rest of the standalone docs, whenever you see instructions to edit the configuration file, you can make the same change in the UI.
 
@@ -113,12 +113,11 @@ config:
     adminAddr: 0.0.0.0:15000
     database:
       url: sqlite:///config/data.db
-  gateways:
-    default:
-      port: 8080
-    secondary:
-      port: 8443
-  routes: []
+  binds:
+  - port: 8080
+    listeners: []
+  - port: 8443
+    listeners: []
 ```
 
 ```yaml
@@ -127,12 +126,11 @@ configYaml: |
     adminAddr: 0.0.0.0:15000
     database:
       url: sqlite:///config/data.db
-  gateways:
-    default:
-      port: 8080
-    secondary:
-      port: 8443
-  routes: []
+  binds:
+  - port: 8080
+    listeners: []
+  - port: 8443
+    listeners: []
 ```
 
 The chart does not overwrite an existing `/config/config.yaml` by default. To force Helm upgrades to rewrite the file from chart values, set `configBootstrap.overwrite=true`.

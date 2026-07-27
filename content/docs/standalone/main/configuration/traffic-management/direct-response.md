@@ -46,14 +46,14 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        directResponse:
-          body: "Not found!"
-          status: 404
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    directResponse:
+      body: "Not found!"
+      status: 404
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -61,14 +61,14 @@ binds:
 {{< doc-test paths="direct-response" >}}
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        directResponse:
-          body: "Not found!"
-          status: 404
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    directResponse:
+      body: "Not found!"
+      status: 404
 EOF
 
 cat <<'EOF' > config-mcp.yaml

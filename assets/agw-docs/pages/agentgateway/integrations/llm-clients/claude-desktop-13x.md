@@ -15,30 +15,31 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 
    ```yaml
    cat > config.yaml << 'EOF'
-   gateways:
-     default:
-       port: 4001
+   binds:
+   - port: 4001
+     listeners:
+     - name: default
        protocol: HTTP
-   routes:
-   - name: claude-agent
-     matches:
-     - path:
-         pathPrefix: /claude
-     policies:
-       urlRewrite:
-         path:
-           prefix: /
-     backends:
-     - ai:
-         name: claude-agent
-         provider:
-           anthropic: {}
+       routes:
+       - name: claude-agent
+         matches:
+         - path:
+             pathPrefix: /claude
          policies:
-           ai:
-             routes:
-               /v1/messages: messages
-               /v1/messages/count_tokens: anthropicTokenCount
-               '*': passthrough
+           urlRewrite:
+             path:
+               prefix: /
+         backends:
+         - ai:
+             name: claude-agent
+             provider:
+               anthropic: {}
+             policies:
+               ai:
+                 routes:
+                   /v1/messages: messages
+                   /v1/messages/count_tokens: anthropicTokenCount
+                   '*': passthrough
    EOF
    ```
 
@@ -48,15 +49,16 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
    agentgateway -f config.yaml
    ```
 
-> [!NOTE]
-> Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the following to the `passthrough` route policy in your config:
->
-> ```yaml
-> policies:
->   requestHeaderModifier:
->     add:
->       anthropic-beta: oauth-2025-04-20
-> ```
+{{< callout type="info" >}}
+Claude Code automatically sends the `anthropic-beta: oauth-2025-04-20` header required for OAuth-based authentication. Claude Desktop may require this header to be set as well depending on your client version. If requests fail with a 400 error, add the following to the `passthrough` route policy in your config:
+
+```yaml
+policies:
+  requestHeaderModifier:
+    add:
+      anthropic-beta: oauth-2025-04-20
+```
+{{< /callout >}}
 
 ## Configure Claude Desktop
 

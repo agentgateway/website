@@ -79,20 +79,20 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        authorization:
-          rules:
-          - allow: 'request.path == "/authz/public"'
-          - deny: 'request.path == "/authz/deny"'
-          - require: 'jwt.aud == "my-service"'
-          # legacy format; same as `allow: ...`
-          - 'request.headers["x-allow"] == "true"'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -101,7 +101,7 @@ binds:
 # WHAT THIS TEST VALIDATES:
 #   * The authorization policy with allow/deny/require and legacy rules is
 #     accepted by agentgateway in all three configuration forms: routing-based
-#     (binds), simplified LLM (llm.policies), and simplified MCP (mcp.policies).
+#     (gateways), simplified LLM (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually allowed/denied at runtime — requires a backend
 #     and traffic the page omits.
@@ -109,20 +109,20 @@ binds:
 #     focused fragments, so they are not tested.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        authorization:
-          rules:
-          - allow: 'request.path == "/authz/public"'
-          - deny: 'request.path == "/authz/deny"'
-          - require: 'jwt.aud == "my-service"'
-          # legacy format; same as `allow: ...`
-          - 'request.headers["x-allow"] == "true"'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 

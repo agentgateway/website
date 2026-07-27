@@ -8,4 +8,4 @@ test:
     path: httpbin
 ---
 
-{{< reuse "agw-docs/standalone/quickstart/non-agentic-http.md" >}}
+{{< reuse "agw-docs/standalone/quickstart/non-agentic-http-13x.md" >}}

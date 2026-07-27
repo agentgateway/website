@@ -9,5 +9,5 @@ test: skip
 
 Secure backends and routes with different types of security, authentication, authorization, and rate limiting policies.
 
-{{< reuse "agw-docs/snippets/policy-apply.md" >}}
+{{< reuse "agw-docs/snippets/policy-apply-13x.md" >}}
 
