@@ -94,11 +94,11 @@ spec:
 
 ## Concrete and virtual models
 
-Every model is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource. What the spec sets decides which kind of model it is, and the two fields are mutually exclusive.
+Every model is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource. A model either names a particular language model the provider that serves it ("concrete" model), or routes across other models ("virtual" model). The two fields are mutually exclusive.
 
 | Kind | Sets | Role |
 |------|------|------|
-| [Concrete model](#concrete-models) | `spec.provider` | The destination. The provider that is named in the spec serves the request. |
+| [Concrete model](#concrete-models) | `spec.provider` | A particular model from an LLM provider that serves as the destination. The provider that is named in the spec serves the request. |
 | [Virtual model](#virtual-models) | `spec.virtualModel` | A client-facing name that resolves to a concrete model at request time. It has no provider of its own. |
 
 The following diagram shows a client requesting the `balanced` virtual model, which splits traffic 80/20 across two internal concrete models. Each concrete model forwards to its provider.
@@ -118,7 +118,7 @@ flowchart LR
 
 ## Concrete models
 
-A concrete model is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.provider`. Because the spec names the provider, the gateway knows which provider serves the request.
+A model that names its provider is a concrete model. It is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.provider`, so the gateway knows which provider serves the request.
 
 The following example shows the pieces that a concrete model configures. Only `parentRefs` and `provider` are required.
 
@@ -250,7 +250,7 @@ Use `spec.baseURL` to override the provider address and base path prefix. It mus
 
 ## Virtual models
 
-A virtual model is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`. It publishes one client-facing name and selects a concrete model to serve each request.
+A model that routes across other models is a virtual model. It is an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` that sets `spec.virtualModel` instead of `spec.provider`, so it has no provider of its own. It publishes one client-facing name and selects a concrete model to serve each request.
 
 The following example splits traffic across two concrete models by weight.
 
