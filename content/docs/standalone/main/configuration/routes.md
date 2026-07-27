@@ -1,6 +1,6 @@
 ---
 title: Routes
-weight: 14
+weight: 30
 description: Match HTTP and TCP traffic on a gateway and forward it to backends.
 next: /configuration/traffic-management
 ---

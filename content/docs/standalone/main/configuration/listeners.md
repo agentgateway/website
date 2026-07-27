@@ -1,6 +1,6 @@
 ---
 title: Listeners
-weight: 12
+weight: 25
 description: Define the ports, protocols, and TLS settings where agentgateway accepts incoming traffic.
 test:
   listeners:
