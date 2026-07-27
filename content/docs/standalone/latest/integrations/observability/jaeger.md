@@ -17,27 +17,9 @@ docker run -d --name jaeger \
   jaegertracing/all-in-one:latest
 ```
 
-Configure agentgateway to send traces:
+Configure agentgateway to send traces. The following configuration is from the [`mcp-telemetry` example](https://github.com/agentgateway/agentgateway/tree/main/examples/mcp-telemetry) in the agentgateway repository.
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-frontendPolicies:
-  tracing:
-    otlpEndpoint: http://localhost:4317
-    randomSampling: true
-
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-```
+{{% github-yaml url="https://agentgateway.dev/examples/mcp-telemetry/config.yaml" %}}
 
 View traces at [http://localhost:16686](http://localhost:16686).
 
@@ -51,6 +33,8 @@ Agentgateway traces include:
 - **Backend spans**: Upstream connections and responses
 
 ## Docker Compose example
+
+The following Compose file runs agentgateway alongside Jaeger. To route traces through an OpenTelemetry Collector instead, see the [Compose file in the `mcp-telemetry` example](https://github.com/agentgateway/agentgateway/blob/main/examples/mcp-telemetry/docker-compose.yaml).
 
 ```yaml
 version: '3'

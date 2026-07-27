@@ -44,19 +44,19 @@ config:
     otlpEndpoint: https://cloud.langfuse.com/api/public/otel
     randomSampling: true
 
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-4o-mini
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI:
+          model: gpt-4o-mini
+  policies:
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
 ### Authentication

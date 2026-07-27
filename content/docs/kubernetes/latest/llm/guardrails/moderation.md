@@ -40,6 +40,8 @@ The OpenAI Moderation API detects potentially harmful content across categories 
    EOF
    ```
 
+   The `policies` field supports more than the `secretRef` authentication shown here. You can choose a different authentication method or tune the connection that agentgateway opens to the Moderation API, such as setting a request timeout or custom TLS. For all the options, see [Backend connection and authentication policies](#backend-connection-and-authentication-policies).
+
 2. Test with content that triggers moderation. 
    {{< tabs >}}
 
@@ -82,6 +84,46 @@ The OpenAI Moderation API detects potentially harmful content across categories 
    HTTP/1.1 403 Forbidden
    Content blocked by moderation policy
    ```
+
+## Backend connection and authentication policies
+
+The `policies` field configures how agentgateway connects and authenticates to the OpenAI Moderation API when it evaluates a request.
+
+### Authentication
+
+Under `policies.auth`, set one credential source (`secretRef` or `key`). Optionally, set `location` to control where the credential is placed.
+
+| Method | Description |
+| -- | -- |
+| `secretRef` | Read the API key from a Kubernetes secret. By default, the key that matches the credential location is used, such as `Authorization` for the default header location. To use a different key, set `secretRef.key`. |
+| `key` | Send an inline API key in the `Authorization` header. This option is the least secure. Use a secret instead when possible. |
+| `location` | Where to place the credential. Defaults to the `Authorization` header with a `Bearer` prefix. To change it, set a `header`, `queryParameter`, or `cookie`. |
+
+### Backend connection settings
+
+You can also tune the connection that agentgateway opens to the OpenAI Moderation backend by setting the following `BackendConnectionPolicy` fields under `policies`.
+
+| Setting | Description |
+| -- | -- |
+| `tls` | TLS settings for the connection, such as a custom CA certificate or SNI. |
+| `http` | HTTP settings, such as the `requestTimeout` and HTTP protocol `version`. |
+| `tcp` | TCP connection settings. |
+| `tunnel` | Tunnel settings, such as an `HTTPS_PROXY`, used to reach the backend. |
+
+For example, the following prompt guard authenticates with a secret and sets a request timeout for the calls to the Moderation API.
+
+```yaml
+- openAIModeration:
+    model: omni-moderation-latest
+    policies:
+      auth:
+        secretRef:
+          name: openai-secret
+      http:
+        requestTimeout: 5s
+```
+
+For the full set of fields, see the [API reference]({{< link-hextra path="/reference/api/" >}}).
 
 ## Cleanup
 

@@ -1,6 +1,6 @@
 ---
 title: Resiliency
-weight: 50
+weight: 60
 description: Configure retries, timeouts, rate limits, and mirroring for fault tolerance.
 prev: /configuration/traffic-management
 next: /configuration/security
@@ -12,4 +12,4 @@ Simulate failures, disruptions, and adverse conditions to test that your gateway
 > [!TIP]
 > {{< reuse "agw-docs/snippets/policies-gateway-api.md" >}}
 
-{{< reuse "agw-docs/snippets/policy-apply-13x.md" >}}
+{{< reuse "agw-docs/snippets/policy-apply.md" >}}

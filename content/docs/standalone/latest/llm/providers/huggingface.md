@@ -2,7 +2,7 @@
 title: Hugging Face
 weight: 20
 icon: /integrations/providers/bw/huggingface.svg
-description: Configuration and setup for Hugging Face LLM provider
+description: Route agentgateway LLM traffic to models hosted on Hugging Face.
 ---
 
 Configure Hugging Face as an LLM provider in agentgateway.

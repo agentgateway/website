@@ -125,7 +125,7 @@ console.log(response);
 ## Model routing and aliases
 
 Model routing is configured within the `llm` section of your agentgateway configuration file. 
-The `llm` section offers a simplified, model-centric approach compared to the traditional `binds/listeners/routes` model; for more details on the two approaches, see [LLM configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
+The `llm` section offers a simplified, model-centric approach compared to the `gateways` and `routes` model; for more details on the two approaches, see [LLM configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
 The model configurations shown in this section live under the `llm.models` key.
 
 Agentgateway routes requests by matching an incoming model name, and then sending it to the configured model.

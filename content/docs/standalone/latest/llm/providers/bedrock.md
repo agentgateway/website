@@ -2,7 +2,7 @@
 title: Amazon Bedrock
 weight: 15
 icon: /integrations/providers/bw/bedrock.svg
-description: Configuration and setup for Amazon Bedrock provider
+description: Route agentgateway LLM traffic to foundation models on Amazon Bedrock.
 ---
 
 Configure Amazon Bedrock as an LLM provider in agentgateway.

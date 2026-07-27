@@ -25,26 +25,26 @@ llm:
       apiKey: "$ANTHROPIC_API_KEY"
 ```
 
-To configure the route type explicitly, use the `binds/listeners/routes` format and set the `anthropicTokenCount` route type in the `policies.ai.routes` map. Most configurations also map `/v1/messages` to the `messages` route type for the actual model request.
+To configure the route type explicitly, use the `gateways` and `routes` format and set the `anthropicTokenCount` route type in the `policies.ai.routes` map. Most configurations also map `/v1/messages` to the `messages` route type for the actual model request.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: anthropic
-          provider:
-            anthropic: {}
-      policies:
-        ai:
-          routes:
-            "/v1/messages": "messages"
-            "/v1/messages/count_tokens": "anthropicTokenCount"
-        backendAuth:
-          key: "$ANTHROPIC_API_KEY"
+gateways:
+  default:
+    port: 4000
+routes:
+- backends:
+  - ai:
+      name: anthropic
+      provider:
+        anthropic: {}
+  policies:
+    ai:
+      routes:
+        "/v1/messages": "messages"
+        "/v1/messages/count_tokens": "anthropicTokenCount"
+    backendAuth:
+      key: "$ANTHROPIC_API_KEY"
 ```
 
 > [!NOTE]

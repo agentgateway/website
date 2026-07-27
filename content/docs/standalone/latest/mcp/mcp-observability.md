@@ -1,7 +1,7 @@
 ---
 title: MCP observability
 weight: 70
-description: Monitor MCP requests with metrics, logs, and distributed traces
+description: Track MCP tool calls with agentgateway metrics, logs, and distributed traces.
 ---
 
 Review MCP-specific metrics, logs, and traces. 

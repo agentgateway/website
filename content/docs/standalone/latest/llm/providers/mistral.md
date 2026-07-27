@@ -2,7 +2,7 @@
 title: Mistral
 weight: 20
 icon: /integrations/providers/bw/mistral.svg
-description: Configuration and setup for Mistral LLM provider
+description: Route agentgateway LLM traffic to Mistral's models.
 ---
 
 Configure Mistral as an LLM provider in agentgateway.
