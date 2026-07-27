@@ -120,9 +120,8 @@ llm:
 mcp: {}
 ```
 
-{{< callout type="info" >}}
-The `llm.port`, `llm.tls`, and `mcp.port` fields are deprecated in favor of gateways. They still work, and when you set them without a gateway, LLM traffic defaults to port `4000` and MCP traffic to port `3000`.
-{{< /callout >}}
+> [!NOTE]
+> The `llm.port`, `llm.tls`, and `mcp.port` fields are deprecated in favor of gateways. They still work, and when you set them without a gateway, LLM traffic defaults to port `4000` and MCP traffic to port `3000`.
 
 For more MCP listener context, see [MCP overview]({{< link-hextra path="/mcp/" >}}).
 
