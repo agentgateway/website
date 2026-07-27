@@ -27,7 +27,7 @@ Any one of these approaches can address parts of the problem in isolation. A pro
 
 ## One extension point, any compression engine
 
-Agentgateway solves this problem with the newly added `contextCompression` policy, compatible with any compression implementation that speaks a simple wire contract:
+Agentgateway solves this problem with an upcoming feature: `contextCompression` policy, compatible with any compression implementation that speaks a simple wire contract.
 
 ```
 POST /v1/compress
