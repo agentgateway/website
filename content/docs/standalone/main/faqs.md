@@ -55,6 +55,12 @@ The agentgateway project organizes issues into milestones for each release. For 
 
 The changelog is part of each [GitHub release](https://github.com/agentgateway/agentgateway/releases/).
 
+## How do I report a security vulnerability? 
+
+Report vulnerabilities privately by [filing a GitHub security advisory](https://github.com/agentgateway/agentgateway/security/advisories/new). The agentgateway security team reviews each report privately. Do not report security vulnerabilities in public GitHub issues. If you are unsure whether an issue is a security vulnerability, report it privately.
+
+For more details, see the [agentgateway security policy](https://github.com/agentgateway/agentgateway/security/policy). To review vulnerabilities that the project already disclosed, see the [published security advisories](https://github.com/agentgateway/agentgateway/security/advisories).
+
 ## Is there enterprise software that is based on agentgateway?
 
 {{< cards >}}
