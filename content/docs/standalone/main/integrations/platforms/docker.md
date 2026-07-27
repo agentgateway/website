@@ -4,7 +4,7 @@ weight: 20
 description: Run agentgateway as a Docker container
 test:
   docker-provider-configs:
-  - file: content/docs/standalone/main/integrations/platforms/docker.md
+  - file: ${versionRoot}/integrations/platforms/docker.md
     path: docker-provider-configs
 ---
 

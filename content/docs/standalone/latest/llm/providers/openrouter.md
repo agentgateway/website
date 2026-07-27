@@ -2,7 +2,7 @@
 title: OpenRouter
 weight: 20
 icon: /integrations/providers/bw/openrouter.svg
-description: Configuration and setup for OpenRouter LLM provider
+description: Route agentgateway LLM traffic to models available through OpenRouter.
 ---
 
 Configure OpenRouter as an LLM provider in agentgateway.

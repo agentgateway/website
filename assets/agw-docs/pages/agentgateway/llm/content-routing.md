@@ -1,6 +1,6 @@
 Route requests to different LLM backends based on request body content, such as the requested model name.
 
-{{< version include-if="1.4.x" >}}
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
 > [!NOTE]
 > **Model-centric alternative**: To select a model from request context without writing route matches, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.conditional`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
 {{< /version >}}

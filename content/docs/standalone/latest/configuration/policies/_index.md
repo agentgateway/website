@@ -1,6 +1,6 @@
 ---
 title: Policies
-weight: 11
+weight: 40
 description: Apply policies to shape traffic that flows through agentgateway.
 ---
 

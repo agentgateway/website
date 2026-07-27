@@ -30,26 +30,26 @@ llm:
     passthrough: opaque
 ```
 
-To configure passthrough as a fallback for unmatched paths in the `binds/listeners/routes` format, map the `*` wildcard path to the `passthrough` route type.
+To configure passthrough as a fallback for unmatched paths in the `gateways` and `routes` format, map the `*` wildcard path to the `passthrough` route type.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI: {}
-      policies:
-        ai:
-          routes:
-            "/v1/chat/completions": "completions"
-            "*": "passthrough"
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 4000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI: {}
+  policies:
+    ai:
+      routes:
+        "/v1/chat/completions": "completions"
+        "*": "passthrough"
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
 ## Extract telemetry from passthrough traffic

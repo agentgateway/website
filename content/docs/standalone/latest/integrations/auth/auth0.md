@@ -20,25 +20,25 @@ Configure agentgateway to validate Auth0 JWTs:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: my-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      policies:
-        mcpAuthentication:
-          mode: strict
-          issuer: https://your-tenant.auth0.com/
-          audiences:
-          - https://api.example.com
-          jwks:
-            url: https://your-tenant.auth0.com/.well-known/jwks.json
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: my-server
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  policies:
+    mcpAuthentication:
+      mode: strict
+      issuer: https://your-tenant.auth0.com/
+      audiences:
+      - https://api.example.com
+      jwks:
+        url: https://your-tenant.auth0.com/.well-known/jwks.json
 ```
 
 ## Auth0 setup

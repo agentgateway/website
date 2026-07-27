@@ -94,3 +94,4 @@ Every request that flows through the proxy is now recorded and priced. Port-forw
 ### Group by and measure
 
 Use the **Group by** control to break the same traffic down by model, provider, user, group, or user agent*, and toggle **Measure** between tokens, cost, and requests. Set to **Cost** to see realized spend in dollars. Use **Export** to pull the underlying numbers out for reporting.
+
