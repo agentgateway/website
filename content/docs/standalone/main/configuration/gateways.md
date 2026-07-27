@@ -10,9 +10,11 @@ test:
     path: gateways
 ---
 
-Gateways are the entry point to agentgateway. Each gateway is a named port that agentgateway listens on, and the features that serve traffic attach to it: HTTP and TCP routes, LLM models, MCP targets, and the agentgateway UI.
+Gateways are the entry point to agentgateway. Each gateway is a named port that agentgateway listens on, and the endpoints that serve traffic attach to it: HTTP and TCP routes, LLM models, MCP targets, and the agentgateway UI.
 
-Because everything attaches to a gateway by name, you can serve several features on one port, or expose the same routes on more than one port.
+Every gateway has one or more listeners. A gateway that serves a single hostname needs only the implicit listener that it comes with, and a gateway that serves several hostnames on one port defines a named listener for each one.
+
+Because everything attaches to a gateway by name, you can serve several endpoints on one port, or expose the same routes on more than one port.
 
 > [!NOTE]
 > Gateways replace the `binds` field. The `binds` field still works, but it is deprecated. For help converting an existing configuration, see [Migrate from binds](#migrate-from-binds).
@@ -43,7 +45,7 @@ The following diagram shows traffic flowing left to right through the three laye
 
 * The `default` gateway on port 3000 sets no `listeners`, so it gets one implicit listener that serves all hostnames. You do not configure that listener; the dotted box marks it as implied.
 * The `web` gateway on port 8443 splits its port into two named listeners that serve different hostnames.
-* Routes and features attach by name in the last column. A route that names `web` is served by every listener under that gateway, so both `discrete` and `wildcard` forward to it. A route that names `web/discrete` is served by that one listener only.
+* Routes, LLM, MCP, and the UI attach by name in the last column. A route that names `web` is served by every listener under that gateway, so both `discrete` and `wildcard` forward to it. A route that names `web/discrete` is served by that one listener only.
 
 ```mermaid
 flowchart LR
@@ -60,9 +62,9 @@ flowchart LR
         LW["wildcard<br/>*.example.com"]:::listener
     end
 
-    subgraph at["routes and features: attach by name"]
+    subgraph at["routes and endpoints: attach by name"]
         RD["route<br/>gateways: [default]"]:::route
-        FE["llm / mcp / ui<br/>gateways: [default]"]:::feature
+        FE["llm / mcp / ui<br/>gateways: [default]"]:::endpoint
         RA["route<br/>gateways: [web/discrete]"]:::route
         RW["route<br/>gateways: [web]"]:::route
     end
@@ -85,7 +87,7 @@ flowchart LR
     classDef listener stroke:#7734be,stroke-width:2px,stroke-dasharray:6 3;
     classDef implicit stroke:#7734be,stroke-width:1px,stroke-dasharray:2 3;
     classDef route stroke:#7734be,stroke-width:1px;
-    classDef feature stroke:#7734be,stroke-width:1px,stroke-dasharray:2 2;
+    classDef endpoint stroke:#7734be,stroke-width:1px,stroke-dasharray:2 2;
 ```
 
 ## Define a gateway {#define}
@@ -342,7 +344,7 @@ agentgateway -f config5.yaml --validate-only
 
 ## Attach LLM, MCP, and the UI to a gateway {#features}
 
-The `llm`, `mcp`, and `ui` sections each take a `gateways` field, so you can serve them all from one port. Each feature serves its own paths: LLM uses the standard serving paths such as `/v1/chat/completions`, MCP uses `/mcp`, and the UI serves the remaining paths.
+The `llm`, `mcp`, and `ui` sections each take a `gateways` field, so you can serve them all from one port. Each section serves its own paths: LLM uses the standard serving paths such as `/v1/chat/completions`, MCP uses `/mcp`, and the UI serves the remaining paths.
 
 The following configuration exposes an LLM model, an MCP target, and the UI on port 3000. None of the three sections sets `gateways`, so all of them attach to the gateway named `default`.
 
@@ -377,7 +379,7 @@ By default, the UI is served only on the admin interface on `localhost:15000`. S
 #   * An LLM model, MCP target, and the UI attached to one gateway are accepted by
 #     agentgateway.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That each feature serves its paths at runtime — requires a provider API key,
+#   * That each section serves its paths at runtime — requires a provider API key,
 #     an MCP server process, and a browser session the page does not exercise.
 export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 cat <<'EOF' > config6.yaml
@@ -403,7 +405,7 @@ EOF
 agentgateway -f config6.yaml --validate-only
 {{< /doc-test >}}
 
-Because each feature attaches separately, you can also split them across ports. The following configuration serves the UI on its own port while LLM traffic stays on the shared gateway.
+Because each section attaches separately, you can also split them across ports. The following configuration serves the UI on its own port while LLM traffic stays on the shared gateway.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
@@ -426,7 +428,7 @@ ui:
 # WHAT THIS TEST VALIDATES:
 #   * Splitting the UI and LLM across two gateways is accepted by agentgateway.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
-#   * That each port serves the expected feature at runtime — requires a provider
+#   * That each port serves the expected section at runtime — requires a provider
 #     API key and a browser session the page does not exercise.
 export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 cat <<'EOF' > config7.yaml
@@ -543,7 +545,7 @@ routes:
 
 To convert a configuration:
 
-1. Replace the `binds` list with a `gateways` map. Give each port a name, and name your primary gateway `default` so that routes and features attach to it without an explicit `gateways` field.
+1. Replace the `binds` list with a `gateways` map. Give each port a name, and name your primary gateway `default` so that routes and endpoints attach to it without an explicit `gateways` field.
 2. Move each bind's `port` to the gateway. If the bind had one listener, move that listener's `protocol`, `hostname`, and `tls` settings to the gateway too. If the bind had multiple listeners, keep them in the gateway's `listeners` field and give each one a `name`.
 3. Unwrap each listener's `policies` block. Gateways and listeners take policies as direct fields, so a policy that was at `binds[].listeners[].policies.jwtAuth` moves to `gateways.<name>.jwtAuth`. Route and backend policies keep their `policies` wrapper.
 4. Move `routes` and `tcpRoutes` to the top level. Add a `gateways` field to each route that names the gateway or the `<gateway-name>/<listener-name>` it serves.

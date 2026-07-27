@@ -96,15 +96,14 @@ Then reference it in your agentgateway config:
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 gateways:
-  https:
+  default:
     port: 443
     protocol: HTTPS
     tls:
       cert: /certs/tls.crt
       key: /certs/tls.key
 routes:
-- gateways: [https]
-  backends:
+- backends:
   - mcp:
       targets:
       - name: my-server
