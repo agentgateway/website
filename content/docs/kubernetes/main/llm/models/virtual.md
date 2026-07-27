@@ -41,91 +41,109 @@ Targets are usually `Internal` models, so clients cannot request them directly a
 1. Complete [Serve a model]({{< link-hextra path="/llm/models/serve/" >}}). This guide reuses the `agentgateway-proxy` Gateway and the httpbun mock LLM from that guide, and assumes that the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API is enabled.
 2. Save the gateway address in an environment variable.
 
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
+   echo $INGRESS_GW_ADDRESS
    ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   Use this option if your cluster does not assign an external IP to `LoadBalancer` services, such as a default Kind cluster.
+
+   ```sh
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
+   ```
+
+   In a separate terminal, point the requests in this guide at the forwarded port.
+
+   ```sh
+   export INGRESS_GW_ADDRESS=localhost:8080
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 ## Create the target models
 
-Create two internal models to route between. Each rewrites the `model` field to a distinct value so that you can tell from the response which target served the request.
+1. Create two internal models to route between. Each rewrites the `model` field to a distinct value so that you can tell from the response which target served the request.
 
-```yaml {paths="virtual-models"}
-kubectl apply -f- <<EOF
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
-metadata:
-  name: internal-fast
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: agentgateway-proxy
-    sectionName: http
-  visibility: Internal
-  provider: OpenAI
-  baseURL: http://httpbun.default.svc.cluster.local:3090/llm
-  policies:
-    transformations:
-    - field: model
-      expression: '"resolved-internal-fast"'
----
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
-kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
-metadata:
-  name: internal-premium
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-spec:
-  parentRefs:
-  - group: gateway.networking.k8s.io
-    kind: Gateway
-    name: agentgateway-proxy
-    sectionName: http
-  visibility: Internal
-  provider: OpenAI
-  baseURL: http://httpbun.default.svc.cluster.local:3090/llm
-  policies:
-    transformations:
-    - field: model
-      expression: '"resolved-internal-premium"'
-EOF
-```
+   ```yaml {paths="virtual-models"}
+   kubectl apply -f- <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: internal-fast
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     visibility: Internal
+     provider: OpenAI
+     baseURL: http://httpbun.default.svc.cluster.local:3090/llm
+     policies:
+       transformations:
+       - field: model
+         expression: '"resolved-internal-fast"'
+   ---
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
+   metadata:
+     name: internal-premium
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+       sectionName: http
+     visibility: Internal
+     provider: OpenAI
+     baseURL: http://httpbun.default.svc.cluster.local:3090/llm
+     policies:
+       transformations:
+       - field: model
+         expression: '"resolved-internal-premium"'
+   EOF
+   ```
 
-Verify that neither model can be requested directly.
+2. Verify that neither model can be requested directly. Because both models set `visibility: Internal`, a direct request returns an error.
 
-```sh
-curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -d '{"model": "internal-fast", "messages": []}'
-```
+   ```sh
+   curl -s -X POST http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+     -H "Content-Type: application/json" \
+     -d '{"model": "internal-fast", "messages": []}'
+   ```
 
-Example output:
+   Example output:
 
-```json
-{"error":{"message":"Model not found","type":"invalid_request_error","code":"model_not_found"}}
-```
+   ```json
+   {"error":{"message":"Model not found","type":"invalid_request_error","code":"model_not_found"}}
+   ```
 
-{{< doc-test paths="virtual-models" >}}
-YAMLTest -f - <<'EOF'
-- name: internal models cannot be requested directly
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
-    method: POST
-    headers:
-      Content-Type: application/json
-    body: |
-      {"model": "internal-fast", "messages": []}
-  source:
-    type: local
-  retries: 3
-  expect:
-    statusCode: 404
-    bodyJsonPath:
-      - path: "$.error.code"
-        comparator: equals
-        value: "model_not_found"
-EOF
-{{< /doc-test >}}
+   {{< doc-test paths="virtual-models" >}}
+   YAMLTest -f - <<'EOF'
+   - name: internal models cannot be requested directly
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}/v1/chat/completions"
+       method: POST
+       headers:
+         Content-Type: application/json
+       body: |
+         {"model": "internal-fast", "messages": []}
+     source:
+       type: local
+     retries: 3
+     expect:
+       statusCode: 404
+       bodyJsonPath:
+         - path: "$.error.code"
+           comparator: equals
+           value: "model_not_found"
+   EOF
+   {{< /doc-test >}}
 
 ## Split traffic with weighted routing
 

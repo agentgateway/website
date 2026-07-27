@@ -19,9 +19,9 @@ Expose an LLM model to clients with an `{{< reuse "agw-docs/snippets/agentgatewa
 
 An `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` declares one client-facing model and attaches it to a Gateway listener. Agentgateway derives the LLM routing from the models that attach to a listener, so you do not create an {{< reuse "agw-docs/snippets/backend.md" >}} or an `HTTPRoute`.
 
-In this guide, you enable the API, turn on LLM serving for a listener, and expose three kinds of model: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
+In this guide, you enable the API, turn on LLM serving for a listener, and expose three kinds of models: an exact match, a wildcard match, and a model that authenticates to its provider with a Kubernetes Secret.
 
-For background, see [About models]({{< link-hextra path="/llm/models/about/" >}}).
+For more information, see [About models]({{< link-hextra path="/llm/models/about/" >}}).
 
 ## Before you begin
 
@@ -122,10 +122,27 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
 
 3. Save the gateway address in an environment variable, if you have not already.
 
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    export INGRESS_GW_ADDRESS=$(kubectl get svc -n {{< reuse "agw-docs/snippets/namespace.md" >}} agentgateway-proxy -o=jsonpath="{.status.loadBalancer.ingress[0]['hostname','ip']}")
    echo $INGRESS_GW_ADDRESS
    ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   Use this option if your cluster does not assign an external IP to `LoadBalancer` services, such as a default Kind cluster.
+
+   ```sh
+   kubectl port-forward deployment/agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} 8080:80
+   ```
+
+   In a separate terminal, point the requests in this guide at the forwarded port.
+
+   ```sh
+   export INGRESS_GW_ADDRESS=localhost:8080
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
 
 The listener now serves LLM traffic, but it has no models yet, so every LLM request returns a `model_not_found` error.
 
