@@ -1,5 +1,10 @@
 Distribute requests across multiple LLM providers automatically (also known as Power of Two Choices, or P2C).
 
+{{< version include-if="1.4.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: To split traffic across models by weight, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+{{< /version >}}
+
 ## About load balancing {#about}
 
 Load balancing distributes incoming requests across multiple backend LLM providers to optimize performance, cost, and availability. {{< reuse "agw-docs/snippets/agentgateway.md" >}} uses an intelligent **Power of Two Choices (P2C)** algorithm with health-aware scoring to automatically select the best available provider for each request.

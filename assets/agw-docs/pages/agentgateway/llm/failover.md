@@ -1,5 +1,10 @@
 Prioritize the failover of requests across different models from an LLM provider. Include outlier detection of unhealthy LLM backends to automatically fail over when getting throttled by an unperformant model.
 
+{{< version include-if="1.4.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: You can also configure failover with the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API, by using a virtual model with `virtualModel.failover` instead of an {{< reuse "agw-docs/snippets/backend.md" >}} with priority groups. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+{{< /version >}}
+
 ## About failover {#about}
 
 Use failover (automatic fallback) to keep services running by switching to a backup when the main system fails or becomes unavailable.
