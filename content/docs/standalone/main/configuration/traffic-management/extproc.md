@@ -69,23 +69,23 @@ External processing is applied at the route level.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-         name: openai
-         provider:
-           openAI:
-             # Optional; overrides the model in requests
-             model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPEN_AI_APIKEY"
-        extProc:
-          host: "extproc.com:9000"
-          failureMode: failClosed
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+     name: openai
+     provider:
+       openAI:
+         # Optional; overrides the model in requests
+         model: gpt-3.5-turbo
+  policies:
+    backendAuth:
+      key: "$OPEN_AI_APIKEY"
+    extProc:
+      host: "extproc.com:9000"
+      failureMode: failClosed
 ```
 
 ## Configure processing options
@@ -110,58 +110,58 @@ The following example sends headers and trailers, buffers request bodies up to t
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: default
-            sse:
-              host: mcp.example.com
-              port: 8080
-      policies:
-        extProc:
-          host: "extproc.com:9000"
-          failureMode: failClosed
-          processingOptions:
-            requestHeaderMode: send
-            responseHeaderMode: send
-            requestBodyMode: bufferedPartial
-            responseBodyMode: none
-            requestTrailerMode: send
-            responseTrailerMode: send
-            allowModeOverride: true
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: default
+        sse:
+          host: mcp.example.com
+          port: 8080
+  policies:
+    extProc:
+      host: "extproc.com:9000"
+      failureMode: failClosed
+      processingOptions:
+        requestHeaderMode: send
+        responseHeaderMode: send
+        requestBodyMode: bufferedPartial
+        responseBodyMode: none
+        requestTrailerMode: send
+        responseTrailerMode: send
+        allowModeOverride: true
 ```
 
 You can also set `processingOptions` inside a conditional ExtProc policy. Each conditional policy entry can use different phase settings.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: default
-            sse:
-              host: mcp.example.com
-              port: 8080
-      policies:
-        extProc:
-          conditional:
-          - condition: 'request.path.startsWith("/upload")'
-            host: "extproc.com:9000"
-            processingOptions:
-              requestBodyMode: buffered
-              responseBodyMode: none
-          - host: "extproc.com:9000"
-            processingOptions:
-              requestBodyMode: none
-              responseBodyMode: none
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: default
+        sse:
+          host: mcp.example.com
+          port: 8080
+  policies:
+    extProc:
+      conditional:
+      - condition: 'request.path.startsWith("/upload")'
+        host: "extproc.com:9000"
+        processingOptions:
+          requestBodyMode: buffered
+          responseBodyMode: none
+      - host: "extproc.com:9000"
+        processingOptions:
+          requestBodyMode: none
+          responseBodyMode: none
 ```
 
 ## Conditional execution

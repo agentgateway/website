@@ -15,30 +15,31 @@ Start agentgateway with the Teams configuration. Agentgateway listens on port `4
 
    ```yaml
    cat > config.yaml << 'EOF'
-   gateways:
-     default:
-       port: 4001
+   binds:
+   - port: 4001
+     listeners:
+     - name: default
        protocol: HTTP
-   routes:
-   - name: claude-agent
-     matches:
-     - path:
-         pathPrefix: /claude
-     policies:
-       urlRewrite:
-         path:
-           prefix: /
-     backends:
-     - ai:
-         name: claude-agent
-         provider:
-           anthropic: {}
+       routes:
+       - name: claude-agent
+         matches:
+         - path:
+             pathPrefix: /claude
          policies:
-           ai:
-             routes:
-               /v1/messages: messages
-               /v1/messages/count_tokens: anthropicTokenCount
-               '*': passthrough
+           urlRewrite:
+             path:
+               prefix: /
+         backends:
+         - ai:
+             name: claude-agent
+             provider:
+               anthropic: {}
+             policies:
+               ai:
+                 routes:
+                   /v1/messages: messages
+                   /v1/messages/count_tokens: anthropicTokenCount
+                   '*': passthrough
    EOF
    ```
 

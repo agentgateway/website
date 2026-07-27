@@ -5,4 +5,4 @@ description: Deploy standalone agentgateway on Kubernetes with Helm.
 test: skip
 ---
 
-{{< reuse "agw-docs/standalone/deployment/helm.md" >}}
+{{< reuse "agw-docs/standalone/deployment/helm-13x.md" >}}

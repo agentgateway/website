@@ -79,23 +79,22 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      basicAuth:
-        mode: strict
-        # Generated with `htpasswd -nb -B user1 agentgateway`
-        # You can also use:
-        # htpasswd:
-        #   file: /path/to/htpasswd
-        # With inline configuration, $ must be escaped to $$.
-        htpasswd: |
-          user1:$$2y$$05$$LMZ.8WGNqvagmtJz2Gw6VuiE6khXc2zc0FDTHrfWJyLT66HM8BMAa
-        realm: example.com
-    routes:
-    - backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    basicAuth:
+      mode: strict
+      # Generated with `htpasswd -nb -B user1 agentgateway`
+      # You can also use:
+      # htpasswd:
+      #   file: /path/to/htpasswd
+      # With inline configuration, $ must be escaped to $$.
+      htpasswd: |
+        user1:$$2y$$05$$LMZ.8WGNqvagmtJz2Gw6VuiE6khXc2zc0FDTHrfWJyLT66HM8BMAa
+      realm: example.com
+routes:
+- backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -103,30 +102,29 @@ binds:
 {{< doc-test paths="basic-authn" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The basicAuth authentication policy is accepted by agentgateway in all
-#     three configuration forms: routing-based (binds), simplified LLM
+#     three configuration forms: routing-based (gateways), simplified LLM
 #     (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That credentials are actually enforced at runtime — requires a backend
 #     the page omits to forward to.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      basicAuth:
-        mode: strict
-        # Generated with `htpasswd -nb -B user1 agentgateway`
-        # You can also use:
-        # htpasswd:
-        #   file: /path/to/htpasswd
-        # With inline configuration, $ must be escaped to $$.
-        htpasswd: |
-          user1:$$2y$$05$$LMZ.8WGNqvagmtJz2Gw6VuiE6khXc2zc0FDTHrfWJyLT66HM8BMAa
-        realm: example.com
-    routes:
-    - backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    basicAuth:
+      mode: strict
+      # Generated with `htpasswd -nb -B user1 agentgateway`
+      # You can also use:
+      # htpasswd:
+      #   file: /path/to/htpasswd
+      # With inline configuration, $ must be escaped to $$.
+      htpasswd: |
+        user1:$$2y$$05$$LMZ.8WGNqvagmtJz2Gw6VuiE6khXc2zc0FDTHrfWJyLT66HM8BMAa
+      realm: example.com
+routes:
+- backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 

@@ -12,4 +12,4 @@ test:
 {{< reuse "agw-docs/snippets/feature-experimental.md">}}
 {{< /callout >}}
 
-{{< reuse "agw-docs/pages/operations/trace-requests-standalone.md" >}}
+{{< reuse "agw-docs/pages/operations/trace-requests-standalone-13x.md" >}}

@@ -78,18 +78,18 @@ routes:
       
       ```yaml
       # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-      binds:
-      - port: 3000
-        listeners:
-        - routes:
-          - policies:
-              cors:
-                allowOrigins: ["*"]
-                allowHeaders: ["*"]
-                exposeHeaders: ["Mcp-Session-Id"]
-            backends:
-            - mcp:
-                targets:
+      gateways:
+        default:
+          port: 3000
+      routes:
+      - policies:
+          cors:
+            allowOrigins: ["*"]
+            allowHeaders: ["*"]
+            exposeHeaders: ["Mcp-Session-Id"]
+        backends:
+        - mcp:
+            targets:
       ...
       ```
 

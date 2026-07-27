@@ -5,4 +5,4 @@ description: Run different variants of a policy on the same route based on a CEL
 test: skip
 ---
 
-{{< reuse "agw-docs/pages/conditional-policies.md" >}}
+{{< reuse "agw-docs/pages/conditional-policies-13x.md" >}}

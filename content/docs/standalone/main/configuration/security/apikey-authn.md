@@ -73,20 +73,19 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      apiKey:
-        mode: strict
-        keys:
-        - key: sk-testkey-1
-          metadata:
-            user: test
-            role: admin
-    routes:
-    - backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+routes:
+- backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -94,27 +93,26 @@ binds:
 {{< doc-test paths="apikey-authn" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The apiKey authentication policy is accepted by agentgateway in all three
-#     configuration forms: routing-based (binds), simplified LLM (llm.policies),
+#     configuration forms: routing-based (gateways), simplified LLM (llm.policies),
 #     and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That a request with the given key is actually authenticated at runtime —
 #     requires a backend the page omits to forward to.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      apiKey:
-        mode: strict
-        keys:
-        - key: sk-testkey-1
-          metadata:
-            user: test
-            role: admin
-    routes:
-    - backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+routes:
+- backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 
@@ -211,25 +209,24 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      apiKey:
-        mode: strict
-        keys:
-        - key: sk-testkey-1
-          metadata:
-            user: test
-            role: admin
-    routes:
-    - policies:
-        transformations:
-          request:
-            set:
-              x-authenticated-user: apiKey.user
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+routes:
+- policies:
+    transformations:
+      request:
+        set:
+          x-authenticated-user: apiKey.user
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -238,32 +235,31 @@ binds:
 # WHAT THIS TEST VALIDATES:
 #   * The apiKey config combined with a transformation that sets a header from
 #     API key metadata is accepted by agentgateway in all three configuration
-#     forms: routing-based (binds), simplified LLM (llm.policies), and simplified
+#     forms: routing-based (gateways), simplified LLM (llm.policies), and simplified
 #     MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the x-authenticated-user header is actually set at runtime —
 #     requires a backend the page omits to forward to and inspect.
 cat <<'EOF' > config2.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      apiKey:
-        mode: strict
-        keys:
-        - key: sk-testkey-1
-          metadata:
-            user: test
-            role: admin
-    routes:
-    - policies:
-        transformations:
-          request:
-            set:
-              x-authenticated-user: apiKey.user
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    apiKey:
+      mode: strict
+      keys:
+      - key: sk-testkey-1
+        metadata:
+          user: test
+          role: admin
+routes:
+- policies:
+    transformations:
+      request:
+        set:
+          x-authenticated-user: apiKey.user
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config2.yaml --validate-only
 

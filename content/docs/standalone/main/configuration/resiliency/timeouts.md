@@ -46,15 +46,15 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        timeout:
-          requestTimeout: 1s
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    timeout:
+      requestTimeout: 1s
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -62,21 +62,21 @@ binds:
 {{< doc-test paths="timeouts" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The route-level timeout policy is accepted by agentgateway in both the
-#     routing-based (binds) and simplified MCP (mcp.policies) forms.
+#     routing-based (gateways) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests actually time out at runtime — requires a slow backend the
 #     page omits to exceed the configured deadline.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        timeout:
-          requestTimeout: 1s
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    timeout:
+      requestTimeout: 1s
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 
@@ -107,19 +107,19 @@ In addition to route level timeouts, you can configure per-backend timeouts with
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          http:
-            requestTimeout: 1s
-          tcp:
-            connectTimeout: 10s
-            # Required when setting tcp connection options; {} keeps keepalive defaults
-            keepalives: {}
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      http:
+        requestTimeout: 1s
+      tcp:
+        connectTimeout: 10s
+        # Required when setting tcp connection options; {} keeps keepalive defaults
+        keepalives: {}
 ```
 
 {{< doc-test paths="timeouts" >}}
@@ -130,19 +130,19 @@ binds:
 #     requires a slow/unreachable backend the page omits to trigger them.
 cat <<'EOF' > config2.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          http:
-            requestTimeout: 1s
-          tcp:
-            connectTimeout: 10s
-            # Required when setting tcp connection options; {} keeps keepalive defaults
-            keepalives: {}
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      http:
+        requestTimeout: 1s
+      tcp:
+        connectTimeout: 10s
+        # Required when setting tcp connection options; {} keeps keepalive defaults
+        keepalives: {}
 EOF
 agentgateway -f config2.yaml --validate-only
 {{< /doc-test >}}

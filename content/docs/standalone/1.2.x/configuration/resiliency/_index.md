@@ -12,4 +12,4 @@ Simulate failures, disruptions, and adverse conditions to test that your gateway
 > [!TIP]
 > {{< reuse "agw-docs/snippets/policies-gateway-api.md" >}}
 
-{{< reuse "agw-docs/snippets/policy-apply.md" >}}
+{{< reuse "agw-docs/snippets/policy-apply-13x.md" >}}

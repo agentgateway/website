@@ -75,21 +75,21 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        extAuthz:
-          host: localhost:9000
-          protocol:
-            grpc:
-              # Optional: metadata to send to the external authorization service
-              # The value is a CEL expression
-              metadata:
-                dev.agentgateway.jwt: '{"claims": jwt}'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    extAuthz:
+      host: localhost:9000
+      protocol:
+        grpc:
+          # Optional: metadata to send to the external authorization service
+          # The value is a CEL expression
+          metadata:
+            dev.agentgateway.jwt: '{"claims": jwt}'
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -97,30 +97,30 @@ binds:
 {{< doc-test paths="external-authz" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The gRPC extAuthz policy example config is accepted by agentgateway in all
-#     three configuration forms: routing-based (binds), simplified LLM
+#     three configuration forms: routing-based (gateways), simplified LLM
 #     (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That authorization decisions are actually enforced at runtime — requires a
 #     running external authorization service the page omits.
 #   * The bare `extAuthz:` snippets later on the page are focused fragments
-#     (no binds:), so they are not tested.
+#     (no `gateways:`), so they are not tested.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        extAuthz:
-          host: localhost:9000
-          protocol:
-            grpc:
-              # Optional: metadata to send to the external authorization service
-              # The value is a CEL expression
-              metadata:
-                dev.agentgateway.jwt: '{"claims": jwt}'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    extAuthz:
+      host: localhost:9000
+      protocol:
+        grpc:
+          # Optional: metadata to send to the external authorization service
+          # The value is a CEL expression
+          metadata:
+            dev.agentgateway.jwt: '{"claims": jwt}'
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 
@@ -275,17 +275,17 @@ extAuthz:
 You can also attach an `extAuthz` policy directly to a backend. Backend-level external authorization runs after agentgateway selects the backend, so the policy applies even when a route load-balances or fails over across multiple backends. Attach at the backend level when the authorization service shapes the outgoing request, for example by inserting a token, rather than only deciding whether the incoming request is allowed.
 
 ```yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          extAuthz:
-            host: localhost:9000
-            protocol:
-              grpc: {}
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      extAuthz:
+        host: localhost:9000
+        protocol:
+          grpc: {}
 ```
 
 {{< doc-test paths="external-authz" >}}
@@ -295,17 +295,17 @@ binds:
 #   * That backend-level authorization is actually enforced at runtime —
 #     requires a running external authorization service the page omits.
 cat <<'EOF' > config2.yaml
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          extAuthz:
-            host: localhost:9000
-            protocol:
-              grpc: {}
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      extAuthz:
+        host: localhost:9000
+        protocol:
+          grpc: {}
 EOF
 agentgateway -f config2.yaml --validate-only
 {{< /doc-test >}}

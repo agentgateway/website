@@ -45,22 +45,22 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        retry:
-          # total number of attempts allowed.
-          # Note: 1 attempt implies no retries; the initial attempt is included in the count.
-          attempts: 3
-          # Optional; if set, a delay between each additional attempt
-          backoff: 500ms
-          # A list of HTTP response codes to consider retry-able.
-          # In addition, retries are always permitted if the request to a backend was never started.
-          codes: [429, 500, 503]
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    retry:
+      # total number of attempts allowed.
+      # Note: 1 attempt implies no retries; the initial attempt is included in the count.
+      attempts: 3
+      # Optional; if set, a delay between each additional attempt
+      backoff: 500ms
+      # A list of HTTP response codes to consider retry-able.
+      # In addition, retries are always permitted if the request to a backend was never started.
+      codes: [429, 500, 503]
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -68,28 +68,28 @@ binds:
 {{< doc-test paths="retries" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The retry policy is accepted by agentgateway in both the routing-based
-#     (binds) and simplified MCP (mcp.policies) forms.
+#     (gateways) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That failed requests are actually retried at runtime — requires a backend
 #     that returns the retry-able codes the page omits to drive the behavior.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        retry:
-          # total number of attempts allowed.
-          # Note: 1 attempt implies no retries; the initial attempt is included in the count.
-          attempts: 3
-          # Optional; if set, a delay between each additional attempt
-          backoff: 500ms
-          # A list of HTTP response codes to consider retry-able.
-          # In addition, retries are always permitted if the request to a backend was never started.
-          codes: [429, 500, 503]
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    retry:
+      # total number of attempts allowed.
+      # Note: 1 attempt implies no retries; the initial attempt is included in the count.
+      attempts: 3
+      # Optional; if set, a delay between each additional attempt
+      backoff: 500ms
+      # A list of HTTP response codes to consider retry-able.
+      # In addition, retries are always permitted if the request to a backend was never started.
+      codes: [429, 500, 503]
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 

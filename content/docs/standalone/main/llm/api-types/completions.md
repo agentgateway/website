@@ -25,25 +25,25 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-To configure the route type explicitly, use the `binds/listeners/routes` format and set the `completions` route type in the `policies.ai.routes` map.
+To configure the route type explicitly, use the `gateways` and `routes` format and set the `completions` route type in the `policies.ai.routes` map.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI: {}
-      policies:
-        ai:
-          routes:
-            "/v1/chat/completions": "completions"
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 4000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI: {}
+  policies:
+    ai:
+      routes:
+        "/v1/chat/completions": "completions"
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
 {{< callout type="info" >}}

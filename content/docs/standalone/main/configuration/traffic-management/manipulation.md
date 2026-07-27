@@ -44,18 +44,18 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        requestHeaderModifier:
-          add:
-            x-req-added: value
-          remove:
-          - x-remove-me
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    requestHeaderModifier:
+      add:
+        x-req-added: value
+      remove:
+      - x-remove-me
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -63,24 +63,24 @@ binds:
 {{< doc-test paths="manipulation" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The requestHeaderModifier example config is accepted by agentgateway in
-#     both the routing-based (binds) and simplified MCP (mcp.policies) forms.
+#     both the routing-based (gateways) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That headers are actually added/removed at runtime — requires a backend
 #     the page omits to forward to and inspect.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        requestHeaderModifier:
-          add:
-            x-req-added: value
-          remove:
-          - x-remove-me
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    requestHeaderModifier:
+      add:
+        x-req-added: value
+      remove:
+      - x-remove-me
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 

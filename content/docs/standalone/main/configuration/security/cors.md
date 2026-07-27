@@ -112,27 +112,27 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: api.example.com:443
-      policies:
-        cors:
-          allowOrigins:
-          - https://app.example.com
-          allowMethods:
-          - GET
-          - POST
-          - OPTIONS
-          allowHeaders:
-          - authorization
-          - content-type
-          exposeHeaders:
-          - x-request-id
-          allowCredentials: true
-          maxAge: 100s
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: api.example.com:443
+  policies:
+    cors:
+      allowOrigins:
+      - https://app.example.com
+      allowMethods:
+      - GET
+      - POST
+      - OPTIONS
+      allowHeaders:
+      - authorization
+      - content-type
+      exposeHeaders:
+      - x-request-id
+      allowCredentials: true
+      maxAge: 100s
 ```
 {{< /tab >}}
 {{< /tabs >}}

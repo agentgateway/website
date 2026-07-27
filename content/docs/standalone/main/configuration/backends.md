@@ -21,20 +21,20 @@ export OPENAI_API_KEY="${OPENAI_API_KEY:-dummy}"
 
 ## Static Hosts
 
-The simplest form of backend is a static hostname or IP address. Static hosts are a routing-based backend, so they are configured under `binds`; the simplified `llm` and `mcp` modes model only LLM providers and MCP targets. For example:
+The simplest form of backend is a static hostname or IP address. Static hosts are a routing-based backend, so they are configured in a `routes` entry; the simplified `llm` and `mcp` modes model only LLM providers and MCP targets. For example:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - backends:
-      - host: example.com:8080
-        weight: 1
-      - host: 127.0.0.1:80
-        weight: 9
+gateways:
+  default:
+    port: 3000
+    protocol: HTTP
+routes:
+- backends:
+  - host: example.com:8080
+    weight: 1
+  - host: 127.0.0.1:80
+    weight: 9
 ```
 
 {{< doc-test paths="backends" >}}
@@ -45,16 +45,16 @@ binds:
 #     reachable backends the page omits.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - backends:
-      - host: example.com:8080
-        weight: 1
-      - host: 127.0.0.1:80
-        weight: 9
+gateways:
+  default:
+    port: 3000
+    protocol: HTTP
+routes:
+- backends:
+  - host: example.com:8080
+    weight: 1
+  - host: 127.0.0.1:80
+    weight: 9
 EOF
 agentgateway -f config.yaml --validate-only
 {{< /doc-test >}}
@@ -84,20 +84,20 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: stdio-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-          - name: http-server
-            mcp:
-              host: https://example.com/mcp
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: stdio-server
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+      - name: http-server
+        mcp:
+          host: https://example.com/mcp
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -105,26 +105,26 @@ binds:
 {{< doc-test paths="backends" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The MCP backend example (stdio + remote MCP targets) is accepted by
-#     agentgateway in both the routing-based (binds) and simplified MCP (mcp) forms.
+#     agentgateway in both the routing-based (gateways) and simplified MCP (mcp) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the MCP targets actually start/connect at runtime — requires the npx
 #     command and remote server the page does not stand up.
 cat <<'EOF' > config2.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: stdio-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-          - name: http-server
-            mcp:
-              host: https://example.com/mcp
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: stdio-server
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+      - name: http-server
+        mcp:
+          host: https://example.com/mcp
 EOF
 agentgateway -f config2.yaml --validate-only
 
@@ -166,19 +166,19 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          statefulMode: stateless
-          targets:
-          - name: openapi-server
-            openapi:
-              host: petstore3.swagger.io:443
-              schema:
-                url: https://petstore3.swagger.io/api/v3/openapi.json
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      statefulMode: stateless
+      targets:
+      - name: openapi-server
+        openapi:
+          host: petstore3.swagger.io:443
+          schema:
+            url: https://petstore3.swagger.io/api/v3/openapi.json
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -186,25 +186,25 @@ binds:
 {{< doc-test paths="backends" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The stateless session-routing MCP backend example is accepted by agentgateway
-#     in both the routing-based (binds) and simplified MCP (mcp) forms.
+#     in both the routing-based (gateways) and simplified MCP (mcp) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That stateless wrapping actually occurs at runtime — requires the OpenAPI
 #     upstream and live MCP traffic the page omits.
 cat <<'EOF' > config3.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          statefulMode: stateless
-          targets:
-          - name: openapi-server
-            openapi:
-              host: petstore3.swagger.io:443
-              schema:
-                url: https://petstore3.swagger.io/api/v3/openapi.json
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      statefulMode: stateless
+      targets:
+      - name: openapi-server
+        openapi:
+          host: petstore3.swagger.io:443
+          schema:
+            url: https://petstore3.swagger.io/api/v3/openapi.json
 EOF
 agentgateway -f config3.yaml --validate-only
 
@@ -245,19 +245,19 @@ llm:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI:
+          model: gpt-3.5-turbo
+  policies:
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -271,19 +271,19 @@ binds:
 #     OPENAI_API_KEY and live LLM traffic the page omits.
 cat <<'EOF' > config4.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI:
-              model: gpt-3.5-turbo
-      policies:
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI:
+          model: gpt-3.5-turbo
+  policies:
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 EOF
 agentgateway -f config4.yaml --validate-only
 
@@ -302,7 +302,7 @@ agentgateway -f config4-simplified.yaml --validate-only
 
 ## AWS AgentCore
 
-The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. AgentCore is a routing-based backend, so it is configured under `binds`.
+The AWS backend routes requests to an [Amazon Bedrock AgentCore](https://aws.amazon.com/bedrock/agentcore/) agent runtime. AgentCore is a routing-based backend, so it is configured in a `routes` entry.
 
 Agentgateway derives the connection details from the `agentRuntimeArn` value: requests are sent over TLS to the `bedrock-agentcore` endpoint in the runtime's AWS region, with the path set to the runtime's invocation endpoint. Agentgateway signs each request with AWS SigV4 by using the standard [AWS credential lookup](https://docs.aws.amazon.com/sdkref/latest/guide/access.html) from the environment.
 

@@ -44,18 +44,18 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        requestRedirect:
-          scheme: https
-          authority:
-            full: example.com
-          path:
-            full: /new-path
-          status: 307
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    requestRedirect:
+      scheme: https
+      authority:
+        full: example.com
+      path:
+        full: /new-path
+      status: 307
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -63,24 +63,24 @@ binds:
 {{< doc-test paths="redirects" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The requestRedirect example config is accepted by agentgateway in both the
-#     routing-based (binds) and simplified MCP (mcp.policies) forms.
+#     routing-based (gateways) and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That a 307 redirect is actually returned at runtime — requires sending a
 #     request and inspecting the response, which the page does not demonstrate.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        requestRedirect:
-          scheme: https
-          authority:
-            full: example.com
-          path:
-            full: /new-path
-          status: 307
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    requestRedirect:
+      scheme: https
+      authority:
+        full: example.com
+      path:
+        full: /new-path
+      status: 307
 EOF
 agentgateway -f config.yaml --validate-only
 

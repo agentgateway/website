@@ -53,15 +53,15 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        delay:
-          duration: 2s
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    delay:
+      duration: 2s
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -80,15 +80,15 @@ The following example delays approximately 10% of requests by 500ms.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        delay:
-          duration: "random() < 0.1 ? 500 : 0"
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    delay:
+      duration: "random() < 0.1 ? 500 : 0"
+  backends:
+  - host: localhost:8080
 ```
 
 {{< doc-test paths="fault-injection" >}}
@@ -101,15 +101,15 @@ binds:
 #     omits.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        delay:
-          duration: 2s
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    delay:
+      duration: 2s
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 
@@ -130,15 +130,15 @@ agentgateway -f config-mcp.yaml --validate-only
 
 cat <<'EOF' > config-cel.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        delay:
-          duration: "random() < 0.1 ? 500 : 0"
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    delay:
+      duration: "random() < 0.1 ? 500 : 0"
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config-cel.yaml --validate-only
 {{< /doc-test >}}

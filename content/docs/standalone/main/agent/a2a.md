@@ -127,7 +127,7 @@ The agentgateway UI shows the listener and route that serve your A2A traffic. To
    {{< reuse-image-light src="img/ui-a2a-route.png" >}}
    {{< reuse-image-dark srcDark="img/ui-a2a-route-dark.png" >}}
 
-3. Click **Listeners** to review the bind and listener that serve A2A traffic on port 3000.
+3. Click **Gateways** to review the gateway that serves A2A traffic on port 3000.
 
    {{< reuse-image-light src="img/ui-a2a-listener.png" >}}
    {{< reuse-image-dark srcDark="img/ui-a2a-listener-dark.png" >}}
