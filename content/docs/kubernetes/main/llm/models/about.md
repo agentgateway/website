@@ -129,7 +129,7 @@ Virtual models cannot set `spec.policies`. Configure policies on the concrete ta
 
 ## Providers
 
-Set `spec.provider` to one of the supported provider names: `OpenAI`, `Azure`, `Anthropic`, `Gemini`, `VertexAI`, `Bedrock`, `Cohere`, `Ollama`, `Baseten`, `Cerebras`, `Deepinfra`, `Deepseek`, `Groq`, `Huggingface`, `Mistral`, `Openrouter`, `TogetherAI`, `XAI`, `Fireworks`, or `Custom`.
+Set `spec.provider` to one of the supported provider names, such as `OpenAI`. For a full list of providers, see the [model provider API docs]({{< link-hextra path="/reference/api/#modelprovider" >}}).
 
 Some providers require a matching settings field.
 
@@ -148,8 +148,3 @@ Use `spec.baseURL` to override the provider address and base path prefix. It mus
 - The API is experimental and turned off by default.
 - An {{< reuse "agw-docs/snippets/policy.md" >}} cannot target an `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}`.
 - Status is not yet reported on the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resource. The `status.parents` field stays empty even when a model serves traffic correctly. To confirm that models attached, check the Gateway listener's `attachedRoutes` count, or list the models on `/v1/models`.
-
-## What's next
-
-- [Serve a model]({{< link-hextra path="/llm/models/serve/" >}})
-- [Route across models with virtual models]({{< link-hextra path="/llm/models/virtual/" >}})

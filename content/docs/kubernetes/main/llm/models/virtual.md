@@ -125,7 +125,7 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
    EOF
    ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
 
    | Field | Value | Description |
    |-------|-------|-------------|
@@ -183,7 +183,7 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
    EOF
    ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
 
    | Field | Value | Description |
    |-------|-------|-------------|
@@ -350,8 +350,3 @@ Example output:
 kubectl delete agentgatewaymodel balanced smart resilient internal-fast internal-premium primary-down -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete service unreachable-llm -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 ```
-
-## What's next
-
-- [About models]({{< link-hextra path="/llm/models/about/" >}})
-- [Model failover with backends and routes]({{< link-hextra path="/llm/failover/" >}})

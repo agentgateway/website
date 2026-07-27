@@ -121,11 +121,11 @@ When you omit `spec.match`, the model matches `metadata.name` exactly. Clients r
    EOF
    ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
 
    | Field | Value | Description |
    |-------|-------|-------------|
-   | `parentRefs[0].sectionName` | `http` | Attaches the model to the `http` listener. Omit `sectionName` to attach to every eligible listener on the Gateway. |
+   | `parentRefs` | Gateway | Attaches the model to the `http` listener. Omit `sectionName` to attach to every eligible listener on the Gateway. |
    | `provider` | `OpenAI` | The provider that serves this model. httpbun implements the OpenAI-compatible API. |
    | `baseURL` | `http://httpbun.default.svc.cluster.local:3090/llm` | Overrides the provider address and base path prefix, so requests go to httpbun's `/llm/chat/completions` endpoint instead of OpenAI. Remove this field to use the real provider. |
 
@@ -191,13 +191,13 @@ Use `spec.match.model` to match more than one model name. The provider does not 
    EOF
    ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
 
    | Field | Value | Description |
    |-------|-------|-------------|
-   | `match.model` | `openai/*` | Matches any model name that starts with `openai/`. Wildcards must be `*`, a suffix such as `openai/*`, or a prefix such as `*-latest`. |
-   | `policies.transformations[0].field` | `model` | The field in the provider request body to rewrite. |
-   | `policies.transformations[0].expression` | `llmRequest.model.stripPrefix("openai/")` | Removes the client-facing prefix, so the provider receives `gpt-5-mini` rather than `openai/gpt-5-mini`. |
+   | `model` | `openai/*` | Matches any model name that starts with `openai/`. Wildcards must be `*`, a suffix such as `openai/*`, or a prefix such as `*-latest`. |
+   | `field` | `model` | The field in the provider request body to rewrite, as part of a transformation policy. |
+   | `expression` | `llmRequest.model.stripPrefix("openai/")` | Removes the client-facing prefix, so the provider receives `gpt-5-mini` rather than `openai/gpt-5-mini`. |
 
 2. Request a model through the wildcard. The response shows the transformed model name.
 
@@ -232,7 +232,7 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    type: Opaque
    stringData:
-     Authorization: \$OPENAI_API_KEY
+     Authorization: $OPENAI_API_KEY
    EOF
    ```
 
@@ -252,7 +252,6 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
        name: agentgateway-proxy
        sectionName: http
      provider: OpenAI
-     baseURL: http://httpbun.default.svc.cluster.local:3090/llm
      policies:
        auth:
          secretRef:
@@ -260,16 +259,13 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
    EOF
    ```
 
-   {{% reuse "agw-docs/snippets/review-table.md" %}}
+   {{% reuse "agw-docs/snippets/review-table.md" %}} For more information, see the [API docs]({{< link-hextra path="/reference/api/#agentgatewaymodelspec" >}}).
 
    | Field | Value | Description |
    |-------|-------|-------------|
-   | `policies.auth.secretRef.name` | `openai-secret` | The Secret to read the credential from. Set `secretRef.key` to read a key other than `Authorization`. |
+   | `secretRef` | `openai-secret` | The Secret to read the credential from. Set `secretRef.key` to read a key other than `Authorization`. |
 
    Agentgateway writes the credential to the `Authorization` header with a `Bearer ` prefix. Use `policies.auth.location` to write it somewhere else, such as a custom header or query parameter.
-
-   > [!NOTE]
-   > To point this model at the real OpenAI API, remove the `baseURL` field and set the Secret to a valid key.
 
 ## Verify model discovery
 
@@ -352,8 +348,3 @@ kubectl delete secret openai-secret -n {{< reuse "agw-docs/snippets/namespace.md
 ```
 
 To stop the listener from serving LLM traffic, remove the `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` entry from `allowedRoutes.kinds`. Do not delete the `agentgateway-proxy` Gateway, because other guides use it.
-
-## What's next
-
-- [Route across models with virtual models]({{< link-hextra path="/llm/models/virtual/" >}})
-- [About models]({{< link-hextra path="/llm/models/about/" >}})
