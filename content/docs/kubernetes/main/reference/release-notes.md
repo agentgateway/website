@@ -73,6 +73,19 @@ Agentgateway can exchange an incoming token for a backend credential by using [R
 
 Agentgateway includes a native `Entra` MCP authentication provider that bridges the OAuth behaviors that Microsoft Entra ID (Azure AD) implements differently from the MCP authorization specification, such as serving RFC 8414 metadata from Entra's OIDC discovery document, stripping the RFC 8707 `resource` parameter, and short-circuiting Dynamic Client Registration with your pre-registered application ID. For more information, see [Set up Microsoft Entra ID]({{< link-hextra path="/mcp/auth/entra/" >}}).
 
+### Model-centric LLM configuration with AgentgatewayModel
+
+<!-- ref: https://github.com/agentgateway/agentgateway/pull/2583 -->
+
+A new experimental `AgentgatewayModel` API provides a model-centric way to serve LLMs in Kubernetes. Each resource declares one client-facing model and attaches directly to a Gateway listener, so you no longer assemble a listener, an `HTTPRoute` that matches on the request body, an `AgentgatewayBackend` for each provider, and an `AgentgatewayPolicy` for the AI behavior.
+
+- **Listener opt-in**: A listener serves LLM traffic when it allows the `AgentgatewayModel` route kind in `allowedRoutes.kinds`. The same listener can also allow `HTTPRoute`, so LLM endpoints and ordinary HTTP routes coexist on one port.
+- **Aggregated model table**: Models that attach to the same listener are aggregated into one table that serves request model extraction, the standard LLM API paths, `/v1/models` discovery, per-model provider routing, and OpenAI-compatible responses for unknown models.
+- **Concrete and virtual models**: A concrete model names the provider that serves it. A virtual model routes across other models with weighted, failover, or conditional strategies.
+- **Per-model policies**: Concrete models accept an inline `policies` block for credentials, authorization, transformations, guardrails, health, TLS, tunnel, and header changes.
+
+The API is disabled by default. To enable it, set the `agentgatewayModels.enabled=true` Helm value on the control plane. For more information, see [About models]({{< link-hextra path="/llm/models/about/" >}}), [Serve a model]({{< link-hextra path="/llm/models/serve/" >}}), and [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+
 ### Virtual keys from ConfigMaps and hashed keys
 
 <!-- ref: https://github.com/agentgateway/agentgateway/pull/2570 -->
