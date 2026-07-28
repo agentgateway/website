@@ -50,7 +50,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: 'playwright/package-lock.json'
 
@@ -72,9 +72,25 @@ jobs:
       - name: Capture Kubernetes UI (latest + main)
         run: |
           set -euo pipefail
+
+          cluster=""
+          pf=""
+          group_open=""
+
+          # Under `set -e` a failed capture aborts mid-iteration, which would leave the
+          # ::group:: open (collapsing every later step's log into it, hiding the actual
+          # error) and leak the port-forward + kind cluster. Close and tear down on any exit.
+          cleanup() {
+            [ -n "$pf" ] && kill "$pf" 2>/dev/null || true
+            [ -n "$cluster" ] && kind delete cluster --name "$cluster" || true
+            [ -n "$group_open" ] && echo "::endgroup::" || true
+          }
+          trap cleanup EXIT
+
           for v in latest main; do
             page="content/docs/kubernetes/$v/observability/ui.md"
             echo "::group::kube capture — $v"
+            group_open=1
             python3 scripts/doc_test_run.py --repo-root . \
               --file "$page" --test capture \
               --keep-cluster --keep-cluster-file "out/tests/kept-$v.txt"
@@ -96,8 +112,11 @@ jobs:
               DOC_VERSION="$v" npm run sync-docs )
 
             kill "$pf" 2>/dev/null || true
+            pf=""
             kind delete cluster --name "$cluster"
+            cluster=""
             echo "::endgroup::"
+            group_open=""
           done
 
       - name: Upload Playwright report
