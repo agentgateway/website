@@ -23,12 +23,12 @@ frontendPolicies:
     - deny: 'source.address == "192.168.1.100"'
     - require: 'source.port > 1024'
 
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
 ```
 
 ## Rules
@@ -90,16 +90,16 @@ frontendPolicies:
     rules:
     - allow: 'cidr("10.0.0.0/8").containsIP(source.address)'
 
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-      policies:
-        authorization:
-          rules:
-          - require: 'jwt.aud == "my-service"'
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+  policies:
+    authorization:
+      rules:
+      - require: 'jwt.aud == "my-service"'
 ```
 
 In this example, only connections from the `10.0.0.0/8` range are accepted at the network level, and those connections must also present a valid JWT with the correct audience claim.

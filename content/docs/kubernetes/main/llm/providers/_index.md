@@ -1,6 +1,6 @@
 ---
 title: Providers
-weight: 15
+weight: 10
 description: Configure agentgateway for first-class provider shortcuts and OpenAI-compatible fallbacks.
 test: skip
 ---

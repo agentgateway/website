@@ -117,9 +117,8 @@ Alternatively, route Claude Code directly to Anthropic's API through agentgatewa
    claude -p "Hello"
    ```
 
-{{< callout type="info" >}}
-For pinned model configuration, extended thinking, and other options, see the [Anthropic provider page]({{< link-hextra path="/llm/providers/anthropic" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For pinned model configuration, extended thinking, and other options, see the [Anthropic provider page]({{< link-hextra path="/llm/providers/anthropic" >}}).
 
 ## Claude Teams or Pro account
 
@@ -129,31 +128,30 @@ If you have a Claude Teams or Pro account, you can use agentgateway for request 
 
    ```yaml
    cat > config.yaml << 'EOF'
-   binds:
-   - port: 4001
-     listeners:
-     - name: default
+   gateways:
+     default:
+       port: 4001
        protocol: HTTP
-       routes:
-       - name: claude-agent
-         matches:
-         - path:
-             pathPrefix: /claude
+   routes:
+   - name: claude-agent
+     matches:
+     - path:
+         pathPrefix: /claude
+     policies:
+       urlRewrite:
+         path:
+           prefix: /
+     backends:
+     - ai:
+         name: claude-agent
+         provider:
+           anthropic: {}
          policies:
-           urlRewrite:
-             path:
-               prefix: /
-         backends:
-         - ai:
-             name: claude-agent
-             provider:
-               anthropic: {}
-             policies:
-               ai:
-                 routes:
-                   /v1/messages: messages
-                   /v1/messages/count_tokens: anthropicTokenCount
-                   '*': passthrough
+           ai:
+             routes:
+               /v1/messages: messages
+               /v1/messages/count_tokens: anthropicTokenCount
+               '*': passthrough
    EOF
    ```
 

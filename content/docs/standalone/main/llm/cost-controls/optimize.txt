@@ -4,7 +4,7 @@ weight: 70
 description: Reduce LLM spend by routing to cheaper models and caching repeated prompt content.
 test:
   optimize:
-  - file: content/docs/standalone/main/llm/cost-controls/optimize.md
+  - file: ${versionRoot}/llm/cost-controls/optimize.md
     path: optimize
 ---
 
@@ -190,9 +190,8 @@ Use `routing.failover` with `priority` to define ordered backups. Beyond resilie
 
 When requests share a large, stable prefix (a long system prompt, tool definitions, or retrieved context), prompt caching lets the provider reuse that work instead of reprocessing it every time. Cached input tokens are billed at a much lower rate than fresh input tokens, so caching cuts cost for repetitive workloads such as agents and chat sessions.
 
-{{< callout type="warning" >}}
-Prompt caching is currently applied for **Amazon Bedrock** models that support it (Claude 3 and later, and Amazon Nova). It is not applied for the direct Anthropic or OpenAI providers.
-{{< /callout >}}
+> [!WARNING]
+> Prompt caching is currently applied for **Amazon Bedrock** models that support it (Claude 3 and later, and Amazon Nova). It is not applied for the direct Anthropic or OpenAI providers.
 
 Enable caching per model with `promptCaching`. When enabled, agentgateway automatically inserts cache markers into the request, so you do not change client payloads.
 

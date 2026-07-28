@@ -121,9 +121,8 @@ The webhook server is configured to take the following actions:
 * If the content has the word `block`, the request is rejected with a 403 Forbidden response.
 * If the response has the word `mask`, the gateway transforms the word `mask` to asterisks (`****`) in the body with a 200 response.
 
-{{< callout type="warning" >}}
-{{% reuse "agw-docs/snippets/demo-disclaimer.md" %}}
-{{< /callout >}}
+> [!WARNING]
+> {{% reuse "agw-docs/snippets/demo-disclaimer.md" %}}
 
 ### Before you begin
 
@@ -272,7 +271,7 @@ EOF
    {{% tab name="Cloud Provider LoadBalancer" %}}   
    ```sh
    curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -289,7 +288,7 @@ EOF
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -319,7 +318,7 @@ EOF
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl -vi "$INGRESS_GW_ADDRESS:80/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -336,7 +335,7 @@ EOF
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl -vi "localhost:8080/openai" -H content-type:application/json  -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -363,7 +362,7 @@ EOF
      "id": "chatcmpl-BMFO97jLVP4YOjf6CZEOL5sHSqhbn",
      "object": "chat.completion",
      "created": 1744642069,
-     "model": "gpt-3.5-turbo-0125",
+     "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}-0125",
      "choices": [
        {
          "index": 0,

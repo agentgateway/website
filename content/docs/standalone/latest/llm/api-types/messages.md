@@ -30,31 +30,30 @@ llm:
       apiKey: "$ANTHROPIC_API_KEY"
 ```
 
-To configure the route type explicitly, use the `binds/listeners/routes` format and set the `messages` route type in the `policies.ai.routes` map. To also support token counting, map `/v1/messages/count_tokens` to the `anthropicTokenCount` route type.
+To configure the route type explicitly, use the `gateways` and `routes` format and set the `messages` route type in the `policies.ai.routes` map. To also support token counting, map `/v1/messages/count_tokens` to the `anthropicTokenCount` route type.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: anthropic
-          provider:
-            anthropic: {}
-      policies:
-        ai:
-          routes:
-            "/v1/messages": "messages"
-            "/v1/messages/count_tokens": "anthropicTokenCount"
-        backendAuth:
-          key: "$ANTHROPIC_API_KEY"
+gateways:
+  default:
+    port: 4000
+routes:
+- backends:
+  - ai:
+      name: anthropic
+      provider:
+        anthropic: {}
+  policies:
+    ai:
+      routes:
+        "/v1/messages": "messages"
+        "/v1/messages/count_tokens": "anthropicTokenCount"
+    backendAuth:
+      key: "$ANTHROPIC_API_KEY"
 ```
 
-{{< callout type="info" >}}
-For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
 
 ## Using the API
 
@@ -76,7 +75,7 @@ curl -X POST http://localhost:4000/v1/messages \
 {{% /tab %}}
 {{% tab name="Other" %}}
 
-[View other LLM client integrations](/docs/standalone/latest/integrations/llm-clients/).
+[View other LLM client integrations](/docs/standalone/main/integrations/llm-clients/).
 
 {{% /tab %}}
 {{< /tabs >}}

@@ -16,9 +16,8 @@ Each set of routing rules is defined in a dedicated HTTPRoute. These HTTPRoutes 
 | Child | HTTPRoute | The child HTTPRoute receives traffic from the parent HTTPRoute and either forwards traffic to a backing service or delegates further to a grandchild HTTPRoute. To receive delegated traffic, the child must match a path that contains the parent's prefix. For example, if the parent delegates traffic for `/route`, the child must define a route that includes that prefix, such as `/route/a`. To delegate further to a grandchild, the child rule must use a `PathPrefix` matcher. |
 | Grandchild | HTTPRoute | A grandchild HTTPRoute receives traffic from a child HTTPRoute. It can be selected by any child that delegates to it. The grandchild must match a path that contains the prefix the child delegated for. For example, if the child delegates traffic for `/route/a`, the grandchild must match a path that includes that prefix, such as `/route/a/myservice`. Great-grandchild HTTPRoutes and beyond behave the same way. |
 
-{{< callout type="info" >}}
-For an example route delegation setup with a parent, child, and grandchild HTTPRoute, see [Multi-level delegation]({{< link-hextra path="/traffic-management/route-delegation/multi-level-delegation/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For an example route delegation setup with a parent, child, and grandchild HTTPRoute, see [Multi-level delegation]({{< link-hextra path="/traffic-management/route-delegation/multi-level-delegation/" >}}).
 
 ## Benefits and use cases
 
@@ -96,9 +95,8 @@ rules:
     port: 8080
 ```
 
-{{< callout type="info" >}}
-If a child HTTPRoute delegates routing decisions to a grandchild, the rule that delegates _must_ use a `PathPrefix` matcher. For an example of route delegation between a parent, child, and grandchild HTTPRoute, see [Multi-level delegation]({{< link-hextra path="/traffic-management/route-delegation/multi-level-delegation/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> If a child HTTPRoute delegates routing decisions to a grandchild, the rule that delegates _must_ use a `PathPrefix` matcher. For an example of route delegation between a parent, child, and grandchild HTTPRoute, see [Multi-level delegation]({{< link-hextra path="/traffic-management/route-delegation/multi-level-delegation/" >}}).
 
 ### Headers, query parameters, HTTP methods
 
@@ -106,9 +104,8 @@ You can specify headers, query parameters, and HTTP method matchers on both pare
 
 The parent and child can define different sets of header and query parameter matchers. For example, a parent might delegate traffic that includes `header1: val1`, while the child matches on `headerX: valX`. In this case, a request must include both `header1` and `headerX` to reach the backend: `header1` so the parent delegates the request, and `headerX` so the child routes it.
 
-{{< callout type="info" >}}
-For an example route delegation setup that uses headers and query parameters, see [Header and query match]({{< link-hextra path="/traffic-management/route-delegation/header-query/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For an example route delegation setup that uses headers and query parameters, see [Header and query match]({{< link-hextra path="/traffic-management/route-delegation/header-query/" >}}).
 
 ### Multiple parent HTTPRoutes
 

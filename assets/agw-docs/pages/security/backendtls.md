@@ -1,8 +1,7 @@
 Originate a one-way TLS connection from the Gateway to a backend. 
 
-{{< callout type="warning" >}}
-{{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 
 ## About one-way TLS
 

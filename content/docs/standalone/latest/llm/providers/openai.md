@@ -2,7 +2,7 @@
 title: OpenAI
 weight: 10
 icon: /integrations/providers/bw/openai.svg
-description: Configuration and setup for OpenAI LLM provider
+description: Route agentgateway LLM traffic to OpenAI's GPT models.
 ---
 
 Configure OpenAI as an LLM provider in agentgateway.
@@ -31,10 +31,8 @@ llm:
 | `params.model` | The specific OpenAI model to use. If set, this model is used for all requests. If not set, the request must include the model to use. |
 | `params.apiKey` | The OpenAI API key for authentication. You can reference environment variables using the `$VAR_NAME` syntax. |
 
-{{< callout type="info" >}}
-For advanced routing scenarios that require path-based routing or custom endpoints, use the traditional `binds/listeners/routes` configuration format. See the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}) for more information.
-{{< /callout >}}
+> [!NOTE]
+> For advanced routing scenarios that require path-based routing or custom endpoints, use the `gateways` and `routes` configuration format. See the [Routing-based configuration guide]({{< link-hextra path="/llm/configuration-modes/" >}}) for more information.
 
-{{< callout type="info" >}}
-To connect Codex to agentgateway, see the [Codex integration page]({{< link-hextra path="/integrations/llm-clients/codex" >}}).
-{{< /callout >}}
+> [!NOTE]
+> To connect Codex to agentgateway, see the [Codex integration page]({{< link-hextra path="/integrations/llm-clients/codex" >}}).

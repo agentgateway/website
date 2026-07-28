@@ -1,6 +1,6 @@
 ---
-linkTitle: "Version 1.3.x"
-title: Version 1.3.x
+linkTitle: "Version 1.4.x"
+title: Version 1.4.x
 description: Use agentgateway as a standalone binary.
 test: skip
 ---

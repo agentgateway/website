@@ -59,6 +59,7 @@ non-default path for that format.
 | `Embeddings` | `/v1/embeddings` |
 | `AnthropicTokenCount` | `/v1/messages/count_tokens` |
 | `Realtime` | `/v1/realtime` |
+| `Rerank` | `/v1/rerank` |
 
 Agentgateway chooses from the provider-native formats that you declare. For
 example, if a custom provider supports OpenAI chat completions but not OpenAI
@@ -73,6 +74,7 @@ shapes, declare each supported format and optionally set a per-format path.
 | OpenAI embeddings | `Embeddings` |
 | Anthropic token count | `AnthropicTokenCount` |
 | OpenAI realtime | `Realtime` |
+| Rerank | `Rerank` |
 
 If no declared provider format can serve the client request format,
 agentgateway rejects the request.
@@ -183,13 +185,12 @@ spec:
       name: qwen-inferencepool
 ```
 
-{{< callout type="info" >}}
-Most users can keep the default llm-d Router OpenAI parser and send
-OpenAI-compatible requests, such as `/v1/chat/completions`. If clients send a
-different request format, configure the llm-d Router EPP parser, such as
-`router.epp.parser`, for that client-facing format. For parser options, see the
-[llm-d Router parser docs](https://github.com/llm-d/llm-d-router/blob/main/pkg/epp/framework/plugins/requesthandling/parsers/README.md).
-{{< /callout >}}
+> [!NOTE]
+> Most users can keep the default llm-d Router OpenAI parser and send
+> OpenAI-compatible requests, such as `/v1/chat/completions`. If clients send a
+> different request format, configure the llm-d Router EPP parser, such as
+> `router.epp.parser`, for that client-facing format. For parser options, see the
+> [llm-d Router parser docs](https://github.com/llm-d/llm-d-router/blob/main/pkg/epp/framework/plugins/requesthandling/parsers/README.md).
 
 ## Limitations
 

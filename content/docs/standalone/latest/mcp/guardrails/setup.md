@@ -33,80 +33,79 @@ In this guide, you route `tools/call` and `tools/list` requests through a sample
    for i in $(seq 1 30); do (echo > /dev/tcp/localhost/9001) 2>/dev/null && break; sleep 1; done
    {{< /doc-test >}}
 
-   {{< callout type="info" >}}
-   **Build your own ExtMCP server**: The sample server is for demonstration only. To build your own, implement the `ExtMcp` gRPC service from the [ExtMCP protocol definition](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto). The service has two methods:
-
-   * `CheckRequest`: Called in the request phase, before the call reaches the MCP backend. Return the request unchanged, return mutated `params`, or return an `AuthorizationError` to deny the call.
-   * `CheckResponse`: Called in the response phase, after the MCP backend returns a result. Return the response unchanged, return a mutated `result`, or return an `AuthorizationError` to deny the call.
-
-   Generate gRPC bindings from the proto file in your language, implement the two methods, and serve them over cleartext HTTP/2 (h2c) on the port that agentgateway connects to. For more information about the request and response messages, outcomes, and error codes, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}).
-   {{< /callout >}}
+   > [!NOTE]
+   > **Build your own ExtMCP server**: The sample server is for demonstration only. To build your own, implement the `ExtMcp` gRPC service from the [ExtMCP protocol definition](https://github.com/agentgateway/agentgateway/blob/main/crates/protos/proto/ext_mcp.proto). The service has two methods:
+   >
+   > * `CheckRequest`: Called in the request phase, before the call reaches the MCP backend. Return the request unchanged, return mutated `params`, or return an `AuthorizationError` to deny the call.
+   > * `CheckResponse`: Called in the response phase, after the MCP backend returns a result. Return the response unchanged, return a mutated `result`, or return an `AuthorizationError` to deny the call.
+   >
+   > Generate gRPC bindings from the proto file in your language, implement the two methods, and serve them over cleartext HTTP/2 (h2c) on the port that agentgateway connects to. For more information about the request and response messages, outcomes, and error codes, see [About MCP guardrails]({{< link-hextra path="/mcp/guardrails/about" >}}).
 
 2. In another terminal, create a `config.yaml` file. The MCP backend exposes a local stdio MCP server, and the `mcpGuardrails` policy on the route sends selected MCP methods through the ExtMCP server.
    ```yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - policies:
-           cors:
-             allowOrigins:
-             - "*"
-             allowHeaders:
-             - mcp-protocol-version
-             - content-type
-             - mcp-session-id
-             exposeHeaders:
-             - "Mcp-Session-Id"
-           mcpGuardrails:
-             processors:
-             - kind: remote
-               host: "localhost:9001"
-               failureMode: failClosed
-               methods:
-                 tools/call: request
-                 tools/list: response
-         backends:
-         - mcp:
-             targets:
-             - name: everything
-               stdio:
-                 cmd: npx
-                 args: ["@modelcontextprotocol/server-everything"]
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - policies:
+       cors:
+         allowOrigins:
+         - "*"
+         allowHeaders:
+         - mcp-protocol-version
+         - content-type
+         - mcp-session-id
+         exposeHeaders:
+         - "Mcp-Session-Id"
+       mcpGuardrails:
+         processors:
+         - kind: remote
+           host: "localhost:9001"
+           failureMode: failClosed
+           methods:
+             tools/call: request
+             tools/list: response
+     backends:
+     - mcp:
+         targets:
+         - name: everything
+           stdio:
+             cmd: npx
+             args: ["@modelcontextprotocol/server-everything"]
    ```
 
    {{< doc-test paths="mcp-guardrails" >}}
    cat <<'EOF' > config.yaml
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - policies:
-           cors:
-             allowOrigins:
-             - "*"
-             allowHeaders:
-             - mcp-protocol-version
-             - content-type
-             - mcp-session-id
-             exposeHeaders:
-             - "Mcp-Session-Id"
-           mcpGuardrails:
-             processors:
-             - kind: remote
-               host: "localhost:9001"
-               failureMode: failClosed
-               methods:
-                 tools/call: request
-                 tools/list: response
-         backends:
-         - mcp:
-             targets:
-             - name: everything
-               stdio:
-                 cmd: npx
-                 args: ["@modelcontextprotocol/server-everything"]
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - policies:
+       cors:
+         allowOrigins:
+         - "*"
+         allowHeaders:
+         - mcp-protocol-version
+         - content-type
+         - mcp-session-id
+         exposeHeaders:
+         - "Mcp-Session-Id"
+       mcpGuardrails:
+         processors:
+         - kind: remote
+           host: "localhost:9001"
+           failureMode: failClosed
+           methods:
+             tools/call: request
+             tools/list: response
+     backends:
+     - mcp:
+         targets:
+         - name: everything
+           stdio:
+             cmd: npx
+             args: ["@modelcontextprotocol/server-everything"]
    EOF
    {{< /doc-test >}}
 

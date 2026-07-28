@@ -77,18 +77,18 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        localRateLimit:
-        - maxTokens: 10
-          tokensPerFill: 1
-          fillInterval: 60s
-          type: requests
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: requests
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< tab name="traffic-ratelimiting-local example" >}}
@@ -101,25 +101,25 @@ For a runnable version of the routing-based configuration, see the [`traffic-rat
 {{< doc-test paths="rate-limits" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The request-based localRateLimit policy is accepted by agentgateway in the
-#     routing-based (binds), simplified LLM (llm.policies), and simplified MCP
+#     routing-based (gateways), simplified LLM (llm.policies), and simplified MCP
 #     (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually limited at runtime — requires driving traffic
 #     past the configured bucket, which the page does not exercise.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        localRateLimit:
-        - maxTokens: 10
-          tokensPerFill: 1
-          fillInterval: 60s
-          type: requests
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    localRateLimit:
+    - maxTokens: 10
+      tokensPerFill: 1
+      fillInterval: 60s
+      type: requests
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 
@@ -248,24 +248,24 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        localRateLimit:
-        - maxTokens: 5000
-          # Every hour, refill 5000 tokens
-          tokensPerFill: 5000
-          fillInterval: 1h
-          type: tokens
-        - maxTokens: 60
-          # Every second, refill 1 token
-          tokensPerFill: 1
-          fillInterval: 1s
-          type: requests
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    localRateLimit:
+    - maxTokens: 5000
+      # Every hour, refill 5000 tokens
+      tokensPerFill: 5000
+      fillInterval: 1h
+      type: tokens
+    - maxTokens: 60
+      # Every second, refill 1 token
+      tokensPerFill: 1
+      fillInterval: 1s
+      type: requests
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -273,7 +273,7 @@ binds:
 {{< doc-test paths="rate-limits" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The Local example config (5000 tokens/hour and 60 requests/second) is
-#     accepted by agentgateway in the routing-based (binds), simplified LLM
+#     accepted by agentgateway in the routing-based (gateways), simplified LLM
 #     (llm.policies), and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the token-bucket limits actually refill and throttle at runtime —
@@ -282,24 +282,24 @@ binds:
 #     reference snippets, not standalone configs, so they are not tested here.
 cat <<'EOF' > config2.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        localRateLimit:
-        - maxTokens: 5000
-          # Every hour, refill 5000 tokens
-          tokensPerFill: 5000
-          fillInterval: 1h
-          type: tokens
-        - maxTokens: 60
-          # Every second, refill 1 token
-          tokensPerFill: 1
-          fillInterval: 1s
-          type: requests
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    localRateLimit:
+    - maxTokens: 5000
+      # Every hour, refill 5000 tokens
+      tokensPerFill: 5000
+      fillInterval: 1h
+      type: tokens
+    - maxTokens: 60
+      # Every second, refill 1 token
+      tokensPerFill: 1
+      fillInterval: 1s
+      type: requests
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config2.yaml --validate-only
 
@@ -416,9 +416,8 @@ The following example runs the `ratelimit` server and its Redis backing store lo
    docker compose logs ratelimit
    ```
 
-{{< callout type="info" >}}
-Setting `LOG_LEVEL: debug` makes the server log every descriptor it receives from agentgateway at request time, which is the fastest way to confirm that your `domain` and descriptor keys line up on both sides.
-{{< /callout >}}
+> [!NOTE]
+> Setting `LOG_LEVEL: debug` makes the server log every descriptor it receives from agentgateway at request time, which is the fastest way to confirm that your `domain` and descriptor keys line up on both sides.
 
 #### Connect agentgateway to the rate limit server
 
@@ -483,28 +482,28 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        remoteRateLimit:
-          # The address to access the rate limit server
-          host: localhost:8081
-          # Arbitrary 'domain' to match limits on the rate limit server
-          domain: example.com
-          descriptors:
-          # Rate limit requests based on a header, whether the user is authenticated, and a static value (used to match a specific rate limit rule on the rate limit server)
-          - entries:
-            - key: some-static-value
-              value: '"something"'
-            - key: organization
-              value: 'request.headers["x-organization"]'
-            - key: authenticated
-              value: 'has(jwt.sub)'
-            type: tokens # or 'requests'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    remoteRateLimit:
+      # The address to access the rate limit server
+      host: localhost:8081
+      # Arbitrary 'domain' to match limits on the rate limit server
+      domain: example.com
+      descriptors:
+      # Rate limit requests based on a header, whether the user is authenticated, and a static value (used to match a specific rate limit rule on the rate limit server)
+      - entries:
+        - key: some-static-value
+          value: '"something"'
+        - key: organization
+          value: 'request.headers["x-organization"]'
+        - key: authenticated
+          value: 'has(jwt.sub)'
+        type: tokens # or 'requests'
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -512,7 +511,7 @@ binds:
 {{< doc-test paths="rate-limits" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The Remote example config (remoteRateLimit with descriptors) is accepted
-#     by agentgateway in the routing-based (binds), simplified LLM
+#     by agentgateway in the routing-based (gateways), simplified LLM
 #     (llm.policies), and simplified MCP (mcp.policies) forms.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That limits are actually enforced at runtime — requires an external Envoy
@@ -521,28 +520,28 @@ binds:
 #     field-reference fragments, not standalone configs, so they are not tested.
 cat <<'EOF' > config3.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        remoteRateLimit:
-          # The address to access the rate limit server
-          host: localhost:8081
-          # Arbitrary 'domain' to match limits on the rate limit server
-          domain: example.com
-          descriptors:
-          # Rate limit requests based on a header, whether the user is authenticated, and a static value (used to match a specific rate limit rule on the rate limit server)
-          - entries:
-            - key: some-static-value
-              value: '"something"'
-            - key: organization
-              value: 'request.headers["x-organization"]'
-            - key: authenticated
-              value: 'has(jwt.sub)'
-            type: tokens # or 'requests'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    remoteRateLimit:
+      # The address to access the rate limit server
+      host: localhost:8081
+      # Arbitrary 'domain' to match limits on the rate limit server
+      domain: example.com
+      descriptors:
+      # Rate limit requests based on a header, whether the user is authenticated, and a static value (used to match a specific rate limit rule on the rate limit server)
+      - entries:
+        - key: some-static-value
+          value: '"something"'
+        - key: organization
+          value: 'request.headers["x-organization"]'
+        - key: authenticated
+          value: 'has(jwt.sub)'
+        type: tokens # or 'requests'
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config3.yaml --validate-only
 
@@ -637,9 +636,8 @@ remoteRateLimit:
 | `failClosed` (default) | Deny requests with `500` when the rate limit service is unavailable |
 | `failOpen` | Allow requests through when the rate limit service is unavailable |
 
-{{< callout type="warning" >}}
-Be cautious when setting the failure mode to `failOpen`. While this setting prevents service disruptions if the rate limiting server is unavailable, rate limits are not enforced for your routes until the rate limiting server is available again.
-{{< /callout >}}
+> [!WARNING]
+> Be cautious when setting the failure mode to `failOpen`. While this setting prevents service disruptions if the rate limiting server is unavailable, rate limits are not enforced for your routes until the rate limiting server is available again.
 
 #### Backend connection policies
 

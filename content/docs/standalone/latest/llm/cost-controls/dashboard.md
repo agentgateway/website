@@ -4,7 +4,7 @@ weight: 30
 description: View LLM spend, tokens, and traffic in the built-in Admin UI, grouped by model, provider, and user.
 test:
   cost-dashboard:
-  - file: content/docs/standalone/latest/llm/cost-controls/dashboard.md
+  - file: ${versionRoot}/llm/cost-controls/dashboard.md
     path: cost-dashboard
 ---
 
@@ -59,9 +59,8 @@ Review the dashboard in the **LLM > Analytics** page. Open [http://localhost:150
 {{< reuse-image-light src="img/ui-cost-dashboard-tokens.png" alt="agentgateway Analytics dashboard showing token traffic over time, with group-by and measure controls" >}}
 {{< reuse-image-dark srcDark="img/ui-cost-dashboard-tokens-dark.png" alt="agentgateway Analytics dashboard showing token traffic over time, with group-by and measure controls" >}}
 
-{{< callout type="info" >}}
-The separate **LLM > Costs** page ([http://localhost:15000/ui/llm/costs](http://localhost:15000/ui/llm/costs)) is where you *manage the cost catalog* (import or override pricing), not where you view spend. See [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) for catalog setup.
-{{< /callout >}}
+> [!NOTE]
+> The separate **LLM > Costs** page ([http://localhost:15000/ui/llm/costs](http://localhost:15000/ui/llm/costs)) is where you *manage the cost catalog* (import or override pricing), not where you view spend. See [Model costs]({{< link-hextra path="/llm/cost-controls/costs/" >}}) for catalog setup.
 
 ### Group by and measure
 

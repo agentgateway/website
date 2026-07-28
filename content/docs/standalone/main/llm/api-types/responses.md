@@ -25,30 +25,29 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-To configure the route type explicitly, use the `binds/listeners/routes` format and set the `responses` route type in the `policies.ai.routes` map.
+To configure the route type explicitly, use the `gateways` and `routes` format and set the `responses` route type in the `policies.ai.routes` map.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI: {}
-      policies:
-        ai:
-          routes:
-            "/v1/responses": "responses"
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 4000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI: {}
+  policies:
+    ai:
+      routes:
+        "/v1/responses": "responses"
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
-{{< callout type="info" >}}
-For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
 
 ## Using the API
 
@@ -69,9 +68,8 @@ curl 'http://localhost:4000/v1/responses' \
 {{% /tab %}}
 {{% tab name="Python" %}}
 
-{{< callout type="info" >}}
-The `api_key` parameter is required in the OpenAI library. Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
-{{< /callout >}}
+> [!NOTE]
+> The `api_key` parameter is required in the OpenAI library. Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
 
 ```python
 import openai

@@ -8,9 +8,8 @@ Attaches to: {{< badge content="Listener" path="/configuration/listeners/" >}} {
 
 Use the `policies.buffer` policy to buffer request or response bodies in the proxy before the bodies are forwarded. By default, agentgateway streams bodies. When you configure `policies.buffer`, the proxy accumulates the configured body direction in memory until the body is complete, and then forwards it.
 
-{{< callout type="info" >}}
-This policy is different from gateway-level buffering, which configures the `frontend.http.maxBufferSize` limit used by policies that need buffering.
-{{< /callout >}}
+> [!NOTE]
+> This policy is different from gateway-level buffering, which configures the `frontend.http.maxBufferSize` limit used by policies that need buffering.
 
 ## Buffer settings
 
@@ -29,16 +28,16 @@ Use a `policies` block to configure body buffering at the listener, route, or ba
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:8080
-        policies:
-          buffer:
-            request:
-              maxBytes: 64Ki
-            response:
-              maxBytes: 256Ki
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:8080
+    policies:
+      buffer:
+        request:
+          maxBytes: 64Ki
+        response:
+          maxBytes: 256Ki
 ```

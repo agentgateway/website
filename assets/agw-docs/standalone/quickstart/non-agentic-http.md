@@ -68,37 +68,7 @@ Example output:
 
 ### Step 2: Configure agentgateway to route to httpbin
 
-{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
-Create a `config.yaml` that listens on port 3000 and routes traffic to the httpbin host. Use a static `host` backend with the address and port where httpbin is reachable, such as `127.0.0.1:8000`.
-
-```yaml {paths="httpbin"}
-cat > config.yaml << 'EOF'
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - backends:
-      - host: 127.0.0.1:8000
-EOF
-```
-
-In a separate terminal, run agentgateway with the config file.
-
-```sh
-agentgateway -f config.yaml
-```
-
-{{< doc-test paths="httpbin" >}}
-agentgateway -f config.yaml &
-AGW_PID=$!
-trap 'kill $AGW_PID 2>/dev/null' EXIT
-sleep 3
-{{< /doc-test >}}
-{{< /version >}}
-{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
-You add the listener and route from the UI, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
+You add the gateway and route from the UI, so you can start agentgateway without a config file. When you run `agentgateway` without specifying a config, it bootstraps a basic config at `~/.config/agentgateway/config.yaml` and uses it automatically.
 
 1. In a separate terminal, start agentgateway.
 
@@ -108,14 +78,13 @@ You add the listener and route from the UI, so you can start agentgateway withou
 
 2. Open the [agentgateway UI](http://localhost:15000/ui/). On the **Gateway Overview**, find the **Traffic** row and click **Enable Traffic**.
 
-3. Add a bind and listener.
-   1. In the **Traffic** section of the navigation menu, click **Listeners**.
-   2. Click **Add bind**, enter `3000` for the **Port**, and click **Save bind**.
-   3. Click **Add listener**, keep the defaults (HTTP, hostname `*`), and save the listener.
+3. Add a gateway.
+   1. In the **Traffic** section of the navigation menu, click **Gateways**.
+   2. Click **Add gateway**, enter `default` for the **Name** and `3000` for the **Port**, and click **Save gateway**.
 
 4. Add a route to httpbin.
    1. Click **Routes**, and then click **Add route**.
-   2. For the **Listener**, select the `:3000` listener you created.
+   2. For the **Gateway**, select the `default` gateway you created.
    3. Under **Backends**, click **Add backend**, keep the **Host** target type, and enter `127.0.0.1:8000` for the host.
    4. Click **Save route**.
 
@@ -123,25 +92,24 @@ You add the listener and route from the UI, so you can start agentgateway withou
    {{< reuse-image-dark srcDark="img/ui-traffic-add-route-dark.png" >}}
 
 {{< doc-test paths="httpbin" >}}
-# Hidden test: the UI steps above (Enable Traffic -> Add bind/listener/route) are not
+# Hidden test: the UI steps above (Enable Traffic -> Add gateway/route) are not
 # scriptable, so this block reproduces the equivalent config they produce, to keep the
 # resulting setup tested.
 cat > config.yaml << 'EOF'
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - protocol: HTTP
-    routes:
-    - backends:
-      - host: 127.0.0.1:8000
+gateways:
+  default:
+    port: 3000
+    protocol: HTTP
+routes:
+- backends:
+  - host: 127.0.0.1:8000
 EOF
 agentgateway -f config.yaml &
 AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
 {{< /doc-test >}}
-{{< /version >}}
 
 ### Step 3: Send a request through agentgateway
 

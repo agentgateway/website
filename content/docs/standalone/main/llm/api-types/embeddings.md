@@ -25,30 +25,29 @@ llm:
       apiKey: "$OPENAI_API_KEY"
 ```
 
-To configure the route type explicitly, use the `binds/listeners/routes` format and set the `embeddings` route type in the `policies.ai.routes` map.
+To configure the route type explicitly, use the `gateways` and `routes` format and set the `embeddings` route type in the `policies.ai.routes` map.
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 4000
-  listeners:
-  - routes:
-    - backends:
-      - ai:
-          name: openai
-          provider:
-            openAI: {}
-      policies:
-        ai:
-          routes:
-            "/v1/embeddings": "embeddings"
-        backendAuth:
-          key: "$OPENAI_API_KEY"
+gateways:
+  default:
+    port: 4000
+routes:
+- backends:
+  - ai:
+      name: openai
+      provider:
+        openAI: {}
+  policies:
+    ai:
+      routes:
+        "/v1/embeddings": "embeddings"
+    backendAuth:
+      key: "$OPENAI_API_KEY"
 ```
 
-{{< callout type="info" >}}
-For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For detailed information about model routing and configuration modes, see [Model routing and aliases]({{< link-hextra path="/llm/about/" >}}).
 
 ## Using the API
 

@@ -41,17 +41,17 @@ Static tracing is configured globally and applies to all routes.
 3. Optional: To use the agentgateway UI playground later, add the following CORS policy to your `config.yaml` file. The config automatically reloads when you save the file.
       
       ```yaml
-      binds:
-      - port: 3000
-        listeners:
-        - routes:
-          - policies:
-              cors:
-                allowOrigins:
-                  - "*"
-                allowHeaders:
-                  - "*"
-            backends:
+      gateways:
+        default:
+          port: 3000
+      routes:
+      - policies:
+          cors:
+            allowOrigins:
+              - "*"
+            allowHeaders:
+              - "*"
+        backends:
       ...
       ```
 
@@ -96,30 +96,29 @@ frontendPolicies:
       route: request.path
     resources:
       service.name: '"agentgateway"'
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        cors:
-          allowOrigins:
-            - "*"
-          allowHeaders:
-            - "*"
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    cors:
+      allowOrigins:
+        - "*"
+      allowHeaders:
+        - "*"
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
 ```
 
 ## Verify traces
 
 1. Open the [agentgateway UI](http://localhost:15000/ui/) to view your listener and target configuration.
 
-{{< version exclude-if="1.2.x,1.1.x,1.0.x" >}}
 2. Connect to the MCP server with the agentgateway UI playground.
 
    1. From the navigation menu under **MCP**, click **Tool Playground**.
@@ -140,27 +139,6 @@ binds:
 
       {{< reuse-image-light src="img/agentgateway-ui-tool-echo-hello.png" >}}
       {{< reuse-image-dark srcDark="img/agentgateway-ui-tool-echo-hello-dark.png" >}}
-{{< /version >}}
-{{< version include-if="1.2.x,1.1.x,1.0.x" >}}
-2. Connect to the MCP server with the agentgateway UI playground.
-
-   1. From the navigation menu, click [**Playground**](http://localhost:15000/ui/playground/).
-
-      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-playground.png" >}}
-
-   2. In the **Testing** card, review your **Connection** details and click **Connect**. The agentgateway UI connects to the target that you configured and retrieves the tools that are exposed on the target.
-
-   3. Verify that you see a list of **Available Tools**.
-
-      {{< reuse-image src="img/1.2-earlier/ui-playground-tools.png" >}}
-
-3. Verify access to a tool.
-   1. From the **Available Tools** list, select the `echo` tool.
-   2. In the **Message** field, enter any string, such as `hello world`, and click **Run Tool**.
-   3. Verify that you see your message echoed in the **Response** card.
-
-      {{< reuse-image src="img/1.2-earlier/agentgateway-ui-tool-echo-hello.png" >}}
-{{< /version >}}
 
 4. Open the [Jaeger UI](http://localhost:16686). 
 
@@ -203,68 +181,58 @@ You can optionally enrich the traces that are captured by the agentgateway with 
    ```json
    cat <<EOF > ./config.json
    {
-     "binds": [
-       {
+     "gateways": {
+       "default": {
          "port": 3000,
-         "listeners": [
+         "protocol": "HTTP"
+       }
+     },
+     "routes": [
+       {
+         "matches": [
            {
-             "name": "sse",
-             "protocol": "HTTP",
-             "hostname": null,
-             "routes": [
-               {
-                 "name": null,
-                 "ruleName": null,
-                 "hostnames": [],
-                 "matches": [
-                   {
-                     "path": {
-                       "pathPrefix": "/"
-                     }
+             "path": {
+               "pathPrefix": "/"
+             }
+           }
+         ],
+         "policies": {
+           "jwtAuth": {
+             "issuer": "me",
+             "audiences": ["me.com"],
+             "jwks": {
+               "file": "./pub-key"
+             }
+           }
+         },
+         "backends": [
+           {
+             "mcp": {
+               "targets": [
+                 {
+                   "name": "everything",
+                   "stdio": {
+                     "cmd": "npx",
+                     "args": [
+                       "@modelcontextprotocol/server-everything"
+                     ]
                    }
-                 ],
-                 "policies": {
-                   "jwtAuth": {
-                     "issuer": "me",
-                     "audiences": ["me.com"],
-                     "jwks": {
-                       "file": "./pub-key"
-                     }
-                   }
-                 },
-                 "backends": [
-                   {
-                     "mcp": {
-                       "targets": [
-                         {
-                           "name": "everything",
-                           "stdio": {
-                             "cmd": "npx",
-                             "args": [
-                               "@modelcontextprotocol/server-everything"
-                             ]
-                           }
-                         }
-                       ]
-                     }
-                   }
-                 ]
-               }
-             ],
-             "tls": null
+                 }
+               ]
+             }
            }
          ]
        }
      ],
-     "tracing": {
-       "tracer": {
-         "otlp": {
-           "endpoint": "http://localhost:4317"
+     "frontendPolicies": {
+       "tracing": {
+         "host": "localhost:4317",
+         "protocol": "grpc",
+         "randomSampling": "1.0",
+         "attributes": {
+           "user": "jwt.sub",
+           "custom-tag": "\"test\""
          }
-       },
-       "tags": {
-         "user": "@sub",
-         "custom-tag": "test"
        }
      }
    }

@@ -53,7 +53,6 @@ Set up an HTTPS listener on your Gateway.
 
    {{% /tab %}}
    {{% tab name="ListenerSets" %}}
-
    1. Create a Gateway that enables the attachment of ListenerSets.
 
       ```yaml
@@ -69,10 +68,10 @@ Set up an HTTPS listener on your Gateway.
         gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
         allowedListeners:
           namespaces:
-            from: All        
+            from: All
         listeners:
         - protocol: HTTP
-          port: 8443
+          port: 80
           name: http-mock
           allowedRoutes:
             namespaces:
@@ -89,6 +88,7 @@ Set up an HTTPS listener on your Gateway.
       |`spec.listeners`| {{< reuse "agw-docs/snippets/generic-listener.md" >}} In this example, the generic listener is configured on port 80, which differs from port 443 in the ListenerSet that you create later. |
 
    2. Create a ListenerSet that configures an HTTPS listener for the Gateway.
+
       ```yaml
       kubectl apply -f- <<EOF
       apiVersion: gateway.networking.k8s.io/v1

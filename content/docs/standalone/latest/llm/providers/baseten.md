@@ -2,7 +2,7 @@
 title: Baseten
 weight: 20
 icon: /integrations/providers/bw/baseten.svg
-description: Configuration and setup for Baseten LLM provider
+description: Route agentgateway LLM traffic to models hosted on Baseten.
 ---
 
 Configure Baseten as an LLM provider in agentgateway.

@@ -46,7 +46,7 @@ This example configures an {{< reuse "agw-docs/snippets/agentgateway.md" >}} bac
        port: 443
      policies:
        tls:
-         insecureSkipVerify: true
+         insecureSkipVerify: All
        tunnel:
          backendRef:
            group: {{< reuse "agw-docs/snippets/group.md" >}}
@@ -61,6 +61,6 @@ This example configures an {{< reuse "agw-docs/snippets/agentgateway.md" >}} bac
    | `spec.static.host` | The upstream backend host (the actual service you want to reach) |
    | `spec.policies.tunnel.backendRef.name` | The {{< reuse "agw-docs/snippets/backend.md" >}} or `Service` that represents the proxy |
    | `spec.policies.tunnel.backendRef.port` | The port the proxy listens on |
-   | `spec.policies.tls.insecureSkipVerify` | Skip TLS certificate validation when connecting to the upstream backend. Use with caution — only in trusted environments. |
+   | `spec.policies.tls.insecureSkipVerify` | Skip TLS certificate validation when connecting to the upstream backend. Set to `All` to skip all verification or `Hostname` to skip only hostname verification. Use with caution — only in trusted environments. |
 
 3. Agentgateway now routes all outbound connections from `idp-proxied` through the `squid-proxy` tunnel. When the control plane needs to fetch JWKS keys, it does so via the proxy.

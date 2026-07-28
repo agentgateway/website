@@ -41,6 +41,8 @@ EOF
 Agentgateway can adapt traffic for authorization servers that don't fully comply with OAuth standards.
 For example, Keycloak exposes certificates at a non-standard endpoint.
 
+Set the `provider` field to adapt agentgateway's behavior to a specific authorization server. Supported values include `keycloak`, `auth0`, `okta`, `descope`, `authentik`, and `entra`. Microsoft Entra ID requires extra handling; see [Microsoft Entra ID](#microsoft-entra-id).
+
 In this mode, agentgateway:
 - Exposes protected resource metadata on behalf of the MCP server
 - Proxies authorization server metadata and client registration
@@ -81,44 +83,44 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
-      - path:
-          exact: /.well-known/oauth-authorization-server/mcp
-      - path:
-          exact: /.well-known/oauth-authorization-server/mcp/client-registration
-      policies:
-        mcpAuthentication:
-          issuer: http://localhost:7080/realms/mcp
-          audiences: ["http://localhost:3000/mcp"]
-          jwks:
-            url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
-          provider:
-            keycloak: {}
-          resourceMetadata:
-            resource: http://localhost:3000/mcp
-            scopesSupported:
-            - read:all
-            bearerMethodsSupported:
-            - header
-            - body
-            - query
-            resourceDocumentation: http://localhost:3000/stdio/docs
-            resourcePolicyUri: http://localhost:3000/stdio/policies
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  - path:
+      exact: /.well-known/oauth-authorization-server/mcp
+  - path:
+      exact: /.well-known/oauth-authorization-server/mcp/client-registration
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:7080/realms/mcp
+      audiences: ["http://localhost:3000/mcp"]
+      jwks:
+        url: http://localhost:7080/realms/mcp/protocol/openid-connect/certs
+      provider:
+        keycloak: {}
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
+        resourceDocumentation: http://localhost:3000/stdio/docs
+        resourcePolicyUri: http://localhost:3000/stdio/policies
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -127,7 +129,7 @@ binds:
 # WHAT THIS TEST VALIDATES:
 #   * The Authorization Server Proxy mcpAuthentication example (issuer, audiences,
 #     keycloak provider, resourceMetadata, jwks) is accepted by agentgateway in
-#     both the simplified MCP (mcp) and routing-based (binds) forms.
+#     both the simplified MCP (mcp) and routing-based (gateways) forms.
 #   * The test points jwks at a local file instead of the displayed IdP URL so it
 #     runs without a live identity provider.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
@@ -166,46 +168,215 @@ agentgateway -f proxy-mcp.yaml --validate-only
 
 cat <<'EOF' > proxy-routing.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
-      - path:
-          exact: /.well-known/oauth-authorization-server/mcp
-      - path:
-          exact: /.well-known/oauth-authorization-server/mcp/client-registration
-      policies:
-        mcpAuthentication:
-          issuer: http://localhost:7080/realms/mcp
-          audiences: ["http://localhost:3000/mcp"]
-          jwks:
-            file: ./manifests/jwt/pub-key
-          provider:
-            keycloak: {}
-          resourceMetadata:
-            resource: http://localhost:3000/mcp
-            scopesSupported:
-            - read:all
-            bearerMethodsSupported:
-            - header
-            - body
-            - query
-            resourceDocumentation: http://localhost:3000/stdio/docs
-            resourcePolicyUri: http://localhost:3000/stdio/policies
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  - path:
+      exact: /.well-known/oauth-authorization-server/mcp
+  - path:
+      exact: /.well-known/oauth-authorization-server/mcp/client-registration
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:7080/realms/mcp
+      audiences: ["http://localhost:3000/mcp"]
+      jwks:
+        file: ./manifests/jwt/pub-key
+      provider:
+        keycloak: {}
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
+        resourceDocumentation: http://localhost:3000/stdio/docs
+        resourcePolicyUri: http://localhost:3000/stdio/policies
 EOF
 agentgateway -f proxy-routing.yaml --validate-only
+{{< /doc-test >}}
+
+## Microsoft Entra ID
+
+Microsoft Entra ID (Azure AD) does not fully implement the OAuth behaviors that the MCP authorization specification assumes. It rejects the RFC 8707 `resource` parameter that MCP clients send (`AADSTS9010010`), has no Dynamic Client Registration (RFC 7591), and serves only OIDC discovery instead of RFC 8414 authorization server metadata. Set `provider.entra` to have agentgateway bridge these gaps so that you can use Entra as the authorization server without an external adapter proxy.
+
+With the `entra` provider, agentgateway uses two extra `mcpAuthentication` fields as follows.
+
+| Field | Description |
+|-------|-------------|
+| `clientId` | The Application (client) ID of a pre-registered Entra app registration. Because Entra has no Dynamic Client Registration, agentgateway answers registration requests with this value. |
+| `clientSecret` | The client secret of the app registration. Required only for confidential clients (apps registered under the Entra **Web** platform), which Entra requires to authenticate at the token endpoint. Omit it for public (PKCE-only) app registrations. Agentgateway injects it server-side into proxied token requests. |
+
+The route must also match the `/.well-known/oauth-authorization-server/<path>` path prefix so that agentgateway can serve the bridged metadata and proxy the `authorize` and `token` endpoints. The `jwks` field is optional; when omitted, it defaults to `https://login.microsoftonline.com/<tenant-id>/discovery/v2.0/keys`.
+
+{{< tabs >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    mcpAuthentication:
+      issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
+      audiences:
+      - api://<client-id>
+      - <client-id>
+      provider:
+        entra: {}
+      clientId: <client-id>
+      clientSecret: <client-secret>
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - api://<client-id>/mcp_access
+        bearerMethodsSupported:
+        - header
+  targets:
+  - name: tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  - path:
+      pathPrefix: /.well-known/oauth-authorization-server/mcp
+  policies:
+    mcpAuthentication:
+      issuer: https://login.microsoftonline.com/<tenant-id>/v2.0
+      audiences:
+      - api://<client-id>
+      - <client-id>
+      provider:
+        entra: {}
+      clientId: <client-id>
+      clientSecret: <client-secret>
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - api://<client-id>/mcp_access
+        bearerMethodsSupported:
+        - header
+```
+{{< /tab >}}
+{{< /tabs >}}
+
+For end-to-end setup, including registering the Entra app and connecting an MCP client, see the [Microsoft Entra ID integration guide]({{< link-hextra path="/integrations/auth/entra" >}}).
+
+{{< doc-test paths="mcp-authn" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The Microsoft Entra ID mcpAuthentication example (entra provider, clientId,
+#     clientSecret, dual audiences, and the oauth-authorization-server pathPrefix
+#     match) is accepted by agentgateway in both the simplified MCP (mcp) and
+#     routing-based (gateways) forms.
+#   * The test points jwks at a local file instead of the derived Entra URL so it
+#     runs without a live identity provider.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The metadata bridging, resource-strip proxying, DCR short-circuit, and
+#     token verification — require a live Entra tenant and MCP client that the
+#     page does not stand up.
+cat <<'EOF' > entra-mcp.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    mcpAuthentication:
+      issuer: https://login.microsoftonline.com/11111111-2222-3333-4444-555555555555/v2.0
+      audiences:
+      - api://client-id-guid
+      - client-id-guid
+      provider:
+        entra: {}
+      clientId: client-id-guid
+      clientSecret: s3cret
+      jwks:
+        file: ./manifests/jwt/pub-key
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - api://client-id-guid/mcp_access
+        bearerMethodsSupported:
+        - header
+  targets:
+  - name: tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f entra-mcp.yaml --validate-only
+
+cat <<'EOF' > entra-routing.yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  - path:
+      pathPrefix: /.well-known/oauth-authorization-server/mcp
+  policies:
+    mcpAuthentication:
+      issuer: https://login.microsoftonline.com/11111111-2222-3333-4444-555555555555/v2.0
+      audiences:
+      - api://client-id-guid
+      - client-id-guid
+      provider:
+        entra: {}
+      clientId: client-id-guid
+      clientSecret: s3cret
+      jwks:
+        file: ./manifests/jwt/pub-key
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - api://client-id-guid/mcp_access
+        bearerMethodsSupported:
+        - header
+EOF
+agentgateway -f entra-routing.yaml --validate-only
 {{< /doc-test >}}
 
 ## Resource Server Only
@@ -242,36 +413,36 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
-      policies:
-        mcpAuthentication:
-          issuer: http://localhost:9000
-          audiences: ["http://localhost:3000/mcp"]
-          jwks:
-            url: http://localhost:9000/.well-known/jwks.json
-          resourceMetadata:
-            resource: http://localhost:3000/mcp
-            scopesSupported:
-            - read:all
-            bearerMethodsSupported:
-            - header
-            - body
-            - query
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:9000
+      audiences: ["http://localhost:3000/mcp"]
+      jwks:
+        url: http://localhost:9000/.well-known/jwks.json
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -280,7 +451,7 @@ binds:
 # WHAT THIS TEST VALIDATES:
 #   * The Resource Server Only mcpAuthentication example (issuer, audiences, jwks,
 #     resourceMetadata) is accepted by agentgateway in both the simplified MCP
-#     (mcp) and routing-based (binds) forms.
+#     (mcp) and routing-based (gateways) forms.
 #   * The test points jwks at a local file instead of the displayed IdP URL so it
 #     runs without a live identity provider.
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
@@ -316,36 +487,36 @@ agentgateway -f rsonly-mcp.yaml --validate-only
 
 cat <<'EOF' > rsonly-routing.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: tools
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      matches:
-      - path:
-          exact: /mcp
-      - path:
-          exact: /.well-known/oauth-protected-resource/mcp
-      policies:
-        mcpAuthentication:
-          issuer: http://localhost:9000
-          audiences: ["http://localhost:3000/mcp"]
-          jwks:
-            file: ./manifests/jwt/pub-key
-          resourceMetadata:
-            resource: http://localhost:3000/mcp
-            scopesSupported:
-            - read:all
-            bearerMethodsSupported:
-            - header
-            - body
-            - query
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - mcp:
+      targets:
+      - name: tools
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  matches:
+  - path:
+      exact: /mcp
+  - path:
+      exact: /.well-known/oauth-protected-resource/mcp
+  policies:
+    mcpAuthentication:
+      issuer: http://localhost:9000
+      audiences: ["http://localhost:3000/mcp"]
+      jwks:
+        file: ./manifests/jwt/pub-key
+      resourceMetadata:
+        resource: http://localhost:3000/mcp
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
+        - body
+        - query
 EOF
 agentgateway -f rsonly-routing.yaml --validate-only
 {{< /doc-test >}}

@@ -30,7 +30,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [
          {
            "role": "user",
@@ -44,7 +44,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [
          {
            "role": "user",
@@ -75,7 +75,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -93,7 +93,7 @@ In the following example, you explore how to refactor system and user prompts to
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -159,7 +159,7 @@ Use an {{< reuse "agw-docs/snippets/policy.md" >}} resource to enrich prompts by
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",
@@ -173,7 +173,7 @@ Use an {{< reuse "agw-docs/snippets/policy.md" >}} resource to enrich prompts by
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",
@@ -205,7 +205,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/policy.
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -223,7 +223,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/policy.
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "system",
@@ -267,7 +267,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/policy.
    {{% tab name="Cloud Provider LoadBalancer" %}}
    ```sh
    curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",
@@ -281,7 +281,7 @@ To overwrite a setting that you added to an {{< reuse "agw-docs/snippets/policy.
    {{% tab name="Port-forward for local testing" %}}
    ```sh
    curl "localhost:8080/openai" -H content-type:application/json -d '{
-      "model": "gpt-3.5-turbo",
+      "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
       "messages": [
         {
           "role": "user",

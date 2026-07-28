@@ -34,7 +34,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
        provider:
          openai: {}
            # Optional: specify default model
-           #model: gpt-3.5-turbo
+           #model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
         # host: api.openai.com  # Optional: custom host if needed
         # port: 443  # Optional: custom port
      policies:
@@ -106,7 +106,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
      ai:
        provider:
          openai:
-           model: gpt-3.5-turbo  # Optional: specify default model
+           model: {{< reuse "agw-docs/snippets/openai-model.md" >}}  # Optional: specify default model
         # host: api.openai.com  # Optional: custom host if needed
         # port: 443  # Optional: custom port
      policies:
@@ -149,7 +149,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    curl "$INGRESS_GW_ADDRESS/openai/v1/chat/completions" \
      -H content-type:application/json \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }' | jq
    ```
@@ -175,7 +175,7 @@ Configure access to multiple endpoints in your LLM provider, such as for chat co
    curl "localhost:8080/openai/v1/chat/completions" \
      -H content-type:application/json \
      -d '{
-       "model": "gpt-3.5-turbo",
+       "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
        "messages": [{"role": "user", "content": "Hello!"}]
      }' | jq
    ```

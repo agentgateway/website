@@ -14,7 +14,7 @@ Enable OpenTelemetry tracing in your agentgateway configuration.
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   tracing:
-    otlpEndpoint: http://localhost:4317
+    host: localhost:4317
     randomSampling: true
 ```
 
@@ -22,7 +22,7 @@ frontendPolicies:
 
 | Setting | Description |
 |---------|-------------|
-| `otlpEndpoint` | The OTLP gRPC endpoint (e.g., `http://localhost:4317`) |
+| `host` | The hostname or IP address and port of the OTLP gRPC endpoint, such as `localhost:4317`. |
 | `randomSampling` | Set to `true` to sample every request. Useful in development when you want to capture all traces. |
 
 ### Sampling strategies
@@ -33,7 +33,7 @@ In development, set `randomSampling: true` to capture every trace. In production
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
 frontendPolicies:
   tracing:
-    otlpEndpoint: http://localhost:4317
+    host: localhost:4317
     randomSampling: "0.1"
 ```
 
@@ -48,60 +48,19 @@ docker run -d --name jaeger \
   jaegertracing/all-in-one:latest
 ```
 
-Configure agentgateway.
+Configure agentgateway. The following configuration is from the [`mcp-telemetry` example](https://github.com/agentgateway/agentgateway/tree/main/examples/mcp-telemetry) in the agentgateway repository.
 
-```yaml
-# yaml-language-server: $schema=https://agentgateway.dev/schema/config
-frontendPolicies:
-  tracing:
-    otlpEndpoint: http://localhost:4317
-    randomSampling: true
-
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - mcp:
-          targets:
-          - name: my-server
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-```
+{{% github-yaml url="https://agentgateway.dev/examples/mcp-telemetry/config.yaml" %}}
 
 View traces at [http://localhost:16686](http://localhost:16686).
 
 ## With OpenTelemetry Collector
 
-For production deployments, use the OpenTelemetry Collector:
+For production deployments, use the OpenTelemetry Collector.
 
-The following example exports traces to Jaeger via OTLP. Replace the `otlp/jaeger` endpoint with any OTLP-compatible backend.
+The following collector configuration from the [`mcp-telemetry` example](https://github.com/agentgateway/agentgateway/tree/main/examples/mcp-telemetry) exports traces to Jaeger via OTLP. Replace the `otlp/jaeger` endpoint with any OTLP-compatible backend. The example also includes a [Compose file](https://github.com/agentgateway/agentgateway/blob/main/examples/mcp-telemetry/docker-compose.yaml) that runs the collector and Jaeger together.
 
-```yaml
-# otel-collector-config.yaml
-receivers:
-  otlp:
-    protocols:
-      grpc:
-        endpoint: 0.0.0.0:4317
-
-processors:
-  batch:
-
-exporters:
-  otlp/jaeger:
-    endpoint: jaeger:4317
-    tls:
-      insecure: true
-
-service:
-  pipelines:
-    traces:
-      receivers: [otlp]
-      processors: [batch]
-      exporters: [otlp/jaeger]
-```
+{{% github-yaml url="https://agentgateway.dev/examples/mcp-telemetry/otel-collector-config.yaml" %}}
 
 ## Trace attributes
 

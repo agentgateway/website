@@ -1,5 +1,10 @@
 Route requests to different LLM backends based on request body content, such as the requested model name.
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: To select a model from request context without writing route matches, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.conditional`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+{{< /version >}}
+
 ## About content-based routing {#about}
 
 Content-based routing (also known as body-based routing or intelligent routing) allows you to route requests to different backends based on the content of the request body, not just headers or path. This is particularly useful for LLM applications where you want to route to different providers based on the `model` field in the request JSON.
@@ -439,9 +444,8 @@ This example shows routing based on a custom `priority` field in the request bod
 
 When implementing content-based routing, be aware of these limitations:
 
-{{< callout type="warning" >}}
-**PreRouting phase required**: Content-based routing requires `traffic.phase: PreRouting` and must target the Gateway (not HTTPRoute). This way, transformations run before route selection. Without PreRouting, the extracted header arrives too late for route matching.
-{{< /callout >}}
+> [!WARNING]
+> **PreRouting phase required**: Content-based routing requires `traffic.phase: PreRouting` and must target the Gateway (not HTTPRoute). This way, transformations run before route selection. Without PreRouting, the extracted header arrives too late for route matching.
 
 - **Performance impact**: Extracting fields from the request body adds processing overhead. For high-throughput scenarios, consider using header-based routing when possible.
 - **JSON parsing**: The `json()` CEL function requires valid JSON. Malformed JSON in the request body will cause routing failures.

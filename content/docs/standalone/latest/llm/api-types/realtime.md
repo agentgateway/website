@@ -16,9 +16,8 @@ The [OpenAI Realtime API](https://developers.openai.com/api/docs/guides/realtime
 
 To enable token usage tracking, you must prevent the client and server from negotiating WebSocket frame compression. When the `sec-websocket-extensions: permessage-deflate` header is present, the WebSocket frames are compressed and agentgateway cannot parse the token usage data. Remove this header from the request so that frames remain uncompressed and parseable.
 
-{{< callout type="info" >}}
-The `realtime` route type supports token usage tracking and observability. Other LLM policies such as prompt guards, prompt enrichment, and request-body rate limiting are not supported for WebSocket traffic.
-{{< /callout >}}
+> [!NOTE]
+> The `realtime` route type supports token usage tracking and observability. Other LLM policies such as prompt guards, prompt enrichment, and request-body rate limiting are not supported for WebSocket traffic.
 
 ## Before you begin
 
@@ -39,41 +38,41 @@ Set up your agentgateway configuration with the `realtime` route type and a tran
    ```yaml {paths="realtime-standalone"}
    cat <<'EOF' > config.yaml
    # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-   binds:
-   - port: 3000
-     listeners:
-     - routes:
-       - matches:
-         - path:
-             pathPrefix: "/v1/realtime"
-         backends:
-         - ai:
-             name: openai
-             provider:
-               openAI: {}
-         policies:
-           ai:
-             routes:
-               "/v1/realtime": "realtime"
-           backendAuth:
-             key: "$OPENAI_API_KEY"
-           transformations:
-             request:
-               remove:
-               - sec-websocket-extensions
-       - backends:
-         - ai:
-             name: openai
-             provider:
-               openAI:
-                 model: gpt-4
-         policies:
-           ai:
-             routes:
-               "/v1/chat/completions": "completions"
-               "*": "passthrough"
-           backendAuth:
-             key: "$OPENAI_API_KEY"
+   gateways:
+     default:
+       port: 3000
+   routes:
+   - matches:
+     - path:
+         pathPrefix: "/v1/realtime"
+     backends:
+     - ai:
+         name: openai
+         provider:
+           openAI: {}
+     policies:
+       ai:
+         routes:
+           "/v1/realtime": "realtime"
+       backendAuth:
+         key: "$OPENAI_API_KEY"
+       transformations:
+         request:
+           remove:
+           - sec-websocket-extensions
+   - backends:
+     - ai:
+         name: openai
+         provider:
+           openAI:
+             model: gpt-4
+     policies:
+       ai:
+         routes:
+           "/v1/chat/completions": "completions"
+           "*": "passthrough"
+       backendAuth:
+         key: "$OPENAI_API_KEY"
    EOF
    ```
 

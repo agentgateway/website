@@ -2,16 +2,15 @@
 title: Amazon Bedrock
 weight: 15
 icon: /integrations/providers/bw/bedrock.svg
-description: Configuration and setup for Amazon Bedrock provider
+description: Route agentgateway LLM traffic to foundation models on Amazon Bedrock.
 ---
 
 Configure Amazon Bedrock as an LLM provider in agentgateway.
 
-{{< callout type="info" >}}
-Agentgateway accepts requests in one of the supported [API formats](../../api-types) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
-Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
-Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
-{{< /callout >}}
+> [!NOTE]
+> Agentgateway accepts requests in one of the supported [API formats](../../api-types) (such as the `/v1/chat/completions` request body shape) and returns responses in that format.
+> Agentgateway translates between these formats and Bedrock formats internally using Bedrock's [Converse API](https://docs.aws.amazon.com/bedrock/latest/userguide/conversation-inference-call.html).
+> Directly sending `Converse` or `Invoke` request shapes are not directly supported; see [passthrough](#passthrough) for more information if you need these APIs.
 
 ## Authentication
 
@@ -126,9 +125,8 @@ print(body)
 {{< /tabs >}}
 
 
-{{< callout type="info" >}}
-Model translations are not supported with passthrough, so avoid using a model match like `aws/*`, as it cannot be transformed.
-{{< /callout >}}
+> [!NOTE]
+> Model translations are not supported with passthrough, so avoid using a model match like `aws/*`, as it cannot be transformed.
 
 ## Claude Platform on AWS
 
@@ -166,9 +164,8 @@ Example response:
 
 Extended thinking and reasoning lets models reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. Agentgateway maps these parameters to Bedrock's native format automatically.
 
-{{< callout type="info" >}}
-Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
-{{< /callout >}}
+> [!NOTE]
+> Extended thinking and reasoning requires a Claude model that supports it, such as `us.anthropic.claude-opus-4-20250514-v1:0`.
 
 Use the `reasoning_effort` field to control how much reasoning the model applies. The value is automatically mapped to a thinking budget.
 

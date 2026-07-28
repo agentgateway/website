@@ -2,7 +2,7 @@
 title: Anthropic
 weight: 15
 icon: /integrations/providers/bw/anthropic.svg
-description: Configuration and setup for Anthropic Claude provider
+description: Route agentgateway LLM traffic to Anthropic's Claude models.
 ---
 
 Configure Anthropic (Claude models) as an LLM provider in agentgateway.
@@ -103,9 +103,8 @@ Example response:
 
 Extended thinking and reasoning lets Claude reason through complex problems before generating a response. You can opt in to extended thinking and reasoning by adding specific parameters to your request. 
 
-{{< callout type="info" >}}
-Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
-{{< /callout >}}
+> [!NOTE]
+> Extended thinking and reasoning requires a Claude model that supports these, such as `claude-opus-4-6`.
 
 To opt in to extended thinking, include the `thinking.type` field in your request. You can also set the `output_config.effort` field to control how much reasoning the model applies.
 

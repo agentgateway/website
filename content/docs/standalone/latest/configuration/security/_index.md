@@ -1,7 +1,7 @@
 ---
 title: Security
-weight: 60
-description: Secure backends and routes with authentication, authorization, and TLS policies.
+weight: 70
+description: Compare the authentication, authorization, TLS, and rate limiting policies available to protect your gateway.
 prev: /configuration/resiliency
 next: /reference
 test: skip

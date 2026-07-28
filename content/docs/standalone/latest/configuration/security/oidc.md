@@ -6,6 +6,8 @@ description: Enable browser-based OpenID Connect authentication with encrypted s
 
 Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
+{{< reuse "agw-docs/snippets/config-styles-note.md" >}}
+
 OIDC browser authentication provides built-in OpenID Connect login for browser-based clients. Unauthenticated requests are automatically redirected to the identity provider's login page. After successful authentication, the user's session is maintained with encrypted cookies.
 
 The OIDC policy uses the OAuth 2.0 Authorization Code Flow with PKCE (Proof Key for Code Exchange) for secure browser-based authentication without requiring a separate proxy like oauth2-proxy.
@@ -56,43 +58,154 @@ Review the following details about session management.
 
 Add the `oidc` policy to a route to protect it with browser-based OIDC authentication.
 
+Agentgateway requires the `OIDC_COOKIE_SECRET` environment variable to encrypt session cookies when an `oidc` policy is configured. Set it to a random value before you start the gateway, such as in the following example.
+
+```bash
+export OIDC_COOKIE_SECRET="$(python3 -c 'import os; print(os.urandom(32).hex())')"
+```
+
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:18080
-      matches:
-      - path:
-          pathPrefix: /
-      policies:
-        oidc:
-          issuer: http://localhost:7080/realms/agentgateway
-          clientId: agentgateway-browser
-          clientSecret: agentgateway-secret
-          redirectURI: http://localhost:3000/oauth/callback
-          scopes:
-          - profile
-          - email
+llm:
+  policies:
+    oidc:
+      issuer: http://localhost:7080/realms/agentgateway
+      clientId: agentgateway-browser
+      clientSecret: agentgateway-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    oidc:
+      issuer: http://localhost:7080/realms/agentgateway
+      clientId: agentgateway-browser
+      clientSecret: agentgateway-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:18080
+  matches:
+  - path:
+      pathPrefix: /
+  policies:
+    oidc:
+      issuer: http://localhost:7080/realms/agentgateway
+      clientId: agentgateway-browser
+      clientSecret: agentgateway-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+```
+{{< /tab >}}
+{{< /tabs >}}
 
 ### Keycloak example
 
 Review the following example for a Keycloak IdP.
 
+{{< tabs >}}
+{{< tab name="Simplified (LLM)" >}}
 ```yaml
-policies:
-  oidc:
-    issuer: http://keycloak.example.com/realms/myrealm
-    clientId: agentgateway-browser
-    clientSecret: my-client-secret
-    redirectURI: http://localhost:3000/oauth/callback
-    scopes:
-    - profile
-    - email
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  policies:
+    oidc:
+      issuer: http://keycloak.example.com/realms/myrealm
+      clientId: agentgateway-browser
+      clientSecret: my-client-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  models:
+  - name: "*"
+    provider: openAI
+    params:
+      apiKey: "$OPENAI_API_KEY"
 ```
+{{< /tab >}}
+{{< tab name="Simplified (MCP)" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+mcp:
+  port: 3000
+  policies:
+    oidc:
+      issuer: http://keycloak.example.com/realms/myrealm
+      clientId: agentgateway-browser
+      clientSecret: my-client-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+  targets:
+  - name: everything
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
+```
+{{< /tab >}}
+{{< tab name="Routing-based" >}}
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:18080
+  matches:
+  - path:
+      pathPrefix: /
+  policies:
+    oidc:
+      issuer: http://keycloak.example.com/realms/myrealm
+      clientId: agentgateway-browser
+      clientSecret: my-client-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
+```
+{{< /tab >}}
+{{< tab name="traffic-oidc example" >}}
+For a complete runnable setup, including a Compose file that starts a preconfigured local Keycloak instance, see the [`traffic-oidc` example](https://github.com/agentgateway/agentgateway/tree/main/examples/traffic-oidc) in the agentgateway repository.
+
+{{% github-yaml url="https://agentgateway.dev/examples/traffic-oidc/config.yaml" %}}
+{{< /tab >}}
+{{< /tabs >}}
 
 ## Fields
 

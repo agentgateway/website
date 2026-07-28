@@ -51,7 +51,6 @@
 .dark .hp-hero-card:hover { background: rgba(160,110,255,0.08); }
 .dark .hp-hero-card-icon { background: rgba(160,110,255,0.15); }
 .dark .hp-code-block { background: linear-gradient(180deg, #0D1020, #080B14); }
-.dark .hp-lf { background: #060812; }
 .dark .hp-footer { background: #060812; }
 
 /* Reset some Hextra defaults for the landing page */
@@ -587,26 +586,6 @@
   font-family: var(--hp-font-m); font-size: 11px; color: var(--hp-text-5); letter-spacing: 0.04em;
 }
 
-/* ===== LF QUOTE ===== */
-.hp-lf {
-  background: #0B0E18; padding: 80px 0; color: #C8CCDB;
-}
-.hp-lf-grid { display: grid; grid-template-columns: auto 1fr; gap: 48px; align-items: center; }
-@media (max-width: 720px) { .hp-lf-grid { grid-template-columns: 1fr; text-align: center; } }
-.hp-lf-mark {
-  font-family: var(--hp-font-h); font-weight: 700; font-size: 24px;
-  color: #fff; line-height: 1.15; letter-spacing: -0.01em;
-}
-.hp-lf-mark-small {
-  display: block; font-family: var(--hp-font-m); font-size: 11px; font-weight: 400;
-  color: #5A6078; margin-top: 8px; letter-spacing: 0.06em;
-}
-.hp-lf-quote {
-  font-family: var(--hp-font-b); font-size: 18px; line-height: 1.65;
-  color: #C8CCDB; font-style: italic; margin: 0 0 16px;
-}
-.hp-lf-byline { font-family: var(--hp-font-m); font-size: 13px; color: #5A6078; }
-
 /* ===== FOOTER ===== */
 .hp-footer {
   background: #0B0E18; padding: 64px 0 32px; color: #C8CCDB;
@@ -633,12 +612,6 @@
   transition: color 200ms; text-decoration: none;
 }
 .hp-footer-col a:hover { color: #C8CCDB; }
-.hp-footer-bottom {
-  display: flex; justify-content: space-between; align-items: center;
-  border-top: 1px solid rgba(255,255,255,0.08); margin-top: 48px; padding-top: 24px;
-  font-family: var(--hp-font-m); font-size: 12px; color: #5A6078;
-}
-@media (max-width: 540px) { .hp-footer-bottom { flex-direction: column; gap: 8px; text-align: center; } }
 </style>
 
 <div class="hp-page">
@@ -1287,23 +1260,6 @@
 
 {{ partial "quotes-carousel.html" . }}
 
-<!-- ============ LF QUOTE ============ -->
-<div class="hp-lf">
-  <div class="hp-wrap">
-    <div class="hp-lf-grid">
-      <div class="hp-lf-mark">
-        <img src="/aaif-dark.svg" alt="AAIF" style="height: 48px; width: auto;">
-      </div>
-      <div>
-        <p class="hp-lf-quote">
-          "One of the biggest open security problems today is how to do MCP security effectively. While there are a lot of problems in this space that the community doesn't know how to address, the agentgateway project provides a first step toward addressing some of the important issues with basic role-based access control and visibility of actions to MCP servers. I look forward to seeing how this project adapts and evolves to handle the complex, evolving threats in this space under open source governance."
-        </p>
-        <div class="hp-lf-byline"><strong style="color:#fff;">Jamie Capper</strong> · published in The New York Times</div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ============ FOOTER ============ -->
 <footer class="hp-footer">
   <div class="hp-wrap">
@@ -1336,10 +1292,6 @@
         <a href="#community">Meetings</a>
         <a href="https://github.com/agentgateway/agentgateway/blob/main/CODE_OF_CONDUCT.md">Code of Conduct</a>
       </div>
-    </div>
-    <div class="hp-footer-bottom">
-      <span>&copy; 2026 agentgateway authors · An AAIF Project</span>
-      <span>Apache 2.0</span>
     </div>
   </div>
 </footer>

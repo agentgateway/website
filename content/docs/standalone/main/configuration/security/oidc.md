@@ -109,24 +109,24 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:18080
-      matches:
-      - path:
-          pathPrefix: /
-      policies:
-        oidc:
-          issuer: http://localhost:7080/realms/agentgateway
-          clientId: agentgateway-browser
-          clientSecret: agentgateway-secret
-          redirectURI: http://localhost:3000/oauth/callback
-          scopes:
-          - profile
-          - email
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:18080
+  matches:
+  - path:
+      pathPrefix: /
+  policies:
+    oidc:
+      issuer: http://localhost:7080/realms/agentgateway
+      clientId: agentgateway-browser
+      clientSecret: agentgateway-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -180,24 +180,24 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - backends:
-      - host: localhost:18080
-      matches:
-      - path:
-          pathPrefix: /
-      policies:
-        oidc:
-          issuer: http://keycloak.example.com/realms/myrealm
-          clientId: agentgateway-browser
-          clientSecret: my-client-secret
-          redirectURI: http://localhost:3000/oauth/callback
-          scopes:
-          - profile
-          - email
+gateways:
+  default:
+    port: 3000
+routes:
+- backends:
+  - host: localhost:18080
+  matches:
+  - path:
+      pathPrefix: /
+  policies:
+    oidc:
+      issuer: http://keycloak.example.com/realms/myrealm
+      clientId: agentgateway-browser
+      clientSecret: my-client-secret
+      redirectURI: http://localhost:3000/oauth/callback
+      scopes:
+      - profile
+      - email
 ```
 {{< /tab >}}
 {{< tab name="traffic-oidc example" >}}

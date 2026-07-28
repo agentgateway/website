@@ -47,36 +47,35 @@ frontendPolicies:
       tailscale.node: extauthz.tailscaleNode
       tailscale.email: extauthz.tailscaleEmail
 
-binds:
-- port: 3000
-  listeners:
-  - name: default
+gateways:
+  default:
+    port: 3000
     protocol: HTTP
-    routes:
-    - name: application
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-          exposeHeaders: ["Mcp-Session-Id"]
-        extAuthz:
-          host: unix:/run/tailscale/tailscaled.sock
-          protocol:
-            http:
-              path: |
-                "/localapi/v0/whois?addr=" + source.address
-              addRequestHeaders:
-                :authority: '"local-tailscaled.sock"'
-              metadata:
-                tailscaleNode: json(response.body).Node.Name
-                tailscaleEmail: json(response.body).UserProfile.LoginName
+routes:
+- name: application
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: ["*"]
+      exposeHeaders: ["Mcp-Session-Id"]
+    extAuthz:
+      host: unix:/run/tailscale/tailscaled.sock
+      protocol:
+        http:
+          path: |
+            "/localapi/v0/whois?addr=" + source.address
+          addRequestHeaders:
+            :authority: '"local-tailscaled.sock"'
+          metadata:
+            tailscaleNode: json(response.body).Node.Name
+            tailscaleEmail: json(response.body).UserProfile.LoginName
 ```
 {{% /tab %}}
 {{% tab name="macOS" %}}
@@ -88,36 +87,35 @@ frontendPolicies:
       tailscale.node: extauthz.tailscaleNode
       tailscale.email: extauthz.tailscaleEmail
 
-binds:
-- port: 3000
-  listeners:
-  - name: default
+gateways:
+  default:
+    port: 3000
     protocol: HTTP
-    routes:
-    - name: application
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-          exposeHeaders: ["Mcp-Session-Id"]
-        extAuthz:
-          host: unix:/var/run/tailscale/tailscaled.sock
-          protocol:
-            http:
-              path: |
-                "/localapi/v0/whois?addr=" + source.address
-              addRequestHeaders:
-                :authority: '"local-tailscaled.sock"'
-              metadata:
-                tailscaleNode: json(response.body).Node.Name
-                tailscaleEmail: json(response.body).UserProfile.LoginName
+routes:
+- name: application
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: ["*"]
+      exposeHeaders: ["Mcp-Session-Id"]
+    extAuthz:
+      host: unix:/var/run/tailscale/tailscaled.sock
+      protocol:
+        http:
+          path: |
+            "/localapi/v0/whois?addr=" + source.address
+          addRequestHeaders:
+            :authority: '"local-tailscaled.sock"'
+          metadata:
+            tailscaleNode: json(response.body).Node.Name
+            tailscaleEmail: json(response.body).UserProfile.LoginName
 ```
 {{% /tab %}}
 {{< /tabs >}}
@@ -141,9 +139,8 @@ The value for `extAuthz.host` is the path to the Tailscale daemon's local socket
 | macOS | `/var/run/tailscale/tailscaled.sock` |
 | Windows | Named pipe (not supported through a Unix socket) |
 
-{{< callout type="info" >}}
-On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
-{{< /callout >}}
+> [!NOTE]
+> On most Linux systems, `/var/run` is a symlink to `/run`, so `/var/run/tailscale/tailscaled.sock` and `/run/tailscale/tailscaled.sock` point to the same socket.
 
 ## Step 3: Start agentgateway
 

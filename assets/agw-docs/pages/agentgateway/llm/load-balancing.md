@@ -1,5 +1,10 @@
 Distribute requests across multiple LLM providers automatically (also known as Power of Two Choices, or P2C).
 
+{{< version exclude-if="1.3.x,1.2.x,1.1.x" >}}
+> [!NOTE]
+> **Model-centric alternative**: To split traffic across models by weight, you can also use the experimental `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` API with `virtualModel.weighted`. For more information, see [Virtual models]({{< link-hextra path="/llm/models/virtual/" >}}).
+{{< /version >}}
+
 ## About load balancing {#about}
 
 Load balancing distributes incoming requests across multiple backend LLM providers to optimize performance, cost, and availability. {{< reuse "agw-docs/snippets/agentgateway.md" >}} uses an intelligent **Power of Two Choices (P2C)** algorithm with health-aware scoring to automatically select the best available provider for each request.
@@ -122,7 +127,7 @@ spec:
                   name: openai-secret
           - name: openai-gpt35
             openai:
-              model: gpt-3.5-turbo
+              model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
             policies:
               auth:
                 secretRef:
@@ -339,15 +344,14 @@ For a complete guide on traffic splitting patterns, see [Traffic splitting]({{< 
 
 ## Known limitations
 
-{{< callout type="warning" >}}
-**Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
-- 503 Service Unavailable responses
-- Connection refused or timeout errors
-- DNS resolution failures
-- Other error codes (404, 500, etc.)
-
-Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
-{{< /callout >}}
+> [!WARNING]
+> **Rate-limit-based eviction only**: Provider eviction and failover currently only trigger on 429 (Too Many Requests) responses with proper rate-limit headers (`Retry-After` or `x-ratelimit-reset`). Eviction does NOT trigger on:
+> - 503 Service Unavailable responses
+> - Connection refused or timeout errors
+> - DNS resolution failures
+> - Other error codes (404, 500, etc.)
+>
+> Providers that return non-429 errors receive degraded health scores (EWMA) and lower priority within their group, but are not evicted or failed over. This means traffic may still be routed to consistently failing providers, though at reduced rates.
 
 ## Monitoring load balancing
 

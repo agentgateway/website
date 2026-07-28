@@ -2,7 +2,7 @@
 title: Gemini
 weight: 15
 icon: /integrations/providers/bw/gemini.svg
-description: Configuration and setup for Google Gemini provider
+description: Route agentgateway LLM traffic to Google Gemini models.
 ---
 
 Configure Google Gemini as an LLM provider in agentgateway.

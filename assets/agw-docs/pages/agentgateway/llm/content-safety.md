@@ -85,9 +85,8 @@ To optimize performance:
 
 For webhook-specific performance tuning, see the [Guardrail Webhook optimization guide]({{< link-hextra path="/llm/guardrail-api/guardrail-guide/" >}}#optimize-performance).
 
-{{< callout type="info" >}}
-**Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
-{{< /callout >}}
+> [!NOTE]
+> **Evaluation order**: Prompt guards are evaluated *after* rate limiting. This means that requests rejected by content safety checks (403 Forbidden) still consume rate limit quota. If you want to avoid consuming quota on blocked requests, authentication policies (JWT/OPA) are evaluated before rate limiting and can prevent quota consumption.
 
 ## Before you begin
 
@@ -175,7 +174,7 @@ Send a request with a fake credit card number and verify it gets masked in the r
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```sh
 curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
-  "model": "gpt-3.5-turbo",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
   "messages": [
     {
       "role": "user",
@@ -189,7 +188,7 @@ curl "$INGRESS_GW_ADDRESS/openai" -H content-type:application/json -d '{
 {{% tab name="Port-forward for local testing" %}}
 ```sh
 curl "localhost:8080/openai" -H content-type:application/json -d '{
-  "model": "gpt-3.5-turbo",
+  "model": "{{< reuse "agw-docs/snippets/openai-model.md" >}}",
   "messages": [
     {
       "role": "user",
@@ -359,9 +358,8 @@ The OpenAI Moderation API detects potentially harmful content across categories 
 
 AWS Bedrock Guardrails provide content filtering, PII detection, topic restrictions, and word filters. You must first create a guardrail in the AWS Bedrock console.
 
-{{< callout type="info" >}}
-For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions.html).
-{{< /callout >}}
+> [!NOTE]
+> For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/guardrails-permissions.html).
 
 1. Get your guardrail identifier and version:
    ```sh
@@ -403,17 +401,15 @@ For instructions on creating Bedrock Guardrails, see the [AWS Bedrock Guardrails
    EOF
    ```
 
-{{< callout type="info" >}}
-The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
-{{< /callout >}}
+> [!NOTE]
+> The `aws: {}` configuration uses the default AWS credential chain (IAM role, environment variables, or instance profile). For authentication details, see the [AWS authentication documentation](https://docs.aws.amazon.com/sdk-for-go/api/aws/session/).
 
 ### Google Model Armor
 
 Google Model Armor (formerly Vertex AI Safety) provides content safety filtering for Google Cloud customers. Configuration follows a similar pattern to other external moderation endpoints.
 
-{{< callout type="info" >}}
-For Google Model Armor configuration details, consult the Google Cloud documentation for Vertex AI content safety features.
-{{< /callout >}}
+> [!NOTE]
+> For Google Model Armor configuration details, consult the Google Cloud documentation for Vertex AI content safety features.
 
 ## Layer 3: Custom webhook integration
 

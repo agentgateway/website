@@ -18,9 +18,8 @@ Attaches to: {{< badge content="Route" path="/configuration/routes/">}}
 
 HTTP {{< gloss "Authorization (AuthZ)" >}}authorization{{< /gloss >}} allows defining rules to allow or deny requests based on their properties, using [CEL expressions]({{< link-hextra path="/reference/cel/" >}}).
 
-{{< callout type="info" >}}
-Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
-{{< /callout >}}
+> [!NOTE]
+> Try out CEL expressions in the built-in [CEL playground]({{< link-hextra path="/reference/cel/playground/" >}}) in the agentgateway admin UI before using them in your configuration.
 
 Policies can define `allow`, `deny`, and `require` rules. Rules are evaluated in this order of precedence:
 1. If there are no rules, the request is allowed.
@@ -31,12 +30,11 @@ Policies can define `allow`, `deny`, and `require` rules. Rules are evaluated in
    - If no `allow` rules are configured, the request is allowed (denylist semantics: `deny` and `require` rules act as a gate, and anything not blocked is permitted).
    - If `allow` rules are configured, the request is denied (allowlist semantics: only explicitly allowed requests are permitted).
 
-{{< callout type="warning" >}}
-A CEL expression that cannot be evaluated is treated as `false`. For example, if the expression refers to `jwt.aud`, but the request has no JWT. The effect depends on the rule type:
-- A `require` expression that is `false` (or errors) denies the request (fail-closed).
-- A `deny` expression that errors does not match, so it does not deny the request (fail-open).
-- An `allow` expression that errors does not match, so it does not allow the request.
-{{< /callout >}}
+> [!WARNING]
+> A CEL expression that cannot be evaluated is treated as `false`. For example, if the expression refers to `jwt.aud`, but the request has no JWT. The effect depends on the rule type:
+> - A `require` expression that is `false` (or errors) denies the request (fail-closed).
+> - A `deny` expression that errors does not match, so it does not deny the request (fail-open).
+> - An `allow` expression that errors does not match, so it does not allow the request.
 
 {{< tabs >}}
 {{< tab name="Simplified (LLM)" >}}
@@ -81,20 +79,20 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        authorization:
-          rules:
-          - allow: 'request.path == "/authz/public"'
-          - deny: 'request.path == "/authz/deny"'
-          - require: 'jwt.aud == "my-service"'
-          # legacy format; same as `allow: ...`
-          - 'request.headers["x-allow"] == "true"'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -103,7 +101,7 @@ binds:
 # WHAT THIS TEST VALIDATES:
 #   * The authorization policy with allow/deny/require and legacy rules is
 #     accepted by agentgateway in all three configuration forms: routing-based
-#     (binds), simplified LLM (llm.policies), and simplified MCP (mcp.policies).
+#     (gateways), simplified LLM (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That requests are actually allowed/denied at runtime — requires a backend
 #     and traffic the page omits.
@@ -111,20 +109,20 @@ binds:
 #     focused fragments, so they are not tested.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - routes:
-    - policies:
-        authorization:
-          rules:
-          - allow: 'request.path == "/authz/public"'
-          - deny: 'request.path == "/authz/deny"'
-          - require: 'jwt.aud == "my-service"'
-          # legacy format; same as `allow: ...`
-          - 'request.headers["x-allow"] == "true"'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+routes:
+- policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/authz/public"'
+      - deny: 'request.path == "/authz/deny"'
+      - require: 'jwt.aud == "my-service"'
+      # legacy format; same as `allow: ...`
+      - 'request.headers["x-allow"] == "true"'
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 

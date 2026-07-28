@@ -82,20 +82,19 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      jwtAuth:
-        mode: strict
-        issuer: agentgateway.dev
-        audiences: [test.agentgateway.dev]
-        jwks:
-          # Relative to the folder the binary runs from, not the config file
-          file: ./manifests/jwt/pub-key
-    routes:
-    - backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        # Relative to the folder the binary runs from, not the config file
+        file: ./manifests/jwt/pub-key
+routes:
+- backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -103,27 +102,26 @@ binds:
 {{< doc-test paths="jwt-authn" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The jwtAuth policy is accepted by agentgateway in all three configuration
-#     forms: routing-based (binds), simplified LLM (llm.policies), and
+#     forms: routing-based (gateways), simplified LLM (llm.policies), and
 #     simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That a token is actually verified at runtime — requires minting a signed
 #     JWT and a backend the page omits.
 cat <<'EOF' > config.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      jwtAuth:
-        mode: strict
-        issuer: agentgateway.dev
-        audiences: [test.agentgateway.dev]
-        jwks:
-          # Relative to the folder the binary runs from, not the config file
-          file: ./manifests/jwt/pub-key
-    routes:
-    - backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        # Relative to the folder the binary runs from, not the config file
+        file: ./manifests/jwt/pub-key
+routes:
+- backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config.yaml --validate-only
 
@@ -215,23 +213,22 @@ mcp:
 {{< tab name="Routing-based" >}}
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      jwtAuth:
-        mode: strict
-        issuer: agentgateway.dev
-        audiences: [test.agentgateway.dev]
-        jwks:
-          file: ./manifests/jwt/pub-key
-    routes:
-    - policies:
-        authorization:
-          rules:
-          - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+routes:
+- policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
+  backends:
+  - host: localhost:8080
 ```
 {{< /tab >}}
 {{< /tabs >}}
@@ -239,30 +236,29 @@ binds:
 {{< doc-test paths="jwt-authn" >}}
 # WHAT THIS TEST VALIDATES:
 #   * The jwtAuth + authorization example config is accepted by agentgateway in
-#     all three configuration forms: routing-based (binds), simplified LLM
+#     all three configuration forms: routing-based (gateways), simplified LLM
 #     (llm.policies), and simplified MCP (mcp.policies).
 # WHAT THIS TEST DOES NOT VALIDATE (and why):
 #   * That the authorization rule actually allows/denies at runtime — requires
 #     minting a signed JWT with the `admins` group and a backend the page omits.
 cat <<'EOF' > config2.yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-binds:
-- port: 3000
-  listeners:
-  - policies:
-      jwtAuth:
-        mode: strict
-        issuer: agentgateway.dev
-        audiences: [test.agentgateway.dev]
-        jwks:
-          file: ./manifests/jwt/pub-key
-    routes:
-    - policies:
-        authorization:
-          rules:
-          - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
-      backends:
-      - host: localhost:8080
+gateways:
+  default:
+    port: 3000
+    jwtAuth:
+      mode: strict
+      issuer: agentgateway.dev
+      audiences: [test.agentgateway.dev]
+      jwks:
+        file: ./manifests/jwt/pub-key
+routes:
+- policies:
+    authorization:
+      rules:
+      - allow: 'request.path == "/admin" && jwt.groups.contains("admins")'
+  backends:
+  - host: localhost:8080
 EOF
 agentgateway -f config2.yaml --validate-only
 

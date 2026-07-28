@@ -67,10 +67,9 @@ def generate_helm_docs(link_version: str, website_dir: str, kgateway_dir: str) -
         with open(helm_file, "r", encoding="utf-8") as f:
             content = f.read()
 
-        content = content.replace('{{< callout type=info >}}', '{{< callout type="info" >}}')
         if "## Values" not in content or ("## Values" in content and "|-----|" not in content):
-            note = '\n\n{{< callout type="info" >}}\nNo configurable values are currently available for this chart.\n{{< /callout >}}\n'
-            if "{{< callout" not in content:
+            note = '\n\n> [!NOTE]\n> No configurable values are currently available for this chart.\n'
+            if "[!NOTE]" not in content:
                 content = content.rstrip() + note
 
         # Swap Default and Description columns

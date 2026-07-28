@@ -55,9 +55,8 @@ Depending on the API used in the request, and the provider selected, agentgatewa
 This enables a unified API regardless of the provider used, allowing seamlessly connecting clients (regardless of which API they use) to any provider.
 
 Below shows some basic examples using the Chat Completions API
-{{< callout type="info" >}}
-For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For detailed configuration of specific API endpoint types, including Chat Completions and the OpenAI Realtime API, see [API types]({{< link-hextra path="/llm/api-types/" >}}).
 
 {{< tabs >}}
 {{% tab name="Curl" %}}
@@ -80,10 +79,9 @@ curl 'http://localhost:4000/v1/chat/completions' \
 {{% /tab %}}
 {{% tab name="Python" %}}
 
-{{< callout type="info" >}}
-The `api_key` parameter is required in the OpenAI library.
-Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
-{{< /callout >}}
+> [!NOTE]
+> The `api_key` parameter is required in the OpenAI library.
+> Depending on your agentgateway configuration, it may or may not be required, and can be set to a mock value.
 
 ```python
 import openai
@@ -127,7 +125,7 @@ console.log(response);
 ## Model routing and aliases
 
 Model routing is configured within the `llm` section of your agentgateway configuration file. 
-The `llm` section offers a simplified, model-centric approach compared to the traditional `binds/listeners/routes` model; for more details on the two approaches, see [LLM configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
+The `llm` section offers a simplified, model-centric approach compared to the `gateways` and `routes` model; for more details on the two approaches, see [LLM configuration modes]({{< link-hextra path="/llm/configuration-modes/" >}}).
 The model configurations shown in this section live under the `llm.models` key.
 
 Agentgateway routes requests by matching an incoming model name, and then sending it to the configured model.
@@ -231,6 +229,5 @@ llm:
 
 In this example, both routes have one header matcher, so they have equal specificity. Because the Fireworks route is listed first, it takes priority when both routes match.
 
-{{< callout type="info" >}}
-For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/llm/virtual-models/" >}}).
-{{< /callout >}}
+> [!NOTE]
+> For advanced routing based on request body fields like the `model` name, see [Virtual models]({{< link-hextra path="/llm/virtual-models/" >}}).

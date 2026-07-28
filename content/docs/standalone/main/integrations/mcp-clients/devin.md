@@ -26,9 +26,8 @@ Add agentgateway to your Devin Desktop MCP configuration. Create or edit `~/.cod
 }
 ```
 
-{{< callout type="info" >}}
-For remote MCP servers, Devin Desktop uses the `serverUrl` field rather than the `url` field that some other clients use.
-{{< /callout >}}
+> [!NOTE]
+> For remote MCP servers, Devin Desktop uses the `serverUrl` field rather than the `url` field that some other clients use.
 
 ## Authentication
 

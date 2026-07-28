@@ -1,8 +1,7 @@
 Set separate timeouts for retries. 
 
-{{< callout type="warning" >}} 
-{{< reuse "agw-docs/versions/warn-experimental.md" >}}
-{{< /callout >}}
+> [!WARNING]
+> {{< reuse "agw-docs/versions/warn-experimental.md" >}}
 
 ## About per-try timeouts
 

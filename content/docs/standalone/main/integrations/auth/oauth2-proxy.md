@@ -80,55 +80,54 @@ frontendPolicies:
       github.user: 'extauthz.githubUser'
       github.email: 'extauthz.githubEmail'
 
-binds:
-- port: 3000
-  listeners:
-  - name: default
+gateways:
+  default:
+    port: 3000
     protocol: HTTP
-    routes:
-    # Route OAuth2 Proxy endpoints (login, callback, and so on)
-    - name: oauth2-proxy
-      matches:
-      - path:
-          pathPrefix: /oauth2
-      policies:
-        urlRewrite:
-          authority: none
-      backends:
-      - host: localhost:4180
+routes:
+# Route OAuth2 Proxy endpoints (login, callback, and so on)
+- name: oauth2-proxy
+  matches:
+  - path:
+      pathPrefix: /oauth2
+  policies:
+    urlRewrite:
+      authority: none
+  backends:
+  - host: localhost:4180
 
-    # Protected MCP application
-    - name: application
-      backends:
-      - mcp:
-          targets:
-          - name: everything
-            stdio:
-              cmd: npx
-              args: ["@modelcontextprotocol/server-everything"]
-      policies:
-        cors:
-          allowOrigins: ["*"]
-          allowHeaders: ["*"]
-          exposeHeaders: ["Mcp-Session-Id"]
-        extAuthz:
-          host: localhost:4180
-          includeRequestHeaders:
-          - cookie
-          protocol:
-            http:
-              # Check authentication status
-              path: '"/oauth2/auth"'
-              # Redirect unauthenticated users to login
-              redirect: '"/oauth2/start?rd=" + request.path'
-              # Extract user info from OAuth2 Proxy response headers
-              metadata:
-                githubUser: response.headers["x-auth-request-user"]
-                githubEmail: response.headers["x-auth-request-email"]
-              addRequestHeaders:
-                x-forwarded-host: request.host
-              includeResponseHeaders:
-              - x-auth-request-user
+# Protected MCP application
+- name: application
+  backends:
+  - mcp:
+      targets:
+      - name: everything
+        stdio:
+          cmd: npx
+          args: ["@modelcontextprotocol/server-everything"]
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: ["*"]
+      exposeHeaders: ["Mcp-Session-Id"]
+    extAuthz:
+      host: localhost:4180
+      includeRequestHeaders:
+      - cookie
+      protocol:
+        http:
+          # Check authentication status
+          path: '"/oauth2/auth"'
+          # Redirect unauthenticated users to login
+          redirect: '"/oauth2/start?rd=" + request.path'
+          # Extract user info from OAuth2 Proxy response headers
+          metadata:
+            githubUser: response.headers["x-auth-request-user"]
+            githubEmail: response.headers["x-auth-request-email"]
+          addRequestHeaders:
+            x-forwarded-host: request.host
+          includeResponseHeaders:
+          - x-auth-request-user
 ```
 
 The following table describes the key settings in the configuration.

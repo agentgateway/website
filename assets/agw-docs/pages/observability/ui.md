@@ -4,9 +4,8 @@ Use the agentgateway Admin UI to inspect your Kubernetes proxy configuration.
 
 The agentgateway Admin UI is a built-in web interface that runs on port 15000 of the `agentgateway-proxy` pod. In Kubernetes mode, the UI is **read-only**. It reflects the configuration that the agentgateway controller pushes to the proxy over xDS, the protocol that the control plane uses to deliver configuration to the proxy.
 
-{{< callout type="info" >}}
-The Admin UI is read-only in Kubernetes mode. Unlike standalone mode, you cannot use the UI to add features such as models, LLM providers, or MCP servers. Instead, make configuration changes by updating your Kubernetes resources, such as through GitOps, not through the UI.
-{{< /callout >}}
+> [!NOTE]
+> The Admin UI is read-only in Kubernetes mode. Unlike standalone mode, you cannot use the UI to add features such as models, LLM providers, or MCP servers. Instead, make configuration changes by updating your Kubernetes resources, such as through GitOps, not through the UI.
 
 
 The Admin UI is useful for debugging and verifying the configuration that the proxy received from the controller, such as confirming that a Gateway, HTTPRoute, AgentgatewayBackend, or AgentgatewayPolicy resource took effect.
@@ -72,7 +71,7 @@ spec:
   ai:
     provider:
       openai:
-        model: gpt-3.5-turbo
+        model: {{< reuse "agw-docs/snippets/openai-model.md" >}}
   policies:
     auth:
       secretRef:
@@ -140,9 +139,8 @@ YAMLTest -f - <<'EOF'
 EOF
 {{< /doc-test >}}
 
-{{< callout type="info" >}}
-The port-forward connection closes when you stop the <code>kubectl port-forward</code> command. Run it in a dedicated terminal tab or in the background if you need persistent access.
-{{< /callout >}}
+> [!NOTE]
+> The port-forward connection closes when you stop the <code>kubectl port-forward</code> command. Run it in a dedicated terminal tab or in the background if you need persistent access.
 
 {{% version exclude-if="1.2.x,1.1.x,1.0.x,2.2.x" %}}
 ## Explore the read-only views {#explore}
