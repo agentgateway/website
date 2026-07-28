@@ -406,8 +406,13 @@ Example output:
 ```
 
 {{< doc-test paths="serve-model" >}}
+# YAMLTest evaluates "$.data[*].id" to the first array element only, so a
+# `contains` check can verify the first listed model (gpt-4) but cannot assert
+# membership for later entries such as the "openai/*" wildcard. The wildcard is
+# already validated by the "wildcard match" serving check above, and appears in
+# the /v1/models response shown in the example output.
 YAMLTest -f - <<'EOF'
-- name: model discovery lists every public model
+- name: model discovery endpoint lists public models
   http:
     url: "http://${INGRESS_GW_ADDRESS}/v1/models"
     method: GET
@@ -420,9 +425,6 @@ YAMLTest -f - <<'EOF'
       - path: "$.data[*].id"
         comparator: contains
         value: "gpt-4"
-      - path: "$.data[*].id"
-        comparator: contains
-        value: "openai/*"
 EOF
 {{< /doc-test >}}
 
