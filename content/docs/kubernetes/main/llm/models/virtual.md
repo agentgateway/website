@@ -517,26 +517,23 @@ Example output:
 ```
 
 {{< doc-test paths="virtual-models" >}}
-# YAMLTest evaluates "$.data[*].id" to the first array element only, so a
-# `contains` check can verify the first listed model (balanced) but cannot
-# assert membership for later entries such as "resilient". Those virtual models
-# are already validated by the serving checks above, and appear in the
-# /v1/models response shown in the example output.
-YAMLTest -f - <<'EOF'
-- name: discovery lists virtual models and hides internal targets
-  http:
-    url: "http://${INGRESS_GW_ADDRESS}/v1/models"
-    method: GET
-  source:
-    type: local
-  retries: 3
-  expect:
-    statusCode: 200
-    bodyJsonPath:
-      - path: "$.data[*].id"
-        comparator: contains
-        value: "balanced"
-EOF
+# Assert on the raw /v1/models body instead of YAMLTest bodyJsonPath: YAMLTest's
+# "$.data[*].id" only evaluates the first array element, and the serve-model
+# prerequisite also registers gpt-4/gpt-5-mini, so a JSONPath `contains` cannot
+# reach the virtual model IDs. Grep the response so we can verify every virtual
+# model is listed and that the Internal targets stay hidden.
+for i in $(seq 1 30); do
+  models=$(curl -s "http://${INGRESS_GW_ADDRESS}/v1/models")
+  if echo "$models" | grep -q '"balanced"' && echo "$models" | grep -q '"resilient"' && echo "$models" | grep -q '"smart"'; then break; fi
+  sleep 2
+done
+echo "$models"
+echo "$models" | grep -q '"balanced"'
+echo "$models" | grep -q '"resilient"'
+echo "$models" | grep -q '"smart"'
+if echo "$models" | grep -qE '"(internal-fast|internal-premium|primary-down|unreachable-llm)"'; then
+  echo "ERROR: an Internal model target appeared in /v1/models"; exit 1
+fi
 {{< /doc-test >}}
 
 ## Cleanup
