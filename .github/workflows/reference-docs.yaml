@@ -27,10 +27,16 @@ concurrency:
 
 # create-pull-request pushes a branch and opens a PR, so the token needs write on both.
 # Without this block the token is read-only and the push fails with a 403.
-# Note: the PR steps below pass secrets.GH_TOKEN (a PAT) rather than the default
-# GITHUB_TOKEN, for two reasons: "Allow GitHub Actions to create and approve pull
-# requests" is disabled on this repo, and PRs opened by GITHUB_TOKEN do not trigger
-# further workflow runs — so the generated PRs would get no CI.
+# The PR step below uses the default GITHUB_TOKEN, which requires the repo setting
+# "Allow GitHub Actions to create and approve pull requests" to be enabled. PRs are
+# authored by github-actions[bot] rather than a human, so maintainers can review and
+# approve them.
+#
+# Consequence: pull_request workflows (doc-tests, framework-tests, links) are queued
+# on the generated PR but held as "action_required" — click "Approve and run" on the
+# PR's checks to execute them. Cloudflare Pages previews and DCO are GitHub Apps, not
+# Actions, so they run automatically. This matches how kgateway-dev/kgateway.dev and
+# kagent-dev/website handle their own generated reference-docs PRs.
 permissions:
   contents: write
   pull-requests: write
@@ -289,8 +295,8 @@ jobs:
           echo "CEL widget HTML generated successfully:"
           ls -la "${TARGET_DIR}/cel-context.html"
 
-      # Create PR: uses the GH_TOKEN PAT (contents: write + pull-requests: write). See the
-      # permissions block at the top of this file for why the default GITHUB_TOKEN is not used.
+      # Create PR: uses the default GITHUB_TOKEN (contents: write + pull-requests: write from
+      # the permissions block at the top of this file). See that block for the CI implications.
       - name: Create PR for website repo
         uses: peter-evans/create-pull-request@v7
         id: create-pr
@@ -314,7 +320,7 @@ jobs:
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ matrix.link_version }}) from agentgateway ${{ matrix.ref }}'
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Output PR URL
         run: |

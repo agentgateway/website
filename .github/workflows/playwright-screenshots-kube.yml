@@ -160,7 +160,7 @@ jobs:
             add a `{{< version include-if="1.4.x" >}}` split for them.
 
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Report PR result
         run: |
