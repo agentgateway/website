@@ -30,7 +30,7 @@ If no path match is specified, the default is to match all paths (`/`).
 |-------------|--------------------------------------|---------------------------------------------|
 | Exact       | `{ "exact": "/foo/bar" }`            | Matches only the exact path `/foo/bar`      |
 | Prefix      | `{ "pathPrefix": "/foo" }`           | Matches any path starting with `/foo`       |
-| Regex       | `{ "regex": ["^/foo/[0-9]+$", 0] }`  | Matches paths using a regular expression    |
+| Regex       | `{ "regex": "^/foo/[0-9]+$" }`  | Matches paths using a regular expression    |
 
 > [!NOTE]
 > Only one of `exact`, `pathPrefix`, or `regex` can be specified per path matcher.
@@ -78,7 +78,7 @@ routes:
 - name: api-regex
   matches:
   - path:
-      regex: ["^/api/v[0-9]+/users$", 0]
+      regex: "^/api/v[0-9]+/users$"
   backends:
   - host: api.example.com:8080
 ```

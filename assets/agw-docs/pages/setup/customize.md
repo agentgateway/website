@@ -175,6 +175,7 @@ EOF
 Use the `rawConfig` option to pass in raw upstream configuration to your agentgateway proxy. Note that the configuration is not automatically validated. If configuration is malformatted or includes unsupported fields, the agentgateway proxy does not start. You can run `kubectl logs deploy/agentgateway-proxy -n agentgateway-system` to view the logs of the proxy and find more information about why the configuration could not be applied. 
 
 1. Create an {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource with your custom configuration. The following example sets up a simple direct response listener on port 3000 that returns a `200 OK` response with the body `"hello!"` for requests to the `/direct` path.
+
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
@@ -184,23 +185,26 @@ Use the `rawConfig` option to pass in raw upstream configuration to your agentga
      namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
    spec:
      rawConfig:
-       binds: 
-       - port: 3000
-         listeners: 
-         - protocol: HTTP
-           routes: 
-           - name: direct-response
-             matches: 
-             - path: 
-                 pathPrefix: /direct
-             policies: 
-               directResponse:
-                 body: "hello!"
-                 status: 200
+       gateways:
+         default:
+           port: 3000
+           protocol: HTTP
+       routes:
+       - name: direct-response
+         matches:
+         - path:
+             pathPrefix: /direct
+         policies:
+           directResponse:
+             body: "hello!"
+             status: 200
    EOF
    ```
 
-2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. Set the port to a mock value like `3030` to avoid conflicts with the binds defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
+   > [!NOTE]
+   > The `gateways` API requires agentgateway 1.4 or later. In earlier releases, use the equivalent `binds` configuration. Agentgateway 1.4 still accepts `binds`, but `gateways` is the recommended API.
+
+2. Create a Gateway resource that sets up an agentgateway proxy that uses your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}}. Set the port to a mock value like `3030` to avoid conflicts with the ports defined in your {{< reuse "agw-docs/snippets/gatewayparameters.md" >}} resource.
 
    ```yaml
    kubectl apply --server-side -f- <<'EOF'
