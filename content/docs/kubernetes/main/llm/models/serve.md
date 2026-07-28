@@ -32,8 +32,8 @@ For more information, see [About models]({{< link-hextra path="/llm/models/about
    ```sh {paths="serve-model"}
    helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-path.md" >}} \
    --version {{< reuse "agw-docs/versions/patch-dev.md" >}} \
-   --reuse-values \
    --set controller.image.pullPolicy=Always \
+   --set controller.extraEnv.KGW_ENABLE_GATEWAY_API_EXPERIMENTAL_FEATURES=true \
    --set agentgatewayModels.enabled=true \
    --wait
    ```
