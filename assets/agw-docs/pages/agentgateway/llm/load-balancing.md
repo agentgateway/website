@@ -105,9 +105,8 @@ spec:
 
 For **health-aware P2C load balancing** across individual Pod replicas, use the `custom` provider type with the `backendRef` field. Agentgateway resolves the Service's `EndpointSlices` directly and applies its P2C load balancing and health scoring across individual Pods, bypassing kube-proxy entirely.
 
-{{< callout type="info" >}}
-The `backendRef` field is only available for the `custom` provider type. Use this approach when you want agentgateway's health-aware load balancing across replicas of a self-hosted LLM backend.
-{{< /callout >}}
+> [!NOTE]
+> The `backendRef` field is only available for the `custom` provider type. Use this approach when you want agentgateway's health-aware load balancing across replicas of a self-hosted LLM backend.
 
 1. Create a Service for your LLM backend.
 
