@@ -39,6 +39,12 @@ routes:
       - api://agentgateway
       jwks:
         url: https://your-org.okta.com/oauth2/default/v1/keys
+      resourceMetadata:
+        resource: api://agentgateway
+        scopesSupported:
+        - agentgateway
+        bearerMethodsSupported:
+        - header
 ```
 
 ## Okta setup
@@ -80,6 +86,12 @@ policies:
     audiences: [api://agentgateway]
     jwks:
       url: https://your-org.okta.com/oauth2/default/v1/keys
+    resourceMetadata:
+      resource: api://agentgateway
+      scopesSupported:
+      - agentgateway
+      bearerMethodsSupported:
+      - header
   authorization:
     rules:
     # Check for Okta group membership

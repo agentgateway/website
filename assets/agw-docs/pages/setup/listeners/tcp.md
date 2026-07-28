@@ -210,7 +210,7 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
    {{% tab name="Gateway listeners" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1alpha2
+   apiVersion: gateway.networking.k8s.io/{{< reuse "agw-docs/versions/tcproute-version.md" >}}
    kind: TCPRoute
    metadata:
      name: tcp-route-echo
@@ -233,7 +233,7 @@ Create a TCP listener so that the Gateway can serve TCP traffic. In the followin
    {{% tab name="ListenerSets" %}}
    ```yaml
    kubectl apply -f- <<EOF
-   apiVersion: gateway.networking.k8s.io/v1alpha2
+   apiVersion: gateway.networking.k8s.io/{{< reuse "agw-docs/versions/tcproute-version.md" >}}
    kind: TCPRoute
    metadata:
      name: tcp-route-echo

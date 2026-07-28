@@ -117,7 +117,12 @@ llm:
     provider: openAI
     params:
       apiKey: "$OPENAI_API_KEY"
-mcp: {}
+mcp:
+  targets:
+  - name: tools
+    stdio:
+      cmd: npx
+      args: ["@modelcontextprotocol/server-everything"]
 ```
 
 > [!NOTE]
