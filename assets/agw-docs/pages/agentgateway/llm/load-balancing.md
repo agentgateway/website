@@ -55,7 +55,7 @@ When you register an LLM provider backend that points at an in-cluster Kubernete
 When you use the `host` and `port` fields (available on all provider types) to point at a normal Kubernetes Service with a `ClusterIP`, traffic goes through kube-proxy. Agentgateway sees only a single backend endpoint (the Service's ClusterIP), and kube-proxy handles the load balancing across individual Pods using iptables or IPVS rules. Agentgateway's P2C load balancing and health-aware scoring does **not** apply across individual Pod replicas in this case.
 
 ```yaml
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: my-backend
