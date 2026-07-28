@@ -58,7 +58,7 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
 1. Update the listener to allow both `HTTPRoute` and `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources.
 
    ```yaml {paths="serve-model"}
-   kubectl apply -f- <<EOF
+   kubectl apply --server-side --force-conflicts -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
    metadata:
@@ -102,15 +102,11 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
    ```
 
    {{< doc-test paths="serve-model" >}}
-   # The AgentgatewayModel API is enabled by a rolling helm upgrade in "Before you
-   # begin", so the listener update above can land while the control plane is still
-   # rolling out. The first reconcile after the new (gate-enabled) controller
-   # becomes leader can run before it observes the updated listener, and nothing
-   # re-triggers it, so supportedKinds never picks up AgentgatewayModel. Restart the
-   # controller once the listener is in place so a fresh, gate-enabled reconcile
-   # re-lists the current Gateway and recomputes supportedKinds.
-   kubectl rollout restart deployment/agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}}
-   kubectl rollout status deployment/agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} --timeout=120s
+   # DIAGNOSTIC (temporary): show what the stored Gateway actually carries so CI
+   # reveals whether the AgentgatewayModel route kind persisted and how the
+   # controller computed supportedKinds.
+   echo "spec.allowedRoutes.kinds:"; kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.spec.listeners[0].allowedRoutes.kinds}'; echo
+   echo "status.supportedKinds:"; kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.listeners[0].supportedKinds}'; echo
    YAMLTest -f - <<'EOF'
    - name: wait for the listener to allow the AgentgatewayModel route kind
      wait:
