@@ -58,7 +58,7 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
 1. Update the listener to allow both `HTTPRoute` and `{{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}` resources.
 
    ```yaml {paths="serve-model"}
-   kubectl apply --server-side --force-conflicts -f- <<EOF
+   kubectl apply -f- <<EOF
    apiVersion: gateway.networking.k8s.io/v1
    kind: Gateway
    metadata:
@@ -102,11 +102,6 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
    ```
 
    {{< doc-test paths="serve-model" >}}
-   # DIAGNOSTIC (temporary): show what the stored Gateway actually carries so CI
-   # reveals whether the AgentgatewayModel route kind persisted and how the
-   # controller computed supportedKinds.
-   echo "spec.allowedRoutes.kinds:"; kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.spec.listeners[0].allowedRoutes.kinds}'; echo
-   echo "status.supportedKinds:"; kubectl get gateway agentgateway-proxy -n {{< reuse "agw-docs/snippets/namespace.md" >}} -o jsonpath='{.status.listeners[0].supportedKinds}'; echo
    YAMLTest -f - <<'EOF'
    - name: wait for the listener to allow the AgentgatewayModel route kind
      wait:
