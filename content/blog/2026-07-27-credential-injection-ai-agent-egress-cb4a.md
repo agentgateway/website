@@ -1,5 +1,5 @@
 ---
-title: "Credential injection for AI agent egress: agentgateway as a CB4A proxy gateway"
+title: "Credential Injection Patterns for AI Agents"
 category: "Deep Dive"
 publishDate: 2026-07-27
 author: "Christian Posta"
