@@ -56,7 +56,7 @@ When you use the `host` and `port` fields (available on all provider types) to p
 
 ```yaml
 apiVersion: agentgateway.dev/v1alpha1
-kind: AgentgatewayBackend
+kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: my-backend
   namespace: agentgateway-system
