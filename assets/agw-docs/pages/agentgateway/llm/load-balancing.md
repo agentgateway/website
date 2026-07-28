@@ -87,7 +87,7 @@ spec:
   - port: 8000
     targetPort: 8000
 ---
-apiVersion: agentgateway.dev/v1alpha1
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: AgentgatewayBackend
 metadata:
   name: my-backend
