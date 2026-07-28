@@ -12,8 +12,10 @@ concurrency:
   cancel-in-progress: false
 
 # create-pull-request pushes a branch and opens a PR, so the token needs write on both.
-# This also requires "Allow GitHub Actions to create and approve pull requests" in repo
-# Settings -> Actions -> General (or a CREATE_PR_TOKEN/GH_TOKEN PAT).
+# The PR step passes secrets.GH_TOKEN (a PAT) rather than the default GITHUB_TOKEN, for two
+# reasons: "Allow GitHub Actions to create and approve pull requests" is disabled on this
+# repo, and PRs opened by GITHUB_TOKEN do not trigger further workflow runs — so the
+# refreshed-screenshot PRs would get no CI.
 permissions:
   contents: write
   pull-requests: write

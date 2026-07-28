@@ -25,10 +25,12 @@ concurrency:
   group: reference-docs
   cancel-in-progress: false
 
-# create-pull-request pushes a branch and opens a PR, so the GITHUB_TOKEN needs write on both.
+# create-pull-request pushes a branch and opens a PR, so the token needs write on both.
 # Without this block the token is read-only and the push fails with a 403.
-# Note: this still requires "Allow GitHub Actions to create and approve pull requests"
-# to be enabled in repo Settings -> Actions -> General (or a CREATE_PR_TOKEN PAT).
+# Note: the PR steps below pass secrets.GH_TOKEN (a PAT) rather than the default
+# GITHUB_TOKEN, for two reasons: "Allow GitHub Actions to create and approve pull
+# requests" is disabled on this repo, and PRs opened by GITHUB_TOKEN do not trigger
+# further workflow runs — so the generated PRs would get no CI.
 permissions:
   contents: write
   pull-requests: write
@@ -49,7 +51,9 @@ jobs:
       - name: Build version matrix
         id: build_matrix
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          # Only reads public data (gh api .../tags and git ls-remote against
+          # agentgateway/agentgateway), so the default token is enough — no PAT needed.
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]; then
             input_version="1.0.x"
@@ -132,10 +136,12 @@ jobs:
     env:
       GOTOOLCHAIN: auto
     steps:
+      # Both checkouts are reads that the default github.token covers: this repo, and the
+      # public agentgateway/agentgateway. The PR step below is the only thing that needs a
+      # non-default identity, and it brings its own token.
       - name: Checkout website repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
           path: website
           fetch-depth: 0
 
@@ -143,7 +149,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: agentgateway/agentgateway
-          token: ${{ secrets.GH_TOKEN }}
           path: agentgateway
           ref: ${{ matrix.ref }}
 
@@ -284,8 +289,8 @@ jobs:
           echo "CEL widget HTML generated successfully:"
           ls -la "${TARGET_DIR}/cel-context.html"
 
-      # Create PR: needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions)
-      # or a repo secret CREATE_PR_TOKEN (PAT with pull_requests: write).
+      # Create PR: uses the GH_TOKEN PAT (contents: write + pull-requests: write). See the
+      # permissions block at the top of this file for why the default GITHUB_TOKEN is not used.
       - name: Create PR for website repo
         uses: peter-evans/create-pull-request@v7
         id: create-pr
