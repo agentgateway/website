@@ -102,6 +102,15 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
    ```
 
    {{< doc-test paths="serve-model" >}}
+   # The AgentgatewayModel API is enabled by a rolling helm upgrade in "Before you
+   # begin", so the listener update above can land while the control plane is still
+   # rolling out. The first reconcile after the new (gate-enabled) controller
+   # becomes leader can run before it observes the updated listener, and nothing
+   # re-triggers it, so supportedKinds never picks up AgentgatewayModel. Restart the
+   # controller once the listener is in place so a fresh, gate-enabled reconcile
+   # re-lists the current Gateway and recomputes supportedKinds.
+   kubectl rollout restart deployment/agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+   kubectl rollout status deployment/agentgateway -n {{< reuse "agw-docs/snippets/namespace.md" >}} --timeout=120s
    YAMLTest -f - <<'EOF'
    - name: wait for the listener to allow the AgentgatewayModel route kind
      wait:
