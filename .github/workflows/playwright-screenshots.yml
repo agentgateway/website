@@ -12,8 +12,11 @@ concurrency:
   cancel-in-progress: false
 
 # create-pull-request pushes a branch and opens a PR, so the token needs write on both.
-# This also requires "Allow GitHub Actions to create and approve pull requests" in repo
-# Settings -> Actions -> General (or a CREATE_PR_TOKEN/GH_TOKEN PAT).
+# The PR step uses the default GITHUB_TOKEN, which requires the repo setting "Allow GitHub
+# Actions to create and approve pull requests" to be enabled. PRs are authored by
+# github-actions[bot] rather than a human, so maintainers can review and approve them.
+# pull_request workflows are queued as "action_required" on the PR — approve them from the
+# checks list if needed. See reference-docs.yaml for the fuller note.
 permissions:
   contents: write
   pull-requests: write
@@ -31,7 +34,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: 'playwright/package-lock.json'
 
@@ -104,7 +107,7 @@ jobs:
             here means the live UI no longer matches the committed screenshots.
 
             Workflow run: https://github.com/agentgateway/website/actions/runs/${{ github.run_id }}
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Report PR result
         run: |
