@@ -40,7 +40,9 @@
 
    {{< tabs >}}
    {{% tab name="Cloud Provider LoadBalancer" %}}
-   {{< reuse "agw-docs/snippets/kind-loadbalancer-tip.md" >}}
+   
+   > [!TIP]
+   > {{< reuse "agw-docs/snippets/kind-loadbalancer-tip.md" >}}
 
    Verify that the external IP has been created and is not `pending`.
    ```sh
