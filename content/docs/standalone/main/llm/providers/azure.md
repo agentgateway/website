@@ -306,3 +306,53 @@ routes:
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## Use Claude models on Azure AI Foundry
+
+[Azure AI Foundry](https://ai.azure.com/) hosts Anthropic Claude models at native Anthropic endpoints. When you set `azureResourceType: foundry` and a model name that starts with `claude-`, agentgateway automatically routes requests to the Anthropic-native path (`/anthropic/v1/messages`) instead of the OpenAI-compatible path, and injects the required `anthropic-version` header. No extra configuration is needed beyond specifying a Claude model name.
+
+> [!NOTE]
+> For more information about Claude models on Azure AI Foundry, see the [Microsoft documentation](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-claude).
+
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+llm:
+  models:
+  - name: "claude-3-5-haiku-20241022"
+    provider: azure
+    auth:
+      key:
+        value: "$AZURE_API_KEY"
+        location:
+          header:
+            name: api-key
+    params:
+      azureResourceName: "your-foundry-resource"
+      azureResourceType: foundry
+      azureProjectName: "your-project-name"
+```
+
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The exact Claude model name to match in incoming requests, such as `claude-3-5-haiku-20241022`. Use `*` to match any model name. |
+| `provider` | Set to `azure` for Azure AI Foundry. |
+| `auth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+| `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
+| `params.azureProjectName` | The Foundry project name.|
+
+After running agentgateway with this configuration, send a request to verify:
+
+```sh
+curl -X POST http://localhost:4000/v1/messages \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "claude-3-5-haiku-20241022",
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
