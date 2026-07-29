@@ -96,13 +96,7 @@ Refresh the **Analytics** page and the request appears: tokens counted, cost cal
 The dashboard reads from the database at `config.database.url`. Agentgateway supports SQLite (default, single instance) and PostgreSQL. See [Request Log]({{< link-hextra path="/integrations/observability/database/" >}}) for full configuration details, including connection string format, credentials, and schema reference.
 
 {{< doc-test paths="cost-dashboard" >}}
-# Install agentgateway binary
-mkdir -p "$HOME/.local/bin"
-export PATH="$HOME/.local/bin:$PATH"
-VERSION="v{{< reuse "agw-docs/versions/n-patch.md" >}}"
-BINARY_URL="https://github.com/agentgateway/agentgateway/releases/download/${VERSION}/agentgateway-$(uname -s | tr '[:upper:]' '[:lower:]')-$(uname -m | sed 's/x86_64/amd64/')"
-curl -sL "$BINARY_URL" -o "$HOME/.local/bin/agentgateway"
-chmod +x "$HOME/.local/bin/agentgateway"
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
 export OPENAI_API_KEY="${OPENAI_API_KEY:-test}"
 
 # A catalog so modelCatalog loads and validates.
