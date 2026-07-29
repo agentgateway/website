@@ -402,8 +402,11 @@ In this example, you add a transformation to the JWT policy that copies claims f
    # WHAT THIS TEST DOES NOT VALIDATE (and why):
    #   * The exact jwt.sub value (x-user-id) — Different layer: the value is a dynamic
    #     Keycloak user UUID, so only issuer/role (deterministic) are asserted.
-   #   * Claim-based routing example — Requires config/traffic the page omits: it needs
-   #     premium-backend / free-backend Services that the doc tells readers to supply.
+   #   * The full claim-based routing split (premium vs free backend) — Requires
+   #     config/traffic the page omits: real premium-backend / free-backend Services and a
+   #     token carrying a 'tier' claim (the default token has none). The Claim-based routing
+   #     section instead tests the piece that IS deterministic: a later jwt-claims assertion
+   #     confirms the PreRouting transformation derives x-user-tier='free' from default().
    #
    # The visible token block sets ACCESS_TOKEN as a shell variable; export it so that
    # YAMLTest (a child process that interpolates ${ACCESS_TOKEN} from its environment)
@@ -465,8 +468,13 @@ In this example, you add a transformation to the JWT policy that copies claims f
 
 You can route requests to different backends based on a JWT claim, such as sending premium and free-tier users to different services. To do this, use a `PreRouting` transformation to copy a claim into a request header, then match on that header in your `HTTPRoute` rules. The `PreRouting` phase runs the transformation before the gateway makes a routing decision, so the header is available for matching. See [PreRouting phase](#prerouting-phase).
 
+> [!IMPORTANT]
+> This example is illustrative. The following steps show how to derive a routing header from a claim and confirm it is set, but verifying the full premium/free split requires two things that you must configure:
+> - **Running `premium-backend` and `free-backend` Services.** Replace them with your own backends, then compare which one handles the request.
+> - **A token that carries the `tier` claim.** The default Keycloak master-realm token has no `tier` claim, so every request falls back to `free`. To exercise the premium path, configure a Keycloak client scope or protocol mapper that adds a `tier` claim, then request a token that includes `tier: premium`.
+
 1. Create or update the `jwt-auth-policy` to validate the JWT and, in the `PreRouting` phase, copy a `tier` claim into an `x-user-tier` header. Reusing the same policy name replaces the policy from the previous section, so that only one JWT policy targets the Gateway.
-   ```yaml
+   ```yaml {paths="jwt-claims"}
    kubectl apply -f - <<EOF
    apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
    kind: {{< reuse "agw-docs/snippets/policy.md" >}}
@@ -502,7 +510,43 @@ You can route requests to different backends based on a JWT claim, such as sendi
    EOF
    ```
 
-2. Create an `HTTPRoute` that routes requests to different backends based on the `x-user-tier` header. Requests with `x-user-tier: premium` go to the premium backend, and all other requests fall through to the default backend.
+2. Before you add routing rules, confirm that the `PreRouting` transformation derives the `x-user-tier` header from the JWT claim. Send an authenticated request to the httpbin app, which echoes back the headers that it receives. Because the default Keycloak token has no `tier` claim, `default(jwt.tier, 'free')` evaluates to `free`. For local testing with port-forwarding, use `http://localhost:8080/headers` instead.
+   ```sh
+   curl -s "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq '.headers'
+   ```
+
+   {{< doc-test paths="jwt-claims" >}}
+   YAMLTest -f - <<'EOF'
+   - name: PreRouting transformation derives the routing header from the JWT claim
+     retries: 3
+     http:
+       url: "http://${INGRESS_GW_ADDRESS}:80/headers"
+       method: GET
+       headers:
+         host: www.example.com
+         authorization: "Bearer ${ACCESS_TOKEN}"
+     source:
+       type: local
+     expect:
+       statusCode: 200
+       bodyJsonPath:
+         - path: "$.headers.X-User-Tier[0]"
+           comparator: contains
+           value: "free"
+   EOF
+   {{< /doc-test >}}
+
+   In the response, verify that the `X-User-Tier` header is set to `free`.
+   ```json
+   {
+     "Accept": ["*/*"],
+     "Host": ["www.example.com"],
+     "User-Agent": ["curl/8.7.1"],
+     "X-User-Tier": ["free"]
+   }
+   ```
+
+3. Create an `HTTPRoute` that routes requests to different backends based on the `x-user-tier` header. Requests with `x-user-tier: premium` go to the premium backend, and all other requests fall through to the default backend.
    ```yaml
    kubectl apply -f - <<EOF
    apiVersion: gateway.networking.k8s.io/v1
@@ -530,9 +574,6 @@ You can route requests to different backends based on a JWT claim, such as sendi
          port: 8080
    EOF
    ```
-
-   > [!NOTE]
-   > This example assumes that you have `premium-backend` and `free-backend` Services in the namespace. Replace them with your own backends.
 
 {{< /version >}}
 
