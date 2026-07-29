@@ -1,5 +1,7 @@
 [KServe](https://kserve.github.io/website/) is a Kubernetes-native platform for serving machine learning models. With agentgateway in front of KServe, you can enforce traffic management policies, such as token-based rate limiting, for inference requests without modifying your inference services.
 
+KServe also maintains an [LLMInferenceService with agentgateway guide](https://kserve.github.io/website/docs/next/model-serving/generative-inference/llmisvc/llmisvc-agentgateway) for integrating the two projects.
+
 ## Before you begin
 
 {{< reuse "agw-docs/snippets/prereq.md" >}}
