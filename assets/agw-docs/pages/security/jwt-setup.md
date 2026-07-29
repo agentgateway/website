@@ -325,11 +325,178 @@ traffic:
             port: 8080
 ```
 
+## Use JWT claims in transformations {#jwt-claims-transformations}
+
+After a JWT is validated, its claims are available to [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) through the `jwt` context variable. You can use these claims in [transformations]({{< link-hextra path="/traffic-management/transformations/" >}}) to forward the authenticated user's identity to your backends, or to route requests based on a claim. See [Claim-based routing](#claim-based-routing).
+
+The `jwt` variable is populated only after the JWT is validated. Configure `jwtAuthentication` and `transformation` in the same {{< reuse "agw-docs/snippets/policy.md" >}} so that authentication runs before the transformation evaluates the claims.
+
+### Available JWT claims {#jwt-cel-variables}
+
+Access standard and custom claims from the `jwt` variable. Reserved claims, such as `sub`, use dot notation. Custom claims whose names contain special characters, such as a URL, require bracket notation.
+
+| CEL expression | Description |
+|----------------|-------------|
+| `jwt.sub` | The subject (`sub`) claim, which is usually the user ID. |
+| `jwt.iss` | The issuer (`iss`) claim. |
+| `jwt.aud` | The audience (`aud`) claim. |
+| `jwt.exp` | The expiration (`exp`) timestamp. |
+| `jwt['custom-claim']` | Any custom claim. Use bracket notation for claim names that contain special characters, such as `jwt['https://example.com/tier']`. |
+| `jwt.rawToken` | The raw bearer token. Redacted by default. Use `jwt.rawToken.unredacted()` to access the value. |
+
+Because the `value` field of a transformation is a CEL expression, `jwt.sub` refers to the claim value, not the literal string `jwt.sub`. To set a header to a fixed string instead, wrap the value in inner single quotes, such as `value: "'my-value'"`. A claim might also be absent from a token, so wrap claim access in `default()` to provide a fallback and avoid errors, such as `default(jwt.role, 'user')`. For the full list of context variables and functions, see the [CEL reference]({{< link-hextra path="/reference/cel/" >}}).
+
+### Forward JWT claims to a backend
+
+In this example, you add a transformation to the JWT policy that copies claims from the validated token into request headers before the request is forwarded to the backend. This is a common way to pass the authenticated user's identity to upstream apps without having them parse the JWT.
+
+1. Update the `jwt-auth-policy` to add a `transformation` that sets request headers from JWT claims. The `x-user-role` header uses `default()` to fall back to `user` when the `role` claim is absent.
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: jwt-auth-policy
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     traffic:
+       jwtAuthentication:
+         mode: Strict
+         providers:
+         - issuer: "${KEYCLOAK_ISSUER}"
+           jwks:
+             remote:
+               jwksPath: "${KEYCLOAK_JWKS_PATH}"
+               cacheDuration: "5m"
+               backendRef:
+                 group: ""
+                 kind: Service
+                 name: keycloak
+                 namespace: keycloak
+                 port: 8080
+       # Copy JWT claims into request headers for the backend
+       transformation:
+         request:
+           set:
+           - name: x-user-id
+             value: "jwt.sub"
+           - name: x-auth-issuer
+             value: "jwt.iss"
+           - name: x-user-role
+             value: "default(jwt.role, 'user')"
+   EOF
+   ```
+
+2. Get an access token from Keycloak, then send an authenticated request to the httpbin app. Because httpbin echoes back the headers that it receives, you can verify that the claims were injected.
+   {{< tabs >}}
+   {{% tab name="Cloud Provider LoadBalancer" %}}
+   ```sh
+   curl -s "${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq '.headers'
+   ```
+   {{% /tab %}}
+   {{% tab name="Port-forward for local testing" %}}
+   ```sh
+   curl -s "http://localhost:8080/headers" -H "host: www.example.com" -H "Authorization: Bearer ${ACCESS_TOKEN}" | jq '.headers'
+   ```
+   {{% /tab %}}
+   {{< /tabs >}}
+
+   In the response, verify that the `X-User-Id`, `X-Auth-Issuer`, and `X-User-Role` headers contain the values from your JWT claims.
+   ```json
+   {
+     "Accept": ["*/*"],
+     "Host": ["www.example.com"],
+     "User-Agent": ["curl/8.7.1"],
+     "X-Auth-Issuer": ["http://keycloak:8080/realms/master"],
+     "X-User-Id": ["a1b2c3d4-..."],
+     "X-User-Role": ["user"]
+   }
+   ```
+
+### Claim-based routing {#claim-based-routing}
+
+You can route requests to different backends based on a JWT claim, such as sending premium and free-tier users to different services. To do this, use a `PreRouting` transformation to copy a claim into a request header, then match on that header in your `HTTPRoute` rules. The `PreRouting` phase runs the transformation before the gateway makes a routing decision, so the header is available for matching. See [PreRouting phase](#prerouting-phase).
+
+1. Create a policy that validates the JWT and, in the `PreRouting` phase, copies a `tier` claim into an `x-user-tier` header.
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+   metadata:
+     name: jwt-claim-routing
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     targetRefs:
+     - group: gateway.networking.k8s.io
+       kind: Gateway
+       name: agentgateway-proxy
+     traffic:
+       phase: PreRouting
+       jwtAuthentication:
+         mode: Strict
+         providers:
+         - issuer: "${KEYCLOAK_ISSUER}"
+           jwks:
+             remote:
+               jwksPath: "${KEYCLOAK_JWKS_PATH}"
+               cacheDuration: "5m"
+               backendRef:
+                 group: ""
+                 kind: Service
+                 name: keycloak
+                 namespace: keycloak
+                 port: 8080
+       transformation:
+         request:
+           set:
+           - name: x-user-tier
+             value: "default(jwt.tier, 'free')"
+   EOF
+   ```
+
+2. Create an `HTTPRoute` that routes requests to different backends based on the `x-user-tier` header. Requests with `x-user-tier: premium` go to the premium backend, and all other requests fall through to the default backend.
+   ```yaml
+   kubectl apply -f - <<EOF
+   apiVersion: gateway.networking.k8s.io/v1
+   kind: HTTPRoute
+   metadata:
+     name: tier-routing
+     namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+   spec:
+     parentRefs:
+     - name: agentgateway-proxy
+     hostnames:
+     - www.example.com
+     rules:
+     # Premium users, matched on the header set from the JWT claim
+     - matches:
+       - headers:
+         - name: x-user-tier
+           value: premium
+       backendRefs:
+       - name: premium-backend
+         port: 8080
+     # All other users
+     - backendRefs:
+       - name: free-backend
+         port: 8080
+   EOF
+   ```
+
+   > [!NOTE]
+   > This example assumes that you have `premium-backend` and `free-backend` Services in the namespace. Replace them with your own backends.
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt-claim-routing -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete httproute tier-routing -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete ns keycloak
 ```
