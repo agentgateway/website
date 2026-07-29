@@ -143,7 +143,7 @@ Use these patterns to build expressions for header values, body content, and con
 
 Context variables give CEL expressions access to information about the current request, response, and connection. They are populated automatically by agentgateway at runtime so you do not need to declare or configure them. Use them to read values such as headers, path, method, JWT claims, or LLM model names and inject them into headers, bodies, or conditions.
 
-Variables are only populated when they are relevant to the current request. For example, `jwt` is only present when a JWT has been validated, and `llm` is only present when the route is backed by an LLM provider. Referencing an absent variable in a CEL expression produces an error. Use `default(expression, fallback)` to avoid this error.
+Variables are only populated when they are relevant to the current request. For example, `jwt` is only present when a JWT has been validated, and `llm` is only present when the route is backed by an LLM provider. Referencing an absent variable in a CEL expression produces an error. Use `default(expression, fallback)` to avoid this error. For a complete example that forwards validated JWT claims to a backend and routes on them, see [Use JWT claims in transformations]({{< link-hextra path="/security/jwt/setup/#jwt-claims-transformations" >}}).
 
 Not all variables are available in every policy type. The table below lists which variables are available depending on where the CEL expression is evaluated.
 
