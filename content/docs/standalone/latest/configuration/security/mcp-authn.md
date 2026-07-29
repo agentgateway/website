@@ -41,13 +41,34 @@ EOF
 Agentgateway can adapt traffic for authorization servers that don't fully comply with OAuth standards.
 For example, Keycloak exposes certificates at a non-standard endpoint.
 
-Set the `provider` field to adapt agentgateway's behavior to a specific authorization server. Supported values include `keycloak`, `auth0`, `okta`, `descope`, `authentik`, and `entra`. Microsoft Entra ID requires extra handling; see [Microsoft Entra ID](#microsoft-entra-id).
+Set the `provider` field to adapt agentgateway's behavior to a specific authorization server.
 
 In this mode, agentgateway:
 - Exposes protected resource metadata on behalf of the MCP server
 - Proxies authorization server metadata and client registration
 - Validates tokens using the authorization server's JWKS
 - Returns `401 Unauthorized` with appropriate `WWW-Authenticate` headers for unauthenticated requests
+
+### Supported providers {#providers}
+
+The `provider` field takes a map with a single provider key, such as `provider: {keycloak: {}}`. Each provider adapts agentgateway to the behavior of that authorization server, including where it publishes signing keys and how it handles Dynamic Client Registration (DCR).
+
+| `provider` | Derived JWKS URL | Notable behavior | Guide |
+|------------|------------------|------------------|-------|
+| `auth0` | `{issuer}/.well-known/jwks.json` | Appends the first audience to the authorization endpoint, because Auth0 does not support RFC 8707. | [Auth0]({{< link-hextra path="/integrations/auth/auth0" >}}) |
+| `authentik` | `{issuer}/jwks/` | Injects a DCR endpoint, because authentik does not implement RFC 7591. Requires `clientId`. | [authentik]({{< link-hextra path="/integrations/auth/authentik" >}}) |
+| `descope` | `https://api.descope.com/{project-id}/.well-known/jwks.json` | Rewrites agentic issuers to the project-level JWKS URL. `clientId` recommended, because DCR requires a management key. | [Descope]({{< link-hextra path="/integrations/auth/descope" >}}) |
+| `entra` | Derived from the tenant's v2.0 discovery document | Strips the RFC 8707 `resource` parameter and proxies `authorize` and `token`. Requires `clientId`. | [Microsoft Entra ID]({{< link-hextra path="/integrations/auth/entra" >}}) |
+| `keycloak` | `{issuer}/protocol/openid-connect/certs` | Proxies DCR, because Keycloak does not send CORS headers on its registration endpoint. | [Keycloak]({{< link-hextra path="/integrations/auth/keycloak" >}}) |
+| `okta` | `{issuer}/.well-known/jwks.json` | Appends the first audience to the authorization endpoint and proxies DCR to the org-level endpoint. Set `jwks` explicitly. | [Okta]({{< link-hextra path="/integrations/auth/okta" >}}) |
+| Not set | `{issuer}/.well-known/jwks.json` | Standards-compliant behavior with no provider-specific adaptations. | — |
+
+If you omit `jwks`, agentgateway fetches keys from the derived URL for your provider. Set `jwks` to override that URL with a different endpoint, a local file, or an inline key set.
+
+> [!IMPORTANT]
+> The `okta` provider derives `{issuer}/.well-known/jwks.json`, but Okta publishes keys at `{issuer}/v1/keys`. Always set `jwks` explicitly when you use the `okta` provider. For more information, see the [Okta guide]({{< link-hextra path="/integrations/auth/okta" >}}).
+
+Microsoft Entra ID requires extra handling; see [Microsoft Entra ID](#microsoft-entra-id).
 
 {{< tabs >}}
 {{< tab name="Simplified (MCP)" >}}

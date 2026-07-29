@@ -2,6 +2,10 @@
 title: Descope
 weight: 40
 description: Integrate agentgateway with Descope for authentication and identity management
+test:
+  descope-mcp-authn:
+  - file: ${versionRoot}/integrations/auth/descope.md
+    path: descope-mcp-authn
 ---
 
 [Descope](https://www.descope.com/) is an authentication and user management platform. agentgateway can validate JWTs issued by Descope to protect your MCP servers.
@@ -29,10 +33,11 @@ mcp:
       exposeHeaders: ["Mcp-Session-Id"]
     mcpAuthentication:
       mode: strict
-      issuer: <YOUR_ISSUER_URL>
+      issuer: https://api.descope.com/v1/apps/agentic/<YOUR_PROJECT_ID>/<YOUR_SERVER_ID>
       audiences: [<YOUR_MCP_SERVER_URL>]
-      jwks:
-        url: https://api.descope.com/<YOUR_PROJECT_ID>/.well-known/jwks.json
+      provider:
+        descope: {}
+      clientId: <YOUR_CLIENT_ID>
       resourceMetadata:
         resource: <YOUR_MCP_SERVER_URL>
         scopesSupported:
@@ -46,9 +51,14 @@ mcp:
         args: ["@modelcontextprotocol/server-everything"]
 ```
 
-- `<YOUR_ISSUER_URL>`: Copy this from the **Connection Information** section of your [MCP Server](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) configuration in the Descope Console.
-- `<YOUR_PROJECT_ID>`: Found in the Descope Console under **Project Settings**. The JWKS URL always uses the project ID.
+- `<YOUR_PROJECT_ID>` and `<YOUR_SERVER_ID>`: Copy the full issuer URL from the **Connection Information** section of your [MCP Server](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers) configuration in the Descope Console. Descope agentic issuers take the form `https://api.descope.com/v1/apps/agentic/<project-id>/<server-id>`, where the project ID is also listed under **Project Settings**.
 - `<YOUR_MCP_SERVER_URL>`: Your MCP server's public URL, typically ending with `/mcp`. The `audiences` value must match the `aud` claim in Descope-issued tokens, which equals your MCP server's resource URL.
+- `<YOUR_CLIENT_ID>`: A pre-registered [Client](https://docs.descope.com/agentic-identity-hub/core-components/clients) ID. See the note about `clientId` that follows.
+
+Because `provider.descope` is set, agentgateway derives the JWKS URL from the issuer and you do not need to configure `jwks`. Descope publishes keys at the project level rather than under the full agentic issuer, so agentgateway rewrites the agentic issuer to `https://api.descope.com/<project-id>/.well-known/jwks.json`. To fetch keys from somewhere else, set `jwks` explicitly to override the derived URL.
+
+> [!NOTE]
+> Setting `clientId` is recommended for Descope. Descope's Dynamic Client Registration endpoint requires a management key that MCP clients do not have, so agentgateway answers registration requests with this pre-registered client instead. If you prefer to let clients register dynamically through Descope, omit `clientId` and use [CIMD](https://docs.descope.com/agentic-identity-hub/core-components/mcp-servers/registration-methods#client-id-metadata-documents-cimd) instead.
 
 ## Descope setup
 
@@ -114,13 +124,20 @@ You can use authorization with agentgateway based on your existing Descope roles
 policies:
   mcpAuthentication:
     mode: strict
-    issuer: <YOUR_ISSUER_URL>
+    issuer: https://api.descope.com/v1/apps/agentic/<YOUR_PROJECT_ID>/<YOUR_SERVER_ID>
     audiences: [<YOUR_MCP_SERVER_URL>]
-    jwks:
-      url: https://api.descope.com/<YOUR_PROJECT_ID>/.well-known/jwks.json
+    provider:
+      descope: {}
+    resourceMetadata:
+      resource: <YOUR_MCP_SERVER_URL>
+      scopesSupported:
+      - read:all
+      bearerMethodsSupported:
+      - header
   authorization:
     rules:
-      # Check for a specific Descope role
+    # Check for a specific Descope role
+    - '"Tenant Admin" in jwt.roles'
 ```
 
 > [!NOTE]
@@ -134,3 +151,58 @@ policies:
 - [Descope Clients](https://docs.descope.com/agentic-identity-hub/core-components/clients)
 - [Descope MCP authorization](https://docs.descope.com/mcp)
 - [MCP authentication]({{< link-hextra path="/configuration/security/mcp-authn" >}})
+
+{{< doc-test paths="descope-mcp-authn" >}}
+{{< reuse "agw-docs/snippets/install-agentgateway-binary.md" >}}
+{{< /doc-test >}}
+
+{{< doc-test paths="descope-mcp-authn" >}}
+# WHAT THIS TEST VALIDATES:
+#   * The Descope mcpAuthentication examples on this page (an agentic issuer,
+#     audiences, the descope provider, clientId, and resourceMetadata) are
+#     accepted by agentgateway, including the role-based authorization variant.
+#   * The test points jwks at a local file instead of letting agentgateway derive
+#     the project-level Descope JWKS URL, so it runs without a live Descope project.
+# WHAT THIS TEST DOES NOT VALIDATE (and why):
+#   * The rewrite of the agentic issuer to the project-level JWKS URL, the proxied
+#     client registration endpoint, and runtime token verification. Each of these
+#     requires a live Descope project and a signed JWT that this page does not
+#     stand up.
+mkdir -p manifests/jwt
+cat <<'EOF' > manifests/jwt/pub-key
+{"keys": [{"kty": "RSA", "kid": "test", "use": "sig", "alg": "RS256", "n": "teXe4sfDoHQR5YUos3nsY_Ax6J2xrgXnIfUziaTWJ4nljejLVyg8m0g6SK9zrSaCvLm9GxAhpaJ_48RalwqDt4spBPQ8uvr-54jHrECboAbTxhy2T-oXP80Duz0xauSDVlyA_xenoCA24MFJ1rgHppy1F1eYTD-CQ-IxhXLNm5mE3rJufP_pdnMy0q6acXSfPtEzMJY3BYNV5umqimkOgH9PqQWd1RAgYdE7z5fvdCb4T4K667rRRT75PqRB4GJgSY-zQrC4CEVCw_ql7bfdouFcxXwsyh7AfImIEamA1LMODvMXVZWkZ8V0w_VEK6NHqr-BGOBVAUfRqYAEPxfaIw", "e": "AQAB"}]}
+EOF
+cat <<'EOF' > config-descope.yaml
+mcp:
+  port: 3000
+  policies:
+    cors:
+      allowOrigins: ["*"]
+      allowHeaders: ["*"]
+      exposeHeaders: ["Mcp-Session-Id"]
+    mcpAuthentication:
+      mode: strict
+      issuer: https://api.descope.com/v1/apps/agentic/P2abc123/mcp-server
+      audiences: [https://mcp.example.com/mcp]
+      provider:
+        descope: {}
+      clientId: my-client-id
+      jwks:
+        file: ./manifests/jwt/pub-key
+      resourceMetadata:
+        resource: https://mcp.example.com/mcp
+        scopesSupported:
+          - read:all
+        bearerMethodsSupported:
+          - header
+    authorization:
+      rules:
+      - '"Tenant Admin" in jwt.roles'
+  targets:
+    - name: everything
+      stdio:
+        cmd: npx
+        args: ["@modelcontextprotocol/server-everything"]
+EOF
+agentgateway -f config-descope.yaml --validate-only
+{{< /doc-test >}}
