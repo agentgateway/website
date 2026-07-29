@@ -325,6 +325,8 @@ traffic:
             port: 8080
 ```
 
+{{< version exclude-if="2.2.x" >}}
+
 ## Use JWT claims in transformations {#jwt-claims-transformations}
 
 After a JWT is validated, its claims are available to [CEL expressions]({{< link-hextra path="/reference/cel/" >}}) through the `jwt` context variable. You can use these claims in [transformations]({{< link-hextra path="/traffic-management/transformations/" >}}) to forward the authenticated user's identity to your backends, or to route requests based on a claim. See [Claim-based routing](#claim-based-routing).
@@ -532,12 +534,14 @@ You can route requests to different backends based on a JWT claim, such as sendi
    > [!NOTE]
    > This example assumes that you have `premium-backend` and `free-backend` Services in the namespace. Replace them with your own backends.
 
+{{< /version >}}
+
 ## Cleanup
 
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```sh
-kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
+kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} jwt-auth-policy -n {{< reuse "agw-docs/snippets/namespace.md" >}}
 kubectl delete httproute tier-routing -n {{< reuse "agw-docs/snippets/namespace.md" >}} --ignore-not-found
 kubectl delete ns keycloak
 ```
