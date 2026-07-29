@@ -38,6 +38,12 @@ routes:
       - agentgateway
       jwks:
         url: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs
+      resourceMetadata:
+        resource: agentgateway
+        scopesSupported:
+        - read:all
+        bearerMethodsSupported:
+        - header
 ```
 
 ## Docker Compose example
@@ -92,6 +98,12 @@ policies:
     audiences: [agentgateway]
     jwks:
       url: https://keycloak.example.com/realms/myrealm/protocol/openid-connect/certs
+    resourceMetadata:
+      resource: agentgateway
+      scopesSupported:
+      - read:all
+      bearerMethodsSupported:
+      - header
   authorization:
     rules:
     # Check for admin role in token

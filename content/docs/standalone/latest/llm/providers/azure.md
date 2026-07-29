@@ -139,9 +139,9 @@ routes:
       azure:
         explicitConfig:
           clientSecret:
-            tenantId: "<your-tenant-id>"
-            clientId: "<your-client-id>"
-            clientSecret: "<your-client-secret>"
+            tenant_id: "<your-tenant-id>"
+            client_id: "<your-client-id>"
+            client_secret: "<your-client-secret>"
   backends:
   - ai:
       name: azure
@@ -180,9 +180,9 @@ routes:
       azure:
         explicitConfig:
           clientSecret:
-            tenantId: "<your-tenant-id>"
-            clientId: "<your-client-id>"
-            clientSecret: "<your-client-secret>"
+            tenant_id: "<your-tenant-id>"
+            client_id: "<your-client-id>"
+            client_secret: "<your-client-secret>"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
