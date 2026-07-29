@@ -325,7 +325,7 @@ traffic:
             port: 8080
 ```
 
-
+{{< version exclude-if="2.2.x" >}}
 
 ## Use JWT claims in transformations {#jwt-claims-transformations}
 
@@ -534,7 +534,7 @@ You can route requests to different backends based on a JWT claim, such as sendi
    > [!NOTE]
    > This example assumes that you have `premium-backend` and `free-backend` Services in the namespace. Replace them with your own backends.
 
-
+{{< /version >}}
 
 ## Cleanup
 
