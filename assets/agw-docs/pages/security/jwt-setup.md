@@ -325,7 +325,7 @@ traffic:
             port: 8080
 ```
 
-{{< version exclude-if="2.2.x" >}}
+
 
 ## Use JWT claims in transformations {#jwt-claims-transformations}
 
@@ -575,7 +575,7 @@ You can route requests to different backends based on a JWT claim, such as sendi
    EOF
    ```
 
-{{< /version >}}
+
 
 ## Cleanup
 
