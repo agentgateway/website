@@ -5,5 +5,3 @@ description: Authenticate MCP clients with your MCP server using OAuth 2.0 and s
 test: skip
 ---
 
-Authenticate MCP clients with your MCP server by using MCP auth. 
-
