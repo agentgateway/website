@@ -402,6 +402,11 @@ In this example, you add a transformation to the JWT policy that copies claims f
    #     Keycloak user UUID, so only issuer/role (deterministic) are asserted.
    #   * Claim-based routing example — Requires config/traffic the page omits: it needs
    #     premium-backend / free-backend Services that the doc tells readers to supply.
+   #
+   # The visible token block sets ACCESS_TOKEN as a shell variable; export it so that
+   # YAMLTest (a child process that interpolates ${ACCESS_TOKEN} from its environment)
+   # can read it.
+   export ACCESS_TOKEN
    {{< /doc-test >}}
 
    {{< doc-test paths="jwt-claims" >}}
