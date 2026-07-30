@@ -1787,6 +1787,7 @@ function hpSelectGroup(gid) {
     var on = t.id === 'hp-tab-' + gid;
     t.classList.toggle('active', on);
     t.setAttribute('aria-selected', on ? 'true' : 'false');
+    t.setAttribute('tabindex', on ? '0' : '-1');
   });
   document.querySelectorAll('.hp-caps-panel').forEach(function(pl) {
     var on = pl.dataset.group === gid;
@@ -1794,6 +1795,9 @@ function hpSelectGroup(gid) {
     if (on) { pl.removeAttribute('hidden'); } else { pl.setAttribute('hidden', ''); }
   });
 }
+
+// Initialize tabindex/hidden state.
+hpSelectGroup('route');
 
 // Hero tiles deep-link to a capability: open its group, then ring the card briefly.
 function hpScrollToFeat(key) {
