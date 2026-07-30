@@ -190,7 +190,6 @@ params:
   docTabs:
     - name: Documentation
       id: documentation
-      default: true
     - name: Guides
       id: guides
     - name: Reference
