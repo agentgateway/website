@@ -509,7 +509,8 @@
 .hp-page [data-feat="llm"],
 .hp-page [data-feat="inf"],
 .hp-page [data-feat="mcp"],
-.hp-page [data-feat="a2a"] { --fi: #2F6BE0; --fi-soft: rgba(68,125,252,0.10); }
+.hp-page [data-feat="a2a"],
+.hp-page [data-feat="playroute"] { --fi: #2F6BE0; --fi-soft: rgba(68,125,252,0.10); }
 /* secure */
 .hp-page [data-feat="sec"],
 .hp-page [data-feat="jwt"],
@@ -540,7 +541,8 @@
 .dark .hp-page [data-feat="llm"],
 .dark .hp-page [data-feat="inf"],
 .dark .hp-page [data-feat="mcp"],
-.dark .hp-page [data-feat="a2a"] { --fi: #7BA4FF; --fi-soft: rgba(68,125,252,0.16); }
+.dark .hp-page [data-feat="a2a"],
+.dark .hp-page [data-feat="playroute"] { --fi: #7BA4FF; --fi-soft: rgba(68,125,252,0.16); }
 .dark .hp-page [data-feat="sec"],
 .dark .hp-page [data-feat="jwt"],
 .dark .hp-page [data-feat="apikey"],
@@ -1114,6 +1116,19 @@
                 <p>Route agent-to-agent invocations between LangChain, CrewAI, ADK, and your own runtime, with identity and tracing on every hop.</p>
                 <div class="hp-feat-tags"><span class="hp-feat-tag">LangChain</span><span class="hp-feat-tag">CrewAI</span><span class="hp-feat-tag">ADK</span><span class="hp-feat-tag">Identity</span></div>
                 <div class="hp-feat-links"><a href="/docs/standalone/latest/agent/a2a/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a><a href="/docs/kubernetes/latest/agent/a2a/" class="hp-feat-link">Kubernetes docs &rarr;</a></div>
+              </div>
+            </div>
+            <div class="hp-feat" data-feat="playroute">
+              <a class="hp-feat-cover" href="/docs/standalone/latest/llm/playground/" aria-label="LLM Playground — standalone documentation"></a>
+              <div class="hp-feat-head">
+                <div>
+                  <div class="hp-feat-title">LLM Playground</div>
+                </div>
+              </div>
+              <div class="hp-feat-body">
+                <p>Try a route before you ship it: pick a model, send a prompt from the admin UI, and see which backend actually served the request.</p>
+                <div class="hp-feat-tags"><span class="hp-feat-tag">Admin UI</span><span class="hp-feat-tag">Pick a model</span><span class="hp-feat-tag">Compare</span></div>
+                <div class="hp-feat-links"><a href="/docs/standalone/latest/llm/playground/" class="hp-feat-link hp-feat-link-primary">Standalone docs &rarr;</a></div>
               </div>
             </div>
           </div>
