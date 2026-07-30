@@ -1807,7 +1807,8 @@ function hpScrollToFeat(key) {
   if (panel) hpSelectGroup(panel.dataset.group);
   document.querySelectorAll('.hp-feat.open').forEach(function(f) { f.classList.remove('open'); });
   feat.classList.add('open');
-  feat.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  feat.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'center' });
   setTimeout(function() { feat.classList.remove('open'); }, 2400);
 }
 
