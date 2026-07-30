@@ -210,7 +210,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    EOF
    ```
 
-4. Create a backend-level {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `crossAppAccess` method to the `httpbin` Service. The `identityProvider` leg authenticates as `agent-client` to mint the ID-JAG, and the `resourceAuthorizationServer` leg authenticates as `resource-client` to exchange the ID-JAG for a backend access token. The `audience` must equal the resource identifier that `resource-client` is registered with. The `subjectToken.source` reads the inbound ID token as the subject of the exchange; because the route-level JWT policy validates and strips the `Authorization` header, this example reads the validated token from the `jwt.rawToken` CEL variable instead of the header.
+4. Create a backend-level {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `crossAppAccess` method to the `httpbin` Service. The `identityProvider` leg authenticates as `agent-client` to mint the ID-JAG, and the `resourceAuthorizationServer` leg authenticates as `resource-client` to exchange the ID-JAG for a backend access token. The `audience` must equal the resource identifier that `resource-client` is registered with. The `subjectToken.source` reads the inbound ID token as the subject of the exchange. Because the route-level JWT policy validates and strips the `Authorization` header, this example reads the validated token from the `jwt.rawToken` CEL variable instead of the header.
 
    ```yaml {paths="cross-app-access"}
    kubectl apply -f- <<EOF
