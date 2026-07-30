@@ -210,7 +210,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    EOF
    ```
 
-4. Create a backend-level {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `crossAppAccess` method to the `httpbin` Service. The `identityProvider` leg authenticates as `agent-client` to mint the ID-JAG, and the `resourceAuthorizationServer` leg authenticates as `resource-client` to exchange the ID-JAG for a backend access token. The `audience` must equal the resource identifier that `resource-client` is registered with.
+4. Create a backend-level {{< reuse "agw-docs/snippets/policy.md" >}} that attaches the `crossAppAccess` method to the `httpbin` Service. The `identityProvider` leg authenticates as `agent-client` to mint the ID-JAG, and the `resourceAuthorizationServer` leg authenticates as `resource-client` to exchange the ID-JAG for a backend access token. The `audience` must equal the resource identifier that `resource-client` is registered with. The `subjectToken.source` reads the inbound ID token as the subject of the exchange; because the route-level JWT policy validates and strips the `Authorization` header, this example reads the validated token from the `jwt.rawToken` CEL variable instead of the header.
 
    ```yaml {paths="cross-app-access"}
    kubectl apply -f- <<EOF
@@ -249,6 +249,9 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
                method: ClientSecretBasic
                secretRef:
                  name: resource-oauth-client
+           subjectToken:
+             source:
+               expression: jwt.rawToken.unredacted()
            audience: https://resource.idjag.demo
            scopes:
            - todos.read
@@ -262,6 +265,7 @@ Configure agentgateway to validate the inbound ID token and perform the two-leg 
    | `identityProvider` | The user's IdP authorization server token endpoint, referenced as an {{< reuse "agw-docs/snippets/backend.md" >}} through `backendRef`, with the token endpoint `path`. Agentgateway sends the validated ID token as the RFC 8693 `subject_token` on this leg. |
    | `resourceAuthorizationServer` | The resource authorization server token endpoint, in the same shape as `identityProvider`. This leg uses the RFC 7523 JWT-bearer grant, with the ID-JAG from the IdP leg sent as the assertion. This is a separate client registration from the IdP one. |
    | `clientAuth` | Client authentication for each token endpoint. `method` is `ClientSecretBasic` (default), `ClientSecretPost`, or `PrivateKeyJwt`. Use `secretRef` to read the client secret from a Kubernetes Secret. |
+   | `subjectToken` | Optional source of the subject token for the exchange. `source` defaults to the `Authorization` Bearer header. When a route-level JWT policy validates the inbound token, it strips the `Authorization` header, so set `source.expression` to the `jwt.rawToken.unredacted()` CEL expression to read the validated token instead. |
    | `audience` | Required identifier of the resource authorization server. The issued ID-JAG is bound to this value. |
    | `resources` | Optional protected resource or API identifiers ([RFC 8707](https://datatracker.ietf.org/doc/html/rfc8707)), sent on the token exchange leg. Configure these explicitly when the authorization server expects them. |
    | `scopes` | Optional scopes to request. The authorization server might grant a subset. |
