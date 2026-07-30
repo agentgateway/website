@@ -1,5 +1,5 @@
 ---
-title: Integrations
+title: Guides
 weight: 65
 icon: hub
 description: Connect agentgateway with popular tools, platforms, and services

@@ -402,3 +402,14 @@ h6 {
   /* Avoid breaking inside short blocks; don't force headings to next page */
   blockquote, figure, img { break-inside: avoid; }
 }
+
+/* ── Tab-navigation band: merged header (issue solo-io/docs#3164) ────────────
+   When the band is present it supplies the header's single bottom divider (its
+   own hairline), so drop agw's fixed navbar's bottom border on those pages — the
+   navbar and the tab row then read as one header block instead of a double rule.
+   Scoped with :has() so non-band docs pages and all marketing pages keep the
+   navbar divider. agw-local because the theme can't target agw's custom
+   .desktop-navbar (the shared Hextra navbar is a separate, theme-side concern). */
+body:has(.docs-tabs-band) .desktop-navbar {
+  border-bottom-color: transparent;
+}
