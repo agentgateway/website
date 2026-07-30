@@ -372,15 +372,34 @@ ID_TOKEN=$(curl -s --max-time 15 -X POST "http://${INGRESS_GW_ADDRESS}:80/realms
   -d username=alice -d password=alice -d scope=openid | jq -r .id_token)
 test -n "$ID_TOKEN" -a "$ID_TOKEN" != "null" || { echo "FAILED: could not mint alice's ID token"; exit 1; }
 
-AZP=$(curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
-  -H "Authorization: Bearer $ID_TOKEN" | python3 -c '
+# The crossAppAccess exchange (remote JWKS fetch + backend policy programming) can lag route
+# readiness, so poll until the backend reports azp=resource-client. A single-shot request can catch
+# the data plane mid-programming and get an empty or non-JSON response, so this tolerates both.
+AZP=""
+RESP=""
+for i in $(seq 1 30); do
+  RESP=$(curl -s --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com" \
+    -H "Authorization: Bearer $ID_TOKEN")
+  AZP=$(printf '%s' "$RESP" | python3 -c '
 import sys,json,base64
-h=json.load(sys.stdin)["headers"]
-tok=(h.get("Authorization") or h.get("authorization"))
-tok=(tok[0] if isinstance(tok,list) else tok).split()[1]
-print(json.loads(base64.urlsafe_b64decode(tok.split(".")[1]+"=="))["azp"])')
+try:
+    h=json.load(sys.stdin)["headers"]
+    tok=h.get("Authorization") or h.get("authorization")
+    tok=(tok[0] if isinstance(tok,list) else tok).split()[1]
+    print(json.loads(base64.urlsafe_b64decode(tok.split(".")[1]+"=="))["azp"])
+except Exception:
+    pass')
+  [ "$AZP" = "resource-client" ] && break
+  sleep 2
+done
 echo "backend token azp: $AZP"
-[ "$AZP" = "resource-client" ] || { echo "FAILED: expected azp=resource-client, got '$AZP'"; exit 1; }
+if [ "$AZP" != "resource-client" ]; then
+  CODE=$(curl -s -o /dev/null -w '%{http_code}' --max-time 15 "http://${INGRESS_GW_ADDRESS}:80/headers" \
+    -H "host: www.example.com" -H "Authorization: Bearer $ID_TOKEN")
+  echo "FAILED: expected azp=resource-client, got '$AZP' (last HTTP status: $CODE)"
+  echo "last response body (first 500 chars): $(printf '%s' "$RESP" | head -c 500)"
+  exit 1
+fi
 
 NO_TOKEN=$(curl -s -o /dev/null -w '%{http_code}' "http://${INGRESS_GW_ADDRESS}:80/headers" -H "host: www.example.com")
 [ "$NO_TOKEN" = "401" ] || { echo "FAILED: expected 401 with no token, got $NO_TOKEN"; exit 1; }
