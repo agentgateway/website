@@ -1,68 +1,49 @@
-Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the Kubernetes Gateway API Inference Extension to route requests to AI inference workloads, such as Large Language Models (LLMs) that run in your Kubernetes environment.
+Use {{< reuse "agw-docs/snippets/kgateway.md" >}} with the Kubernetes Gateway
+API Inference Extension to route requests to Large Language Model (LLM)
+workloads in your Kubernetes environment.
 
-This page covers Kubernetes Gateway API mode, where agentgateway routes to
-`InferencePool` backends from Gateway API resources. If you want to run the
-Endpoint Picker Extension (EPP) with agentgateway as a standalone sidecar proxy,
-see the standalone request scheduler guide instead.
+The Gateway API Inference Extension defines the `InferencePool` API and the
+protocol between gateways and endpoint pickers. The
+[llm-d Router](https://github.com/llm-d/llm-d-router) provides a
+production-oriented Endpoint Picker (EPP) implementation. In Gateway mode,
+agentgateway routes to the `InferencePool`, and the llm-d Router selects a
+model server from the pool.
 
 For more information, see the following resources.
 
 {{< cards >}}
-  {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Kubernetes Gateway API Inference Extension docs" icon="external-link">}}
+  {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/" title="Gateway API Inference Extension" icon="external-link">}}
+  {{< card link="https://llm-d.ai/docs/infrastructure/gateway" title="llm-d gateway infrastructure" icon="external-link">}}
+  {{< card link="https://llm-d.ai/docs/infrastructure/gateway/agentgateway" title="llm-d with agentgateway" icon="external-link">}}
   {{< card link="https://agentgateway.dev/docs/standalone/main/inference/" title="Standalone inference routing" >}}
 {{< /cards >}}
 
-## Before you begin
-
-To use the Inference Extension with {{< reuse "agw-docs/snippets/kgateway.md" >}}, [upgrade your Helm installation]({{< link-hextra path="/operations/upgrade/" >}}) with the `inferenceExtension.enabled=true` value. 
-
-```bash
-helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
-  --version $AGENTGATEWAY_VERSION \
-  --set inferenceExtension.enabled=true \
-  --reuse-values
-```
-
 ## About {#about}
 
-The Inference Extension extends the Gateway API with two key resources, an InferencePool and an InferenceModel, as shown in the following diagram.
+An `InferencePool` groups model server pods into a routable Gateway API
+backend. Its `endpointPickerRef` identifies the llm-d Router EPP that selects a
+pod for each request.
+
+{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} implements the
+gateway side of the Inference Extension protocol. The following diagram shows
+the request flow.
 
 ```mermaid
-graph TD
-    InferencePool --> InferenceModel_v1["InferenceModel v1"]
-    InferencePool --> InferenceModel_v2["InferenceModel v2"]
-    InferencePool --> InferenceModel_v3["InferenceModel v3"]
+graph LR
+    Client --> Gateway
+    Gateway --> HTTPRoute
+    HTTPRoute --> InferencePool
+    InferencePool --> EPP["llm-d Router EPP"]
+    EPP --> ModelServer["model server"]
 ```
 
-The InferencePool groups together InferenceModels of LLM workloads into a routable backend resource that the Gateway API can route inference requests to. An InferenceModel represents not just a single LLM model, but a specific configuration that includes information such as the version and criticality. The InferencePool uses this information to ensure fair consumption of compute resources across competing LLM workloads and share routing decisions with the Gateway API.
+The EPP returns its selected endpoint to agentgateway. Agentgateway then sends
+the request to that model server and returns the response to the client.
 
-### {{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} with Inference Extension {#integration}
+## Quickstart {#setup}
 
-{{< reuse "/agw-docs/snippets/agentgateway-capital.md" >}} integrates with the Inference Extension as a supported Gateway API provider. A Gateway can route requests to InferencePools, as shown in the following diagram.
-
-{{< reuse "agw-docs/snippets/inference-diagram.md" >}}
-
-The client sends an inference request to get a response from a local LLM workload. The Gateway receives the request and routes to the InferencePool as a backend. Then, the InferencePool selects a specific InferenceModel to route the request to, based on criteria such as the least-loaded model or highest criticality. The Gateway returns the response to the client.
-
-## Set up Inference Extension {#setup}
-
-Refer to the **Agentgateway** tabs in the **Getting started** guide in the Inference Extension docs.
-
-{{< cards >}}
-  {{< card link="https://gateway-api-inference-extension.sigs.k8s.io/guides/implementers/" title="Inference Extension getting started guide" icon="external-link">}}
-{{< /cards >}}
-
-### Quickstart
-
-In this quickstart, you deploy the following components.
-
-- llm-d-inference-sim for simulated model serving.
-- A local model configuration. Qwen3 is used in this example.
-- Kubernetes Gateway API Inference Extension.
-- {{< reuse "agw-docs/snippets/agentgateway-capital.md" >}} with inference enabled.
-- The llm-d InferencePool via Helm, configured for Qwen3.
-
-Steps:
+In this quickstart, you deploy a simulated model server, the Gateway API
+Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
 
 1. Deploy the Qwen3 model server simulator. The
    [llm-d-inference-sim](https://github.com/llm-d/llm-d-inference-sim)
@@ -75,6 +56,7 @@ Steps:
    kind: Deployment
    metadata:
      name: vllm-qwen3-32b
+     namespace: default
    spec:
      replicas: 3
      selector:
@@ -88,17 +70,16 @@ Steps:
        spec:
          containers:
            - name: vllm-sim
-             image: "ghcr.io/llm-d/llm-d-inference-sim:v0.8.2"
-             imagePullPolicy: Always
+             image: ghcr.io/llm-d/llm-d-inference-sim:v0.8.2
              args:
-             - "--model"
-             - "Qwen/Qwen3-32B"
-             - "--port"
-             - "8000"
-             - "--max-loras"
-             - "2"
-             - "--lora-modules"
-             - '{"name": "food-review-1"}'
+               - --model
+               - Qwen/Qwen3-32B
+               - --port
+               - "8000"
+               - --max-loras
+               - "2"
+               - --lora-modules
+               - '{"name": "food-review-1"}'
              env:
                - name: POD_NAME
                  valueFrom:
@@ -113,65 +94,47 @@ Steps:
                  name: http
                  protocol: TCP
              resources:
-                requests:
-                  cpu: 10m
+               requests:
+                 cpu: 10m
    EOF
    ```
 
    Verify that the simulator deployment is available.
 
    ```bash
-   kubectl wait --for=condition=available --timeout=60s deployment/vllm-qwen3-32b
+   kubectl wait --for=condition=available --timeout=120s \
+     deployment/vllm-qwen3-32b
    ```
 
-2. Install the CRDs for the Kubernetes Gateway API Inference Extension.
+2. Install the Gateway API and Gateway API Inference Extension Custom
+   Resource Definitions (CRDs).
 
    ```bash
-   kubectl apply -f https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
+   kubectl apply --server-side -f \
+     https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/standard-install.yaml
+
+   kubectl apply -f \
+     https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
    ```
 
-3. Install the Kubernetes Gateway API CRDs, {{< reuse "agw-docs/snippets/kgateway.md" >}}, and the {{< reuse "agw-docs/snippets/kgateway.md" >}} CRDs.
-
-   ```bash
-   kubectl apply --server-side -f https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
-   ```
+3. Install agentgateway with Inference Extension support.
 
    ```bash
    helm upgrade -i --create-namespace \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
+     --version v1.4.1 \
      {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
    ```
 
    ```bash
-   helm upgrade -i -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}} \
-     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
-     --set inferenceExtension.enabled=true
+   helm upgrade -i \
+     --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
+     --version v1.4.1 \
+     --set inferenceExtension.enabled=true \
+     {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}}
    ```
 
-4. Deploy the InferencePool and the Endpoint Picker extension (EPP/llm-d) via Helm. The InferencePool acts as a logical grouping of simulated AI model servers for load balancing and routing inference requests. The EPP provides intelligent selection among available model servers.
-
-   > [!NOTE]
-   > The `GATEWAY_PROVIDER` is set to `none` because you install your own gateway provider, {{< reuse "agw-docs/snippets/kgateway.md" >}}.
-
-   ```bash
-   export IGW_CHART_VERSION=v1.5.0
-   export GATEWAY_PROVIDER=none
-
-   helm install vllm-qwen3-32b \
-     --set inferencePool.modelServers.matchLabels.app=vllm-qwen3-32b \
-     --set provider.name=$GATEWAY_PROVIDER \
-     --version $IGW_CHART_VERSION \
-     oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
-   ```
-
-   Verify that the InferencePool is deployed.
-
-   ```bash
-   kubectl get inferencepool
-   ```
-
-5. Deploy a Gateway and HTTPRoute for inference routing. The HTTPRoute routes to the InferencePool that you created in the previous step. The `inferencePool.modelServers.matchLabels.app` selector matches any pod with the `vllm-qwen3-32b` label from step 1.
+4. Create an agentgateway `Gateway`.
 
    ```yaml
    kubectl apply -f - <<EOF
@@ -179,69 +142,75 @@ Steps:
    kind: Gateway
    metadata:
      name: inference-gateway
+     namespace: default
    spec:
      gatewayClassName: {{< reuse "agw-docs/snippets/gatewayclass.md" >}}
      listeners:
-     - name: http
-       port: 80
-       protocol: HTTP
-   ---
-   apiVersion: gateway.networking.k8s.io/v1
-   kind: HTTPRoute
-   metadata:
-     name: llm-route
-   spec:
-     parentRefs:
-     - group: gateway.networking.k8s.io
-       kind: Gateway
-       name: inference-gateway
-     rules:
-     - backendRefs:
-       - group: inference.networking.k8s.io
-         kind: InferencePool
-         name: vllm-qwen3-32b
-       matches:
-       - path:
-           type: PathPrefix
-           value: /
-       timeouts:
-         request: 300s
+       - name: http
+         port: 80
+         protocol: HTTP
    EOF
    ```
 
-6. Verify the end-to-end flow. A request flows through the following path.
-
-   ```mermaid
-   graph LR
-       Client -->|curl| Gateway
-       Gateway -->|path prefix /| HTTPRoute
-       HTTPRoute --> InferencePool
-       InferencePool -->|selects model server| Sim["simulator pod"]
-       Sim -->|response| Client
-   ```
-
-   Send a test request to the inference gateway.
+   Verify that the Gateway is programmed.
 
    ```bash
-   IP=$(kubectl get gateway/inference-gateway -o jsonpath='{.status.addresses[0].value}')
-   PORT=80
-
-   curl -i ${IP}:${PORT}/v1/completions -H 'Content-Type: application/json' -d '{
-     "model": "Qwen/Qwen3-32B",
-     "prompt": "What is the warmest city in the USA?",
-     "max_tokens": 100,
-     "temperature": 0.5
-   }'
+   kubectl wait --for=condition=Programmed --timeout=120s \
+     gateway/inference-gateway
    ```
 
-   Example output:
+5. Install the llm-d Router Gateway chart. The chart creates the
+   `InferencePool`, the llm-d Router EPP deployment and service, and an
+   `HTTPRoute` that attaches to the Gateway.
 
-   ```
-   HTTP/1.1 200 OK
-   date: Sat, 11 April 2026 19:54:07 GMT
-   server: uvicorn
-   content-type: application/json
-   transfer-encoding: chunked
+   ```bash
+   export ROUTER_CHART_VERSION=v0.9.0
 
-   {"choices":[{"finish_reason":"length","index":0,"text":" The warmest city in the United States is Phoenix, Arizona..."}],"model":"Qwen/Qwen3-32B","object":"text_completion","usage":{"completion_tokens":100,"prompt_tokens":10,"total_tokens":110}}
+   helm upgrade -i vllm-qwen3-32b \
+     oci://ghcr.io/llm-d/charts/llm-d-router-gateway \
+     --version $ROUTER_CHART_VERSION \
+     --set router.modelServers.matchLabels.app=vllm-qwen3-32b \
+     --set router.epp.resources.requests.cpu=100m \
+     --set router.epp.resources.requests.memory=128Mi \
+     --set router.epp.resources.limits.memory=512Mi \
+     --set provider.name=none \
+     --set httpRoute.create=true \
+     --set httpRoute.inferenceGatewayName=inference-gateway
    ```
+
+   The `none` provider value prevents the chart from creating resources for a
+   different gateway implementation. Agentgateway still processes the
+   chart-created `HTTPRoute` and `InferencePool`.
+
+   Verify the pool, EPP image, and route.
+
+   ```bash
+   kubectl get inferencepool vllm-qwen3-32b
+   kubectl get deployment vllm-qwen3-32b-epp \
+     -o jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+   kubectl get httproute vllm-qwen3-32b
+   ```
+
+   The deployment uses the released
+   `ghcr.io/llm-d/llm-d-router-endpoint-picker:v0.9.0` image.
+
+6. Send a request through agentgateway.
+
+   ```bash
+   kubectl port-forward service/inference-gateway 8080:80
+   ```
+
+   In a separate terminal, send the request.
+
+   ```bash
+   curl -i http://localhost:8080/v1/completions \
+     -H 'Content-Type: application/json' \
+     -d '{
+       "model": "Qwen/Qwen3-32B",
+       "prompt": "What is the warmest city in the USA?",
+       "max_tokens": 100,
+       "temperature": 0.5
+     }'
+   ```
+
+   The response has an HTTP `200 OK` status.
