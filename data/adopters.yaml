@@ -15,3 +15,8 @@ adopters:
     logo_dark: "/adopters/solo-io-dark.png"
     logo_light: "/adopters/solo-io-light.png"
     website: "https://solo.io/"
+
+  - name: "iFlytek"
+    logo_dark: "/adopters/iflytek-dark.png"
+    logo_light: "/adopters/iflytek-light.png"
+    website: "https://www.iflytek.com/"
