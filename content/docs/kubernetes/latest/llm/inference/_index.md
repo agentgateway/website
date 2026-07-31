@@ -3,6 +3,7 @@ title: Inference routing
 weight: 30
 icon: alt_route
 description: Route AI inference requests to LLM workloads using the Kubernetes Gateway API Inference Extension.
+url: /docs/kubernetes/latest/inference/
 test: skip
 ---
 
