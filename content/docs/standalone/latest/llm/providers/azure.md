@@ -334,7 +334,7 @@ llm:
       azureProjectName: "your-project-name"
 ```
 
-{{< reuse "agw-docs/snippets/review-configuration.md" >}}
+{{< reuse "agw-docs/snippets/review-table.md" >}}
 
 | Setting | Description |
 |---------|-------------|
