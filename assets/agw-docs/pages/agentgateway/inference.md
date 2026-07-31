@@ -5,9 +5,9 @@ workloads in your Kubernetes environment.
 The Gateway API Inference Extension defines the `InferencePool` API and the
 protocol between gateways and endpoint pickers. The
 [llm-d Router](https://github.com/llm-d/llm-d-router) provides a
-production-oriented Endpoint Picker (EPP) implementation. In Gateway mode,
-agentgateway routes to the `InferencePool`, the llm-d Router selects a model
-server from the pool, and agentgateway routes to that model server endpoint.
+production-oriented Endpoint Picker (EPP) implementation. agentgateway routes
+to the `InferencePool`, the llm-d Router selects a model server from the pool,
+and agentgateway routes to that model server endpoint.
 
 For more information, see the following resources.
 
