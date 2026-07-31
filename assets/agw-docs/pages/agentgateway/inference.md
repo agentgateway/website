@@ -111,7 +111,7 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
 
    ```bash
    kubectl apply --server-side -f \
-     https://github.com/kubernetes-sigs/gateway-api/releases/download/v1.6.0/standard-install.yaml
+     https://github.com/kubernetes-sigs/gateway-api/releases/download/v{{< reuse "agw-docs/versions/k8s-gw-version.md" >}}/standard-install.yaml
 
    kubectl apply -f \
      https://github.com/kubernetes-sigs/gateway-api-inference-extension/releases/download/v1.5.0/manifests.yaml
@@ -122,14 +122,14 @@ Inference Extension CRDs, agentgateway, and the llm-d Router in Gateway mode.
    ```bash
    helm upgrade -i --create-namespace \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --version v1.4.1 \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
      {{< reuse "agw-docs/snippets/helm-kgateway-crds.md" >}} {{< reuse "agw-docs/snippets/helm-path-crds.md" >}}
    ```
 
    ```bash
    helm upgrade -i \
      --namespace {{< reuse "agw-docs/snippets/namespace.md" >}} \
-     --version v1.4.1 \
+     --version {{< reuse "agw-docs/versions/helm-version-flag.md" >}} \
      --set inferenceExtension.enabled=true \
      {{< reuse "agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "agw-docs/snippets/helm-path.md" >}}
    ```
