@@ -2,6 +2,7 @@
 title: Multiple inference pools
 weight: 46
 description: Route inference requests to multiple InferencePools based on the model name in the request body.
+url: /docs/kubernetes/latest/llm/multiple-inference-pools/
 test: skip
 ---
 
@@ -29,8 +30,9 @@ For parser options, see the
 
 Historically, Gateway API Inference Extension Body Based Router (BBR) handled model-name routing as
 a separate payload-processing service in the request path. The gateway called
-that processor through Envoy external processing, the processor parsed the body
-and added routing metadata, and the route matched on that metadata. That
+that processor through [ExtProc external processing](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_proc_filter),
+the processor parsed the body and added routing metadata, and the route matched
+on that metadata. That
 payload-processing component now lives in llm-d as the
 [llm-d inference payload processor](https://github.com/llm-d/llm-d-inference-payload-processor);
 the EPP and some related API types have also moved into llm-d.
@@ -75,13 +77,13 @@ Complete the [inference routing quickstart]({{< link-hextra path="/inference/#qu
 - A `vllm-qwen3-32b` simulator deployment.
 - A `vllm-qwen3-32b` `InferencePool`.
 - An `inference-gateway` Gateway.
-- An `llm-route` HTTPRoute that routes directly to the Qwen3 `InferencePool`.
+- A `vllm-qwen3-32b` HTTPRoute that routes directly to the Qwen3
+  `InferencePool`.
 
 Set the same variables that the quickstart uses.
 
 ```bash
-export IGW_CHART_VERSION=v1.5.0
-export GATEWAY_PROVIDER=none
+export ROUTER_CHART_VERSION=v0.9.0
 ```
 
 ## Deploy a second model server
@@ -97,6 +99,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: vllm-deepseek-r1
+  namespace: default
 spec:
   replicas: 1
   selector:
@@ -149,9 +152,9 @@ kubectl wait --for=condition=available --timeout=60s deployment/vllm-deepseek-r1
 
 ## Deploy a second InferencePool
 
-Install another `InferencePool` and Endpoint Picker Extension (EPP) with the
-same chart that the quickstart uses. The pool selects the DeepSeek simulator
-pod by its `app: vllm-deepseek-r1` label.
+Install another `InferencePool` and llm-d Router EPP with the same chart that
+the quickstart uses. The pool selects the DeepSeek simulator pod by its
+`app: vllm-deepseek-r1` label.
 
 The EPP resource settings in this example keep the deployment small enough for
 local testing environments such as kind. Size EPP resources for your production
@@ -159,13 +162,13 @@ traffic volume, request parsers, and scheduling plugins.
 
 ```bash
 helm install vllm-deepseek-r1 \
-  --set inferencePool.modelServers.matchLabels.app=vllm-deepseek-r1 \
-  --set inferenceExtension.resources.requests.cpu=10m \
-  --set inferenceExtension.resources.requests.memory=128Mi \
-  --set inferenceExtension.resources.limits.memory=512Mi \
-  --set provider.name=$GATEWAY_PROVIDER \
-  --version $IGW_CHART_VERSION \
-  oci://registry.k8s.io/gateway-api-inference-extension/charts/inferencepool
+  oci://ghcr.io/llm-d/charts/llm-d-router-gateway \
+  --version $ROUTER_CHART_VERSION \
+  --set router.modelServers.matchLabels.app=vllm-deepseek-r1 \
+  --set router.epp.resources.requests.cpu=10m \
+  --set router.epp.resources.requests.memory=128Mi \
+  --set router.epp.resources.limits.memory=512Mi \
+  --set provider.name=none
 ```
 
 Verify that both pools are available.
@@ -232,7 +235,8 @@ kubectl apply -f - <<EOF
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: llm-route
+  name: vllm-qwen3-32b
+  namespace: default
 spec:
   parentRefs:
   - group: gateway.networking.k8s.io
@@ -377,7 +381,7 @@ If requests do not route as expected, check the following items.
 {{< reuse "agw-docs/snippets/cleanup.md" >}}
 
 ```bash
-kubectl delete httproute llm-route
+kubectl delete httproute vllm-qwen3-32b
 kubectl delete {{< reuse "agw-docs/snippets/policy.md" >}} inference-model-routing
 helm uninstall vllm-deepseek-r1
 kubectl delete deployment vllm-deepseek-r1
