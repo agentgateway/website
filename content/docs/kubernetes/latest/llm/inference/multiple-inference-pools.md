@@ -30,8 +30,9 @@ For parser options, see the
 
 Historically, Gateway API Inference Extension Body Based Router (BBR) handled model-name routing as
 a separate payload-processing service in the request path. The gateway called
-that processor through Envoy external processing, the processor parsed the body
-and added routing metadata, and the route matched on that metadata. That
+that processor through [ExtProc external processing](https://www.envoyproxy.io/docs/envoy/latest/configuration/http/http_filters/ext_proc_filter),
+the processor parsed the body and added routing metadata, and the route matched
+on that metadata. That
 payload-processing component now lives in llm-d as the
 [llm-d inference payload processor](https://github.com/llm-d/llm-d-inference-payload-processor);
 the EPP and some related API types have also moved into llm-d.
