@@ -151,9 +151,9 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
      --timeout=180s
    ```
 
-   Do not install the llm-d Router Helm chart in this workflow. KServe owns the
-   router deployment and uses the llm-d endpoint-picker image from its runtime
-   configuration.
+   Do not install the [llm-d Router Helm chart](https://github.com/llm-d/llm-d-router/tree/main/config/charts)
+   in this workflow. KServe owns the router deployment and uses the llm-d
+   endpoint-picker image from its runtime configuration.
 
 ## Deploy a simulated LLM
 
