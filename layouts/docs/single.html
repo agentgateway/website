@@ -12,7 +12,15 @@
   <div class="w-full z-10 pt-10 lg:pt-20">
     {{ partial "announcement.html" .}}
   </div>
-  <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: 2.5rem;">
+  {{/* Tab-navigation band (docs-theme-extras, issue solo-io/docs#3164). Must run
+       before sidebar.html so it can record the active tab on the page store. */}}
+  {{ partial "docs-tabs.html" . }}
+  {{/* Content-wrapper top padding. With the band present it supplies its own
+       spacing, so the wrapper stays tight (0.75rem); without the band the
+       wrapper carries a modest gap below the navbar (1.5rem) so band and no-band
+       versions read consistently and neither leaves a large empty strip. */}}
+  {{ $docTabs := .Store.Get "docTabs" }}
+  <div class='hx:mx-auto hx:flex {{ partial "utils/page-width" . }}' style="padding-top: {{ cond (and $docTabs $docTabs.enabled) "0.75rem" "1.5rem" }};">
     {{ partial "sidebar.html" (dict "context" .) }}
     {{ partial "toc.html" . }}
     <article class="hx:w-full hx:break-words hx:flex hx:min-h-[calc(100vh-var(--navbar-height))] hx:min-w-0 hx:justify-center hx:pb-8 hx:pr-[calc(env(safe-area-inset-right)-1.5rem)]">

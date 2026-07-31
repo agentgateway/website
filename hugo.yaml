@@ -179,6 +179,24 @@ params:
       websites: https://searchbot.tryhelix.ai/
       bots: https://searchbot.tryhelix.ai/bots
 
+  # Tab navigation (issue solo-io/docs#3164; requires docs-theme-extras
+  # >= v0.1.24-beta.2). Each tab's `id` is a top-level content directory under a
+  # version root; docs-theme-extras roots the left nav INSIDE that directory, so
+  # the directory's own node never appears — the tab IS the directory. Only the
+  # `main` version trees (docs/kubernetes/main, docs/standalone/main) are
+  # partitioned into these directories today, so the band renders there; the
+  # other versions have fewer than 2 of these dirs and keep the plain full-tree
+  # nav. Reference lists the API reference first, then its other topics.
+  docTabs:
+    - name: Documentation
+      id: documentation
+    - name: Guides
+      id: guides
+    - name: Reference
+      id: reference
+    - name: Release Notes
+      id: release-notes
+
   # Section-specific configurations
   sections:
     standalone:
