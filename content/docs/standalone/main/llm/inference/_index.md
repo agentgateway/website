@@ -3,6 +3,7 @@ title: Inference routing
 weight: 50
 icon: alt_route
 description: Configure Kubernetes Gateway API or standalone inference routing for AI workloads.
+url: /docs/standalone/main/inference/
 test: skip
 ---
 
@@ -33,8 +34,8 @@ synthetic service before consulting the EPP for endpoint selection.
 
 Use this mode for single-tenant or job-scoped workloads where deploying a full
 Gateway API stack would add unnecessary operational overhead. In this mode, the
-upstream standalone Helm chart can deploy agentgateway as the sidecar proxy with
-`proxyType: agentgateway`.
+[upstream standalone Helm chart](https://github.com/llm-d/llm-d-router/tree/main/config/charts)
+can deploy agentgateway as the sidecar proxy with `proxyType: agentgateway`.
 
 Standalone request scheduler mode does not support `InferencePool`. The
 standalone configuration must define a top-level synthetic service, such as a
