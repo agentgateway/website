@@ -268,9 +268,10 @@ You need a Kubernetes cluster, Helm, and `kubectl`.
 
 ## Optional: Apply an AI policy
 
-Token-based rate limiting requires agentgateway to parse the LLM response.
-Create an {{< reuse "agw-docs/snippets/backend.md" >}} that wraps the same
-`InferencePool`, then override the KServe route to use that backend.
+Token-based rate limiting and other supported AI policies require agentgateway
+to parse the LLM request or response. To apply these policies, create an
+{{< reuse "agw-docs/snippets/backend.md" >}} that wraps the same `InferencePool`,
+then override the KServe route to use that backend.
 
 1. Create the backend.
 
