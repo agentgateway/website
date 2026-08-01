@@ -1,6 +1,6 @@
 ---
 title: Multiple inference pools
-weight: 46
+weight: 20
 description: Route inference requests to multiple InferencePools based on the model name in the request body.
 url: /docs/kubernetes/main/llm/multiple-inference-pools/
 test: skip
