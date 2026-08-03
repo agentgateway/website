@@ -270,7 +270,7 @@ EOF
 {{% /tab %}}
    {{< /tabs >}}
 
-   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the [API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.oauthTokenExchange" >}}).
+   {{< reuse "agw-docs/snippets/review-table.md" >}} For more information, see the {{< conditional-text include-if="kubernetes" >}}[API docs]({{< link-hextra path="/reference/api-kubespec/policies/#spec.backend.auth.oauthTokenExchange" >}}){{< /conditional-text >}}{{< conditional-text include-if="agentgateway" >}}[API docs](https://agentgateway.dev/docs/kubernetes/latest/reference/api-kubespec/policies/#spec.backend.auth.oauthTokenExchange){{< /conditional-text >}}.
 
    | Field | Description |
    | -- | -- |
