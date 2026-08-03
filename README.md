@@ -83,7 +83,30 @@ The same harness runs on PRs via
 which pins to the SHA of `docs-theme-extras` recorded in `go.mod` so layouts
 and tests stay in lockstep.
 
-## Adopters
+## Contributing companies
 
-We’d love to highlight agentgateway adopters on our website! 🌟 If you're using agentgateway in a dev/test or production environment, feel free to add yourself to the [adopters file](data/adopters.yaml) by submitting a PR with your company name and logo. Thank you for your support! 💖
+We’d love to highlight the companies behind agentgateway! 🌟 Contributing organizations appear in the logo marquee on the [homepage](https://agentgateway.dev/). To add yours, open a PR using the [company logo template](https://github.com/agentgateway/website/compare?template=company-logo.md).
 
+### The logo file
+
+Add a single file to `static/logos/`. SVG preferred, or a transparent PNG at least 112px tall if you have no vector.
+
+Logos render as a one-color silhouette: black in light mode, white in dark mode. You only need one file, and its colors are discarded, so:
+
+* The background must be transparent. A background rectangle becomes a solid black or white box.
+* The shape must be defined by transparency, not by light-colored fills — white knockout details turn black and disappear.
+* No gradients or embedded raster images inside SVGs, and convert any text to outlines.
+* Logos display at 56px tall, capped at 160px wide. Roughly 3:1 or squarer works best.
+* Please submit a logo you’re authorized to use. 
+
+The company name is shown as a text label beneath the logo, so the icon or symbol alone usually looks best.
+
+### The markup
+
+Add your entry to `layouts/partials/homepage-content.html` in **both** logo lists — the visible one and the `aria-hidden="true"` duplicate that makes the marquee loop seamlessly:
+
+```html
+<div class="hp-logo-item"><img src="/logos/yourcompany.svg" alt="Your Company" class="hp-logo-img"><span>Your Company</span></div>
+```
+
+Thank you for your support! 💖
