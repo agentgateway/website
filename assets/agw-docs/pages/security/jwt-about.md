@@ -89,3 +89,9 @@ Using a remote JWKS endpoint is the recommended approach when using JWT authenti
 - **No manual key management**: You don't need to update policies when keys change
 - **Multiple keys**: The JWKS endpoint can return multiple keys, supporting gradual key rotation
 
+## What's next
+
+After setting up JWT authentication, you can use the verified JWT claims in authorization policies to control which requests are allowed to reach your backends.
+
+For more information, see [Authorization]({{< link-hextra path="/security/authorization/" >}}).
+
