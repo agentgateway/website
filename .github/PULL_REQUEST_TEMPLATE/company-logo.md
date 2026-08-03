@@ -29,12 +29,7 @@ https://github.com/agentgateway/website/blob/main/CONTRIBUTING.md#adding-your-or
 **Listing**
 
 - [ ] One entry added to `data/contributors.yaml` with `name` and `logo`
-- [ ] `logo` is an absolute path that matches the file you added (e.g. `/logos/yourcompany.svg`)
-- [ ] No changes to `layouts/partials/homepage-content.html` — the marquee is generated from the data file
-
-**Permission**
-
-- [ ] I am authorized to grant use of this logo on the agentgateway website
+- [ ] `logo` is an absolute path that matches the file you added, such as `/logos/yourcompany.svg`
 
 ## Preview
 
