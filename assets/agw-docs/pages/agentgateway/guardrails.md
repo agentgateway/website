@@ -290,7 +290,7 @@ spec:
               name: ai-guardrail-webhook
               port: 8000
             headers:
-              ":path": '"/v3/guardrails/request"'
+              ":path": '"/api/guardrails/request"'
               x-user: jwt.sub
               x-tenant: request.headers["x-tenant"]
 EOF
