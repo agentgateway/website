@@ -53,7 +53,9 @@ Agentgateway's repository comes with a long list of [examples](https://github.co
 
 Start with the simple [MCP Basic example](https://github.com/agentgateway/agentgateway/tree/main/examples/mcp-basic) to proxy an MCP server that adheres to the new revision of the protocol, and test the communication between an MCP client and agentgateway.
 
-As of the time of this writing, the example ["everything"](https://github.com/modelcontextprotocol/servers/tree/main/src/everything) MCP server has yet to be ported to the new revision of the spec. Standing up a simple MCP server of your own is trivial though; see for example the [Python SDK docs](https://py.sdk.modelcontextprotocol.io/v2/).
+The example uses the canonical ["everything"](https://github.com/modelcontextprotocol/servers/tree/main/src/everything) MCP server as the backend.
+As of the time of this writing, that particular MCP server has not yet been ported to the new revision of the spec.
+If necessary, stand up a simple MCP server of your own; see the [Python SDK docs](https://py.sdk.modelcontextprotocol.io/v2/) for an example.
 
 Another more interesting scenario is a gateway that multiplexes or federates multiple MCP servers. The [example](https://github.com/agentgateway/agentgateway/tree/main/examples/mcp-multiplex) can be interesting to test using a mix of legacy and "new era" MCP servers.
 
