@@ -101,12 +101,15 @@ Logos render as a one-color silhouette: black in light mode, white in dark mode.
 
 The company name is shown as a text label beneath the logo, so the icon or symbol alone usually looks best.
 
-### The markup
+### The listing
 
-Add your entry to `layouts/partials/homepage-content.html` in **both** logo lists — the visible one and the `aria-hidden="true"` duplicate that makes the marquee loop seamlessly:
+Add one entry to [`data/contributors.yaml`](data/contributors.yaml):
 
-```html
-<div class="hp-logo-item"><img src="/logos/yourcompany.svg" alt="Your Company" class="hp-logo-img"><span>Your Company</span></div>
+```yaml
+- name: Your Company
+  logo: /logos/yourcompany.svg
 ```
+
+`name` is used for both the caption under the logo and the image alt text. That’s the whole change — the marquee is generated from this file, so there’s no HTML to edit.
 
 Thank you for your support! 💖

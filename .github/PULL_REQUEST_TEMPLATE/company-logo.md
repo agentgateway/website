@@ -26,11 +26,11 @@ https://github.com/agentgateway/website/blob/main/README.md#contributing-compani
 - [ ] Reads correctly as a solid one-color silhouette: no gradients, no white knockout details, no embedded raster images
 - [ ] Any text in the logo is converted to outlines
 
-**Markup**
+**Listing**
 
-- [ ] Entry added to **both** logo lists in `layouts/partials/homepage-content.html` — the visible one and the `aria-hidden="true"` duplicate
-- [ ] Both entries are in the same position in their respective lists
-- [ ] `alt` attribute and `<span>` label are both set to the company name
+- [ ] One entry added to `data/contributors.yaml` with `name` and `logo`
+- [ ] `logo` is an absolute path that matches the file you added (e.g. `/logos/yourcompany.svg`)
+- [ ] No changes to `layouts/partials/homepage-content.html` — the marquee is generated from the data file
 
 **Permission**
 
