@@ -7,7 +7,7 @@ description: "agentgateway introduces an extension point for token compression p
 toc: false
 ---
 
-You pay for the full context of every LLM request, and agents multiply that cost on every round trip with the model. Verbose tool results, documents quoted whole, and retrieved chunks kept "just in case" ride along on every turn. The waste adds up quickly: a 50KB tool result is roughly 12,000 tokens, paid for again on each turn of a 30-turn session, at a discount when provider caching works and at full price when it doesn't. And the cost isn't only money: [models attend less reliably to what matters when it's buried in noise](https://research.trychroma.com/context-rot).
+You pay for the full context of every LLM request, and agents multiply that cost on every round trip with the model. Verbose tool results, documents quoted whole, and retrieved chunks kept "just in case" ride along on every turn. The waste adds up quickly: a 50KB tool result is roughly 12,000 tokens, paid for again on each turn of a 30-turn session, at a discount when provider caching works and at full price when it doesn't. And the cost isn't only money: [models attend less reliably to what matters when it's buried in noise](https://www.trychroma.com/research/context-rot).
 
 Context compression is a promising solution to this problem, transforming the messages you're about to send so the same information costs fewer tokens. That sounds like an almost magical fix: keep the meaning, cut the bill. The reality is more nuanced. This post explores the opportunities and the challenges of compression, and shows how the new context compression support in agentgateway addresses both.
 
