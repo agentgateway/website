@@ -89,14 +89,14 @@ We’d love to highlight the companies behind agentgateway! 🌟 Contributing or
 
 ### The logo file
 
-Add a single file to `static/logos/`. SVG preferred, or a transparent PNG at least 112px tall if you have no vector.
+Add a single file to `static/logos/`. SVG preferred, or a transparent PNG at least 80px tall if you have no vector.
 
 Logos render as a one-color silhouette: black in light mode, white in dark mode. You only need one file, and its colors are discarded, so:
 
 * The background must be transparent. A background rectangle becomes a solid black or white box.
 * The shape must be defined by transparency, not by light-colored fills — white knockout details turn black and disappear.
 * No gradients or embedded raster images inside SVGs, and convert any text to outlines.
-* Logos display at 56px tall, capped at 160px wide. Roughly 3:1 or squarer works best.
+* Logos display at 38px tall, capped at 120px wide. Roughly 3:1 or squarer works best — wider lockups get width-capped and render noticeably shorter than their neighbors.
 * Please submit a logo you’re authorized to use. 
 
 The company name is shown as a text label beneath the logo, so the icon or symbol alone usually looks best.

@@ -20,7 +20,8 @@ https://github.com/agentgateway/website/blob/main/README.md#contributing-compani
 **Logo file**
 
 - [ ] Added to `static/logos/`
-- [ ] SVG (preferred), or a transparent PNG at least 112px tall
+- [ ] SVG (preferred), or a transparent PNG at least 80px tall
+- [ ] Aspect ratio is roughly 3:1 or squarer (logos display at 38px tall, capped at 120px wide)
 - [ ] Background is transparent — no background rectangle
 - [ ] Reads correctly as a solid one-color silhouette: no gradients, no white knockout details, no embedded raster images
 - [ ] Any text in the logo is converted to outlines
