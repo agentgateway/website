@@ -318,20 +318,24 @@ routes:
 
 ```yaml
 # yaml-language-server: $schema=https://agentgateway.dev/schema/config
-llm:
-  models:
-  - name: "claude-3-5-haiku-20241022"
-    provider: azure
-    auth:
-      key:
-        value: "$AZURE_API_KEY"
-        location:
-          header:
-            name: api-key
-    params:
-      azureResourceName: "your-foundry-resource"
-      azureResourceType: foundry
-      azureProjectName: "your-project-name"
+routes:
+- name: azure
+  matches:
+  - path:
+      pathPrefix: /azure-anthropic #prefix example
+  backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: your-foundry-resource
+          projectName: your-project-name
+          resourceType: foundry
+          model: claude-sonnet-4-6   
+    policies:
+      backendAuth:
+        key:
+          value: your-api-key
 ```
 
 {{< reuse "agw-docs/snippets/review-table.md" >}}
@@ -340,7 +344,7 @@ llm:
 |---------|-------------|
 | `name` | The exact Claude model name to match in incoming requests, such as `claude-3-5-haiku-20241022`. Use `*` to match any model name. |
 | `provider` | Set to `azure` for Azure AI Foundry. |
-| `auth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. |
+| `backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. Other auth method can be applied [Backend authentication]({{< link-hextra path="/configuration/security/backend-authn/" >}}) |
 | `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
 | `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
 | `params.azureProjectName` | The Foundry project name. |
@@ -348,10 +352,9 @@ llm:
 After running agentgateway with this configuration, send a request to verify:
 
 ```sh
-curl -X POST http://localhost:4000/v1/messages \
+curl -X POST http://localhost:4000/azure-anthropic \
   -H "Content-Type: application/json" \
   -d '{
-    "model": "claude-3-5-haiku-20241022",
     "max_tokens": 256,
     "messages": [{"role": "user", "content": "Hello!"}]
   }'

@@ -327,7 +327,7 @@ Azure supports two endpoint types:
    | `azure.resourceType` | Set to `Foundry` to use Azure AI Foundry endpoints. |
    | `azure.projectName` | The Foundry project name. |
    | `azure.model` | The Claude model to use, for example `claude-3-5-haiku-20241022`. The model name must start with `claude-` to trigger routing to the Anthropic-native endpoint. |
-   | `policies.auth.secretRef` | References the secret that holds the Azure AI Foundry API key. The key is automatically sent in the `api-key` header. |
+   | `policies.auth.secretRef` | References the secret that holds the Azure AI Foundry API key. The key is automatically sent in the `Authorization` header. |
 
 3. Create an HTTPRoute resource that routes incoming traffic to the {{< reuse "agw-docs/snippets/backend.md" >}}.
 
@@ -348,6 +348,10 @@ Azure supports two endpoint types:
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
          group: agentgateway.dev
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
+       matches:
+          - path:
+              type: PathPrefix
+              value: /azure-claude #Path  example
    EOF
    ```
 
@@ -355,8 +359,7 @@ Azure supports two endpoint types:
 
    **Cloud Provider LoadBalancer**:
    ```sh
-   curl "$INGRESS_GW_ADDRESS/v1/messages" -H content-type:application/json -d '{
-     "model": "",
+   curl "$INGRESS_GW_ADDRESS/azure-claude" -H content-type:application/json -d '{
      "max_tokens": 256,
      "messages": [
        {
@@ -369,8 +372,7 @@ Azure supports two endpoint types:
 
    **Localhost**:
    ```sh
-   curl "localhost:8080/v1/messages" -H content-type:application/json -d '{
-     "model": "",
+   curl "localhost:8080/azure-claude" -H content-type:application/json -d '{
      "max_tokens": 256,
      "messages": [
        {
