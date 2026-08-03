@@ -196,6 +196,7 @@ params:
       id: reference
     - name: Release Notes
       id: release-notes
+      hideSidebar: true
 
   # Section-specific configurations
   sections:
