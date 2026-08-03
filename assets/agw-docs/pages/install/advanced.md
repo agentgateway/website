@@ -80,7 +80,7 @@ Create a `secondary-values.yaml` file for the second control plane.
 
 ```yaml
 gatewayClassName: agentgateway-tenant-b
-controllerName: platform.example.com/agentgateway-tenant-b
+controllerName: agentgateway.dev/agentgateway-tenant-b
 
 discoveryNamespaceSelectors:
 - matchExpressions:
