@@ -655,9 +655,9 @@ remoteRateLimit:
       root: /certs/ca.pem
       insecure: false
     tcp:
-      connectTimeout:
-        secs: 3
-        nanos: 0
+      connectTimeout: 3s
+      # Required when setting tcp connection options; {} keeps keepalive defaults
+      keepalives: {}
   descriptors:
     - entries:
         - key: service
@@ -669,7 +669,7 @@ remoteRateLimit:
 |-------|-------------|
 | `policies.backendAuth` | Credentials to authenticate to the rate limit service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.backendTLS` | TLS settings for the connection to the rate limit service. Use `root` to specify a CA cert, `insecure: true` to skip certificate verification (not recommended for production). |
-| `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
+| `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. When you set any `tcp` option, you must also set `keepalives`. Use `keepalives: {}` to keep the keepalive defaults. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). Use for HTTP-based rate limit service connections. |
 
 ## Conditional execution

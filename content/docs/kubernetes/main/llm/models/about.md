@@ -62,7 +62,7 @@ spec:
         from: All
       # Enables the listener's built-in LLM paths
       kinds:
-      - group: {{< reuse "agw-docs/snippets/group.md" >}}
+      - group: agentgateway.dev
         kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
 ```
 
@@ -86,7 +86,7 @@ spec:
       namespaces:
         from: All
       kinds:
-      - group: {{< reuse "agw-docs/snippets/group.md" >}}
+      - group: agentgateway.dev
         kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
       - group: gateway.networking.k8s.io
         kind: HTTPRoute
@@ -123,7 +123,7 @@ A model that names its provider is a concrete model. It is an `{{< reuse "agw-do
 The following example shows the pieces that a concrete model configures. Only `parentRefs` and `provider` are required.
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
 metadata:
   name: gpt-5-mini
@@ -184,7 +184,7 @@ A wildcard model usually pairs with a `model` transformation, because the provid
 A model resource is an alias by construction. The name that clients request is `metadata.name` or `match.model`, and the name that the provider receives comes from a `model` transformation. To publish `fast` as an alias for `gpt-3.5-turbo`, create a model named `fast` that rewrites the field.
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
 metadata:
   name: fast
@@ -255,7 +255,7 @@ A model that routes across other models is a virtual model. It is an `{{< reuse 
 The following example splits traffic across two concrete models by weight.
 
 ```yaml
-apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
 metadata:
   name: balanced

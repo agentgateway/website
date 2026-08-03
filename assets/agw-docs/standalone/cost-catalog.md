@@ -228,5 +228,5 @@ agentgateway -f /tmp/costs-config.yaml > /tmp/costs-agw.log 2>&1 &
 AGW_PID=$!
 trap 'kill $AGW_PID 2>/dev/null' EXIT
 sleep 3
-grep -q "loaded model catalog" /tmp/costs-agw.log
+grep -qE "model catalog (re)?loaded" /tmp/costs-agw.log
 {{< /doc-test >}}

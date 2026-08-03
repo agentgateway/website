@@ -1,2 +1,6 @@
-github.com/solo-io/docs-theme-extras v0.1.21 h1:wj9hx8n4/xTJpXUHA9ntWAclAdXf0+pZV2BBUc2zD0s=
-github.com/solo-io/docs-theme-extras v0.1.21/go.mod h1:jjjYu/QoD+vMu30zgcpfEuTEGuJOJWs5qai/K18kltg=
+github.com/imfing/hextra v0.12.3 h1:DZHY2rUWYteyzjlHi9r4n7Bb5e2Q+6LXe4C1Dqn0ZjM=
+github.com/imfing/hextra v0.12.3/go.mod h1:vi+yhpq8YPp/aghvJlNKVnJKcPJ/VyAEcfC1BSV9ARo=
+github.com/solo-io/docs-theme-extras v0.1.23 h1:sTUT+7hV17R9TSgQyJTrvOKm8ScQCvYa4kRY2juz/WQ=
+github.com/solo-io/docs-theme-extras v0.1.23/go.mod h1:jjjYu/QoD+vMu30zgcpfEuTEGuJOJWs5qai/K18kltg=
+github.com/solo-io/docs-theme-extras v0.1.24-beta.1 h1:MSfv6VGuzLMkyJnpswI/FuPByKTEexWlYf21nJFpJFs=
+github.com/solo-io/docs-theme-extras v0.1.24-beta.1/go.mod h1:jjjYu/QoD+vMu30zgcpfEuTEGuJOJWs5qai/K18kltg=

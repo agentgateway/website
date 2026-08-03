@@ -39,6 +39,12 @@ routes:
       - https://api.example.com
       jwks:
         url: https://your-tenant.auth0.com/.well-known/jwks.json
+      resourceMetadata:
+        resource: https://api.example.com
+        scopesSupported:
+        - read:tools
+        bearerMethodsSupported:
+        - header
 ```
 
 ## Auth0 setup
@@ -89,6 +95,12 @@ policies:
     audiences: [https://api.example.com]
     jwks:
       url: https://your-tenant.auth0.com/.well-known/jwks.json
+    resourceMetadata:
+      resource: https://api.example.com
+      scopesSupported:
+      - read:tools
+      bearerMethodsSupported:
+      - header
   authorization:
     rules:
     # Check for specific permission

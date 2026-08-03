@@ -120,6 +120,7 @@ routes:
         sse:
           host: mcp.example.com
           port: 8080
+          path: /sse
   policies:
     extProc:
       host: "extproc.com:9000"
@@ -149,6 +150,7 @@ routes:
         sse:
           host: mcp.example.com
           port: 8080
+          path: /sse
   policies:
     extProc:
       conditional:
