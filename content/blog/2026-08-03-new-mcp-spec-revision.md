@@ -45,7 +45,7 @@ As one of the building blocks of agentic solutions, it's important for gateways 
 
 ## Agentgateway version 1.4
 
-[Agentgateway](https://agentgateway.dev/) v1.4 was released on July 27, one day before the release of the `2026-07-28` revision of the MCP spec. One of version 1.4's biggest themes is support for the new revision of the specification. Version 1.4.1 has already been released, only 4 days later, providing increased compatibility with the new revision.
+[Agentgateway](https://agentgateway.dev/) v1.4 was released on July 27, one day before the release of the `2026-07-28` revision of the MCP spec. One of version 1.4's biggest themes is support for the new revision of the specification. Version 1.4.1 has already been released, only 2 days later, providing increased compatibility with the new revision.
 
 Agentgateway's repository comes with a long list of [examples](https://github.com/agentgateway/agentgateway/tree/main/examples) demonstrating the features and capabilities of agentgateway.
 
