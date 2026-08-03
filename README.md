@@ -83,33 +83,8 @@ The same harness runs on PRs via
 which pins to the SHA of `docs-theme-extras` recorded in `go.mod` so layouts
 and tests stay in lockstep.
 
-## Contributing companies
+## Contributors
 
-We’d love to highlight the companies behind agentgateway! 🌟 Contributing organizations appear in the logo marquee on the [homepage](https://agentgateway.dev/). To add yours, open a PR using the [company logo template](https://github.com/agentgateway/website/compare?template=company-logo.md).
-
-### The logo file
-
-Add a single file to `static/logos/`. SVG preferred, or a transparent PNG at least 80px tall if you have no vector.
-
-Logos render as a one-color silhouette: black in light mode, white in dark mode. You only need one file, and its colors are discarded, so:
-
-* The background must be transparent. A background rectangle becomes a solid black or white box.
-* The shape must be defined by transparency, not by light-colored fills — white knockout details turn black and disappear.
-* No gradients or embedded raster images inside SVGs, and convert any text to outlines.
-* Logos display at 38px tall, capped at 120px wide. Roughly 3:1 or squarer works best — wider lockups get width-capped and render noticeably shorter than their neighbors.
-* Please submit a logo you’re authorized to use. 
-
-The company name is shown as a text label beneath the logo, so the icon or symbol alone usually looks best.
-
-### The listing
-
-Add one entry to [`data/contributors.yaml`](data/contributors.yaml):
-
-```yaml
-- name: Your Company
-  logo: /logos/yourcompany.svg
-```
-
-`name` is used for both the caption under the logo and the image alt text. That’s the whole change — the marquee is generated from this file, so there’s no HTML to edit.
-
-Thank you for your support! 💖
+We’d love to highlight the contributors and organizations behind agentgateway! 🌟 See
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute to the project and how to add your
+organization’s logo to the [homepage](https://agentgateway.dev/). Thank you for your support! 💖

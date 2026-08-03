@@ -6,7 +6,7 @@
 # generated for you.
 #
 # Logo requirements (transparent background, one-color silhouette, sizing):
-# see README.md#contributing-companies
+# see CONTRIBUTING.md
 #
 #   - name:  Display name. Used for both the caption and the image alt text.
 #   - logo:  Absolute path to the file under static/. New logos belong in

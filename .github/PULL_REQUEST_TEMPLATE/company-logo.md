@@ -1,8 +1,8 @@
 <!--
 Thanks for adding your company to the agentgateway homepage!
 
-Requirements are documented in the README:
-https://github.com/agentgateway/website/blob/main/README.md#contributing-companies
+Requirements are documented here:
+https://github.com/agentgateway/website/blob/main/CONTRIBUTING.md#adding-your-organizations-logo
 -->
 
 ## Company
