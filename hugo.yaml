@@ -188,12 +188,16 @@ params:
   # other versions have fewer than 2 of these dirs and keep the plain full-tree
   # nav. Reference lists the API reference first, then its other topics.
   docTabs:
+  
     - name: Documentation
       id: documentation
+
     - name: Guides
       id: guides
+
     - name: Reference
       id: reference
+
     - name: Release Notes
       id: release-notes
       hideSidebar: true
