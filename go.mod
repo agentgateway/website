@@ -4,5 +4,5 @@ go 1.21
 
 require (
 	github.com/imfing/hextra v0.12.3 // indirect
-	github.com/solo-io/docs-theme-extras v0.1.24-beta.1 // indirect
+	github.com/solo-io/docs-theme-extras v0.1.25-beta.1 // indirect
 )
