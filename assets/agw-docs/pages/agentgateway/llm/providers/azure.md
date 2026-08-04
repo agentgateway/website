@@ -346,7 +346,7 @@ Azure supports two endpoint types:
      - backendRefs:
        - name: azure-claude
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
-         group: agentgateway.dev
+         group: {{< reuse "agw-docs/snippets/group.md" >}}
          kind: {{< reuse "agw-docs/snippets/backend.md" >}}
        matches:
           - path:
