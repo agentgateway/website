@@ -4,6 +4,40 @@ By default, the {{< reuse "/agw-docs/snippets/kgateway.md" >}} control plane exp
 
 {{< reuse "agw-docs/snippets/agentgateway-prereq.md" >}}
 
+## Enable monitoring with Helm {#enable-monitoring}
+
+To enable Prometheus ServiceMonitors and Grafana dashboard ConfigMaps via the {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} Helm chart, add the `monitoring` section to your Helm values file or pass them via `--set` flags:
+
+```yaml
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+```YAML
+This creates:
+
+* A **ServiceMonitor** for the agentgateway controller (scrapes metrics on port 9092)
+* A **PodMonitor** for each proxy pod (scrapes metrics on port 15020)
+* A **Grafana dashboard ConfigMap** (discoverable by Grafana sidecar using label `grafana_dashboard: "1"`)
+
+{{< callout type="info" >}}
+You need the Prometheus Operator CRDs installed in your cluster for the ServiceMonitor resources to be recognized by Prometheus.
+{{< /callout >}}
+
+Alternatively, you can pass these values directly via `helm upgrade`:
+
+```sh
+helm upgrade --install agentgateway agentgateway/agentgateway \
+  --namespace agentgateway-system --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.serviceMonitor.enabled=true
+
+```
+
+Once enabled, the metrics are available for scraping by your Prometheus instance, and Grafana can visualize them using the built-in dashboard ConfigMap.
+
+
+
 ## View control plane metrics {#control-plane-metrics}
 
 The following steps show you how to view the raw metrics endpoint of the control plane deployment.

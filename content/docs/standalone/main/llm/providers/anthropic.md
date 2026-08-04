@@ -297,6 +297,12 @@ llm:
 {{% /tab %}}
 {{< /tabs >}}
 
+## Use Claude on Azure AI Foundry
+
+To use Claude models through Azure AI Foundry, configure the `azure` provider with `azureResourceType: foundry` and a Claude model name. Agentgateway automatically routes requests to the Anthropic-native endpoint and injects the required headers — no additional configuration is needed.
+
+For setup instructions, see [Use Claude models on Azure AI Foundry]({{< link-hextra path="/llm/providers/azure/#use-claude-models-on-azure-ai-foundry" >}}).
+
 ## Connect to Claude Code
 
 To route Claude Code CLI traffic through agentgateway, see the [Claude Code integration guide]({{< link-hextra path="/integrations/llm-clients/claude-code" >}}).
