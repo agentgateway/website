@@ -260,8 +260,45 @@ EOF
 | `backend.ai.promptGuard` | The AI prompt guarding configuration that you want to set up. In this example, you configure the webhook server for both request and response guardrails. |
 | `webhook.backendRef` | The reference to the webhook server service. The example webhook server is configured to use port 8000. |
 
+By default, agentgateway calls `POST /request` and `POST /response` on the webhook target.
 
+#### Customize the request path and headers {#webhook-headers}
 
+Use the `webhook.headers` field to set headers on the outgoing webhook request with [CEL expressions]({{< link-hextra path="/reference/cel/" >}}). Keys can be regular header names or the `:path`, `:method`, and `:authority` pseudo-headers; setting `:path` overrides the default `/request` or `/response` path. This is useful when your webhook service hosts other endpoints and can't dedicate its root path to the guardrail API, or when you want to forward context such as JWT claims to the webhook.
+
+Expressions are evaluated against the original incoming request, so `request.*` and `jwt.*` refer to the client's request:
+
+```yaml
+kubectl apply -f - <<EOF
+apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+kind: {{< reuse "agw-docs/snippets/policy.md" >}}
+metadata:
+  name: openai-prompt-guard
+  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+spec:
+  targetRefs:
+  - group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: openai
+  backend:
+    ai:
+      promptGuard:
+        request:
+        - webhook:
+            backendRef:
+              kind: Service
+              name: ai-guardrail-webhook
+              port: 8000
+            headers:
+              ":path": '"/api/guardrails/request"'
+              x-user: jwt.sub
+              x-tenant: request.headers["x-tenant"]
+EOF
+```
+
+| Setting | Description |
+|---------|-------------|
+| `webhook.headers` | A map of header names (or the `:path`, `:method`, `:authority` pseudo-headers) to CEL expressions, evaluated against the original client request. Setting `:path` replaces the default `/request` or `/response` path sent to the webhook target. |
 
 ### Step 3: Test the webhook server {#test-webhook-server}
 
