@@ -1,0 +1,40 @@
+<!--
+Thanks for adding your company to the agentgateway homepage!
+
+Requirements are documented here:
+https://github.com/agentgateway/website/blob/main/CONTRIBUTING.md#adding-your-organizations-logo
+-->
+
+## Company
+
+**Name (as it should appear under the logo):**
+
+**Website:**
+
+## Contribution summary
+
+<!-- Link to merged PRs, or briefly describe your organization's involvement in the project. -->
+
+## Checklist
+
+**Logo file**
+
+- [ ] Added to `static/logos/`
+- [ ] SVG (preferred), or a transparent PNG at least 80px tall
+- [ ] Aspect ratio is roughly 3:1 or squarer (logos display at 38px tall, capped at 120px wide)
+- [ ] Background is transparent — no background rectangle
+- [ ] Reads correctly as a solid one-color silhouette: no gradients, no white knockout details, no embedded raster images
+- [ ] Any text in the logo is converted to outlines
+
+**Listing**
+
+- [ ] One entry added to `data/contributors.yaml` with `name` and `logo`
+- [ ] `logo` is an absolute path that matches the file you added, such as `/logos/yourcompany.svg`
+
+## Preview
+
+<!--
+Run `hugo server` and attach screenshots of the marquee in both light and dark
+mode. The filter that renders the silhouette is the most common source of
+surprises, so this is the fastest way for us to review.
+-->
