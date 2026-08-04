@@ -799,3 +799,33 @@ YAMLTest -f - <<'EOF'
         comparator: exists
 EOF
 {{< /doc-test >}}
+
+### Enable monitoring via Helm chart
+
+The steps above configure Prometheus to scrape metrics from the OTel collector, but by default the {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} Helm chart does **not** create ServiceMonitor resources for its own controller metrics. To enable this, add the following to your Helm values file or pass via `--set` flags:
+
+```yaml
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+```
+
+This creates:
+
+* A **ServiceMonitor** for the agentgateway controller (scrapes port 9092)
+* A **PodMonitor** for each proxy pod (scrapes port 15020)
+* A **Grafana dashboard ConfigMap** for built-in dashboards
+
+```sh
+helm upgrade --install agentgateway agentgateway/agentgateway \
+  --namespace agentgateway-system --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.serviceMonitor.enabled=true
+```
+
+See the [control plane metrics guide]({{< link-hextra path="/observability/control-plane-metrics/#enable-monitoring" >}}) for more details.
+
+{{< callout type="info" >}}
+Requires the Prometheus Operator CRDs to be installed in your cluster.
+{{< /callout >}}
