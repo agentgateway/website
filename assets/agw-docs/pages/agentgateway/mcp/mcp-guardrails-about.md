@@ -50,6 +50,14 @@ The server returns one of three outcomes for each call:
 * **Mutate**: Replace the JSON-RPC `params` (request phase) or `result` (response phase) before agentgateway forwards it.
 * **Deny**: Reject the call with a JSON-RPC error that is returned to the client. The server can deny a call in either the request phase or the response phase.
 
+### Request mutation trust boundary
+
+A request-phase processor can replace the JSON-RPC `params` before agentgateway sends the request to the selected backend. Treat every processor that can mutate `params` as a trusted component. A mutation can determine the effective request, but it does not change the selected backend.
+
+For `tools/call`, `prompts/get`, and `resources/read`, agentgateway selects the backend and resolves the original tool name, prompt name, or resource URI before request-phase processors run. If the processor chain allows the request, Common Expression Language (CEL)-based role-based access control (RBAC) then evaluates the original backend and resolved identifier. Agentgateway does not automatically re-resolve a changed identifier or replace the values used for that RBAC check.
+
+If authorization must cover the post-mutation identifier or parameters, place the authorization processor after the last processor that can change them. Alternatively, the final mutating processor can enforce that authorization itself.
+
 ## Configuration
 
 You configure MCP guardrails as an ordered list of *processors*. A processor defines the actions to take for a particular set of MCP methods, and each processor is enforced by an ExtMCP server. You can chain multiple processors, where each one calls a different ExtMCP server that performs a specific manipulation, such as one server for authorization and another for content redaction.
@@ -128,7 +136,7 @@ The `failureMode` setting controls what happens when the server is unreachable o
 
 Keep the following behaviors in mind when you design a policy:
 
-* Guardrails run *after* MCP authentication. If a processor mutates a request, agentgateway does not re-run authentication on the mutated request.
+* MCP authentication runs before request-phase processors. Agentgateway does not repeat authentication after request mutation.
 * Processors run in the order listed. The first processor to deny a request short-circuits the chain.
 * Agentgateway passes tool names to the server in their original, un-prefixed form. When agentgateway multiplexes tools from several backends, it passes the backend name separately as metadata rather than in the tool name.
 * For fanout methods such as `tools/list`, agentgateway calls the server once per backend.
