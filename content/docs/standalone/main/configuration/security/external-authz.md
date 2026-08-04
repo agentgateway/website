@@ -267,7 +267,7 @@ extAuthz:
 | `policies.backendTLS` | TLS settings for the connection to the authorization service. Use `root` to specify a CA cert, `hostname` to override the SNI hostname, `insecure: true` to skip certificate verification (not recommended for production). |
 | `policies.backendAuth` | Credentials to authenticate to the authorization service. Supports `key` (API key from file or inline), `gcp`, `aws`, and `azure` auth. |
 | `policies.http.requestTimeout` | Request-level timeout as a duration string (for example, `"5s"`). |
-| `policies.tcp.connectTimeout` | Connection timeout specified as `secs` and `nanos`. |
+| `policies.tcp.connectTimeout` | Connection timeout as a duration string, such as `3s`. When you set any `tcp` option, you must also set `keepalives`. Use `keepalives: {}` to keep the keepalive defaults. |
 
 ## Backend-level external authorization
 

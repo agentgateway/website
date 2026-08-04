@@ -73,6 +73,11 @@ const command = BIN
     : `sh -c "docker rm -f agw-ui-pw 2>/dev/null; mkdir -p .agw-runtime; ` +
       `exec docker run --rm --name agw-ui-pw --user $(id -u):$(id -g) ` +
       `-v \\"$(pwd)/.agw-runtime:/config\\" ` +
+      // The admin listener serves /ui/, and as of v1.4.0 it defaults to binding container
+      // loopback (127.0.0.1/[::1]) — unreachable through `-p`, so the readiness poll below
+      // would time out even though the container booted fine. Bind all interfaces, matching
+      // what every scripts/serve-*.sh launcher already does.
+      `-e ADMIN_ADDR=0.0.0.0:15000 ` +
       `-p ${HOST_PORT}:15000 -p 4100:4000 -p 3100:3000 ${IMAGE}"`;
 
 export default defineConfig({

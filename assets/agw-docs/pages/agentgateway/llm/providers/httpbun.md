@@ -269,7 +269,7 @@ Send a standard chat completion request.
 {{< tabs >}}
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```bash
-curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+curl -sS http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",
@@ -281,7 +281,7 @@ curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 ```bash
-curl -s http://localhost:8080/v1/chat/completions \
+curl -sS http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",
@@ -369,7 +369,7 @@ Control exactly what the mock LLM returns by including the `httpbun` field in th
 {{< tabs >}}
 {{% tab name="Cloud Provider LoadBalancer" %}}
 ```bash
-curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
+curl -sS http://$INGRESS_GW_ADDRESS/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",
@@ -381,7 +381,7 @@ curl -s http://$INGRESS_GW_ADDRESS/v1/chat/completions \
 {{% /tab %}}
 {{% tab name="Port-forward for local testing" %}}
 ```bash
-curl -s http://localhost:8080/v1/chat/completions \
+curl -sS http://localhost:8080/v1/chat/completions \
   -H "Content-Type: application/json" \
   -d '{
     "model": "gpt-4",

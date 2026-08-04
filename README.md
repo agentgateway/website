@@ -83,7 +83,8 @@ The same harness runs on PRs via
 which pins to the SHA of `docs-theme-extras` recorded in `go.mod` so layouts
 and tests stay in lockstep.
 
-## Adopters
+## Contributors
 
-We’d love to highlight agentgateway adopters on our website! 🌟 If you're using agentgateway in a dev/test or production environment, feel free to add yourself to the [adopters file](data/adopters.yaml) by submitting a PR with your company name and logo. Thank you for your support! 💖
-
+We’d love to highlight the contributors and organizations behind agentgateway! 🌟 See
+[CONTRIBUTING.md](CONTRIBUTING.md) for how to contribute to the project and how to add your
+organization’s logo to the [homepage](https://agentgateway.dev/). Thank you for your support! 💖

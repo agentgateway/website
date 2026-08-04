@@ -25,10 +25,18 @@ concurrency:
   group: reference-docs
   cancel-in-progress: false
 
-# create-pull-request pushes a branch and opens a PR, so the GITHUB_TOKEN needs write on both.
+# create-pull-request pushes a branch and opens a PR, so the token needs write on both.
 # Without this block the token is read-only and the push fails with a 403.
-# Note: this still requires "Allow GitHub Actions to create and approve pull requests"
-# to be enabled in repo Settings -> Actions -> General (or a CREATE_PR_TOKEN PAT).
+# The PR step below uses the default GITHUB_TOKEN, which requires the repo setting
+# "Allow GitHub Actions to create and approve pull requests" to be enabled. PRs are
+# authored by github-actions[bot] rather than a human, so maintainers can review and
+# approve them.
+#
+# Consequence: pull_request workflows (doc-tests, framework-tests, links) are queued
+# on the generated PR but held as "action_required" — click "Approve and run" on the
+# PR's checks to execute them. Cloudflare Pages previews and DCO are GitHub Apps, not
+# Actions, so they run automatically. This matches how kgateway-dev/kgateway.dev and
+# kagent-dev/website handle their own generated reference-docs PRs.
 permissions:
   contents: write
   pull-requests: write
@@ -49,7 +57,9 @@ jobs:
       - name: Build version matrix
         id: build_matrix
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+          # Only reads public data (gh api .../tags and git ls-remote against
+          # agentgateway/agentgateway), so the default token is enough — no PAT needed.
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           if [[ "${{ github.event_name }}" == "release" ]]; then
             input_version="1.0.x"
@@ -132,10 +142,12 @@ jobs:
     env:
       GOTOOLCHAIN: auto
     steps:
+      # Both checkouts are reads that the default github.token covers: this repo, and the
+      # public agentgateway/agentgateway. The PR step below is the only thing that needs a
+      # non-default identity, and it brings its own token.
       - name: Checkout website repo
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GH_TOKEN }}
           path: website
           fetch-depth: 0
 
@@ -143,7 +155,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: agentgateway/agentgateway
-          token: ${{ secrets.GH_TOKEN }}
           path: agentgateway
           ref: ${{ matrix.ref }}
 
@@ -284,8 +295,8 @@ jobs:
           echo "CEL widget HTML generated successfully:"
           ls -la "${TARGET_DIR}/cel-context.html"
 
-      # Create PR: needs "Allow GitHub Actions to create and approve pull requests" (Settings → Actions)
-      # or a repo secret CREATE_PR_TOKEN (PAT with pull_requests: write).
+      # Create PR: uses the default GITHUB_TOKEN (contents: write + pull-requests: write from
+      # the permissions block at the top of this file). See that block for the CI implications.
       - name: Create PR for website repo
         uses: peter-evans/create-pull-request@v7
         id: create-pr
@@ -309,7 +320,7 @@ jobs:
           committer: GitHub Action <action@github.com>
           delete-branch: true
           title: '[Automated] Update reference docs (${{ matrix.link_version }}) from agentgateway ${{ matrix.ref }}'
-          token: ${{ secrets.GH_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Output PR URL
         run: |

@@ -1,0 +1,1 @@
+{{< version include-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}v1alpha2{{< /version >}}{{< version exclude-if="1.0.x,1.1.x,1.2.x,1.3.x" >}}v1{{< /version >}}

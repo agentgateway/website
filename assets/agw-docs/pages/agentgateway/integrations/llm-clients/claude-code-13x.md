@@ -26,7 +26,7 @@ Route Claude Code to any OpenAI-compatible LLM provider (such as vLLM, Ollama, o
      - name: "*"
        provider: openAI
        params:
-         baseURL: "http://localhost:8000/v1"  # vLLM or similar OpenAI-compatible endpoint
+         baseUrl: "http://localhost:8000/v1"  # vLLM or similar OpenAI-compatible endpoint
          apiKey: "mock-key"  # Not used for local providers, but required by config
    EOF
    ```

@@ -78,12 +78,12 @@ Provide the token directly in the configuration for the {{< reuse "agw-docs/snip
        - path:
            type: PathPrefix
            value: /openai
-         filters:
-         - type: URLRewrite
-           urlRewrite:
-             path:
-               type: ReplacePrefixMatch
-               replacePrefixMatch: /v1/chat/completions
+       filters:
+       - type: URLRewrite
+         urlRewrite:
+           path:
+             type: ReplacePrefixMatch
+             replacePrefixMatch: /v1/chat/completions
        backendRefs:
        - name: openai
          namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}

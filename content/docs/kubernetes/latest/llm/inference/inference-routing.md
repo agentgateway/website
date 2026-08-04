@@ -1,7 +1,6 @@
 ---
 title: Inference routing
-weight: 30
-icon: alt_route
+weight: 10
 description: Route AI inference requests to LLM workloads using the Kubernetes Gateway API Inference Extension.
 test: skip
 ---
@@ -33,7 +32,7 @@ apiVersion: agentgateway.dev/v1alpha1
 kind: {{< reuse "agw-docs/snippets/backend.md" >}}
 metadata:
   name: qwen-inferencepool
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  namespace: default
 spec:
   ai:
     provider:
@@ -50,8 +49,8 @@ spec:
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
-  name: llm-route
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  name: vllm-qwen3-32b
+  namespace: default
 spec:
   parentRefs:
   - group: gateway.networking.k8s.io
@@ -80,12 +79,12 @@ apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
 kind: {{< reuse "agw-docs/snippets/policy.md" >}}
 metadata:
   name: qwen-token-budget
-  namespace: {{< reuse "agw-docs/snippets/namespace.md" >}}
+  namespace: default
 spec:
   targetRefs:
   - group: gateway.networking.k8s.io
     kind: HTTPRoute
-    name: llm-route
+    name: vllm-qwen3-32b
   traffic:
     rateLimit:
       local:

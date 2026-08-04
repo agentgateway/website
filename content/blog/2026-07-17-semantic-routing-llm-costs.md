@@ -96,7 +96,7 @@ model transition without mixing cache behavior into the primary evaluation.
 ## Try It
 
 The demo automates the setup work I would otherwise repeat by hand. It uses the [agentgateway semantic-routing
-example](https://github.com/agentgateway/agentgateway/tree/main/examples/llm-semantic-routing),
+example](https://github.com/agentgateway/agentgateway/tree/v1.4.1/examples/llm-semantic-routing),
 creates or reuses a kind cluster, and installs agentgateway, vSR, a model cost
 catalog, and the OpenTelemetry stack. It checks readiness, routing,
 catalog-priced metrics, logs, and traces before the primary requests run.

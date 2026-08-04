@@ -139,9 +139,9 @@ routes:
       azure:
         explicitConfig:
           clientSecret:
-            tenantId: "<your-tenant-id>"
-            clientId: "<your-client-id>"
-            clientSecret: "<your-client-secret>"
+            tenant_id: "<your-tenant-id>"
+            client_id: "<your-client-id>"
+            client_secret: "<your-client-secret>"
   backends:
   - ai:
       name: azure
@@ -180,9 +180,9 @@ routes:
       azure:
         explicitConfig:
           clientSecret:
-            tenantId: "<your-tenant-id>"
-            clientId: "<your-client-id>"
-            clientSecret: "<your-client-secret>"
+            tenant_id: "<your-tenant-id>"
+            client_id: "<your-client-id>"
+            client_secret: "<your-client-secret>"
 ```
 
 {{< reuse "agw-docs/snippets/review-configuration.md" >}}
@@ -306,3 +306,56 @@ routes:
 
 {{% /tab %}}
 {{< /tabs >}}
+
+## Use Claude models on Azure AI Foundry
+
+[Azure AI Foundry](https://ai.azure.com/) hosts Anthropic Claude models at native Anthropic endpoints. When you set `azureResourceType: foundry` and a model name that starts with `claude-`, agentgateway automatically routes requests to the Anthropic-native path (`/anthropic/v1/messages`) instead of the OpenAI-compatible path, and injects the required `anthropic-version` header. No extra configuration is needed beyond specifying a Claude model name.
+
+> [!NOTE]
+> For more information about Claude models on Azure AI Foundry, see the [Microsoft documentation](https://learn.microsoft.com/en-us/azure/foundry/foundry-models/how-to/use-foundry-models-claude).
+
+{{< reuse "agw-docs/snippets/review-configuration.md" >}}
+
+```yaml
+# yaml-language-server: $schema=https://agentgateway.dev/schema/config
+routes:
+- name: azure
+  matches:
+  - path:
+      pathPrefix: /azure-anthropic #prefix example
+  backends:
+  - ai:
+      name: azure
+      provider:
+        azure:
+          resourceName: your-foundry-resource
+          projectName: your-project-name
+          resourceType: foundry
+          model: claude-sonnet-4-6   
+    policies:
+      backendAuth:
+        key:
+          value: your-api-key
+```
+
+{{< reuse "agw-docs/snippets/review-table.md" >}}
+
+| Setting | Description |
+|---------|-------------|
+| `name` | The exact Claude model name to match in incoming requests, such as `claude-3-5-haiku-20241022`. Use `*` to match any model name. |
+| `provider` | Set to `azure` for Azure AI Foundry. |
+| `backendAuth.key.value` | The Azure AI Foundry API key. You can reference environment variables using the `$VAR_NAME` syntax. The key is automatically sent in the `Authorization` header. Other auth method can be applied [Backend authentication]({{< link-hextra path="/configuration/security/backend-authn/" >}}) |
+| `params.azureResourceName` | The Azure AI Foundry resource name used to construct the endpoint hostname. |
+| `params.azureResourceType` | Set to `foundry` to use Azure AI Foundry endpoints. |
+| `params.azureProjectName` | The Foundry project name. |
+
+After running agentgateway with this configuration, send a request to verify:
+
+```sh
+curl -X POST http://localhost:4000/azure-anthropic \
+  -H "Content-Type: application/json" \
+  -d '{
+    "max_tokens": 256,
+    "messages": [{"role": "user", "content": "Hello!"}]
+  }'
+```
