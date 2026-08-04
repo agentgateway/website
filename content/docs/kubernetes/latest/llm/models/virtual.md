@@ -69,7 +69,7 @@ Targets are usually `Internal` models, so clients cannot request them directly a
 
    ```yaml {paths="virtual-models"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: internal-fast
@@ -88,7 +88,7 @@ Targets are usually `Internal` models, so clients cannot request them directly a
        - field: model
          expression: '"resolved-internal-fast"'
    ---
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: internal-premium
@@ -153,7 +153,7 @@ Use `virtualModel.weighted` to distribute requests across targets by relative we
 
    ```yaml {paths="virtual-models"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: balanced
@@ -241,7 +241,7 @@ Use `virtualModel.conditional` to select a target with a CEL expression. Targets
 
    ```yaml {paths="virtual-models"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: smart
@@ -373,7 +373,7 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
      - port: 9235
        targetPort: 9235
    ---
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: primary-down
@@ -404,7 +404,7 @@ Failover depends on eviction. Configure `policies.health` on the concrete target
 
    ```yaml {paths="virtual-models"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: resilient

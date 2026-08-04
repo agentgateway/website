@@ -76,7 +76,7 @@ A listener serves LLM traffic only when it allows the `{{< reuse "agw-docs/snipp
          kinds:
          - group: gateway.networking.k8s.io
            kind: HTTPRoute
-         - group: {{< reuse "agw-docs/snippets/group.md" >}}
+         - group: agentgateway.dev
            kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    EOF
    ```
@@ -142,7 +142,7 @@ When you omit `spec.match`, the model matches `metadata.name` exactly. Clients r
 
    ```yaml {paths="serve-model"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: gpt-4
@@ -265,7 +265,7 @@ Use `spec.match.model` to match more than one model name. The provider does not 
 
    ```yaml {paths="serve-model"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: openai-models
@@ -374,7 +374,7 @@ Real providers require credentials. Use `spec.policies.auth` to read them from a
 
    ```yaml {paths="serve-model"}
    kubectl apply -f- <<EOF
-   apiVersion: {{< reuse "agw-docs/snippets/api-version.md" >}}
+   apiVersion: agentgateway.dev/v1alpha1
    kind: {{< reuse "agw-docs/snippets/agentgatewaymodel.md" >}}
    metadata:
      name: gpt-5-mini

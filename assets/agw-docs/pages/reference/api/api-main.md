@@ -2898,7 +2898,7 @@ _Appears in:_
 | `alg` _[OAuthPrivateKeyJWTSigningAlgorithm](#oauthprivatekeyjwtsigningalgorithm)_ | JWS signing algorithm. Defaults to RS256. |  | Optional: \{\} <br /> |
 | `kid` _string_ | Optional JWS key ID header. |  | Optional: \{\} <br /> |
 | `claims` _object (keys:string, values:[JSON](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#json-v1-apiextensions-k8s-io))_ | Static claims added to every token (e.g. iss, sub, aud). Values may be<br />any JSON value (e.g. a string, number, bool, or array). iat, exp, and<br />nbf are reserved for the signer and cannot be configured here; the<br />controller rejects them at translation time. (CEL admission validation<br />cannot inspect this map: JSON-valued fields are excluded from CEL type<br />declarations.) |  | MinProperties: 1 <br />Required: \{\} <br /> |
-| `ttl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Token lifetime used for exp. Defaults to 300s. |  | Optional: \{\} <br /> |
+| `ttl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | Token lifetime used for exp. Defaults to 300s. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
 | `location` _[AuthorizationLocation](#authorizationlocation)_ | Where the signed token is written on the backend request.<br />Defaults to the Authorization header with a "Bearer " prefix. |  | ExactlyOneOf: [header queryParameter cookie] <br />Optional: \{\} <br /> |
 
 
@@ -3808,7 +3808,7 @@ _Appears in:_
 | Field | Description | Default | Validation |
 | --- | --- | --- | --- |
 | `maxEntries` _integer_ | Default 8192; 0 disables the cache. |  | Optional: \{\} <br /> |
-| `defaultTtl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | TTL used when the token endpoint omits expires_in. Default 300s. |  | Optional: \{\} <br /> |
+| `defaultTtl` _[Duration](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#duration-v1-meta)_ | TTL used when the token endpoint omits expires_in. Default 300s. |  | MaxLength: 32 <br />Type: string <br />Optional: \{\} <br /> |
 
 
 #### OAuthMayActValidationMode
@@ -4119,8 +4119,6 @@ _Appears in:_
 | `ancestorRef` _[ParentReference](https://gateway-api.sigs.k8s.io/reference/api-spec/main/spec/#parentreference)_ | The ancestor resource that this status entry describes. |  | Required: \{\} <br /> |
 | `controllerName` _string_ | The controller that wrote this status entry.<br />Example: `example.net/gateway-controller`. |  | Required: \{\} <br /> |
 | `conditions` _[Condition](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.31/#condition-v1-meta) array_ | Conditions for this policy's effect on the specified ancestor. |  | MaxItems: 8 <br />MinItems: 1 <br />Optional: \{\} <br /> |
-
-
 
 
 
