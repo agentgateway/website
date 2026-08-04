@@ -51,16 +51,16 @@ kubectl delete referencegrants --all -A --ignore-not-found
 
 7. Uninstall the control plane.
    
-   1. Uninstall the {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} Helm release.
+   1. Uninstall the {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} Helm release.
       
       ```sh {paths="uninstall"}
-      helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+      helm uninstall {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    2. Delete the CRDs.
 
       ```sh {paths="uninstall"}
-      helm uninstall {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
+      helm uninstall {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}} -n {{< reuse "agw-docs/snippets/namespace.md" >}}
       ```
 
    3. Remove the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace. 
@@ -72,7 +72,7 @@ kubectl delete referencegrants --all -A --ignore-not-found
    4. Confirm that the CRDs are deleted.
 
       ```sh {paths="uninstall"}
-      kubectl get crds | grep {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} || true
+      kubectl get crds | grep {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} || true
       ```
 
 8. Remove the Kubernetes Gateway API CRDs. If you installed a different version or channel of the Kubernetes Gateway API, update the following command accordingly.
@@ -129,28 +129,28 @@ For ArgoCD installations, use the following steps to clean up your environment.
    argocd login localhost:9999 --username admin --password gateway --insecure
    ```
    
-3. Delete the {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} application.
+3. Delete the {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} application.
    
    ```sh
-   argocd app delete {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-helm --cascade --server localhost:9999 --insecure
+   argocd app delete {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}-helm --cascade --server localhost:9999 --insecure
    ```
    
    Example output: 
    ```txt
-   Are you sure you want to delete '{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-helm' and all its resources? [y/n] y
-   application '{{< reuse "/agw-docs/snippets/helm-kgateway.md" >}}-helm' deleted   
+   Are you sure you want to delete '{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}-helm' and all its resources? [y/n] y
+   application '{{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}}-helm' deleted   
    ```
 
-4. Delete the {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} CRD application.
+4. Delete the {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} CRD application.
    
    ```sh
-   argocd app delete {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}-helm --cascade --server localhost:9999 --insecure
+   argocd app delete {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}-helm --cascade --server localhost:9999 --insecure
    ```
    
    Example output: 
    ```txt
-   Are you sure you want to delete '{{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}-helm' and all its resources? [y/n] y
-   application '{{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}-helm' deleted   
+   Are you sure you want to delete '{{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}-helm' and all its resources? [y/n] y
+   application '{{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}-helm' deleted   
    ```
 
 5. Verify that the pods were removed from the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace. 
@@ -183,8 +183,8 @@ If you followed the [Flux installation steps]({{< link-hextra path="/install/flu
 1. Delete the {{< reuse "/agw-docs/snippets/kgateway.md" >}} `HelmRelease` and `OCIRepository` resources. Flux uninstalls the corresponding Helm releases from the cluster.
 
    ```sh
-   kubectl delete helmrelease -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
-   kubectl delete ocirepository -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-kgateway-crds.md" >}}
+   kubectl delete helmrelease -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
+   kubectl delete ocirepository -n {{< reuse "agw-docs/snippets/namespace.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway.md" >}} {{< reuse "/agw-docs/snippets/helm-agentgateway-crds.md" >}}
    ```
 
 2. Verify that the pods were removed from the `{{< reuse "agw-docs/snippets/namespace.md" >}}` namespace.
